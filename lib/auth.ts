@@ -7,7 +7,83 @@ import CredentialsProvider from "next-auth/providers/credentials"
 import GoogleProvider from "next-auth/providers/google"
 import bcrypt from "bcryptjs"
 
+import { randomBytes } from "crypto"
 import { prisma } from "@/lib/prisma"
+import { DEFAULT_ROLES } from "@/lib/permissions"
+
+type DbUser = Awaited<ReturnType<typeof getUserWithRoles>>
+
+async function getUserWithRoles(email: string) {
+  return prisma.user.findUnique({
+    where: { email },
+    include: {
+      userRoles: {
+        include: {
+          role: true,
+        },
+      },
+    },
+  })
+}
+
+async function createUserFromOAuth({
+  email,
+  name,
+  image,
+}: {
+  email: string
+  name?: string | null
+  image?: string | null
+}): Promise<DbUser> {
+  const defaultRole = await prisma.role.findUnique({
+    where: { name: DEFAULT_ROLES.USER.name },
+  })
+
+  const password = await bcrypt.hash(randomBytes(16).toString("hex"), 10)
+
+  const newUser = await prisma.user.create({
+    data: {
+      email,
+      name,
+      avatar: image ?? null,
+      password,
+      isActive: true,
+    },
+  })
+
+  if (defaultRole) {
+    await prisma.userRole.create({
+      data: {
+        userId: newUser.id,
+        roleId: defaultRole.id,
+      },
+    })
+  }
+
+  return getUserWithRoles(email)
+}
+
+function mapUserAuthPayload(user: DbUser | null) {
+  if (!user) {
+    return null
+  }
+
+  const permissions = user.userRoles.flatMap((ur) => ur.role.permissions)
+  const roles = user.userRoles.map((ur) => ({
+    id: ur.role.id,
+    name: ur.role.name,
+    displayName: ur.role.displayName,
+  }))
+
+  return {
+    id: user.id,
+    email: user.email,
+    name: user.name,
+    image: user.avatar,
+    permissions,
+    roles,
+  }
+}
 
 export const authConfig: NextAuthConfig = {
   trustHost: true, // Important for Next.js 16
@@ -50,22 +126,7 @@ export const authConfig: NextAuthConfig = {
         }
 
         // Get user permissions
-        const permissions = user.userRoles.flatMap(
-          (ur: { role: { permissions: string[] } }) => ur.role.permissions
-        )
-
-        return {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          image: user.avatar,
-          permissions,
-          roles: user.userRoles.map((ur: { role: { id: string; name: string; displayName: string } }) => ({
-            id: ur.role.id,
-            name: ur.role.name,
-            displayName: ur.role.displayName,
-          })),
-        }
+        return mapUserAuthPayload(user)
       },
     }),
     GoogleProvider({
@@ -74,17 +135,63 @@ export const authConfig: NextAuthConfig = {
     }),
   ],
   callbacks: {
+    async signIn({ user, account }: any) {
+      if (!user?.email) {
+        return false
+      }
+
+      const normalizedEmail = user.email.toLowerCase()
+      let dbUser = await getUserWithRoles(normalizedEmail)
+
+      if (!dbUser && normalizedEmail !== user.email) {
+        dbUser = await getUserWithRoles(user.email)
+      }
+
+      if (!dbUser && account?.provider === "google") {
+        dbUser = await createUserFromOAuth({
+          email: normalizedEmail,
+          name: user.name,
+          image: user.image,
+        })
+      }
+
+      if (!dbUser || !dbUser.isActive) {
+        return false
+      }
+
+      const authPayload = mapUserAuthPayload(dbUser)
+
+      if (!authPayload) {
+        return false
+      }
+
+      Object.assign(user, authPayload)
+
+      return true
+    },
     async jwt({ token, user }: any) {
       if (user) {
         token.id = user.id
         token.permissions = (user as any).permissions || []
         token.roles = (user as any).roles || []
+        token.picture = user.image
+      } else if ((!token.permissions || !(token.permissions as any[]).length) && token.email) {
+        const dbUser = await getUserWithRoles(token.email as string)
+        const authPayload = mapUserAuthPayload(dbUser)
+
+        if (authPayload) {
+          token.id = authPayload.id
+          token.permissions = authPayload.permissions
+          token.roles = authPayload.roles
+          token.picture = authPayload.image
+        }
       }
       return token
     },
     async session({ session, token }: any) {
       if (session.user) {
         session.user.id = token.id as string
+        session.user.image = (token.picture as string | null) ?? session.user.image
         ;(session as any).permissions = token.permissions || []
         ;(session as any).roles = token.roles || []
       }

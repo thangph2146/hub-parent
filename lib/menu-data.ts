@@ -22,6 +22,8 @@ import {
   Phone,
   GraduationCap,
   LayoutDashboard,
+  Home,
+  LogInIcon,
 } from "lucide-react"
 import { MENU_PERMISSIONS, PERMISSIONS } from "./permissions"
 import type { Permission } from "./permissions"
@@ -301,15 +303,10 @@ export function getMenuData(userPermissions: Permission[]): {
 
   const projects: MenuProject[] = [
     {
-      name: "Thiết kế",
-      url: "#",
-      icon: Frame,
-    },
-    {
-      name: "Marketing",
-      url: "#",
-      icon: PieChart,
-    },
+      name: "Trang chính",
+      url: "/",
+      icon: Home,
+    }
   ]
 
   // Filter menu items based on permissions
