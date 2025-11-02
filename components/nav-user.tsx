@@ -1,6 +1,6 @@
 "use client"
 
-import { signOut } from "next-auth/react"
+import { signOut, useSession } from "next-auth/react"
 import {
   BadgeCheck,
   ChevronsUpDown,
@@ -29,16 +29,42 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 
-export function NavUser({
-  user,
-}: {
-  user: {
-    name: string
-    email: string
-    avatar?: string | null
-  }
-}) {
+export function NavUser() {
+  const { data: session, status } = useSession()
   const { isMobile } = useSidebar()
+  
+  // Lấy thông tin user từ session
+  const user = session?.user
+  const primaryRole = session?.roles?.[0]
+  
+  // Tạo avatar fallback từ tên
+  const getInitials = (name?: string | null) => {
+    if (!name) return "U"
+    const parts = name.trim().split(" ")
+    if (parts.length >= 2) {
+      return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase()
+    }
+    return name.substring(0, 2).toUpperCase()
+  }
+  
+  // Loading state
+  if (status === "loading" || !user) {
+    return (
+      <SidebarMenu>
+        <SidebarMenuItem>
+          <SidebarMenuButton size="lg" disabled>
+            <Avatar className="h-8 w-8 rounded-lg">
+              <AvatarFallback className="rounded-lg">...</AvatarFallback>
+            </Avatar>
+            <div className="grid flex-1 text-left text-sm leading-tight">
+              <span className="truncate font-medium">Đang tải...</span>
+              <span className="truncate text-xs">Vui lòng chờ</span>
+            </div>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+      </SidebarMenu>
+    )
+  }
 
   return (
     <SidebarMenu>
@@ -50,12 +76,14 @@ export function NavUser({
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
               <Avatar className="h-8 w-8 rounded-lg">
-                <AvatarImage src={user.avatar || "/avatars/default.jpg"} alt={user.name} />
-                <AvatarFallback className="rounded-lg">CN</AvatarFallback>
+                <AvatarImage src={user.image || "/avatars/default.jpg"} alt={user.name || ""} />
+                <AvatarFallback className="rounded-lg">{getInitials(user.name)}</AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-medium">{user.name}</span>
-                <span className="truncate text-xs">{user.email}</span>
+                <span className="truncate font-medium">{user.name || user.email}</span>
+                <span className="truncate text-xs">
+                  {primaryRole?.displayName || primaryRole?.name || user.email}
+                </span>
               </div>
               <ChevronsUpDown className="ml-auto size-4" />
             </SidebarMenuButton>
@@ -69,12 +97,19 @@ export function NavUser({
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarImage src={user.avatar || "/avatars/default.jpg"} alt={user.name} />
-                  <AvatarFallback className="rounded-lg">CN</AvatarFallback>
+                  <AvatarImage src={user.image || "/avatars/default.jpg"} alt={user.name || ""} />
+                  <AvatarFallback className="rounded-lg">{getInitials(user.name)}</AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">{user.name}</span>
-                  <span className="truncate text-xs">{user.email}</span>
+                  <span className="truncate font-medium">{user.name || user.email}</span>
+                  <span className="truncate text-xs">
+                    {user.email}
+                    {primaryRole && (
+                      <span className="ml-1 text-muted-foreground">
+                        • {primaryRole.displayName || primaryRole.name}
+                      </span>
+                    )}
+                  </span>
                 </div>
               </div>
             </DropdownMenuLabel>

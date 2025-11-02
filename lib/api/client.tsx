@@ -1,34 +1,13 @@
 /**
- * TanStack Query client configuration
+ * TanStack Query Client Utilities
+ * 
+ * DEPRECATED: QueryProvider đã được chuyển sang components/providers/query-provider.tsx
+ * File này giữ lại để backward compatibility nếu có code cũ đang import
+ * 
+ * @deprecated Sử dụng QueryProvider từ @/components/providers thay thế
  */
 "use client"
 
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools"
-import { useState, type ReactNode } from "react"
-
-export function Providers({ children }: { children: ReactNode }) {
-  const [queryClient] = useState(
-    () =>
-      new QueryClient({
-        defaultOptions: {
-          queries: {
-            staleTime: 60 * 1000, // 1 minute
-            refetchOnWindowFocus: false,
-            retry: 1,
-          },
-          mutations: {
-            retry: 1,
-          },
-        },
-      })
-  )
-
-  return (
-    <QueryClientProvider client={queryClient}>
-      {children}
-      <ReactQueryDevtools initialIsOpen={false} />
-    </QueryClientProvider>
-  )
-}
+// Re-export để backward compatibility
+export { QueryProvider as Providers } from "@/components/providers/query-provider"
 

@@ -41,6 +41,95 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+  --color-highlight-color: var(----highlight-color);
+  --color-cube-color: var(----cube-color);
+  --color-wrapper-bg: var(----wrapper-bg);
+  @keyframes translate-z {
+  0%,
+  40%,
+  100% {
+    transform: translateZ(-2px);
+    }
+  30% {
+    transform: translateZ(16px) translateY(-1px);
+    }
+  }
+  @keyframes face-color {
+  0%,
+  50%,
+  100% {
+    background-color: var(--cube-color);
+    }
+  10% {
+    background-color: var(--highlight-color);
+    }
+  }
+  @keyframes face-glow {
+  0%,
+  50%,
+  100% {
+    color: #fff0;
+    filter: none;
+    }
+  30% {
+    color: #fff;
+    filter: drop-shadow(0 14px 10px var(--highlight-color));
+    }
+  }
+  @keyframes edge-glow {
+  0%,
+  40%,
+  100% {
+    box-shadow: inset 0 0 2px 1px #0001,
+      inset 0 0 12px 1px #fff1;
+    }
+  30% {
+    box-shadow: 0 0 2px 0px var(--highlight-color);
+    }
+  }
+  @keyframes translate-z {
+  0%,
+  40%,
+  100% {
+    transform: translateZ(-2px);
+    }
+  30% {
+    transform: translateZ(16px) translateY(-1px);
+    }
+  }
+  @keyframes face-color {
+  0%,
+  50%,
+  100% {
+    background-color: var(--cube-color);
+    }
+  10% {
+    background-color: var(--highlight-color);
+    }
+  }
+  @keyframes face-glow {
+  0%,
+  50%,
+  100% {
+    color: #fff0;
+    filter: none;
+    }
+  30% {
+    color: #fff;
+    filter: drop-shadow(0 14px 10px var(--highlight-color));
+    }
+  }
+  @keyframes edge-glow {
+  0%,
+  40%,
+  100% {
+    box-shadow: inset 0 0 2px 1px #0001,
+      inset 0 0 12px 1px #fff1;
+    }
+  30% {
+    box-shadow: 0 0 2px 0px var(--highlight-color);
+    }
+  }
 }
 
 :root {
@@ -76,6 +165,9 @@
   --sidebar-accent-foreground: oklch(0.208 0.042 265.755);
   --sidebar-border: oklch(0.929 0.013 255.508);
   --sidebar-ring: oklch(0.704 0.04 256.788);
+  --wrapper-bg: #ffffff;
+  --cube-color: #0000;
+  --highlight-color: #00cc44;
 }
 
 .dark {
@@ -110,6 +202,9 @@
   --sidebar-accent-foreground: oklch(0.984 0.003 247.858);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.551 0.027 264.364);
+  --wrapper-bg: #000000;
+  --cube-color: #0000;
+  --highlight-color: #00ff88;
 }
 
 @layer base {

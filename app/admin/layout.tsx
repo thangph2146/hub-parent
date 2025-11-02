@@ -1,6 +1,16 @@
 import { AppSidebar } from "@/components/app-sidebar"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
+import { ScrollArea } from "@/components/ui/scroll-area"
 
+/**
+ * Admin Layout
+ * 
+ * Cấu trúc:
+ * - SidebarProvider: Quản lý sidebar state
+ * - AppSidebar: Sidebar navigation
+ * - SidebarInset: Main content area
+ * - ScrollArea: Wrapper cho scrollable content, đảm bảo AdminHeader sticky hoạt động
+ */
 export default function AdminLayout({
   children,
 }: {
@@ -9,7 +19,11 @@ export default function AdminLayout({
   return (
     <SidebarProvider>
       <AppSidebar />
-      <SidebarInset>{children}</SidebarInset>
+      <SidebarInset className="flex flex-col overflow-hidden">
+        <ScrollArea className="h-screen">
+          {children}
+        </ScrollArea>
+      </SidebarInset>
     </SidebarProvider>
   )
 }

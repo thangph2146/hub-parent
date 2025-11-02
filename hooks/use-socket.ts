@@ -206,7 +206,8 @@ export function useSocket({ userId, role }: UseSocketOptions) {
       })
 
       socket.on("connect_error", (err) => {
-        logger.error("Lỗi kết nối", err instanceof Error ? err : new Error(String(err?.message ?? err)))
+        const error = err instanceof Error ? err : new Error(String(err))
+        logger.error("Lỗi kết nối", error)
       })
 
       socket.on("disconnect", (reason) => {

@@ -16,6 +16,7 @@ import {
 import { Separator } from "@/components/ui/separator"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { NotificationBell } from "@/components/notification-bell"
+import { ModeToggle } from "@/components/mode-toggle"
 
 export interface AdminBreadcrumbItem {
   label: string
@@ -31,7 +32,7 @@ export function AdminHeader({ breadcrumbs = [] }: AdminHeaderProps) {
   const { data: session } = useSession()
 
   return (
-    <header className="flex h-16 shrink-0 items-center gap-2 border-b">
+    <header className="sticky top-0 z-50 flex h-16 shrink-0 items-center gap-2 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="flex flex-1 items-center gap-2 px-4">
         <SidebarTrigger className="-ml-1" />
         <Separator
@@ -72,6 +73,7 @@ export function AdminHeader({ breadcrumbs = [] }: AdminHeaderProps) {
       </div>
       {session?.user?.id && (
         <div className="flex items-center gap-2 px-4">
+          <ModeToggle />
           <NotificationBell />
         </div>
       )}

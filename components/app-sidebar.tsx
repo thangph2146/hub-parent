@@ -37,18 +37,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     return getMenuData(permissions)
   }, [session?.permissions])
 
-  const userData = session?.user
-    ? {
-        name: session.user.name || session.user.email || "",
-        email: session.user.email || "",
-        avatar: session.user.image || undefined,
-      }
-    : {
-        name: "Guest",
-        email: "",
-        avatar: undefined,
-      }
-
   return (
     <Sidebar variant="inset" {...props}>
       <SidebarHeader>
@@ -80,13 +68,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         )}
       </SidebarContent>
       <SidebarFooter>
-        <NavUser
-          user={{
-            name: userData.name,
-            email: userData.email,
-            avatar: userData.avatar || "/avatars/default.jpg",
-          }}
-        />
+        <NavUser />
       </SidebarFooter>
     </Sidebar>
   )
