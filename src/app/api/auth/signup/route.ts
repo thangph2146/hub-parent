@@ -5,40 +5,76 @@ import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/database"
 import { logger } from "@/lib/config"
 import bcrypt from "bcryptjs"
+import { createPostRoute } from "@/lib/api/api-route-wrapper"
+import {
+  validateEmail,
+  validatePassword,
+  validateStringLength,
+  sanitizeString,
+  sanitizeEmail,
+} from "@/lib/api/validation"
 
-export async function POST(request: NextRequest) {
-  try {
-    const { name, email, password } = await request.json()
+async function signupHandler(
+  request: NextRequest,
+  _context: {
+    session: Awaited<ReturnType<typeof import("@/lib/auth").requireAuth>> | null
+    permissions: import("@/lib/permissions").Permission[]
+    roles: Array<{ name: string }>
+  }
+) {
+  const body = await request.json()
+  const { name, email, password } = body
 
-    if (!email || !password || !name) {
-      return NextResponse.json(
-        { error: "Tên, email và mật khẩu là bắt buộc" },
-        { status: 400 }
-      )
-    }
+  // Validate và sanitize input
+  const nameValidation = validateStringLength(
+    name,
+    1,
+    100,
+    "Tên"
+  )
+  if (!nameValidation.valid) {
+    return NextResponse.json({ error: nameValidation.error }, { status: 400 })
+  }
 
-    // Check if user already exists
-    const existingUser = await prisma.user.findUnique({
-      where: { email },
-    })
+  const emailValidation = validateEmail(email)
+  if (!emailValidation.valid) {
+    return NextResponse.json({ error: emailValidation.error }, { status: 400 })
+  }
 
-    if (existingUser) {
-      return NextResponse.json(
-        { error: "Email đã được sử dụng" },
-        { status: 400 }
-      )
-    }
+  const passwordValidation = validatePassword(password)
+  if (!passwordValidation.valid) {
+    return NextResponse.json(
+      { error: passwordValidation.error },
+      { status: 400 }
+    )
+  }
 
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10)
+  // Sanitize inputs
+  const sanitizedName = sanitizeString(name)
+  const sanitizedEmail = sanitizeEmail(email)
 
-    // Create user
-    const user = await prisma.user.create({
-      data: {
-        email,
-        name,
-        password: hashedPassword,
-      },
+  // Check if user already exists
+  const existingUser = await prisma.user.findUnique({
+    where: { email: sanitizedEmail },
+  })
+
+  if (existingUser) {
+    return NextResponse.json(
+      { error: "Email đã được sử dụng" },
+      { status: 400 }
+    )
+  }
+
+  // Hash password
+  const hashedPassword = await bcrypt.hash(password, 10)
+
+  // Create user
+  const user = await prisma.user.create({
+    data: {
+      email: sanitizedEmail,
+      name: sanitizedName,
+      password: hashedPassword,
+    },
       include: {
         userRoles: {
           include: {
@@ -48,34 +84,32 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    // Get default user role if exists
-    const defaultRole = await prisma.role.findUnique({
-      where: { name: "user" },
-    })
+  // Get default user role if exists
+  const defaultRole = await prisma.role.findUnique({
+    where: { name: "user" },
+  })
 
-    if (defaultRole) {
-      await prisma.userRole.create({
-        data: {
-          userId: user.id,
-          roleId: defaultRole.id,
-        },
-      })
-    }
-
-    return NextResponse.json({
-      message: "Đăng ký thành công",
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
+  if (defaultRole) {
+    await prisma.userRole.create({
+      data: {
+        userId: user.id,
+        roleId: defaultRole.id,
       },
     })
-  } catch (error) {
-    logger.error("Sign up error", error instanceof Error ? error : new Error(String(error)))
-    return NextResponse.json(
-      { error: "Lỗi đăng ký" },
-      { status: 500 }
-    )
   }
+
+  return NextResponse.json({
+    message: "Đăng ký thành công",
+    user: {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+    },
+  })
 }
+
+export const POST = createPostRoute(signupHandler, {
+  requireAuth: false,
+  rateLimit: "auth",
+})
 

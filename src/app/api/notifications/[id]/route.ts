@@ -2,9 +2,8 @@
  * API Route cho Notification operations (mark as read, delete)
  */
 import { NextRequest, NextResponse } from "next/server"
-import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/database"
-import { logger } from "@/lib/config"
+import { PERMISSIONS } from "@/lib/permissions"
 import {
   getNotificationCache,
   getSocketServer,
@@ -12,113 +11,122 @@ import {
   removeNotificationFromCache,
   updateNotificationInCache,
 } from "@/lib/socket/state"
+import {
+  createPatchRoute,
+  createDeleteRoute,
+} from "@/lib/api/api-route-wrapper"
+import { validateID } from "@/lib/api/validation"
 
 // PATCH - Mark notification as read/unread
-export async function PATCH(
+async function patchNotificationHandler(
   request: NextRequest,
+  context: {
+    session: Awaited<ReturnType<typeof import("@/lib/auth").requireAuth>>
+    permissions: import("@/lib/permissions").Permission[]
+    roles: Array<{ name: string }>
+  },
   { params }: { params: Promise<{ id: string }> }
 ) {
-  try {
-    const session = await auth()
-    const { id } = await params
+  const { id } = await params
 
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
+  // Validate ID (UUID or CUID)
+  const idValidation = validateID(id)
+  if (!idValidation.valid) {
+    return NextResponse.json({ error: idValidation.error }, { status: 400 })
+  }
 
-    const body = await request.json()
-    const { isRead } = body
+  const body = await request.json()
+  const { isRead } = body
 
-    // Verify notification belongs to user
-    const notification = await prisma.notification.findFirst({
-      where: {
-        id,
-        userId: session.user.id,
-      },
-    })
+  // Verify notification belongs to user
+  const notification = await prisma.notification.findFirst({
+    where: {
+      id,
+      userId: context.session.user.id,
+    },
+  })
 
-    if (!notification) {
-      return NextResponse.json(
-        { error: "Notification not found" },
-        { status: 404 }
-      )
-    }
-
-    const updated = await prisma.notification.update({
-      where: { id },
-      data: {
-        isRead: isRead ?? !notification.isRead,
-        readAt: isRead !== false ? new Date() : null,
-      },
-    })
-
-    updateNotificationInCache(session.user.id, updated.id, (item) => {
-      item.read = updated.isRead
-    })
-
-    const io = getSocketServer()
-    if (io) {
-      const payload = mapNotificationToPayload(updated)
-      io.to(`user:${session.user.id}`).emit("notification:updated", payload)
-    }
-
-    return NextResponse.json(updated)
-  } catch (error) {
-    logger.error("Error updating notification", error instanceof Error ? error : new Error(String(error)))
+  if (!notification) {
     return NextResponse.json(
-      { error: "Failed to update notification" },
-      { status: 500 }
+      { error: "Notification not found" },
+      { status: 404 }
     )
   }
+
+  const updated = await prisma.notification.update({
+    where: { id },
+    data: {
+      isRead: isRead ?? !notification.isRead,
+      readAt: isRead !== false ? new Date() : null,
+    },
+  })
+
+  updateNotificationInCache(context.session.user.id, updated.id, (item) => {
+    item.read = updated.isRead
+  })
+
+  const io = getSocketServer()
+  if (io) {
+    const payload = mapNotificationToPayload(updated)
+    io.to(`user:${context.session.user.id}`).emit("notification:updated", payload)
+  }
+
+  return NextResponse.json(updated)
 }
 
 // DELETE - Xóa notification
-export async function DELETE(
+async function deleteNotificationHandler(
   request: NextRequest,
+  context: {
+    session: Awaited<ReturnType<typeof import("@/lib/auth").requireAuth>>
+    permissions: import("@/lib/permissions").Permission[]
+    roles: Array<{ name: string }>
+  },
   { params }: { params: Promise<{ id: string }> }
 ) {
-  try {
-    const session = await auth()
-    const { id } = await params
+  const { id } = await params
 
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
+  // Validate ID (UUID or CUID)
+  const idValidation = validateID(id)
+  if (!idValidation.valid) {
+    return NextResponse.json({ error: idValidation.error }, { status: 400 })
+  }
 
-    // Verify notification belongs to user
-    const notification = await prisma.notification.findFirst({
-      where: {
-        id,
-        userId: session.user.id,
-      },
-    })
+  // Verify notification belongs to user
+  const notification = await prisma.notification.findFirst({
+    where: {
+      id,
+      userId: context.session.user.id,
+    },
+  })
 
-    if (!notification) {
-      return NextResponse.json(
-        { error: "Notification not found" },
-        { status: 404 }
-      )
-    }
-
-    await prisma.notification.delete({
-      where: { id },
-    })
-
-    const removed = removeNotificationFromCache(session.user.id, id)
-
-    const io = getSocketServer()
-    if (io && removed) {
-      const cache = getNotificationCache()
-      const current = cache.get(session.user.id) ?? []
-      io.to(`user:${session.user.id}`).emit("notifications:sync", current)
-    }
-
-    return NextResponse.json({ success: true })
-  } catch (error) {
-    logger.error("Error deleting notification", error instanceof Error ? error : new Error(String(error)))
+  if (!notification) {
     return NextResponse.json(
-      { error: "Failed to delete notification" },
-      { status: 500 }
+      { error: "Notification not found" },
+      { status: 404 }
     )
   }
+
+  await prisma.notification.delete({
+    where: { id },
+  })
+
+  const removed = removeNotificationFromCache(context.session.user.id, id)
+
+  const io = getSocketServer()
+  if (io && removed) {
+    const cache = getNotificationCache()
+    const current = cache.get(context.session.user.id) ?? []
+    io.to(`user:${context.session.user.id}`).emit("notifications:sync", current)
+  }
+
+  return NextResponse.json({ success: true })
 }
+
+export const PATCH = createPatchRoute(patchNotificationHandler, {
+  permissions: PERMISSIONS.NOTIFICATIONS_VIEW,
+})
+
+export const DELETE = createDeleteRoute(deleteNotificationHandler, {
+  permissions: PERMISSIONS.NOTIFICATIONS_VIEW,
+})

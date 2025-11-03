@@ -1,54 +1,51 @@
 /**
  * API Route để mark tất cả notifications là đã đọc
  */
-import { NextResponse } from "next/server"
-import { auth } from "@/lib/auth"
+import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/database"
-import { logger } from "@/lib/config"
+import { PERMISSIONS } from "@/lib/permissions"
 import { getNotificationCache, getSocketServer } from "@/lib/socket/state"
+import { createPostRoute } from "@/lib/api/api-route-wrapper"
 
-export async function POST() {
-  try {
-    const session = await auth()
+async function markAllReadHandler(
+  _req: NextRequest,
+  context: {
+    session: Awaited<ReturnType<typeof import("@/lib/auth").requireAuth>>
+    permissions: import("@/lib/permissions").Permission[]
+    roles: Array<{ name: string }>
+  }
+) {
+  const result = await prisma.notification.updateMany({
+    where: {
+      userId: context.session.user.id,
+      isRead: false,
+    },
+    data: {
+      isRead: true,
+      readAt: new Date(),
+    },
+  })
 
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
-
-    const result = await prisma.notification.updateMany({
-      where: {
-        userId: session.user.id,
-        isRead: false,
-      },
-      data: {
-        isRead: true,
-        readAt: new Date(),
-      },
-    })
-
-    if (result.count > 0) {
-      const cache = getNotificationCache()
-      const notifications = cache.get(session.user.id)
-      if (notifications) {
-        notifications.forEach((notification) => {
-          notification.read = true
-        })
-        const io = getSocketServer()
-        if (io) {
-          io.to(`user:${session.user.id}`).emit("notifications:sync", notifications)
-        }
+  if (result.count > 0) {
+    const cache = getNotificationCache()
+    const notifications = cache.get(context.session.user.id)
+    if (notifications) {
+      notifications.forEach((notification) => {
+        notification.read = true
+      })
+      const io = getSocketServer()
+      if (io) {
+        io.to(`user:${context.session.user.id}`).emit("notifications:sync", notifications)
       }
     }
-
-    return NextResponse.json({
-      success: true,
-      count: result.count,
-    })
-  } catch (error) {
-    logger.error("Error marking all as read", error instanceof Error ? error : new Error(String(error)))
-    return NextResponse.json(
-      { error: "Failed to mark all as read" },
-      { status: 500 }
-    )
   }
+
+  return NextResponse.json({
+    success: true,
+    count: result.count,
+  })
 }
+
+export const POST = createPostRoute(markAllReadHandler, {
+  permissions: PERMISSIONS.NOTIFICATIONS_VIEW,
+})

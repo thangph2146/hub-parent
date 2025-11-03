@@ -15,8 +15,8 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { ResourceTableClient } from "@/features/resources/components/resource-table.client"
 import type { ResourceViewMode } from "@/features/resources/types"
-import { extractErrorMessage } from "@/lib/utils"
 import { cn } from "@/lib/utils"
+import { apiClient } from "@/lib/api/axios"
 
 import type { UserRow, UsersResponse, UsersTableClientProps } from "../types"
 
@@ -71,19 +71,14 @@ export function UsersTableClient({
   useEffect(() => {
     async function fetchRoles() {
       try {
-        const response = await fetch("/api/roles")
-        if (!response.ok) {
-          console.error("Failed to fetch roles")
-          return
-        }
-        const data = await response.json()
-        const options = data.data.map((role: RoleOption) => ({
+        const response = await apiClient.get<{ data: RoleOption[] }>("/roles")
+        const options = response.data.data.map((role) => ({
           label: role.displayName,
           value: role.name,
         }))
         setRolesOptions(options)
-      } catch {
-        console.error("Error fetching roles")
+      } catch (error) {
+        console.error("Error fetching roles", error)
       }
     }
     fetchRoles()
@@ -242,16 +237,8 @@ export function UsersTableClient({
         }
       })
 
-      const response = await fetch(`/api/users?${params.toString()}`, {
-        headers: { "Content-Type": "application/json" },
-        cache: "no-store",
-      })
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch users")
-      }
-
-      const payload = (await response.json()) as UsersResponse
+      const response = await apiClient.get<UsersResponse>(`/users?${params.toString()}`)
+      const payload = response.data
 
       return {
         rows: payload.data,
@@ -272,18 +259,15 @@ export function UsersTableClient({
         type: "soft",
         row,
         onConfirm: async () => {
-          const response = await fetch(`/api/users/${row.id}`, {
-            method: "DELETE",
-          })
-
-          if (!response.ok) {
-            const error = await extractErrorMessage(response)
-            showFeedback("error", "Xóa thất bại", `Không thể xóa người dùng ${row.email}`, error)
-            throw new Error(error)
+          try {
+            await apiClient.delete(`/users/${row.id}`)
+            showFeedback("success", "Xóa thành công", `Đã xóa người dùng ${row.email}`)
+            refresh()
+          } catch (error: unknown) {
+            const errorMessage = error instanceof Error ? error.message : "Đã xảy ra lỗi không xác định"
+            showFeedback("error", "Xóa thất bại", `Không thể xóa người dùng ${row.email}`, errorMessage)
+            throw error
           }
-
-          showFeedback("success", "Xóa thành công", `Đã xóa người dùng ${row.email}`)
-          refresh()
         },
       })
     },
@@ -298,18 +282,15 @@ export function UsersTableClient({
         type: "hard",
         row,
         onConfirm: async () => {
-          const response = await fetch(`/api/users/${row.id}/hard-delete`, {
-            method: "DELETE",
-          })
-
-          if (!response.ok) {
-            const error = await extractErrorMessage(response)
-            showFeedback("error", "Xóa vĩnh viễn thất bại", `Không thể xóa vĩnh viễn người dùng ${row.email}`, error)
-            throw new Error(error)
+          try {
+            await apiClient.delete(`/users/${row.id}/hard-delete`)
+            showFeedback("success", "Xóa vĩnh viễn thành công", `Đã xóa vĩnh viễn người dùng ${row.email}`)
+            refresh()
+          } catch (error: unknown) {
+            const errorMessage = error instanceof Error ? error.message : "Đã xảy ra lỗi không xác định"
+            showFeedback("error", "Xóa vĩnh viễn thất bại", `Không thể xóa vĩnh viễn người dùng ${row.email}`, errorMessage)
+            throw error
           }
-
-          showFeedback("success", "Xóa vĩnh viễn thành công", `Đã xóa vĩnh viễn người dùng ${row.email}`)
-          refresh()
         },
       })
     },
@@ -320,16 +301,12 @@ export function UsersTableClient({
     async (row: UserRow, refresh: () => void) => {
       if (!canRestore) return
 
-      const response = await fetch(`/api/users/${row.id}/restore`, {
-        method: "POST",
-      })
-
-      if (!response.ok) {
-        console.error("Failed to restore user", await response.text())
-        return
+      try {
+        await apiClient.post(`/users/${row.id}/restore`)
+        refresh()
+      } catch (error) {
+        console.error("Failed to restore user", error)
       }
-
-      refresh()
     },
     [canRestore],
   )
@@ -346,21 +323,14 @@ export function UsersTableClient({
           onConfirm: async () => {
             setIsBulkProcessing(true)
             try {
-              const response = await fetch("/api/users/bulk", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ action, ids }),
-              })
-
-              if (!response.ok) {
-                const error = await extractErrorMessage(response)
-                showFeedback("error", "Xóa hàng loạt thất bại", `Không thể xóa ${ids.length} người dùng`, error)
-                throw new Error(error)
-              }
-
+              await apiClient.post("/users/bulk", { action, ids })
               showFeedback("success", "Xóa thành công", `Đã xóa ${ids.length} người dùng`)
               clearSelection()
               refresh()
+            } catch (error: unknown) {
+              const errorMessage = error instanceof Error ? error.message : "Đã xảy ra lỗi không xác định"
+              showFeedback("error", "Xóa hàng loạt thất bại", `Không thể xóa ${ids.length} người dùng`, errorMessage)
+              throw error
             } finally {
               setIsBulkProcessing(false)
             }
@@ -374,21 +344,14 @@ export function UsersTableClient({
           onConfirm: async () => {
             setIsBulkProcessing(true)
             try {
-              const response = await fetch("/api/users/bulk", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ action, ids }),
-              })
-
-              if (!response.ok) {
-                const error = await extractErrorMessage(response)
-                showFeedback("error", "Xóa vĩnh viễn thất bại", `Không thể xóa vĩnh viễn ${ids.length} người dùng`, error)
-                throw new Error(error)
-              }
-
+              await apiClient.post("/users/bulk", { action, ids })
               showFeedback("success", "Xóa vĩnh viễn thành công", `Đã xóa vĩnh viễn ${ids.length} người dùng`)
               clearSelection()
               refresh()
+            } catch (error: unknown) {
+              const errorMessage = error instanceof Error ? error.message : "Đã xảy ra lỗi không xác định"
+              showFeedback("error", "Xóa vĩnh viễn thất bại", `Không thể xóa vĩnh viễn ${ids.length} người dùng`, errorMessage)
+              throw error
             } finally {
               setIsBulkProcessing(false)
             }
@@ -397,20 +360,16 @@ export function UsersTableClient({
       } else {
         // restore action - no confirmation needed
         setIsBulkProcessing(true)
-        fetch("/api/users/bulk", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ action, ids }),
-        })
-          .then(async (response) => {
-            if (!response.ok) {
-              const error = await extractErrorMessage(response)
-              showFeedback("error", "Khôi phục thất bại", `Không thể khôi phục ${ids.length} người dùng`, error)
-              return
-            }
+        apiClient
+          .post("/users/bulk", { action, ids })
+          .then(() => {
             showFeedback("success", "Khôi phục thành công", `Đã khôi phục ${ids.length} người dùng`)
             clearSelection()
             refresh()
+          })
+          .catch((error: unknown) => {
+            const errorMessage = error instanceof Error ? error.message : "Đã xảy ra lỗi không xác định"
+            showFeedback("error", "Khôi phục thất bại", `Không thể khôi phục ${ids.length} người dùng`, errorMessage)
           })
           .finally(() => {
             setIsBulkProcessing(false)

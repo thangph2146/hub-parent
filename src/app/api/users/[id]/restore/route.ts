@@ -2,44 +2,43 @@
  * API Route: POST /api/users/[id]/restore
  */
 import { NextRequest, NextResponse } from "next/server"
-import { requireAuth, getPermissions } from "@/lib/auth"
-import { PERMISSIONS, canPerformAction } from "@/lib/permissions"
+import { PERMISSIONS } from "@/lib/permissions"
 import {
-  ApplicationError,
   type AuthContext,
   restoreUser,
 } from "@/features/users/server/mutations"
+import { createPostRoute } from "@/lib/api/api-route-wrapper"
+import { validateID } from "@/lib/api/validation"
 
-export async function POST(
+async function restoreUserHandler(
   _req: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
+  context: {
+    session: Awaited<ReturnType<typeof import("@/lib/auth").requireAuth>>
+    permissions: import("@/lib/permissions").Permission[]
+    roles: Array<{ name: string }>
+  },
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  try {
-    const { id } = await params
-    const session = await requireAuth()
-    const permissions = await getPermissions()
-    const sessionWithRoles = session as typeof session & { roles?: Array<{ name: string }> }
-    const roles = sessionWithRoles?.roles ?? []
+  const { id } = await params
 
-    if (!canPerformAction(permissions, roles, PERMISSIONS.USERS_UPDATE)) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 })
-    }
-
-    const ctx: AuthContext = {
-      actorId: session.user?.id ?? "unknown",
-      permissions,
-      roles,
-    }
-
-    await restoreUser(ctx, id)
-
-    return NextResponse.json({ success: true })
-  } catch (error) {
-    console.error("Error restoring user:", error)
-    if (error instanceof ApplicationError) {
-      return NextResponse.json({ error: error.message }, { status: error.status })
-    }
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+  // Validate ID (UUID or CUID)
+  const idValidation = validateID(id)
+  if (!idValidation.valid) {
+    return NextResponse.json({ error: idValidation.error }, { status: 400 })
   }
+
+  const ctx: AuthContext = {
+    actorId: context.session.user?.id ?? "unknown",
+    permissions: context.permissions,
+    roles: context.roles,
+  }
+
+  await restoreUser(ctx, id)
+
+  return NextResponse.json({ success: true })
 }
+
+export const POST = createPostRoute(restoreUserHandler, {
+  permissions: PERMISSIONS.USERS_UPDATE,
+})
 

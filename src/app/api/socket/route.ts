@@ -1,4 +1,5 @@
 import type { NextRequest } from "next/server"
+import { NextResponse } from "next/server"
 // import type { Server as HTTPServer } from "http" // TODO: Will be used when implementing custom server setup
 import { Server as IOServer, Socket } from "socket.io"
 import { NotificationKind, type Prisma } from "@prisma/client"
@@ -496,34 +497,54 @@ async function setupSocketHandlers(io: IOServer) {
 // Note: Socket.IO với App Router cần custom server setup
 // Route handler này chỉ để initialize socket server
 // Socket.IO sẽ upgrade connection từ HTTP sang WebSocket
-export async function GET(req: NextRequest) {
-  try {
-    logger.info("Socket API handler called", {
-      method: "GET",
-      url: req.url,
-    })
+// Áp dụng security middleware nhưng không yêu cầu authentication
+// vì Socket.IO sẽ tự xử lý authentication qua handshake
+import { createGetRoute, createPostRoute } from "@/lib/api/api-route-wrapper"
 
-    // Lấy server instance từ request
-    // Lưu ý: Socket.IO với App Router cần setup qua custom server
-    // Hoặc sử dụng edge runtime với WebSocket support
-    return new Response("Socket.IO server endpoint", { status: 200 })
-  } catch (error) {
-    logger.error("Socket API error", error instanceof Error ? error : new Error(String(error)))
-    return new Response("Internal Server Error", { status: 500 })
+async function socketGetHandler(
+  req: NextRequest,
+  _context: {
+    session: Awaited<ReturnType<typeof import("@/lib/auth").requireAuth>> | null
+    permissions: import("@/lib/permissions").Permission[]
+    roles: Array<{ name: string }>
   }
+) {
+  logger.info("Socket API handler called", {
+    method: "GET",
+    url: req.url,
+  })
+
+  // Lấy server instance từ request
+  // Lưu ý: Socket.IO với App Router cần setup qua custom server
+  // Hoặc sử dụng edge runtime với WebSocket support
+  return NextResponse.json({ message: "Socket.IO server endpoint" }, { status: 200 })
 }
 
-export async function POST(req: NextRequest) {
-  try {
-    logger.info("Socket API handler called", {
-      method: "POST",
-      url: req.url,
-    })
-
-    return new Response("Socket.IO server endpoint", { status: 200 })
-  } catch (error) {
-    logger.error("Socket API error", error instanceof Error ? error : new Error(String(error)))
-    return new Response("Internal Server Error", { status: 500 })
+async function socketPostHandler(
+  req: NextRequest,
+  _context: {
+    session: Awaited<ReturnType<typeof import("@/lib/auth").requireAuth>> | null
+    permissions: import("@/lib/permissions").Permission[]
+    roles: Array<{ name: string }>
   }
+) {
+  logger.info("Socket API handler called", {
+    method: "POST",
+    url: req.url,
+  })
+
+  return NextResponse.json({ message: "Socket.IO server endpoint" }, { status: 200 })
 }
+
+// Socket endpoint không yêu cầu authentication vì Socket.IO tự xử lý qua handshake
+// Nhưng vẫn áp dụng rate limiting để chống DDoS
+export const GET = createGetRoute(socketGetHandler, {
+  requireAuth: false,
+  rateLimit: "read",
+})
+
+export const POST = createPostRoute(socketPostHandler, {
+  requireAuth: false,
+  rateLimit: "write",
+})
 
