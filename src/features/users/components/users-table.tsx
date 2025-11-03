@@ -5,6 +5,7 @@ import { UsersTableClient, type UserRow } from "./users-table.client"
 export interface UsersTableProps {
   canDelete?: boolean
   canRestore?: boolean
+  canManage?: boolean
 }
 
 function serializeInitialData(
@@ -31,7 +32,7 @@ function serializeInitialData(
   }
 }
 
-export async function UsersTable({ canDelete, canRestore }: UsersTableProps) {
+export async function UsersTable({ canDelete, canRestore, canManage }: UsersTableProps) {
   const initial = await listUsersCached(1, 10, "", "", "active")
   const initialData = serializeInitialData(initial)
 
@@ -39,6 +40,7 @@ export async function UsersTable({ canDelete, canRestore }: UsersTableProps) {
     <UsersTableClient
       canDelete={canDelete}
       canRestore={canRestore}
+      canManage={canManage}
       initialData={initialData}
     />
   )

@@ -31,13 +31,6 @@ function ForbiddenNotice() {
   )
 }
 
-function UsersTableFallback() {
-  return (
-    <div className="flex flex-col gap-2 rounded-lg border border-dashed border-border p-6 text-sm text-muted-foreground">
-      <span>Đang tải danh sách người dùng...</span>
-    </div>
-  )
-}
 
 export default async function UsersPage() {
   const session = (await getSession()) as SessionWithMeta | null
@@ -59,6 +52,7 @@ export default async function UsersPage() {
     PERMISSIONS.USERS_UPDATE,
     PERMISSIONS.USERS_MANAGE,
   ])
+  const canManage = canPerformAction(permissions, roles, PERMISSIONS.USERS_MANAGE)
 
   if (!canView) {
     return <ForbiddenNotice />
@@ -75,6 +69,7 @@ export default async function UsersPage() {
           <UsersTable
             canDelete={canDelete}
             canRestore={canRestore}
+            canManage={canManage}
           />
       </div>
     </>

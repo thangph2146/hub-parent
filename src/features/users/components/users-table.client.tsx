@@ -5,14 +5,16 @@ import type { DataTableResult, DataTableColumn, DataTableQueryState } from "@/co
 import { ResourceTableClient } from "@/features/resources/components/resource-table.client"
 import type { ResourceViewMode } from "@/features/resources/types"
 import { Button } from "@/components/ui/button"
+import { FeedbackDialog, type FeedbackVariant } from "@/components/feedback-dialog"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { RotateCcw, Trash2, MoreHorizontal } from "lucide-react"
+import { RotateCcw, Trash2, MoreHorizontal, AlertTriangle } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { ConfirmDialog } from "@/components/confirm-dialog"
 
 export interface UserRole {
   id: string
@@ -40,18 +42,78 @@ interface UsersResponse {
   }
 }
 
+
+interface FeedbackState {
+  open: boolean
+  variant: FeedbackVariant
+  title: string
+  description?: string
+  details?: string
+}
+
 export interface UsersTableClientProps {
   canDelete?: boolean
   canRestore?: boolean
+  canManage?: boolean
   initialData?: DataTableResult<UserRow>
+}
+
+interface DeleteConfirmState {
+  open: boolean
+  type: "soft" | "hard"
+  row?: UserRow
+  bulkIds?: string[]
+  onConfirm: () => Promise<void>
 }
 
 export function UsersTableClient({
   canDelete = false,
   canRestore = false,
+  canManage = false,
   initialData,
 }: UsersTableClientProps) {
   const [isBulkProcessing, setIsBulkProcessing] = useState(false)
+  const [feedback, setFeedback] = useState<FeedbackState | null>(null)
+  const [deleteConfirm, setDeleteConfirm] = useState<DeleteConfirmState | null>(null)
+
+  const showFeedback = useCallback(
+    (variant: FeedbackVariant, title: string, description?: string, details?: string) => {
+      setFeedback({ open: true, variant, title, description, details })
+    },
+    [],
+  )
+
+  const handleFeedbackOpenChange = useCallback((open: boolean) => {
+    if (!open) {
+      setFeedback(null)
+    }
+  }, [])
+
+  const parseJsonSafe = useCallback(async <T,>(response: Response): Promise<T | null> => {
+    try {
+      const clone = response.clone()
+      const textBody = await clone.text()
+      if (!textBody) return null
+      return JSON.parse(textBody) as T
+    } catch {
+      return null
+    }
+  }, [])
+
+  const extractErrorMessage = useCallback(async (response: Response) => {
+    const data = await parseJsonSafe<{ error?: string; message?: string }>(response)
+    if (data) {
+      if (typeof data.error === "string") return data.error
+      if (typeof data.message === "string") return data.message
+      return JSON.stringify(data)
+    }
+    try {
+      return await response.clone().text()
+    } catch {
+      return "Không xác định"
+    }
+  }, [parseJsonSafe])
+
   const dateFormatter = useMemo(
     () =>
       new Intl.DateTimeFormat("vi-VN", {
@@ -197,22 +259,55 @@ export function UsersTableClient({
   )
 
   const handleDeleteSingle = useCallback(
-    async (row: UserRow, refresh: () => void) => {
+    (row: UserRow, refresh: () => void) => {
       if (!canDelete) return
-      if (!window.confirm(`Bạn có chắc chắn muốn xóa ${row.email}?`)) return
+      setDeleteConfirm({
+        open: true,
+        type: "soft",
+        row,
+        onConfirm: async () => {
+          const response = await fetch(`/api/users/${row.id}`, {
+            method: "DELETE",
+          })
 
-      const response = await fetch(`/api/users/${row.id}`, {
-        method: "DELETE",
+          if (!response.ok) {
+            const error = await extractErrorMessage(response)
+            showFeedback("error", "Xóa thất bại", `Không thể xóa người dùng ${row.email}`, error)
+            throw new Error(error)
+          }
+
+          showFeedback("success", "Xóa thành công", `Đã xóa người dùng ${row.email}`)
+          refresh()
+        },
       })
-
-      if (!response.ok) {
-        console.error("Failed to delete user", await response.text())
-        return
-      }
-
-      refresh()
     },
-    [canDelete],
+    [canDelete, extractErrorMessage, showFeedback],
+  )
+
+  const handleHardDeleteSingle = useCallback(
+    (row: UserRow, refresh: () => void) => {
+      if (!canManage) return
+      setDeleteConfirm({
+        open: true,
+        type: "hard",
+        row,
+        onConfirm: async () => {
+          const response = await fetch(`/api/users/${row.id}/hard-delete`, {
+            method: "DELETE",
+          })
+
+          if (!response.ok) {
+            const error = await extractErrorMessage(response)
+            showFeedback("error", "Xóa vĩnh viễn thất bại", `Không thể xóa vĩnh viễn người dùng ${row.email}`, error)
+            throw new Error(error)
+          }
+
+          showFeedback("success", "Xóa vĩnh viễn thành công", `Đã xóa vĩnh viễn người dùng ${row.email}`)
+          refresh()
+        },
+      })
+    },
+    [canManage, extractErrorMessage, showFeedback],
   )
 
   const handleRestoreSingle = useCallback(
@@ -234,28 +329,89 @@ export function UsersTableClient({
   )
 
   const executeBulk = useCallback(
-    async (action: "delete" | "restore", ids: string[], refresh: () => void, clearSelection: () => void) => {
+    (action: "delete" | "restore" | "hard-delete", ids: string[], refresh: () => void, clearSelection: () => void) => {
       if (ids.length === 0) return
-      setIsBulkProcessing(true)
-      try {
-        const response = await fetch("/api/users/bulk", {
+
+      if (action === "delete") {
+        setDeleteConfirm({
+          open: true,
+          type: "soft",
+          bulkIds: ids,
+          onConfirm: async () => {
+            setIsBulkProcessing(true)
+            try {
+              const response = await fetch("/api/users/bulk", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ action, ids }),
+              })
+
+              if (!response.ok) {
+                const error = await extractErrorMessage(response)
+                showFeedback("error", "Xóa hàng loạt thất bại", `Không thể xóa ${ids.length} người dùng`, error)
+                throw new Error(error)
+              }
+
+              showFeedback("success", "Xóa thành công", `Đã xóa ${ids.length} người dùng`)
+              clearSelection()
+              refresh()
+            } finally {
+              setIsBulkProcessing(false)
+            }
+          },
+        })
+      } else if (action === "hard-delete") {
+        setDeleteConfirm({
+          open: true,
+          type: "hard",
+          bulkIds: ids,
+          onConfirm: async () => {
+            setIsBulkProcessing(true)
+            try {
+              const response = await fetch("/api/users/bulk", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ action, ids }),
+              })
+
+              if (!response.ok) {
+                const error = await extractErrorMessage(response)
+                showFeedback("error", "Xóa vĩnh viễn thất bại", `Không thể xóa vĩnh viễn ${ids.length} người dùng`, error)
+                throw new Error(error)
+              }
+
+              showFeedback("success", "Xóa vĩnh viễn thành công", `Đã xóa vĩnh viễn ${ids.length} người dùng`)
+              clearSelection()
+              refresh()
+            } finally {
+              setIsBulkProcessing(false)
+            }
+          },
+        })
+      } else {
+        // restore action - no confirmation needed
+        setIsBulkProcessing(true)
+        fetch("/api/users/bulk", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ action, ids }),
         })
-
-        if (!response.ok) {
-          console.error("Bulk action failed", await response.text())
-          return
-        }
-
-        clearSelection()
-        refresh()
-      } finally {
-        setIsBulkProcessing(false)
+          .then(async (response) => {
+            if (!response.ok) {
+              const error = await extractErrorMessage(response)
+              showFeedback("error", "Khôi phục thất bại", `Không thể khôi phục ${ids.length} người dùng`, error)
+              return
+            }
+            showFeedback("success", "Khôi phục thành công", `Đã khôi phục ${ids.length} người dùng`)
+            clearSelection()
+            refresh()
+          })
+          .finally(() => {
+            setIsBulkProcessing(false)
+          })
       }
     },
-    [],
+    [extractErrorMessage, showFeedback],
   )
 
   const viewModes = useMemo<ResourceViewMode<UserRow>[]>(() => {
@@ -282,6 +438,18 @@ export function UsersTableClient({
                     <Trash2 className="mr-2 h-4 w-4" />
                     Xóa đã chọn
                   </Button>
+                  {canManage && (
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="destructive"
+                      disabled={isBulkProcessing}
+                      onClick={() => executeBulk("hard-delete", selectedIds, refresh, clearSelection)}
+                    >
+                      <AlertTriangle className="mr-2 h-4 w-4" />
+                      Xóa vĩnh viễn
+                    </Button>
+                  )}
                   <Button type="button" size="sm" variant="ghost" onClick={clearSelection}>
                     Bỏ chọn
                   </Button>
@@ -316,24 +484,38 @@ export function UsersTableClient({
         label: "Đã xóa",
         status: "deleted",
         columns: deletedColumns,
-        selectionEnabled: canRestore,
-        selectionActions: canRestore
+        selectionEnabled: canRestore || canManage,
+        selectionActions: canRestore || canManage
           ? ({ selectedIds, clearSelection, refresh }) => (
               <div className="flex flex-wrap items-center justify-between gap-3 text-sm">
                 <span>
                   Đã chọn <strong>{selectedIds.length}</strong> người dùng (đã xóa)
                 </span>
                 <div className="flex items-center gap-2">
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    disabled={isBulkProcessing}
-                    onClick={() => executeBulk("restore", selectedIds, refresh, clearSelection)}
-                  >
-                    <RotateCcw className="mr-2 h-4 w-4" />
-                    Khôi phục
-                  </Button>
+                  {canRestore && (
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      disabled={isBulkProcessing}
+                      onClick={() => executeBulk("restore", selectedIds, refresh, clearSelection)}
+                    >
+                      <RotateCcw className="mr-2 h-4 w-4" />
+                      Khôi phục
+                    </Button>
+                  )}
+                  {canManage && (
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="destructive"
+                      disabled={isBulkProcessing}
+                      onClick={() => executeBulk("hard-delete", selectedIds, refresh, clearSelection)}
+                    >
+                      <AlertTriangle className="mr-2 h-4 w-4" />
+                      Xóa vĩnh viễn
+                    </Button>
+                  )}
                   <Button type="button" size="sm" variant="ghost" onClick={clearSelection}>
                     Bỏ chọn
                   </Button>
@@ -341,7 +523,7 @@ export function UsersTableClient({
               </div>
             )
           : undefined,
-        rowActions: canRestore
+        rowActions: canRestore || canManage
           ? (row, { refresh }) => (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -354,6 +536,15 @@ export function UsersTableClient({
                     <RotateCcw className="mr-2 h-4 w-4" />
                     Khôi phục
                   </DropdownMenuItem>
+                  {canManage && (
+                    <DropdownMenuItem
+                      onClick={() => handleHardDeleteSingle(row, refresh)}
+                      className="text-destructive focus:text-destructive"
+                    >
+                      <AlertTriangle className="mr-2 h-4 w-4" />
+                      Xóa vĩnh viễn
+                    </DropdownMenuItem>
+                  )}
                 </DropdownMenuContent>
               </DropdownMenu>
             )
@@ -363,24 +554,90 @@ export function UsersTableClient({
     ]
 
     return modes
-  }, [canDelete, canRestore, deletedColumns, executeBulk, handleDeleteSingle, handleRestoreSingle, isBulkProcessing])
+  }, [canDelete, canRestore, canManage, deletedColumns, executeBulk, handleDeleteSingle, handleRestoreSingle, handleHardDeleteSingle, isBulkProcessing])
 
   const initialDataByView = useMemo(
     () => (initialData ? { active: initialData } : undefined),
     [initialData],
   )
 
+  const handleDeleteConfirm = useCallback(async () => {
+    if (!deleteConfirm) return
+    try {
+      await deleteConfirm.onConfirm()
+    } catch (error) {
+      // Error already handled in onConfirm
+    } finally {
+      setDeleteConfirm(null)
+    }
+  }, [deleteConfirm])
+
+  const getDeleteConfirmTitle = () => {
+    if (!deleteConfirm) return ""
+    if (deleteConfirm.type === "hard") {
+      return deleteConfirm.bulkIds
+        ? `Xóa vĩnh viễn ${deleteConfirm.bulkIds.length} người dùng?`
+        : `Xóa vĩnh viễn người dùng ${deleteConfirm.row?.email}?`
+    }
+    return deleteConfirm.bulkIds
+      ? `Xóa ${deleteConfirm.bulkIds.length} người dùng?`
+      : `Xóa người dùng ${deleteConfirm.row?.email}?`
+  }
+
+  const getDeleteConfirmDescription = () => {
+    if (!deleteConfirm) return ""
+    if (deleteConfirm.type === "hard") {
+      return deleteConfirm.bulkIds
+        ? `Hành động này sẽ xóa vĩnh viễn ${deleteConfirm.bulkIds.length} người dùng khỏi hệ thống. Dữ liệu sẽ không thể khôi phục. Bạn có chắc chắn muốn tiếp tục?`
+        : `Hành động này sẽ xóa vĩnh viễn người dùng "${deleteConfirm.row?.email}" khỏi hệ thống. Dữ liệu sẽ không thể khôi phục. Bạn có chắc chắn muốn tiếp tục?`
+    }
+    return deleteConfirm.bulkIds
+      ? `Bạn có chắc chắn muốn xóa ${deleteConfirm.bulkIds.length} người dùng? Họ sẽ được chuyển vào thùng rác và có thể khôi phục sau.`
+      : `Bạn có chắc chắn muốn xóa người dùng "${deleteConfirm.row?.email}"? Người dùng sẽ được chuyển vào thùng rác và có thể khôi phục sau.`
+  }
+
   return (
-    <ResourceTableClient<UserRow>
-      title="Quản lý người dùng"
-      baseColumns={baseColumns}
-      loader={loader}
-      viewModes={viewModes}
-      defaultViewId="active"
-      initialDataByView={initialDataByView}
-      fallbackRowCount={6}
-      searchPlaceholder="Tìm theo email, tên người dùng..."
-    />
+    <>
+      <ResourceTableClient<UserRow>
+        title="Quản lý người dùng"
+        baseColumns={baseColumns}
+        loader={loader}
+        viewModes={viewModes}
+        defaultViewId="active"
+        initialDataByView={initialDataByView}
+        fallbackRowCount={6}
+        searchPlaceholder="Tìm theo email, tên người dùng..."
+      />
+
+      {/* Delete Confirmation Dialog */}
+      {deleteConfirm && (
+        <ConfirmDialog
+          open={deleteConfirm.open}
+          onOpenChange={(open) => {
+            if (!open) setDeleteConfirm(null)
+          }}
+          title={getDeleteConfirmTitle()}
+          description={getDeleteConfirmDescription()}
+          variant={deleteConfirm.type === "hard" ? "destructive" : "destructive"}
+          confirmLabel={deleteConfirm.type === "hard" ? "Xóa vĩnh viễn" : "Xóa"}
+          cancelLabel="Hủy"
+          onConfirm={handleDeleteConfirm}
+          isLoading={isBulkProcessing}
+        />
+      )}
+
+      {/* Feedback Dialog */}
+      {feedback && (
+        <FeedbackDialog
+          open={feedback.open}
+          onOpenChange={handleFeedbackOpenChange}
+          variant={feedback.variant}
+          title={feedback.title}
+          description={feedback.description}
+          details={feedback.details}
+        />
+      )}
+    </>
   )
 }
 

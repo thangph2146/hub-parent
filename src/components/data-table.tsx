@@ -24,6 +24,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Skeleton } from "@/components/ui/skeleton"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import { useDebouncedCallback } from "@/hooks/use-debounced-callback"
 
 type UnknownRecord = Record<string, unknown>
@@ -43,6 +44,50 @@ type ColumnFilterConfig =
       options: ColumnFilterSelectOption[]
       placeholder?: string
     }
+
+
+interface ColumnFilterControlProps {
+  column: DataTableColumn<any>
+  value: string
+  disabled: boolean
+  onChange: (value: string, immediate?: boolean) => void
+}
+
+function ColumnFilterControl({ column, value, disabled, onChange }: ColumnFilterControlProps) {
+  if (!column.filter) return null
+
+  if (column.filter.type === "select") {
+    return (
+      <select
+        value={value}
+        onChange={(event) => onChange(event.target.value, true)}
+        disabled={disabled}
+        className={cn(
+          "h-8 w-full rounded-md border border-input bg-background px-2 text-xs outline-none focus-visible:ring-1 focus-visible:ring-ring",
+          "disabled:cursor-not-allowed disabled:opacity-60",
+        )}
+        aria-label={`Lọc ${column.header}`}
+      >
+        <option value="">{column.filter.placeholder ?? "Tất cả"}</option>
+        {column.filter.options.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </select>
+    )
+  }
+
+  return (
+    <Input
+      value={value}
+      onChange={(event) => onChange(event.target.value)}
+      placeholder={column.filter?.placeholder ?? `Lọc ${column.header.toLowerCase()}...`}
+      className="h-8 text-xs"
+      disabled={disabled}
+    />
+  )
+}
 
 export interface DataTableColumn<T extends object> {
   accessorKey: keyof T & string
@@ -266,6 +311,7 @@ export function DataTable<T extends object>({
         next[columnKey] = value
       }
       if (immediate) {
+        debouncedApplyFilters.cancel()
         applyFilters(next)
       } else {
         debouncedApplyFilters(next)
@@ -306,43 +352,6 @@ export function DataTable<T extends object>({
       search: "",
       filters: {},
     }))
-  }
-
-  const renderFilterControl = (column: DataTableColumn<T>) => {
-    if (!column.filter) return null
-    const filterValue = pendingTextFilters[column.accessorKey] ?? ""
-
-    if (column.filter.type === "select") {
-      return (
-        <select
-          value={filterValue}
-          onChange={(event) => handleFilterChange(column.accessorKey, event.target.value, true)}
-          disabled={isPending}
-          className={cn(
-            "h-8 w-full rounded-md border border-input bg-background px-2 text-xs outline-none focus-visible:ring-1 focus-visible:ring-ring",
-            "disabled:cursor-not-allowed disabled:opacity-60",
-          )}
-          aria-label={`Lọc ${column.header}`}
-        >
-          <option value="">{column.filter.placeholder ?? "Tất cả"}</option>
-          {column.filter.options.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
-      )
-    }
-
-    return (
-      <Input
-        value={filterValue}
-        onChange={(event) => handleFilterChange(column.accessorKey, event.target.value)}
-        placeholder={column.filter?.placeholder ?? `Lọc ${column.header.toLowerCase()}...`}
-        className="h-8 text-xs"
-        disabled={isPending}
-      />
-    )
   }
 
   const selectionSelectedIds = selection?.selectedIds
@@ -506,55 +515,64 @@ export function DataTable<T extends object>({
       ) : null}
 
       <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              {selectionEnabled ? (
-                <TableHead className="w-10 align-middle">
-                  <SelectionCheckbox
-                    checked={allVisibleSelected}
-                    indeterminate={someVisibleSelected}
-                    disabled={selectionDisabled || selectableVisibleIds.length === 0}
-                    onCheckedChange={(checked) => handleToggleAll(selectableVisibleIds, checked)}
-                  />
-                </TableHead>
-              ) : null}
-              {columns.map((column) => (
-                <TableHead key={`header-${column.accessorKey}`} className={cn("align-middle", column.headerClassName)}>
-                  <span className="text-sm font-medium text-foreground">{column.header}</span>
-                </TableHead>
-              ))}
-              {actions ? <TableHead className="w-[120px] text-right">Hành động</TableHead> : null}
-            </TableRow>
-            {columns.some((col) => col.filter) && (
-              <TableRow className="border-t border-border bg-muted/40">
-                {selectionEnabled ? <TableHead className="w-10" /> : null}
+        <ScrollArea className="w-full">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                {selectionEnabled ? (
+                  <TableHead className="w-10 align-middle">
+                    <SelectionCheckbox
+                      checked={allVisibleSelected}
+                      indeterminate={someVisibleSelected}
+                      disabled={selectionDisabled || selectableVisibleIds.length === 0}
+                      onCheckedChange={(checked) => handleToggleAll(selectableVisibleIds, checked)}
+                    />
+                  </TableHead>
+                ) : null}
                 {columns.map((column) => (
-                  <TableHead key={`filter-${column.accessorKey}`} className={cn("align-middle", column.headerClassName)}>
-                    {renderFilterControl(column)}
+                  <TableHead key={`header-${column.accessorKey}`} className={cn("align-middle", column.headerClassName)}>
+                    <span className="text-sm font-medium text-foreground">{column.header}</span>
                   </TableHead>
                 ))}
-                {actions ? <TableHead className="w-[120px]" /> : null}
+                {actions ? <TableHead className="w-[120px] text-right">Hành động</TableHead> : null}
               </TableRow>
-            )}
-          </TableHeader>
-          <Suspense fallback={<TableBodySkeleton columnCount={columnCount} rowCount={fallbackRowCount} />}>
-            <TableBodyContent<T>
-              dataPromise={dataPromise}
-              columns={columns}
-              actions={actions}
-              showSelection={selectionEnabled}
-              selectionDisabled={selectionDisabled}
-              selectedIds={selectedIdsSet}
-              isRowSelectable={isRowSelectable}
-              onToggleRow={handleRowToggle}
-              getRowId={getRowId}
-              onVisibleRowsChange={setVisibleRows}
-              emptyMessage={emptyMessage}
-              totalColumns={columnCount}
-            />
-          </Suspense>
-        </Table>
+              {columns.some((col) => col.filter) && (
+                <TableRow className="border-t border-border bg-muted/40">
+                  {selectionEnabled ? <TableHead className="w-10" /> : null}
+                  {columns.map((column) => (
+                    <TableHead key={`filter-${column.accessorKey}`} className={cn("align-middle", column.headerClassName)}>
+                      {
+                      <ColumnFilterControl
+                        column={column}
+                        value={pendingTextFilters[column.accessorKey] ?? ""}
+                        disabled={isPending}
+                        onChange={(value, immediate) => handleFilterChange(column.accessorKey, value, immediate)}
+                      />
+                    }
+                    </TableHead>
+                  ))}
+                  {actions ? <TableHead className="w-[120px]" /> : null}
+                </TableRow>
+              )}
+            </TableHeader>
+            <Suspense fallback={<TableBodySkeleton columnCount={columnCount} rowCount={fallbackRowCount} />}>
+              <TableBodyContent<T>
+                dataPromise={dataPromise}
+                columns={columns}
+                actions={actions}
+                showSelection={selectionEnabled}
+                selectionDisabled={selectionDisabled}
+                selectedIds={selectedIdsSet}
+                isRowSelectable={isRowSelectable}
+                onToggleRow={handleRowToggle}
+                getRowId={getRowId}
+                onVisibleRowsChange={setVisibleRows}
+                emptyMessage={emptyMessage}
+                totalColumns={columnCount}
+              />
+            </Suspense>
+          </Table>
+        </ScrollArea>
       </div>
 
       <Suspense fallback={<SummarySkeleton />}>
