@@ -169,13 +169,16 @@ export const authConfig: NextAuthConfig = {
 
       return true
     },
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger }) {
+      // Khi user đăng nhập lần đầu
       if (user) {
         const userWithPerms = user as typeof user & {
           permissions?: string[]
           roles?: Array<{ id: string; name: string; displayName: string }>
         }
         token.id = user.id
+        token.email = user.email
+        token.name = user.name
         token.permissions = Array.isArray(userWithPerms.permissions)
           ? userWithPerms.permissions
           : []
@@ -183,7 +186,25 @@ export const authConfig: NextAuthConfig = {
           ? userWithPerms.roles
           : []
         token.picture = user.image
-      } else if (
+        // Thêm timestamp để track khi token được tạo
+        token.iat = Math.floor(Date.now() / 1000)
+      } 
+      // Refresh token khi cần (khi session được update)
+      else if (trigger === "update" && token.email) {
+        // Refresh user data từ database khi session được update
+        const dbUser = await getUserWithRoles(token.email as string)
+        const authPayload = mapUserAuthPayload(dbUser)
+        
+        if (authPayload) {
+          token.id = authPayload.id
+          token.permissions = authPayload.permissions ?? []
+          token.roles = authPayload.roles ?? []
+          token.picture = authPayload.image
+          token.name = authPayload.name
+        }
+      }
+      // Kiểm tra và refresh permissions nếu token thiếu data
+      else if (
         (!token.permissions || (Array.isArray(token.permissions) && token.permissions.length === 0)) &&
         token.email
       ) {
@@ -195,8 +216,10 @@ export const authConfig: NextAuthConfig = {
           token.permissions = authPayload.permissions ?? []
           token.roles = authPayload.roles ?? []
           token.picture = authPayload.image
+          token.name = authPayload.name
         }
       }
+      
       return token
     },
     async session({ session, token }) {
@@ -221,7 +244,13 @@ export const authConfig: NextAuthConfig = {
   session: {
     strategy: "jwt",
     maxAge: 7 * 24 * 60 * 60, // 7 days
+    updateAge: 24 * 60 * 60, // Update session every 24 hours
   },
+  // JWT Configuration
+  // Trong NextAuth v5, JWT options được đặt ở top-level
+  // JWT secret được set qua 'secret' option ở bottom
+  // JWT signing algorithm mặc định là HS256 (an toàn)
+  // Có thể custom JWT thông qua jwt callback
   secret: process.env.NEXTAUTH_SECRET,
 }
 

@@ -52,13 +52,45 @@ core-cms-16/
 
 ## Getting Started
 
-Cài đặt dependencies:
+### 1. Cài đặt dependencies
 
 ```bash
 pnpm install
 ```
 
-Chạy development server:
+### 2. Setup Environment Variables
+
+⚠️ **QUAN TRỌNG**: File `docs/env.md` chỉ chứa placeholders. Bạn cần tạo file `.env.local` với giá trị thực:
+
+```bash
+# Copy template
+cp docs/env.md .env.local
+
+# Chỉnh sửa .env.local và điền các giá trị thực:
+# - DATABASE_URL (connection string của database)
+# - NEXTAUTH_SECRET (tạo bằng: openssl rand -base64 32)
+# - GOOGLE_CLIENT_ID và GOOGLE_CLIENT_SECRET (từ Google Cloud Console)
+```
+
+**Lưu ý bảo mật**:
+- ❌ KHÔNG commit file `.env.local` vào git
+- ❌ KHÔNG commit bất kỳ file nào chứa secrets thực
+- ✅ Xem `docs/security.md` để biết thêm về security best practices
+
+### 3. Setup Database
+
+```bash
+# Generate Prisma Client
+pnpm prisma generate
+
+# Run migrations
+pnpm prisma migrate dev
+
+# (Optional) Seed database với sample data
+pnpm prisma db seed
+```
+
+### 4. Chạy Development Server
 
 ```bash
 pnpm dev
@@ -66,7 +98,7 @@ pnpm dev
 
 Mở [http://localhost:3000](http://localhost:3000) để xem kết quả.
 
-Build cho production:
+### 5. Build cho Production
 
 ```bash
 pnpm build
@@ -83,6 +115,12 @@ pnpm start
 - ✅ TanStack Query cho data fetching
 - ✅ Tailwind CSS với shadcn/ui
 - ✅ Dark mode support
+
+## Documentation
+
+- [Environment Variables Setup](docs/env.md) - Hướng dẫn cấu hình environment variables
+- [JWT Configuration](docs/jwt-config.md) - Cấu hình NextAuth.js với JWT
+- [Security Best Practices](docs/security.md) - Quy tắc bảo mật và quản lý secrets
 
 ## Learn More
 
