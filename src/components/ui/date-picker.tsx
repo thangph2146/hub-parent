@@ -12,6 +12,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { useClientOnly } from "@/hooks/use-client-only"
 
 interface DatePickerProps {
   date?: Date
@@ -43,6 +44,7 @@ export function DatePicker({
   showSeconds = false,
 }: DatePickerProps) {
   const today = React.useMemo(() => new Date(), [])
+  const mounted = useClientOnly()
   const datePickerId = React.useId()
   const [internalDate, setInternalDate] = useState<Date | undefined>(date)
   const [internalTime, setInternalTime] = useState<string | null>(selectedTime ?? null)
@@ -298,6 +300,24 @@ export function DatePicker({
   }
 
   // Simple date picker without time slots (for filter use)
+  // Only render Popover after component has mounted on client to prevent hydration mismatch
+  if (!mounted) {
+    return (
+      <Button
+        variant="outline"
+        className={cn(
+          "h-8 w-full justify-start text-left text-xs font-normal",
+          !hasValue && "text-muted-foreground",
+          className,
+        )}
+        disabled={disabled}
+      >
+        <CalendarIcon className="mr-2 h-3 w-3" />
+        {displayDate}
+      </Button>
+    )
+  }
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>

@@ -37,6 +37,7 @@ import {
 } from "@/components/ui/table"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useDebouncedCallback } from "@/hooks/use-debounced-callback"
+import { useClientOnly } from "@/hooks/use-client-only"
 
 type UnknownRecord = Record<string, unknown>
 
@@ -84,14 +85,9 @@ function ColumnFilterControl<T extends object = object>({ column, value, disable
         // eslint-disable-next-line react-hooks/rules-of-hooks
         const [open, setOpen] = useState(false)
         // eslint-disable-next-line react-hooks/rules-of-hooks
-        const [mounted, setMounted] = useState(false)
+        const mounted = useClientOnly()
         // eslint-disable-next-line react-hooks/rules-of-hooks
         const filterId = useId()
-        
-        // eslint-disable-next-line react-hooks/rules-of-hooks
-        useEffect(() => {
-            setMounted(true)
-        }, [])
 
         const selectedOption = column.filter.options.find((opt) => opt.value === value)
 
