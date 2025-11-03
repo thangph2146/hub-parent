@@ -21,6 +21,7 @@
  * 
  * @see src/components/providers/client-only-provider.tsx - Provider version (for comparison)
  */
+/* eslint-disable react-hooks/set-state-in-effect */
 "use client"
 
 import { useLayoutEffect, useState } from "react"
@@ -32,7 +33,6 @@ export function useClientOnly(): boolean {
   // This prevents hydration mismatch with useId() in Radix UI components
   // Note: setState in effect is intentional here for hydration fixes
   // This is a recommended pattern by Next.js and React team for hydration issues
-  // eslint-disable-next-line react-hooks/set-state-in-effect
   useLayoutEffect(() => {
     setMounted(true)
   }, [])

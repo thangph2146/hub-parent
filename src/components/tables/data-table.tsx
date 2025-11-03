@@ -12,7 +12,7 @@ import {
     useTransition,
     type ReactNode,
 } from "react"
-import { ChevronLeft, ChevronRight, Check, ChevronsUpDown, Eye, EyeOff, Search } from "lucide-react"
+import { ChevronLeft, ChevronRight, Check, ChevronsUpDown, Eye, EyeOff } from "lucide-react"
 import { format } from "date-fns"
 import { cn } from "@/lib/utils"
 import { Input } from "@/components/ui/input"
@@ -476,18 +476,6 @@ export function DataTable<T extends object>({
     const hasPendingFilters = Object.values(pendingTextFilters).some((value) => value && value.trim().length > 0)
     const showClearFilters = hasAppliedFilters || hasPendingFilters
 
-    const [searchInput, setSearchInput] = useState("")
-    
-    const updateSearchQuery = useCallback((value: string) => {
-        setQuery((prev) => ({
-            ...prev,
-            page: 1,
-            search: value,
-        }))
-    }, [])
-    
-    const debouncedSearch = useDebouncedCallback(updateSearchQuery, 300)
-
     const handleFilterChange = (columnKey: string, value: string, immediate = false) => {
         setPendingTextFilters((prev) => {
             const next = { ...prev }
@@ -530,9 +518,7 @@ export function DataTable<T extends object>({
 
     const handleResetFilters = () => {
         debouncedApplyFilters.cancel()
-        debouncedSearch.cancel()
         setPendingTextFilters({})
-        setSearchInput("")
         applyFilters({})
         setQuery((prev) => ({
             ...prev,
