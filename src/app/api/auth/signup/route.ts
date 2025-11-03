@@ -2,8 +2,8 @@
  * Sign Up API Route - Tạo user mới
  */
 import { NextRequest, NextResponse } from "next/server"
-import { prisma } from "@/lib/prisma"
-import { logger } from "@/lib/logger"
+import { prisma } from "@/lib/database"
+import { logger } from "@/lib/config"
 import bcrypt from "bcryptjs"
 
 export async function POST(request: NextRequest) {

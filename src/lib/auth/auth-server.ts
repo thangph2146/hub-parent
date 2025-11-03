@@ -1,7 +1,7 @@
 /**
  * Server-side auth utilities
  */
-import { auth } from "@/lib/auth"
+import { auth } from "./auth"
 import type { Permission } from "@/lib/permissions"
 
 export async function getSession() {

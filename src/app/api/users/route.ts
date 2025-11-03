@@ -3,9 +3,8 @@
  * POST /api/users - Create user
  */
 import { NextRequest, NextResponse } from "next/server"
-import { requireAuth, getPermissions } from "@/lib/api/auth-server"
-import { PERMISSIONS } from "@/lib/permissions"
-import { canPerformAction } from "@/lib/permissions-helpers"
+import { requireAuth, getPermissions } from "@/lib/auth"
+import { PERMISSIONS, canPerformAction } from "@/lib/permissions"
 import { listUsersCached } from "@/features/users/server/queries"
 import {
   ApplicationError,

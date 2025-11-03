@@ -3,7 +3,7 @@
  * Body: { action: "delete" | "restore" | "hard-delete", ids: string[] }
  */
 import { NextRequest, NextResponse } from "next/server"
-import { requireAuth, getPermissions } from "@/lib/api/auth-server"
+import { requireAuth, getPermissions } from "@/lib/auth"
 import {
   ApplicationError,
   type AuthContext,
@@ -11,8 +11,7 @@ import {
   bulkRestoreUsers,
   bulkHardDeleteUsers,
 } from "@/features/users/server/mutations"
-import { PERMISSIONS } from "@/lib/permissions"
-import { canPerformAnyAction, canPerformAction } from "@/lib/permissions-helpers"
+import { PERMISSIONS, canPerformAnyAction, canPerformAction } from "@/lib/permissions"
 
 type BulkAction = "delete" | "restore" | "hard-delete"
 

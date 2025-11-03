@@ -1,9 +1,8 @@
 import bcrypt from "bcryptjs"
 import type { Prisma } from "@prisma/client"
 import type { Permission } from "@/lib/permissions"
-import { PERMISSIONS } from "@/lib/permissions"
-import { canPerformAction, canPerformAnyAction } from "@/lib/permissions-helpers"
-import { prisma } from "@/lib/prisma"
+import { PERMISSIONS, canPerformAction, canPerformAnyAction } from "@/lib/permissions"
+import { prisma } from "@/lib/database"
 import { mapUserRecord, type ListedUser, type UserWithRoles } from "./queries"
 
 export interface AuthContext {

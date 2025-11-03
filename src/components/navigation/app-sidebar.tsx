@@ -3,7 +3,7 @@
 import * as React from "react"
 import { Command } from "lucide-react"
 import { useSession } from "next-auth/react"
-import { getMenuData } from "@/lib/menu-data"
+import { getMenuData } from "@/lib/config"
 import { NavProjects, NavSecondary, NavUser } from "./"
 import { AppSidebarSkeleton } from "@/components/skeletons"
 import {

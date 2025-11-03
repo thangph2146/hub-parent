@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, type MutableRefObject } from "react"
 import { io, type Socket } from "socket.io-client"
-import { logger } from "@/lib/logger"
+import { logger } from "@/lib/config"
 
 export interface UseSocketOptions {
   userId?: string | null

@@ -1,12 +1,12 @@
-import { getSession } from "@/lib/api/auth-server"
-import { getMenuData } from "@/lib/menu-data"
+import { getSession } from "@/lib/auth"
+import { getMenuData } from "@/lib/config"
 import { NavMainItem } from "./nav-main-item.client"
 import {
   SidebarGroup,
   SidebarGroupLabel,
   SidebarMenu,
 } from "@/components/ui/sidebar"
-import type { MenuItem } from "@/lib/menu-data"
+import type { MenuItem } from "@/lib/config"
 import type { Permission } from "@/lib/permissions"
 
 /**

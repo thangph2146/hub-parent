@@ -3,8 +3,8 @@
  */
 import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
-import { prisma } from "@/lib/prisma"
-import { logger } from "@/lib/logger"
+import { prisma } from "@/lib/database"
+import { logger } from "@/lib/config"
 import {
   getNotificationCache,
   getSocketServer,

@@ -1,6 +1,6 @@
 import { cache } from "react"
 import type { Prisma } from "@prisma/client"
-import { prisma } from "@/lib/prisma"
+import { prisma } from "@/lib/database"
 
 export interface ListUsersInput {
   page?: number

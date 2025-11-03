@@ -1,7 +1,6 @@
 import { AdminHeader } from "@/components/headers"
-import { PERMISSIONS } from "@/lib/permissions"
-import { canPerformAction, canPerformAnyAction } from "@/lib/permissions-helpers"
-import { getPermissions, getSession } from "@/lib/api/auth-server"
+import { PERMISSIONS, canPerformAction, canPerformAnyAction } from "@/lib/permissions"
+import { getPermissions, getSession } from "@/lib/auth"
 
 import { UsersTable } from "@/features/users/components/users-table"
 

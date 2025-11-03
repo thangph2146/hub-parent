@@ -1,14 +1,14 @@
 import type { NextRequest } from "next/server"
-import type { Server as HTTPServer } from "http"
+// import type { Server as HTTPServer } from "http" // TODO: Will be used when implementing custom server setup
 import { Server as IOServer, Socket } from "socket.io"
 import { NotificationKind, type Prisma } from "@prisma/client"
-import { prisma } from "@/lib/prisma"
-import { logger } from "@/lib/logger"
+import { prisma } from "@/lib/database"
+import { logger } from "@/lib/config"
 import {
   getNotificationCache,
   mapNotificationToPayload,
   storeNotificationInCache,
-  setSocketServer,
+  // setSocketServer, // TODO: Will be used when implementing custom server setup
   MAX_IN_MEMORY_NOTIFICATIONS,
   type SocketNotificationPayload as NotificationPayload,
   type SocketNotificationKind as NotificationKindClient,
@@ -176,6 +176,8 @@ async function ensureUserNotificationsCached(userId: string) {
   }
 }
 
+// TODO: Will be used when implementing custom server setup for Socket.IO with App Router
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function setupSocketHandlers(io: IOServer) {
   logger.info("Setting up Socket.IO handlers", {
     action: "initialize_handlers",
@@ -488,7 +490,8 @@ async function setupSocketHandlers(io: IOServer) {
   })
 }
 
-type ServerWithIO = HTTPServer & { io?: IOServer }
+// TODO: Will be used when implementing custom server setup for Socket.IO with App Router
+// type ServerWithIO = HTTPServer & { io?: IOServer }
 
 // Note: Socket.IO với App Router cần custom server setup
 // Route handler này chỉ để initialize socket server

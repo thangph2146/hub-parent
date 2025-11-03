@@ -2,9 +2,8 @@
  * API Route: DELETE /api/users/[id]/hard-delete - Hard delete user (xóa vĩnh viễn)
  */
 import { NextRequest, NextResponse } from "next/server"
-import { requireAuth, getPermissions } from "@/lib/api/auth-server"
-import { PERMISSIONS } from "@/lib/permissions"
-import { canPerformAnyAction } from "@/lib/permissions-helpers"
+import { requireAuth, getPermissions } from "@/lib/auth"
+import { PERMISSIONS, canPerformAnyAction } from "@/lib/permissions"
 import {
   ApplicationError,
   type AuthContext,

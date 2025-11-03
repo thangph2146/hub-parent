@@ -1,8 +1,8 @@
 /**
  * Menu data với permissions mapping
  */
-import { MENU_PERMISSIONS, PERMISSIONS } from "./permissions"
-import type { Permission } from "./permissions"
+import { MENU_PERMISSIONS, PERMISSIONS } from "@/lib/permissions"
+import type { Permission } from "@/lib/permissions"
 
 export type IconName =
   | "LayoutDashboard"

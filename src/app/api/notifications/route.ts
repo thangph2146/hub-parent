@@ -4,8 +4,8 @@
 import { NextRequest, NextResponse } from "next/server"
 import type { Notification } from "@prisma/client"
 import { auth } from "@/lib/auth"
-import { prisma } from "@/lib/prisma"
-import { logger } from "@/lib/logger"
+import { prisma } from "@/lib/database"
+import { logger } from "@/lib/config"
 import {
   getSocketServer,
   mapNotificationToPayload,

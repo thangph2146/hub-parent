@@ -2,10 +2,9 @@
  * API Route: GET /api/roles - List roles
  */
 import { NextResponse } from "next/server"
-import { prisma } from "@/lib/prisma"
-import { requireAuth, getPermissions } from "@/lib/api/auth-server"
-import { PERMISSIONS } from "@/lib/permissions"
-import { canPerformAction } from "@/lib/permissions-helpers"
+import { prisma } from "@/lib/database"
+import { requireAuth, getPermissions } from "@/lib/auth"
+import { PERMISSIONS, canPerformAction } from "@/lib/permissions"
 
 export async function GET() {
   try {

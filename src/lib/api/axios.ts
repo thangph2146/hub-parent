@@ -2,7 +2,7 @@
  * Axios instance configuration với proxy support
  */
 import axios from "axios"
-import { logger } from "@/lib/logger"
+import { logger } from "@/lib/config"
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "/api"
 

@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { ResourceTableClient } from "@/features/resources/components/resource-table.client"
 import type { ResourceViewMode } from "@/features/resources/types"
-import { extractErrorMessage } from "@/lib/api-utils"
+import { extractErrorMessage } from "@/lib/utils"
 import { cn } from "@/lib/utils"
 
 import type { UserRow, UsersResponse, UsersTableClientProps } from "../types"

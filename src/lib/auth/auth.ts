@@ -8,7 +8,7 @@ import GoogleProvider from "next-auth/providers/google"
 import bcrypt from "bcryptjs"
 
 import { randomBytes } from "crypto"
-import { prisma } from "@/lib/prisma"
+import { prisma } from "@/lib/database"
 import { DEFAULT_ROLES } from "@/lib/permissions"
 
 type DbUser = Awaited<ReturnType<typeof getUserWithRoles>>

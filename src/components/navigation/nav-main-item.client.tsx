@@ -33,7 +33,7 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar"
-import type { IconName } from "@/lib/menu-data"
+import type { IconName } from "@/lib/config"
 
 const iconMap: Record<IconName, LucideIcon> = {
   LayoutDashboard,

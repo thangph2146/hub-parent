@@ -4,7 +4,7 @@
 "use client"
 
 import { signIn, signOut } from "next-auth/react"
-import { apiClient } from "./axios"
+import { apiClient } from "@/lib/api/axios"
 
 export interface SignInRequest {
   email: string
