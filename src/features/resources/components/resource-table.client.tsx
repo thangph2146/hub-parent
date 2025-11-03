@@ -104,12 +104,12 @@ export function ResourceTableClient<T extends object>({
   const initialData = initialDataByView?.[activeView.id]
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-3 sm:gap-4">
       {(title || viewModes.length > 1) && (
-        <div className="flex items-center justify-between">
-          {title ? <h2 className="text-lg font-semibold">{title}</h2> : <span />}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0">
+          {title ? <h2 className="text-base sm:text-lg font-semibold">{title}</h2> : <span />}
           {viewModes.length > 1 && (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
               {viewModes.map((view) => (
                 <Button
                   key={view.id}
@@ -117,6 +117,7 @@ export function ResourceTableClient<T extends object>({
                   size="sm"
                   variant={currentViewId === view.id ? "default" : "outline"}
                   onClick={() => handleViewChange(view.id)}
+                  className="h-8 px-2 sm:px-3 text-xs sm:text-sm"
                 >
                   {view.label}
                 </Button>

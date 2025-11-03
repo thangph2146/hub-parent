@@ -94,19 +94,19 @@ function ColumnFilterControl<T extends object = object>({ column, value, disable
         // Only render Popover on client to avoid hydration mismatch
         if (!mounted) {
             return (
-                <Button
-                    variant="outline"
-                    role="combobox"
-                    className={cn(
-                        "h-8 w-full justify-between text-xs font-normal",
-                        !value && "text-muted-foreground",
-                    )}
-                    disabled={true}
-                >
-                    <span className="truncate">
+                    <Button
+                        variant="outline"
+                        role="combobox"
+                        className={cn(
+                            "h-7 sm:h-8 w-full justify-between text-xs font-normal",
+                            !value && "text-muted-foreground",
+                        )}
+                        disabled={true}
+                    >
+                    <span className="truncate text-xs">
                         {selectedOption ? selectedOption.label : column.filter.placeholder ?? "Chọn..."}
                     </span>
-                    <ChevronsUpDown className="ml-2 h-3 w-3 shrink-0 opacity-50" />
+                    <ChevronsUpDown className="ml-1 sm:ml-2 h-3 w-3 shrink-0 opacity-50" />
                 </Button>
             )
         }
@@ -120,15 +120,15 @@ function ColumnFilterControl<T extends object = object>({ column, value, disable
                         aria-expanded={open}
                         aria-controls={filterId}
                         className={cn(
-                            "h-8 w-full justify-between text-xs font-normal",
+                            "h-7 sm:h-8 w-full justify-between text-xs font-normal",
                             !value && "text-muted-foreground",
                         )}
                         disabled={disabled}
                     >
-                        <span className="truncate">
+                        <span className="truncate text-xs">
                             {selectedOption ? selectedOption.label : column.filter.placeholder ?? "Chọn..."}
                         </span>
-                        <ChevronsUpDown className="ml-2 h-3 w-3 shrink-0 opacity-50" />
+                        <ChevronsUpDown className="ml-1 sm:ml-2 h-3 w-3 shrink-0 opacity-50" />
                     </Button>
                 </PopoverTrigger>
                 <PopoverContent id={filterId} className="w-[200px] p-0" align="start">
@@ -192,7 +192,7 @@ function ColumnFilterControl<T extends object = object>({ column, value, disable
                 onChange={(event) => onChange(event.target.value, true)}
                 disabled={disabled}
                 className={cn(
-                    "h-8 w-full rounded-md border border-input bg-background px-2 text-xs outline-none focus-visible:ring-1 focus-visible:ring-ring",
+                    "h-7 sm:h-8 w-full rounded-md border border-input bg-background px-2 text-xs outline-none focus-visible:ring-1 focus-visible:ring-ring",
                     "disabled:cursor-not-allowed disabled:opacity-60",
                 )}
                 aria-label={`Lọc ${column.header}`}
@@ -263,7 +263,7 @@ function ColumnFilterControl<T extends object = object>({ column, value, disable
             value={value}
             onChange={(event) => onChange(event.target.value)}
             placeholder={column.filter?.placeholder ?? `Lọc ${column.header.toLowerCase()}...`}
-            className="h-8 text-xs"
+            className="h-7 sm:h-8 text-xs"
             disabled={disabled}
         />
     )
@@ -655,33 +655,14 @@ export function DataTable<T extends object>({
                     : undefined
             }
         >
-            <div className="flex flex-wrap items-center justify-between gap-3">
-                <div className="w-full flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                    <div className="relative min-w-[240px] max-w-sm flex-1">
-                        <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                        <Input
-                            type="search"
-                            placeholder="Tìm kiếm..."
-                            value={searchInput}
-                            onChange={(event) => {
-                                const value = event.target.value
-                                setSearchInput(value)
-                                debouncedSearch(value)
-                            }}
-                            onBlur={() => {
-                                debouncedSearch.cancel()
-                                updateSearchQuery(searchInput)
-                            }}
-                            className="h-9 pl-8"
-                            disabled={isPending}
-                        />
-                    </div>
+            <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-3">
+                <div className="w-full flex gap-2 sm:gap-3 sm:items-center justify-between">
                     <div className="flex items-center gap-2">
-                        <span className="text-sm text-muted-foreground">Hiển thị</span>
+                        <span className="text-xs sm:text-sm text-muted-foreground whitespace-nowrap">Hiển thị</span>
                         <select
                             value={query.limit}
                             onChange={(event) => handleLimitChange(Number(event.target.value))}
-                            className="h-9 rounded-md border border-input bg-background px-2 text-sm outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                            className="h-8 sm:h-9 rounded-md border border-input bg-background px-2 text-xs sm:text-sm outline-none focus-visible:ring-1 focus-visible:ring-ring"
                             disabled={isPending}
                             aria-label="Chọn số bản ghi mỗi trang"
                         >
@@ -692,7 +673,7 @@ export function DataTable<T extends object>({
                             ))}
                         </select>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
                         {columns.some((col) => col.filter) && (
                             <Button
                                 type="button"
@@ -701,16 +682,17 @@ export function DataTable<T extends object>({
                                 onClick={() => setShowFilters((prev) => !prev)}
                                 disabled={isPending}
                                 aria-label={showFilters ? "Ẩn bộ lọc" : "Hiện bộ lọc"}
+                                className="h-8 px-2 sm:px-3"
                             >
                                 {showFilters ? (
                                     <>
-                                        <EyeOff className="mr-2 h-4 w-4" />
-                                        Ẩn bộ lọc
+                                        <EyeOff className="h-4 w-4 sm:mr-2" />
+                                        <span className="inline">Ẩn bộ lọc</span>
                                     </>
                                 ) : (
                                     <>
-                                        <Eye className="mr-2 h-4 w-4" />
-                                        Hiện bộ lọc
+                                        <Eye className="h-4 w-4 sm:mr-2" />
+                                        <span className="inline">Hiện bộ lọc</span>
                                     </>
                                 )}
                             </Button>
@@ -722,8 +704,9 @@ export function DataTable<T extends object>({
                                 size="sm"
                                 onClick={handleResetFilters}
                                 disabled={isPending}
+                                className="h-8 px-2 sm:px-3 text-xs sm:text-sm"
                             >
-                                Xóa bộ lọc
+                                <span className="inline">Xóa bộ lọc</span>
                             </Button>
                         )}
                     </div>
@@ -731,7 +714,7 @@ export function DataTable<T extends object>({
             </div>
 
             {selectionEnabled && selectionActions && selectedIdsSet.size > 0 ? (
-                <div className="rounded-lg border border-border/80 bg-muted/40 p-3">
+                <div className="rounded-lg border border-border/80 bg-muted/40 p-2 sm:p-3">
                     {selectionActions({
                         selectedIds: Array.from(selectedIdsSet),
                         selectedRows: selectedVisibleRows,
@@ -741,11 +724,12 @@ export function DataTable<T extends object>({
             ) : null}
 
             <div className="rounded-md border overflow-x-auto">
-                <Table>
+                <div className="min-w-full inline-block">
+                    <Table className="min-w-full">
                     <TableHeader>
                         <TableRow>
                             {selectionEnabled ? (
-                                <TableHead className="w-10 align-middle">
+                                <TableHead className="w-8 sm:w-10 align-middle px-1 sm:px-3">
                                     <SelectionCheckbox
                                         checked={allVisibleSelected}
                                         indeterminate={someVisibleSelected}
@@ -757,22 +741,24 @@ export function DataTable<T extends object>({
                             {columns.map((column) => (
                                 <TableHead
                                     key={`header-${column.accessorKey}`}
-                                    className={cn("align-middle", column.headerClassName)}
+                                    className={cn("align-middle whitespace-nowrap px-2 sm:px-3", column.headerClassName)}
                                 >
-                                    <span className="text-sm font-medium text-foreground">{column.header}</span>
+                                    <span className="text-xs sm:text-sm font-medium text-foreground">{column.header}</span>
                                 </TableHead>
                             ))}
                             {actions ? (
-                                <TableHead className="w-[120px] text-right">Hành động</TableHead>
+                                <TableHead className="w-[80px] sm:w-[120px] text-right px-2 sm:px-3">
+                                    <span className="text-xs sm:text-sm">Hành động</span>
+                                </TableHead>
                             ) : null}
                         </TableRow>
                         {columns.some((col) => col.filter) && showFilters && (
                             <TableRow className="border-t border-border bg-muted/40">
-                                {selectionEnabled ? <TableHead className="w-10 bg-muted/40" /> : null}
+                                {selectionEnabled ? <TableHead className="w-8 sm:w-10 bg-muted/40 px-1 sm:px-3" /> : null}
                                 {columns.map((column) => (
                                     <TableHead
                                         key={`filter-${column.accessorKey}`}
-                                        className={cn("align-middle bg-muted/40", column.headerClassName)}
+                                        className={cn("align-middle bg-muted/40 whitespace-nowrap px-2 sm:px-3", column.headerClassName)}
                                     >
                                         <ColumnFilterControl
                                             column={column}
@@ -782,7 +768,7 @@ export function DataTable<T extends object>({
                                         />
                                     </TableHead>
                                 ))}
-                                {actions ? <TableHead className="w-[120px] bg-muted/40" /> : null}
+                                {actions ? <TableHead className="w-[80px] sm:w-[120px] bg-muted/40 px-2 sm:px-3" /> : null}
                             </TableRow>
                         )}
                     </TableHeader>
@@ -803,6 +789,7 @@ export function DataTable<T extends object>({
                         />
                     </Suspense>
                 </Table>
+                </div>
             </div>
 
             <Suspense fallback={<SummarySkeleton />}>
@@ -887,7 +874,7 @@ function TableBodyContent<T extends object>({
                 return (
                     <TableRow key={rowId}>
                         {showSelection ? (
-                            <TableCell className="w-10 align-middle">
+                            <TableCell className="w-8 sm:w-10 align-middle px-1 sm:px-3">
                                 <SelectionCheckbox
                                     checked={rowSelected}
                                     indeterminate={false}
@@ -899,7 +886,7 @@ function TableBodyContent<T extends object>({
                         {columns.map((column) => {
                             const rawValue = (row as UnknownRecord)[column.accessorKey]
                             return (
-                                <TableCell key={column.accessorKey} className={column.className}>
+                                <TableCell key={column.accessorKey} className={cn("whitespace-nowrap px-2 sm:px-3", column.className)}>
                                     {column.cell
                                         ? column.cell(row)
                                         : rawValue == null
@@ -912,7 +899,7 @@ function TableBodyContent<T extends object>({
                                 </TableCell>
                             )
                         })}
-                        {actions ? <TableCell className="text-right">{actions(row)}</TableCell> : null}
+                        {actions ? <TableCell className="text-right whitespace-nowrap px-2 sm:px-3">{actions(row)}</TableCell> : null}
                     </TableRow>
                 )
             })}
@@ -938,23 +925,26 @@ function TableSummary<T extends object>({
     const totalPages = result.totalPages || 1
 
     return (
-        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border px-2 py-4 text-sm text-muted-foreground">
-            <div>
-                Hiển thị {startIndex}-{endIndex} trong {result.total} kết quả
+        <div className="flex flex-col sm:flex-row flex-wrap items-center justify-between gap-2 sm:gap-3 border-t border-border px-2 sm:px-4 py-3 sm:py-4 text-xs sm:text-sm text-muted-foreground">
+            <div className="text-center sm:text-left">
+                <span className="hidden sm:inline">Hiển thị {startIndex}-{endIndex} trong {result.total} kết quả</span>
+                <span className="sm:hidden">{startIndex}-{endIndex} / {result.total}</span>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 sm:gap-2">
                 <Button
                     type="button"
                     variant="outline"
                     size="sm"
                     onClick={() => onPageChange(result.page - 1, totalPages)}
                     disabled={isPending || result.page <= 1}
+                    className="h-8 px-2 sm:px-3"
                 >
-                    <ChevronLeft className="mr-2 h-4 w-4" />
-                    Trước
+                    <ChevronLeft className="h-4 w-4 sm:mr-2" />
+                    <span className="hidden sm:inline">Trước</span>
                 </Button>
-                <span className="min-w-[100px] text-center">
-                    Trang {totalPages === 0 ? 0 : result.page} / {Math.max(totalPages, 1)}
+                <span className="min-w-[80px] sm:min-w-[100px] text-center text-xs sm:text-sm">
+                    <span className="hidden sm:inline">Trang </span>
+                    {totalPages === 0 ? 0 : result.page} / {Math.max(totalPages, 1)}
                 </span>
                 <Button
                     type="button"
@@ -962,9 +952,10 @@ function TableSummary<T extends object>({
                     size="sm"
                     onClick={() => onPageChange(result.page + 1, totalPages)}
                     disabled={isPending || result.page >= totalPages}
+                    className="h-8 px-2 sm:px-3"
                 >
-                    Sau
-                    <ChevronRight className="ml-2 h-4 w-4" />
+                    <span className="hidden sm:inline">Sau</span>
+                    <ChevronRight className="h-4 w-4 sm:ml-2" />
                 </Button>
             </div>
         </div>
