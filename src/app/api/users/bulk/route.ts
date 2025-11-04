@@ -11,28 +11,20 @@ import {
 } from "@/features/admin/users/server/mutations"
 import { PERMISSIONS } from "@/lib/permissions"
 import { createPostRoute } from "@/lib/api/api-route-wrapper"
+import type { ApiRouteContext } from "@/lib/api/types"
 import { validateArray, validateEnum, validateID } from "@/lib/api/validation"
 
 type BulkAction = "delete" | "restore" | "hard-delete"
 
-async function bulkUsersHandler(
-  req: NextRequest,
-  context: {
-    session: Awaited<ReturnType<typeof import("@/lib/auth").requireAuth>>
-    permissions: import("@/lib/permissions").Permission[]
-    roles: Array<{ name: string }>
-  }
-) {
+async function bulkUsersHandler(req: NextRequest, context: ApiRouteContext) {
   const body = await req.json()
   const { action, ids } = body as { action?: BulkAction; ids?: unknown }
 
-  // Validate action
   const actionValidation = validateEnum(action, ["delete", "restore", "hard-delete"] as const, "Action")
   if (!actionValidation.valid) {
     return NextResponse.json({ error: actionValidation.error }, { status: 400 })
   }
 
-  // Validate ids array
   const idsValidation = validateArray<string>(ids, 1, 100, "Danh sách người dùng")
   if (!idsValidation.valid || !idsValidation.value) {
     return NextResponse.json(
@@ -41,7 +33,6 @@ async function bulkUsersHandler(
     )
   }
 
-  // Validate all IDs (support UUID, CUID, or other valid formats)
   for (const id of idsValidation.value) {
     const idValidation = validateID(id)
     if (!idValidation.valid) {
@@ -55,34 +46,17 @@ async function bulkUsersHandler(
     roles: context.roles,
   }
 
-  let resultCount = 0
-
-  switch (actionValidation.value) {
-    case "delete": {
-      // Permission check is handled by wrapper
-      const { count } = await bulkSoftDeleteUsers(ctx, idsValidation.value)
-      resultCount = count
-      break
-    }
-    case "restore": {
-      // Permission check is handled by wrapper
-      const { count } = await bulkRestoreUsers(ctx, idsValidation.value)
-      resultCount = count
-      break
-    }
-    case "hard-delete": {
-      // Permission check is handled by wrapper
-      const { count } = await bulkHardDeleteUsers(ctx, idsValidation.value)
-      resultCount = count
-      break
-    }
+  const actions: Record<BulkAction, typeof bulkSoftDeleteUsers> = {
+    delete: bulkSoftDeleteUsers,
+    restore: bulkRestoreUsers,
+    "hard-delete": bulkHardDeleteUsers,
   }
 
-  return NextResponse.json({ success: true, count: resultCount })
+  const { count } = await actions[actionValidation.value!](ctx, idsValidation.value!)
+  return NextResponse.json({ success: true, count })
 }
 
-// Dynamic permission based on action - use wrapper that checks multiple permissions
 export const POST = createPostRoute(bulkUsersHandler, {
   permissions: [PERMISSIONS.USERS_DELETE, PERMISSIONS.USERS_UPDATE, PERMISSIONS.USERS_MANAGE],
+  autoDetectPermissions: false,
 })
-

@@ -1,23 +1,12 @@
 /**
- * API Types
+ * Shared types for API routes
  */
-export interface ApiResponse<T = unknown> {
-  data?: T
-  error?: string
-  message?: string
-}
 
-export interface PaginatedResponse<T> {
-  data: T[]
-  total: number
-  page: number
-  limit: number
-  totalPages: number
-}
+import type { requireAuth } from "@/lib/auth"
+import type { Permission } from "@/lib/permissions"
 
-export interface ApiError {
-  error: string
-  message?: string
-  statusCode?: number
+export type ApiRouteContext = {
+  session: Awaited<ReturnType<typeof requireAuth>>
+  permissions: Permission[]
+  roles: Array<{ name: string }>
 }
-

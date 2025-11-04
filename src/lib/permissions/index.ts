@@ -35,3 +35,11 @@ export {
   requiresPermission,
 } from "./route-permissions"
 
+// API Route permissions mapping
+export {
+  API_ROUTE_PERMISSIONS,
+  getApiRoutePermissions,
+  requiresApiPermission,
+  type HttpMethod,
+} from "./api-route-permissions"
+
