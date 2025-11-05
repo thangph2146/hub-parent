@@ -148,7 +148,7 @@ export const listNotificationsCached = cache(async (
   }
 })
 
-export async function getNotificationById(id: string) {
+export const getNotificationByIdCached = cache(async (id: string): Promise<ListedNotification | null> => {
   const notification = await prisma.notification.findUnique({
     where: { id },
     include: {
@@ -178,4 +178,9 @@ export async function getNotificationById(id: string) {
     createdAt: notification.createdAt,
     readAt: notification.readAt,
   } as ListedNotification
+})
+
+// Non-cached version for backward compatibility
+export async function getNotificationById(id: string) {
+  return getNotificationByIdCached(id)
 }

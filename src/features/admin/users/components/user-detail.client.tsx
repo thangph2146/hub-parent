@@ -222,7 +222,7 @@ export function UserDetailClient({ userId, user, backUrl = "/admin/users" }: Use
           onClick={() => router.push(backUrl)}
           className="self-start"
         >
-          <ArrowLeft className="mr-2 h-4 w-4" />
+          <ArrowLeft className="mr-2 h-5 w-5" />
           Quay lại danh sách
         </Button>
       )}
@@ -274,7 +274,7 @@ export function UserDetailClient({ userId, user, backUrl = "/admin/users" }: Use
                   {user.name || "Chưa có tên"}
                 </h1>
                 <p className="text-muted-foreground mt-1 flex items-center gap-2">
-                  <Mail className="h-4 w-4" />
+                  <Mail className="h-5 w-5" />
                   {user.email}
                 </p>
               </div>
@@ -320,7 +320,7 @@ export function UserDetailClient({ userId, user, backUrl = "/admin/users" }: Use
               onClick={() => router.push(`/admin/users/${userId}/edit`)}
               className="shadow-lg backdrop-blur-sm border-2 hover:border-primary/50 transition-all"
             >
-              <Edit className="mr-2 h-4 w-4" />
+              <Edit className="mr-2 h-5 w-5" />
               Chỉnh sửa
             </Button>
           </div>

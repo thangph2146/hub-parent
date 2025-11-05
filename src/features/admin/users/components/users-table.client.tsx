@@ -256,23 +256,27 @@ export function UsersTableClient({
 
   const loader = useCallback(
     async (query: DataTableQueryState, view: ResourceViewMode<UserRow>) => {
-      const params = new URLSearchParams({
-        page: String(query.page),
-        limit: String(query.limit),
+      // Build base URL with apiRoutes
+      const baseUrl = apiRoutes.users.list({
+        page: query.page,
+        limit: query.limit,
         status: view.status ?? "active",
+        search: query.search.trim() || undefined,
       })
-
-      if (query.search.trim().length > 0) {
-        params.set("search", query.search.trim())
-      }
-
+      
+      // Add filter params to URL if needed
+      const filterParams = new URLSearchParams()
       Object.entries(query.filters).forEach(([key, value]) => {
         if (value) {
-          params.set(`filter[${key}]`, value)
+          filterParams.set(`filter[${key}]`, value)
         }
       })
-
-      const response = await apiClient.get<UsersResponse>(`/admin/users?${params.toString()}`)
+      
+      // Combine base URL with filter params
+      const filterString = filterParams.toString()
+      const url = filterString ? `${baseUrl}&${filterString}` : baseUrl
+      
+      const response = await apiClient.get<UsersResponse>(url)
       const payload = response.data
 
       return {
@@ -395,20 +399,19 @@ export function UsersTableClient({
       } else {
         // restore action - no confirmation needed
         setIsBulkProcessing(true)
-        apiClient
-          .post("/users/bulk", { action, ids })
-          .then(() => {
+        ;(async () => {
+          try {
+            await apiClient.post(apiRoutes.users.bulk, { action, ids })
             showFeedback("success", "Khôi phục thành công", `Đã khôi phục ${ids.length} người dùng`)
             clearSelection()
             refresh()
-          })
-          .catch((error: unknown) => {
+          } catch (error: unknown) {
             const errorMessage = error instanceof Error ? error.message : "Đã xảy ra lỗi không xác định"
             showFeedback("error", "Khôi phục thất bại", `Không thể khôi phục ${ids.length} người dùng`, errorMessage)
-          })
-          .finally(() => {
+          } finally {
             setIsBulkProcessing(false)
-          })
+          }
+        })()
       }
     },
     [showFeedback],
@@ -435,7 +438,7 @@ export function UsersTableClient({
                     disabled={isBulkProcessing}
                     onClick={() => executeBulk("delete", selectedIds, refresh, clearSelection)}
                   >
-                    <Trash2 className="mr-2 h-4 w-4" />
+                    <Trash2 className="mr-2 h-5 w-5" />
                     Xóa đã chọn
                   </Button>
                   {canManage && (
@@ -446,7 +449,7 @@ export function UsersTableClient({
                       disabled={isBulkProcessing}
                       onClick={() => executeBulk("hard-delete", selectedIds, refresh, clearSelection)}
                     >
-                      <AlertTriangle className="mr-2 h-4 w-4" />
+                      <AlertTriangle className="mr-2 h-5 w-5" />
                       Xóa vĩnh viễn
                     </Button>
                   )}
@@ -463,17 +466,17 @@ export function UsersTableClient({
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="icon" className="h-8 w-8">
-                      <MoreHorizontal className="h-4 w-4" />
+                      <MoreHorizontal className="h-5 w-5" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem onClick={() => router.push(`/admin/users/${row.id}`)}>
-                      <Eye className="mr-2 h-4 w-4" />
+                      <Eye className="mr-2 h-5 w-5" />
                       Xem chi tiết
                     </DropdownMenuItem>
                     {canDelete && (
                       <DropdownMenuItem onClick={() => handleDeleteSingle(row, refresh)}>
-                        <Trash2 className="mr-2 h-4 w-4" />
+                        <Trash2 className="mr-2 h-5 w-5" />
                         Xóa
                       </DropdownMenuItem>
                     )}
@@ -486,7 +489,7 @@ export function UsersTableClient({
                   size="sm"
                   onClick={() => router.push(`/admin/users/${row.id}`)}
                 >
-                  <Eye className="mr-2 h-4 w-4" />
+                  <Eye className="mr-2 h-5 w-5" />
                   Xem
                 </Button>
               ),
@@ -513,7 +516,7 @@ export function UsersTableClient({
                       disabled={isBulkProcessing}
                       onClick={() => executeBulk("restore", selectedIds, refresh, clearSelection)}
                     >
-                      <RotateCcw className="mr-2 h-4 w-4" />
+                      <RotateCcw className="mr-2 h-5 w-5" />
                       Khôi phục
                     </Button>
                   )}
@@ -525,7 +528,7 @@ export function UsersTableClient({
                       disabled={isBulkProcessing}
                       onClick={() => executeBulk("hard-delete", selectedIds, refresh, clearSelection)}
                     >
-                      <AlertTriangle className="mr-2 h-4 w-4" />
+                      <AlertTriangle className="mr-2 h-5 w-5" />
                       Xóa vĩnh viễn
                     </Button>
                   )}
@@ -541,16 +544,16 @@ export function UsersTableClient({
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="icon" className="h-8 w-8">
-                    <MoreHorizontal className="h-4 w-4" />
+                    <MoreHorizontal className="h-5 w-5" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem onClick={() => router.push(`/admin/users/${row.id}`)}>
-                    <Eye className="mr-2 h-4 w-4" />
+                    <Eye className="mr-2 h-5 w-5" />
                     Xem chi tiết
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => handleRestoreSingle(row, refresh)}>
-                    <RotateCcw className="mr-2 h-4 w-4" />
+                    <RotateCcw className="mr-2 h-5 w-5" />
                     Khôi phục
                   </DropdownMenuItem>
                   {canManage && (
@@ -558,7 +561,7 @@ export function UsersTableClient({
                       onClick={() => handleHardDeleteSingle(row, refresh)}
                       className="text-destructive focus:text-destructive"
                     >
-                      <AlertTriangle className="mr-2 h-4 w-4" />
+                      <AlertTriangle className="mr-2 h-5 w-5" />
                       Xóa vĩnh viễn
                     </DropdownMenuItem>
                   )}
@@ -571,7 +574,7 @@ export function UsersTableClient({
                 size="sm"
                 onClick={() => router.push(`/admin/users/${row.id}`)}
               >
-                <Eye className="mr-2 h-4 w-4" />
+                <Eye className="mr-2 h-5 w-5" />
                 Xem
               </Button>
             ),
@@ -629,7 +632,7 @@ export function UsersTableClient({
       onClick={() => router.push("/admin/users/new")}
       className="h-8 px-3 text-xs sm:text-sm"
     >
-      <Plus className="mr-2 h-4 w-4" />
+      <Plus className="mr-2 h-5 w-5" />
       Thêm mới
     </Button>
   ) : undefined

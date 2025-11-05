@@ -176,7 +176,7 @@ export function ResourceDetailPage<T extends Record<string, unknown>>({
             {[1, 2, 3, 4].map((i) => (
               <div key={i} className="flex items-center justify-between">
                 <Skeleton className="h-4 w-32" />
-                <Skeleton className="h-4 w-48" />
+                <Skeleton className="h-5 w-58" />
               </div>
             ))}
           </CardContent>
@@ -198,7 +198,7 @@ export function ResourceDetailPage<T extends Record<string, unknown>>({
                   onClick={() => router.push(backUrl)}
                   className="mt-4"
                 >
-                  <ArrowLeft className="mr-2 h-4 w-4" />
+                  <ArrowLeft className="mr-2 h-5 w-5" />
                   {backLabel}
                 </Button>
               )}
@@ -222,7 +222,7 @@ export function ResourceDetailPage<T extends Record<string, unknown>>({
                 onClick={() => router.push(backUrl)}
                 className="-ml-2"
               >
-                <ArrowLeft className="mr-2 h-4 w-4" />
+                <ArrowLeft className="mr-2 h-5 w-5" />
                 {backLabel}
               </Button>
             )}
@@ -240,7 +240,7 @@ export function ResourceDetailPage<T extends Record<string, unknown>>({
                 onClick={() => setIsEditOpen(true)}
                 className="shadow-sm"
               >
-                <Edit className="mr-2 h-4 w-4" />
+                <Edit className="mr-2 h-5 w-5" />
                 {editLabel}
               </Button>
             )}

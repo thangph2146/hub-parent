@@ -1,12 +1,13 @@
 /**
  * API Route: PATCH /api/notifications/[id] - Update notification (mark as read/unread)
- * DELETE /api/notifications/[id] - Delete notification
  */
 import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/lib/auth/auth"
 import { prisma } from "@/lib/database"
 import { getSocketServer } from "@/lib/socket/state"
 import { mapNotificationToPayload } from "@/lib/socket/state"
+import { isSuperAdmin } from "@/lib/permissions"
+import { NotificationKind } from "@prisma/client"
 
 async function patchNotificationHandler(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await auth()
@@ -19,7 +20,7 @@ async function patchNotificationHandler(req: NextRequest, { params }: { params: 
   const body = await req.json().catch(() => ({}))
   const { isRead } = body
 
-  // Verify notification belongs to user
+  // Verify notification exists
   const notification = await prisma.notification.findUnique({
     where: { id },
   })
@@ -28,8 +29,22 @@ async function patchNotificationHandler(req: NextRequest, { params }: { params: 
     return NextResponse.json({ error: "Notification not found" }, { status: 404 })
   }
 
-  if (notification.userId !== session.user.id) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 })
+  // Check permissions: user must be owner OR (super admin AND notification is SYSTEM)
+  const isOwner = notification.userId === session.user.id
+  const roles = session?.roles ?? []
+  const isSuperAdminUser = isSuperAdmin(roles)
+  const isSystemNotification = notification.kind === NotificationKind.SYSTEM
+  
+  const canUpdate = isOwner || (isSuperAdminUser && isSystemNotification)
+  
+  if (!canUpdate) {
+    return NextResponse.json(
+      { 
+        error: "Forbidden",
+        message: "Bạn chỉ có thể đánh dấu đã đọc thông báo của chính mình hoặc thông báo hệ thống (nếu là super admin)."
+      },
+      { status: 403 }
+    )
   }
 
   // Update notification
@@ -75,43 +90,6 @@ async function patchNotificationHandler(req: NextRequest, { params }: { params: 
   })
 }
 
-async function deleteNotificationHandler(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const session = await auth()
-
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-  }
-
-  const { id } = await params
-
-  // Verify notification belongs to user
-  const notification = await prisma.notification.findUnique({
-    where: { id },
-  })
-
-  if (!notification) {
-    return NextResponse.json({ error: "Notification not found" }, { status: 404 })
-  }
-
-  // Chỉ chủ sở hữu mới được xóa notification, kể cả super admin cũng không được xóa
-  if (notification.userId !== session.user.id) {
-    return NextResponse.json(
-      { 
-        error: "Forbidden",
-        message: "Bạn chỉ có thể xóa thông báo của chính mình. Kể cả super admin cũng không được xóa thông báo của người khác."
-      },
-      { status: 403 }
-    )
-  }
-
-  // Delete notification
-  await prisma.notification.delete({
-    where: { id },
-  })
-
-  return NextResponse.json({ success: true })
-}
-
 export async function PATCH(req: NextRequest, context: { params: Promise<{ id: string }> }) {
   try {
     return await patchNotificationHandler(req, context)
@@ -124,15 +102,4 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ id: s
   }
 }
 
-export async function DELETE(req: NextRequest, context: { params: Promise<{ id: string }> }) {
-  try {
-    return await deleteNotificationHandler(req, context)
-  } catch (error) {
-    console.error("Error deleting notification:", error)
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    )
-  }
-}
 

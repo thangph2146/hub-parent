@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react"
 import { apiClient } from "@/lib/api/axios"
+import { apiRoutes } from "@/lib/api/routes"
 import type { Role } from "../utils"
 
 export interface UseRolesOptions {
@@ -44,7 +45,7 @@ export function useRoles(options: UseRolesOptions = {}) {
         hasFetchedRef.current = true
         setIsLoading(true)
         setError(null)
-        const response = await apiClient.get<{ data: Role[] }>("/roles")
+        const response = await apiClient.get<{ data: Role[] }>(apiRoutes.roles.list)
         if (!isCancelled) {
           setRoles(response.data.data)
         }

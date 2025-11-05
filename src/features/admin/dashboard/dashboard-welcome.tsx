@@ -205,7 +205,7 @@ export function DashboardWelcome() {
                     "hover:scale-105 hover:shadow-xl transition-all duration-300"
                   )}
                 >
-                  <RoleIcon className="h-4 w-4" />
+                  <RoleIcon className="h-5 w-5" />
                   <span>{roleInfo.label}</span>
                 </Badge>
                 <span className="text-sm md:text-base text-muted-foreground">

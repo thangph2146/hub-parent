@@ -1,10 +1,10 @@
 "use client"
 
 import { useCallback, useEffect, useMemo, useState, useRef } from "react"
-import { Eye, EyeOff, Trash2, CheckCircle2 } from "lucide-react"
+import { Eye, CheckCircle2, MoreHorizontal, Circle } from "lucide-react"
 import { useSession } from "next-auth/react"
+import { useRouter } from "next/navigation"
 import { useQueryClient, useQuery } from "@tanstack/react-query"
-import { ConfirmDialog } from "@/components/dialogs"
 import { queryKeys, invalidateQueries } from "@/lib/query-keys"
 import { apiRoutes } from "@/lib/api/routes"
 import type { DataTableColumn, DataTableQueryState, DataTableResult } from "@/components/tables"
@@ -20,8 +20,10 @@ import { Badge } from "@/components/ui/badge"
 import { ResourceTableClient } from "@/features/admin/resources/components/resource-table.client"
 import type { ResourceViewMode, ResourceTableLoader } from "@/features/admin/resources/types"
 import { apiClient } from "@/lib/api/axios"
-import { useDeleteAllNotifications, useAdminNotificationsSocketBridge } from "@/hooks/use-notifications"
+import { useAdminNotificationsSocketBridge } from "@/hooks/use-notifications"
 import { logger } from "@/lib/config"
+import { isSuperAdmin } from "@/lib/permissions"
+import { NotificationKind } from "@prisma/client"
 import type { NotificationRow } from "../types"
 
 interface NotificationsTableClientProps {
@@ -37,12 +39,6 @@ interface FeedbackState {
   details?: string
 }
 
-interface DeleteConfirmState {
-  open: boolean
-  row?: NotificationRow
-  bulkIds?: string[]
-  onConfirm: () => Promise<void>
-}
 
 const NOTIFICATION_KINDS: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
   MESSAGE: { label: "Tin nhắn", variant: "default" },
@@ -58,14 +54,12 @@ export function NotificationsTableClient({
   canManage = false,
   initialData,
 }: NotificationsTableClientProps) {
+  const router = useRouter()
   const { data: session } = useSession()
   const queryClient = useQueryClient()
-  const deleteAllNotifications = useDeleteAllNotifications()
   
   const [isProcessing, setIsProcessing] = useState(false)
   const [feedback, setFeedback] = useState<FeedbackState | null>(null)
-  const [deleteConfirm, setDeleteConfirm] = useState<DeleteConfirmState | null>(null)
-  const [_deleteAllConfirm, setDeleteAllConfirm] = useState(false)
   const tableRefreshRef = useRef<(() => void) | null>(null)
 
   // Function để trigger refresh của table
@@ -242,53 +236,68 @@ export function NotificationsTableClient({
 
   const handleMarkAsRead = useCallback(
     async (row: NotificationRow) => {
+      // Kiểm tra quyền trước khi thực hiện
+      const isOwner = session?.user?.id === row.userId
+      const roles = session?.roles ?? []
+      const isSuperAdminUser = isSuperAdmin(roles)
+      const isSystemNotification = row.kind === NotificationKind.SYSTEM
+      
+      // Cho phép nếu: là chủ sở hữu HOẶC (super admin VÀ notification loại SYSTEM)
+      const canMarkAsRead = isOwner || (isSuperAdminUser && isSystemNotification)
+      
+      if (!canMarkAsRead) {
+        showFeedback("error", "Không có quyền", "Bạn chỉ có thể đánh dấu đã đọc thông báo của chính mình hoặc thông báo hệ thống (nếu là super admin).")
+        return
+      }
+
       try {
         setIsProcessing(true)
         await apiClient.patch(apiRoutes.notifications.markRead(row.id), { isRead: true })
         showFeedback("success", "Đã đánh dấu đã đọc", "Thông báo đã được đánh dấu là đã đọc.")
         triggerTableRefresh()
-      } catch {
-        showFeedback("error", "Lỗi", "Không thể đánh dấu đã đọc thông báo.")
-      } finally {
-        setIsProcessing(false)
-      }
-    },
-    [showFeedback, triggerTableRefresh]
-  )
-
-  const handleMarkAsUnread = useCallback(
-    async (row: NotificationRow) => {
-      try {
-        setIsProcessing(true)
-        await apiClient.patch(apiRoutes.notifications.markRead(row.id), { isRead: false })
-        showFeedback("success", "Đã đánh dấu chưa đọc", "Thông báo đã được đánh dấu là chưa đọc.")
-        triggerTableRefresh()
-      } catch {
-        showFeedback("error", "Lỗi", "Không thể đánh dấu chưa đọc thông báo.")
-      } finally {
-        setIsProcessing(false)
-      }
-    },
-    [showFeedback, triggerTableRefresh]
-  )
-
-  const handleDelete = useCallback(
-    async (row: NotificationRow) => {
-      try {
-        setIsProcessing(true)
-        await apiClient.delete(apiRoutes.notifications.delete(row.id))
-        showFeedback("success", "Đã xóa", "Thông báo đã được xóa thành công.")
-        triggerTableRefresh()
       } catch (error: unknown) {
         const errorMessage = 
           (error as { response?: { data?: { message?: string } } })?.response?.data?.message ||
-          "Bạn chỉ có thể xóa thông báo của chính mình. Kể cả super admin cũng không được xóa thông báo của người khác."
+          "Không thể đánh dấu đã đọc thông báo."
         showFeedback("error", "Lỗi", errorMessage)
       } finally {
         setIsProcessing(false)
       }
     },
-    [showFeedback, triggerTableRefresh]
+    [showFeedback, triggerTableRefresh, session?.user?.id, session?.roles]
+  )
+
+  const handleMarkAsUnread = useCallback(
+    async (row: NotificationRow) => {
+      // Kiểm tra quyền trước khi thực hiện
+      const isOwner = session?.user?.id === row.userId
+      const roles = session?.roles ?? []
+      const isSuperAdminUser = isSuperAdmin(roles)
+      const isSystemNotification = row.kind === NotificationKind.SYSTEM
+      
+      // Cho phép nếu: là chủ sở hữu HOẶC (super admin VÀ notification loại SYSTEM)
+      const canMarkAsUnread = isOwner || (isSuperAdminUser && isSystemNotification)
+      
+      if (!canMarkAsUnread) {
+        showFeedback("error", "Không có quyền", "Bạn chỉ có thể đánh dấu chưa đọc thông báo của chính mình hoặc thông báo hệ thống (nếu là super admin).")
+        return
+      }
+
+      try {
+        setIsProcessing(true)
+        await apiClient.patch(apiRoutes.notifications.markRead(row.id), { isRead: false })
+        showFeedback("success", "Đã đánh dấu chưa đọc", "Thông báo đã được đánh dấu là chưa đọc.")
+        triggerTableRefresh()
+      } catch (error: unknown) {
+        const errorMessage = 
+          (error as { response?: { data?: { message?: string } } })?.response?.data?.message ||
+          "Không thể đánh dấu chưa đọc thông báo."
+        showFeedback("error", "Lỗi", errorMessage)
+      } finally {
+        setIsProcessing(false)
+      }
+    },
+    [showFeedback, triggerTableRefresh, session?.user?.id, session?.roles]
   )
 
   const handleBulkMarkAsRead = useCallback(
@@ -307,68 +316,6 @@ export function NotificationsTableClient({
     [showFeedback, triggerTableRefresh]
   )
 
-  const handleBulkDelete = useCallback(
-    async (ids: string[]) => {
-      try {
-        setIsProcessing(true)
-        // Chỉ xóa các notification mà user là chủ sở hữu
-        // API sẽ reject những notification không thuộc về user
-        const results = await Promise.allSettled(
-          ids.map((id) => apiClient.delete(apiRoutes.notifications.delete(id)))
-        )
-        
-        const successful = results.filter((r) => r.status === "fulfilled").length
-        const failed = results.filter((r) => r.status === "rejected").length
-        
-        if (successful > 0) {
-          showFeedback(
-            "success",
-            "Đã xóa",
-            `Đã xóa ${successful} thông báo thành công.${failed > 0 ? ` ${failed} thông báo không thể xóa vì không phải chủ sở hữu.` : ""}`
-          )
-          triggerTableRefresh()
-        } else {
-          showFeedback(
-            "error",
-            "Lỗi",
-            "Không thể xóa các thông báo. Bạn chỉ có thể xóa thông báo của chính mình."
-          )
-        }
-      } catch {
-        showFeedback("error", "Lỗi", "Không thể xóa các thông báo. Bạn chỉ có thể xóa thông báo của chính mình.")
-      } finally {
-        setIsProcessing(false)
-      }
-    },
-    [showFeedback, triggerTableRefresh]
-  )
-
-  const _handleDeleteAll = useCallback(() => {
-    setDeleteAllConfirm(true)
-  }, [])
-
-  const _confirmDeleteAll = useCallback(async () => {
-    try {
-      setIsProcessing(true)
-      const result = await deleteAllNotifications.mutateAsync(undefined)
-      showFeedback(
-        "success",
-        "Đã xóa tất cả",
-        result.message || `Đã xóa ${result.count} thông báo thành công.`
-      )
-      setDeleteAllConfirm(false)
-      // Trigger refresh bằng cách invalidate queries
-      // NotificationBell và các components khác sẽ tự động refetch
-      triggerTableRefresh()
-    } catch (error: unknown) {
-      const errorMessage = 
-        (error as { response?: { data?: { message?: string } } })?.response?.data?.message ||
-        "Không thể xóa tất cả thông báo."
-      showFeedback("error", "Lỗi", errorMessage)
-    } finally {
-      setIsProcessing(false)
-    }
-  }, [deleteAllNotifications, showFeedback, triggerTableRefresh])
 
   const baseColumns = useMemo<DataTableColumn<NotificationRow>[]>(
     () => [
@@ -386,12 +333,13 @@ export function NotificationsTableClient({
               <div>
                 <div className="font-medium">{row.userEmail || "-"}</div>
                 {row.userName && <div className="text-sm text-muted-foreground">{row.userName}</div>}
-              </div>
-              {isOwner && (
+                {isOwner && (
                 <Badge variant="outline" className="text-xs">
-                  Của bạn
+                  - Của bạn -
                 </Badge>
               )}
+              </div>
+              
             </div>
           )
         },
@@ -420,6 +368,14 @@ export function NotificationsTableClient({
         searchable: true,
         className: "min-w-[250px]",
         headerClassName: "min-w-[250px]",
+        cell: (row) => (
+          <a
+            href={`/admin/notifications/${row.id}`}
+            className="font-medium text-primary hover:underline"
+          >
+            {row.title}
+          </a>
+        ),
       },
       {
         accessorKey: "description",
@@ -465,8 +421,8 @@ export function NotificationsTableClient({
       label: "Tất cả",
       columns: baseColumns,
       selectionEnabled: canManage,
-      selectionActions: canManage
-        ? ({ selectedIds, clearSelection, refresh }) => {
+        selectionActions: canManage
+        ? ({ selectedIds, refresh }) => {
             // Wrap handlers với refresh function
             const handleBulkMarkAsReadWithRefresh = async () => {
               await handleBulkMarkAsRead(selectedIds)
@@ -481,29 +437,8 @@ export function NotificationsTableClient({
                   onClick={handleBulkMarkAsReadWithRefresh}
                   disabled={isProcessing}
                 >
-                  <CheckCircle2 className="mr-2 h-4 w-4" />
+                  <CheckCircle2 className="mr-2 h-5 w-5" />
                   Đánh dấu đã đọc ({selectedIds.length})
-                </Button>
-                <Button
-                  size="sm"
-                  variant="destructive"
-                  onClick={() => {
-                    setDeleteConfirm({
-                      open: true,
-                      bulkIds: selectedIds,
-                      onConfirm: async () => {
-                        await handleBulkDelete(selectedIds)
-                        clearSelection()
-                        setDeleteConfirm(null)
-                        refresh?.() // Trigger table refresh
-                      },
-                    })
-                  }}
-                  disabled={isProcessing}
-                  title="Chỉ có thể xóa các thông báo mà bạn là chủ sở hữu"
-                >
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  Xóa ({selectedIds.length})
                 </Button>
               </div>
             )
@@ -511,8 +446,13 @@ export function NotificationsTableClient({
         : undefined,
       rowActions: canManage
         ? (row, context) => {
-            // Chỉ chủ sở hữu mới được xóa notification
+            // Chỉ chủ sở hữu mới được đánh dấu đã đọc/chưa đọc notification
+            // HOẶC super admin với notification loại SYSTEM
             const isOwner = session?.user?.id === row.userId
+            const roles = session?.roles ?? []
+            const isSuperAdminUser = isSuperAdmin(roles)
+            const isSystemNotification = row.kind === NotificationKind.SYSTEM
+            const canMarkRead = isOwner || (isSuperAdminUser && isSystemNotification)
             
             // Wrap handlers với refresh function từ context
             const handleMarkAsReadWithRefresh = async () => {
@@ -528,56 +468,46 @@ export function NotificationsTableClient({
             return (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon">
+                  <Button variant="ghost" size="icon" className="h-8 w-8">
                     <span className="sr-only">Mở menu</span>
-                    <span>⋮</span>
+                    <MoreHorizontal className="h-5 w-5" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  {row.isRead ? (
-                    <DropdownMenuItem onClick={handleMarkAsUnreadWithRefresh}>
-                      <EyeOff className="mr-2 h-4 w-4" />
-                      Đánh dấu chưa đọc
-                    </DropdownMenuItem>
-                  ) : (
-                    <DropdownMenuItem onClick={handleMarkAsReadWithRefresh}>
-                      <Eye className="mr-2 h-4 w-4" />
-                      Đánh dấu đã đọc
-                    </DropdownMenuItem>
-                  )}
-                  {/* Chỉ hiển thị option xóa nếu user là chủ sở hữu */}
-                  {isOwner ? (
-                    <DropdownMenuItem
-                      className="text-destructive focus:text-destructive"
-                      onClick={() => {
-                        setDeleteConfirm({
-                          open: true,
-                          row,
-                          onConfirm: async () => {
-                            await handleDelete(row)
-                            setDeleteConfirm(null)
-                            context?.refresh?.() // Trigger table refresh
-                          },
-                        })
-                      }}
-                    >
-                      <Trash2 className="mr-2 h-4 w-4" />
-                      Xóa thông báo
-                    </DropdownMenuItem>
-                  ) : (
-                    <DropdownMenuItem
-                      disabled
-                      className="text-muted-foreground opacity-50 cursor-not-allowed"
-                    >
-                      <Trash2 className="mr-2 h-4 w-4" />
-                      <span className="text-xs">Chỉ chủ sở hữu mới được xóa</span>
-                    </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => router.push(`/admin/notifications/${row.id}`)}>
+                    <Eye className="mr-2 h-5 w-5" />
+                    Xem chi tiết
+                  </DropdownMenuItem>
+                  {/* Hiển thị option đánh dấu đã đọc/chưa đọc nếu user là chủ sở hữu hoặc super admin với notification SYSTEM */}
+                  {canMarkRead && (
+                    <>
+                      {row.isRead ? (
+                        <DropdownMenuItem onClick={handleMarkAsUnreadWithRefresh}>
+                          <Circle className="mr-2 h-5 w-5" />
+                          Đánh dấu chưa đọc
+                        </DropdownMenuItem>
+                      ) : (
+                        <DropdownMenuItem onClick={handleMarkAsReadWithRefresh}>
+                          <CheckCircle2 className="mr-2 h-5 w-5" />
+                          Đánh dấu đã đọc
+                        </DropdownMenuItem>
+                      )}
+                    </>
                   )}
                 </DropdownMenuContent>
               </DropdownMenu>
             )
           }
-        : undefined,
+        : (row) => (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => router.push(`/admin/notifications/${row.id}`)}
+            >
+              <Eye className="mr-2 h-5 w-5" />
+              Xem chi tiết
+            </Button>
+          ),
     },
   ]
 
@@ -597,28 +527,6 @@ export function NotificationsTableClient({
         fallbackRowCount={6}
         onRefreshReady={handleRefreshReady}
       />
-
-      {deleteConfirm && (
-        <ConfirmDialog
-          open={deleteConfirm.open}
-          onOpenChange={(open) => {
-            if (!open) setDeleteConfirm(null)
-          }}
-          title={deleteConfirm.bulkIds ? "Xóa thông báo" : "Xóa thông báo"}
-          description={
-            deleteConfirm.bulkIds
-              ? `Bạn có chắc chắn muốn xóa ${deleteConfirm.bulkIds.length} thông báo đã chọn? Chỉ các thông báo mà bạn là chủ sở hữu mới được xóa.`
-              : "Bạn có chắc chắn muốn xóa thông báo này?"
-          }
-          variant="destructive"
-          confirmLabel="Xóa"
-          cancelLabel="Hủy"
-          onConfirm={deleteConfirm.onConfirm}
-          isLoading={isProcessing}
-        />
-      )}
-
-  
 
       {feedback && (
         <FeedbackDialog

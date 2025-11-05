@@ -154,7 +154,7 @@ export function DashboardStatsClient({ stats }: DashboardStatsClientProps) {
                                 </span>
                             </h1>
                             <p className="text-muted-foreground mt-2 flex items-center gap-2">
-                                <Calendar className="h-4 w-4" />
+                                <Calendar className="h-5 w-5" />
                                 {new Date().toLocaleDateString("vi-VN", {
                                     weekday: "long",
                                     year: "numeric",

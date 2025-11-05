@@ -242,7 +242,7 @@ export function ResourceForm<T extends Record<string, unknown>>({
             <span className="truncate">
               {selectedOption ? selectedOption.label : field.placeholder || "-- Chọn --"}
             </span>
-            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+            <ChevronsUpDown className="ml-2 h-5 w-5 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
@@ -261,7 +261,7 @@ export function ResourceForm<T extends Record<string, unknown>>({
                   >
                     <Check
                       className={cn(
-                        "mr-2 h-4 w-4",
+                        "mr-2 h-5 w-5",
                         !fieldValue || fieldValue === "" ? "opacity-100" : "opacity-0"
                       )}
                     />
@@ -279,7 +279,7 @@ export function ResourceForm<T extends Record<string, unknown>>({
                   >
                     <Check
                       className={cn(
-                        "mr-2 h-4 w-4",
+                        "mr-2 h-5 w-5",
                         String(fieldValue) === String(option.value) ? "opacity-100" : "opacity-0"
                       )}
                     />
@@ -358,7 +358,7 @@ export function ResourceForm<T extends Record<string, unknown>>({
                 disabled={field.disabled || isPending}
                 aria-invalid={error ? "true" : "false"}
                 className={cn(
-                  "h-4 w-4 rounded border border-input",
+                  "h-5 w-5 rounded border border-input",
                   error && "border-destructive"
                 )}
               />
@@ -520,12 +520,12 @@ export function ResourceForm<T extends Record<string, unknown>>({
       >
         {variant === "page" && backUrl ? (
           <>
-            <ArrowLeft className="mr-2 h-4 w-4" />
+            <ArrowLeft className="mr-2 h-5 w-5" />
             {cancelLabel}
           </>
         ) : (
           <>
-            <X className="mr-2 h-4 w-4" />
+            <X className="mr-2 h-5 w-5" />
             {cancelLabel}
           </>
         )}
@@ -533,12 +533,12 @@ export function ResourceForm<T extends Record<string, unknown>>({
       <Button type="submit" form="resource-form" disabled={isPending}>
         {isPending ? (
           <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            <Loader2 className="mr-2 h-5 w-5 animate-spin" />
             Đang lưu...
           </>
         ) : (
           <>
-            <Save className="mr-2 h-4 w-4" />
+            <Save className="mr-2 h-5 w-5" />
             {submitLabel}
           </>
         )}
@@ -618,7 +618,7 @@ export function ResourceForm<T extends Record<string, unknown>>({
                 onClick={() => router.push(backUrl)}
                 className="-ml-2"
               >
-                <ArrowLeft className="mr-2 h-4 w-4" />
+                <ArrowLeft className="mr-2 h-5 w-5" />
                 {backLabel}
               </Button>
             )}

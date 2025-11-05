@@ -153,11 +153,11 @@ export function NavUser({ variant = "sidebar" }: NavUserProps) {
       <DropdownMenuSeparator />
       <DropdownMenuGroup>
         <DropdownMenuItem>
-          <BadgeCheck className={variant === "header" ? "mr-2 h-4 w-4" : ""} />
+          <BadgeCheck className={variant === "header" ? "mr-2 h-5 w-5" : ""} />
           <span>Tài khoản</span>
         </DropdownMenuItem>
         <DropdownMenuItem>
-          <CreditCard className={variant === "header" ? "mr-2 h-4 w-4" : ""} />
+          <CreditCard className={variant === "header" ? "mr-2 h-5 w-5" : ""} />
           <span>Thanh toán</span>
         </DropdownMenuItem>
       </DropdownMenuGroup>
@@ -172,7 +172,7 @@ export function NavUser({ variant = "sidebar" }: NavUserProps) {
                 return (
                   <DropdownMenuItem key={item.url} asChild>
                     <Link href={item.url} className="flex items-center">
-                      <Icon className={variant === "header" ? "mr-2 h-4 w-4" : ""} />
+                      <Icon className={variant === "header" ? "mr-2 h-5 w-5" : ""} />
                       <span>{item.title}</span>
                     </Link>
                   </DropdownMenuItem>
@@ -190,7 +190,7 @@ export function NavUser({ variant = "sidebar" }: NavUserProps) {
           })
         }}
       >
-        <LogOut className={variant === "header" ? "mr-2 h-4 w-4" : ""} />
+        <LogOut className={variant === "header" ? "mr-2 h-5 w-5" : ""} />
         <span>Đăng xuất</span>
       </DropdownMenuItem>
     </DropdownMenuContent>
@@ -209,7 +209,7 @@ export function NavUser({ variant = "sidebar" }: NavUserProps) {
             <span className="hidden md:inline-block text-sm font-medium truncate max-w-[120px]">
               {user.name || user.email}
             </span>
-            <ChevronsUpDown className="h-4 w-4 opacity-50" />
+            <ChevronsUpDown className="h-5 w-5 opacity-50" />
           </Button>
         </DropdownMenuTrigger>
         {dropdownMenuContent}

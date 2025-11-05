@@ -5,24 +5,21 @@
 
 import * as React from "react"
 import { useRouter } from "next/navigation"
-import { Bell, CheckCheck, Loader2, Trash2, ArrowRight } from "lucide-react"
+import { Bell, CheckCheck, Loader2, ArrowRight } from "lucide-react"
 import { useSession } from "next-auth/react"
-import { useNotifications, useMarkAllAsRead, useDeleteAllNotifications, useNotificationsSocketBridge } from "@/hooks/use-notifications"
+import { useNotifications, useMarkAllAsRead, useNotificationsSocketBridge } from "@/hooks/use-notifications"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { ConfirmDialog } from "@/components/dialogs"
-import { useToast } from "@/hooks/use-toast"
 import { NotificationItem } from "./notification-item"
 import { Separator } from "@/components/ui/separator"
 import { isSuperAdmin } from "@/lib/permissions"
 
 export function NotificationBell() {
   const router = useRouter()
-  const { toast } = useToast()
   const { data: session } = useSession()
   const { socket } = useNotificationsSocketBridge()
   
@@ -34,45 +31,14 @@ export function NotificationBell() {
     refetchInterval: 30000 // 30 giây (fallback khi không có socket)
   })
   const markAllAsRead = useMarkAllAsRead()
-  const deleteAllNotifications = useDeleteAllNotifications()
   const [open, setOpen] = React.useState(false)
 
   const unreadCount = data?.unreadCount || 0
   const notifications = data?.notifications || []
-  const totalCount = data?.total || 0
-  const [deleteAllConfirmOpen, setDeleteAllConfirmOpen] = React.useState(false)
   
   // Check nếu user là super admin để hiển thị link đến admin notifications page
   const roles = session?.roles ?? []
   const isSuperAdminUser = isSuperAdmin(roles)
-
-  const handleDeleteAll = () => {
-    setDeleteAllConfirmOpen(true)
-  }
-
-  const confirmDeleteAll = async () => {
-    deleteAllNotifications.mutate(undefined, {
-      onSuccess: (result) => {
-        setDeleteAllConfirmOpen(false)
-        setOpen(false)
-        toast({
-          title: "Thành công",
-          description: result.message || `Đã xóa ${result.count} thông báo thành công.`,
-          variant: "default",
-        })
-      },
-      onError: (error: unknown) => {
-        const errorMessage = 
-          (error as { response?: { data?: { message?: string } } })?.response?.data?.message ||
-          "Không thể xóa tất cả thông báo."
-        toast({
-          title: "Lỗi",
-          description: errorMessage,
-          variant: "destructive",
-        })
-      },
-    })
-  }
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
@@ -115,23 +81,6 @@ export function NotificationBell() {
                   <CheckCheck className="mr-1 h-3 w-3" />
                 )}
                 Đánh dấu tất cả đã đọc
-              </Button>
-            )}
-            {totalCount > 0 && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleDeleteAll}
-                disabled={deleteAllNotifications.isPending}
-                className="h-8 text-xs text-destructive hover:text-destructive"
-                title="Xóa tất cả thông báo"
-              >
-                {deleteAllNotifications.isPending ? (
-                  <Loader2 className="mr-1 h-3 w-3 animate-spin" />
-                ) : (
-                  <Trash2 className="mr-1 h-3 w-3" />
-                )}
-                Xóa tất cả
               </Button>
             )}
           </div>
@@ -188,24 +137,12 @@ export function NotificationBell() {
                 }}
               >
                 <span>Xem tất cả thông báo</span>
-                <ArrowRight className="ml-2 h-4 w-4" />
+                <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </div>
           </>
         )}
       </DropdownMenuContent>
-
-      <ConfirmDialog
-        open={deleteAllConfirmOpen}
-        onOpenChange={setDeleteAllConfirmOpen}
-        title="Xóa tất cả thông báo"
-        description={`Bạn có chắc chắn muốn xóa TẤT CẢ ${totalCount} thông báo? Hành động này không thể hoàn tác. Chỉ các thông báo mà bạn là chủ sở hữu mới được xóa.`}
-        variant="destructive"
-        confirmLabel="Xóa tất cả"
-        cancelLabel="Hủy"
-        onConfirm={confirmDeleteAll}
-        isLoading={deleteAllNotifications.isPending}
-      />
     </DropdownMenu>
   )
 }

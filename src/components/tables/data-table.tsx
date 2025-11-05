@@ -670,12 +670,12 @@ export function DataTable<T extends object>({
                             >
                                 {showFilters ? (
                                     <>
-                                        <EyeOff className="h-4 w-4 sm:mr-2" />
+                                        <EyeOff className="h-5 w-5 sm:mr-2" />
                                         <span className="inline">Ẩn bộ lọc</span>
                                     </>
                                 ) : (
                                     <>
-                                        <Eye className="h-4 w-4 sm:mr-2" />
+                                        <Eye className="h-5 w-5 sm:mr-2" />
                                         <span className="inline">Hiện bộ lọc</span>
                                     </>
                                 )}
@@ -870,7 +870,7 @@ function TableBodyContent<T extends object>({
                         {columns.map((column) => {
                             const rawValue = (row as UnknownRecord)[column.accessorKey]
                             return (
-                                <TableCell key={column.accessorKey} className={cn("whitespace-nowrap px-2 sm:px-3", column.className)}>
+                                <TableCell key={column.accessorKey} className={cn("px-2 sm:px-3 max-w-[300px] break-words", column.className)}>
                                     {column.cell
                                         ? column.cell(row)
                                         : rawValue == null
@@ -923,7 +923,7 @@ function TableSummary<T extends object>({
                     disabled={isPending || result.page <= 1}
                     className="h-8 px-2 sm:px-3"
                 >
-                    <ChevronLeft className="h-4 w-4 sm:mr-2" />
+                    <ChevronLeft className="h-5 w-5 sm:mr-2" />
                     <span className="hidden sm:inline">Trước</span>
                 </Button>
                 <span className="min-w-[80px] sm:min-w-[100px] text-center text-xs sm:text-sm">
@@ -939,7 +939,7 @@ function TableSummary<T extends object>({
                     className="h-8 px-2 sm:px-3"
                 >
                     <span className="hidden sm:inline">Sau</span>
-                    <ChevronRight className="h-4 w-4 sm:ml-2" />
+                    <ChevronRight className="h-5 w-5 sm:ml-2" />
                 </Button>
             </div>
         </div>
@@ -970,7 +970,7 @@ function TableBodySkeleton({ columnCount, rowCount = 5 }: TableBodySkeletonProps
 function SummarySkeleton() {
     return (
         <div className="flex items-center justify-between gap-3 border-t border-border px-2 py-4">
-            <Skeleton className="h-4 w-48" />
+            <Skeleton className="h-5 w-58" />
             <div className="flex items-center gap-2">
                 <Skeleton className="h-8 w-20" />
                 <Skeleton className="h-4 w-24" />
@@ -999,7 +999,7 @@ function SelectionCheckbox({ checked, indeterminate, disabled, onCheckedChange }
         <input
             ref={ref}
             type="checkbox"
-            className="h-4 w-4 rounded border-border text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+            className="h-5 w-5 rounded border-border text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
             checked={checked}
             disabled={disabled}
             onChange={(event) => {

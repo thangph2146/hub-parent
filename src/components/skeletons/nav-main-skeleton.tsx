@@ -16,7 +16,7 @@ export function NavMainSkeleton() {
           <SidebarMenuItem key={index}>
             <SidebarMenuButton asChild>
               <div className="flex items-center gap-2 w-full">
-                <Skeleton className="h-4 w-4 rounded" />
+                <Skeleton className="h-5 w-5 rounded" />
                 <Skeleton className="h-4 flex-1" />
               </div>
             </SidebarMenuButton>

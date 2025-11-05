@@ -97,27 +97,6 @@ async function getUserNotificationsHandler(req: NextRequest) {
   })
 }
 
-async function deleteAllNotificationsHandler(_req: NextRequest) {
-  const session = await auth()
-
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-  }
-
-  // Chỉ xóa notification của chính user - không bao giờ xóa notification của người khác
-  const result = await prisma.notification.deleteMany({
-    where: {
-      userId: session.user.id,
-    },
-  })
-
-  return NextResponse.json({
-    success: true,
-    count: result.count,
-    message: `Đã xóa ${result.count} thông báo thành công.`,
-  })
-}
-
 export async function GET(req: NextRequest) {
   try {
     return await getUserNotificationsHandler(req)
@@ -130,14 +109,3 @@ export async function GET(req: NextRequest) {
   }
 }
 
-export async function DELETE(req: NextRequest) {
-  try {
-    return await deleteAllNotificationsHandler(req)
-  } catch (error) {
-    console.error("Error deleting all notifications:", error)
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    )
-  }
-}
