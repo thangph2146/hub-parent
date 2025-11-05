@@ -10,6 +10,11 @@ import bcrypt from "bcryptjs"
 import { randomBytes } from "crypto"
 import { prisma } from "@/lib/database"
 import { DEFAULT_ROLES } from "@/lib/permissions"
+import { NotificationKind } from "@prisma/client"
+import {
+  createNotificationForSuperAdmins,
+  createNotificationForUser,
+} from "@/features/admin/notifications/server/mutations"
 
 type DbUser = Awaited<ReturnType<typeof getUserWithRoles>>
 
@@ -226,6 +231,116 @@ export const authConfig: NextAuthConfig = {
         }
 
         Object.assign(user, authPayload)
+
+        // Tạo 2 thông báo khác nhau cùng lúc khi user đăng nhập thành công:
+        // 1. Thông báo chào mừng cho người dùng (SUCCESS)
+        // 2. Thông báo quản lý cho super admin (SYSTEM) để kiểm tra hành vi hệ thống
+        try {
+          const userName = dbUser.name || dbUser.email || "Người dùng"
+          const provider = account?.provider || "credentials"
+          const providerName = provider === "google" ? "Google OAuth" : "Credentials"
+          const loginTime = new Date().toISOString()
+          
+          console.log("[auth] Creating login notifications:", {
+            userId: dbUser.id,
+            email: dbUser.email,
+            name: userName,
+            provider,
+          })
+          
+          // Tạo cả 2 thông báo cùng lúc (song song) để đảm bảo không có delay
+          const [userNotificationResult, adminNotificationResult] = await Promise.allSettled([
+            // 1. Thông báo chào mừng cho người dùng đăng nhập
+            createNotificationForUser(
+              dbUser.id,
+              "🎉 Chào mừng bạn đăng nhập!",
+              `Chào mừng ${userName}! Bạn đã đăng nhập thành công vào hệ thống qua ${providerName}.`,
+              "/admin/dashboard",
+              NotificationKind.SUCCESS,
+              {
+                type: "welcome",
+                provider,
+                loginTime,
+              }
+            ),
+            // 2. Thông báo quản lý cho super admin để kiểm tra hành vi hệ thống
+            createNotificationForSuperAdmins(
+              "🔔 Hoạt động đăng nhập hệ thống",
+              `Người dùng ${userName} (${dbUser.email}) vừa đăng nhập vào hệ thống qua ${providerName}. Thời gian: ${new Date().toLocaleString("vi-VN")}.`,
+              `/admin/users/${dbUser.id}`,
+              NotificationKind.SYSTEM,
+              {
+                type: "login_activity",
+                userId: dbUser.id,
+                userEmail: dbUser.email,
+                userName: dbUser.name,
+                provider,
+                loginTime,
+                purpose: "system_monitoring", // Mục đích: quản lý và kiểm tra hành vi hệ thống
+              }
+            ),
+          ])
+          
+          // Log kết quả chi tiết
+          if (userNotificationResult.status === "fulfilled" && userNotificationResult.value) {
+            console.log("[auth] ✅ User welcome notification created successfully:", {
+              notificationId: userNotificationResult.value.id,
+              userId: dbUser.id,
+              email: dbUser.email,
+              title: "🎉 Chào mừng bạn đăng nhập!",
+            })
+          } else {
+            console.error("[auth] ❌ Error creating user welcome notification:", {
+              error: userNotificationResult.status === "rejected" ? userNotificationResult.reason : "Unknown error",
+              userId: dbUser.id,
+              email: dbUser.email,
+            })
+          }
+          
+          if (adminNotificationResult.status === "fulfilled" && adminNotificationResult.value) {
+            console.log("[auth] ✅ Super admin monitoring notification created successfully:", {
+              count: adminNotificationResult.value.count || 0,
+              userId: dbUser.id,
+              email: dbUser.email,
+              title: "🔔 Hoạt động đăng nhập hệ thống",
+            })
+          } else {
+            console.error("[auth] ❌ Error creating super admin monitoring notification:", {
+              error: adminNotificationResult.status === "rejected" ? adminNotificationResult.reason : "Unknown error",
+              userId: dbUser.id,
+              email: dbUser.email,
+            })
+          }
+          
+          // Summary log
+          const userNotificationSuccess = userNotificationResult.status === "fulfilled" && userNotificationResult.value !== null
+          const adminNotificationSuccess = adminNotificationResult.status === "fulfilled" && adminNotificationResult.value !== null
+          
+          if (userNotificationSuccess && adminNotificationSuccess) {
+            console.log("[auth] ✅ Both notifications created successfully:", {
+              userId: dbUser.id,
+              email: dbUser.email,
+              userNotificationId: userNotificationResult.value?.id,
+              adminNotificationCount: adminNotificationResult.value?.count || 0,
+            })
+          } else {
+            console.warn("[auth] ⚠️ Some notifications failed to create:", {
+              userId: dbUser.id,
+              email: dbUser.email,
+              userNotificationSuccess,
+              adminNotificationSuccess,
+            })
+          }
+        } catch (notificationError) {
+          // Log error nhưng không block sign-in process
+          console.error("[auth] Error creating login notifications:", notificationError)
+          if (notificationError instanceof Error) {
+            console.error("[auth] Error details:", {
+              message: notificationError.message,
+              stack: notificationError.stack,
+            })
+          }
+        }
 
         return true
       } catch (error) {

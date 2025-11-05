@@ -8,6 +8,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { useSession } from "next-auth/react"
 import { apiClient } from "@/lib/api/axios"
 import { useSocket } from "@/hooks/use-socket"
+import { queryKeys, invalidateQueries } from "@/lib/query-keys"
+import { apiRoutes } from "@/lib/api/routes"
 
 export interface Notification {
   id: string
@@ -42,15 +44,10 @@ export function useNotifications(options?: {
   const { limit = 20, offset = 0, unreadOnly = false, refetchInterval = 30000 } = options || {}
 
   return useQuery<NotificationsResponse>({
-    queryKey: ["notifications", session?.user?.id, limit, offset, unreadOnly],
+    queryKey: queryKeys.notifications.user(session?.user?.id, { limit, offset, unreadOnly }),
     queryFn: async () => {
-      const params = new URLSearchParams({
-        limit: limit.toString(),
-        offset: offset.toString(),
-        unreadOnly: unreadOnly.toString(),
-      })
       const response = await apiClient.get<NotificationsResponse>(
-        `notifications?${params.toString()}`
+        apiRoutes.notifications.list({ limit, offset, unreadOnly })
       )
       return response.data
     },
@@ -67,14 +64,13 @@ export function useMarkNotificationRead() {
 
   return useMutation({
     mutationFn: async ({ id, isRead = true }: { id: string; isRead?: boolean }) => {
-      const response = await apiClient.patch<Notification>(`notifications/${id}`, { isRead })
+      const response = await apiClient.patch<Notification>(apiRoutes.notifications.markRead(id), { isRead })
       return response.data
     },
     onSuccess: () => {
-      // Invalidate và refetch notifications
-      queryClient.invalidateQueries({
-        queryKey: ["notifications", session?.user?.id],
-      })
+      // Chỉ invalidate user notifications - admin table sẽ tự refresh khi cần
+      // Theo chuẩn Next.js 16: chỉ invalidate những queries thực sự cần thiết
+      invalidateQueries.userNotifications(queryClient, session?.user?.id)
     },
   })
 }
@@ -86,13 +82,16 @@ export function useDeleteNotification() {
 
   return useMutation({
     mutationFn: async (id: string) => {
-      await apiClient.delete(`notifications/${id}`)
+      const response = await apiClient.delete(apiRoutes.notifications.delete(id))
       return id
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["notifications", session?.user?.id],
-      })
+      // Invalidate cả user và admin notifications vì xóa notification ảnh hưởng đến cả 2
+      invalidateQueries.allNotifications(queryClient, session?.user?.id)
+    },
+    onError: (error: unknown) => {
+      // Error message sẽ được hiển thị bởi component sử dụng hook này
+      console.error("Error deleting notification:", error)
     },
   })
 }
@@ -105,14 +104,35 @@ export function useMarkAllAsRead() {
   return useMutation({
     mutationFn: async () => {
       const response = await apiClient.post<{ success: boolean; count: number }>(
-        "notifications/mark-all-read"
+        apiRoutes.notifications.markAllRead
       )
       return response.data
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["notifications", session?.user?.id],
-      })
+      // Chỉ invalidate user notifications - admin table sẽ tự refresh khi cần
+      invalidateQueries.userNotifications(queryClient, session?.user?.id)
+    },
+  })
+}
+
+// Delete all notifications
+export function useDeleteAllNotifications() {
+  const queryClient = useQueryClient()
+  const { data: session } = useSession()
+
+  return useMutation({
+    mutationFn: async () => {
+      const response = await apiClient.delete<{ success: boolean; count: number; message: string }>(
+        apiRoutes.notifications.deleteAll
+      )
+      return response.data
+    },
+    onSuccess: () => {
+      // Invalidate cả user và admin notifications vì xóa tất cả ảnh hưởng đến cả 2
+      invalidateQueries.allNotifications(queryClient, session?.user?.id)
+    },
+    onError: (error: unknown) => {
+      console.error("Error deleting all notifications:", error)
     },
   })
 }
@@ -133,9 +153,8 @@ export function useNotificationsSocketBridge() {
     if (!userId) return
 
     const invalidate = () => {
-      queryClient.invalidateQueries({
-        queryKey: ["notifications", userId],
-      })
+      // Chỉ invalidate user notifications khi có socket update
+      invalidateQueries.userNotifications(queryClient, userId)
     }
 
     const stopNew = onNotification(() => {

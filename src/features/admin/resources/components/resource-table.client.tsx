@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useState } from "react"
+import { useCallback, useState, useEffect } from "react"
 import {
   DataTable,
   type DataTableColumn,
@@ -27,6 +27,7 @@ export interface ResourceTableClientProps<T extends object> {
   limitOptions?: number[]
   fallbackRowCount?: number
   headerActions?: React.ReactNode
+  onRefreshReady?: (refresh: () => void) => void
 }
 
 export function ResourceTableClient<T extends object>({
@@ -39,6 +40,7 @@ export function ResourceTableClient<T extends object>({
   limitOptions,
   fallbackRowCount = 5,
   headerActions,
+  onRefreshReady,
 }: ResourceTableClientProps<T>) {
   if (viewModes.length === 0) {
     throw new Error("ResourceTableClient requires at least one view mode")
@@ -57,6 +59,11 @@ export function ResourceTableClient<T extends object>({
   const handleRefresh = useCallback(() => {
     setRefreshKey((prev) => prev + 1)
   }, [])
+
+  // Expose refresh function to parent component
+  useEffect(() => {
+    onRefreshReady?.(handleRefresh)
+  }, [handleRefresh, onRefreshReady])
 
   const handleViewChange = useCallback(
     (viewId: string) => {

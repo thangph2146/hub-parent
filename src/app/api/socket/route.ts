@@ -149,10 +149,10 @@ async function ensureUserNotificationsCached(userId: string) {
 
   logger.debug("Loading notifications from database", { userId })
   try {
+    // Không filter theo expiresAt - giữ nguyên thông báo cho đến khi user tự xóa
     const notifications = await prisma.notification.findMany({
       where: {
         userId,
-        OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
       },
       orderBy: { createdAt: "desc" },
       take: MAX_IN_MEMORY_NOTIFICATIONS,

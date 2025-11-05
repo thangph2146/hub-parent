@@ -4,20 +4,29 @@
 "use client"
 
 import * as React from "react"
-import { Bell, CheckCheck, Loader2 } from "lucide-react"
-import { useNotifications, useMarkAllAsRead, useNotificationsSocketBridge } from "@/hooks/use-notifications"
+import { useRouter } from "next/navigation"
+import { Bell, CheckCheck, Loader2, Trash2, ArrowRight } from "lucide-react"
+import { useSession } from "next-auth/react"
+import { useNotifications, useMarkAllAsRead, useDeleteAllNotifications, useNotificationsSocketBridge } from "@/hooks/use-notifications"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { ConfirmDialog } from "@/components/dialogs"
+import { useToast } from "@/hooks/use-toast"
 import { NotificationItem } from "./notification-item"
 import { Separator } from "@/components/ui/separator"
+import { isSuperAdmin } from "@/lib/permissions"
 
 export function NotificationBell() {
+  const router = useRouter()
+  const { toast } = useToast()
+  const { data: session } = useSession()
   const { data, isLoading } = useNotifications({ limit: 10, refetchInterval: 30000 })
   const markAllAsRead = useMarkAllAsRead()
+  const deleteAllNotifications = useDeleteAllNotifications()
   const [open, setOpen] = React.useState(false)
   
   // Khởi tạo socket connection cho real-time notifications
@@ -25,6 +34,40 @@ export function NotificationBell() {
 
   const unreadCount = data?.unreadCount || 0
   const notifications = data?.notifications || []
+  const totalCount = data?.total || 0
+  const [deleteAllConfirmOpen, setDeleteAllConfirmOpen] = React.useState(false)
+  
+  // Check nếu user là super admin để hiển thị link đến admin notifications page
+  const roles = session?.roles ?? []
+  const isSuperAdminUser = isSuperAdmin(roles)
+
+  const handleDeleteAll = () => {
+    setDeleteAllConfirmOpen(true)
+  }
+
+  const confirmDeleteAll = async () => {
+    deleteAllNotifications.mutate(undefined, {
+      onSuccess: (result) => {
+        setDeleteAllConfirmOpen(false)
+        setOpen(false)
+        toast({
+          title: "Thành công",
+          description: result.message || `Đã xóa ${result.count} thông báo thành công.`,
+          variant: "default",
+        })
+      },
+      onError: (error: unknown) => {
+        const errorMessage = 
+          (error as { response?: { data?: { message?: string } } })?.response?.data?.message ||
+          "Không thể xóa tất cả thông báo."
+        toast({
+          title: "Lỗi",
+          description: errorMessage,
+          variant: "destructive",
+        })
+      },
+    })
+  }
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
@@ -50,24 +93,43 @@ export function NotificationBell() {
       >
         <div className="flex items-center justify-between border-b px-4 py-3">
           <h2 className="text-lg font-semibold">Thông báo</h2>
-          {unreadCount > 0 && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                markAllAsRead.mutate()
-              }}
-              disabled={markAllAsRead.isPending}
-              className="h-8 text-xs"
-            >
-              {markAllAsRead.isPending ? (
-                <Loader2 className="mr-1 h-3 w-3 animate-spin" />
-              ) : (
-                <CheckCheck className="mr-1 h-3 w-3" />
-              )}
-              Đánh dấu tất cả đã đọc
-            </Button>
-          )}
+          <div className="flex items-center gap-2">
+            {unreadCount > 0 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  markAllAsRead.mutate()
+                }}
+                disabled={markAllAsRead.isPending}
+                className="h-8 text-xs"
+              >
+                {markAllAsRead.isPending ? (
+                  <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+                ) : (
+                  <CheckCheck className="mr-1 h-3 w-3" />
+                )}
+                Đánh dấu tất cả đã đọc
+              </Button>
+            )}
+            {totalCount > 0 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleDeleteAll}
+                disabled={deleteAllNotifications.isPending}
+                className="h-8 text-xs text-destructive hover:text-destructive"
+                title="Xóa tất cả thông báo"
+              >
+                {deleteAllNotifications.isPending ? (
+                  <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+                ) : (
+                  <Trash2 className="mr-1 h-3 w-3" />
+                )}
+                Xóa tất cả
+              </Button>
+            )}
+          </div>
         </div>
 
         <div className="max-h-[400px] overflow-y-auto">
@@ -85,43 +147,60 @@ export function NotificationBell() {
             </div>
           ) : (
             <div className="divide-y">
-              {notifications.map((notification, index) => (
+              {/* Chỉ hiển thị tối đa 10 thông báo đầu tiên */}
+              {notifications.slice(0, 10).map((notification, index) => (
                 <React.Fragment key={notification.id}>
                   <NotificationItem
                     notification={notification}
                     onClick={() => {
                       if (notification.actionUrl) {
-                        window.location.href = notification.actionUrl
+                        // Sử dụng Next.js router thay vì window.location để tránh reload page
+                        router.push(notification.actionUrl)
                       }
                       setOpen(false)
                     }}
                   />
-                  {index < notifications.length - 1 && <Separator />}
+                  {index < Math.min(notifications.length, 10) - 1 && <Separator />}
                 </React.Fragment>
               ))}
             </div>
           )}
         </div>
 
-        {data && data.hasMore && (
+        {/* Luôn hiển thị link "Xem tất cả" nếu có thông báo và user là super admin */}
+        {!isLoading && notifications.length > 0 && isSuperAdminUser && (
           <>
             <Separator />
             <div className="p-2">
               <Button
                 variant="ghost"
                 size="sm"
-                className="w-full"
+                className="w-full justify-between"
                 onClick={() => {
-                  window.location.href = "/admin/notifications"
+                  // Sử dụng Next.js router thay vì window.location để tránh reload page
+                  router.push("/admin/notifications")
                   setOpen(false)
                 }}
               >
-                Xem tất cả thông báo
+                <span>Xem tất cả thông báo</span>
+                <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </div>
           </>
         )}
       </DropdownMenuContent>
+
+      <ConfirmDialog
+        open={deleteAllConfirmOpen}
+        onOpenChange={setDeleteAllConfirmOpen}
+        title="Xóa tất cả thông báo"
+        description={`Bạn có chắc chắn muốn xóa TẤT CẢ ${totalCount} thông báo? Hành động này không thể hoàn tác. Chỉ các thông báo mà bạn là chủ sở hữu mới được xóa.`}
+        variant="destructive"
+        confirmLabel="Xóa tất cả"
+        cancelLabel="Hủy"
+        onConfirm={confirmDeleteAll}
+        isLoading={deleteAllNotifications.isPending}
+      />
     </DropdownMenu>
   )
 }

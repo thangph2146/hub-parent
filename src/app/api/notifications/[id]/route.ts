@@ -80,8 +80,15 @@ async function deleteNotificationHandler(_req: NextRequest, { params }: { params
     return NextResponse.json({ error: "Notification not found" }, { status: 404 })
   }
 
+  // Chỉ chủ sở hữu mới được xóa notification, kể cả super admin cũng không được xóa
   if (notification.userId !== session.user.id) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 })
+    return NextResponse.json(
+      { 
+        error: "Forbidden",
+        message: "Bạn chỉ có thể xóa thông báo của chính mình. Kể cả super admin cũng không được xóa thông báo của người khác."
+      },
+      { status: 403 }
+    )
   }
 
   // Delete notification

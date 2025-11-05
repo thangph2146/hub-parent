@@ -1,0 +1,105 @@
+/**
+ * Query Keys Configuration
+ * 
+ * Tập trung quản lý tất cả query keys cho TanStack Query
+ * Theo chuẩn Next.js 16: chỉ invalidate những queries thực sự cần thiết
+ */
+
+import type { QueryClient } from "@tanstack/react-query"
+
+/**
+ * Query Keys Factory Pattern
+ * Giúp type-safe và dễ quản lý query keys
+ */
+export const queryKeys = {
+  // Notifications
+  notifications: {
+    // User notifications (NotificationBell)
+    user: (userId: string | undefined, options?: { limit?: number; offset?: number; unreadOnly?: boolean }): readonly unknown[] => {
+      if (!userId) return ["notifications", "user", null]
+      const { limit, offset, unreadOnly } = options || {}
+      const keys: unknown[] = ["notifications", "user", userId]
+      if (limit !== undefined) keys.push(limit)
+      if (offset !== undefined) keys.push(offset)
+      if (unreadOnly !== undefined) keys.push(unreadOnly)
+      return keys as readonly unknown[]
+    },
+    // Admin notifications (Admin Table)
+    admin: (): readonly unknown[] => ["notifications", "admin"],
+    // Tất cả user notifications (không phân biệt params)
+    allUser: (userId: string | undefined): readonly unknown[] => {
+      if (!userId) return ["notifications", "user"]
+      return ["notifications", "user", userId]
+    },
+    // Tất cả admin notifications
+    allAdmin: (): readonly unknown[] => ["notifications", "admin"],
+  },
+
+  // Users
+  users: {
+    list: (params?: { page?: number; limit?: number; search?: string; status?: string }): readonly unknown[] => {
+      const { page, limit, search, status } = params || {}
+      const keys: unknown[] = ["users", "list"]
+      if (page !== undefined) keys.push(page)
+      if (limit !== undefined) keys.push(limit)
+      if (search !== undefined) keys.push(search)
+      if (status !== undefined) keys.push(status)
+      return keys as readonly unknown[]
+    },
+    detail: (id: string): readonly unknown[] => ["users", "detail", id],
+    all: (): readonly unknown[] => ["users"],
+  },
+
+  // Roles
+  roles: {
+    list: (): readonly unknown[] => ["roles", "list"],
+    all: (): readonly unknown[] => ["roles"],
+  },
+}
+
+/**
+ * Helper functions để invalidate queries một cách chính xác
+ */
+export const invalidateQueries = {
+  /**
+   * Invalidate user notifications
+   * Chỉ invalidate queries của user cụ thể với các params cụ thể
+   */
+  userNotifications: (queryClient: QueryClient, userId: string | undefined, options?: { exact?: boolean }) => {
+    if (!userId) return
+    const { exact = false } = options || {}
+    
+    if (exact) {
+      // Chỉ invalidate query chính xác với params - tốn ít tài nguyên hơn
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.notifications.user(userId) as unknown[],
+      })
+    } else {
+      // Invalidate tất cả queries của user này (bao gồm các params khác nhau)
+      // Dùng khi không biết chính xác params nào đang được sử dụng
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.notifications.allUser(userId) as unknown[],
+      })
+    }
+  },
+
+  /**
+   * Invalidate admin notifications
+   * Chỉ invalidate admin table queries
+   */
+  adminNotifications: (queryClient: QueryClient) => {
+    queryClient.invalidateQueries({
+      queryKey: queryKeys.notifications.admin() as unknown[],
+    })
+  },
+
+  /**
+   * Invalidate cả user và admin notifications
+   * Chỉ dùng khi thay đổi ảnh hưởng đến cả 2 (ví dụ: xóa notification)
+   */
+  allNotifications: (queryClient: QueryClient, userId: string | undefined, options?: { exact?: boolean }) => {
+    invalidateQueries.userNotifications(queryClient, userId, options)
+    invalidateQueries.adminNotifications(queryClient)
+  },
+}
+

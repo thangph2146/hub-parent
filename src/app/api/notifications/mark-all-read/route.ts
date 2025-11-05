@@ -13,14 +13,11 @@ async function markAllAsReadHandler(_req: NextRequest) {
   }
 
   // Update all unread notifications for the user
+  // Không filter theo expiresAt - giữ nguyên thông báo cho đến khi user tự xóa
   const result = await prisma.notification.updateMany({
     where: {
       userId: session.user.id,
       isRead: false,
-      OR: [
-        { expiresAt: null },
-        { expiresAt: { gt: new Date() } },
-      ],
     },
     data: {
       isRead: true,

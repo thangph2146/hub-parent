@@ -2,15 +2,12 @@
 
 import { motion } from "framer-motion"
 import { useSession } from "next-auth/react"
-import { 
-  Users, 
-  FileText, 
-  MessageSquare, 
+import {
+  Users,
+  FileText,
+  MessageSquare,
   Bell,
-  TrendingUp,
   Activity,
-  Zap,
-  ArrowRight,
   Calendar,
   Clock,
   Shield,
@@ -26,11 +23,9 @@ import {
   UserCheck,
   GraduationCap,
   KeyRound,
-  Sparkles
 } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import Link from "next/link"
 import { useClientOnly } from "@/hooks/use-client-only"
 import { usePermissions } from "@/hooks/use-permissions"
 import { PERMISSIONS } from "@/lib/permissions"
@@ -82,7 +77,7 @@ function getCurrentDate() {
 function getRoleInfo(roles: Array<{ name: string; displayName?: string }> = []) {
   const roleNames = roles.map(r => r.name)
   const displayNames = roles.map(r => r.displayName || r.name).join(", ")
-  
+
   if (roleNames.includes("super_admin")) {
     return {
       label: "Super Admin",
@@ -133,14 +128,7 @@ function getRoleInfo(roles: Array<{ name: string; displayName?: string }> = []) 
   }
 }
 
-// Chart colors mapping for stats
-const chartColors = [
-  { chart: "chart-1", iconColor: "text-chart-1", bg: "bg-chart-1/10", border: "border-chart-1/20", glow: "shadow-chart-1/20" },
-  { chart: "chart-2", iconColor: "text-chart-2", bg: "bg-chart-2/10", border: "border-chart-2/20", glow: "shadow-chart-2/20" },
-  { chart: "chart-3", iconColor: "text-chart-3", bg: "bg-chart-3/10", border: "border-chart-3/20", glow: "shadow-chart-3/20" },
-  { chart: "chart-4", iconColor: "text-chart-4", bg: "bg-chart-4/10", border: "border-chart-4/20", glow: "shadow-chart-4/20" },
-  { chart: "chart-5", iconColor: "text-chart-5", bg: "bg-chart-5/10", border: "border-chart-5/20", glow: "shadow-chart-5/20" },
-]
+
 
 export function DashboardWelcome() {
   const { data: session } = useSession()
@@ -154,48 +142,8 @@ export function DashboardWelcome() {
   const currentDate = getCurrentDate()
   const roleInfo = getRoleInfo(userRoles)
 
-  // Stats based on permissions - using chart colors from theme
-  const allStats = [
-    { title: "Tổng người dùng", value: "1,234", change: "+12.5%", icon: Users, permission: PERMISSIONS.USERS_VIEW, href: "/admin/users" },
-    { title: "Bài viết", value: "456", change: "+8.2%", icon: FileText, permission: PERMISSIONS.POSTS_VIEW, href: "/admin/posts" },
-    { title: "Bình luận", value: "2,341", change: "+15.3%", icon: MessageCircle, permission: PERMISSIONS.COMMENTS_VIEW, href: "/admin/comments" },
-    { title: "Tin nhắn", value: "89", change: "+5.1%", icon: MessageSquare, permission: PERMISSIONS.MESSAGES_VIEW, href: "/admin/messages" },
-    { title: "Thông báo", value: "23", change: "+2.3%", icon: Bell, permission: PERMISSIONS.NOTIFICATIONS_VIEW, href: "/admin/notifications" },
-    { title: "Danh mục", value: "45", change: "+3.1%", icon: FolderTree, permission: PERMISSIONS.CATEGORIES_VIEW, href: "/admin/categories" },
-    { title: "Thẻ", value: "128", change: "+6.2%", icon: Tag, permission: PERMISSIONS.TAGS_VIEW, href: "/admin/tags" },
-    { title: "Yêu cầu liên hệ", value: "67", change: "+4.7%", icon: UserCheck, permission: PERMISSIONS.CONTACT_REQUESTS_VIEW, href: "/admin/contact-requests" },
-    { title: "Học sinh", value: "892", change: "+9.8%", icon: GraduationCap, permission: PERMISSIONS.STUDENTS_VIEW, href: "/admin/students" },
-    { title: "Vai trò", value: "12", change: "0%", icon: KeyRound, permission: PERMISSIONS.ROLES_VIEW, href: "/admin/roles" },
-  ]
 
-  const availableStats = allStats
-    .filter(stat => isSuperAdminUser || hasPermission(stat.permission))
-    .map((stat, index) => ({
-      ...stat,
-      ...chartColors[index % chartColors.length]
-    }))
 
-  // Quick actions with theme colors
-  const allQuickActions = [
-    { title: "Tạo bài viết mới", description: "Viết và xuất bản bài viết", icon: FileText, href: "/admin/posts/new", permission: PERMISSIONS.POSTS_CREATE, priority: 1 },
-    { title: "Quản lý người dùng", description: "Xem và quản lý tất cả người dùng", icon: Users, href: "/admin/users", permission: PERMISSIONS.USERS_VIEW, priority: 2 },
-    { title: "Xem thống kê", description: "Phân tích và báo cáo chi tiết", icon: BarChart3, href: "/admin/dashboard/stats", permission: PERMISSIONS.DASHBOARD_VIEW, priority: 3 },
-    { title: "Quản lý bình luận", description: "Duyệt và quản lý bình luận", icon: MessageCircle, href: "/admin/comments", permission: PERMISSIONS.COMMENTS_VIEW, priority: 4 },
-    { title: "Quản lý danh mục", description: "Tạo và chỉnh sửa danh mục", icon: FolderTree, href: "/admin/categories", permission: PERMISSIONS.CATEGORIES_VIEW, priority: 5 },
-    { title: "Quản lý thẻ", description: "Tạo và chỉnh sửa thẻ", icon: Tag, href: "/admin/tags", permission: PERMISSIONS.TAGS_VIEW, priority: 6 },
-    { title: "Yêu cầu liên hệ", description: "Xem và xử lý yêu cầu liên hệ", icon: UserCheck, href: "/admin/contact-requests", permission: PERMISSIONS.CONTACT_REQUESTS_VIEW, priority: 7 },
-    { title: "Quản lý vai trò", description: "Cấu hình vai trò và quyền hạn", icon: KeyRound, href: "/admin/roles", permission: PERMISSIONS.ROLES_VIEW, priority: 8 },
-    { title: "Cài đặt hệ thống", description: "Quản lý cấu hình hệ thống", icon: Settings, href: "/admin/settings", permission: PERMISSIONS.SETTINGS_VIEW, priority: 9 },
-  ]
-
-  const availableQuickActions = allQuickActions
-    .filter(action => isSuperAdminUser || hasPermission(action.permission))
-    .sort((a, b) => a.priority - b.priority)
-    .slice(0, 6)
-    .map((action, index) => ({
-      ...action,
-      ...chartColors[index % chartColors.length]
-    }))
 
   if (!isMounted) {
     return (
@@ -258,8 +206,8 @@ export function DashboardWelcome() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4, duration: 0.6 }}
               >
-                <Badge 
-                  variant="outline" 
+                <Badge
+                  variant="outline"
                   className={cn(
                     "px-4 py-2 border-2 gap-2 font-semibold shadow-lg backdrop-blur-sm",
                     roleInfo.bgColor,
@@ -291,176 +239,8 @@ export function DashboardWelcome() {
           </div>
         </motion.div>
 
-        {/* Stats Grid */}
-        {availableStats.length > 0 && (
-          <motion.div variants={itemVariants} className="space-y-5">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-2xl font-bold flex items-center gap-2">
-                  <Sparkles className="h-6 w-6 text-[#00cc44] dark:text-[#00ff88]" />
-                  Tổng quan thống kê
-                </h2>
-                <p className="text-sm text-muted-foreground mt-1">Dữ liệu tổng hợp theo thời gian thực</p>
-              </div>
-            </div>
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
-              {availableStats.map((stat, index) => {
-                const Icon = stat.icon
-                const StatCard = (
-                  <Card className={cn(
-                    "relative overflow-hidden border transition-all duration-300 group cursor-pointer",
-                    "backdrop-blur-sm bg-card/80 hover:bg-card",
-                    stat.border,
-                    "hover:shadow-2xl hover:shadow-[var(--highlight-color)]/20",
-                    "hover:scale-[1.02] hover:-translate-y-1"
-                  )}>
-                    {/* Glass morphism effect */}
-                    <div className="absolute inset-0 bg-gradient-to-br from-background/50 to-background/30 backdrop-blur-sm" />
-                    
-                    {/* Animated gradient border */}
-                    <div 
-                      className={cn(
-                        "absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300",
-                        `bg-gradient-to-r ${stat.bg.replace("/10", "/20")}`
-                      )}
-                      style={{ maskImage: "linear-gradient(to bottom, transparent, black)" }}
-                    />
-                    
-                    {/* Glow effect */}
-                    <div className={cn(
-                      "absolute top-0 right-0 w-32 h-32 rounded-full blur-3xl opacity-30 group-hover:opacity-50 transition-opacity duration-300",
-                      stat.bg
-                    )} />
-                    
-                    {/* Top accent bar */}
-                    <div className={cn(
-                      "absolute top-0 left-0 w-full h-1 bg-gradient-to-r transition-all",
-                      stat.bg.replace("/10", "")
-                    )} />
-                    
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3 relative z-10">
-                      <CardTitle className="text-sm font-medium text-muted-foreground">
-                        {stat.title}
-                      </CardTitle>
-                      <div className={cn(
-                        "p-2.5 rounded-xl transition-all duration-300 shadow-lg backdrop-blur-sm",
-                        "group-hover:scale-110 group-hover:rotate-6",
-                        stat.bg,
-                        "border border-border/50"
-                      )}>
-                        <Icon className={cn("h-5 w-5", stat.iconColor)} />
-                      </div>
-                    </CardHeader>
-                    <CardContent className="relative z-10">
-                      <div className="text-3xl font-bold mb-2 tracking-tight bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text text-transparent">
-                        {stat.value}
-                      </div>
-                      <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                        <TrendingUp className="h-3.5 w-3.5 text-[#00cc44] dark:text-[#00ff88]" />
-                        <span className="font-semibold text-[#00cc44] dark:text-[#00ff88]">{stat.change}</span>
-                        <span>so với tháng trước</span>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )
-
-                return (
-                  <motion.div
-                    key={stat.title}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.1 * index, duration: 0.5 }}
-                  >
-                    {stat.href ? (
-                      <Link href={stat.href} className="block">
-                        {StatCard}
-                      </Link>
-                    ) : (
-                      StatCard
-                    )}
-                  </motion.div>
-                )
-              })}
-            </div>
-          </motion.div>
-        )}
-
-        {/* Quick Actions */}
-        {availableQuickActions.length > 0 && (
-          <motion.div variants={itemVariants} className="space-y-5">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-2xl font-bold flex items-center gap-2">
-                  <Zap className="h-6 w-6 text-primary" />
-                  Thao tác nhanh
-                </h2>
-                <p className="text-sm text-muted-foreground mt-1">Các tác vụ thường dùng</p>
-              </div>
-            </div>
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {availableQuickActions.map((action, index) => {
-                const Icon = action.icon
-                return (
-                  <motion.div
-                    key={action.title}
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 0.2 + 0.1 * index, duration: 0.5 }}
-                    whileHover={{ scale: 1.03, y: -4 }}
-                    whileTap={{ scale: 0.98 }}
-                  >
-                    <Link href={action.href}>
-                      <Card className={cn(
-                        "relative overflow-hidden border transition-all duration-300 h-full group cursor-pointer",
-                        "backdrop-blur-sm bg-card/80 hover:bg-card",
-                        action.border,
-                        "hover:shadow-2xl hover:shadow-[var(--highlight-color)]/20"
-                      )}>
-                        {/* Glass morphism */}
-                        <div className="absolute inset-0 bg-gradient-to-br from-background/50 to-background/30 backdrop-blur-sm" />
-                        
-                        {/* Glow effect */}
-                        <div className={cn(
-                          "absolute top-0 right-0 w-40 h-40 rounded-full blur-3xl opacity-20 group-hover:opacity-40 transition-opacity duration-300",
-                          action.bg
-                        )} />
-                        
-                        {/* Accent bar */}
-                        <div className={cn(
-                          "absolute top-0 left-0 w-full h-1 bg-gradient-to-r transition-all",
-                          action.bg.replace("/10", "")
-                        )} />
-                        
-                        <CardHeader className="relative z-10">
-                          <div className="flex items-center justify-between mb-4">
-                            <div className={cn(
-                              "p-4 rounded-xl transition-all duration-300 shadow-lg backdrop-blur-sm",
-                              "group-hover:scale-110 group-hover:rotate-6",
-                              action.bg,
-                              "border border-border/50"
-                            )}>
-                              <Icon className={cn("h-6 w-6", action.iconColor)} />
-                            </div>
-                            <ArrowRight className={cn(
-                              "h-5 w-5 opacity-40 transition-all duration-300",
-                              "group-hover:translate-x-2 group-hover:opacity-100",
-                              action.iconColor
-                            )} />
-                          </div>
-                          <CardTitle className="text-lg font-semibold mb-1">{action.title}</CardTitle>
-                          <CardDescription className="text-xs">{action.description}</CardDescription>
-                        </CardHeader>
-                      </Card>
-                    </Link>
-                  </motion.div>
-                )
-              })}
-            </div>
-          </motion.div>
-        )}
-
         {/* Welcome Message for Limited Permissions */}
-        {!isSuperAdminUser && availableStats.length === 0 && (
+        {!isSuperAdminUser && (
           <motion.div
             variants={itemVariants}
             initial={{ opacity: 0, y: 20 }}

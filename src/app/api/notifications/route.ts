@@ -47,12 +47,9 @@ async function getUserNotificationsHandler(req: NextRequest) {
   const unreadOnly = unreadOnlyParam === "true"
 
   // Build where clause
+  // Không filter theo expiresAt - giữ nguyên thông báo cho đến khi user tự xóa
   const where: Prisma.NotificationWhereInput = {
     userId: session.user.id,
-    OR: [
-      { expiresAt: null },
-      { expiresAt: { gt: new Date() } },
-    ],
   }
 
   if (unreadOnly) {
@@ -100,11 +97,44 @@ async function getUserNotificationsHandler(req: NextRequest) {
   })
 }
 
+async function deleteAllNotificationsHandler(req: NextRequest) {
+  const session = await auth()
+
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  }
+
+  // Chỉ xóa notification của chính user - không bao giờ xóa notification của người khác
+  const result = await prisma.notification.deleteMany({
+    where: {
+      userId: session.user.id,
+    },
+  })
+
+  return NextResponse.json({
+    success: true,
+    count: result.count,
+    message: `Đã xóa ${result.count} thông báo thành công.`,
+  })
+}
+
 export async function GET(req: NextRequest) {
   try {
     return await getUserNotificationsHandler(req)
   } catch (error) {
     console.error("Error fetching notifications:", error)
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    )
+  }
+}
+
+export async function DELETE(req: NextRequest) {
+  try {
+    return await deleteAllNotificationsHandler(req)
+  } catch (error) {
+    console.error("Error deleting all notifications:", error)
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

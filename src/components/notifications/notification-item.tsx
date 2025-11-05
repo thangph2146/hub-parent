@@ -12,11 +12,16 @@ import {
   Info,
   MessageSquare,
   Trash2,
+  EyeOff,
+  Eye,
 } from "lucide-react"
 import { useMarkNotificationRead, useDeleteNotification } from "@/hooks/use-notifications"
 import type { Notification } from "@/hooks/use-notifications"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
+import { useSession } from "next-auth/react"
+import { ConfirmDialog } from "@/components/dialogs"
+import { useToast } from "@/hooks/use-toast"
 
 interface NotificationItemProps {
   notification: Notification
@@ -47,22 +52,57 @@ export function NotificationItem({
   notification,
   onClick,
 }: NotificationItemProps) {
+  const { data: session } = useSession()
+  const { toast } = useToast()
   const markAsRead = useMarkNotificationRead()
   const deleteNotification = useDeleteNotification()
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = React.useState(false)
 
   const Icon = kindIcons[notification.kind] || Info
   const styleClass = kindStyles[notification.kind] || kindStyles.INFO
+  
+  // Chỉ chủ sở hữu mới được xóa notification
+  const isOwner = session?.user?.id === notification.userId
 
-  const handleMarkAsRead = (e: React.MouseEvent) => {
+  const handleToggleRead = (e: React.MouseEvent) => {
     e.stopPropagation()
-    if (!notification.isRead) {
-      markAsRead.mutate({ id: notification.id, isRead: true })
-    }
+    // Toggle giữa đã đọc và chưa đọc
+    markAsRead.mutate({ id: notification.id, isRead: !notification.isRead })
   }
 
   const handleDelete = (e: React.MouseEvent) => {
     e.stopPropagation()
-    deleteNotification.mutate(notification.id)
+    
+    // Double check ownership trước khi xóa
+    if (!isOwner) {
+      console.warn("Attempted to delete notification without ownership")
+      return
+    }
+    
+    setDeleteConfirmOpen(true)
+  }
+
+  const confirmDelete = () => {
+    deleteNotification.mutate(notification.id, {
+      onSuccess: () => {
+        setDeleteConfirmOpen(false)
+        toast({
+          title: "Thành công",
+          description: "Thông báo đã được xóa thành công.",
+          variant: "default",
+        })
+      },
+      onError: (error: unknown) => {
+        const errorMessage = 
+          (error as { response?: { data?: { message?: string } } })?.response?.data?.message ||
+          "Bạn chỉ có thể xóa thông báo của chính mình. Kể cả super admin cũng không được xóa thông báo của người khác."
+        toast({
+          title: "Lỗi",
+          description: errorMessage,
+          variant: "destructive",
+        })
+      },
+    })
   }
 
   const timeAgo = formatDistanceToNow(new Date(notification.createdAt), {
@@ -127,33 +167,71 @@ export function NotificationItem({
             </p>
           )}
 
-          <div className="flex items-center justify-between pt-1">
+          <div className="flex items-center justify-between pt-2">
             <span className="text-xs text-muted-foreground">{timeAgo}</span>
-            <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-              {!notification.isRead && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-6 w-6"
-                  onClick={handleMarkAsRead}
-                  title="Đánh dấu đã đọc"
-                >
-                  <CheckCircle2 className="h-3.5 w-3.5" />
-                </Button>
-              )}
+            <div className="flex items-center gap-2">
               <Button
-                variant="ghost"
-                size="icon"
-                className="h-6 w-6"
-                onClick={handleDelete}
-                title="Xóa"
+                variant={notification.isRead ? "outline" : "default"}
+                size="sm"
+                className={cn(
+                  "h-8 gap-1.5 text-xs",
+                  notification.isRead
+                    ? "border-blue-300 text-blue-700 hover:bg-blue-50 dark:border-blue-700 dark:text-blue-300 dark:hover:bg-blue-950/30"
+                    : "bg-green-600 text-white hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-600"
+                )}
+                onClick={handleToggleRead}
+                title={notification.isRead ? "Đánh dấu chưa đọc" : "Đánh dấu đã đọc"}
               >
-                <Trash2 className="h-3.5 w-3.5" />
+                {notification.isRead ? (
+                  <>
+                    <EyeOff className="h-3.5 w-3.5" />
+                    <span className="hidden sm:inline">Chưa đọc</span>
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle2 className="h-3.5 w-3.5" />
+                    <span className="hidden sm:inline">Đã đọc</span>
+                  </>
+                )}
               </Button>
+              {/* Chỉ hiển thị button xóa nếu user là chủ sở hữu */}
+              {isOwner ? (
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  className="h-8 gap-1.5 text-xs"
+                  onClick={handleDelete}
+                  disabled={deleteNotification.isPending}
+                  title="Xóa thông báo này - Chỉ bạn mới có thể xóa thông báo của chính mình"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                  <span className="hidden sm:inline">Xóa</span>
+                </Button>
+              ) : (
+                <div 
+                  className="h-8 px-2 flex items-center gap-1.5 text-xs text-muted-foreground opacity-50"
+                  title="Chỉ chủ sở hữu mới có thể xóa thông báo này"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                  <span className="hidden sm:inline">Không thể xóa</span>
+                </div>
+              )}
             </div>
           </div>
         </div>
       </div>
+
+      <ConfirmDialog
+        open={deleteConfirmOpen}
+        onOpenChange={setDeleteConfirmOpen}
+        title="Xóa thông báo"
+        description="Bạn có chắc chắn muốn xóa thông báo này? Hành động này không thể hoàn tác."
+        variant="destructive"
+        confirmLabel="Xóa"
+        cancelLabel="Hủy"
+        onConfirm={confirmDelete}
+        isLoading={deleteNotification.isPending}
+      />
     </div>
   )
 }

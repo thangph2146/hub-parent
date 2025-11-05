@@ -1,0 +1,96 @@
+/**
+ * API Routes Configuration
+ * 
+ * Tập trung quản lý tất cả API routes cho toàn hệ thống
+ * Theo chuẩn Next.js 16: type-safe và dễ maintain
+ * 
+ * LƯU Ý: Không include `/api` prefix vì `apiClient` đã có `baseURL: "/api"`
+ * Nếu sử dụng trực tiếp với fetch/axios khác, cần thêm `/api` prefix
+ */
+
+/**
+ * API Routes cho từng feature
+ * Không include `/api` prefix vì apiClient đã có baseURL
+ */
+export const apiRoutes = {
+  // Auth
+  auth: {
+    signIn: "/auth/sign-in",
+    signUp: "/auth/signup",
+    signOut: "/auth/sign-out",
+    session: "/auth/session",
+  },
+
+  // Notifications
+  notifications: {
+    // User notifications
+    list: (params?: { limit?: number; offset?: number; unreadOnly?: boolean }) => {
+      const searchParams = new URLSearchParams()
+      if (params?.limit) searchParams.set("limit", params.limit.toString())
+      if (params?.offset) searchParams.set("offset", params.offset.toString())
+      if (params?.unreadOnly !== undefined) searchParams.set("unreadOnly", params.unreadOnly.toString())
+      const queryString = searchParams.toString()
+      return `/notifications${queryString ? `?${queryString}` : ""}`
+    },
+    detail: (id: string) => `/notifications/${id}`,
+    markRead: (id: string) => `/notifications/${id}`,
+    markAllRead: "/notifications/mark-all-read",
+    delete: (id: string) => `/notifications/${id}`,
+    deleteAll: "/notifications",
+  },
+
+  // Admin Notifications
+  adminNotifications: {
+    list: (params?: { page?: number; limit?: number; search?: string }) => {
+      const searchParams = new URLSearchParams()
+      if (params?.page) searchParams.set("page", params.page.toString())
+      if (params?.limit) searchParams.set("limit", params.limit.toString())
+      if (params?.search) searchParams.set("search", params.search)
+      const queryString = searchParams.toString()
+      return `/admin/notifications${queryString ? `?${queryString}` : ""}`
+    },
+  },
+
+  // Users
+  users: {
+    list: (params?: { page?: number; limit?: number; search?: string; status?: string }) => {
+      const searchParams = new URLSearchParams()
+      if (params?.page) searchParams.set("page", params.page.toString())
+      if (params?.limit) searchParams.set("limit", params.limit.toString())
+      if (params?.search) searchParams.set("search", params.search)
+      if (params?.status) searchParams.set("status", params.status)
+      const queryString = searchParams.toString()
+      return `/admin/users${queryString ? `?${queryString}` : ""}`
+    },
+    detail: (id: string) => `/admin/users/${id}`,
+    create: "/admin/users",
+    update: (id: string) => `/admin/users/${id}`,
+    delete: (id: string) => `/admin/users/${id}`,
+    restore: (id: string) => `/admin/users/${id}/restore`,
+    hardDelete: (id: string) => `/admin/users/${id}/hard-delete`,
+    bulk: "/admin/users/bulk",
+  },
+
+  // Roles
+  roles: {
+    list: "/roles",
+    adminList: "/admin/roles",
+  },
+
+  // Socket
+  socket: "/socket",
+} as const
+
+/**
+ * Helper để build query string từ params
+ */
+export function buildQueryString(params: Record<string, string | number | boolean | undefined>): string {
+  const searchParams = new URLSearchParams()
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== "") {
+      searchParams.set(key, String(value))
+    }
+  })
+  return searchParams.toString()
+}
+
