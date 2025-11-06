@@ -2,13 +2,13 @@
 
 import { useCallback, useMemo, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
-import { RotateCcw, Trash2, MoreHorizontal, AlertTriangle, Eye, Edit } from "lucide-react"
+import { RotateCcw, Trash2, MoreHorizontal, AlertTriangle, Eye, Plus } from "lucide-react"
 
 import { ConfirmDialog } from "@/components/dialogs"
 import type { DataTableColumn, DataTableQueryState, DataTableResult } from "@/components/tables"
 import { FeedbackDialog, type FeedbackVariant } from "@/components/dialogs"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
+import { Switch } from "@/components/ui/switch"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,7 +20,7 @@ import type { ResourceViewMode } from "@/features/admin/resources/types"
 import { apiClient } from "@/lib/api/axios"
 import { apiRoutes } from "@/lib/api/routes"
 
-import type { ContactRequestRow, ContactRequestsResponse, ContactRequestsTableClientProps } from "../types"
+import type { StudentRow, StudentsResponse, StudentsTableClientProps } from "../types"
 
 interface FeedbackState {
   open: boolean
@@ -33,52 +33,24 @@ interface FeedbackState {
 interface DeleteConfirmState {
   open: boolean
   type: "soft" | "hard"
-  row?: ContactRequestRow
+  row?: StudentRow
   bulkIds?: string[]
   onConfirm: () => Promise<void>
 }
 
-const statusLabels: Record<string, string> = {
-  NEW: "Mới",
-  IN_PROGRESS: "Đang xử lý",
-  RESOLVED: "Đã xử lý",
-  CLOSED: "Đã đóng",
-}
-
-const priorityLabels: Record<string, string> = {
-  LOW: "Thấp",
-  MEDIUM: "Trung bình",
-  HIGH: "Cao",
-  URGENT: "Khẩn cấp",
-}
-
-const statusColors: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
-  NEW: "default",
-  IN_PROGRESS: "secondary",
-  RESOLVED: "outline",
-  CLOSED: "destructive",
-}
-
-const priorityColors: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
-  LOW: "outline",
-  MEDIUM: "default",
-  HIGH: "secondary",
-  URGENT: "destructive",
-}
-
-export function ContactRequestsTableClient({
+export function StudentsTableClient({
   canDelete = false,
   canRestore = false,
   canManage = false,
-  canUpdate = false,
-  canAssign: _canAssign = false,
+  canCreate = false,
   initialData,
-  initialUsersOptions = [],
-}: ContactRequestsTableClientProps) {
+  initialUsersOptions: _initialUsersOptions = [],
+}: StudentsTableClientProps) {
   const router = useRouter()
   const [isBulkProcessing, setIsBulkProcessing] = useState(false)
   const [feedback, setFeedback] = useState<FeedbackState | null>(null)
   const [deleteConfirm, setDeleteConfirm] = useState<DeleteConfirmState | null>(null)
+  const [togglingStudents, setTogglingStudents] = useState<Set<string>>(new Set())
   const tableRefreshRef = useRef<(() => void) | null>(null)
 
   const showFeedback = useCallback(
@@ -94,6 +66,45 @@ export function ContactRequestsTableClient({
     }
   }, [])
 
+  // Handler để toggle student status
+  const handleToggleStatus = useCallback(
+    async (row: StudentRow, newStatus: boolean, refresh: () => void) => {
+      if (!canManage) {
+        showFeedback("error", "Không có quyền", "Bạn không có quyền thay đổi trạng thái học sinh")
+        return
+      }
+
+      setTogglingStudents((prev) => new Set(prev).add(row.id))
+
+      try {
+        await apiClient.put(apiRoutes.students.update(row.id), {
+          isActive: newStatus,
+        })
+
+        showFeedback(
+          "success",
+          "Cập nhật thành công",
+          `Đã ${newStatus ? "kích hoạt" : "vô hiệu hóa"} học sinh ${row.studentCode}`
+        )
+        refresh()
+      } catch (error) {
+        console.error("Error toggling student status:", error)
+        showFeedback(
+          "error",
+          "Lỗi cập nhật",
+          `Không thể ${newStatus ? "kích hoạt" : "vô hiệu hóa"} học sinh. Vui lòng thử lại.`
+        )
+      } finally {
+        setTogglingStudents((prev) => {
+          const next = new Set(prev)
+          next.delete(row.id)
+          return next
+        })
+      }
+    },
+    [canManage, showFeedback],
+  )
+
   const dateFormatter = useMemo(
     () =>
       new Intl.DateTimeFormat("vi-VN", {
@@ -103,15 +114,24 @@ export function ContactRequestsTableClient({
     [],
   )
 
-  const baseColumns = useMemo<DataTableColumn<ContactRequestRow>[]>(
+  const baseColumns = useMemo<DataTableColumn<StudentRow>[]>(
     () => [
       {
-        accessorKey: "name",
-        header: "Tên người liên hệ",
-        filter: { placeholder: "Lọc tên..." },
+        accessorKey: "studentCode",
+        header: "Mã học sinh",
+        filter: { placeholder: "Lọc mã học sinh..." },
         searchable: true,
         className: "min-w-[150px] max-w-[200px]",
         headerClassName: "min-w-[150px] max-w-[200px]",
+      },
+      {
+        accessorKey: "name",
+        header: "Tên học sinh",
+        filter: { placeholder: "Lọc tên học sinh..." },
+        searchable: true,
+        className: "min-w-[150px] max-w-[250px]",
+        headerClassName: "min-w-[150px] max-w-[250px]",
+        cell: (row) => row.name ?? <span className="text-muted-foreground">-</span>,
       },
       {
         accessorKey: "email",
@@ -120,86 +140,45 @@ export function ContactRequestsTableClient({
         searchable: true,
         className: "min-w-[180px] max-w-[250px]",
         headerClassName: "min-w-[180px] max-w-[250px]",
+        cell: (row) => row.email ?? <span className="text-muted-foreground">-</span>,
       },
       {
-        accessorKey: "phone",
-        header: "Số điện thoại",
-        filter: { placeholder: "Lọc số điện thoại..." },
-        searchable: true,
-        className: "min-w-[120px] max-w-[150px]",
-        headerClassName: "min-w-[120px] max-w-[150px]",
-        cell: (row) => row.phone || <span className="text-muted-foreground">-</span>,
-      },
-      {
-        accessorKey: "subject",
-        header: "Tiêu đề",
-        filter: { placeholder: "Lọc tiêu đề..." },
-        searchable: true,
-        className: "min-w-[200px] max-w-[300px]",
-        headerClassName: "min-w-[200px] max-w-[300px]",
-      },
-      {
-        accessorKey: "status",
+        accessorKey: "isActive",
         header: "Trạng thái",
         filter: {
           type: "command",
           placeholder: "Chọn trạng thái...",
-          searchPlaceholder: "Tìm kiếm trạng thái...",
-          emptyMessage: "Không tìm thấy trạng thái.",
-          options: Object.entries(statusLabels).map(([value, label]) => ({ label, value })),
-        },
-        className: "min-w-[120px] max-w-[150px]",
-        headerClassName: "min-w-[120px] max-w-[150px]",
-        cell: (row) => (
-          <Badge variant={statusColors[row.status] || "default"}>{statusLabels[row.status] || row.status}</Badge>
-        ),
-      },
-      {
-        accessorKey: "priority",
-        header: "Độ ưu tiên",
-        filter: {
-          type: "command",
-          placeholder: "Chọn độ ưu tiên...",
-          searchPlaceholder: "Tìm kiếm độ ưu tiên...",
-          emptyMessage: "Không tìm thấy độ ưu tiên.",
-          options: Object.entries(priorityLabels).map(([value, label]) => ({ label, value })),
-        },
-        className: "min-w-[120px] max-w-[150px]",
-        headerClassName: "min-w-[120px] max-w-[150px]",
-        cell: (row) => (
-          <Badge variant={priorityColors[row.priority] || "default"}>{priorityLabels[row.priority] || row.priority}</Badge>
-        ),
-      },
-      {
-        accessorKey: "isRead",
-        header: "Đã đọc",
-        filter: {
-          type: "command",
-          placeholder: "Chọn trạng thái đọc...",
+          searchPlaceholder: "Tìm kiếm...",
+          emptyMessage: "Không tìm thấy.",
           options: [
-            { label: "Đã đọc", value: "true" },
-            { label: "Chưa đọc", value: "false" },
+            { label: "Hoạt động", value: "true" },
+            { label: "Ngưng hoạt động", value: "false" },
           ],
         },
-        className: "min-w-[100px] max-w-[120px]",
-        headerClassName: "min-w-[100px] max-w-[120px]",
-        cell: (row) => (
-          <Badge variant={row.isRead ? "outline" : "default"}>{row.isRead ? "Đã đọc" : "Chưa đọc"}</Badge>
-        ),
-      },
-      {
-        accessorKey: "assignedToName",
-        header: "Người được giao",
-        filter: {
-          type: "command",
-          placeholder: "Chọn người được giao...",
-          searchPlaceholder: "Tìm kiếm người dùng...",
-          emptyMessage: "Không tìm thấy người dùng.",
-          options: initialUsersOptions,
-        },
-        className: "min-w-[150px] max-w-[200px]",
-        headerClassName: "min-w-[150px] max-w-[200px]",
-        cell: (row) => row.assignedToName || <span className="text-muted-foreground">-</span>,
+        className: "w-[120px]",
+        headerClassName: "w-[120px]",
+        cell: (row) =>
+          row.deletedAt ? (
+            <span className="inline-flex min-w-[88px] items-center justify-center rounded-full bg-rose-100 px-2 py-1 text-xs font-medium text-rose-700">
+              Đã xóa
+            </span>
+          ) : (
+            <div className="flex items-center gap-2">
+              <Switch
+                checked={row.isActive}
+                disabled={togglingStudents.has(row.id) || !canManage}
+                onCheckedChange={(checked) => {
+                  if (tableRefreshRef.current) {
+                    handleToggleStatus(row, checked, tableRefreshRef.current)
+                  }
+                }}
+                aria-label={row.isActive ? "Vô hiệu hóa học sinh" : "Kích hoạt học sinh"}
+              />
+              <span className="text-xs text-muted-foreground">
+                {row.isActive ? "Hoạt động" : "Tạm khóa"}
+              </span>
+            </div>
+          ),
       },
       {
         accessorKey: "createdAt",
@@ -220,10 +199,10 @@ export function ContactRequestsTableClient({
         },
       },
     ],
-    [dateFormatter, initialUsersOptions],
+    [dateFormatter, togglingStudents, canManage, handleToggleStatus],
   )
 
-  const deletedColumns = useMemo<DataTableColumn<ContactRequestRow>[]>(
+  const deletedColumns = useMemo<DataTableColumn<StudentRow>[]>(
     () => [
       ...baseColumns,
       {
@@ -250,8 +229,8 @@ export function ContactRequestsTableClient({
   )
 
   const loader = useCallback(
-    async (query: DataTableQueryState, view: ResourceViewMode<ContactRequestRow>) => {
-      const baseUrl = apiRoutes.contactRequests.list({
+    async (query: DataTableQueryState, view: ResourceViewMode<StudentRow>) => {
+      const baseUrl = apiRoutes.students.list({
         page: query.page,
         limit: query.limit,
         status: view.status ?? "active",
@@ -268,7 +247,7 @@ export function ContactRequestsTableClient({
       const filterString = filterParams.toString()
       const url = filterString ? `${baseUrl}&${filterString}` : baseUrl
 
-      const response = await apiClient.get<ContactRequestsResponse>(url)
+      const response = await apiClient.get<StudentsResponse>(url)
       const payload = response.data
 
       return {
@@ -277,13 +256,13 @@ export function ContactRequestsTableClient({
         limit: payload.pagination.limit,
         total: payload.pagination.total,
         totalPages: payload.pagination.totalPages,
-      } satisfies DataTableResult<ContactRequestRow>
+      } satisfies DataTableResult<StudentRow>
     },
     [],
   )
 
   const handleDeleteSingle = useCallback(
-    (row: ContactRequestRow, refresh: () => void) => {
+    (row: StudentRow, refresh: () => void) => {
       if (!canDelete) return
       setDeleteConfirm({
         open: true,
@@ -291,12 +270,12 @@ export function ContactRequestsTableClient({
         row,
         onConfirm: async () => {
           try {
-            await apiClient.delete(apiRoutes.contactRequests.delete(row.id))
-            showFeedback("success", "Xóa thành công", `Đã xóa yêu cầu liên hệ ${row.subject}`)
+            await apiClient.delete(apiRoutes.students.delete(row.id))
+            showFeedback("success", "Xóa thành công", `Đã xóa học sinh ${row.studentCode}`)
             refresh()
           } catch (error: unknown) {
             const errorMessage = error instanceof Error ? error.message : "Đã xảy ra lỗi không xác định"
-            showFeedback("error", "Xóa thất bại", `Không thể xóa yêu cầu liên hệ ${row.subject}`, errorMessage)
+            showFeedback("error", "Xóa thất bại", `Không thể xóa học sinh ${row.studentCode}`, errorMessage)
             throw error
           }
         },
@@ -306,7 +285,7 @@ export function ContactRequestsTableClient({
   )
 
   const handleHardDeleteSingle = useCallback(
-    (row: ContactRequestRow, refresh: () => void) => {
+    (row: StudentRow, refresh: () => void) => {
       if (!canManage) return
       setDeleteConfirm({
         open: true,
@@ -314,12 +293,12 @@ export function ContactRequestsTableClient({
         row,
         onConfirm: async () => {
           try {
-            await apiClient.delete(apiRoutes.contactRequests.hardDelete(row.id))
-            showFeedback("success", "Xóa vĩnh viễn thành công", `Đã xóa vĩnh viễn yêu cầu liên hệ ${row.subject}`)
+            await apiClient.delete(apiRoutes.students.hardDelete(row.id))
+            showFeedback("success", "Xóa vĩnh viễn thành công", `Đã xóa vĩnh viễn học sinh ${row.studentCode}`)
             refresh()
           } catch (error: unknown) {
             const errorMessage = error instanceof Error ? error.message : "Đã xảy ra lỗi không xác định"
-            showFeedback("error", "Xóa vĩnh viễn thất bại", `Không thể xóa vĩnh viễn yêu cầu liên hệ ${row.subject}`, errorMessage)
+            showFeedback("error", "Xóa vĩnh viễn thất bại", `Không thể xóa vĩnh viễn học sinh ${row.studentCode}`, errorMessage)
             throw error
           }
         },
@@ -329,14 +308,14 @@ export function ContactRequestsTableClient({
   )
 
   const handleRestoreSingle = useCallback(
-    async (row: ContactRequestRow, refresh: () => void) => {
+    async (row: StudentRow, refresh: () => void) => {
       if (!canRestore) return
 
       try {
-        await apiClient.post(apiRoutes.contactRequests.restore(row.id))
+        await apiClient.post(apiRoutes.students.restore(row.id))
         refresh()
       } catch (error) {
-        console.error("Failed to restore contact request", error)
+        console.error("Failed to restore student", error)
       }
     },
     [canRestore],
@@ -354,13 +333,13 @@ export function ContactRequestsTableClient({
           onConfirm: async () => {
             setIsBulkProcessing(true)
             try {
-              await apiClient.post(apiRoutes.contactRequests.bulk, { action, ids })
-              showFeedback("success", "Xóa thành công", `Đã xóa ${ids.length} yêu cầu liên hệ`)
+              await apiClient.post(apiRoutes.students.bulk, { action, ids })
+              showFeedback("success", "Xóa thành công", `Đã xóa ${ids.length} học sinh`)
               clearSelection()
               refresh()
             } catch (error: unknown) {
               const errorMessage = error instanceof Error ? error.message : "Đã xảy ra lỗi không xác định"
-              showFeedback("error", "Xóa hàng loạt thất bại", `Không thể xóa ${ids.length} yêu cầu liên hệ`, errorMessage)
+              showFeedback("error", "Xóa hàng loạt thất bại", `Không thể xóa ${ids.length} học sinh`, errorMessage)
               throw error
             } finally {
               setIsBulkProcessing(false)
@@ -375,13 +354,13 @@ export function ContactRequestsTableClient({
           onConfirm: async () => {
             setIsBulkProcessing(true)
             try {
-              await apiClient.post(apiRoutes.contactRequests.bulk, { action, ids })
-              showFeedback("success", "Xóa vĩnh viễn thành công", `Đã xóa vĩnh viễn ${ids.length} yêu cầu liên hệ`)
+              await apiClient.post(apiRoutes.students.bulk, { action, ids })
+              showFeedback("success", "Xóa vĩnh viễn thành công", `Đã xóa vĩnh viễn ${ids.length} học sinh`)
               clearSelection()
               refresh()
             } catch (error: unknown) {
               const errorMessage = error instanceof Error ? error.message : "Đã xảy ra lỗi không xác định"
-              showFeedback("error", "Xóa vĩnh viễn thất bại", `Không thể xóa vĩnh viễn ${ids.length} yêu cầu liên hệ`, errorMessage)
+              showFeedback("error", "Xóa vĩnh viễn thất bại", `Không thể xóa vĩnh viễn ${ids.length} học sinh`, errorMessage)
               throw error
             } finally {
               setIsBulkProcessing(false)
@@ -392,13 +371,13 @@ export function ContactRequestsTableClient({
         setIsBulkProcessing(true)
         ;(async () => {
           try {
-            await apiClient.post(apiRoutes.contactRequests.bulk, { action, ids })
-            showFeedback("success", "Khôi phục thành công", `Đã khôi phục ${ids.length} yêu cầu liên hệ`)
+            await apiClient.post(apiRoutes.students.bulk, { action, ids })
+            showFeedback("success", "Khôi phục thành công", `Đã khôi phục ${ids.length} học sinh`)
             clearSelection()
             refresh()
           } catch (error: unknown) {
             const errorMessage = error instanceof Error ? error.message : "Đã xảy ra lỗi không xác định"
-            showFeedback("error", "Khôi phục thất bại", `Không thể khôi phục ${ids.length} yêu cầu liên hệ`, errorMessage)
+            showFeedback("error", "Khôi phục thất bại", `Không thể khôi phục ${ids.length} học sinh`, errorMessage)
           } finally {
             setIsBulkProcessing(false)
           }
@@ -408,104 +387,30 @@ export function ContactRequestsTableClient({
     [showFeedback],
   )
 
-  const viewModes = useMemo<ResourceViewMode<ContactRequestRow>[]>(() => {
-    const modes: ResourceViewMode<ContactRequestRow>[] = [
-      {
-        id: "new",
-        label: "Mới",
-        status: "NEW",
-        selectionEnabled: canDelete || canUpdate,
-        selectionActions: canDelete || canUpdate
-          ? ({ selectedIds, clearSelection, refresh }) => (
-              <div className="flex flex-wrap items-center justify-between gap-3 text-sm">
-                <span>
-                  Đã chọn <strong>{selectedIds.length}</strong> yêu cầu liên hệ
-                </span>
-                <div className="flex items-center gap-2">
-                  {canDelete && (
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="destructive"
-                      disabled={isBulkProcessing}
-                      onClick={() => executeBulk("delete", selectedIds, refresh, clearSelection)}
-                    >
-                      <Trash2 className="mr-2 h-5 w-5" />
-                      Xóa đã chọn
-                    </Button>
-                  )}
-                  <Button type="button" size="sm" variant="outline" onClick={clearSelection}>
-                    Bỏ chọn
-                  </Button>
-                </div>
-              </div>
-            )
-          : undefined,
-        rowActions:
-          canUpdate || canDelete
-            ? (row, { refresh }) => (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-8 w-8">
-                      <MoreHorizontal className="h-5 w-5" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => router.push(`/admin/contact-requests/${row.id}`)}>
-                      <Eye className="mr-2 h-5 w-5" />
-                      Xem chi tiết
-                    </DropdownMenuItem>
-                    {canUpdate && (
-                      <DropdownMenuItem onClick={() => router.push(`/admin/contact-requests/${row.id}/edit`)}>
-                        <Edit className="mr-2 h-5 w-5" />
-                        Chỉnh sửa
-                      </DropdownMenuItem>
-                    )}
-                    {canDelete && (
-                      <DropdownMenuItem onClick={() => handleDeleteSingle(row, refresh)}>
-                        <Trash2 className="mr-2 h-5 w-5" />
-                        Xóa
-                      </DropdownMenuItem>
-                    )}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              )
-            : (row) => (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => router.push(`/admin/contact-requests/${row.id}`)}
-                >
-                  <Eye className="mr-2 h-5 w-5" />
-                  Xem
-                </Button>
-              ),
-        emptyMessage: "Không tìm thấy yêu cầu liên hệ mới nào",
-      },
+  const viewModes = useMemo<ResourceViewMode<StudentRow>[]>(() => {
+    const modes: ResourceViewMode<StudentRow>[] = [
       {
         id: "active",
-        label: "Tất cả (đang hoạt động)",
+        label: "Đang hoạt động",
         status: "active",
-        selectionEnabled: canDelete || canUpdate,
-        selectionActions: canDelete || canUpdate
+        selectionEnabled: canDelete,
+        selectionActions: canDelete
           ? ({ selectedIds, clearSelection, refresh }) => (
               <div className="flex flex-wrap items-center justify-between gap-3 text-sm">
                 <span>
-                  Đã chọn <strong>{selectedIds.length}</strong> yêu cầu liên hệ
+                  Đã chọn <strong>{selectedIds.length}</strong> học sinh
                 </span>
                 <div className="flex items-center gap-2">
-                  {canDelete && (
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="destructive"
-                      disabled={isBulkProcessing}
-                      onClick={() => executeBulk("delete", selectedIds, refresh, clearSelection)}
-                    >
-                      <Trash2 className="mr-2 h-5 w-5" />
-                      Xóa đã chọn
-                    </Button>
-                  )}
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="destructive"
+                    disabled={isBulkProcessing}
+                    onClick={() => executeBulk("delete", selectedIds, refresh, clearSelection)}
+                  >
+                    <Trash2 className="mr-2 h-5 w-5" />
+                    Xóa đã chọn
+                  </Button>
                   <Button type="button" size="sm" variant="outline" onClick={clearSelection}>
                     Bỏ chọn
                   </Button>
@@ -514,7 +419,7 @@ export function ContactRequestsTableClient({
             )
           : undefined,
         rowActions:
-          canUpdate || canDelete
+          canDelete || canRestore
             ? (row, { refresh }) => (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -523,16 +428,10 @@ export function ContactRequestsTableClient({
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => router.push(`/admin/contact-requests/${row.id}`)}>
+                    <DropdownMenuItem onClick={() => router.push(`/admin/students/${row.id}`)}>
                       <Eye className="mr-2 h-5 w-5" />
                       Xem chi tiết
                     </DropdownMenuItem>
-                    {canUpdate && (
-                      <DropdownMenuItem onClick={() => router.push(`/admin/contact-requests/${row.id}/edit`)}>
-                        <Edit className="mr-2 h-5 w-5" />
-                        Chỉnh sửa
-                      </DropdownMenuItem>
-                    )}
                     {canDelete && (
                       <DropdownMenuItem onClick={() => handleDeleteSingle(row, refresh)}>
                         <Trash2 className="mr-2 h-5 w-5" />
@@ -546,13 +445,13 @@ export function ContactRequestsTableClient({
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => router.push(`/admin/contact-requests/${row.id}`)}
+                  onClick={() => router.push(`/admin/students/${row.id}`)}
                 >
                   <Eye className="mr-2 h-5 w-5" />
                   Xem
                 </Button>
               ),
-        emptyMessage: "Không tìm thấy yêu cầu liên hệ nào phù hợp",
+        emptyMessage: "Không tìm thấy học sinh nào phù hợp",
       },
       {
         id: "deleted",
@@ -564,7 +463,7 @@ export function ContactRequestsTableClient({
           ? ({ selectedIds, clearSelection, refresh }) => (
               <div className="flex flex-wrap items-center justify-between gap-3 text-sm">
                 <span>
-                  Đã chọn <strong>{selectedIds.length}</strong> yêu cầu liên hệ (đã xóa)
+                  Đã chọn <strong>{selectedIds.length}</strong> học sinh (đã xóa)
                 </span>
                 <div className="flex items-center gap-2">
                   {canRestore && (
@@ -624,7 +523,7 @@ export function ContactRequestsTableClient({
                 </DropdownMenu>
               )
             : undefined,
-        emptyMessage: "Không tìm thấy yêu cầu liên hệ đã xóa nào",
+        emptyMessage: "Không tìm thấy học sinh đã xóa nào",
       },
     ]
 
@@ -633,7 +532,6 @@ export function ContactRequestsTableClient({
     canDelete,
     canRestore,
     canManage,
-    canUpdate,
     isBulkProcessing,
     executeBulk,
     handleDeleteSingle,
@@ -648,6 +546,18 @@ export function ContactRequestsTableClient({
     [initialData],
   )
 
+  const headerActions = canCreate ? (
+    <Button
+      type="button"
+      size="sm"
+      onClick={() => router.push("/admin/students/new")}
+      className="h-8 px-3 text-xs sm:text-sm"
+    >
+      <Plus className="mr-2 h-5 w-5" />
+      Thêm mới
+    </Button>
+  ) : undefined
+
   const handleDeleteConfirm = useCallback(async () => {
     if (!deleteConfirm) return
     try {
@@ -661,14 +571,15 @@ export function ContactRequestsTableClient({
 
   return (
     <>
-      <ResourceTableClient<ContactRequestRow>
-        title="Quản lý yêu cầu liên hệ"
+      <ResourceTableClient<StudentRow>
+        title="Quản lý học sinh"
         baseColumns={baseColumns}
         loader={loader}
         viewModes={viewModes}
-        defaultViewId="new"
+        defaultViewId="active"
         initialDataByView={initialDataByView}
         fallbackRowCount={6}
+        headerActions={headerActions}
         onRefreshReady={(refresh) => {
           tableRefreshRef.current = refresh
         }}
@@ -681,15 +592,15 @@ export function ContactRequestsTableClient({
             setDeleteConfirm(null)
           }
         }}
-        title={deleteConfirm?.type === "hard" ? "Xóa vĩnh viễn?" : "Xóa yêu cầu liên hệ?"}
+        title={deleteConfirm?.type === "hard" ? "Xóa vĩnh viễn?" : "Xóa học sinh?"}
         description={
           deleteConfirm?.type === "hard"
             ? deleteConfirm.bulkIds
-              ? `Bạn có chắc chắn muốn xóa vĩnh viễn ${deleteConfirm.bulkIds.length} yêu cầu liên hệ đã chọn? Hành động này không thể hoàn tác.`
-              : `Bạn có chắc chắn muốn xóa vĩnh viễn yêu cầu liên hệ "${deleteConfirm?.row?.subject}"? Hành động này không thể hoàn tác.`
+              ? `Bạn có chắc chắn muốn xóa vĩnh viễn ${deleteConfirm.bulkIds.length} học sinh đã chọn? Hành động này không thể hoàn tác.`
+              : `Bạn có chắc chắn muốn xóa vĩnh viễn học sinh "${deleteConfirm?.row?.studentCode}"? Hành động này không thể hoàn tác.`
             : deleteConfirm?.bulkIds
-              ? `Bạn có chắc chắn muốn xóa ${deleteConfirm.bulkIds.length} yêu cầu liên hệ đã chọn?`
-              : `Bạn có chắc chắn muốn xóa yêu cầu liên hệ "${deleteConfirm?.row?.subject}"?`
+              ? `Bạn có chắc chắn muốn xóa ${deleteConfirm.bulkIds.length} học sinh đã chọn?`
+              : `Bạn có chắc chắn muốn xóa học sinh "${deleteConfirm?.row?.studentCode}"?`
         }
         confirmLabel={deleteConfirm?.type === "hard" ? "Xóa vĩnh viễn" : "Xóa"}
         cancelLabel="Hủy"

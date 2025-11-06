@@ -151,6 +151,26 @@ export const apiRoutes = {
     bulk: "/admin/contact-requests/bulk",
   },
 
+  // Students
+  students: {
+    list: (params?: { page?: number; limit?: number; search?: string; status?: string }) => {
+      const searchParams = new URLSearchParams()
+      if (params?.page) searchParams.set("page", params.page.toString())
+      if (params?.limit) searchParams.set("limit", params.limit.toString())
+      if (params?.search) searchParams.set("search", params.search)
+      if (params?.status) searchParams.set("status", params.status)
+      const queryString = searchParams.toString()
+      return `/admin/students${queryString ? `?${queryString}` : ""}`
+    },
+    detail: (id: string) => `/admin/students/${id}`,
+    create: "/admin/students",
+    update: (id: string) => `/admin/students/${id}`,
+    delete: (id: string) => `/admin/students/${id}`,
+    restore: (id: string) => `/admin/students/${id}/restore`,
+    hardDelete: (id: string) => `/admin/students/${id}/hard-delete`,
+    bulk: "/admin/students/bulk",
+  },
+
   // Socket
   socket: "/socket",
 } as const
