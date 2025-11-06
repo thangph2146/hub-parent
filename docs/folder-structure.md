@@ -175,11 +175,60 @@ export default async function UserCreatePage() {
 
 ```typescript
 // src/app/api/admin/users/route.ts
+import { NextRequest, NextResponse } from "next/server"
+import { listUsersCached } from "@/features/admin/users/server/cache"
+import { createUser, type AuthContext, type CreateUserInput, ApplicationError } from "@/features/admin/users/server/mutations"
 import { createGetRoute, createPostRoute } from "@/lib/api/api-route-wrapper"
-import { createUser, type AuthContext } from "@/features/admin/users/server/mutations"
+import type { ApiRouteContext } from "@/lib/api/types"
+import { validatePagination, sanitizeSearchQuery } from "@/lib/api/validation"
+
+async function getUsersHandler(req: NextRequest, _context: ApiRouteContext) {
+  const searchParams = req.nextUrl.searchParams
+  
+  const paginationValidation = validatePagination({
+    page: searchParams.get("page"),
+    limit: searchParams.get("limit"),
+  })
+  
+  if (!paginationValidation.valid) {
+    return NextResponse.json({ error: paginationValidation.error }, { status: 400 })
+  }
+  
+  const searchValidation = sanitizeSearchQuery(searchParams.get("search") || "", 200)
+  const statusParam = searchParams.get("status") || "active"
+  const status = statusParam === "deleted" || statusParam === "all" ? statusParam : "active"
+  
+  const columnFilters: Record<string, string> = {}
+  searchParams.forEach((value, key) => {
+    if (key.startsWith("filter[")) {
+      const columnKey = key.replace("filter[", "").replace("]", "")
+      const sanitizedValue = sanitizeSearchQuery(value, 100)
+      if (sanitizedValue.valid && sanitizedValue.value) {
+        columnFilters[columnKey] = sanitizedValue.value
+      }
+    }
+  })
+  
+  const activeFilters = Object.keys(columnFilters).length > 0 ? columnFilters : undefined
+  const filtersKey = activeFilters ? JSON.stringify(activeFilters) : ""
+  const result = await listUsersCached(
+    paginationValidation.page!,
+    paginationValidation.limit!,
+    searchValidation.value || "",
+    filtersKey,
+    status
+  )
+  
+  return NextResponse.json(result)
+}
 
 async function postUsersHandler(req: NextRequest, context: ApiRouteContext) {
-  const body = await req.json()
+  let body: Record<string, unknown>
+  try {
+    body = await req.json()
+  } catch {
+    return NextResponse.json({ error: "Dữ liệu không hợp lệ. Vui lòng kiểm tra lại." }, { status: 400 })
+  }
   
   const ctx: AuthContext = {
     actorId: context.session.user?.id ?? "unknown",
@@ -188,10 +237,14 @@ async function postUsersHandler(req: NextRequest, context: ApiRouteContext) {
   }
   
   try {
-    const user = await createUser(ctx, body as CreateUserInput)
+    const user = await createUser(ctx, body as unknown as CreateUserInput)
     return NextResponse.json({ data: user }, { status: 201 })
   } catch (error) {
-    // Handle errors
+    if (error instanceof ApplicationError) {
+      return NextResponse.json({ error: error.message || "Không thể tạo người dùng" }, { status: error.status || 400 })
+    }
+    console.error("Error creating user:", error)
+    return NextResponse.json({ error: "Đã xảy ra lỗi khi tạo người dùng" }, { status: 500 })
   }
 }
 
@@ -284,19 +337,36 @@ export async function UsersTable({ canDelete, canRestore, canManage, canCreate }
 "use client"
 
 import { useCallback } from "react"
-import { ResourceTableClient } from "@/features/admin/resources/components/resource-table.client"
+import { DataTable, type DataTableLoader } from "@/components/tables/data-table"
+import { apiClient } from "@/lib/api/axios"
+import type { UserRow } from "../types"
 
 export function UsersTableClient({ initialData, canDelete }: UsersTableClientProps) {
-  const loader = useCallback(async (query) => {
-    const response = await apiClient.get(`/api/admin/users?${query}`)
+  // Loader function để fetch data khi user tương tác (pagination, filter, etc.)
+  const loader: DataTableLoader<UserRow> = useCallback(async (query) => {
+    const params = new URLSearchParams({
+      page: String(query.page),
+      limit: String(query.limit),
+    })
+
+    if (query.search.trim()) {
+      params.set("search", query.search.trim())
+    }
+
+    Object.entries(query.filters).forEach(([key, value]) => {
+      if (value) params.set(`filter[${key}]`, value)
+    })
+
+    const response = await apiClient.get(`/api/admin/users?${params}`)
     return response.data
   }, [])
 
   return (
-    <ResourceTableClient
-      initialDataByView={{ active: initialData }}
+    <DataTable
+      columns={columns}
       loader={loader}
-      canDelete={canDelete}
+      initialData={initialData} // Server-side bootstrap data
+      // ... other props
     />
   )
 }
@@ -366,13 +436,48 @@ export const listUsersCached = cache(
 
 ```typescript
 // src/features/admin/users/server/mutations.ts
+import bcrypt from "bcryptjs"
+import type { Permission } from "@/lib/permissions"
 import { PERMISSIONS, canPerformAction } from "@/lib/permissions"
 import { prisma } from "@/lib/database"
+import { mapUserRecord, type ListedUser, type UserWithRoles } from "./queries"
 
 export interface AuthContext {
   actorId: string
   permissions: Permission[]
   roles: Array<{ name: string }>
+}
+
+export class ApplicationError extends Error {
+  status: number
+  constructor(message: string, status = 400) {
+    super(message)
+    this.status = status
+  }
+}
+
+export class NotFoundError extends ApplicationError {
+  constructor(message = "Not found") {
+    super(message, 404)
+  }
+}
+
+export interface CreateUserInput {
+  email: string
+  password: string
+  name?: string | null
+  roleIds?: string[]
+  isActive?: boolean
+}
+
+/**
+ * Ensure user has permission to perform action
+ */
+function ensurePermission(ctx: AuthContext, ...required: Permission[]) {
+  const allowed = required.some((perm) => canPerformAction(ctx.permissions, ctx.roles, perm))
+  if (!allowed) {
+    throw new ApplicationError("Bạn không có quyền thực hiện hành động này", 403)
+  }
 }
 
 export async function createUser(ctx: AuthContext, input: CreateUserInput): Promise<ListedUser> {
@@ -384,17 +489,53 @@ export async function createUser(ctx: AuthContext, input: CreateUserInput): Prom
     throw new ApplicationError("Email và mật khẩu là bắt buộc", 400)
   }
   
+  // Validate email format
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input.email)) {
+    throw new ApplicationError("Email không hợp lệ", 400)
+  }
+  
+  // Check email uniqueness
+  const existingUser = await prisma.user.findUnique({
+    where: { email: input.email.toLowerCase() },
+  })
+  
+  if (existingUser) {
+    throw new ApplicationError("Email đã tồn tại", 400)
+  }
+  
   // Business logic
   const passwordHash = await bcrypt.hash(input.password, 10)
+  
   const user = await prisma.user.create({
-    data: { email: input.email, password: passwordHash, /* ... */ },
-    include: { userRoles: { include: { role: true } } },
+    data: {
+      email: input.email.toLowerCase(),
+      password: passwordHash,
+      name: input.name || null,
+      isActive: input.isActive ?? true,
+    },
+    include: {
+      userRoles: {
+        include: {
+          role: true,
+        },
+      },
+    },
   })
+  
+  // Assign roles if provided
+  if (input.roleIds && input.roleIds.length > 0) {
+    await prisma.userRole.createMany({
+      data: input.roleIds.map((roleId) => ({
+        userId: user.id,
+        roleId,
+      })),
+    })
+  }
   
   // Notifications, logging, etc.
   await notifySuperAdminsOfUserAction("create", ctx.actorId, user)
   
-  return sanitizeUser(user)
+  return mapUserRecord(user)
 }
 ```
 
@@ -402,8 +543,27 @@ export async function createUser(ctx: AuthContext, input: CreateUserInput): Prom
 
 ```typescript
 // src/features/admin/users/server/helpers.ts
-import { serializeDate } from "@/features/admin/resources/server"
 import type { Prisma } from "@prisma/client"
+import type { DataTableResult } from "@/components/tables"
+import { serializeDate } from "@/features/admin/resources/server"
+import type { ListUsersInput, ListedUser, UserDetail, ListUsersResult } from "./queries"
+import type { UserRow } from "../types"
+
+type UserWithRoles = Prisma.UserGetPayload<{
+  include: {
+    userRoles: {
+      include: {
+        role: {
+          select: {
+            id: true
+            name: true
+            displayName: true
+          }
+        }
+      }
+    }
+  }
+}>
 
 /**
  * Map Prisma user record to ListedUser format
@@ -426,20 +586,45 @@ export function mapUserRecord(user: UserWithRoles): ListedUser {
  */
 export function buildWhereClause(params: ListUsersInput): Prisma.UserWhereInput {
   const where: Prisma.UserWhereInput = {}
-  
-  if (params.status === "active") {
+  const status = params.status ?? "active"
+
+  if (status === "active") {
     where.deletedAt = null
-  } else if (params.status === "deleted") {
+  } else if (status === "deleted") {
     where.deletedAt = { not: null }
   }
-  
+
   if (params.search) {
-    where.OR = [
-      { email: { contains: params.search, mode: "insensitive" } },
-      { name: { contains: params.search, mode: "insensitive" } },
-    ]
+    const searchValue = params.search.trim()
+    if (searchValue.length > 0) {
+      where.OR = [
+        { email: { contains: searchValue, mode: "insensitive" } },
+        { name: { contains: searchValue, mode: "insensitive" } },
+      ]
+    }
   }
-  
+
+  if (params.filters) {
+    const activeFilters = Object.entries(params.filters).filter(([, value]) => Boolean(value))
+    for (const [key, rawValue] of activeFilters) {
+      const value = rawValue?.trim()
+      if (!value) continue
+
+      switch (key) {
+        case "email":
+          where.email = { contains: value, mode: "insensitive" }
+          break
+        case "name":
+          where.name = { contains: value, mode: "insensitive" }
+          break
+        case "isActive":
+          where.isActive = value === "true"
+          break
+        // ... more filters
+      }
+    }
+  }
+
   return where
 }
 
@@ -460,6 +645,21 @@ export function serializeUserDetail(user: UserDetail) {
     updatedAt: serializeDate(user.updatedAt)!,
     deletedAt: serializeDate(user.deletedAt),
     emailVerified: serializeDate(user.emailVerified),
+    roles: user.roles,
+  }
+}
+
+/**
+ * Serialize user for table row format
+ */
+export function serializeUserForTable(user: ListedUser): UserRow {
+  return {
+    id: user.id,
+    email: user.email,
+    name: user.name,
+    isActive: user.isActive,
+    createdAt: serializeDate(user.createdAt)!,
+    deletedAt: serializeDate(user.deletedAt),
     roles: user.roles,
   }
 }

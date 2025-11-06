@@ -49,7 +49,7 @@ export default async function EditUserPage({
           { label: "Chỉnh sửa", isActive: true },
         ]}
       />
-      <div className="flex flex-1 flex-col">
+      <div className="flex flex-1 flex-col gap-4 p-4">
         <UserEdit
           userId={id}
           variant="page"

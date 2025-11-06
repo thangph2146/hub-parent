@@ -160,8 +160,8 @@ export function UserDetailClient({ userId, user, backUrl = "/admin/users" }: Use
       type: "custom",
       render: (value) => (
         <div className="flex items-start gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-chart-4/10">
-            <MapPin className="h-5 w-5 text-chart-4" />
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-chart-5/10">
+                    <MapPin className="h-5 w-5 text-chart-4" />
           </div>
           <div className="flex-1 font-medium">{String(value || "—")}</div>
         </div>
@@ -170,7 +170,17 @@ export function UserDetailClient({ userId, user, backUrl = "/admin/users" }: Use
     {
       name: "emailVerified",
       label: "Email đã xác thực",
-      type: "date",
+      type: "custom",
+      render: (value) => (
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
+            <Clock className="h-5 w-5 text-muted-foreground" />
+          </div>
+          <div className="font-medium">
+            {value ? formatDateVi(value as string) : "—"}
+          </div>
+        </div>
+      ),
     },
     {
       name: "createdAt",
@@ -213,7 +223,7 @@ export function UserDetailClient({ userId, user, backUrl = "/admin/users" }: Use
   )
 
   return (
-    <div className="flex flex-1 flex-col gap-6 p-4 md:p-6 lg:p-8">
+    <div className="flex flex-1 flex-col gap-6">
       {/* Back Button */}
       {backUrl && (
         <Button

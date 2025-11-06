@@ -1,0 +1,55 @@
+/**
+ * Server Component: Category Edit
+ * 
+ * Fetches category data, sau đó pass xuống client component
+ * Pattern: Server Component (data fetching) → Client Component (UI/interactions)
+ */
+
+import { getCategoryDetailById } from "../server/cache"
+import { serializeCategoryDetail } from "../server/helpers"
+import { CategoryEditClient } from "./category-edit.client"
+import type { CategoryEditClientProps } from "./category-edit.client"
+
+export interface CategoryEditProps {
+  categoryId: string
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
+  onSuccess?: () => void
+  variant?: "dialog" | "sheet" | "page"
+  backUrl?: string
+  backLabel?: string
+}
+
+export async function CategoryEdit({
+  categoryId,
+  open = true,
+  onOpenChange,
+  onSuccess,
+  variant = "dialog",
+  backUrl,
+  backLabel = "Quay lại",
+}: CategoryEditProps) {
+  const category = await getCategoryDetailById(categoryId)
+
+  if (!category) {
+    return null
+  }
+
+  const categoryForEdit: CategoryEditClientProps["category"] = {
+    ...serializeCategoryDetail(category),
+  }
+
+  return (
+    <CategoryEditClient
+      category={categoryForEdit}
+      open={open}
+      onOpenChange={onOpenChange}
+      onSuccess={onSuccess}
+      variant={variant}
+      backUrl={backUrl}
+      backLabel={backLabel}
+      categoryId={categoryId}
+    />
+  )
+}
+

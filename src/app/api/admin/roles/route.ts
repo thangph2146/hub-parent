@@ -1,45 +1,89 @@
 /**
- * API Route: GET /api/admin/roles - List roles (admin)
+ * API Route: GET /api/admin/roles - List roles
+ * POST /api/admin/roles - Create role
  */
 import { NextRequest, NextResponse } from "next/server"
-import { prisma } from "@/lib/database"
-import { PERMISSIONS } from "@/lib/permissions"
-import { createGetRoute } from "@/lib/api/api-route-wrapper"
+import { listRolesCached } from "@/features/admin/roles/server/cache"
+import {
+  createRole,
+  type AuthContext,
+  type CreateRoleInput,
+  ApplicationError,
+  NotFoundError,
+} from "@/features/admin/roles/server/mutations"
+import { createGetRoute, createPostRoute } from "@/lib/api/api-route-wrapper"
+import type { ApiRouteContext } from "@/lib/api/types"
+import { validatePagination, sanitizeSearchQuery } from "@/lib/api/validation"
 
-async function getRolesHandler(
-  _req: NextRequest,
-  _context: {
-    session: Awaited<ReturnType<typeof import("@/lib/auth").requireAuth>>
-    permissions: import("@/lib/permissions").Permission[]
-    roles: Array<{ name: string }>
-  }
-) {
-  const rolesList = await prisma.role.findMany({
-    where: {
-      isActive: true,
-      deletedAt: null,
-    },
-    select: {
-      id: true,
-      name: true,
-      displayName: true,
-      description: true,
-    },
-    orderBy: {
-      displayName: "asc",
-    },
+async function getRolesHandler(req: NextRequest, _context: ApiRouteContext) {
+  const searchParams = req.nextUrl.searchParams
+
+  const paginationValidation = validatePagination({
+    page: searchParams.get("page"),
+    limit: searchParams.get("limit"),
   })
 
-  return NextResponse.json({ data: rolesList })
+  if (!paginationValidation.valid) {
+    return NextResponse.json({ error: paginationValidation.error }, { status: 400 })
+  }
+
+  const searchValidation = sanitizeSearchQuery(searchParams.get("search") || "", 200)
+  const statusParam = searchParams.get("status") || "active"
+  const status = statusParam === "deleted" || statusParam === "all" ? statusParam : "active"
+
+  const columnFilters: Record<string, string> = {}
+  searchParams.forEach((value, key) => {
+    if (key.startsWith("filter[")) {
+      const columnKey = key.replace("filter[", "").replace("]", "")
+      const sanitizedValue = sanitizeSearchQuery(value, 100)
+      if (sanitizedValue.valid && sanitizedValue.value) {
+        columnFilters[columnKey] = sanitizedValue.value
+      }
+    }
+  })
+
+  const activeFilters = Object.keys(columnFilters).length > 0 ? columnFilters : undefined
+  const filtersKey = activeFilters ? JSON.stringify(activeFilters) : ""
+  const result = await listRolesCached(
+    paginationValidation.page!,
+    paginationValidation.limit!,
+    searchValidation.value || "",
+    filtersKey,
+    status
+  )
+
+  return NextResponse.json(result)
 }
 
-// Allow ROLES_VIEW, USERS_CREATE, or USERS_VIEW permission
-// USERS_VIEW is included because roles are used for filtering in users table
-export const GET = createGetRoute(getRolesHandler, {
-  permissions: [
-    PERMISSIONS.ROLES_VIEW,
-    PERMISSIONS.USERS_CREATE,
-    PERMISSIONS.USERS_VIEW, // Allow users who can view users to also see roles for filtering
-  ],
-})
+async function postRolesHandler(req: NextRequest, context: ApiRouteContext) {
+  let body: Record<string, unknown>
+  try {
+    body = await req.json()
+  } catch {
+    return NextResponse.json({ error: "Dữ liệu không hợp lệ. Vui lòng kiểm tra lại." }, { status: 400 })
+  }
+
+  const ctx: AuthContext = {
+    actorId: context.session.user?.id ?? "unknown",
+    permissions: context.permissions,
+    roles: context.roles,
+  }
+
+  try {
+    const role = await createRole(ctx, body as unknown as CreateRoleInput)
+    return NextResponse.json({ data: role }, { status: 201 })
+  } catch (error) {
+    if (error instanceof ApplicationError) {
+      return NextResponse.json({ error: error.message || "Không thể tạo vai trò" }, { status: error.status || 400 })
+    }
+    if (error instanceof NotFoundError) {
+      return NextResponse.json({ error: error.message || "Không tìm thấy" }, { status: 404 })
+    }
+    console.error("Error creating role:", error)
+    return NextResponse.json({ error: "Đã xảy ra lỗi khi tạo vai trò" }, { status: 500 })
+  }
+}
+
+export const GET = createGetRoute(getRolesHandler)
+export const POST = createPostRoute(postRolesHandler)
 

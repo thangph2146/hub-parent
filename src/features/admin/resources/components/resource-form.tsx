@@ -47,6 +47,8 @@ export interface ResourceFormField<T = unknown> {
   disabled?: boolean
   defaultValue?: unknown
   options?: Array<{ label: string; value: string | number }>
+  optionGroups?: Array<{ label: string; options: Array<{ label: string; value: string | number }> }>
+  icon?: React.ReactNode
   render?: (field: ResourceFormField<T>, value: unknown, onChange: (value: unknown) => void) => React.ReactNode
   validate?: (value: unknown) => { valid: boolean; error?: string }
 }
@@ -225,6 +227,13 @@ export function ResourceForm<T extends Record<string, unknown>>({
                 }}
               >
                 <Field>
+                  {field.icon && (
+                    <FieldLabel htmlFor={fieldName}>
+                      {field.icon}
+                      {field.label}
+                      {field.required && <span className="text-destructive">*</span>}
+                    </FieldLabel>
+                  )}
                   {renderFieldInput({
                     field,
                     value,
@@ -253,6 +262,7 @@ export function ResourceForm<T extends Record<string, unknown>>({
             >
               <Field orientation="responsive">
                 <FieldLabel htmlFor={fieldName}>
+                  {field.icon}
                   {field.label}
                   {field.required && <span className="text-destructive">*</span>}
                 </FieldLabel>
@@ -371,7 +381,7 @@ export function ResourceForm<T extends Record<string, unknown>>({
   )
 
   return (
-    <div className={cn("flex flex-1 flex-col gap-6 p-4 md:p-6 lg:p-8 max-w-4xl mx-auto w-full", className)}>
+    <div className={cn("flex flex-1 flex-col gap-6 p-4 md:p-6 lg:p-8 mx-auto w-full max-w-[100%]", className)}>
       {/* Header */}
       {(title || backUrl) && (
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-border/50">

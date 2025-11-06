@@ -73,8 +73,42 @@ export const apiRoutes = {
 
   // Roles
   roles: {
-    list: "/roles",
-    adminList: "/admin/roles",
+    list: (params?: { page?: number; limit?: number; search?: string; status?: string }) => {
+      const searchParams = new URLSearchParams()
+      if (params?.page) searchParams.set("page", params.page.toString())
+      if (params?.limit) searchParams.set("limit", params.limit.toString())
+      if (params?.search) searchParams.set("search", params.search)
+      if (params?.status) searchParams.set("status", params.status)
+      const queryString = searchParams.toString()
+      return `/admin/roles${queryString ? `?${queryString}` : ""}`
+    },
+    detail: (id: string) => `/admin/roles/${id}`,
+    create: "/admin/roles",
+    update: (id: string) => `/admin/roles/${id}`,
+    delete: (id: string) => `/admin/roles/${id}`,
+    restore: (id: string) => `/admin/roles/${id}/restore`,
+    hardDelete: (id: string) => `/admin/roles/${id}/hard-delete`,
+    bulk: "/admin/roles/bulk",
+  },
+
+  // Categories
+  categories: {
+    list: (params?: { page?: number; limit?: number; search?: string; status?: string }) => {
+      const searchParams = new URLSearchParams()
+      if (params?.page) searchParams.set("page", params.page.toString())
+      if (params?.limit) searchParams.set("limit", params.limit.toString())
+      if (params?.search) searchParams.set("search", params.search)
+      if (params?.status) searchParams.set("status", params.status)
+      const queryString = searchParams.toString()
+      return `/admin/categories${queryString ? `?${queryString}` : ""}`
+    },
+    detail: (id: string) => `/admin/categories/${id}`,
+    create: "/admin/categories",
+    update: (id: string) => `/admin/categories/${id}`,
+    delete: (id: string) => `/admin/categories/${id}`,
+    restore: (id: string) => `/admin/categories/${id}/restore`,
+    hardDelete: (id: string) => `/admin/categories/${id}/hard-delete`,
+    bulk: "/admin/categories/bulk",
   },
 
   // Socket

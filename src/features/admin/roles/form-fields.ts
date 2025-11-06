@@ -1,0 +1,151 @@
+/**
+ * Shared form field definitions cho role forms
+ */
+
+import type { ResourceFormField } from "@/features/admin/resources/components"
+import { validateRoleName, validateDisplayName, validatePermissions } from "./utils"
+import { PERMISSIONS } from "@/lib/permissions"
+import React from "react"
+import { Shield, FileText, ToggleLeft, AlignLeft } from "lucide-react"
+
+export interface RoleFormData {
+  name: string
+  displayName: string
+  description?: string | null
+  permissions?: string[]
+  isActive?: boolean
+  [key: string]: unknown
+}
+
+/**
+ * Get all available permissions grouped by resource
+ */
+function getAllPermissionsOptionGroups(): Array<{ label: string; options: Array<{ label: string; value: string }> }> {
+  
+  // Map resource names to Vietnamese labels
+  const resourceLabels: Record<string, string> = {
+    dashboard: "Dashboard",
+    users: "Người dùng",
+    posts: "Bài viết",
+    categories: "Danh mục",
+    tags: "Thẻ",
+    comments: "Bình luận",
+    roles: "Vai trò",
+    messages: "Tin nhắn",
+    notifications: "Thông báo",
+    contact_requests: "Liên hệ",
+    students: "Học sinh",
+    settings: "Cài đặt",
+  }
+
+  // Map action names to Vietnamese labels
+  const actionLabels: Record<string, string> = {
+    view: "Xem",
+    create: "Tạo",
+    update: "Cập nhật",
+    delete: "Xóa",
+    publish: "Xuất bản",
+    approve: "Duyệt",
+    assign: "Gán",
+    manage: "Quản lý",
+  }
+
+  // Group permissions by resource
+  const grouped: Record<string, Array<{ label: string; value: string }>> = {}
+
+  Object.entries(PERMISSIONS).forEach(([key, value]) => {
+    const [resource, action] = String(value).split(":")
+    if (!grouped[resource]) {
+      grouped[resource] = []
+    }
+    
+    // Format label: "Action - Resource" (e.g., "Xem - Người dùng")
+    const resourceLabel = resourceLabels[resource] || resource
+    const actionLabel = actionLabels[action] || action
+    const label = `${actionLabel} - ${resourceLabel}`
+    
+    grouped[resource].push({
+      label,
+      value: String(value),
+    })
+  })
+
+  // Sort options within each group and sort groups
+  const sortedGroups = Object.entries(grouped)
+    .map(([resource, options]) => ({
+      label: resourceLabels[resource] || resource,
+      options: options.sort((a, b) => a.label.localeCompare(b.label)),
+    }))
+    .sort((a, b) => a.label.localeCompare(b.label))
+
+  return sortedGroups
+}
+
+/**
+ * Get all available permissions as flat options (for backward compatibility)
+ */
+function getAllPermissionsOptions(): Array<{ label: string; value: string }> {
+  return getAllPermissionsOptionGroups().flatMap((group) => group.options)
+}
+
+/**
+ * Base fields cho role form (name, displayName, description, permissions, isActive)
+ */
+export function getBaseRoleFields(
+  permissionsOptions?: Array<{ label: string; value: string }>,
+  useGroups = true
+): ResourceFormField<RoleFormData>[] {
+  // Use grouped permissions by default, fallback to flat if needed
+  const permissionsOptionGroups = useGroups ? getAllPermissionsOptionGroups() : undefined
+  const flatPermissionsOptions = permissionsOptions || getAllPermissionsOptions()
+
+  return [
+    {
+      name: "name",
+      label: "Tên vai trò",
+      type: "text",
+      placeholder: "vd: editor, author",
+      required: true,
+      description: "Tên vai trò (chỉ chữ thường, số, dấu gạch dưới và dấu gạch ngang)",
+      validate: validateRoleName,
+      icon: React.createElement(Shield, { className: "h-4 w-4" }),
+    },
+    {
+      name: "displayName",
+      label: "Tên hiển thị",
+      type: "text",
+      placeholder: "vd: Editor, Author",
+      required: true,
+      validate: validateDisplayName,
+      icon: React.createElement(FileText, { className: "h-4 w-4" }),
+    },
+    {
+      name: "description",
+      label: "Mô tả",
+      type: "textarea",
+      placeholder: "Nhập mô tả về vai trò",
+      icon: React.createElement(AlignLeft, { className: "h-4 w-4" }),
+    },
+    {
+      name: "permissions",
+      label: "Quyền",
+      type: "multiple-select",
+      required: false,
+      placeholder: "Chọn quyền",
+      ...(permissionsOptionGroups
+        ? { optionGroups: permissionsOptionGroups }
+        : { options: flatPermissionsOptions }),
+      description: "Chọn các quyền cho vai trò này",
+      icon: React.createElement(Shield, { className: "h-4 w-4" }),
+    },
+    {
+      name: "isActive",
+      label: "Trạng thái",
+      description: "Bật/tắt để kích hoạt hoặc vô hiệu hóa vai trò",
+      type: "switch",
+      defaultValue: true,
+      icon: React.createElement(ToggleLeft, { className: "h-4 w-4" }),
+    },
+  ]
+}
+

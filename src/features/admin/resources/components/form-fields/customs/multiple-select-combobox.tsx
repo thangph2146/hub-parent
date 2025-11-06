@@ -43,14 +43,6 @@ export function MultipleSelectCombobox<T>({
 }: MultipleSelectComboboxProps<T>) {
   const [selectOpen, setSelectOpen] = useState(false)
 
-  if (!field.options || field.options.length === 0) {
-    return (
-      <div className="flex h-10 w-full items-center rounded-md border border-input bg-background px-3 py-2 text-sm text-muted-foreground">
-        Không có tùy chọn
-      </div>
-    )
-  }
-
   // Normalize fieldValue to array
   const selectedValues = Array.isArray(fieldValue) 
     ? fieldValue.map(v => String(v))
@@ -58,7 +50,20 @@ export function MultipleSelectCombobox<T>({
       ? [String(fieldValue)]
       : []
 
-  const selectedOptions = field.options.filter((opt) => 
+  // Get all options from groups or flat options
+  const allOptions = field.optionGroups
+    ? field.optionGroups.flatMap((group) => group.options)
+    : field.options || []
+
+  if (allOptions.length === 0) {
+    return (
+      <div className="flex h-10 w-full items-center rounded-md border border-input bg-background px-3 py-2 text-sm text-muted-foreground">
+        Không có tùy chọn
+      </div>
+    )
+  }
+
+  const selectedOptions = allOptions.filter((opt) => 
     selectedValues.includes(String(opt.value))
   )
 
@@ -141,26 +146,53 @@ export function MultipleSelectCombobox<T>({
           <CommandInput placeholder="Tìm kiếm..." className="h-9" />
           <CommandList>
             <CommandEmpty>Không tìm thấy.</CommandEmpty>
-            <CommandGroup>
-              {field.options.map((option) => {
-                const isSelected = selectedValues.includes(String(option.value))
-                return (
-                  <CommandItem
-                    key={option.value}
-                    value={String(option.value)}
-                    onSelect={() => handleToggle(option.value)}
-                  >
-                    <Check
-                      className={cn(
-                        "mr-2 h-5 w-5",
-                        isSelected ? "opacity-100" : "opacity-0"
-                      )}
-                    />
-                    {option.label}
-                  </CommandItem>
-                )
-              })}
-            </CommandGroup>
+            {field.optionGroups ? (
+              // Render grouped options
+              field.optionGroups.map((group) => (
+                <CommandGroup key={group.label} heading={group.label}>
+                  {group.options.map((option) => {
+                    const isSelected = selectedValues.includes(String(option.value))
+                    return (
+                      <CommandItem
+                        key={option.value}
+                        value={String(option.value)}
+                        onSelect={() => handleToggle(option.value)}
+                      >
+                        <Check
+                          className={cn(
+                            "mr-2 h-5 w-5",
+                            isSelected ? "opacity-100" : "opacity-0"
+                          )}
+                        />
+                        {option.label}
+                      </CommandItem>
+                    )
+                  })}
+                </CommandGroup>
+              ))
+            ) : (
+              // Render flat options
+              <CommandGroup>
+                {allOptions.map((option) => {
+                  const isSelected = selectedValues.includes(String(option.value))
+                  return (
+                    <CommandItem
+                      key={option.value}
+                      value={String(option.value)}
+                      onSelect={() => handleToggle(option.value)}
+                    >
+                      <Check
+                        className={cn(
+                          "mr-2 h-5 w-5",
+                          isSelected ? "opacity-100" : "opacity-0"
+                        )}
+                      />
+                      {option.label}
+                    </CommandItem>
+                  )
+                })}
+              </CommandGroup>
+            )}
             {selectedValues.length > 0 && (
               <CommandGroup>
                 <CommandItem
