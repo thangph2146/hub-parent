@@ -27,6 +27,8 @@ import {
   BookOpen,
   MessageCircle,
   LucideIcon,
+  LogIn,
+  UserPlus,
 } from "lucide-react"
 
 type LinkItem = {
@@ -82,7 +84,7 @@ export function PublicHeader() {
                     Tính năng
                   </NavigationMenuTrigger>
                   <NavigationMenuContent className="bg-background p-1 pr-1.5">
-                    <ul className="bg-popover grid w-lg grid-cols-2 gap-2 rounded-md border p-2 shadow">
+                    <ul className="bg-popover grid w-lg grid-cols-2 gap-2">
                       {featureLinks.map((item, i) => (
                         <li key={i}>
                           <ListItem {...item} />
@@ -96,7 +98,7 @@ export function PublicHeader() {
                     Hỗ trợ
                   </NavigationMenuTrigger>
                   <NavigationMenuContent className="bg-background p-1 pr-1.5 pb-1.5">
-                    <ul className="bg-popover grid w-lg grid-cols-2 gap-2 rounded-md border p-2 shadow">
+                    <ul className="bg-popover grid w-lg grid-cols-2 gap-2">
                       {supportLinks.map((item, i) => (
                         <li key={i}>
                           <ListItem {...item} />
@@ -122,13 +124,15 @@ export function PublicHeader() {
           <div className="flex items-center gap-2">
             <ModeToggle />
             {isAuthenticated ? (
-              <NavUser variant="header" />
+              <div className="hidden md:flex">
+                <NavUser />
+              </div>
             ) : (
               <>
-                <Button variant="outline" asChild>
+                <Button variant="outline" asChild className="hidden md:flex">
                   <Link href="/auth/sign-in">Đăng nhập</Link>
                 </Button>
-                <Button asChild>
+                <Button asChild className="hidden md:flex">
                   <Link href="/auth/sign-up">Đăng ký</Link>
                 </Button>
               </>
@@ -154,46 +158,100 @@ export function PublicHeader() {
         
       </nav>
       {mounted && (
-        <MobileMenu open={open} className="flex flex-col justify-between gap-2 overflow-y-auto">
-          <div className="flex w-full flex-col gap-y-2">
-            <span className="text-sm font-medium">Tính năng</span>
+        <MobileMenu open={open} onClose={() => setOpen(false)}>
+          <div className="flex flex-col h-full">
+            {/* User Section - Top */}
+            {isAuthenticated ? (
+              <div className="border-b pb-4 mb-4">
+                <div className="w-full">
+                  <NavUser className="w-full" />
+                </div>
+              </div>
+            ) : (
+              <div className="border-b pb-4 mb-4 space-y-2">
+                <Button
+                  variant="default"
+                  className="w-full justify-start gap-3 h-auto py-3"
+                  asChild
+                  onClick={() => setOpen(false)}
+                >
+                  <Link href="/auth/sign-in">
+                    <div className="bg-primary/10 flex aspect-square size-10 items-center justify-center rounded-md">
+                      <LogIn className="text-primary size-5 text-primary-foreground" />
+                    </div>
+                    <div className="flex flex-col items-start">
+                      <span className="font-semibold">Đăng nhập</span>
+                      <span className="text-xs text-muted-foreground">Đăng nhập vào tài khoản của bạn</span>
+                    </div>
+                  </Link>
+                </Button>
+                <Button
+                  variant="outline"
+                  className="w-full justify-start gap-3 h-auto py-3"
+                  asChild
+                  onClick={() => setOpen(false)}
+                >
+                  <Link href="/auth/sign-up">
+                    <div className="bg-muted flex aspect-square size-10 items-center justify-center rounded-md">
+                      <UserPlus className="text-foreground size-5 text-foreground-primary" />
+                    </div>
+                    <div className="flex flex-col items-start">
+                      <span className="font-semibold">Đăng ký</span>
+                      <span className="text-xs text-muted-foreground">Tạo tài khoản mới</span>
+                    </div>
+                  </Link>
+                </Button>
+              </div>
+            )}
+
+            {/* Navigation Links - Scrollable */}
+            <div className="flex-1 overflow-y-auto">
+              <div className="flex w-full flex-col gap-y-1">
+                <span className="px-2 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Tính năng
+                </span>
             {featureLinks.map((link) => (
               <Link
                 key={link.title}
                 href={link.href}
-                className="w-full flex flex-row gap-x-2 hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground rounded-sm p-2"
+                    className="w-full flex flex-row gap-x-3 hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground rounded-lg p-3 transition-colors"
+                    onClick={() => setOpen(false)}
               >
-                <div className="bg-background/40 flex aspect-square size-12 items-center justify-center rounded-md border shadow-sm">
+                    <div className="bg-background/40 flex aspect-square size-11 items-center justify-center rounded-lg border shadow-sm shrink-0">
                   <link.icon className="text-foreground size-5" />
                 </div>
-                <div className="flex flex-col items-start justify-center">
-                  <span className="font-medium">{link.title}</span>
+                    <div className="flex flex-col items-start justify-center min-w-0 flex-1">
+                      <span className="font-medium text-sm">{link.title}</span>
                   {link.description && (
-                    <span className="text-muted-foreground text-xs">{link.description}</span>
+                        <span className="text-muted-foreground text-xs leading-relaxed">{link.description}</span>
                   )}
                 </div>
               </Link>
             ))}
-            <span className="mt-4 text-sm font-medium">Hỗ trợ</span>
+                <span className="px-2 py-2 mt-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Hỗ trợ
+                </span>
             {supportLinks.map((link) => (
               <Link
                 key={link.title}
                 href={link.href}
-                className="w-full flex flex-row gap-x-2 hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground rounded-sm p-2"
+                    className="w-full flex flex-row gap-x-3 hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground rounded-lg p-3 transition-colors"
+                    onClick={() => setOpen(false)}
               >
-                <div className="bg-background/40 flex aspect-square size-12 items-center justify-center rounded-md border shadow-sm">
+                    <div className="bg-background/40 flex aspect-square size-11 items-center justify-center rounded-lg border shadow-sm shrink-0">
                   <link.icon className="text-foreground size-5" />
                 </div>
-                <div className="flex flex-col items-start justify-center">
-                  <span className="font-medium">{link.title}</span>
+                    <div className="flex flex-col items-start justify-center min-w-0 flex-1">
+                      <span className="font-medium text-sm">{link.title}</span>
                   {link.description && (
-                    <span className="text-muted-foreground text-xs">{link.description}</span>
+                        <span className="text-muted-foreground text-xs leading-relaxed">{link.description}</span>
                   )}
                 </div>
               </Link>
             ))}
           </div>
-         
+            </div>
+          </div>
         </MobileMenu>
       )}
     </header>
@@ -202,9 +260,10 @@ export function PublicHeader() {
 
 type MobileMenuProps = React.ComponentProps<"div"> & {
   open: boolean
+  onClose?: () => void
 }
 
-function MobileMenu({ open, children, className, ...props }: MobileMenuProps) {
+function MobileMenu({ open, children, className, onClose, ...props }: MobileMenuProps) {
   if (!open || typeof window === "undefined") return null
 
   return createPortal(
@@ -214,6 +273,12 @@ function MobileMenu({ open, children, className, ...props }: MobileMenuProps) {
         "bg-background/95 supports-[backdrop-filter]:bg-background/50 backdrop-blur-lg",
         "fixed top-14 right-0 bottom-0 left-0 z-40 flex flex-col overflow-hidden border-y md:hidden",
       )}
+      onClick={(e) => {
+        // Close menu when clicking on backdrop
+        if (e.target === e.currentTarget && onClose) {
+          onClose()
+        }
+      }}
     >
       <div
         data-slot={open ? "open" : "closed"}

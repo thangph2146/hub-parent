@@ -47,6 +47,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { getMenuData } from "@/lib/config/menu-data"
 import type { Permission } from "@/lib/permissions"
 import { canPerformAnyAction } from "@/lib/permissions"
+import { cn } from "@/lib/utils"
 
 const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   LayoutDashboard,
@@ -63,16 +64,13 @@ const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   Settings2,
 }
 
-type NavUserProps = {
-  variant?: "sidebar" | "header"
-}
-
-export function NavUser({ variant = "sidebar" }: NavUserProps) {
+export function NavUser({ className }: { className?: string }) {
   const { data: session, status } = useSession()
   
-  // Only use sidebar context when variant is "sidebar"
+  // Auto-detect sidebar context
   const sidebar = useSidebarOptional()
-  const isMobile = variant === "sidebar" ? sidebar?.isMobile ?? false : false
+  const isInSidebar = sidebar !== null
+  const isMobile = sidebar?.isMobile ?? false
   
   const user = session?.user
   const primaryRole = session?.roles?.[0]
@@ -98,7 +96,7 @@ export function NavUser({ variant = "sidebar" }: NavUserProps) {
   
   // Loading state
   if (status === "loading" || !user) {
-    if (variant === "header") {
+    if (!isInSidebar) {
       return (
         <div className="flex items-center gap-2">
           <Avatar className="h-8 w-8">
@@ -126,8 +124,8 @@ export function NavUser({ variant = "sidebar" }: NavUserProps) {
 
   const dropdownMenuContent = (
     <DropdownMenuContent
-      className={variant === "header" ? "w-56" : "w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"}
-      side={variant === "header" ? "bottom" : isMobile ? "bottom" : "right"}
+      className={"w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"}
+      side={!isInSidebar ? "bottom" : isMobile ? "bottom" : "right"}
       align="end"
       sideOffset={4}
     >
@@ -153,11 +151,11 @@ export function NavUser({ variant = "sidebar" }: NavUserProps) {
       <DropdownMenuSeparator />
       <DropdownMenuGroup>
         <DropdownMenuItem>
-          <BadgeCheck className={variant === "header" ? "mr-2 h-5 w-5" : ""} />
+          <BadgeCheck className={!isInSidebar ? "mr-2 h-5 w-5" : ""} />
           <span>Tài khoản</span>
         </DropdownMenuItem>
         <DropdownMenuItem>
-          <CreditCard className={variant === "header" ? "mr-2 h-5 w-5" : ""} />
+          <CreditCard className={!isInSidebar ? "mr-2 h-5 w-5" : ""} />
           <span>Thanh toán</span>
         </DropdownMenuItem>
       </DropdownMenuGroup>
@@ -172,7 +170,7 @@ export function NavUser({ variant = "sidebar" }: NavUserProps) {
                 return (
                   <DropdownMenuItem key={item.url} asChild>
                     <Link href={item.url} className="flex items-center">
-                      <Icon className={variant === "header" ? "mr-2 h-5 w-5" : ""} />
+                      <Icon className={!isInSidebar ? "mr-2 h-5 w-5" : ""} />
                       <span>{item.title}</span>
                     </Link>
                   </DropdownMenuItem>
@@ -190,23 +188,23 @@ export function NavUser({ variant = "sidebar" }: NavUserProps) {
           })
         }}
       >
-        <LogOut className={variant === "header" ? "mr-2 h-5 w-5" : ""} />
+        <LogOut className={!isInSidebar ? "mr-2 h-5 w-5" : ""} />
         <span>Đăng xuất</span>
       </DropdownMenuItem>
     </DropdownMenuContent>
   )
 
-  // Header variant
-  if (variant === "header") {
+  // Auto-detect: render header style if not in sidebar, otherwise render sidebar style
+  if (!isInSidebar) {
     return (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="flex items-center gap-2 px-2">
+          <Button variant="ghost" className={cn("flex items-center gap-2 px-2", className)}>
             <Avatar className="h-8 w-8">
               <AvatarImage src={user.image || "/avatars/default.jpg"} alt={user.name || ""} />
               <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
             </Avatar>
-            <span className="hidden md:inline-block text-sm font-medium truncate max-w-[120px]">
+            <span className="inline-block text-sm font-medium truncate max-w-[120px]">
               {user.name || user.email}
             </span>
             <ChevronsUpDown className="h-5 w-5 opacity-50" />
@@ -217,7 +215,7 @@ export function NavUser({ variant = "sidebar" }: NavUserProps) {
     )
   }
 
-  // Sidebar variant (default)
+  // Sidebar style (when in sidebar context)
   return (
     <SidebarMenu>
       <SidebarMenuItem>
