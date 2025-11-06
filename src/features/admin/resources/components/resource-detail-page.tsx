@@ -36,24 +36,28 @@ export interface ResourceDetailPageProps<T extends Record<string, unknown>> {
   // Data
   data: T | null
   isLoading?: boolean
-  
-  // Fields config
-  fields: ResourceDetailField<T>[]
-  
+
+  // Fields config - có thể là mảng fields hoặc object với title, description, fields
+  fields: ResourceDetailField<T>[] | {
+    title?: string
+    description?: string
+    fields: ResourceDetailField<T>[]
+  }
+
   // Edit form config (optional)
   editFields?: ResourceFormField<T>[]
   onEditSubmit?: (data: Partial<T>) => Promise<{ success: boolean; error?: string }>
-  
+
   // UI
   title?: string
   description?: string
   backUrl?: string
   backLabel?: string
   editLabel?: string
-  
+
   // Actions
   actions?: React.ReactNode
-  
+
   // Custom sections
   sections?: Array<{
     title: string
@@ -79,6 +83,11 @@ export function ResourceDetailPage<T extends Record<string, unknown>>({
   const router = useRouter()
   const [isEditOpen, setIsEditOpen] = useState(false)
 
+  // Normalize fields - có thể là mảng hoặc object
+  const defaultSection = Array.isArray(fields)
+    ? { fields, title: "Thông tin chi tiết", description: undefined }
+    : { fields: fields.fields, title: fields.title || "Thông tin chi tiết", description: fields.description }
+
   const formatValue = (field: ResourceDetailField<T>, value: unknown): React.ReactNode => {
     if (field.render) {
       return field.render(value, data!)
@@ -95,13 +104,13 @@ export function ResourceDetailPage<T extends Record<string, unknown>>({
     switch (field.type) {
       case "boolean":
         return (
-          <span className={cn("inline-flex items-center rounded-full px-2 py-1 text-xs font-medium", 
+          <span className={cn("inline-flex items-center rounded-full px-2 py-1 text-xs font-medium",
             value ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400" : "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300"
           )}>
             {value ? "Có" : "Không"}
           </span>
         )
-      
+
       case "date":
         try {
           const date = new Date(value as string | number)
@@ -115,10 +124,10 @@ export function ResourceDetailPage<T extends Record<string, unknown>>({
         } catch {
           return String(value)
         }
-      
+
       case "number":
         return typeof value === "number" ? value.toLocaleString("vi-VN") : String(value)
-      
+
       default:
         // Wrap long text content
         const stringValue = String(value)
@@ -132,14 +141,14 @@ export function ResourceDetailPage<T extends Record<string, unknown>>({
 
   const renderFields = (fieldsToRender: ResourceDetailField<T>[]) => {
     if (fieldsToRender.length === 0) return null
-    
+
     return (
       <FieldGroup className="gap-0">
         {fieldsToRender.map((field) => {
           const value = data?.[field.name as keyof T]
           return (
-            <Field 
-              key={field.name as string} 
+            <Field
+              key={field.name as string}
               orientation="vertical"
               className="py-2.5 border-b border-border/50 last:border-0"
             >
@@ -217,7 +226,7 @@ export function ResourceDetailPage<T extends Record<string, unknown>>({
   }
 
   return (
-    <div className="flex flex-1 flex-col gap-6 p-4 md:p-6 lg:p-8 max-w-7xl mx-auto w-full">
+    <div className="flex flex-1 flex-col gap-6">
       {/* Header */}
       {(title || backUrl || (editFields && onEditSubmit) || actions) && (
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-border/50">
@@ -258,17 +267,29 @@ export function ResourceDetailPage<T extends Record<string, unknown>>({
 
       {/* Main Content */}
       <div className="grid gap-6 lg:grid-cols-2">
-        {/* Default Section - Full width if exists */}
-        {fields.length > 0 && (
+        {/* Default Section - Auto split into 2 columns based on field count */}
+        {defaultSection.fields.length > 0 && (
           <Card className="lg:col-span-2">
             <CardHeader className="pb-3">
-              <CardTitle className="text-base font-semibold">Thông tin chi tiết</CardTitle>
-              {description && (
-                <CardDescription className="mt-0.5 text-xs">{description}</CardDescription>
+              <CardTitle className="text-base font-semibold">{defaultSection.title}</CardTitle>
+              {(defaultSection.description || description) && (
+                <CardDescription className="mt-0.5 text-xs">{defaultSection.description || description}</CardDescription>
               )}
             </CardHeader>
             <CardContent className="pt-0 pb-4">
-              {renderFields(fields)}
+              {(() => {
+                // Tự động chia fields thành 2 cột
+                const midPoint = Math.ceil(defaultSection.fields.length / 2)
+                const leftFields = defaultSection.fields.slice(0, midPoint)
+                const rightFields = defaultSection.fields.slice(midPoint)
+
+                return (
+                  <div className="grid gap-6 lg:grid-cols-2">
+                    <div>{renderFields(leftFields)}</div>
+                    {rightFields.length > 0 && <div>{renderFields(rightFields)}</div>}
+                  </div>
+                )
+              })()}
             </CardContent>
           </Card>
         )}

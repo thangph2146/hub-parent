@@ -1,7 +1,9 @@
 /**
  * Server queries for notifications
+ * Sử dụng helpers từ resources/server cho pagination và serialization
  */
-import { cache } from "react"
+import { cache } from "@/features/admin/resources/server"
+import { validatePagination, buildPagination, type ResourcePagination } from "@/features/admin/resources/server"
 import type { Prisma } from "@prisma/client"
 import { NotificationKind } from "@prisma/client"
 import { prisma } from "@/lib/database"
@@ -37,12 +39,7 @@ export interface ListedNotification {
 
 export interface ListNotificationsResult {
   data: ListedNotification[]
-  pagination: {
-    page: number
-    limit: number
-    total: number
-    totalPages: number
-  }
+  pagination: ResourcePagination
 }
 
 function isValidKind(value: string): value is NotificationKind {
@@ -102,8 +99,9 @@ export const listNotificationsCached = cache(async (
   kind?: string,
   isRead?: boolean
 ): Promise<ListNotificationsResult> => {
+  const { page: validatedPage, limit: validatedLimit } = validatePagination(page, limit, 100)
   const filters = filtersKey ? (JSON.parse(filtersKey) as Record<string, string>) : {}
-  const where = buildWhereClause({ page, limit, search, filters, userId, kind, isRead })
+  const where = buildWhereClause({ page, limit: validatedLimit, search, filters, userId, kind, isRead })
 
   const [notifications, total] = await Promise.all([
     prisma.notification.findMany({
@@ -118,8 +116,8 @@ export const listNotificationsCached = cache(async (
         },
       },
       orderBy: { createdAt: "desc" },
-      take: limit,
-      skip: (page - 1) * limit,
+      take: validatedLimit,
+      skip: (validatedPage - 1) * validatedLimit,
     }),
     prisma.notification.count({ where }),
   ])
@@ -139,12 +137,7 @@ export const listNotificationsCached = cache(async (
       createdAt: n.createdAt,
       readAt: n.readAt,
     })),
-    pagination: {
-      page,
-      limit,
-      total,
-      totalPages: Math.ceil(total / limit),
-    },
+    pagination: buildPagination(validatedPage, validatedLimit, total),
   }
 })
 

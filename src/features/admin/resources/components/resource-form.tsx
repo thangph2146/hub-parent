@@ -9,17 +9,13 @@
 
 import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
-import { Loader2, Save, ArrowLeft, X, Check, ChevronsUpDown } from "lucide-react"
+import { Loader2, Save, ArrowLeft, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   Field,
-  FieldContent,
   FieldDescription,
-  FieldError,
   FieldLabel,
 } from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   Dialog,
@@ -37,28 +33,15 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet"
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Switch } from "@/components/ui/switch"
 import { cn } from "@/lib/utils"
+import { renderFieldInput } from "./form-fields"
 
 export interface ResourceFormField<T = unknown> {
   name: keyof T | string
   label: string
   description?: string
-  type?: "text" | "email" | "password" | "number" | "textarea" | "select" | "checkbox" | "switch" | "date"
+  type?: "text" | "email" | "password" | "number" | "textarea" | "select" | "multiple-select" | "checkbox" | "switch" | "date"
   placeholder?: string
   required?: boolean
   disabled?: boolean
@@ -210,245 +193,6 @@ export function ResourceForm<T extends Record<string, unknown>>({
     }
   }
 
-  // Select Combobox Component
-  const SelectCombobox = ({ 
-    field, 
-    fieldValue, 
-    error 
-  }: { 
-    field: ResourceFormField<T>
-    fieldValue: unknown
-    error?: string
-  }) => {
-    const [selectOpen, setSelectOpen] = useState(false)
-    
-    if (!field.options || field.options.length === 0) {
-      return (
-        <div className="flex h-10 w-full items-center rounded-md border border-input bg-background px-3 py-2 text-sm text-muted-foreground">
-          Không có tùy chọn
-        </div>
-      )
-    }
-
-    const selectedOption = field.options.find((opt) => String(opt.value) === String(fieldValue))
-
-    return (
-      <Popover open={selectOpen} onOpenChange={setSelectOpen}>
-        <PopoverTrigger asChild>
-          <Button
-            variant="outline"
-            role="combobox"
-            aria-expanded={selectOpen}
-            className={cn(
-              "w-full justify-between h-10",
-              !fieldValue && "text-muted-foreground",
-              error && "border-destructive"
-            )}
-            disabled={field.disabled || isPending}
-          >
-            <span className="truncate">
-              {selectedOption ? selectedOption.label : field.placeholder || "-- Chọn --"}
-            </span>
-            <ChevronsUpDown className="ml-2 h-5 w-5 shrink-0 opacity-50" />
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
-          <Command>
-            <CommandInput placeholder="Tìm kiếm..." className="h-9" />
-            <CommandList>
-              <CommandEmpty>Không tìm thấy.</CommandEmpty>
-              <CommandGroup>
-                {!field.required && (
-                  <CommandItem
-                    value=""
-                    onSelect={() => {
-                      handleFieldChange(field.name as string, "")
-                      setSelectOpen(false)
-                    }}
-                  >
-                    <Check
-                      className={cn(
-                        "mr-2 h-5 w-5",
-                        !fieldValue || fieldValue === "" ? "opacity-100" : "opacity-0"
-                      )}
-                    />
-                    {field.placeholder || "-- Chọn --"}
-                  </CommandItem>
-                )}
-                {field.options.map((option) => (
-                  <CommandItem
-                    key={option.value}
-                    value={String(option.value)}
-                    onSelect={() => {
-                      handleFieldChange(field.name as string, option.value)
-                      setSelectOpen(false)
-                    }}
-                  >
-                    <Check
-                      className={cn(
-                        "mr-2 h-5 w-5",
-                        String(fieldValue) === String(option.value) ? "opacity-100" : "opacity-0"
-                      )}
-                    />
-                    {option.label}
-                  </CommandItem>
-                ))}
-              </CommandGroup>
-            </CommandList>
-          </Command>
-        </PopoverContent>
-      </Popover>
-    )
-  }
-
-  const renderFieldInput = (field: ResourceFormField<T>) => {
-    const value = formData[field.name as keyof T]
-    const fieldName = String(field.name)
-    const error = errors[fieldName]
-    const fieldValue = value ?? field.defaultValue ?? ""
-
-    // Custom render - wrap in FieldContent to ensure consistency
-    if (field.render) {
-      const customContent = field.render(field, fieldValue, (newValue) => handleFieldChange(field.name as string, newValue))
-      return (
-        <FieldContent>
-          {customContent}
-          {error && <FieldError>{error}</FieldError>}
-        </FieldContent>
-      )
-    }
-
-    // All inputs must be wrapped in FieldContent
-    switch (field.type) {
-      case "textarea":
-        return (
-          <FieldContent>
-            <textarea
-              id={field.name as string}
-              name={field.name as string}
-              value={String(fieldValue)}
-              onChange={(e) => handleFieldChange(field.name as string, e.target.value)}
-              placeholder={field.placeholder}
-              required={field.required}
-              disabled={field.disabled || isPending}
-              aria-invalid={error ? "true" : "false"}
-              className={cn(
-                "flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background",
-                "placeholder:text-muted-foreground",
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-                "disabled:cursor-not-allowed disabled:opacity-50",
-                error && "border-destructive"
-              )}
-            />
-            {error && <FieldError>{error}</FieldError>}
-          </FieldContent>
-        )
-
-      case "select":
-        return (
-          <FieldContent>
-            <SelectCombobox field={field} fieldValue={fieldValue} error={error} />
-            {error && <FieldError>{error}</FieldError>}
-          </FieldContent>
-        )
-
-      case "checkbox":
-        return (
-          <FieldContent>
-            <div className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                id={field.name as string}
-                name={field.name as string}
-                checked={Boolean(fieldValue)}
-                onChange={(e) => handleFieldChange(field.name as string, e.target.checked)}
-                disabled={field.disabled || isPending}
-                aria-invalid={error ? "true" : "false"}
-                className={cn(
-                  "h-5 w-5 rounded border border-input",
-                  error && "border-destructive"
-                )}
-              />
-              <Label htmlFor={field.name as string} className="text-sm font-normal">
-                {field.label}
-              </Label>
-            </div>
-            {error && <FieldError>{error}</FieldError>}
-          </FieldContent>
-        )
-
-      case "switch":
-        return (
-          <FieldContent>
-            <Switch
-              id={field.name as string}
-              checked={Boolean(fieldValue)}
-              onCheckedChange={(checked) => handleFieldChange(field.name as string, checked)}
-              disabled={field.disabled || isPending}
-              aria-invalid={error ? "true" : "false"}
-              aria-label={field.label}
-            />
-            {error && <FieldError>{error}</FieldError>}
-          </FieldContent>
-        )
-
-      case "number":
-        return (
-          <FieldContent>
-            <Input
-              id={field.name as string}
-              name={field.name as string}
-              type="number"
-              value={String(fieldValue)}
-              onChange={(e) => handleFieldChange(field.name as string, Number(e.target.value))}
-              placeholder={field.placeholder}
-              required={field.required}
-              disabled={field.disabled || isPending}
-              aria-invalid={error ? "true" : "false"}
-              className={error ? "border-destructive" : ""}
-            />
-            {error && <FieldError>{error}</FieldError>}
-          </FieldContent>
-        )
-
-      case "date":
-        return (
-          <FieldContent>
-            <Input
-              id={field.name as string}
-              name={field.name as string}
-              type="date"
-              value={fieldValue ? String(fieldValue).split("T")[0] : ""}
-              onChange={(e) => handleFieldChange(field.name as string, e.target.value)}
-              required={field.required}
-              disabled={field.disabled || isPending}
-              aria-invalid={error ? "true" : "false"}
-              className={error ? "border-destructive" : ""}
-            />
-            {error && <FieldError>{error}</FieldError>}
-          </FieldContent>
-        )
-
-      default:
-        return (
-          <FieldContent>
-            <Input
-              id={field.name as string}
-              name={field.name as string}
-              type={field.type ?? "text"}
-              value={String(fieldValue)}
-              onChange={(e) => handleFieldChange(field.name as string, e.target.value)}
-              placeholder={field.placeholder}
-              required={field.required}
-              disabled={field.disabled || isPending}
-              aria-invalid={error ? "true" : "false"}
-              className={error ? "border-destructive" : ""}
-            />
-            {error && <FieldError>{error}</FieldError>}
-          </FieldContent>
-        )
-    }
-  }
 
   const formContent = (
     <form id="resource-form" onSubmit={handleSubmit} className={cn("space-y-6", formClassName)}>
@@ -464,6 +208,8 @@ export function ResourceForm<T extends Record<string, unknown>>({
       >
         {fields.map((field) => {
           const fieldName = String(field.name)
+          const value = formData[field.name as keyof T]
+          const error = errors[fieldName]
           const isFullWidth = field.type === "textarea" || field.type === "select" || field.render
           
           if (field.type === "checkbox") {
@@ -479,7 +225,13 @@ export function ResourceForm<T extends Record<string, unknown>>({
                 }}
               >
                 <Field>
-                  {renderFieldInput(field)}
+                  {renderFieldInput({
+                    field,
+                    value,
+                    error,
+                    onChange: (newValue) => handleFieldChange(field.name as string, newValue),
+                    isPending,
+                  })}
                   {field.description && (
                     <FieldDescription>{field.description}</FieldDescription>
                   )}
@@ -504,7 +256,13 @@ export function ResourceForm<T extends Record<string, unknown>>({
                   {field.label}
                   {field.required && <span className="text-destructive">*</span>}
                 </FieldLabel>
-                {renderFieldInput(field)}
+                {renderFieldInput({
+                  field,
+                  value,
+                  error,
+                  onChange: (newValue) => handleFieldChange(field.name as string, newValue),
+                  isPending,
+                })}
                 {field.description && (
                   <FieldDescription>{field.description}</FieldDescription>
                 )}

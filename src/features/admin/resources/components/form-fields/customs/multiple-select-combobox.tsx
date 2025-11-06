@@ -1,0 +1,181 @@
+/**
+ * Multiple Select Combobox Component
+ * 
+ * Reusable combobox component cho multiple select fields
+ */
+
+"use client"
+
+import { useState } from "react"
+import { Check, ChevronsUpDown, X } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command"
+import { cn } from "@/lib/utils"
+import type { ResourceFormField } from "../../resource-form"
+
+interface MultipleSelectComboboxProps<T> {
+  field: ResourceFormField<T>
+  fieldValue: unknown
+  error?: string
+  onChange: (value: unknown) => void
+  isPending?: boolean
+}
+
+export function MultipleSelectCombobox<T>({
+  field,
+  fieldValue,
+  error,
+  onChange,
+  isPending = false,
+}: MultipleSelectComboboxProps<T>) {
+  const [selectOpen, setSelectOpen] = useState(false)
+
+  if (!field.options || field.options.length === 0) {
+    return (
+      <div className="flex h-10 w-full items-center rounded-md border border-input bg-background px-3 py-2 text-sm text-muted-foreground">
+        Không có tùy chọn
+      </div>
+    )
+  }
+
+  // Normalize fieldValue to array
+  const selectedValues = Array.isArray(fieldValue) 
+    ? fieldValue.map(v => String(v))
+    : fieldValue !== null && fieldValue !== undefined && fieldValue !== ""
+      ? [String(fieldValue)]
+      : []
+
+  const selectedOptions = field.options.filter((opt) => 
+    selectedValues.includes(String(opt.value))
+  )
+
+  const handleToggle = (optionValue: string | number) => {
+    const valueStr = String(optionValue)
+    const currentValues = selectedValues
+    
+    if (currentValues.includes(valueStr)) {
+      // Remove if already selected
+      const newValues = currentValues.filter(v => v !== valueStr)
+      onChange(newValues.length > 0 ? newValues : [])
+    } else {
+      // Add if not selected
+      onChange([...currentValues, valueStr])
+    }
+  }
+
+  const handleClear = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    onChange([])
+  }
+
+  const displayText = selectedOptions.length > 0
+    ? `${selectedOptions.length} mục đã chọn`
+    : field.placeholder || "-- Chọn --"
+
+  return (
+    <Popover open={selectOpen} onOpenChange={setSelectOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          role="combobox"
+          aria-expanded={selectOpen}
+          className={cn(
+            "w-full justify-between h-auto min-h-10 px-3 py-2",
+            selectedValues.length === 0 && "text-muted-foreground",
+            error && "border-destructive"
+          )}
+          disabled={field.disabled || isPending}
+        >
+          <div className="flex flex-1 flex-wrap gap-1.5 items-center min-w-0">
+            {selectedOptions.length > 0 ? (
+              selectedOptions.length <= 3 ? (
+                // Show badges if <= 3 items
+                selectedOptions.map((option) => (
+                  <Badge
+                    key={option.value}
+                    variant="secondary"
+                    className="mr-0 text-xs"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      handleToggle(option.value)
+                    }}
+                  >
+                    {option.label}
+                    <X className="ml-1.5 h-3 w-3" />
+                  </Badge>
+                ))
+              ) : (
+                // Show count if > 3 items
+                <span className="text-sm">{displayText}</span>
+              )
+            ) : (
+              <span className="text-sm">{displayText}</span>
+            )}
+          </div>
+          <div className="flex items-center gap-1 ml-2 flex-shrink-0">
+            {selectedValues.length > 0 && (
+              <X
+                className="h-4 w-4 text-muted-foreground hover:text-foreground"
+                onClick={handleClear}
+              />
+            )}
+            <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-50" />
+          </div>
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+        <Command>
+          <CommandInput placeholder="Tìm kiếm..." className="h-9" />
+          <CommandList>
+            <CommandEmpty>Không tìm thấy.</CommandEmpty>
+            <CommandGroup>
+              {field.options.map((option) => {
+                const isSelected = selectedValues.includes(String(option.value))
+                return (
+                  <CommandItem
+                    key={option.value}
+                    value={String(option.value)}
+                    onSelect={() => handleToggle(option.value)}
+                  >
+                    <Check
+                      className={cn(
+                        "mr-2 h-5 w-5",
+                        isSelected ? "opacity-100" : "opacity-0"
+                      )}
+                    />
+                    {option.label}
+                  </CommandItem>
+                )
+              })}
+            </CommandGroup>
+            {selectedValues.length > 0 && (
+              <CommandGroup>
+                <CommandItem
+                  value="clear-all"
+                  onSelect={() => onChange([])}
+                  className="text-destructive"
+                >
+                  Xóa tất cả
+                </CommandItem>
+              </CommandGroup>
+            )}
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  )
+}
+

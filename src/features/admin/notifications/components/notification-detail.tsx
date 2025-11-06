@@ -8,6 +8,7 @@
  */
 
 import { getNotificationByIdCached } from "../server/queries"
+import { serializeNotificationDetail } from "../server/helpers"
 import { NotificationDetailClient } from "./notification-detail.client"
 import type { NotificationDetailData } from "./notification-detail.client"
 
@@ -40,20 +41,7 @@ export async function NotificationDetail({ notificationId, backUrl = "/admin/not
   }
 
   // Transform notification data to match NotificationDetailData format (serialize dates)
-  const notificationForDetail: NotificationDetailData = {
-    id: notification.id,
-    userId: notification.userId,
-    user: notification.user,
-    kind: notification.kind,
-    title: notification.title,
-    description: notification.description,
-    isRead: notification.isRead,
-    actionUrl: notification.actionUrl,
-    metadata: notification.metadata,
-    expiresAt: notification.expiresAt?.toISOString() || null,
-    createdAt: notification.createdAt.toISOString(),
-    readAt: notification.readAt?.toISOString() || null,
-  }
+  const notificationForDetail: NotificationDetailData = serializeNotificationDetail(notification) as NotificationDetailData
 
   // Pass data to client component for rendering
   return <NotificationDetailClient notification={notificationForDetail} backUrl={backUrl} />
