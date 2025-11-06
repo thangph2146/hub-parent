@@ -5,7 +5,16 @@ import { prisma } from "@/lib/database"
 import { mapCategoryRecord, type CategoryWithRelations } from "./helpers"
 import type { ListedCategory } from "../types"
 import { generateSlug } from "../utils"
-import type { CreateCategoryInput, UpdateCategoryInput, BulkActionResult } from "../types"
+import type { BulkActionResult } from "../types"
+import {
+  CreateCategorySchema,
+  UpdateCategorySchema,
+  BulkCategoryActionSchema,
+  type CreateCategoryInput,
+  type UpdateCategoryInput,
+  type BulkCategoryActionInput,
+} from "./schemas"
+import { notifySuperAdminsOfCategoryAction } from "./notifications"
 
 export interface AuthContext {
   actorId: string
@@ -44,24 +53,21 @@ function sanitizeCategory(category: CategoryWithRelations): ListedCategory {
   return mapCategoryRecord(category)
 }
 
-export async function createCategory(ctx: AuthContext, input: CreateCategoryInput): Promise<ListedCategory> {
+export async function createCategory(ctx: AuthContext, input: unknown): Promise<ListedCategory> {
   ensurePermission(ctx, PERMISSIONS.CATEGORIES_CREATE, PERMISSIONS.CATEGORIES_MANAGE)
 
-  if (!input.name || typeof input.name !== "string" || input.name.trim() === "") {
-    throw new ApplicationError("Tên danh mục là bắt buộc", 400)
+  // Validate input với zod
+  const validationResult = CreateCategorySchema.safeParse(input)
+  if (!validationResult.success) {
+    const firstError = validationResult.error.issues[0]
+    throw new ApplicationError(firstError?.message || "Dữ liệu không hợp lệ", 400)
   }
 
-  const trimmedName = input.name.trim()
-  if (trimmedName.length < 2) {
-    throw new ApplicationError("Tên danh mục phải có ít nhất 2 ký tự", 400)
-  }
+  const validatedInput = validationResult.data
 
+  const trimmedName = validatedInput.name.trim()
   // Generate slug if not provided
-  const slug = input.slug?.trim() || generateSlug(trimmedName)
-  
-  if (!/^[a-z0-9-]+$/.test(slug)) {
-    throw new ApplicationError("Slug chỉ được chứa chữ thường, số và dấu gạch ngang", 400)
-  }
+  const slug = validatedInput.slug?.trim() || generateSlug(trimmedName)
 
   // Check if name or slug already exists
   const existing = await prisma.category.findFirst({
@@ -87,19 +93,41 @@ export async function createCategory(ctx: AuthContext, input: CreateCategoryInpu
     data: {
       name: trimmedName,
       slug: slug,
-      description: input.description?.trim() || null,
+      description: validatedInput.description?.trim() || null,
     },
   })
 
-  return sanitizeCategory(category)
+  const sanitized = sanitizeCategory(category)
+
+  // Emit notification realtime
+  await notifySuperAdminsOfCategoryAction(
+    "create",
+    ctx.actorId,
+    {
+      id: sanitized.id,
+      name: sanitized.name,
+      slug: sanitized.slug,
+    }
+  )
+
+  return sanitized
 }
 
-export async function updateCategory(ctx: AuthContext, id: string, input: UpdateCategoryInput): Promise<ListedCategory> {
+export async function updateCategory(ctx: AuthContext, id: string, input: unknown): Promise<ListedCategory> {
   ensurePermission(ctx, PERMISSIONS.CATEGORIES_UPDATE, PERMISSIONS.CATEGORIES_MANAGE)
 
   if (!id || typeof id !== "string" || id.trim() === "") {
     throw new ApplicationError("ID danh mục không hợp lệ", 400)
   }
+
+  // Validate input với zod
+  const validationResult = UpdateCategorySchema.safeParse(input)
+  if (!validationResult.success) {
+    const firstError = validationResult.error.issues[0]
+    throw new ApplicationError(firstError?.message || "Dữ liệu không hợp lệ", 400)
+  }
+
+  const validatedInput = validationResult.data
 
   const existing = await prisma.category.findUnique({
     where: { id },
@@ -109,14 +137,17 @@ export async function updateCategory(ctx: AuthContext, id: string, input: Update
     throw new NotFoundError("Danh mục không tồn tại")
   }
 
+  // Track changes for notification
+  const changes: {
+    name?: { old: string; new: string }
+    slug?: { old: string; new: string }
+    description?: { old: string | null; new: string | null }
+  } = {}
+
   const updateData: Prisma.CategoryUpdateInput = {}
 
-  if (input.name !== undefined) {
-    const trimmedName = input.name.trim()
-    if (trimmedName.length < 2) {
-      throw new ApplicationError("Tên danh mục phải có ít nhất 2 ký tự", 400)
-    }
-
+  if (validatedInput.name !== undefined) {
+    const trimmedName = validatedInput.name.trim()
     // Check if name is already used by another category
     if (trimmedName !== existing.name) {
       const nameExists = await prisma.category.findFirst({
@@ -129,19 +160,13 @@ export async function updateCategory(ctx: AuthContext, id: string, input: Update
       if (nameExists) {
         throw new ApplicationError("Tên danh mục đã được sử dụng", 400)
       }
+      changes.name = { old: existing.name, new: trimmedName }
     }
     updateData.name = trimmedName
   }
 
-  if (input.slug !== undefined) {
-    const trimmedSlug = input.slug.trim()
-    if (trimmedSlug.length < 2) {
-      throw new ApplicationError("Slug phải có ít nhất 2 ký tự", 400)
-    }
-    if (!/^[a-z0-9-]+$/.test(trimmedSlug)) {
-      throw new ApplicationError("Slug chỉ được chứa chữ thường, số và dấu gạch ngang", 400)
-    }
-
+  if (validatedInput.slug !== undefined) {
+    const trimmedSlug = validatedInput.slug.trim()
     // Check if slug is already used by another category
     if (trimmedSlug !== existing.slug) {
       const slugExists = await prisma.category.findFirst({
@@ -154,12 +179,17 @@ export async function updateCategory(ctx: AuthContext, id: string, input: Update
       if (slugExists) {
         throw new ApplicationError("Slug đã được sử dụng", 400)
       }
+      changes.slug = { old: existing.slug, new: trimmedSlug }
     }
     updateData.slug = trimmedSlug
   }
 
-  if (input.description !== undefined) {
-    updateData.description = input.description?.trim() || null
+  if (validatedInput.description !== undefined) {
+    const trimmedDescription = validatedInput.description?.trim() || null
+    if (trimmedDescription !== existing.description) {
+      changes.description = { old: existing.description, new: trimmedDescription }
+    }
+    updateData.description = trimmedDescription
   }
 
   const category = await prisma.category.update({
@@ -167,7 +197,21 @@ export async function updateCategory(ctx: AuthContext, id: string, input: Update
     data: updateData,
   })
 
-  return sanitizeCategory(category)
+  const sanitized = sanitizeCategory(category)
+
+  // Emit notification realtime
+  await notifySuperAdminsOfCategoryAction(
+    "update",
+    ctx.actorId,
+    {
+      id: sanitized.id,
+      name: sanitized.name,
+      slug: sanitized.slug,
+    },
+    Object.keys(changes).length > 0 ? changes : undefined
+  )
+
+  return sanitized
 }
 
 export async function softDeleteCategory(ctx: AuthContext, id: string): Promise<void> {
@@ -184,6 +228,17 @@ export async function softDeleteCategory(ctx: AuthContext, id: string): Promise<
       deletedAt: new Date(),
     },
   })
+
+  // Emit notification realtime
+  await notifySuperAdminsOfCategoryAction(
+    "delete",
+    ctx.actorId,
+    {
+      id: category.id,
+      name: category.name,
+      slug: category.slug,
+    }
+  )
 }
 
 export async function bulkSoftDeleteCategories(ctx: AuthContext, ids: string[]): Promise<BulkActionResult> {
@@ -192,6 +247,15 @@ export async function bulkSoftDeleteCategories(ctx: AuthContext, ids: string[]):
   if (!ids || ids.length === 0) {
     throw new ApplicationError("Danh sách danh mục trống", 400)
   }
+
+  // Lấy thông tin categories trước khi delete để tạo notifications
+  const categories = await prisma.category.findMany({
+    where: {
+      id: { in: ids },
+      deletedAt: null,
+    },
+    select: { id: true, name: true, slug: true },
+  })
 
   const result = await prisma.category.updateMany({
     where: {
@@ -202,6 +266,15 @@ export async function bulkSoftDeleteCategories(ctx: AuthContext, ids: string[]):
       deletedAt: new Date(),
     },
   })
+
+  // Emit notifications realtime cho từng category
+  for (const category of categories) {
+    await notifySuperAdminsOfCategoryAction(
+      "delete",
+      ctx.actorId,
+      category
+    )
+  }
 
   return { success: true, message: `Đã xóa ${result.count} danh mục`, affected: result.count }
 }
@@ -220,6 +293,17 @@ export async function restoreCategory(ctx: AuthContext, id: string): Promise<voi
       deletedAt: null,
     },
   })
+
+  // Emit notification realtime
+  await notifySuperAdminsOfCategoryAction(
+    "restore",
+    ctx.actorId,
+    {
+      id: category.id,
+      name: category.name,
+      slug: category.slug,
+    }
+  )
 }
 
 export async function bulkRestoreCategories(ctx: AuthContext, ids: string[]): Promise<BulkActionResult> {
@@ -228,6 +312,15 @@ export async function bulkRestoreCategories(ctx: AuthContext, ids: string[]): Pr
   if (!ids || ids.length === 0) {
     throw new ApplicationError("Danh sách danh mục trống", 400)
   }
+
+  // Lấy thông tin categories trước khi restore để tạo notifications
+  const categories = await prisma.category.findMany({
+    where: {
+      id: { in: ids },
+      deletedAt: { not: null },
+    },
+    select: { id: true, name: true, slug: true },
+  })
 
   const result = await prisma.category.updateMany({
     where: {
@@ -239,6 +332,15 @@ export async function bulkRestoreCategories(ctx: AuthContext, ids: string[]): Pr
     },
   })
 
+  // Emit notifications realtime cho từng category
+  for (const category of categories) {
+    await notifySuperAdminsOfCategoryAction(
+      "restore",
+      ctx.actorId,
+      category
+    )
+  }
+
   return { success: true, message: `Đã khôi phục ${result.count} danh mục`, affected: result.count }
 }
 
@@ -249,7 +351,7 @@ export async function hardDeleteCategory(ctx: AuthContext, id: string): Promise<
 
   const category = await prisma.category.findUnique({
     where: { id },
-    select: { id: true },
+    select: { id: true, name: true, slug: true },
   })
 
   if (!category) {
@@ -259,6 +361,13 @@ export async function hardDeleteCategory(ctx: AuthContext, id: string): Promise<
   await prisma.category.delete({
     where: { id },
   })
+
+  // Emit notification realtime
+  await notifySuperAdminsOfCategoryAction(
+    "hard-delete",
+    ctx.actorId,
+    category
+  )
 }
 
 export async function bulkHardDeleteCategories(ctx: AuthContext, ids: string[]): Promise<BulkActionResult> {
@@ -270,11 +379,28 @@ export async function bulkHardDeleteCategories(ctx: AuthContext, ids: string[]):
     throw new ApplicationError("Danh sách danh mục trống", 400)
   }
 
+  // Lấy thông tin categories trước khi delete để tạo notifications
+  const categories = await prisma.category.findMany({
+    where: {
+      id: { in: ids },
+    },
+    select: { id: true, name: true, slug: true },
+  })
+
   const result = await prisma.category.deleteMany({
     where: {
       id: { in: ids },
     },
   })
+
+  // Emit notifications realtime cho từng category
+  for (const category of categories) {
+    await notifySuperAdminsOfCategoryAction(
+      "hard-delete",
+      ctx.actorId,
+      category
+    )
+  }
 
   return { success: true, message: `Đã xóa vĩnh viễn ${result.count} danh mục`, affected: result.count }
 }

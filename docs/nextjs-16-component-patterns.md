@@ -40,11 +40,11 @@ Page (Server) → Server Component (fetch data với cache) → Client Component
 ```
 src/features/admin/users/
 ├── components/
-│   ├── index.ts                       # Export barrel (Server + Client components)
-│   ├── users-table.tsx                # Server Component (fetch data)
-│   ├── users-table.client.tsx         # Client Component (UI/interactions)
+│   ├── index.ts                       # Export barrel (Server + Client components + types)
+│   ├── users-table.tsx                # Server Component (fetch data + roles)
+│   ├── users-table.client.tsx         # Client Component (UI/interactions, DataTable)
 │   ├── user-detail.tsx                # Server Component (fetch data)
-│   ├── user-detail.client.tsx         # Client Component (UI/interactions)
+│   ├── user-detail.client.tsx         # Client Component (UI/interactions, animations)
 │   ├── user-create.tsx                # Server Component (fetch roles)
 │   ├── user-create.client.tsx         # Client Component (form)
 │   ├── user-edit.tsx                  # Server Component (fetch data + roles)
@@ -57,11 +57,14 @@ src/features/admin/users/
 │   ├── helpers.ts                     # Helper functions (serialization, mapping, transformation)
 │   └── notifications.ts               # Realtime notifications via Socket.IO
 ├── hooks/
+│   ├── index.ts                       # Export barrel
 │   └── use-roles.ts                   # Custom hooks (client-side)
-├── types.ts                           # Type definitions cho feature
+├── types.ts                           # Type definitions cho feature (UserRow, UsersTableClientProps, etc.)
 ├── form-fields.ts                     # Form field definitions (reusable cho create/edit)
-└── utils.ts                           # Utility functions (validation, formatting)
+└── utils.ts                           # Utility functions (validation, formatting, normalization)
 ```
+
+**Lưu ý:** Cấu trúc này là pattern chuẩn cho tất cả các features trong admin. Mỗi feature sẽ có cấu trúc tương tự.
 
 ## 🔄 Data Fetching với Cache
 
@@ -211,6 +214,14 @@ import { AdminHeader } from "@/components/headers"
 import { UserDetail } from "@/features/admin/users/components/user-detail"
 import { getUserDetailById } from "@/features/admin/users/server/cache"
 
+/**
+ * User Detail Page (Server Component)
+ * 
+ * Permission checking cho page access đã được xử lý ở layout level (PermissionGate)
+ * Route này yêu cầu USERS_VIEW permission (được map trong route-permissions.ts)
+ * 
+ * Pattern: Page fetches data -> UserDetail (server) -> UserDetailClient (client)
+ */
 export default async function UserDetailPage({
   params,
 }: {
@@ -241,7 +252,7 @@ export default async function UserDetailPage({
       </>
     )
   }
-
+  
   return (
     <>
       <AdminHeader
@@ -251,6 +262,7 @@ export default async function UserDetailPage({
         ]}
       />
       <div className="flex flex-1 flex-col gap-4 p-4">
+        {/* UserDetail là server component, tự fetch data và render client component */}
         <UserDetail userId={id} backUrl="/admin/users" />
       </div>
     </>
@@ -571,7 +583,7 @@ export async function UserEdit({
 ```
 features/admin/users/
 ├── components/
-│   ├── index.ts                       # Export barrel (Server + Client components)
+│   ├── index.ts                       # Export barrel (Server + Client components + types)
 │   ├── user-detail.tsx                # Server Component
 │   ├── user-detail.client.tsx         # Client Component
 │   ├── users-table.tsx                # Server Component
@@ -588,11 +600,14 @@ features/admin/users/
 │   ├── helpers.ts                     # Helper functions (serialization, mapping)
 │   └── notifications.ts               # Realtime notifications via Socket.IO
 ├── hooks/
+│   ├── index.ts                       # Export barrel
 │   └── use-roles.ts                   # Custom hooks
-├── types.ts                           # Type definitions
+├── types.ts                           # Type definitions (UserRow, UsersTableClientProps, etc.)
 ├── form-fields.ts                     # Form field definitions
-└── utils.ts                           # Utility functions
+└── utils.ts                           # Utility functions (validation, formatting, normalization)
 ```
+
+**Lưu ý:** Cấu trúc này là pattern chuẩn cho tất cả các features trong admin. Mỗi feature sẽ có cấu trúc tương tự.
 
 ## 🔍 Kiểm tra Component Type
 

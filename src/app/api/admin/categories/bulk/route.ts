@@ -9,20 +9,26 @@ import {
   type AuthContext,
   ApplicationError,
 } from "@/features/admin/categories/server/mutations"
+import { BulkCategoryActionSchema } from "@/features/admin/categories/server/schemas"
 import { createPostRoute } from "@/lib/api/api-route-wrapper"
 import type { ApiRouteContext } from "@/lib/api/types"
 
 async function bulkCategoriesHandler(req: NextRequest, context: ApiRouteContext) {
-  let body: { action: "delete" | "restore" | "hard-delete"; ids: string[] }
+  let body: unknown
   try {
     body = await req.json()
   } catch {
     return NextResponse.json({ error: "Dữ liệu không hợp lệ. Vui lòng kiểm tra lại." }, { status: 400 })
   }
 
-  if (!body.action || !body.ids || !Array.isArray(body.ids) || body.ids.length === 0) {
-    return NextResponse.json({ error: "Action và ids là bắt buộc" }, { status: 400 })
+  // Validate với zod
+  const validationResult = BulkCategoryActionSchema.safeParse(body)
+  if (!validationResult.success) {
+    const firstError = validationResult.error.issues[0]
+    return NextResponse.json({ error: firstError?.message || "Dữ liệu không hợp lệ" }, { status: 400 })
   }
+
+  const validatedBody = validationResult.data
 
   const ctx: AuthContext = {
     actorId: context.session.user?.id ?? "unknown",
@@ -32,12 +38,12 @@ async function bulkCategoriesHandler(req: NextRequest, context: ApiRouteContext)
 
   try {
     let result
-    if (body.action === "delete") {
-      result = await bulkSoftDeleteCategories(ctx, body.ids)
-    } else if (body.action === "restore") {
-      result = await bulkRestoreCategories(ctx, body.ids)
-    } else if (body.action === "hard-delete") {
-      result = await bulkHardDeleteCategories(ctx, body.ids)
+    if (validatedBody.action === "delete") {
+      result = await bulkSoftDeleteCategories(ctx, validatedBody.ids)
+    } else if (validatedBody.action === "restore") {
+      result = await bulkRestoreCategories(ctx, validatedBody.ids)
+    } else if (validatedBody.action === "hard-delete") {
+      result = await bulkHardDeleteCategories(ctx, validatedBody.ids)
     } else {
       return NextResponse.json({ error: "Action không hợp lệ" }, { status: 400 })
     }

@@ -13,7 +13,6 @@ import {
   ApplicationError,
   NotFoundError,
 } from "@/features/admin/categories/server/mutations"
-import type { UpdateCategoryInput } from "@/features/admin/categories/types"
 import { createGetRoute, createPutRoute, createDeleteRoute } from "@/lib/api/api-route-wrapper"
 import type { ApiRouteContext } from "@/lib/api/types"
 
@@ -56,7 +55,7 @@ async function putCategoryHandler(req: NextRequest, context: ApiRouteContext, ..
   }
 
   try {
-    const category = await updateCategory(ctx, categoryId, body as unknown as UpdateCategoryInput)
+    const category = await updateCategory(ctx, categoryId, body)
     // Serialize category to client format (dates to strings)
     const serialized = {
       id: category.id,

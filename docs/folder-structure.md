@@ -41,6 +41,8 @@ src/app/
                 └── route.ts          # POST (bulk operations)
 ```
 
+**Lưu ý:** Cấu trúc này áp dụng cho tất cả các features trong admin (users, categories, tags, roles, contact-requests, notifications).
+
 #### Pages (Server Components)
 
 **Quy tắc:**
@@ -84,7 +86,7 @@ export default async function UsersPage() {
 }
 ```
 
-**Pattern 2: Detail/Edit Page (fetch data để check not found)**
+**Pattern 2: Detail Page (fetch data để check not found)**
 
 ```typescript
 // src/app/admin/users/[id]/page.tsx
@@ -92,6 +94,14 @@ import { AdminHeader } from "@/components/headers"
 import { UserDetail } from "@/features/admin/users/components/user-detail"
 import { getUserDetailById } from "@/features/admin/users/server/cache"
 
+/**
+ * User Detail Page (Server Component)
+ * 
+ * Permission checking cho page access đã được xử lý ở layout level (PermissionGate)
+ * Route này yêu cầu USERS_VIEW permission (được map trong route-permissions.ts)
+ * 
+ * Pattern: Page fetches data -> UserDetail (server) -> UserDetailClient (client)
+ */
 export default async function UserDetailPage({
   params,
 }: {
@@ -122,7 +132,7 @@ export default async function UserDetailPage({
       </>
     )
   }
-
+  
   return (
     <>
       <AdminHeader
@@ -132,6 +142,7 @@ export default async function UserDetailPage({
         ]}
       />
       <div className="flex flex-1 flex-col gap-4 p-4">
+        {/* UserDetail là server component, tự fetch data và render client component */}
         <UserDetail userId={id} backUrl="/admin/users" />
       </div>
     </>
@@ -139,13 +150,87 @@ export default async function UserDetailPage({
 }
 ```
 
-**Pattern 3: Create Page (không cần fetch data)**
+**Pattern 3: Edit Page (fetch data để check not found)**
+
+```typescript
+// src/app/admin/users/[id]/edit/page.tsx
+import { AdminHeader } from "@/components/headers"
+import { UserEdit } from "@/features/admin/users/components/user-edit"
+import { getUserDetailById } from "@/features/admin/users/server/cache"
+
+/**
+ * User Edit Page
+ * 
+ * Permission checking cho page access đã được xử lý ở layout level (PermissionGate)
+ * Route này yêu cầu USERS_UPDATE permission (được map trong route-permissions.ts)
+ */
+export default async function EditUserPage({
+  params,
+}: {
+  params: Promise<{ id: string }>
+}) {
+  const { id } = await params
+  const user = await getUserDetailById(id)
+
+  if (!user) {
+    return (
+      <>
+        <AdminHeader
+          breadcrumbs={[
+            { label: "Users", href: "/admin/users" },
+            { label: "Chi tiết", href: `/admin/users/${id}` },
+            { label: "Chỉnh sửa", isActive: true },
+          ]}
+        />
+        <div className="flex flex-1 flex-col gap-4 p-4">
+          <div className="flex min-h-[400px] flex-1 items-center justify-center">
+            <div className="text-center">
+              <h2 className="mb-2 text-2xl font-bold">Không tìm thấy người dùng</h2>
+              <p className="text-muted-foreground">
+                Người dùng bạn đang tìm kiếm không tồn tại.
+              </p>
+            </div>
+          </div>
+        </div>
+      </>
+    )
+  }
+
+  return (
+    <>
+      <AdminHeader
+        breadcrumbs={[
+          { label: "Users", href: "/admin/users" },
+          { label: "Chi tiết", href: `/admin/users/${id}` },
+          { label: "Chỉnh sửa", isActive: true },
+        ]}
+      />
+      <div className="flex flex-1 flex-col gap-4 p-4">
+        <UserEdit
+          userId={id}
+          variant="page"
+          backUrl={`/admin/users/${id}`}
+          backLabel="Quay lại chi tiết"
+        />
+      </div>
+    </>
+  )
+}
+```
+
+**Pattern 4: Create Page (không cần fetch data)**
 
 ```typescript
 // src/app/admin/users/new/page.tsx
 import { AdminHeader } from "@/components/headers"
 import { UserCreate } from "@/features/admin/users/components/user-create"
 
+/**
+ * User Create Page
+ * 
+ * Permission checking cho page access đã được xử lý ở layout level (PermissionGate)
+ * Route này yêu cầu USERS_CREATE permission (được map trong route-permissions.ts)
+ */
 export default async function UserCreatePage() {
   return (
     <>
@@ -155,7 +240,7 @@ export default async function UserCreatePage() {
           { label: "Tạo mới", isActive: true },
         ]}
       />
-      <div className="flex flex-1 flex-col">
+      <div className="flex flex-1 flex-col gap-4 p-4">
         <UserCreate backUrl="/admin/users" />
       </div>
     </>
@@ -259,15 +344,15 @@ Chứa **business logic**, **components**, và **server functions** cho từng f
 ```
 src/features/admin/users/
 ├── components/
-│   ├── index.ts                       # Export barrel (Server + Client components)
-│   ├── users-table.tsx                # Server Component (fetch data)
-│   ├── users-table.client.tsx         # Client Component (UI/interactions)
+│   ├── index.ts                       # Export barrel (Server + Client components + types)
+│   ├── users-table.tsx                # Server Component (fetch data + roles)
+│   ├── users-table.client.tsx         # Client Component (UI/interactions, DataTable)
 │   ├── user-detail.tsx                # Server Component (fetch data)
-│   ├── user-detail.client.tsx         # Client Component (UI/interactions)
+│   ├── user-detail.client.tsx         # Client Component (UI/interactions, animations)
 │   ├── user-create.tsx                # Server Component (fetch roles)
 │   ├── user-create.client.tsx         # Client Component (form)
 │   ├── user-edit.tsx                  # Server Component (fetch data + roles)
-│   └── user-edit.client.tsx            # Client Component (form)
+│   └── user-edit.client.tsx           # Client Component (form)
 ├── server/
 │   ├── index.ts                       # Export barrel (queries, cache, mutations, helpers, notifications)
 │   ├── queries.ts                     # Non-cached database queries (dùng trong API routes)
@@ -278,10 +363,12 @@ src/features/admin/users/
 ├── hooks/
 │   ├── index.ts                       # Export barrel
 │   └── use-roles.ts                   # Custom hooks (client-side)
-├── types.ts                           # Type definitions cho feature
+├── types.ts                           # Type definitions cho feature (UserRow, UsersTableClientProps, etc.)
 ├── form-fields.ts                     # Form field definitions (reusable cho create/edit)
-└── utils.ts                           # Utility functions (validation, formatting)
+└── utils.ts                           # Utility functions (validation, formatting, normalization)
 ```
+
+**Lưu ý:** Cấu trúc này là pattern chuẩn cho tất cả các features trong admin. Mỗi feature sẽ có cấu trúc tương tự.
 
 #### Components
 
@@ -855,6 +942,9 @@ export function serializeUsersList(data: ListUsersResult): DataTableResult<UserR
 ```typescript
 // src/features/admin/users/types.ts
 import type { ResourceResponse, BaseResourceTableClientProps } from "@/features/admin/resources/types"
+import type { Role } from "./utils"
+
+export type UserRole = Role
 
 export interface UserRow {
   id: string
@@ -877,6 +967,32 @@ export type UsersResponse = ResourceResponse<UserRow>
 
 ```typescript
 // src/features/admin/users/utils.ts
+
+export interface Role {
+  id: string
+  name: string
+  displayName: string
+}
+
+/**
+ * Normalize roleIds từ single value hoặc array thành array
+ */
+export function normalizeRoleIds(roleIds: unknown): string[] {
+  if (roleIds === undefined || roleIds === null || roleIds === "") {
+    return []
+  }
+  if (Array.isArray(roleIds)) {
+    return roleIds.filter((id): id is string => typeof id === "string" && id !== "")
+  }
+  if (typeof roleIds === "string" && roleIds !== "") {
+    return [roleIds]
+  }
+  return []
+}
+
+/**
+ * Validate email format
+ */
 export function validateEmail(value: unknown): { valid: boolean; error?: string } {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
   if (typeof value !== "string" || !emailRegex.test(value)) {
@@ -885,12 +1001,56 @@ export function validateEmail(value: unknown): { valid: boolean; error?: string 
   return { valid: true }
 }
 
+/**
+ * Validate name (minimum 2 characters)
+ */
+export function validateName(value: unknown): { valid: boolean; error?: string } {
+  if (value && typeof value === "string" && value.trim().length < 2) {
+    return { valid: false, error: "Tên phải có ít nhất 2 ký tự" }
+  }
+  return { valid: true }
+}
+
+/**
+ * Validate password (minimum 6 characters, empty allowed for edit)
+ */
+export function validatePassword(value: unknown, allowEmpty = false): { valid: boolean; error?: string } {
+  if (allowEmpty && (!value || value === "")) {
+    return { valid: true }
+  }
+  if (!value || value === "" || typeof value !== "string") {
+    return { valid: false, error: "Mật khẩu là bắt buộc" }
+  }
+  if (value.length < 6) {
+    return { valid: false, error: "Mật khẩu phải có ít nhất 6 ký tự" }
+  }
+  return { valid: true }
+}
+
+/**
+ * Format date to Vietnamese locale
+ */
 export function formatDateVi(date: string | Date): string {
   return new Date(date).toLocaleDateString("vi-VN", {
     year: "numeric",
     month: "long",
     day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
   })
+}
+
+/**
+ * Get user initials from name or email
+ */
+export function getUserInitials(name?: string | null, email?: string): string {
+  if (name) {
+    const parts = name.trim().split(" ")
+    return parts.length >= 2
+      ? `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase()
+      : name.substring(0, 2).toUpperCase()
+  }
+  return email ? email.substring(0, 2).toUpperCase() : "U"
 }
 ```
 
@@ -899,33 +1059,120 @@ export function formatDateVi(date: string | Date): string {
 ```typescript
 // src/features/admin/users/form-fields.ts
 import type { ResourceFormField } from "@/features/admin/resources/components"
-import { validateEmail, validatePassword } from "./utils"
+import { validateEmail, validateName, validatePassword } from "./utils"
+import type { Role } from "./utils"
+import React from "react"
+import { Mail, User, Shield, AlignLeft, Phone, MapPin, ToggleLeft, Lock } from "lucide-react"
 
-export function getBaseUserFields(roles: Role[]): ResourceFormField<UserFormData>[] {
+export interface UserFormData {
+  email: string
+  name?: string | null
+  roleIds?: string[] | string
+  isActive?: boolean
+  bio?: string | null
+  phone?: string | null
+  address?: string | null
+  password?: string
+  [key: string]: unknown
+}
+
+/**
+ * Base fields cho user form (email, name, roles, isActive, bio, phone, address)
+ */
+export function getBaseUserFields(roles: Role[], roleDefaultValue = ""): ResourceFormField<UserFormData>[] {
   return [
     {
       name: "email",
       label: "Email",
       type: "email",
+      placeholder: "email@example.com",
       required: true,
       validate: validateEmail,
+      icon: React.createElement(Mail, { className: "h-4 w-4" }),
     },
     {
       name: "name",
       label: "Tên",
       type: "text",
+      placeholder: "Nhập tên",
       validate: validateName,
+      icon: React.createElement(User, { className: "h-4 w-4" }),
     },
     {
       name: "roleIds",
       label: "Vai trò",
       type: "select",
+      required: false,
+      placeholder: "Chọn vai trò",
       options: roles.map((role) => ({
-        label: role.displayName,
+        label: role.displayName || role.name,
         value: role.id,
       })),
+      defaultValue: roleDefaultValue,
+      icon: React.createElement(Shield, { className: "h-4 w-4" }),
     },
+    {
+      name: "bio",
+      label: "Giới thiệu",
+      type: "textarea",
+      placeholder: "Nhập giới thiệu về người dùng",
+      icon: React.createElement(AlignLeft, { className: "h-4 w-4" }),
+    },
+    {
+      name: "phone",
+      label: "Số điện thoại",
+      type: "text",
+      placeholder: "Nhập số điện thoại",
+      icon: React.createElement(Phone, { className: "h-4 w-4" }),
+    },
+    {
+      name: "address",
+      label: "Địa chỉ",
+      type: "textarea",
+      placeholder: "Nhập địa chỉ",
+      icon: React.createElement(MapPin, { className: "h-4 w-4" }),
+    },
+    {
+      name: "isActive",
+      label: "Trạng thái",
+      description: "Bật/tắt để kích hoạt hoặc vô hiệu hóa người dùng",
+      type: "switch",
+      defaultValue: true,
+      icon: React.createElement(ToggleLeft, { className: "h-4 w-4" }),
+    }
   ]
+}
+
+/**
+ * Password field cho create form
+ */
+export function getPasswordField(): ResourceFormField<UserFormData> {
+  return {
+    name: "password",
+    label: "Mật khẩu",
+    type: "password",
+    placeholder: "Nhập mật khẩu",
+    required: true,
+    description: "Mật khẩu phải có ít nhất 6 ký tự",
+    validate: (value) => validatePassword(value, false),
+    icon: React.createElement(Lock, { className: "h-4 w-4" }),
+  }
+}
+
+/**
+ * Password field cho edit form (optional, only for super admin)
+ */
+export function getPasswordEditField(): ResourceFormField<UserFormData> {
+  return {
+    name: "password",
+    label: "Mật khẩu mới",
+    type: "password",
+    placeholder: "Để trống nếu không muốn thay đổi",
+    description: "Chỉ nhập nếu muốn thay đổi mật khẩu. Để trống để giữ nguyên mật khẩu hiện tại.",
+    required: false,
+    validate: (value) => validatePassword(value, true),
+    icon: React.createElement(Lock, { className: "h-4 w-4" }),
+  }
 }
 ```
 

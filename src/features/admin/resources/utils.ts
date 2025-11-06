@@ -94,3 +94,19 @@ export function validatePhone(value: unknown): { valid: boolean; error?: string 
   return { valid: true }
 }
 
+/**
+ * Validate description (optional, max 500 characters)
+ */
+export function validateDescription(value: unknown): { valid: boolean; error?: string } {
+  if (!value || value === "") {
+    return { valid: true } // Description is optional
+  }
+  if (typeof value !== "string") {
+    return { valid: false, error: "Mô tả không hợp lệ" }
+  }
+  if (value.length > 500) {
+    return { valid: false, error: "Mô tả không được vượt quá 500 ký tự" }
+  }
+  return { valid: true }
+}
+

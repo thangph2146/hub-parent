@@ -40,17 +40,8 @@ export interface ListCategoriesResult {
   pagination: ResourcePagination
 }
 
-export interface CreateCategoryInput {
-  name: string
-  slug: string
-  description?: string | null
-}
-
-export interface UpdateCategoryInput {
-  name?: string
-  slug?: string
-  description?: string | null
-}
+// Types are now exported from schemas.ts
+export type { CreateCategoryInput, UpdateCategoryInput, BulkCategoryActionInput } from "./server/schemas"
 
 export type { BulkActionResult }
 

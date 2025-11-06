@@ -2,10 +2,10 @@
  * Shared utility functions và validation cho category forms
  */
 
-import { formatDateVi, generateSlug, validateName, validateSlug } from "@/features/admin/resources/utils"
+import { formatDateVi, generateSlug, validateName, validateSlug, validateDescription } from "@/features/admin/resources/utils"
 
 // Re-export common utilities from resources
-export { formatDateVi, generateSlug }
+export { formatDateVi, generateSlug, validateDescription }
 
 // Category-specific validations (extend or override base validations)
 
@@ -21,18 +21,5 @@ export function validateCategoryName(value: unknown): { valid: boolean; error?: 
  */
 export function validateCategorySlug(value: unknown): { valid: boolean; error?: string } {
   return validateSlug(value)
-}
-
-/**
- * Validate description (optional, max 500 characters)
- */
-export function validateDescription(value: unknown): { valid: boolean; error?: string } {
-  if (!value || value === "") {
-    return { valid: true }
-  }
-  if (typeof value === "string" && value.length > 500) {
-    return { valid: false, error: "Mô tả không được vượt quá 500 ký tự" }
-  }
-  return { valid: true }
 }
 

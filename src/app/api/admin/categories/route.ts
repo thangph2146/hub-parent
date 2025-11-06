@@ -11,7 +11,6 @@ import {
   ApplicationError,
   NotFoundError,
 } from "@/features/admin/categories/server/mutations"
-import type { CreateCategoryInput } from "@/features/admin/categories/types"
 import { createGetRoute, createPostRoute } from "@/lib/api/api-route-wrapper"
 import type { ApiRouteContext } from "@/lib/api/types"
 import { validatePagination, sanitizeSearchQuery } from "@/lib/api/validation"
@@ -79,7 +78,7 @@ async function postCategoriesHandler(req: NextRequest, context: ApiRouteContext)
   }
 
   try {
-    const category = await createCategory(ctx, body as unknown as CreateCategoryInput)
+    const category = await createCategory(ctx, body)
     // Serialize category to client format (dates to strings)
     const serialized = {
       id: category.id,
