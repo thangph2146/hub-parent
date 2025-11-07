@@ -1,10 +1,17 @@
 /**
  * Server mutations for notifications
+ * 
+ * Best Practices:
+ * - Chỉ user sở hữu notification mới có thể đánh dấu đã đọc/xóa
+ * - Tất cả operations đều có permission checks
+ * - Emit socket events sau khi tạo/cập nhật notification
+ * - Structured logging cho debugging và monitoring
  */
 import { prisma } from "@/lib/database"
 import { NotificationKind, Prisma } from "@prisma/client"
 import { DEFAULT_ROLES } from "@/lib/permissions"
 import { getSocketServer, storeNotificationInCache, mapNotificationToPayload } from "@/lib/socket/state"
+import { logger } from "@/lib/config"
 
 /**
  * Create notification for a specific user
@@ -25,29 +32,52 @@ export async function createNotificationForUser(
   })
 
   if (!user || !user.isActive || user.deletedAt) {
-    console.warn("[notifications] User not found or inactive:", userId)
+    logger.warn("User not found or inactive for notification creation", { userId })
     return null
   }
 
-  // Tạo notification cho user (không cần check permission)
+  // Validate input
+  if (!title || title.trim().length === 0) {
+    logger.warn("Invalid notification title", { userId, title })
+    return null
+  }
+
+  // Tạo notification cho user (không cần check permission - dùng cho system notifications)
   const notification = await prisma.notification.create({
     data: {
       userId,
-      title,
-      description: description ?? null,
-      actionUrl: actionUrl ?? null,
+      title: title.trim(),
+      description: description?.trim() ?? null,
+      actionUrl: actionUrl?.trim() ?? null,
       kind,
       metadata: metadata ? (metadata as Prisma.InputJsonValue) : Prisma.JsonNull,
       isRead: false,
     },
   })
 
-  console.log("[notifications] Created notification for user:", {
+  logger.info("Notification created for user", {
     notificationId: notification.id,
     userId,
     email: user.email,
-    title,
+    title: notification.title,
+    kind: notification.kind,
   })
+
+  // Emit socket event nếu có socket server
+  const io = getSocketServer()
+  if (io) {
+    try {
+      const socketNotification = mapNotificationToPayload(notification)
+      storeNotificationInCache(userId, socketNotification)
+      io.to(`user:${userId}`).emit("notification:new", socketNotification)
+      logger.debug("Socket notification emitted for user", {
+        notificationId: notification.id,
+        userId,
+      })
+    } catch (error) {
+      logger.error("Failed to emit socket notification", error instanceof Error ? error : new Error(String(error)))
+    }
+  }
 
   return notification
 }
@@ -81,14 +111,20 @@ export async function createNotificationForSuperAdmins(
     select: { id: true, email: true },
   })
 
-  console.log("[notifications] Found super admins:", {
+  // Validate input
+  if (!title || title.trim().length === 0) {
+    logger.warn("Invalid notification title for super admins", { title })
+    return { count: 0 }
+  }
+
+  logger.info("Found super admins for notification", {
     count: superAdmins.length,
     adminIds: superAdmins.map((a) => a.id),
     adminEmails: superAdmins.map((a) => a.email),
   })
 
   if (superAdmins.length === 0) {
-    console.warn("[notifications] No super admin found to receive notification")
+    logger.warn("No super admin found to receive notification")
     return { count: 0 }
   }
 
@@ -96,19 +132,20 @@ export async function createNotificationForSuperAdmins(
   const notifications = await prisma.notification.createMany({
     data: superAdmins.map((admin) => ({
       userId: admin.id,
-      title,
-      description: description ?? null,
-      actionUrl: actionUrl ?? null,
+      title: title.trim(),
+      description: description?.trim() ?? null,
+      actionUrl: actionUrl?.trim() ?? null,
       kind,
       metadata: metadata ? (metadata as Prisma.InputJsonValue) : Prisma.JsonNull,
       isRead: false,
     })),
   })
 
-  console.log("[notifications] Created notifications:", {
+  logger.info("Notifications created for super admins", {
     count: notifications.count,
-    title,
+    title: title.trim(),
     adminCount: superAdmins.length,
+    kind,
   })
 
   return { count: notifications.count }
@@ -128,7 +165,7 @@ export async function emitNotificationToSuperAdminsAfterCreate(
   try {
     const io = getSocketServer()
     if (!io) {
-      console.warn("[notifications] Socket server not available, skipping emit")
+      logger.warn("Socket server not available, skipping emit")
       return
     }
 
@@ -151,16 +188,16 @@ export async function emitNotificationToSuperAdminsAfterCreate(
     })
 
     if (superAdmins.length === 0) {
-      console.warn("[notifications] No super admin found to emit notification")
+      logger.warn("No super admin found to emit notification")
       return
     }
 
     // Fetch notifications vừa tạo từ database (trong vòng 5 giây)
     const createdNotifications = await prisma.notification.findMany({
       where: {
-        title,
-        description: description ?? null,
-        actionUrl: actionUrl ?? null,
+        title: title.trim(),
+        description: description?.trim() ?? null,
+        actionUrl: actionUrl?.trim() ?? null,
         kind,
         userId: {
           in: superAdmins.map((a) => a.id),
@@ -175,10 +212,10 @@ export async function emitNotificationToSuperAdminsAfterCreate(
       take: superAdmins.length,
     })
 
-    console.log("[notifications] Emitting socket notifications:", {
+    logger.info("Emitting socket notifications to super admins", {
       superAdminCount: superAdmins.length,
       notificationCount: createdNotifications.length,
-      title,
+      title: title.trim(),
     })
 
     // Emit to each super admin user room với notification từ database
@@ -190,7 +227,7 @@ export async function emitNotificationToSuperAdminsAfterCreate(
         const socketNotification = mapNotificationToPayload(dbNotification)
         storeNotificationInCache(admin.id, socketNotification)
         io.to(`user:${admin.id}`).emit("notification:new", socketNotification)
-        console.log("[notifications] Emitted to user room:", {
+        logger.debug("Emitted notification to user room", {
           adminId: admin.id,
           room: `user:${admin.id}`,
           notificationId: dbNotification.id,
@@ -210,7 +247,7 @@ export async function emitNotificationToSuperAdminsAfterCreate(
         }
         storeNotificationInCache(admin.id, fallbackNotification)
         io.to(`user:${admin.id}`).emit("notification:new", fallbackNotification)
-        console.log("[notifications] Emitted fallback notification to user room:", {
+        logger.debug("Emitted fallback notification to user room", {
           adminId: admin.id,
           room: `user:${admin.id}`,
         })
@@ -221,54 +258,341 @@ export async function emitNotificationToSuperAdminsAfterCreate(
     if (createdNotifications.length > 0) {
       const roleNotification = mapNotificationToPayload(createdNotifications[0])
       io.to("role:super_admin").emit("notification:new", roleNotification)
-      console.log("[notifications] Emitted to role room: role:super_admin")
+      logger.debug("Emitted notification to role room", {
+        room: "role:super_admin",
+        notificationId: createdNotifications[0].id,
+      })
     }
   } catch (error) {
     // Log error nhưng không throw để không ảnh hưởng đến main operation
-    console.error("[notifications] Failed to emit notification to super admins:", error)
+    logger.error("Failed to emit notification to super admins", error instanceof Error ? error : new Error(String(error)))
   }
 }
 
-export async function markNotificationAsRead(notificationId: string) {
-  return await prisma.notification.update({
+/**
+ * Mark notification as read - chỉ cho phép user đánh dấu notification của chính mình
+ * Best Practice: Ownership verification trước khi update
+ */
+export async function markNotificationAsRead(notificationId: string, userId: string) {
+  // Validate input
+  if (!notificationId || !userId) {
+    throw new Error("Notification ID and User ID are required")
+  }
+
+  // Verify notification exists and belongs to user
+  const notification = await prisma.notification.findUnique({
+    where: { id: notificationId },
+    select: { id: true, userId: true, isRead: true },
+  })
+
+  if (!notification) {
+    logger.warn("Notification not found", { notificationId, userId })
+    throw new Error("Notification not found")
+  }
+
+  if (notification.userId !== userId) {
+    logger.warn("User attempted to mark notification as read without ownership", {
+      notificationId,
+      userId,
+      ownerId: notification.userId,
+    })
+    throw new Error("Forbidden: You can only mark your own notifications as read")
+  }
+
+  // Skip update if already read
+  if (notification.isRead) {
+    logger.debug("Notification already marked as read", { notificationId, userId })
+    return await prisma.notification.findUnique({
+      where: { id: notificationId },
+    })
+  }
+
+  const updated = await prisma.notification.update({
     where: { id: notificationId },
     data: {
       isRead: true,
       readAt: new Date(),
     },
   })
+
+  logger.info("Notification marked as read", {
+    notificationId,
+    userId,
+  })
+
+  // Emit socket event
+  const io = getSocketServer()
+  if (io) {
+    try {
+      const payload = mapNotificationToPayload(updated)
+      io.to(`user:${userId}`).emit("notification:updated", payload)
+      logger.debug("Socket notification update emitted", { notificationId, userId })
+    } catch (error) {
+      logger.error("Failed to emit socket notification update", error instanceof Error ? error : new Error(String(error)))
+    }
+  }
+
+  return updated
 }
 
-export async function markNotificationAsUnread(notificationId: string) {
-  return await prisma.notification.update({
+/**
+ * Mark notification as unread - chỉ cho phép user đánh dấu notification của chính mình
+ * Best Practice: Ownership verification trước khi update
+ */
+export async function markNotificationAsUnread(notificationId: string, userId: string) {
+  // Validate input
+  if (!notificationId || !userId) {
+    throw new Error("Notification ID and User ID are required")
+  }
+
+  // Verify notification exists and belongs to user
+  const notification = await prisma.notification.findUnique({
+    where: { id: notificationId },
+    select: { id: true, userId: true, isRead: true },
+  })
+
+  if (!notification) {
+    logger.warn("Notification not found", { notificationId, userId })
+    throw new Error("Notification not found")
+  }
+
+  if (notification.userId !== userId) {
+    logger.warn("User attempted to mark notification as unread without ownership", {
+      notificationId,
+      userId,
+      ownerId: notification.userId,
+    })
+    throw new Error("Forbidden: You can only mark your own notifications as unread")
+  }
+
+  // Skip update if already unread
+  if (!notification.isRead) {
+    logger.debug("Notification already marked as unread", { notificationId, userId })
+    return await prisma.notification.findUnique({
+      where: { id: notificationId },
+    })
+  }
+
+  const updated = await prisma.notification.update({
     where: { id: notificationId },
     data: {
       isRead: false,
       readAt: null,
     },
   })
+
+  logger.info("Notification marked as unread", {
+    notificationId,
+    userId,
+  })
+
+  // Emit socket event
+  const io = getSocketServer()
+  if (io) {
+    try {
+      const payload = mapNotificationToPayload(updated)
+      io.to(`user:${userId}`).emit("notification:updated", payload)
+      logger.debug("Socket notification update emitted", { notificationId, userId })
+    } catch (error) {
+      logger.error("Failed to emit socket notification update", error instanceof Error ? error : new Error(String(error)))
+    }
+  }
+
+  return updated
 }
 
-export async function deleteNotification(notificationId: string) {
-  return await prisma.notification.delete({
+/**
+ * Delete notification - chỉ cho phép user xóa notification của chính mình
+ * Best Practice: Ownership verification trước khi delete
+ */
+export async function deleteNotification(notificationId: string, userId: string) {
+  // Validate input
+  if (!notificationId || !userId) {
+    throw new Error("Notification ID and User ID are required")
+  }
+
+  // Verify notification exists and belongs to user
+  const notification = await prisma.notification.findUnique({
+    where: { id: notificationId },
+    select: { id: true, userId: true },
+  })
+
+  if (!notification) {
+    logger.warn("Notification not found for deletion", { notificationId, userId })
+    throw new Error("Notification not found")
+  }
+
+  if (notification.userId !== userId) {
+    logger.warn("User attempted to delete notification without ownership", {
+      notificationId,
+      userId,
+      ownerId: notification.userId,
+    })
+    throw new Error("Forbidden: You can only delete your own notifications")
+  }
+
+  const deleted = await prisma.notification.delete({
     where: { id: notificationId },
   })
+
+  logger.info("Notification deleted", {
+    notificationId,
+    userId,
+  })
+
+  // Emit socket event để remove từ cache
+  const io = getSocketServer()
+  if (io) {
+    try {
+      io.to(`user:${userId}`).emit("notification:deleted", { id: notificationId })
+      logger.debug("Socket notification deletion emitted", { notificationId, userId })
+    } catch (error) {
+      logger.error("Failed to emit socket notification deletion", error instanceof Error ? error : new Error(String(error)))
+    }
+  }
+
+  return deleted
 }
 
-export async function bulkMarkAsRead(notificationIds: string[]) {
-  const result = await prisma.notification.updateMany({
+/**
+ * Bulk mark notifications as read - chỉ cho phép user đánh dấu notifications của chính mình
+ * Best Practice: Ownership verification và batch update với userId filter
+ */
+export async function bulkMarkAsRead(notificationIds: string[], userId: string) {
+  // Validate input
+  if (!notificationIds || notificationIds.length === 0) {
+    return { count: 0 }
+  }
+
+  if (!userId) {
+    throw new Error("User ID is required")
+  }
+
+  // Verify all notifications belong to user
+  const notifications = await prisma.notification.findMany({
     where: { id: { in: notificationIds } },
+    select: { id: true, userId: true, isRead: true },
+  })
+
+  // Filter chỉ notifications của user và chưa đọc
+  const ownNotificationIds = notifications
+    .filter((n) => n.userId === userId && !n.isRead)
+    .map((n) => n.id)
+
+  const invalidNotifications = notifications.filter((n) => n.userId !== userId)
+  if (invalidNotifications.length > 0) {
+    logger.warn("User attempted to mark notifications as read without ownership", {
+      userId,
+      invalidCount: invalidNotifications.length,
+      totalCount: notificationIds.length,
+    })
+    throw new Error("Forbidden: You can only mark your own notifications as read")
+  }
+
+  if (ownNotificationIds.length === 0) {
+    logger.debug("No unread notifications to mark as read", { userId, totalCount: notificationIds.length })
+    return { count: 0 }
+  }
+
+  const result = await prisma.notification.updateMany({
+    where: { 
+      id: { in: ownNotificationIds },
+      userId, // Double check: chỉ update notifications của user này
+    },
     data: {
       isRead: true,
       readAt: new Date(),
     },
   })
+
+  logger.info("Bulk notifications marked as read", {
+    userId,
+    count: result.count,
+    totalRequested: notificationIds.length,
+  })
+
+  // Emit socket event để sync
+  const io = getSocketServer()
+  if (io && result.count > 0) {
+    try {
+      // Reload updated notifications và emit
+      const updatedNotifications = await prisma.notification.findMany({
+        where: { id: { in: ownNotificationIds }, userId },
+        take: 50,
+      })
+
+      const payloads = updatedNotifications.map(mapNotificationToPayload)
+      
+      // Update cache
+      payloads.forEach((payload) => {
+        storeNotificationInCache(userId, payload)
+      })
+
+      io.to(`user:${userId}`).emit("notifications:sync", payloads)
+      logger.debug("Socket notifications sync emitted", { userId, count: payloads.length })
+    } catch (error) {
+      logger.error("Failed to emit socket notifications sync", error instanceof Error ? error : new Error(String(error)))
+    }
+  }
+
   return { count: result.count }
 }
 
-export async function bulkDelete(notificationIds: string[]) {
-  const result = await prisma.notification.deleteMany({
+/**
+ * Bulk delete notifications - chỉ cho phép user xóa notifications của chính mình
+ * Best Practice: Ownership verification trước khi delete
+ */
+export async function bulkDelete(notificationIds: string[], userId: string) {
+  // Validate input
+  if (!notificationIds || notificationIds.length === 0) {
+    return { count: 0 }
+  }
+
+  if (!userId) {
+    throw new Error("User ID is required")
+  }
+
+  // Verify all notifications belong to user
+  const notifications = await prisma.notification.findMany({
     where: { id: { in: notificationIds } },
+    select: { id: true, userId: true },
   })
+
+  const invalidNotifications = notifications.filter((n) => n.userId !== userId)
+  if (invalidNotifications.length > 0) {
+    logger.warn("User attempted to delete notifications without ownership", {
+      userId,
+      invalidCount: invalidNotifications.length,
+      totalCount: notificationIds.length,
+    })
+    throw new Error("Forbidden: You can only delete your own notifications")
+  }
+
+  const ownNotificationIds = notifications.map((n) => n.id)
+
+  const result = await prisma.notification.deleteMany({
+    where: { 
+      id: { in: ownNotificationIds },
+      userId, // Double check: chỉ delete notifications của user này
+    },
+  })
+
+  logger.info("Bulk notifications deleted", {
+    userId,
+    count: result.count,
+    totalRequested: notificationIds.length,
+  })
+
+  // Emit socket event để remove từ cache
+  const io = getSocketServer()
+  if (io && result.count > 0) {
+    try {
+      io.to(`user:${userId}`).emit("notifications:deleted", { ids: ownNotificationIds })
+      logger.debug("Socket notifications deletion emitted", { userId, count: result.count })
+    } catch (error) {
+      logger.error("Failed to emit socket notifications deletion", error instanceof Error ? error : new Error(String(error)))
+    }
+  }
+
   return { count: result.count }
 }

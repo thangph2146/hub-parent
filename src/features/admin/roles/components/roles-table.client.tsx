@@ -176,7 +176,7 @@ export function RolesTableClient({
         accessorKey: "isActive",
         header: "Trạng thái",
         filter: {
-          type: "command",
+          type: "select",
           placeholder: "Chọn trạng thái...",
           searchPlaceholder: "Tìm kiếm...",
           emptyMessage: "Không tìm thấy.",

@@ -396,7 +396,7 @@ filter: {
 
 ```typescript
 filter: {
-  type: "command",
+  type: "select",
   placeholder: "Chọn...",
   searchPlaceholder: "Tìm kiếm...", // Tùy chọn, mặc định: "Tìm kiếm..."
   emptyMessage: "Không tìm thấy.", // Tùy chọn, mặc định: "Không tìm thấy."
@@ -626,7 +626,7 @@ const columns: DataTableColumn<MyData>[] = [
     accessorKey: "status",
     header: "Trạng thái",
     filter: {
-      type: "command",
+      type: "select",
       placeholder: "Tất cả trạng thái",
       searchPlaceholder: "Tìm kiếm trạng thái...",
       emptyMessage: "Không tìm thấy trạng thái",

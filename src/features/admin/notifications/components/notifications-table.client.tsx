@@ -22,8 +22,6 @@ import type { ResourceViewMode, ResourceTableLoader } from "@/features/admin/res
 import { apiClient } from "@/lib/api/axios"
 import { useAdminNotificationsSocketBridge } from "@/hooks/use-notifications"
 import { logger } from "@/lib/config"
-import { isSuperAdmin } from "@/lib/permissions"
-import { NotificationKind } from "@prisma/client"
 import type { NotificationRow } from "../types"
 
 interface NotificationsTableClientProps {
@@ -238,17 +236,11 @@ export function NotificationsTableClient({
 
   const handleMarkAsRead = useCallback(
     async (row: NotificationRow) => {
-      // Kiểm tra quyền trước khi thực hiện
+      // Kiểm tra quyền: chỉ cho phép đánh dấu notification của chính mình
       const isOwner = session?.user?.id === row.userId
-      const roles = session?.roles ?? []
-      const isSuperAdminUser = isSuperAdmin(roles)
-      const isSystemNotification = row.kind === NotificationKind.SYSTEM
       
-      // Cho phép nếu: là chủ sở hữu HOẶC (super admin VÀ notification loại SYSTEM)
-      const canMarkAsRead = isOwner || (isSuperAdminUser && isSystemNotification)
-      
-      if (!canMarkAsRead) {
-        showFeedback("error", "Không có quyền", "Bạn chỉ có thể đánh dấu đã đọc thông báo của chính mình hoặc thông báo hệ thống (nếu là super admin).")
+      if (!isOwner) {
+        showFeedback("error", "Không có quyền", "Bạn chỉ có thể đánh dấu đã đọc thông báo của chính mình.")
         return
       }
 
@@ -266,22 +258,16 @@ export function NotificationsTableClient({
         setIsProcessing(false)
       }
     },
-    [showFeedback, triggerTableRefresh, session?.user?.id, session?.roles]
+    [showFeedback, triggerTableRefresh, session?.user?.id]
   )
 
   const handleMarkAsUnread = useCallback(
     async (row: NotificationRow) => {
-      // Kiểm tra quyền trước khi thực hiện
+      // Kiểm tra quyền: chỉ cho phép đánh dấu notification của chính mình
       const isOwner = session?.user?.id === row.userId
-      const roles = session?.roles ?? []
-      const isSuperAdminUser = isSuperAdmin(roles)
-      const isSystemNotification = row.kind === NotificationKind.SYSTEM
       
-      // Cho phép nếu: là chủ sở hữu HOẶC (super admin VÀ notification loại SYSTEM)
-      const canMarkAsUnread = isOwner || (isSuperAdminUser && isSystemNotification)
-      
-      if (!canMarkAsUnread) {
-        showFeedback("error", "Không có quyền", "Bạn chỉ có thể đánh dấu chưa đọc thông báo của chính mình hoặc thông báo hệ thống (nếu là super admin).")
+      if (!isOwner) {
+        showFeedback("error", "Không có quyền", "Bạn chỉ có thể đánh dấu chưa đọc thông báo của chính mình.")
         return
       }
 
@@ -299,23 +285,60 @@ export function NotificationsTableClient({
         setIsProcessing(false)
       }
     },
-    [showFeedback, triggerTableRefresh, session?.user?.id, session?.roles]
+    [showFeedback, triggerTableRefresh, session?.user?.id]
   )
 
   const handleBulkMarkAsRead = useCallback(
-    async (ids: string[]) => {
+    async (ids: string[], rows?: NotificationRow[]) => {
+      if (!session?.user?.id) {
+        showFeedback("error", "Lỗi", "Bạn cần đăng nhập để thực hiện thao tác này.")
+        return
+      }
+
+      // Filter chỉ notifications của chính user
+      let ownNotificationIds: string[]
+      if (rows) {
+        // Nếu có rows data, filter theo userId
+        ownNotificationIds = rows
+          .filter((row) => row.userId === session.user.id)
+          .map((row) => row.id)
+      } else {
+        // Nếu không có rows data, gọi API và để server filter
+        // (API sẽ tự động reject notifications không thuộc về user)
+        ownNotificationIds = ids
+      }
+
+      if (ownNotificationIds.length === 0) {
+        showFeedback("error", "Không có quyền", "Bạn chỉ có thể đánh dấu đã đọc thông báo của chính mình.")
+        return
+      }
+
       try {
         setIsProcessing(true)
-        await Promise.all(ids.map((id) => apiClient.patch(apiRoutes.notifications.markRead(id), { isRead: true })))
-        showFeedback("success", "Đã đánh dấu đã đọc", `Đã đánh dấu ${ids.length} thông báo là đã đọc.`)
-        triggerTableRefresh()
+        const results = await Promise.allSettled(
+          ownNotificationIds.map((id) => apiClient.patch(apiRoutes.notifications.markRead(id), { isRead: true }))
+        )
+
+        const successCount = results.filter((r) => r.status === "fulfilled").length
+        const failedCount = results.filter((r) => r.status === "rejected").length
+
+        if (successCount > 0) {
+          showFeedback(
+            "success",
+            "Đã đánh dấu đã đọc",
+            `Đã đánh dấu ${successCount} thông báo là đã đọc.${failedCount > 0 ? ` ${failedCount} thông báo không thể đánh dấu (không thuộc về bạn).` : ""}`
+          )
+          triggerTableRefresh()
+        } else {
+          showFeedback("error", "Lỗi", "Không thể đánh dấu đã đọc các thông báo. Bạn chỉ có thể đánh dấu thông báo của chính mình.")
+        }
       } catch {
         showFeedback("error", "Lỗi", "Không thể đánh dấu đã đọc các thông báo.")
       } finally {
         setIsProcessing(false)
       }
     },
-    [showFeedback, triggerTableRefresh]
+    [showFeedback, triggerTableRefresh, session?.user?.id]
   )
 
 
@@ -350,7 +373,7 @@ export function NotificationsTableClient({
         accessorKey: "kind",
         header: "Loại",
         filter: {
-          type: "command",
+          type: "select",
           placeholder: "Chọn loại...",
           options: Object.entries(NOTIFICATION_KINDS).map(([value, { label }]) => ({
             label,
@@ -391,7 +414,7 @@ export function NotificationsTableClient({
         accessorKey: "isRead",
         header: "Trạng thái",
         filter: {
-          type: "command",
+          type: "select",
           placeholder: "Chọn trạng thái...",
           options: [
             { label: "Đã đọc", value: "true" },
@@ -424,10 +447,15 @@ export function NotificationsTableClient({
       columns: baseColumns,
       selectionEnabled: canManage,
         selectionActions: canManage
-        ? ({ selectedIds, refresh }) => {
+        ? ({ selectedIds, selectedRows, refresh }) => {
+            // Filter chỉ notifications của chính user
+            const ownNotifications = selectedRows.filter((row) => row.userId === session?.user?.id)
+            const ownNotificationIds = ownNotifications.map((row) => row.id)
+            const otherCount = selectedIds.length - ownNotificationIds.length
+
             // Wrap handlers với refresh function
             const handleBulkMarkAsReadWithRefresh = async () => {
-              await handleBulkMarkAsRead(selectedIds)
+              await handleBulkMarkAsRead(ownNotificationIds, ownNotifications)
               refresh?.() // Trigger table refresh
             }
 
@@ -437,11 +465,17 @@ export function NotificationsTableClient({
                   size="sm"
                   variant="outline"
                   onClick={handleBulkMarkAsReadWithRefresh}
-                  disabled={isProcessing}
+                  disabled={isProcessing || ownNotificationIds.length === 0}
                 >
                   <CheckCircle2 className="mr-2 h-5 w-5" />
-                  Đánh dấu đã đọc ({selectedIds.length})
+                  Đánh dấu đã đọc ({ownNotificationIds.length}
+                  {otherCount > 0 && ` / ${selectedIds.length}`})
                 </Button>
+                {otherCount > 0 && (
+                  <span className="text-xs text-muted-foreground flex items-center">
+                    ({otherCount} thông báo không thuộc về bạn)
+                  </span>
+                )}
               </div>
             )
           }
@@ -449,12 +483,9 @@ export function NotificationsTableClient({
       rowActions: canManage
         ? (row, context) => {
             // Chỉ chủ sở hữu mới được đánh dấu đã đọc/chưa đọc notification
-            // HOẶC super admin với notification loại SYSTEM
+            // Chỉ cho phép owner đánh dấu đã đọc
             const isOwner = session?.user?.id === row.userId
-            const roles = session?.roles ?? []
-            const isSuperAdminUser = isSuperAdmin(roles)
-            const isSystemNotification = row.kind === NotificationKind.SYSTEM
-            const canMarkRead = isOwner || (isSuperAdminUser && isSystemNotification)
+            const canMarkRead = isOwner
             
             // Wrap handlers với refresh function từ context
             const handleMarkAsReadWithRefresh = async () => {

@@ -13,5 +13,9 @@ export {
   type DataTableSelectionChange,
   type DataTableSelectionConfig,
   type DataTableProps,
+  type ColumnFilterConfig,
+  type ColumnFilterSelectOption,
 } from "./data-table"
+
+export { ColumnFilterControl } from "./filter-controls"
 

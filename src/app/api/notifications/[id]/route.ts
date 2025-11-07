@@ -6,8 +6,6 @@ import { auth } from "@/lib/auth/auth"
 import { prisma } from "@/lib/database"
 import { getSocketServer } from "@/lib/socket/state"
 import { mapNotificationToPayload } from "@/lib/socket/state"
-import { isSuperAdmin } from "@/lib/permissions"
-import { NotificationKind } from "@prisma/client"
 
 async function patchNotificationHandler(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await auth()
@@ -29,19 +27,14 @@ async function patchNotificationHandler(req: NextRequest, { params }: { params: 
     return NextResponse.json({ error: "Notification not found" }, { status: 404 })
   }
 
-  // Check permissions: user must be owner OR (super admin AND notification is SYSTEM)
+  // Check permissions: user chỉ có thể đánh dấu đã đọc notification của chính mình
   const isOwner = notification.userId === session.user.id
-  const roles = session?.roles ?? []
-  const isSuperAdminUser = isSuperAdmin(roles)
-  const isSystemNotification = notification.kind === NotificationKind.SYSTEM
   
-  const canUpdate = isOwner || (isSuperAdminUser && isSystemNotification)
-  
-  if (!canUpdate) {
+  if (!isOwner) {
     return NextResponse.json(
       { 
         error: "Forbidden",
-        message: "Bạn chỉ có thể đánh dấu đã đọc thông báo của chính mình hoặc thông báo hệ thống (nếu là super admin)."
+        message: "Bạn chỉ có thể đánh dấu đã đọc thông báo của chính mình."
       },
       { status: 403 }
     )

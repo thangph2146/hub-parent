@@ -5,28 +5,15 @@ import {
     use,
     useCallback,
     useEffect,
-    useId,
     useMemo,
     useRef,
     useState,
     useTransition,
     type ReactNode,
 } from "react"
-import { ChevronLeft, ChevronRight, Check, ChevronsUpDown, Eye, EyeOff } from "lucide-react"
-import { format } from "date-fns"
+import { ChevronLeft, ChevronRight, Eye, EyeOff } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { DatePicker } from "@/components/ui/date-picker"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import {
-    Command,
-    CommandEmpty,
-    CommandGroup,
-    CommandInput,
-    CommandItem,
-    CommandList,
-} from "@/components/ui/command"
 import {
     Table,
     TableBody,
@@ -37,237 +24,9 @@ import {
 } from "@/components/ui/table"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useDebouncedCallback } from "@/hooks/use-debounced-callback"
-import { useClientOnly } from "@/hooks/use-client-only"
+import { ColumnFilterControl, type ColumnFilterConfig } from "./filter-controls"
 
 type UnknownRecord = Record<string, unknown>
-
-interface ColumnFilterSelectOption {
-    label: string
-    value: string
-}
-
-type ColumnFilterConfig =
-    | {
-        type?: "text"
-        placeholder?: string
-    }
-    | {
-        type: "select"
-        options: ColumnFilterSelectOption[]
-        placeholder?: string
-    }
-    | {
-        type: "date"
-        placeholder?: string
-        dateFormat?: string
-        enableTime?: boolean
-        showSeconds?: boolean
-    }
-    | {
-        type: "command"
-        options: ColumnFilterSelectOption[]
-        placeholder?: string
-        searchPlaceholder?: string
-        emptyMessage?: string
-    }
-
-
-interface ColumnFilterControlProps<T extends object = object> {
-    column: DataTableColumn<T>
-    value: string
-    disabled: boolean
-    onChange: (value: string, immediate?: boolean) => void
-}
-
-function ColumnFilterControl<T extends object = object>({ column, value, disabled, onChange }: ColumnFilterControlProps<T>) {
-    // Command filter needs state for popover, so we handle it separately
-    if (column.filter?.type === "command") {
-        // eslint-disable-next-line react-hooks/rules-of-hooks
-        const [open, setOpen] = useState(false)
-        // eslint-disable-next-line react-hooks/rules-of-hooks
-        const mounted = useClientOnly()
-        // eslint-disable-next-line react-hooks/rules-of-hooks
-        const filterId = useId()
-
-        const selectedOption = column.filter.options.find((opt) => opt.value === value)
-
-        // Only render Popover on client to avoid hydration mismatch
-        if (!mounted) {
-            return (
-                    <Button
-                        variant="outline"
-                        role="combobox"
-                        className={cn(
-                            "h-7 sm:h-8 w-full justify-between text-xs font-normal",
-                            !value && "text-muted-foreground",
-                        )}
-                        disabled={true}
-                    >
-                    <span className="truncate text-xs">
-                        {selectedOption ? selectedOption.label : column.filter.placeholder ?? "Chọn..."}
-                    </span>
-                    <ChevronsUpDown className="ml-1 sm:ml-2 h-3 w-3 shrink-0 opacity-50" />
-                </Button>
-            )
-        }
-
-        return (
-            <Popover open={open} onOpenChange={setOpen}>
-                <PopoverTrigger asChild>
-                    <Button
-                        variant="outline"
-                        role="combobox"
-                        aria-expanded={open}
-                        aria-controls={filterId}
-                        className={cn(
-                            "h-7 sm:h-8 w-full justify-between text-xs font-normal",
-                            !value && "text-muted-foreground",
-                        )}
-                        disabled={disabled}
-                    >
-                        <span className="truncate text-xs">
-                            {selectedOption ? selectedOption.label : column.filter.placeholder ?? "Chọn..."}
-                        </span>
-                        <ChevronsUpDown className="ml-1 sm:ml-2 h-3 w-3 shrink-0 opacity-50" />
-                    </Button>
-                </PopoverTrigger>
-                <PopoverContent id={filterId} className="w-[200px] p-0" align="start">
-                    <Command>
-                        <CommandInput
-                            placeholder={column.filter.searchPlaceholder ?? "Tìm kiếm..."}
-                            className="h-9"
-                        />
-                        <CommandList>
-                            <CommandEmpty>
-                                {column.filter.emptyMessage ?? "Không tìm thấy."}
-                            </CommandEmpty>
-                            <CommandGroup>
-                                <CommandItem
-                                    value=""
-                                    onSelect={() => {
-                                        onChange("", true)
-                                        setOpen(false)
-                                    }}
-                                >
-                                    <Check
-                                        className={cn(
-                                            "mr-2 h-3 w-3",
-                                            value === "" ? "opacity-100" : "opacity-0",
-                                        )}
-                                    />
-                                    {column.filter.placeholder ?? "Tất cả"}
-                                </CommandItem>
-                                {column.filter.options.map((option) => (
-                                    <CommandItem
-                                        key={option.value}
-                                        value={option.value}
-                                        onSelect={() => {
-                                            onChange(option.value === value ? "" : option.value, true)
-                                            setOpen(false)
-                                        }}
-                                    >
-                                        <Check
-                                            className={cn(
-                                                "mr-2 h-3 w-3",
-                                                value === option.value ? "opacity-100" : "opacity-0",
-                                            )}
-                                        />
-                                        {option.label}
-                                    </CommandItem>
-                                ))}
-                            </CommandGroup>
-                        </CommandList>
-                    </Command>
-                </PopoverContent>
-            </Popover>
-        )
-    }
-
-    if (!column.filter) return null
-
-    if (column.filter.type === "select") {
-        return (
-            <select
-                value={value}
-                onChange={(event) => onChange(event.target.value, true)}
-                disabled={disabled}
-                className={cn(
-                    "h-7 sm:h-8 w-full rounded-md border border-input bg-background px-2 text-xs outline-none focus-visible:ring-1 focus-visible:ring-ring",
-                    "disabled:cursor-not-allowed disabled:opacity-60",
-                )}
-                aria-label={`Lọc ${column.header}`}
-            >
-                <option value="">{column.filter.placeholder ?? "Tất cả"}</option>
-                {column.filter.options.map((option) => (
-                    <option key={option.value} value={option.value}>
-                        {option.label}
-                    </option>
-                ))}
-            </select>
-        )
-    }
-
-    if (column.filter.type === "date") {
-        let dateValue: Date | undefined
-        try {
-            if (value && value.trim()) {
-                const parsed = new Date(value)
-                if (!isNaN(parsed.getTime())) {
-                    dateValue = parsed
-                }
-            }
-        } catch {
-            dateValue = undefined
-        }
-        const dateFormat = column.filter.dateFormat
-        const enableTime = column.filter.enableTime ?? false
-        const showSeconds = column.filter.showSeconds ?? false
-
-        // Determine default format based on enableTime and showSeconds
-        const defaultDateFormat = enableTime
-            ? showSeconds
-                ? "dd/MM/yyyy HH:mm:ss"
-                : "dd/MM/yyyy HH:mm"
-            : "dd/MM/yyyy"
-
-        // Determine output format for filter value
-        const getOutputFormat = () => {
-            if (enableTime) {
-                return showSeconds ? "yyyy-MM-dd'T'HH:mm:ss" : "yyyy-MM-dd'T'HH:mm"
-            }
-            return "yyyy-MM-dd"
-        }
-
-        return (
-            <DatePicker
-                date={dateValue}
-                onDateChange={(date) => {
-                    if (date) {
-                        onChange(format(date, getOutputFormat()), true)
-                    } else {
-                        onChange("", true)
-                    }
-                }}
-                placeholder={column.filter.placeholder ?? (enableTime ? "Chọn ngày giờ" : "Chọn ngày")}
-                dateFormat={dateFormat ?? defaultDateFormat}
-                disabled={disabled}
-                enableTime={enableTime}
-                showSeconds={showSeconds}
-            />
-        )
-    }
-
-
-    return (
-        <Input
-            value={value}
-            onChange={(event) => onChange(event.target.value)}
-            placeholder={column.filter?.placeholder ?? `Lọc ${column.header.toLowerCase()}...`}
-            className="h-7 sm:h-8 text-xs"
-            disabled={disabled}
-        />
-    )
-}
 
 export interface DataTableColumn<T extends object> {
     accessorKey: keyof T & string
@@ -277,6 +36,9 @@ export interface DataTableColumn<T extends object> {
     className?: string
     headerClassName?: string
 }
+
+// Re-export filter types for convenience
+export type { ColumnFilterConfig, ColumnFilterSelectOption } from "./filter-controls"
 
 export interface DataTableQueryState {
     page: number

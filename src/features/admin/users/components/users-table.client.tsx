@@ -144,7 +144,7 @@ export function UsersTableClient({
         accessorKey: "roles",
         header: "Vai trò",
         filter: {
-          type: "command",
+          type: "select",
           placeholder: "Chọn vai trò...",
           searchPlaceholder: "Tìm kiếm vai trò...",
           emptyMessage: "Không tìm thấy vai trò.",
@@ -172,7 +172,7 @@ export function UsersTableClient({
         accessorKey: "isActive",
         header: "Trạng thái",
         filter: {
-          type: "command",
+          type: "select",
           placeholder: "Chọn trạng thái...",
           searchPlaceholder: "Tìm kiếm...",
           emptyMessage: "Không tìm thấy.",

@@ -109,7 +109,6 @@ export function ContactRequestsTableClient({
         accessorKey: "name",
         header: "Tên người liên hệ",
         filter: { placeholder: "Lọc tên..." },
-        searchable: true,
         className: "min-w-[150px] max-w-[200px]",
         headerClassName: "min-w-[150px] max-w-[200px]",
       },
@@ -117,7 +116,6 @@ export function ContactRequestsTableClient({
         accessorKey: "email",
         header: "Email",
         filter: { placeholder: "Lọc email..." },
-        searchable: true,
         className: "min-w-[180px] max-w-[250px]",
         headerClassName: "min-w-[180px] max-w-[250px]",
       },
@@ -125,7 +123,6 @@ export function ContactRequestsTableClient({
         accessorKey: "phone",
         header: "Số điện thoại",
         filter: { placeholder: "Lọc số điện thoại..." },
-        searchable: true,
         className: "min-w-[120px] max-w-[150px]",
         headerClassName: "min-w-[120px] max-w-[150px]",
         cell: (row) => row.phone || <span className="text-muted-foreground">-</span>,
@@ -134,7 +131,6 @@ export function ContactRequestsTableClient({
         accessorKey: "subject",
         header: "Tiêu đề",
         filter: { placeholder: "Lọc tiêu đề..." },
-        searchable: true,
         className: "min-w-[200px] max-w-[300px]",
         headerClassName: "min-w-[200px] max-w-[300px]",
       },
@@ -142,7 +138,7 @@ export function ContactRequestsTableClient({
         accessorKey: "status",
         header: "Trạng thái",
         filter: {
-          type: "command",
+          type: "select",
           placeholder: "Chọn trạng thái...",
           searchPlaceholder: "Tìm kiếm trạng thái...",
           emptyMessage: "Không tìm thấy trạng thái.",
@@ -158,7 +154,7 @@ export function ContactRequestsTableClient({
         accessorKey: "priority",
         header: "Độ ưu tiên",
         filter: {
-          type: "command",
+          type: "select",
           placeholder: "Chọn độ ưu tiên...",
           searchPlaceholder: "Tìm kiếm độ ưu tiên...",
           emptyMessage: "Không tìm thấy độ ưu tiên.",
@@ -174,7 +170,7 @@ export function ContactRequestsTableClient({
         accessorKey: "isRead",
         header: "Đã đọc",
         filter: {
-          type: "command",
+          type: "select",
           placeholder: "Chọn trạng thái đọc...",
           options: [
             { label: "Đã đọc", value: "true" },
@@ -191,7 +187,7 @@ export function ContactRequestsTableClient({
         accessorKey: "assignedToName",
         header: "Người được giao",
         filter: {
-          type: "command",
+          type: "select",
           placeholder: "Chọn người được giao...",
           searchPlaceholder: "Tìm kiếm người dùng...",
           emptyMessage: "Không tìm thấy người dùng.",
