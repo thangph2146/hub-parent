@@ -7,15 +7,20 @@
 
 import { StudentCreateClient } from "./student-create.client"
 import { getActiveUsersForSelectCached } from "@/features/admin/users/server/cache"
+import { getSession } from "@/lib/auth/auth-server"
+import { isSuperAdmin } from "@/lib/permissions"
 
 export interface StudentCreateProps {
   backUrl?: string
 }
 
 export async function StudentCreate({ backUrl = "/admin/students" }: StudentCreateProps) {
-  // Fetch users for userId select field using cached query
-  const usersOptions = await getActiveUsersForSelectCached(100)
+  const session = await getSession()
+  const isSuperAdminUser = isSuperAdmin(session?.roles ?? [])
 
-  return <StudentCreateClient backUrl={backUrl} users={usersOptions} />
+  // Chỉ fetch users options nếu là super admin
+  const usersOptions = isSuperAdminUser ? await getActiveUsersForSelectCached(100) : []
+
+  return <StudentCreateClient backUrl={backUrl} users={usersOptions} isSuperAdmin={isSuperAdminUser} />
 }
 

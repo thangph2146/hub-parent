@@ -51,10 +51,17 @@ export async function listStudents(params: ListStudentsInput = {}): Promise<List
 export async function getStudentColumnOptions(
   column: string,
   search?: string,
-  limit: number = 50
+  limit: number = 50,
+  actorId?: string,
+  isSuperAdmin?: boolean
 ): Promise<Array<{ label: string; value: string }>> {
   const where: Prisma.StudentWhereInput = {
     deletedAt: null, // Only active students
+  }
+
+  // Filter by userId if not super admin
+  if (!isSuperAdmin && actorId) {
+    where.userId = actorId
   }
 
   // Add search filter if provided
@@ -113,9 +120,18 @@ export async function getStudentColumnOptions(
     .filter((item): item is { label: string; value: string } => item !== null)
 }
 
-export async function getStudentById(id: string): Promise<StudentDetail | null> {
+export async function getStudentById(
+  id: string,
+  actorId?: string,
+  isSuperAdmin?: boolean
+): Promise<StudentDetail | null> {
+  const where: Prisma.StudentWhereUniqueInput = { id }
+  
+  // If not super admin, add userId filter to ensure user can only access their own students
+  // Note: This is a safety check, but Prisma findUnique doesn't support additional where conditions
+  // So we'll check after fetching
   const student = await prisma.student.findUnique({
-    where: { id },
+    where,
     include: {
       user: {
         select: {
@@ -128,6 +144,11 @@ export async function getStudentById(id: string): Promise<StudentDetail | null> 
   })
 
   if (!student) {
+    return null
+  }
+
+  // Check permission: non-super admin can only access students with their userId
+  if (!isSuperAdmin && actorId && student.userId !== actorId) {
     return null
   }
 

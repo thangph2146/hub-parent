@@ -11,11 +11,17 @@ import { getStudentColumnOptionsCached } from "@/features/admin/students/server/
 import { createGetRoute } from "@/lib/api/api-route-wrapper"
 import type { ApiRouteContext } from "@/lib/api/types"
 import { createOptionsHandler } from "@/lib/api/options-route-helper"
+import { isSuperAdmin } from "@/lib/permissions"
 
-async function getStudentOptionsHandler(req: NextRequest, _context: ApiRouteContext) {
+async function getStudentOptionsHandler(req: NextRequest, context: ApiRouteContext) {
+  // Check if user is super admin
+  const actorId = context.session.user?.id
+  const isSuperAdminUser = isSuperAdmin(context.roles)
+
   return createOptionsHandler(req, {
     allowedColumns: ["studentCode", "name", "email"],
-    getOptions: (column, search, limit) => getStudentColumnOptionsCached(column, search, limit),
+    getOptions: (column, search, limit) => 
+      getStudentColumnOptionsCached(column, search, limit, actorId, isSuperAdminUser),
   })
 }
 

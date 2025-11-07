@@ -1,5 +1,5 @@
 import type { Prisma } from "@prisma/client"
-import { PERMISSIONS, canPerformAnyAction } from "@/lib/permissions"
+import { PERMISSIONS, canPerformAnyAction, isSuperAdmin } from "@/lib/permissions"
 import { prisma } from "@/lib/database"
 import { mapStudentRecord, type StudentWithRelations } from "./helpers"
 import type { ListedStudent } from "../types"
@@ -51,12 +51,26 @@ export async function createStudent(ctx: AuthContext, input: unknown): Promise<L
     throw new ApplicationError("Mã học sinh đã tồn tại", 400)
   }
 
+  // Check permission: non-super admin can only create students with their userId
+  const isSuperAdminUser = isSuperAdmin(ctx.roles)
+  let finalUserId: string | null = validatedInput.userId || null
+
+  // Nếu không phải super admin, tự động set userId = actorId
+  if (!isSuperAdminUser) {
+    finalUserId = ctx.actorId
+  }
+
+  // Nếu super admin cố gắng set userId nhưng không phải super admin, reject
+  if (!isSuperAdminUser && validatedInput.userId && validatedInput.userId !== ctx.actorId) {
+    throw new ForbiddenError("Bạn không có quyền liên kết học sinh với tài khoản khác")
+  }
+
   const student = await prisma.student.create({
     data: {
       studentCode: trimmedStudentCode,
       name: validatedInput.name?.trim() || null,
       email: validatedInput.email?.trim() || null,
-      userId: validatedInput.userId || null,
+      userId: finalUserId,
       isActive: validatedInput.isActive ?? true,
     },
     include: {
@@ -117,6 +131,17 @@ export async function updateStudent(ctx: AuthContext, id: string, input: unknown
 
   if (!existing || existing.deletedAt) {
     throw new NotFoundError("Học sinh không tồn tại")
+  }
+
+  // Check permission: non-super admin can only update students with their userId
+  const isSuperAdminUser = isSuperAdmin(ctx.roles)
+  if (!isSuperAdminUser && existing.userId !== ctx.actorId) {
+    throw new ForbiddenError("Bạn chỉ có thể cập nhật học sinh của chính mình")
+  }
+
+  // Nếu không phải super admin, không cho phép thay đổi userId
+  if (!isSuperAdminUser && validatedInput.userId !== undefined && validatedInput.userId !== existing.userId) {
+    throw new ForbiddenError("Bạn không có quyền thay đổi liên kết tài khoản")
   }
 
   // Track changes for notification
@@ -216,6 +241,12 @@ export async function softDeleteStudent(ctx: AuthContext, id: string): Promise<v
   const student = await prisma.student.findUnique({ where: { id } })
   if (!student || student.deletedAt) {
     throw new NotFoundError("Học sinh không tồn tại")
+  }
+
+  // Check permission: non-super admin can only delete students with their userId
+  const isSuperAdminUser = isSuperAdmin(ctx.roles)
+  if (!isSuperAdminUser && student.userId !== ctx.actorId) {
+    throw new ForbiddenError("Bạn chỉ có thể xóa học sinh của chính mình")
   }
 
   await prisma.student.update({

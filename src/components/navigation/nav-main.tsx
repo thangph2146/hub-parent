@@ -1,5 +1,3 @@
-import { getSession } from "@/lib/auth/auth-server"
-import { getMenuData } from "@/lib/config"
 import { NavMainItem } from "./nav-main-item.client"
 import {
   SidebarGroup,
@@ -7,24 +5,13 @@ import {
   SidebarMenu,
 } from "@/components/ui/sidebar"
 import type { MenuItem } from "@/lib/config"
-import type { Permission } from "@/lib/permissions"
 
 /**
  * NavMain Server Component
  * 
- * Fetches session and menu data on the server
- * Renders navigation items based on user permissions
+ * Renders navigation items based on menu items passed from layout
  */
-export async function NavMain() {
-  const session = await getSession()
-  
-  if (!session?.permissions || session.permissions.length === 0) {
-    return null
-  }
-
-  const menuData = getMenuData(session.permissions as Permission[])
-  const items: MenuItem[] = menuData.navMain
-
+export function NavMain({ items = [] }: { items?: MenuItem[] }) {
   if (!items.length) {
     return null
   }

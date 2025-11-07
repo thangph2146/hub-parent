@@ -15,8 +15,9 @@ import {
 } from "@/features/admin/students/server/mutations"
 import { createGetRoute, createPutRoute, createDeleteRoute } from "@/lib/api/api-route-wrapper"
 import type { ApiRouteContext } from "@/lib/api/types"
+import { isSuperAdmin } from "@/lib/permissions"
 
-async function getStudentHandler(_req: NextRequest, _context: ApiRouteContext, ...args: unknown[]) {
+async function getStudentHandler(_req: NextRequest, context: ApiRouteContext, ...args: unknown[]) {
   const { params } = args[0] as { params: Promise<{ id: string }> }
   const { id: studentId } = await params
 
@@ -24,7 +25,11 @@ async function getStudentHandler(_req: NextRequest, _context: ApiRouteContext, .
     return NextResponse.json({ error: "Student ID is required" }, { status: 400 })
   }
 
-  const student = await getStudentDetailById(studentId)
+  // Check if user is super admin
+  const actorId = context.session.user?.id
+  const isSuperAdminUser = isSuperAdmin(context.roles)
+
+  const student = await getStudentDetailById(studentId, actorId, isSuperAdminUser)
 
   if (!student) {
     return NextResponse.json({ error: "Student not found" }, { status: 404 })

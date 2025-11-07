@@ -38,9 +38,10 @@ export function getStudentFormSections(): ResourceFormSection[] {
  * Base fields cho student form (studentCode, name, email, userId, isActive)
  */
 export function getBaseStudentFields(
-  usersOptions?: Array<{ label: string; value: string }>
+  usersOptions?: Array<{ label: string; value: string }>,
+  isSuperAdmin: boolean = false
 ): ResourceFormField<StudentFormData>[] {
-  return [
+  const fields: ResourceFormField<StudentFormData>[] = [
     {
       name: "studentCode",
       label: "Mã học sinh",
@@ -84,7 +85,11 @@ export function getBaseStudentFields(
       icon: React.createElement(Mail, { className: "h-4 w-4" }),
       section: "basic",
     },
-    {
+  ]
+
+  // Chỉ super admin mới có thể chọn liên kết tài khoản
+  if (isSuperAdmin) {
+    fields.push({
       name: "userId",
       label: "Liên kết với tài khoản",
       type: "select",
@@ -94,16 +99,19 @@ export function getBaseStudentFields(
       description: "Liên kết học sinh với tài khoản người dùng (tùy chọn)",
       icon: React.createElement(User, { className: "h-4 w-4" }),
       section: "basic",
-    },
-    {
-      name: "isActive",
-      label: "Trạng thái",
-      description: "Bật/tắt để kích hoạt hoặc vô hiệu hóa học sinh",
-      type: "switch",
-      defaultValue: true,
-      icon: React.createElement(ToggleLeft, { className: "h-4 w-4" }),
-      section: "status",
-    },
-  ]
+    })
+  }
+
+  fields.push({
+    name: "isActive",
+    label: "Trạng thái",
+    description: "Bật/tắt để kích hoạt hoặc vô hiệu hóa học sinh",
+    type: "switch",
+    defaultValue: true,
+    icon: React.createElement(ToggleLeft, { className: "h-4 w-4" }),
+    section: "status",
+  })
+
+  return fields
 }
 

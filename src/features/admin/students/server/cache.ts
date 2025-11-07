@@ -29,11 +29,15 @@ export const listStudentsCached = cache(async (params: ListStudentsInput = {}): 
  * Dùng cho Server Components
  * 
  * @param id - Student ID
+ * @param actorId - Actor user ID for permission check
+ * @param isSuperAdmin - Whether actor is super admin
  * @returns StudentDetail | null
  */
-export const getStudentDetailById = cache(async (id: string): Promise<StudentDetail | null> => {
-  return getStudentById(id)
-})
+export const getStudentDetailById = cache(
+  async (id: string, actorId?: string, isSuperAdmin?: boolean): Promise<StudentDetail | null> => {
+    return getStudentById(id, actorId, isSuperAdmin)
+  }
+)
 
 /**
  * Cache function: Get student column options for filters
@@ -42,9 +46,11 @@ export const getStudentColumnOptionsCached = cache(
   async (
     column: string,
     search?: string,
-    limit: number = 50
+    limit: number = 50,
+    actorId?: string,
+    isSuperAdmin?: boolean
   ): Promise<Array<{ label: string; value: string }>> => {
-    return getStudentColumnOptions(column, search, limit)
+    return getStudentColumnOptions(column, search, limit, actorId, isSuperAdmin)
   }
 )
 

@@ -1,9 +1,11 @@
 import { Suspense } from "react"
 import { getSession } from "@/lib/auth/auth-server"
+import { getMenuData } from "@/lib/config"
 import { AppSidebar, NavMain } from "@/components/navigation"
 import { NavMainSkeleton } from "@/components/skeletons"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 import { PermissionGate } from "@/components/shared"
+import type { Permission } from "@/lib/permissions"
 
 /**
  * Admin Layout
@@ -38,14 +40,20 @@ export default async function AdminLayout({
   // 
   // Layout này chỉ cung cấp data cho children components
   // PermissionGate sẽ check permission dựa trên route path và hiển thị ForbiddenNotice nếu không có quyền
-  await getSession()
+  const session = await getSession()
+
+  // Fetch menu data dựa trên permissions
+  const menuData = session?.permissions && session.permissions.length > 0
+    ? getMenuData(session.permissions as Permission[])
+    : { navMain: [] }
+  const navMainItems = menuData.navMain
 
   return (
     <SidebarProvider>
       <AppSidebar
         navMainSlot={
           <Suspense fallback={<NavMainSkeleton />}>
-            <NavMain />
+            <NavMain items={navMainItems} />
           </Suspense>
         }
       />

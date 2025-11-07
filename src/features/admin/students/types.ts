@@ -23,6 +23,8 @@ export interface ListStudentsInput {
   search?: string
   filters?: Record<string, string>
   status?: "active" | "deleted" | "all"
+  actorId?: string
+  isSuperAdmin?: boolean
 }
 
 export interface ListedStudent {

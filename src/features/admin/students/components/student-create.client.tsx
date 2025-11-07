@@ -18,9 +18,14 @@ import { getBaseStudentFields, getStudentFormSections, type StudentFormData } fr
 export interface StudentCreateClientProps {
   backUrl?: string
   users?: Array<{ label: string; value: string }>
+  isSuperAdmin?: boolean
 }
 
-export function StudentCreateClient({ backUrl = "/admin/students", users: usersFromServer = [] }: StudentCreateClientProps) {
+export function StudentCreateClient({ 
+  backUrl = "/admin/students", 
+  users: usersFromServer = [],
+  isSuperAdmin = false,
+}: StudentCreateClientProps) {
   const router = useRouter()
   const { toast } = useToast()
 
@@ -28,6 +33,14 @@ export function StudentCreateClient({ backUrl = "/admin/students", users: usersF
     try {
       const submitData: Record<string, unknown> = {
         ...data,
+      }
+
+      // Nếu không phải super admin, tự động set userId = null (sẽ được set bởi server dựa trên actorId)
+      // Hoặc có thể để server tự động set userId = actorId khi tạo
+      // Ở đây ta không set userId nếu không phải super admin, để server xử lý
+      if (!isSuperAdmin) {
+        // Không gửi userId nếu không phải super admin
+        delete submitData.userId
       }
 
       // Validation được xử lý bởi Zod ở server side
@@ -68,7 +81,7 @@ export function StudentCreateClient({ backUrl = "/admin/students", users: usersF
     }
   }
 
-  const createFields = getBaseStudentFields(usersFromServer)
+  const createFields = getBaseStudentFields(usersFromServer, isSuperAdmin)
   const formSections = getStudentFormSections()
 
   return (

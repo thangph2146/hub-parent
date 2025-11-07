@@ -1,10 +1,13 @@
 import { AdminHeader } from "@/components/headers"
-import { PERMISSIONS, canPerformAction, canPerformAnyAction } from "@/lib/permissions"
+import { PERMISSIONS, canPerformAction, canPerformAnyAction, isSuperAdmin } from "@/lib/permissions"
 import { getPermissions, getSession } from "@/lib/auth/auth-server"
 
 import { StudentsTable } from "@/features/admin/students/components/students-table"
 
 interface SessionWithMeta {
+  user?: {
+    id: string
+  }
   roles?: Array<{ name: string }>
   permissions?: Array<string>
 }
@@ -19,6 +22,8 @@ export default async function StudentsPage() {
   const session = (await getSession()) as SessionWithMeta | null
   const permissions = await getPermissions()
   const roles = session?.roles ?? []
+  const actorId = session?.user?.id
+  const isSuperAdminUser = isSuperAdmin(roles)
 
   // Check permissions cho UI actions (không phải page access)
   const canDelete = canPerformAnyAction(permissions, roles, [
@@ -45,6 +50,8 @@ export default async function StudentsPage() {
           canRestore={canRestore}
           canManage={canManage}
           canCreate={canCreate}
+          actorId={actorId}
+          isSuperAdmin={isSuperAdminUser}
         />
       </div>
     </>

@@ -31,6 +31,7 @@ export interface StudentEditClientProps {
   backLabel?: string
   studentId?: string
   users?: Array<{ label: string; value: string }>
+  isSuperAdmin?: boolean
 }
 
 export function StudentEditClient({
@@ -43,6 +44,7 @@ export function StudentEditClient({
   backLabel = "Quay lại",
   studentId: _studentId,
   users: usersFromServer = [],
+  isSuperAdmin = false,
 }: StudentEditClientProps) {
   const router = useRouter()
   const { toast } = useToast()
@@ -55,6 +57,12 @@ export function StudentEditClient({
     try {
       const submitData: Record<string, unknown> = {
         ...data,
+      }
+
+      // Nếu không phải super admin, không cho phép thay đổi userId
+      if (!isSuperAdmin) {
+        // Giữ nguyên userId hiện tại của student
+        submitData.userId = student.userId
       }
 
       // Validation được xử lý bởi Zod ở server side
@@ -97,7 +105,7 @@ export function StudentEditClient({
     }
   }
 
-  const editFields = getBaseStudentFields(usersFromServer)
+  const editFields = getBaseStudentFields(usersFromServer, isSuperAdmin)
   const formSections = getStudentFormSections()
 
   if (!student) {

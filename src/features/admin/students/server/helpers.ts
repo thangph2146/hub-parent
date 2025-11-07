@@ -51,6 +51,11 @@ export function buildWhereClause(params: ListStudentsInput): Prisma.StudentWhere
     where.deletedAt = { not: null }
   }
 
+  // Filter by userId if not super admin
+  if (!params.isSuperAdmin && params.actorId) {
+    where.userId = params.actorId
+  }
+
   if (params.search) {
     const searchValue = params.search.trim()
     if (searchValue.length > 0) {

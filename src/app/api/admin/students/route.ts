@@ -14,8 +14,9 @@ import {
 import { createGetRoute, createPostRoute } from "@/lib/api/api-route-wrapper"
 import type { ApiRouteContext } from "@/lib/api/types"
 import { validatePagination, sanitizeSearchQuery } from "@/lib/api/validation"
+import { isSuperAdmin } from "@/lib/permissions"
 
-async function getStudentsHandler(req: NextRequest, _context: ApiRouteContext) {
+async function getStudentsHandler(req: NextRequest, context: ApiRouteContext) {
   const searchParams = req.nextUrl.searchParams
 
   const paginationValidation = validatePagination({
@@ -42,12 +43,18 @@ async function getStudentsHandler(req: NextRequest, _context: ApiRouteContext) {
     }
   })
 
+  // Check if user is super admin
+  const actorId = context.session.user?.id
+  const isSuperAdminUser = isSuperAdmin(context.roles)
+
   const result = await listStudentsCached({
     page: paginationValidation.page,
     limit: paginationValidation.limit,
     search: searchValidation.value || undefined,
     filters: Object.keys(columnFilters).length > 0 ? columnFilters : undefined,
     status,
+    actorId,
+    isSuperAdmin: isSuperAdminUser,
   })
 
   // Serialize result to match StudentsResponse format
