@@ -1,6 +1,7 @@
 import { AdminHeader } from "@/components/headers"
 import { UserDetail } from "@/features/admin/users/components/user-detail"
 import { getUserDetailById } from "@/features/admin/users/server/cache"
+import { validateRouteId } from "@/lib/validation/route-params"
 
 /**
  * User Detail Page (Server Component)
@@ -16,7 +17,33 @@ export default async function UserDetailPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const user = await getUserDetailById(id)
+  
+  // Validate route ID
+  const validatedId = validateRouteId(id, "Người dùng")
+  if (!validatedId) {
+    return (
+      <>
+        <AdminHeader
+          breadcrumbs={[
+            { label: "Users", href: "/admin/users" },
+            { label: "Chi tiết", href: `/admin/users/${id}` },
+          ]}
+        />
+        <div className="flex flex-1 flex-col gap-4 p-4">
+          <div className="flex min-h-[400px] flex-1 items-center justify-center">
+            <div className="text-center">
+              <h2 className="mb-2 text-2xl font-bold">ID không hợp lệ</h2>
+              <p className="text-muted-foreground">
+                ID người dùng không hợp lệ.
+              </p>
+            </div>
+          </div>
+        </div>
+      </>
+    )
+  }
+  
+  const user = await getUserDetailById(validatedId)
 
   if (!user) {
     return (
@@ -51,7 +78,7 @@ export default async function UserDetailPage({
       />
       <div className="flex flex-1 flex-col gap-4 p-4">
         {/* UserDetail là server component, tự fetch data và render client component */}
-        <UserDetail userId={id} backUrl="/admin/users" />
+        <UserDetail userId={validatedId} backUrl="/admin/users" />
       </div>
     </>
   )

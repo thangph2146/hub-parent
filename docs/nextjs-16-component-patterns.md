@@ -186,14 +186,74 @@ export const getUserDetailById = cache(async (id: string): Promise<UserDetail | 
 })
 
 /**
- * Cache function: Get all roles
+ * Cache function: Get all active roles
+ * 
+ * Sử dụng cache() để tự động deduplicate requests và cache kết quả
+ * Dùng cho form options, filters, etc.
  */
 export const getRolesCached = cache(async () => {
   return prisma.role.findMany({
-    where: { isActive: true },
-    orderBy: { displayName: "asc" },
+    where: {
+      isActive: true,
+      deletedAt: null,
+    },
+    select: {
+      id: true,
+      name: true,
+      displayName: true,
+    },
+    orderBy: {
+      displayName: "asc",
+    },
   })
 })
+
+/**
+ * Cache function: Get user column options for filters
+ * 
+ * Sử dụng cache() để tự động deduplicate requests và cache kết quả
+ * Dùng cho filter options API route
+ */
+export const getUserColumnOptionsCached = cache(
+  async (
+    column: string,
+    search?: string,
+    limit: number = 50
+  ): Promise<Array<{ label: string; value: string }>> => {
+    return getUserColumnOptions(column, search, limit)
+  }
+)
+
+/**
+ * Cache function: Get active users for select options
+ * 
+ * Sử dụng cache() để tự động deduplicate requests và cache kết quả
+ * Dùng cho form select fields (userId, assignedTo, etc.)
+ */
+export const getActiveUsersForSelectCached = cache(
+  async (limit: number = 100): Promise<Array<{ label: string; value: string }>> => {
+    const users = await prisma.user.findMany({
+      where: {
+        isActive: true,
+        deletedAt: null,
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+      },
+      orderBy: {
+        name: "asc",
+      },
+      take: limit,
+    })
+
+    return users.map((user) => ({
+      label: user.name ? `${user.name} (${user.email})` : user.email || user.id,
+      value: user.id,
+    }))
+  }
+)
 ```
 
 **Lợi ích:**
@@ -450,11 +510,13 @@ export async function UsersTable({ canDelete, canRestore, canManage, canCreate }
 // src/features/admin/users/components/users-table.client.tsx
 "use client"
 
-import { useCallback, useMemo, useRef, useState } from "react"
+import { useCallback, useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
 import { ResourceTableClient } from "@/features/admin/resources/components/resource-table.client"
+import { useDynamicFilterOptions } from "@/features/admin/resources/hooks/use-dynamic-filter-options"
 import { apiClient } from "@/lib/api/axios"
 import { apiRoutes } from "@/lib/api/routes"
+import type { DataTableColumn } from "@/components/tables"
 import type { UserRow, UsersTableClientProps } from "../types"
 
 export function UsersTableClient({
@@ -466,6 +528,15 @@ export function UsersTableClient({
   initialRolesOptions = [],
 }: UsersTableClientProps) {
   const router = useRouter()
+  
+  // Sử dụng hook để fetch filter options động
+  const emailFilter = useDynamicFilterOptions({
+    optionsEndpoint: apiRoutes.users.options({ column: "email" }),
+  })
+
+  const nameFilter = useDynamicFilterOptions({
+    optionsEndpoint: apiRoutes.users.options({ column: "name" }),
+  })
   
   // Loader function để fetch data khi user tương tác (pagination, filter, etc.)
   const loader = useCallback(async (query) => {
@@ -486,8 +557,43 @@ export function UsersTableClient({
     return response.data
   }, [])
 
+  // Define columns với dynamic filter options
+  const columns = useMemo<DataTableColumn<UserRow>[]>(
+    () => [
+      {
+        accessorKey: "email",
+        header: "Email",
+        filter: {
+          type: "select",
+          placeholder: "Chọn email...",
+          searchPlaceholder: "Tìm kiếm...",
+          emptyMessage: "Không tìm thấy.",
+          options: emailFilter.options,
+          onSearchChange: emailFilter.onSearchChange,
+          isLoading: emailFilter.isLoading,
+        },
+      },
+      {
+        accessorKey: "name",
+        header: "Tên",
+        filter: {
+          type: "select",
+          placeholder: "Chọn tên...",
+          searchPlaceholder: "Tìm kiếm...",
+          emptyMessage: "Không tìm thấy.",
+          options: nameFilter.options,
+          onSearchChange: nameFilter.onSearchChange,
+          isLoading: nameFilter.isLoading,
+        },
+      },
+      // ... more columns
+    ],
+    [emailFilter, nameFilter]
+  )
+
   return (
     <ResourceTableClient
+      columns={columns}
       loader={loader}
       initialData={initialData} // Server-side bootstrap data
       // ... other props
@@ -516,7 +622,7 @@ export interface UserCreateProps {
 }
 
 export async function UserCreate({ backUrl = "/admin/users" }: UserCreateProps) {
-  // Fetch roles với cached query
+  // Fetch roles với cached query (tự động deduplicate)
   const roles = await getRolesCached()
 
   return <UserCreateClient backUrl={backUrl} roles={roles} />
@@ -655,7 +761,8 @@ export async function UserEdit({
   backUrl,
   backLabel = "Quay lại",
 }: UserEditProps) {
-  // Fetch user data và roles với cached queries
+  // Fetch user data và roles với cached queries (parallel fetching với Promise.all)
+  // Các queries được deduplicate tự động nếu được gọi nhiều lần trong cùng render pass
   const [user, roles] = await Promise.all([
     getUserDetailById(userId),
     getRolesCached(),
@@ -665,6 +772,7 @@ export async function UserEdit({
     return null
   }
 
+  // Serialize data trước khi pass xuống client component (dates → strings)
   const userForEdit: UserEditClientProps["user"] = {
     ...serializeUserDetail(user),
     roles: user.roles,
@@ -871,12 +979,69 @@ export async function UsersTable() {
 
 **Server Functions**:
 - `queries.ts`: Non-cached queries (dùng trong API routes)
+  - `listUsers()`: List users với pagination và filters
+  - `getUserById()`: Get user by ID
+  - `getUserColumnOptions()`: Get unique column values cho filter options
 - `cache.ts`: Cached queries với React `cache()` (dùng trong Server Components)
+  - `listUsersCached()`: Cached list users
+  - `getUserDetailById()`: Cached get user detail
+  - `getRolesCached()`: Cached get all active roles
+  - `getUserColumnOptionsCached()`: Cached get column options cho filters
+  - `getActiveUsersForSelectCached()`: Cached get active users cho select fields
 - `mutations.ts`: Create, update, delete operations với permission checks
 - `helpers.ts`: Serialization, mapping, transformation
+  - `mapUserRecord()`: Map Prisma user to ListedUser format
+  - `buildWhereClause()`: Build Prisma where clause từ filters
+  - `serializeUserDetail()`: Serialize user detail (dates → strings)
+  - `serializeUsersList()`: Serialize users list to DataTable format
 - `notifications.ts`: Realtime notifications via Socket.IO cho các actions
 
 **Pattern**: Page → Server Component (fetch với cache) → Client Component (UI/interactions)
+
+### Filter Options Pattern
+
+**Cấu trúc:**
+- Server queries: `get{Resource}ColumnOptions()` trong `queries.ts`
+- Cached queries: `get{Resource}ColumnOptionsCached()` trong `cache.ts`
+- API route: `/api/admin/{resource}/options/route.ts` sử dụng `createOptionsHandler`
+- Client hooks: `useDynamicFilterOptions()` để fetch options động
+
+**Flow:**
+1. Client Component sử dụng `useDynamicFilterOptions` hook
+2. Hook gọi API route `/api/admin/{resource}/options?column={column}&search={search}`
+3. API route sử dụng `createOptionsHandler` helper
+4. Helper gọi cached query `get{Resource}ColumnOptionsCached()`
+5. Cached query gọi non-cached query `get{Resource}ColumnOptions()`
+6. Database query trả về unique values cho column
+7. Response được cache với Cache-Control headers
+
+**Ví dụ:**
+
+```typescript
+// Client Component
+const emailFilter = useDynamicFilterOptions({
+  optionsEndpoint: apiRoutes.users.options({ column: "email" }),
+})
+
+// Column definition
+{
+  accessorKey: "email",
+  header: "Email",
+  filter: {
+    type: "select",
+    options: emailFilter.options,
+    onSearchChange: emailFilter.onSearchChange,
+    isLoading: emailFilter.isLoading,
+  },
+}
+```
+
+**Lợi ích:**
+- ✅ Dynamic filter options với search
+- ✅ Server-side caching với React `cache()`
+- ✅ Response caching với Cache-Control headers
+- ✅ Debouncing (300ms) để optimize requests
+- ✅ Type-safe với TypeScript
 
 ### Realtime Notifications Pattern
 

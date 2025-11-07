@@ -18,7 +18,11 @@ export interface UsersTableProps {
 
 export async function UsersTable({ canDelete, canRestore, canManage, canCreate }: UsersTableProps) {
   const [usersData, roles] = await Promise.all([
-    listUsersCached(1, 10, "", "", "active"),
+    listUsersCached({
+      page: 1,
+      limit: 10,
+      status: "active",
+    }),
     getRolesCached(),
   ])
 

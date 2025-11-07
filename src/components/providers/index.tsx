@@ -24,7 +24,6 @@ import { ThemeProvider } from "./theme-provider"
 import { SessionProvider } from "./session-provider"
 import { QueryProvider } from "./query-provider"
 import { LoadingFallback } from "./loading-fallback"
-import { PermissionGate } from "../shared/permission/gate/permission-gate"
 import { Suspense } from "react"
 
 export interface ProvidersProps {
@@ -41,9 +40,7 @@ export function Providers({ children, initialSession }: ProvidersProps) {
     <ThemeProvider>
       <Suspense fallback={<LoadingFallback />}>
         <SessionProvider session={initialSession}>
-            <PermissionGate>
               <QueryProvider>{children}</QueryProvider>
-            </PermissionGate>
         </SessionProvider>
       </Suspense>
     </ThemeProvider>

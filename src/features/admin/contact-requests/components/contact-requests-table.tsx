@@ -8,7 +8,7 @@
 import { listContactRequestsCached } from "../server/cache"
 import { serializeContactRequestsList } from "../server/helpers"
 import { ContactRequestsTableClient } from "./contact-requests-table.client"
-import { prisma } from "@/lib/database"
+import { getActiveUsersForSelectCached } from "@/features/admin/users/server/cache"
 
 export interface ContactRequestsTableProps {
   canDelete?: boolean
@@ -19,24 +19,13 @@ export interface ContactRequestsTableProps {
 }
 
 export async function ContactRequestsTable({ canDelete, canRestore, canManage, canUpdate, canAssign }: ContactRequestsTableProps) {
-  const [contactRequestsData, users] = await Promise.all([
+  const [contactRequestsData, usersOptions] = await Promise.all([
     listContactRequestsCached({
       page: 1,
       limit: 10,
       status: "active",
     }),
-    prisma.user.findMany({
-      where: {
-        isActive: true,
-        deletedAt: null,
-      },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-      },
-      orderBy: { name: "asc" },
-    }),
+    getActiveUsersForSelectCached(100),
   ])
 
   return (
@@ -47,10 +36,7 @@ export async function ContactRequestsTable({ canDelete, canRestore, canManage, c
       canUpdate={canUpdate}
       canAssign={canAssign}
       initialData={serializeContactRequestsList(contactRequestsData)}
-      initialUsersOptions={users.map((user) => ({
-        label: user.name || user.email,
-        value: user.id,
-      }))}
+      initialUsersOptions={usersOptions}
     />
   )
 }

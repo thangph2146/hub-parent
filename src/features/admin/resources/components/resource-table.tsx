@@ -8,7 +8,11 @@
  * ```typescript
  * // In your feature (e.g., users)
  * export async function UsersTable(props: UsersTableProps) {
- *   const initial = await listUsersCached(1, 10, "", "", "active")
+ *   const initial = await listUsersCached({
+ *     page: 1,
+ *     limit: 10,
+ *     status: "active",
+ *   })
  *   return (
  *     <ResourceTable
  *       initialDataByView={{ active: serializeUsersList(initial) }}

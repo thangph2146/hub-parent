@@ -7,6 +7,8 @@
  * - queries.ts: Generic query patterns và helpers
  * - cache.ts: Cache utilities
  * - helpers.ts: Shared helper functions
+ * - errors.ts: Shared error classes
+ * - mutations-helpers.ts: Shared mutation helpers
  */
 
 // Helpers
@@ -23,4 +25,17 @@ export {
 
 // Cache utilities
 export { cache } from "./cache"
+
+// Error classes
+export {
+  ApplicationError,
+  ForbiddenError,
+  NotFoundError,
+} from "./errors"
+
+// Mutation helpers
+export {
+  ensurePermission,
+  type AuthContext,
+} from "./mutations-helpers"
 

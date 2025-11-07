@@ -9,6 +9,7 @@
 
 export { HeroSection } from "./hero-section"
 export { ModeToggle } from "./mode-toggle"
-export { ForbiddenNotice } from "./forbidden-notice"
+export { ForbiddenNotice } from "./permission/forbidden-notice"
+export { UnauthenticatedNotice } from "./permission/unauthenticated-notice"
 export { PermissionGate } from "./permission/gate/permission-gate"
 

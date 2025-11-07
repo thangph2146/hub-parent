@@ -11,7 +11,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/lib/auth/auth"
 import { isSuperAdmin } from "@/lib/permissions"
-import { listNotificationsCached } from "@/features/admin/notifications/server/queries"
+import { listNotificationsCached } from "@/features/admin/notifications/server/cache"
 
 async function getAdminNotificationsHandler(req: NextRequest) {
   const session = await auth()
@@ -58,7 +58,12 @@ async function getAdminNotificationsHandler(req: NextRequest) {
     // Sử dụng cached query function để fetch notifications
     // Nếu userId được truyền, chỉ fetch notifications của user đó
     // Nếu không (super admin), fetch tất cả notifications
-    const result = await listNotificationsCached(page, limit, search, "", userId)
+    const result = await listNotificationsCached({
+      page,
+      limit,
+      search: search || undefined,
+      userId,
+    })
 
     return NextResponse.json({
       data: result.data.map((notification) => ({

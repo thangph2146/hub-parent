@@ -11,10 +11,10 @@ import { useEffect, useState } from "react"
 import { usePathname, useRouter } from "next/navigation"
 import { getRoutePermissions, canPerformAnyAction } from "@/lib/permissions"
 import type { Permission } from "@/lib/permissions"
-import { ForbiddenNotice } from "../../forbidden-notice"
+import { ForbiddenNotice, UnauthenticatedNotice } from "@/components/shared"
+import { AlreadyAuthenticatedNotice } from "../already-authenticated-notice"
 import { useClientOnly } from "@/hooks/use-client-only"
 import { useSession } from "@/lib/auth"
-import { LoadingFallback } from "@/components/providers/loading-fallback"
 
 interface PermissionGateClientProps {
   children: React.ReactNode
@@ -29,7 +29,7 @@ export function PermissionGateClient({ children, permissions, roles }: Permissio
   const { status } = useSession()
   const [isChecking, setIsChecking] = useState(true)
 
-  // Combined useEffect for checking state and redirect
+  // Combined useEffect for checking state
   useEffect(() => {
     // Reset checking state asynchronously to avoid synchronous setState
     const startTimer = setTimeout(() => {
@@ -40,34 +40,35 @@ export function PermissionGateClient({ children, permissions, roles }: Permissio
       setIsChecking(false)
     }, 100)
 
-    // Redirect unauthenticated users to sign-in
-    if (mounted && pathname && status === "unauthenticated" && pathname.startsWith("/admin") && !pathname.startsWith("/auth")) {
-      const callbackUrl = encodeURIComponent(pathname)
-      router.push(`/auth/sign-in?callbackUrl=${callbackUrl}`)
-    }
-
     return () => {
       clearTimeout(startTimer)
       clearTimeout(finishTimer)
     }
-  }, [pathname, status, mounted, router])
+  }, [pathname, status, mounted])
 
   // Loading states
   if (!pathname || isChecking || status === "loading" || (!mounted && pathname?.startsWith("/admin"))) {
-    return <LoadingFallback />
+    return 
   }
 
   const isAdminRoute = pathname.startsWith("/admin")
   const isAuthRoute = pathname.startsWith("/auth")
 
-  // Still show loading while redirecting
+  // Show unauthenticated notice instead of redirecting
   if (status === "unauthenticated" && isAdminRoute) {
-    return <LoadingFallback />
+    const callbackUrl = encodeURIComponent(pathname)
+    return (
+      <UnauthenticatedNotice
+        onLogin={() => {
+          router.push(`/auth/sign-in?callbackUrl=${callbackUrl}`)
+        }}
+      />
+    )
   }
 
   // Block auth routes when authenticated
   if (status === "authenticated" && isAuthRoute) {
-    return <ForbiddenNotice title="Đã đăng nhập" message="Bạn đã đăng nhập. Vui lòng quay lại trang quản trị." />
+    return <AlreadyAuthenticatedNotice />
   }
 
   // Permission checks (only for authenticated users)

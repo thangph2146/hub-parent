@@ -24,6 +24,8 @@ export {
   listUsersCached,
   getUserDetailById,
   getRolesCached,
+  getUserColumnOptionsCached,
+  getActiveUsersForSelectCached,
 } from "./cache"
 
 // Mutations

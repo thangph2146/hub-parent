@@ -7,7 +7,7 @@
  * - Dynamic route vì có search query parameter
  */
 import { NextRequest } from "next/server"
-import { getNotificationColumnOptionsCached } from "@/features/admin/notifications/server/queries"
+import { getNotificationColumnOptionsCached } from "@/features/admin/notifications/server/cache"
 import { createGetRoute } from "@/lib/api/api-route-wrapper"
 import type { ApiRouteContext } from "@/lib/api/types"
 import { createOptionsHandler } from "@/lib/api/options-route-helper"

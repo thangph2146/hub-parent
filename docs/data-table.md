@@ -1,15 +1,19 @@
-# DataTable Component - Hướng dẫn sử dụng
+# DataTable Component - Hướng dẫn sử dụng chi tiết
 
 `DataTable` là component bảng dữ liệu tái sử dụng, tích hợp Suspense của React 19 / Next.js 16 để xử lý load dữ liệu bất đồng bộ. Component hỗ trợ:
 
 - Pagination server-side với `page`, `limit`, `total`, `totalPages`
 - Search toàn bảng (thông qua `query.search` trong loader)
-- Filter theo từng cột (text, select, date picker, hoặc command/combobox)
+- Filter theo từng cột (text, select, multi-select, date)
 - Tùy biến cell renderer cho từng cột
 - Gắn actions theo từng dòng (edit/delete...)
 - Lựa chọn nhiều dòng, chọn tất cả và hiển thị bulk actions
 - Làm việc trực tiếp với dữ liệu Prisma thông qua loader
 - Server-side bootstrap với `initialData` để tối ưu performance
+- Query comparison để tránh duplicate API calls
+- Debouncing cho text filters (300ms)
+- Toggle ẩn/hiện filter row
+- Clear filters button
 
 ## Cấu trúc thư mục
 
@@ -17,7 +21,17 @@
 src/
 ├── components/
 │   └── tables/
-│       └── data-table.tsx                # DataTable generics kèm Suspense + selection
+│       ├── data-table.tsx                # DataTable generics kèm Suspense + selection
+│       ├── filter-controls/             # Filter components
+│       │   ├── column-filter-control.tsx
+│       │   ├── text-filter.tsx
+│       │   ├── select-filter.tsx
+│       │   ├── multi-select-filter.tsx
+│       │   ├── date-filter.tsx
+│       │   └── customs/
+│       │       ├── command-combobox.tsx   # Single select với search
+│       │       └── multi-command-combobox.tsx  # Multi select với search
+│       └── index.ts
 └── features/
     └── users/
         ├── components/
@@ -40,6 +54,7 @@ interface UserRow {
   email: string
   name: string | null
   isActive: boolean
+  roles: string[]
   createdAt: string
 }
 
@@ -47,12 +62,17 @@ const columns: DataTableColumn<UserRow>[] = [
   {
     accessorKey: "email",
     header: "Email",
-    filter: { placeholder: "Lọc email..." },
+    filter: { 
+      type: "text",
+      placeholder: "Lọc email..." 
+    },
   },
   {
     accessorKey: "name",
     header: "Tên",
-    filter: { placeholder: "Lọc tên..." },
+    filter: { 
+      placeholder: "Lọc tên..." 
+    },
     cell: (row) => row.name ?? "-",
   },
   {
@@ -67,6 +87,26 @@ const columns: DataTableColumn<UserRow>[] = [
       ],
     },
     cell: (row) => (row.isActive ? "Active" : "Inactive"),
+  },
+  {
+    accessorKey: "roles",
+    header: "Vai trò",
+    filter: {
+      type: "multi-select",
+      placeholder: "Chọn vai trò...",
+      searchPlaceholder: "Tìm kiếm vai trò...",
+      emptyMessage: "Không tìm thấy vai trò",
+      options: [
+        { label: "Admin", value: "admin" },
+        { label: "User", value: "user" },
+        { label: "Moderator", value: "moderator" },
+      ],
+      onSearchChange: (query) => {
+        // Gọi API để fetch options động
+      },
+      isLoading: false,
+    },
+    cell: (row) => row.roles.join(", "),
   },
   {
     accessorKey: "createdAt",
@@ -84,7 +124,7 @@ const columns: DataTableColumn<UserRow>[] = [
 **Lưu ý:**
 - `accessorKey`: Phải là key của object type `T`
 - `header`: Tiêu đề cột
-- `cell`: Optional renderer function, mặc định hiển thị raw value
+- `cell`: Optional renderer function, mặc định hiển thị raw value hoặc "-" nếu null/undefined
 - `filter`: Optional filter configuration
 - `className`: Optional CSS class cho cell
 - `headerClassName`: Optional CSS class cho header
@@ -139,6 +179,8 @@ interface DataTableQueryState {
   limit: number         // Số bản ghi mỗi trang
   search: string        // Search toàn bảng (có thể implement UI riêng)
   filters: Record<string, string>  // Column filters
+  // Lưu ý: Multi-select filters trả về comma-separated string
+  // Ví dụ: "admin,user,moderator"
 }
 ```
 
@@ -160,7 +202,7 @@ interface DataTableResult<T> {
 ```tsx
 "use client"
 
-import { useState } from "react"
+import { useState, useCallback } from "react"
 import { DataTable, type DataTableSelectionChange } from "@/components/tables/data-table"
 
 export function UsersTableClient({ canManage }: { canManage: boolean }) {
@@ -169,6 +211,12 @@ export function UsersTableClient({ canManage }: { canManage: boolean }) {
   const handleSelectionChange = (change: DataTableSelectionChange<UserRow>) => {
     setSelectedIds(change.ids)
   }
+
+  const loader = useCallback(async (query: DataTableQueryState) => {
+    // Loader implementation
+    const response = await apiClient.get(apiRoutes.users.list(query))
+    return response.data
+  }, [])
 
   return (
     <DataTable
@@ -251,8 +299,7 @@ export async function UsersTable() {
       name: user.name,
       isActive: user.isActive,
       createdAt: user.createdAt.toISOString(),
-      deletedAt: user.deletedAt ? user.deletedAt.toISOString() : null,
-      roles: user.roles,
+      roles: user.roles.map(r => r.name),
     })),
   }
 
@@ -264,6 +311,7 @@ export async function UsersTable() {
 - Render ngay lập tức với dữ liệu ban đầu (không cần loading state)
 - Tận dụng React Server Components và caching
 - Các thao tác tiếp theo (pagination, filter) vẫn dùng loader/fetch thông qua API
+- Component tự động sử dụng `initialData` cho query đầu tiên, sau đó chuyển sang loader
 
 ## 5. Props API
 
@@ -293,9 +341,9 @@ interface DataTableProps<T extends object> {
     selectedRows: T[]
     clearSelection: () => void
   }) => ReactNode                         // Renderer cho bulk actions
-  maxHeight?: string | number             // Max height cho table
+  maxHeight?: string | number             // Max height cho table (chưa được implement)
   enableHorizontalScroll?: boolean        // Enable horizontal scroll (mặc định: true)
-  maxWidth?: string | number              // Max width cho table
+  maxWidth?: string | number              // Max width cho table container
 }
 ```
 
@@ -338,9 +386,11 @@ filter: {
 }
 ```
 
+**Đặc điểm:**
 - Input text đơn giản
 - Debounced (300ms) để tránh quá nhiều requests
 - Phù hợp cho các trường text cần tìm kiếm theo từ khóa
+- Apply filter sau khi user ngừng gõ 300ms
 
 ### 2. Select Filter (Dropdown đơn giản)
 
@@ -355,11 +405,82 @@ filter: {
 }
 ```
 
+**Đặc điểm:**
 - Native HTML `<select>` element
 - Phù hợp cho danh sách options ngắn (< 10 items)
 - Apply ngay lập tức khi chọn
 
-### 3. Date Filter (Date Picker)
+**Với Search (Command Combobox):**
+
+Khi có `onSearchChange` callback, component sẽ tự động sử dụng Command Combobox với search:
+
+```typescript
+filter: {
+  type: "select",
+  placeholder: "Chọn email...",
+  searchPlaceholder: "Tìm kiếm...",
+  emptyMessage: "Không tìm thấy.",
+  options: [], // Options sẽ được load động qua onSearchChange
+  onSearchChange: (query: string) => {
+    // Gọi API để fetch options
+    // Component sẽ tự động sử dụng Command Combobox
+  },
+  isLoading: boolean, // Hiển thị loading state
+}
+```
+
+**Đặc điểm:**
+- Combobox với search functionality
+- Phù hợp cho danh sách options dài (> 10 items) cần tìm kiếm
+- Apply ngay lập tức khi chọn
+- Sử dụng Popover + Command component từ shadcn/ui
+- Ngăn chặn auto-select khi nhấn Enter trong search (chỉ select khi click)
+
+### 3. Multi-Select Filter
+
+```typescript
+filter: {
+  type: "multi-select",
+  placeholder: "Chọn vai trò...",
+  searchPlaceholder: "Tìm kiếm vai trò...",
+  emptyMessage: "Không tìm thấy vai trò",
+  options: [
+    { label: "Admin", value: "admin" },
+    { label: "User", value: "user" },
+    { label: "Moderator", value: "moderator" },
+  ],
+  onSearchChange: (query: string) => {
+    // Gọi API để fetch options động
+  },
+  isLoading: boolean,
+}
+```
+
+**Đặc điểm:**
+- Cho phép chọn nhiều options
+- Giá trị trong `query.filters` là comma-separated string: `"admin,user,moderator"`
+- Hiển thị badges cho các options đã chọn (tối đa 3, sau đó hiển thị "X mục đã chọn")
+- Có nút X để clear tất cả
+- Sử dụng Command Combobox với multi-select support
+- Ngăn chặn auto-select khi nhấn Enter trong search
+
+**Xử lý Multi-Select trong Loader:**
+
+```typescript
+// Trong loader, parse comma-separated string
+Object.entries(query.filters).forEach(([key, value]) => {
+  if (key === "roles" && value) {
+    // Multi-select filter: value là "admin,user,moderator"
+    const roles = value.split(",").filter(r => r.trim())
+    // Sử dụng roles array trong Prisma query
+    where.roles = { hasSome: roles }
+  } else if (value) {
+    params.set(`filter[${key}]`, value)
+  }
+})
+```
+
+### 4. Date Filter (Date Picker)
 
 ```typescript
 // Date picker chỉ ngày
@@ -392,25 +513,18 @@ filter: {
 - Date filter với `enableTime: true` (không có `showSeconds`) trả về format `yyyy-MM-ddTHH:mm`.
 - Date filter với `enableTime: true` và `showSeconds: true` trả về format `yyyy-MM-ddTHH:mm:ss`.
 
-### 4. Command Filter (Combobox với search)
+**Xử lý Date Filter trong Loader:**
 
 ```typescript
-filter: {
-  type: "select",
-  placeholder: "Chọn...",
-  searchPlaceholder: "Tìm kiếm...", // Tùy chọn, mặc định: "Tìm kiếm..."
-  emptyMessage: "Không tìm thấy.", // Tùy chọn, mặc định: "Không tìm thấy."
-  options: [
-    { label: "Option 1", value: "opt1" },
-    { label: "Option 2", value: "opt2" },
-  ],
+if (columnFilters.createdAt) {
+  // Parse date filter (format: yyyy-MM-dd hoặc yyyy-MM-ddTHH:mm hoặc yyyy-MM-ddTHH:mm:ss)
+  const dateValue = new Date(columnFilters.createdAt)
+  where.createdAt = {
+    gte: new Date(dateValue.setHours(0, 0, 0, 0)),
+    lte: new Date(dateValue.setHours(23, 59, 59, 999)),
+  }
 }
 ```
-
-- Combobox với search functionality
-- Phù hợp cho danh sách options dài (> 10 items) cần tìm kiếm
-- Apply ngay lập tức khi chọn
-- Sử dụng Popover + Command component từ shadcn/ui
 
 ## 7. Ẩn/Hiện Bộ Lọc
 
@@ -477,6 +591,7 @@ Nhấp vào nút này sẽ:
 - Xóa toàn bộ giá trị search (nếu có)
 - Xóa tất cả các filter đã áp dụng
 - Reset về trang đầu tiên
+- Clear tất cả pending text filters
 
 ## 8. Search Toàn Bảng
 
@@ -524,7 +639,49 @@ export function UsersTableWithSearch() {
 }
 ```
 
-## 9. Ví dụ API với Prisma
+## 9. Query Comparison và Duplicate Request Prevention
+
+DataTable tự động so sánh query objects để tránh gọi API khi query không thực sự thay đổi:
+
+**Cơ chế:**
+- Component sử dụng `areQueriesEqual` function để so sánh giá trị của query objects (không phải reference)
+- Chỉ gọi API khi:
+  1. Query thực sự thay đổi (giá trị khác nhau), HOẶC
+  2. `refreshKey` thay đổi (force refresh)
+- Sử dụng `useRef` để track previous query và refreshKey
+
+**Lợi ích:**
+- Tránh duplicate API calls khi component re-render
+- Tối ưu performance
+- Giảm network requests không cần thiết
+
+## 10. Refresh Key Mechanism
+
+Sử dụng `refreshKey` để force reload dữ liệu sau các thao tác CRUD:
+
+```tsx
+const [refreshKey, setRefreshKey] = useState(0)
+
+const handleDelete = async (id: string) => {
+  await deleteUser(id)
+  setRefreshKey((prev) => prev + 1) // Force reload
+}
+
+return (
+  <DataTable
+    columns={columns}
+    loader={loader}
+    refreshKey={refreshKey}
+  />
+)
+```
+
+**Cơ chế:**
+- Khi `refreshKey` thay đổi, component sẽ force reload dữ liệu
+- Bỏ qua `initialData` khi `refreshKey` thay đổi
+- Luôn gọi loader với query hiện tại
+
+## 11. Ví dụ API với Prisma
 
 ```typescript
 // GET /api/users
@@ -552,12 +709,29 @@ export async function GET(req: NextRequest) {
       : undefined,
   }
 
+  // Text filter
   if (columnFilters.email) {
     where.email = { contains: columnFilters.email, mode: "insensitive" }
   }
+
+  // Select filter
   if (columnFilters.isActive) {
     where.isActive = columnFilters.isActive === "true"
   }
+
+  // Multi-select filter (comma-separated)
+  if (columnFilters.roles) {
+    const roles = columnFilters.roles.split(",").filter(r => r.trim())
+    where.userRoles = {
+      some: {
+        role: {
+          name: { in: roles },
+        },
+      },
+    }
+  }
+
+  // Date filter
   if (columnFilters.createdAt) {
     // Parse date filter (format: yyyy-MM-dd hoặc yyyy-MM-ddTHH:mm)
     const dateValue = new Date(columnFilters.createdAt)
@@ -589,12 +763,12 @@ export async function GET(req: NextRequest) {
 }
 ```
 
-## 10. Quick Start Example
+## 12. Quick Start Example
 
 ```typescript
 "use client"
 
-import { useState } from "react"
+import { useState, useCallback } from "react"
 import {
   DataTable,
   type DataTableColumn,
@@ -709,7 +883,7 @@ export function MyDataTable() {
 }
 ```
 
-## 11. Best Practices
+## 13. Best Practices
 
 1. **Memo hóa columns & loader** bằng `useMemo`/`useCallback` để tránh re-render không cần thiết.
 2. **Luôn trả về `total` & `totalPages`** từ API để pagination chính xác.
@@ -718,12 +892,49 @@ export function MyDataTable() {
 5. **Giới hạn filters cần thiết** để giao diện gọn gàng; tránh hiển thị quá nhiều bộ lọc.
 6. **Chọn loại filter phù hợp:**
    - `text`: Cho các trường text cần tìm kiếm theo từ khóa
-   - `select`: Cho danh sách options ngắn (< 10 items)
-   - `command`: Cho danh sách options dài (> 10 items) cần search
+   - `select`: Cho danh sách options ngắn (< 10 items) hoặc dài với search
+   - `multi-select`: Cho danh sách options cần chọn nhiều
    - `date`: Cho các trường ngày tháng
 7. **Ẩn filter khi không cần thiết:** Chỉ thêm `filter` cho các cột thực sự cần lọc. Việc này giúp giao diện gọn gàng và tải nhanh hơn.
 8. **Sử dụng `initialData`** để tối ưu performance với server-side bootstrap.
 9. **Debounced filters:** Text filters được debounce tự động (300ms) để tránh quá nhiều requests.
 10. **Type safety:** Luôn định nghĩa type cho row data (`UserRow`, `MyData`, etc.) để đảm bảo type safety.
+11. **Query comparison:** Component tự động so sánh queries để tránh duplicate requests, không cần lo lắng về re-renders.
+12. **Multi-select format:** Nhớ parse comma-separated string trong loader khi xử lý multi-select filters.
+13. **Date format:** Xử lý đúng format date trong loader (yyyy-MM-dd, yyyy-MM-ddTHH:mm, yyyy-MM-ddTHH:mm:ss).
+
+## 14. Suspense và Loading States
+
+DataTable sử dụng React Suspense để xử lý loading states:
+
+**Các Suspense boundaries:**
+1. **TableBodyContent:** Hiển thị skeleton khi đang load data
+2. **TableSummary:** Hiển thị skeleton cho pagination summary
+
+**Loading states:**
+- `isPending`: State từ `useTransition` để disable buttons và inputs khi đang load
+- Skeleton rows: Hiển thị trong `TableBodySkeleton` với số rows = `fallbackRowCount` (mặc định: 5)
+- Summary skeleton: Hiển thị trong `SummarySkeleton` khi đang load pagination info
+
+**Lưu ý:**
+- Component sử dụng `use()` hook để unwrap Promise từ Suspense
+- Error handling: Loader errors được catch và fallback về empty state
+
+## 15. Selection Mechanism
+
+**Controlled vs Uncontrolled:**
+- **Controlled:** Sử dụng `selectedIds` prop và `onSelectionChange` callback
+- **Uncontrolled:** Sử dụng `defaultSelectedIds` prop, component quản lý state internally
+
+**Selection features:**
+- Select all visible rows: Checkbox ở header
+- Select individual row: Checkbox ở mỗi row
+- Indeterminate state: Khi một số rows được chọn
+- `isRowSelectable`: Function để kiểm tra row có thể select không
+- `disabled`: Disable toàn bộ selection
+
+**Selection actions:**
+- `selectionActions`: Renderer cho bulk actions khi có rows được chọn
+- `clearSelection`: Function để clear tất cả selections
 
 Tham khảo triển khai thực tế tại `src/features/users/components/users-table.tsx` và `src/features/users/components/users-table.client.tsx`.

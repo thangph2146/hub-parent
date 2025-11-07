@@ -1,6 +1,5 @@
 import type { Prisma } from "@prisma/client"
-import type { Permission } from "@/lib/permissions"
-import { PERMISSIONS, canPerformAction, canPerformAnyAction } from "@/lib/permissions"
+import { PERMISSIONS, canPerformAnyAction } from "@/lib/permissions"
 import { prisma } from "@/lib/database"
 import { mapCategoryRecord, type CategoryWithRelations } from "./helpers"
 import type { ListedCategory } from "../types"
@@ -11,39 +10,16 @@ import {
   UpdateCategorySchema,
 } from "./schemas"
 import { notifySuperAdminsOfCategoryAction } from "./notifications"
+import {
+  ApplicationError,
+  ForbiddenError,
+  NotFoundError,
+  ensurePermission,
+  type AuthContext,
+} from "@/features/admin/resources/server"
 
-export interface AuthContext {
-  actorId: string
-  permissions: Permission[]
-  roles: Array<{ name: string }>
-}
-
-export class ApplicationError extends Error {
-  status: number
-  constructor(message: string, status = 400) {
-    super(message)
-    this.status = status
-  }
-}
-
-export class ForbiddenError extends ApplicationError {
-  constructor(message = "Forbidden") {
-    super(message, 403)
-  }
-}
-
-export class NotFoundError extends ApplicationError {
-  constructor(message = "Not found") {
-    super(message, 404)
-  }
-}
-
-function ensurePermission(ctx: AuthContext, ...required: Permission[]) {
-  const allowed = required.some((perm) => canPerformAction(ctx.permissions, ctx.roles, perm))
-  if (!allowed) {
-    throw new ForbiddenError()
-  }
-}
+// Re-export for backward compatibility with API routes
+export { ApplicationError, ForbiddenError, NotFoundError, type AuthContext }
 
 function sanitizeCategory(category: CategoryWithRelations): ListedCategory {
   return mapCategoryRecord(category)

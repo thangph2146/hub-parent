@@ -9,7 +9,7 @@ import { getContactRequestDetailById } from "../server/cache"
 import { serializeContactRequestDetail } from "../server/helpers"
 import { ContactRequestEditClient } from "./contact-request-edit.client"
 import type { ContactRequestEditClientProps } from "./contact-request-edit.client"
-import { prisma } from "@/lib/database"
+import { getActiveUsersForSelectCached } from "@/features/admin/users/server/cache"
 
 export interface ContactRequestEditProps {
   contactRequestId: string
@@ -30,20 +30,9 @@ export async function ContactRequestEdit({
   backUrl,
   backLabel = "Quay lại",
 }: ContactRequestEditProps) {
-  const [contactRequest, users] = await Promise.all([
+  const [contactRequest, usersOptions] = await Promise.all([
     getContactRequestDetailById(contactRequestId),
-    prisma.user.findMany({
-      where: {
-        isActive: true,
-        deletedAt: null,
-      },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-      },
-      orderBy: { name: "asc" },
-    }),
+    getActiveUsersForSelectCached(100),
   ])
 
   if (!contactRequest) {
@@ -64,10 +53,7 @@ export async function ContactRequestEdit({
       backUrl={backUrl}
       backLabel={backLabel}
       contactRequestId={contactRequestId}
-      usersOptions={users.map((user) => ({
-        label: user.name || user.email,
-        value: user.id,
-      }))}
+      usersOptions={usersOptions}
     />
   )
 }

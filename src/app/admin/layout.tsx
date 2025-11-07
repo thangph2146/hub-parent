@@ -3,6 +3,7 @@ import { getSession } from "@/lib/auth/auth-server"
 import { AppSidebar, NavMain } from "@/components/navigation"
 import { NavMainSkeleton } from "@/components/skeletons"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
+import { PermissionGate } from "@/components/shared"
 
 /**
  * Admin Layout
@@ -49,7 +50,9 @@ export default async function AdminLayout({
         }
       />
       <SidebarInset className="flex flex-col w-full overflow-x-hidden">
-        {children}
+        <PermissionGate>
+          {children}
+        </PermissionGate>
       </SidebarInset>
     </SidebarProvider>
   )

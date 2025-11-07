@@ -10,7 +10,7 @@
  */
 
 import { cache } from "react"
-import { listRoles, getRoleColumnOptions, type RoleDetail } from "./queries"
+import { listRoles, getRoleColumnOptions, type RoleDetail, type ListRolesInput, type ListRolesResult } from "./queries"
 import { mapRoleRecord } from "./helpers"
 import { prisma } from "@/lib/database"
 
@@ -18,20 +18,14 @@ import { prisma } from "@/lib/database"
  * Cache function: List roles with pagination
  * 
  * Sử dụng cache() để tự động deduplicate requests và cache kết quả
+ * Dùng cho Server Components
+ * 
+ * @param params - ListRolesInput
+ * @returns ListRolesResult
  */
-export const listRolesCached = cache(
-  async (page: number, limit: number, search: string, filtersKey: string, status: string) => {
-    const filters = filtersKey ? (JSON.parse(filtersKey) as Record<string, string>) : undefined
-    const parsedStatus = status === "deleted" || status === "all" ? status : "active"
-    return listRoles({
-      page,
-      limit,
-      search: search || undefined,
-      filters,
-      status: parsedStatus,
-    })
-  },
-)
+export const listRolesCached = cache(async (params: ListRolesInput = {}): Promise<ListRolesResult> => {
+  return listRoles(params)
+})
 
 /**
  * Cache function: Get role detail by ID

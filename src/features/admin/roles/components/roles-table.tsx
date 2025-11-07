@@ -18,7 +18,11 @@ export interface RolesTableProps {
 
 export async function RolesTable({ canDelete, canRestore, canManage, canCreate }: RolesTableProps) {
   const [rolesData, permissions] = await Promise.all([
-    listRolesCached(1, 10, "", "", "active"),
+    listRolesCached({
+      page: 1,
+      limit: 10,
+      status: "active",
+    }),
     getAllPermissionsCached(),
   ])
 

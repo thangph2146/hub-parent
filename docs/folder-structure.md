@@ -31,6 +31,8 @@ src/app/
     └── admin/
         └── users/
             ├── route.ts               # GET (list), POST (create)
+            ├── options/
+            │   └── route.ts           # GET (filter options by column)
             ├── [id]/
             │   ├── route.ts           # GET, PUT, DELETE
             │   ├── restore/
@@ -276,8 +278,18 @@ export default async function UserCreatePage() {
 **Quy tắc:**
 - ✅ Sử dụng `api-route-wrapper` để handle authentication và permissions
 - ✅ Import mutations từ `features/*/server/mutations`
+- ✅ Import cached queries từ `features/*/server/cache` cho GET requests
 - ✅ Validate input và return proper error responses
 - ✅ Không chứa business logic (logic nằm trong mutations)
+- ✅ Options routes sử dụng `createOptionsHandler` helper để đảm bảo consistency
+
+**API Routes Structure:**
+- **List/Create**: `/api/admin/{resource}/route.ts` - GET (list), POST (create)
+- **Options**: `/api/admin/{resource}/options/route.ts` - GET (filter options by column)
+- **Detail/Update/Delete**: `/api/admin/{resource}/[id]/route.ts` - GET, PUT, DELETE
+- **Restore**: `/api/admin/{resource}/[id]/restore/route.ts` - POST (restore)
+- **Hard Delete**: `/api/admin/{resource}/[id]/hard-delete/route.ts` - DELETE (hard delete)
+- **Bulk Operations**: `/api/admin/{resource}/bulk/route.ts` - POST (bulk operations)
 
 **Ví dụ:**
 
@@ -373,6 +385,39 @@ export const GET = createGetRoute(getUsersHandler)
 export const POST = createPostRoute(postUsersHandler)
 ```
 
+**Ví dụ Options Route:**
+
+```typescript
+// src/app/api/admin/users/options/route.ts
+/**
+ * API Route: GET /api/admin/users/options - Get filter options for a column
+ * 
+ * Theo chuẩn Next.js 16:
+ * - Sử dụng server-side caching với React cache()
+ * - Response caching với short-term cache (30s) để optimize performance
+ * - Dynamic route vì có search query parameter
+ */
+import { NextRequest } from "next/server"
+import { getUserColumnOptionsCached } from "@/features/admin/users/server/cache"
+import { createGetRoute } from "@/lib/api/api-route-wrapper"
+import type { ApiRouteContext } from "@/lib/api/types"
+import { createOptionsHandler } from "@/lib/api/options-route-helper"
+
+async function getUserOptionsHandler(req: NextRequest, _context: ApiRouteContext) {
+  return createOptionsHandler(req, {
+    allowedColumns: ["email", "name"], // Whitelist allowed columns
+    getOptions: (column, search, limit) => getUserColumnOptionsCached(column, search, limit),
+  })
+}
+
+// Route Segment Config theo Next.js 16
+// LƯU Ý: Phải là static values, không thể từ object (Next.js requirement)
+export const dynamic = "force-dynamic"
+export const revalidate = false
+
+export const GET = createGetRoute(getUserOptionsHandler)
+```
+
 ### 2. Features (`src/features/`)
 
 Chứa **business logic**, **components**, và **server functions** cho từng feature.
@@ -466,11 +511,13 @@ export async function UsersTable({ canDelete, canRestore, canManage, canCreate }
 // src/features/admin/users/components/users-table.client.tsx
 "use client"
 
-import { useCallback, useMemo, useRef, useState } from "react"
+import { useCallback, useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
 import { ResourceTableClient } from "@/features/admin/resources/components/resource-table.client"
+import { useDynamicFilterOptions } from "@/features/admin/resources/hooks/use-dynamic-filter-options"
 import { apiClient } from "@/lib/api/axios"
 import { apiRoutes } from "@/lib/api/routes"
+import type { DataTableColumn } from "@/components/tables"
 import type { UserRow, UsersTableClientProps } from "../types"
 
 export function UsersTableClient({
@@ -482,6 +529,15 @@ export function UsersTableClient({
   initialRolesOptions = [],
 }: UsersTableClientProps) {
   const router = useRouter()
+  
+  // Sử dụng hook để fetch filter options động
+  const emailFilter = useDynamicFilterOptions({
+    optionsEndpoint: apiRoutes.users.options({ column: "email" }),
+  })
+
+  const nameFilter = useDynamicFilterOptions({
+    optionsEndpoint: apiRoutes.users.options({ column: "name" }),
+  })
   
   // Loader function để fetch data khi user tương tác (pagination, filter, etc.)
   const loader = useCallback(async (query) => {
@@ -502,8 +558,43 @@ export function UsersTableClient({
     return response.data
   }, [])
 
+  // Define columns với dynamic filter options
+  const columns = useMemo<DataTableColumn<UserRow>[]>(
+    () => [
+      {
+        accessorKey: "email",
+        header: "Email",
+        filter: {
+          type: "select",
+          placeholder: "Chọn email...",
+          searchPlaceholder: "Tìm kiếm...",
+          emptyMessage: "Không tìm thấy.",
+          options: emailFilter.options,
+          onSearchChange: emailFilter.onSearchChange,
+          isLoading: emailFilter.isLoading,
+        },
+      },
+      {
+        accessorKey: "name",
+        header: "Tên",
+        filter: {
+          type: "select",
+          placeholder: "Chọn tên...",
+          searchPlaceholder: "Tìm kiếm...",
+          emptyMessage: "Không tìm thấy.",
+          options: nameFilter.options,
+          onSearchChange: nameFilter.onSearchChange,
+          isLoading: nameFilter.isLoading,
+        },
+      },
+      // ... more columns
+    ],
+    [emailFilter, nameFilter]
+  )
+
   return (
     <ResourceTableClient
+      columns={columns}
       loader={loader}
       initialData={initialData} // Server-side bootstrap data
       // ... other props
@@ -659,14 +750,74 @@ export const getUserDetailById = cache(async (id: string): Promise<UserDetail | 
 })
 
 /**
- * Cache function: Get all roles
+ * Cache function: Get all active roles
+ * 
+ * Sử dụng cache() để tự động deduplicate requests và cache kết quả
+ * Dùng cho form options, filters, etc.
  */
 export const getRolesCached = cache(async () => {
   return prisma.role.findMany({
-    where: { isActive: true },
-    orderBy: { displayName: "asc" },
+    where: {
+      isActive: true,
+      deletedAt: null,
+    },
+    select: {
+      id: true,
+      name: true,
+      displayName: true,
+    },
+    orderBy: {
+      displayName: "asc",
+    },
   })
 })
+
+/**
+ * Cache function: Get user column options for filters
+ * 
+ * Sử dụng cache() để tự động deduplicate requests và cache kết quả
+ * Dùng cho filter options API route
+ */
+export const getUserColumnOptionsCached = cache(
+  async (
+    column: string,
+    search?: string,
+    limit: number = 50
+  ): Promise<Array<{ label: string; value: string }>> => {
+    return getUserColumnOptions(column, search, limit)
+  }
+)
+
+/**
+ * Cache function: Get active users for select options
+ * 
+ * Sử dụng cache() để tự động deduplicate requests và cache kết quả
+ * Dùng cho form select fields (userId, assignedTo, etc.)
+ */
+export const getActiveUsersForSelectCached = cache(
+  async (limit: number = 100): Promise<Array<{ label: string; value: string }>> => {
+    const users = await prisma.user.findMany({
+      where: {
+        isActive: true,
+        deletedAt: null,
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+      },
+      orderBy: {
+        name: "asc",
+      },
+      take: limit,
+    })
+
+    return users.map((user) => ({
+      label: user.name ? `${user.name} (${user.email})` : user.email || user.id,
+      value: user.id,
+    }))
+  }
+)
 ```
 
 **Ví dụ mutations.ts:**
@@ -1081,6 +1232,69 @@ export function serializeUsersList(data: ListUsersResult): DataTableResult<UserR
 - ✅ **`types.ts`**: Type definitions cho feature
 - ✅ **`utils.ts`**: Utility functions (validation, formatting)
 - ✅ **`form-fields.ts`**: Form field definitions (reusable cho create/edit)
+
+#### Shared Cached Queries Pattern
+
+Khi một cached query được sử dụng bởi nhiều features khác nhau, nên đặt nó trong feature gốc và export để các features khác sử dụng.
+
+**Ví dụ: `getActiveUsersForSelectCached`**
+
+Query này được sử dụng bởi nhiều features (students, contact-requests) để lấy danh sách users cho select fields:
+
+```typescript
+// src/features/admin/users/server/cache.ts
+export const getActiveUsersForSelectCached = cache(
+  async (limit: number = 100): Promise<Array<{ label: string; value: string }>> => {
+    const users = await prisma.user.findMany({
+      where: {
+        isActive: true,
+        deletedAt: null,
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+      },
+      orderBy: {
+        name: "asc",
+      },
+      take: limit,
+    })
+
+    return users.map((user) => ({
+      label: user.name ? `${user.name} (${user.email})` : user.email || user.id,
+      value: user.id,
+    }))
+  }
+)
+```
+
+**Sử dụng trong features khác:**
+
+```typescript
+// src/features/admin/students/components/students-table.tsx
+import { getActiveUsersForSelectCached } from "@/features/admin/users/server/cache"
+
+export async function StudentsTable() {
+  const [studentsData, usersOptions] = await Promise.all([
+    listStudentsCached({ page: 1, limit: 10, status: "active" }),
+    getActiveUsersForSelectCached(100), // Sử dụng shared cached query
+  ])
+
+  return (
+    <StudentsTableClient
+      initialData={serializeStudentsList(studentsData)}
+      initialUsersOptions={usersOptions}
+    />
+  )
+}
+```
+
+**Lợi ích:**
+- ✅ Tránh duplicate code
+- ✅ Centralized caching
+- ✅ Consistent data format
+- ✅ Dễ maintain và update
 
 **Ví dụ types.ts:**
 
@@ -1547,6 +1761,8 @@ src/
 │   │       └── page.tsx                 # Create page (không fetch data)
 │   └── api/admin/users/
 │       ├── route.ts                    # GET (list), POST (create)
+│       ├── options/
+│       │   └── route.ts                 # GET (filter options by column)
 │       ├── [id]/
 │       │   ├── route.ts                # GET, PUT, DELETE
 │       │   ├── restore/

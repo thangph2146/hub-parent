@@ -1,36 +1,19 @@
 import bcrypt from "bcryptjs"
 import type { Prisma } from "@prisma/client"
-import type { Permission } from "@/lib/permissions"
-import { PERMISSIONS, canPerformAction, canPerformAnyAction } from "@/lib/permissions"
+import { PERMISSIONS, canPerformAnyAction } from "@/lib/permissions"
 import { prisma } from "@/lib/database"
 import { mapUserRecord, type ListedUser, type UserWithRoles } from "./queries"
 import { notifySuperAdminsOfUserAction } from "./notifications"
+import {
+  ApplicationError,
+  ForbiddenError,
+  NotFoundError,
+  ensurePermission,
+  type AuthContext,
+} from "@/features/admin/resources/server"
 
-export interface AuthContext {
-  actorId: string
-  permissions: Permission[]
-  roles: Array<{ name: string }>
-}
-
-export class ApplicationError extends Error {
-  status: number
-  constructor(message: string, status = 400) {
-    super(message)
-    this.status = status
-  }
-}
-
-export class ForbiddenError extends ApplicationError {
-  constructor(message = "Forbidden") {
-    super(message, 403)
-  }
-}
-
-export class NotFoundError extends ApplicationError {
-  constructor(message = "Not found") {
-    super(message, 404)
-  }
-}
+// Re-export for backward compatibility with API routes
+export { ApplicationError, ForbiddenError, NotFoundError, type AuthContext }
 
 export interface CreateUserInput {
   email: string
@@ -56,13 +39,6 @@ export interface UpdateUserInput {
 
 export interface BulkActionResult {
   count: number
-}
-
-function ensurePermission(ctx: AuthContext, ...required: Permission[]) {
-  const allowed = required.some((perm) => canPerformAction(ctx.permissions, ctx.roles, perm))
-  if (!allowed) {
-    throw new ForbiddenError()
-  }
 }
 
 function sanitizeUser(user: UserWithRoles): ListedUser {

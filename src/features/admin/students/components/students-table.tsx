@@ -8,7 +8,7 @@
 import { listStudentsCached } from "../server/cache"
 import { serializeStudentsList } from "../server/helpers"
 import { StudentsTableClient } from "./students-table.client"
-import { prisma } from "@/lib/database"
+import { getActiveUsersForSelectCached } from "@/features/admin/users/server/cache"
 
 export interface StudentsTableProps {
   canDelete?: boolean
@@ -18,33 +18,14 @@ export interface StudentsTableProps {
 }
 
 export async function StudentsTable({ canDelete, canRestore, canManage, canCreate }: StudentsTableProps) {
-  const studentsData = await listStudentsCached({
-    page: 1,
-    limit: 10,
-    status: "active",
-  })
-
-  // Fetch users for userId select field
-  const users = await prisma.user.findMany({
-    where: {
-      isActive: true,
-      deletedAt: null,
-    },
-    select: {
-      id: true,
-      name: true,
-      email: true,
-    },
-    orderBy: {
-      name: "asc",
-    },
-    take: 100, // Limit to 100 users
-  })
-
-  const usersOptions = users.map((user) => ({
-    label: user.name ? `${user.name} (${user.email})` : user.email || user.id,
-    value: user.id,
-  }))
+  const [studentsData, usersOptions] = await Promise.all([
+    listStudentsCached({
+      page: 1,
+      limit: 10,
+      status: "active",
+    }),
+    getActiveUsersForSelectCached(100),
+  ])
 
   return (
     <StudentsTableClient

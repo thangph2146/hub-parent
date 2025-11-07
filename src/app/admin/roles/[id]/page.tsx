@@ -1,6 +1,7 @@
 import { AdminHeader } from "@/components/headers"
 import { RoleDetail } from "@/features/admin/roles/components/role-detail"
 import { getRoleDetailById } from "@/features/admin/roles/server/cache"
+import { validateRouteId } from "@/lib/validation/route-params"
 
 export default async function RoleDetailPage({
   params,
@@ -8,7 +9,33 @@ export default async function RoleDetailPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const role = await getRoleDetailById(id)
+  
+  // Validate route ID
+  const validatedId = validateRouteId(id, "Vai trò")
+  if (!validatedId) {
+    return (
+      <>
+        <AdminHeader
+          breadcrumbs={[
+            { label: "Vai trò", href: "/admin/roles" },
+            { label: "Chi tiết", href: `/admin/roles/${id}` },
+          ]}
+        />
+        <div className="flex flex-1 flex-col gap-4 p-4">
+          <div className="flex min-h-[400px] flex-1 items-center justify-center">
+            <div className="text-center">
+              <h2 className="mb-2 text-2xl font-bold">ID không hợp lệ</h2>
+              <p className="text-muted-foreground">
+                ID vai trò không hợp lệ.
+              </p>
+            </div>
+          </div>
+        </div>
+      </>
+    )
+  }
+  
+  const role = await getRoleDetailById(validatedId)
 
   if (!role) {
     return (
@@ -42,7 +69,7 @@ export default async function RoleDetailPage({
         ]}
       />
       <div className="flex flex-1 flex-col gap-4 p-4">
-        <RoleDetail roleId={id} backUrl="/admin/roles" />
+        <RoleDetail roleId={validatedId} backUrl="/admin/roles" />
       </div>
     </>
   )

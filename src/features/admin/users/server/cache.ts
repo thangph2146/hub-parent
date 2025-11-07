@@ -10,7 +10,7 @@
  */
 
 import { cache } from "react"
-import { listUsers, getUserColumnOptions, type UserDetail } from "./queries"
+import { listUsers, getUserColumnOptions, type UserDetail, type ListUsersInput, type ListUsersResult } from "./queries"
 import { mapUserRecord } from "./helpers"
 import { prisma } from "@/lib/database"
 
@@ -18,20 +18,14 @@ import { prisma } from "@/lib/database"
  * Cache function: List users with pagination
  * 
  * Sử dụng cache() để tự động deduplicate requests và cache kết quả
+ * Dùng cho Server Components
+ * 
+ * @param params - ListUsersInput
+ * @returns ListUsersResult
  */
-export const listUsersCached = cache(
-  async (page: number, limit: number, search: string, filtersKey: string, status: string) => {
-    const filters = filtersKey ? (JSON.parse(filtersKey) as Record<string, string>) : undefined
-    const parsedStatus = status === "deleted" || status === "all" ? status : "active"
-    return listUsers({
-      page,
-      limit,
-      search: search || undefined,
-      filters,
-      status: parsedStatus,
-    })
-  },
-)
+export const listUsersCached = cache(async (params: ListUsersInput = {}): Promise<ListUsersResult> => {
+  return listUsers(params)
+})
 
 /**
  * Cache function: Get user detail by ID
@@ -111,6 +105,40 @@ export const getUserColumnOptionsCached = cache(
     limit: number = 50
   ): Promise<Array<{ label: string; value: string }>> => {
     return getUserColumnOptions(column, search, limit)
+  }
+)
+
+/**
+ * Cache function: Get active users for select options
+ * 
+ * Sử dụng cache() để tự động deduplicate requests và cache kết quả
+ * Dùng cho form select fields (userId, assignedTo, etc.)
+ * 
+ * @param limit - Maximum number of users to return (default: 100)
+ * @returns Array of { label, value } options
+ */
+export const getActiveUsersForSelectCached = cache(
+  async (limit: number = 100): Promise<Array<{ label: string; value: string }>> => {
+    const users = await prisma.user.findMany({
+      where: {
+        isActive: true,
+        deletedAt: null,
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+      },
+      orderBy: {
+        name: "asc",
+      },
+      take: limit,
+    })
+
+    return users.map((user) => ({
+      label: user.name ? `${user.name} (${user.email})` : user.email || user.id,
+      value: user.id,
+    }))
   }
 )
 

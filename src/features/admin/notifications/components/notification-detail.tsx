@@ -7,7 +7,7 @@
  * Pattern: Server Component (data fetching) -> Client Component (UI/interactions)
  */
 
-import { getNotificationByIdCached } from "../server/queries"
+import { getNotificationByIdCached } from "../server/cache"
 import { serializeNotificationDetail } from "../server/helpers"
 import { NotificationDetailClient } from "./notification-detail.client"
 import type { NotificationDetailData } from "./notification-detail.client"

@@ -42,14 +42,13 @@ async function getRolesHandler(req: NextRequest, _context: ApiRouteContext) {
   })
 
   const activeFilters = Object.keys(columnFilters).length > 0 ? columnFilters : undefined
-  const filtersKey = activeFilters ? JSON.stringify(activeFilters) : ""
-  const result = await listRolesCached(
-    paginationValidation.page!,
-    paginationValidation.limit!,
-    searchValidation.value || "",
-    filtersKey,
-    status
-  )
+  const result = await listRolesCached({
+    page: paginationValidation.page!,
+    limit: paginationValidation.limit!,
+    search: searchValidation.value || undefined,
+    filters: activeFilters,
+    status: status as "active" | "deleted" | "all",
+  })
 
   return NextResponse.json(result)
 }

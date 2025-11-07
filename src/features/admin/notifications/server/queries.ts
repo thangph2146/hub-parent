@@ -1,8 +1,9 @@
 /**
- * Server queries for notifications
- * Sử dụng helpers từ resources/server cho pagination và serialization
+ * Non-cached Database Queries for Notifications
+ * 
+ * Chứa các database queries không có cache wrapper
+ * Sử dụng cho các trường hợp cần fresh data hoặc trong API routes
  */
-import { cache } from "@/features/admin/resources/server"
 import { validatePagination, buildPagination, type ResourcePagination } from "@/features/admin/resources/server"
 import type { Prisma } from "@prisma/client"
 import { NotificationKind } from "@prisma/client"
@@ -90,18 +91,14 @@ function buildWhereClause(params: ListNotificationsInput): Prisma.NotificationWh
   return where
 }
 
-export const listNotificationsCached = cache(async (
-  page: number = 1,
-  limit: number = 10,
-  search: string = "",
-  filtersKey: string = "",
-  userId?: string,
-  kind?: string,
-  isRead?: boolean
-): Promise<ListNotificationsResult> => {
-  const { page: validatedPage, limit: validatedLimit } = validatePagination(page, limit, 100)
-  const filters = filtersKey ? (JSON.parse(filtersKey) as Record<string, string>) : {}
-  const where = buildWhereClause({ page, limit: validatedLimit, search, filters, userId, kind, isRead })
+/**
+ * Non-cached query: List notifications
+ * 
+ * Sử dụng cho API routes hoặc khi cần fresh data
+ */
+export async function listNotifications(params: ListNotificationsInput = {}): Promise<ListNotificationsResult> {
+  const { page, limit } = validatePagination(params.page, params.limit, 100)
+  const where = buildWhereClause(params)
 
   const [notifications, total] = await Promise.all([
     prisma.notification.findMany({
@@ -116,8 +113,8 @@ export const listNotificationsCached = cache(async (
         },
       },
       orderBy: { createdAt: "desc" },
-      take: validatedLimit,
-      skip: (validatedPage - 1) * validatedLimit,
+      take: limit,
+      skip: (page - 1) * limit,
     }),
     prisma.notification.count({ where }),
   ])
@@ -137,11 +134,14 @@ export const listNotificationsCached = cache(async (
       createdAt: n.createdAt,
       readAt: n.readAt,
     })),
-    pagination: buildPagination(validatedPage, validatedLimit, total),
+    pagination: buildPagination(page, limit, total),
   }
-})
+}
 
-export const getNotificationByIdCached = cache(async (id: string): Promise<ListedNotification | null> => {
+/**
+ * Non-cached query: Get notification by ID
+ */
+export async function getNotificationById(id: string): Promise<ListedNotification | null> {
   const notification = await prisma.notification.findUnique({
     where: { id },
     include: {
@@ -171,11 +171,6 @@ export const getNotificationByIdCached = cache(async (id: string): Promise<Liste
     createdAt: notification.createdAt,
     readAt: notification.readAt,
   } as ListedNotification
-})
-
-// Non-cached version for backward compatibility
-export async function getNotificationById(id: string) {
-  return getNotificationByIdCached(id)
 }
 
 /**
@@ -230,15 +225,3 @@ export async function getNotificationColumnOptions(
     .filter((item): item is { label: string; value: string } => item !== null)
 }
 
-/**
- * Cache function: Get notification column options for filters
- */
-export const getNotificationColumnOptionsCached = cache(
-  async (
-    column: string,
-    search?: string,
-    limit: number = 50
-  ): Promise<Array<{ label: string; value: string }>> => {
-    return getNotificationColumnOptions(column, search, limit)
-  }
-)

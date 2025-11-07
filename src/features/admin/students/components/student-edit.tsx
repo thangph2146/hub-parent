@@ -9,7 +9,7 @@ import { getStudentDetailById } from "../server/cache"
 import { serializeStudentDetail } from "../server/helpers"
 import { StudentEditClient } from "./student-edit.client"
 import type { StudentEditClientProps } from "./student-edit.client"
-import { prisma } from "@/lib/database"
+import { getActiveUsersForSelectCached } from "@/features/admin/users/server/cache"
 
 export interface StudentEditProps {
   studentId: string
@@ -30,33 +30,14 @@ export async function StudentEdit({
   backUrl,
   backLabel = "Quay lại",
 }: StudentEditProps) {
-  const student = await getStudentDetailById(studentId)
+  const [student, usersOptions] = await Promise.all([
+    getStudentDetailById(studentId),
+    getActiveUsersForSelectCached(100),
+  ])
 
   if (!student) {
     return null
   }
-
-  // Fetch users for userId select field
-  const users = await prisma.user.findMany({
-    where: {
-      isActive: true,
-      deletedAt: null,
-    },
-    select: {
-      id: true,
-      name: true,
-      email: true,
-    },
-    orderBy: {
-      name: "asc",
-    },
-    take: 100, // Limit to 100 users
-  })
-
-  const usersOptions = users.map((user) => ({
-    label: user.name ? `${user.name} (${user.email})` : user.email || user.id,
-    value: user.id,
-  }))
 
   const studentForEdit: StudentEditClientProps["student"] = {
     ...serializeStudentDetail(student),
