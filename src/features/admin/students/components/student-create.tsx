@@ -7,16 +7,14 @@
 
 import { StudentCreateClient } from "./student-create.client"
 import { getActiveUsersForSelectCached } from "@/features/admin/users/server/cache"
-import { getSession } from "@/lib/auth/auth-server"
-import { isSuperAdmin } from "@/lib/permissions"
+import { getAuthInfo } from "@/features/admin/resources/server"
 
 export interface StudentCreateProps {
   backUrl?: string
 }
 
 export async function StudentCreate({ backUrl = "/admin/students" }: StudentCreateProps) {
-  const session = await getSession()
-  const isSuperAdminUser = isSuperAdmin(session?.roles ?? [])
+  const { isSuperAdminUser } = await getAuthInfo()
 
   // Chỉ fetch users options nếu là super admin
   const usersOptions = isSuperAdminUser ? await getActiveUsersForSelectCached(100) : []

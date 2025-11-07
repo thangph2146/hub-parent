@@ -7,12 +7,9 @@
 
 "use client"
 
-import { useRouter } from "next/navigation"
 import { ResourceForm } from "@/features/admin/resources/components"
-import { apiClient } from "@/lib/api/axios"
+import { useResourceFormSubmit } from "@/features/admin/resources/hooks"
 import { apiRoutes } from "@/lib/api/routes"
-import { useToast } from "@/hooks/use-toast"
-import { extractAxiosErrorMessage } from "@/lib/utils/api-utils"
 import { getBaseCategoryFields, type CategoryFormData } from "../form-fields"
 import type { CategoryRow } from "../types"
 
@@ -44,56 +41,32 @@ export function CategoryEditClient({
   backLabel = "Quay lại",
   categoryId: _categoryId,
 }: CategoryEditClientProps) {
-  const router = useRouter()
-  const { toast } = useToast()
-
-  const handleSubmit = async (data: Partial<CategoryEditData>) => {
-    if (!category?.id) {
-      return { success: false, error: "Không tìm thấy danh mục" }
-    }
-
-    try {
-      const submitData: Record<string, unknown> = {
-        ...data,
+  const { handleSubmit } = useResourceFormSubmit({
+    apiRoute: (id) => apiRoutes.categories.update(id),
+    method: "PUT",
+    resourceId: category?.id,
+    messages: {
+      successTitle: "Cập nhật danh mục thành công",
+      successDescription: "Danh mục đã được cập nhật thành công.",
+      errorTitle: "Lỗi cập nhật danh mục",
+    },
+    navigation: {
+      toDetail: variant === "page" && backUrl
+        ? backUrl
+        : variant === "page" && category?.id
+          ? `/admin/categories/${category.id}`
+          : undefined,
+      fallback: backUrl,
+    },
+    onSuccess: async () => {
+      if (onSuccess) {
+        onSuccess()
       }
+    },
+  })
 
-      const response = await apiClient.put(apiRoutes.categories.update(category.id), submitData)
-
-      if (response.status === 200) {
-        toast({
-          variant: "success",
-          title: "Cập nhật danh mục thành công",
-          description: "Danh mục đã được cập nhật thành công.",
-        })
-
-        if (onSuccess) {
-          onSuccess()
-        } else if (variant === "page" && backUrl) {
-          router.push(backUrl)
-        } else if (variant === "page") {
-          router.push(`/admin/categories/${category.id}`)
-        }
-
-        return { success: true }
-      }
-
-      toast({
-        variant: "destructive",
-        title: "Cập nhật danh mục thất bại",
-        description: "Không thể cập nhật danh mục. Vui lòng thử lại.",
-      })
-      return { success: false, error: "Không thể cập nhật danh mục" }
-    } catch (error: unknown) {
-      const errorMessage = extractAxiosErrorMessage(error, "Đã xảy ra lỗi khi cập nhật danh mục")
-
-      toast({
-        variant: "destructive",
-        title: "Lỗi cập nhật danh mục",
-        description: errorMessage,
-      })
-
-      return { success: false, error: errorMessage }
-    }
+  if (!category?.id) {
+    return null
   }
 
   const editFields = getBaseCategoryFields()

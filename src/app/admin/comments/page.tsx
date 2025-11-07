@@ -1,13 +1,7 @@
 import { AdminHeader } from "@/components/headers"
-import { PERMISSIONS, canPerformAction, canPerformAnyAction } from "@/lib/permissions"
-import { getPermissions, getSession } from "@/lib/auth/auth-server"
-
+import { PERMISSIONS, canPerformAction } from "@/lib/permissions"
+import { getAuthInfo } from "@/features/admin/resources/server"
 import { CommentsTable } from "@/features/admin/comments/components/comments-table"
-
-interface SessionWithMeta {
-  roles?: Array<{ name: string }>
-  permissions?: Array<string>
-}
 
 /**
  * Comments Page
@@ -16,18 +10,11 @@ interface SessionWithMeta {
  * Chỉ cần check permissions cho UI actions (canDelete, canRestore, canManage, canApprove)
  */
 export default async function CommentsPage() {
-  const session = (await getSession()) as SessionWithMeta | null
-  const permissions = await getPermissions()
-  const roles = session?.roles ?? []
+  const { permissions, roles } = await getAuthInfo()
 
   // Check permissions cho UI actions (không phải page access)
-  const canDelete = canPerformAnyAction(permissions, roles, [
-    PERMISSIONS.COMMENTS_DELETE,
-    PERMISSIONS.COMMENTS_MANAGE,
-  ])
-  const canRestore = canPerformAnyAction(permissions, roles, [
-    PERMISSIONS.COMMENTS_MANAGE,
-  ])
+  const canDelete = canPerformAction(permissions, roles, PERMISSIONS.COMMENTS_MANAGE)
+  const canRestore = canPerformAction(permissions, roles, PERMISSIONS.COMMENTS_MANAGE)
   const canManage = canPerformAction(permissions, roles, PERMISSIONS.COMMENTS_MANAGE)
   const canApprove = canPerformAction(permissions, roles, PERMISSIONS.COMMENTS_APPROVE)
 

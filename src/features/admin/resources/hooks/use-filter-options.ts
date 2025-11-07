@@ -1,6 +1,7 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import * as React from "react"
+import { useQuery } from "@tanstack/react-query"
 import { apiClient } from "@/lib/api/axios"
 import type { ColumnFilterSelectOption } from "@/components/tables"
 
@@ -12,6 +13,7 @@ interface UseFilterOptionsParams {
 
 /**
  * Hook để fetch filter options từ API route options
+ * Sử dụng TanStack Query để cache và deduplicate requests
  * Sử dụng API route /api/admin/{resource}/options?column={column}&search={search}
  * 
  * @param optionsEndpoint - Endpoint để lấy options (ví dụ: apiRoutes.categories.options({ column: "name" }))
@@ -23,49 +25,41 @@ export function useFilterOptions({
   searchQuery = "",
   limit = 50,
 }: UseFilterOptionsParams) {
-  const [options, setOptions] = useState<ColumnFilterSelectOption[]>([])
-  const [isLoading, setIsLoading] = useState(false)
-  const [debouncedQuery, setDebouncedQuery] = useState(searchQuery)
+  // Debounce search query để tránh quá nhiều requests
+  const debouncedQuery = useDebounce(searchQuery, 300)
 
-  useEffect(() => {
-    const timer = setTimeout(() => setDebouncedQuery(searchQuery), 300)
-    return () => clearTimeout(timer)
-  }, [searchQuery])
+  const { data: options = [], isLoading } = useQuery<ColumnFilterSelectOption[]>({
+    queryKey: ["filter-options", optionsEndpoint, debouncedQuery, limit],
+    queryFn: async () => {
+      const params = new URLSearchParams({
+        limit: limit.toString(),
+        ...(debouncedQuery && { search: debouncedQuery }),
+      })
 
-  useEffect(() => {
-    let cancelled = false
+      // optionsEndpoint đã có column parameter, chỉ cần thêm search và limit
+      const url = `${optionsEndpoint}${optionsEndpoint.includes("?") ? "&" : "?"}${params}`
+      const response = await apiClient.get<{ data: ColumnFilterSelectOption[] }>(url)
+      
+      return response.data.data || []
+    },
+    staleTime: 5 * 60 * 1000, // Cache 5 phút
+    gcTime: 10 * 60 * 1000, // Keep in cache 10 phút
+    enabled: !!optionsEndpoint, // Chỉ fetch khi có endpoint
+  })
 
-    const fetchOptions = async () => {
-      setIsLoading(true)
-      try {
-        const params = new URLSearchParams({
-          limit: limit.toString(),
-          ...(debouncedQuery && { search: debouncedQuery }),
-        })
-
-        // optionsEndpoint đã có column parameter, chỉ cần thêm search và limit
-        const url = `${optionsEndpoint}${optionsEndpoint.includes("?") ? "&" : "?"}${params}`
-        const response = await apiClient.get<{ data: ColumnFilterSelectOption[] }>(url)
-        
-        if (cancelled) return
-
-        setOptions(response.data.data || [])
-      } catch (error) {
-        if (!cancelled) {
-          console.error(`Error fetching filter options:`, error)
-          setOptions([])
-        }
-      } finally {
-        if (!cancelled) setIsLoading(false)
-      }
-    }
-
-    fetchOptions()
-    return () => {
-      cancelled = true
-    }
-  }, [optionsEndpoint, debouncedQuery, limit])
-
-  return useMemo(() => ({ options, isLoading }), [options, isLoading])
+  return { options, isLoading }
 }
 
+/**
+ * Simple debounce hook
+ */
+function useDebounce<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = React.useState<T>(value)
+
+  React.useEffect(() => {
+    const timer = setTimeout(() => setDebouncedValue(value), delay)
+    return () => clearTimeout(timer)
+  }, [value, delay])
+
+  return debouncedValue
+}

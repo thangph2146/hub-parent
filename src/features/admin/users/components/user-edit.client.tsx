@@ -10,11 +10,9 @@
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { ResourceForm, type ResourceFormField } from "@/features/admin/resources/components"
-import { apiClient } from "@/lib/api/axios"
+import { useResourceFormSubmit } from "@/features/admin/resources/hooks"
 import { apiRoutes } from "@/lib/api/routes"
 import { isSuperAdmin } from "@/lib/permissions"
-import { useToast } from "@/hooks/use-toast"
-import { extractAxiosErrorMessage } from "@/lib/utils/api-utils"
 import { useRoles } from "../hooks/use-roles"
 import { normalizeRoleIds, type Role } from "../utils"
 import { getBaseUserFields, getPasswordEditField } from "../form-fields"
@@ -53,61 +51,46 @@ export function UserEditClient({
   userId,
   roles: rolesFromServer,
 }: UserEditClientProps) {
-  const router = useRouter()
   const { data: session } = useSession()
   const currentUserRoles = session?.roles || []
   const isSuperAdminUser = isSuperAdmin(currentUserRoles)
-  const { toast } = useToast()
   const { roles } = useRoles({ initialRoles: rolesFromServer })
+  const router = useRouter()
 
-  const handleSubmit = async (data: Partial<UserEditData>) => {
-    if (!user?.id) {
-      return { success: false, error: "Không tìm thấy người dùng" }
-    }
-
-    try {
+  const { handleSubmit } = useResourceFormSubmit({
+    apiRoute: (id) => apiRoutes.users.update(id),
+    method: "PUT",
+    resourceId: user?.id,
+    messages: {
+      successTitle: "Cập nhật thành công",
+      successDescription: "Thông tin người dùng đã được cập nhật.",
+      errorTitle: "Lỗi cập nhật",
+    },
+    navigation: {
+      toDetail: variant === "page" && userId ? `/admin/users/${userId}` : undefined,
+      fallback: backUrl,
+    },
+    transformData: (data) => {
       const submitData: Record<string, unknown> = {
         ...data,
         roleIds: normalizeRoleIds(data.roleIds),
       }
-
+      // Remove password if empty
       if (!submitData.password || submitData.password === "") {
         delete submitData.password
       }
-
-      const response = await apiClient.put(apiRoutes.users.update(user.id), submitData)
-
-      if (response.status === 200) {
-        toast({
-          variant: "success",
-          title: "Cập nhật thành công",
-          description: "Thông tin người dùng đã được cập nhật.",
-        })
-        onSuccess?.()
-        if (variant === "page" && userId) {
-          router.push(`/admin/users/${userId}`)
-          router.refresh()
-        }
-        return { success: true }
+      return submitData
+    },
+    onSuccess: async () => {
+      onSuccess?.()
+      if (variant === "page" && userId) {
+        router.refresh()
       }
+    },
+  })
 
-      toast({
-        variant: "destructive",
-        title: "Cập nhật thất bại",
-        description: "Không thể cập nhật người dùng. Vui lòng thử lại.",
-      })
-      return { success: false, error: "Không thể cập nhật người dùng" }
-    } catch (error: unknown) {
-      const errorMessage = extractAxiosErrorMessage(error, "Đã xảy ra lỗi khi cập nhật")
-
-      toast({
-        variant: "destructive",
-        title: "Lỗi cập nhật",
-        description: errorMessage,
-      })
-
-      return { success: false, error: errorMessage }
-    }
+  if (!user?.id) {
+    return null
   }
 
   const userForEdit: UserEditData | null = user

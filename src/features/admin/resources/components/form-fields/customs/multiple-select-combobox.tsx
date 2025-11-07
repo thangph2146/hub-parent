@@ -174,7 +174,7 @@ export function MultipleSelectCombobox<T>({
                         }
                       }}
                       className={cn(
-                        "font-medium",
+                        "font-medium border rounded-md",
                         allSelected && "text-primary"
                       )}
                     >

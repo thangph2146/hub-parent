@@ -15,6 +15,7 @@ export type { ResourceDetailAsyncProps } from "./resource-detail"
 export { ResourceTableClient } from "./resource-table.client"
 export { ResourceForm } from "./resource-form"
 export { ResourceDetailPage } from "./resource-detail-page"
+export { NotFoundMessage } from "./not-found-message"
 
 // Types
 export type { ResourceTableProps } from "./resource-table"

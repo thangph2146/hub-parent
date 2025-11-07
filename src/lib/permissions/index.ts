@@ -46,5 +46,22 @@ export {
 } from "./api-route-permissions"
 
 // Shared route helpers
-export { patternToRegex, matchPattern, normalizePathname } from "./route-helpers"
+export { matchPattern, normalizePathname } from "./route-helpers"
+
+// Route helper functions for menu generation
+export {
+  getPageRoutes,
+  getResourceRoutes,
+  getResourceMainRoute,
+  getResourceCreateRoute,
+  getResourceSubRoutes,
+} from "./route-helpers"
+
+// API route helper functions
+export {
+  getApiRoutes,
+  getResourceAdminApiRoutes,
+  getResourceApiRoute,
+  generateResourceApiRoutes,
+} from "./api-route-helpers"
 

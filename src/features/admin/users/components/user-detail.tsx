@@ -9,6 +9,7 @@ import { getUserDetailById } from "../server/cache"
 import { serializeUserDetail } from "../server/helpers"
 import { UserDetailClient } from "./user-detail.client"
 import type { UserDetailData } from "./user-detail.client"
+import { NotFoundMessage } from "@/features/admin/resources/components"
 
 export interface UserDetailProps {
   userId: string
@@ -19,13 +20,7 @@ export async function UserDetail({ userId, backUrl = "/admin/users" }: UserDetai
   const user = await getUserDetailById(userId)
 
   if (!user) {
-    return (
-      <div className="flex flex-1 flex-col items-center justify-center gap-4 p-4 md:p-6 lg:p-8">
-        <div className="text-center">
-          <p className="text-muted-foreground">Không tìm thấy người dùng</p>
-        </div>
-      </div>
-    )
+    return <NotFoundMessage resourceName="người dùng" />
   }
 
   return (

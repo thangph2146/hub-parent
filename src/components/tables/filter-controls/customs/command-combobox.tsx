@@ -91,7 +91,7 @@ export function CommandCombobox<T extends object = object>({
                     <ChevronsUpDown className="ml-1 sm:ml-2 h-3 w-3 shrink-0 opacity-50" />
                 </Button>
             </PopoverTrigger>
-            <PopoverContent id={filterId} className="w-[200px] p-0" align="start">
+            <PopoverContent id={filterId} className="w-[--radix-popover-trigger-width] p-0" align="start">
                 <Command 
                     shouldFilter={!onSearchChange}
                     // Ngăn chặn tự động select option khi nhấn Enter trong search

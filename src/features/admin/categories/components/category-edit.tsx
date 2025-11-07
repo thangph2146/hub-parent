@@ -9,6 +9,7 @@ import { getCategoryDetailById } from "../server/cache"
 import { serializeCategoryDetail } from "../server/helpers"
 import { CategoryEditClient } from "./category-edit.client"
 import type { CategoryEditClientProps } from "./category-edit.client"
+import { NotFoundMessage } from "@/features/admin/resources/components"
 
 export interface CategoryEditProps {
   categoryId: string
@@ -32,7 +33,7 @@ export async function CategoryEdit({
   const category = await getCategoryDetailById(categoryId)
 
   if (!category) {
-    return null
+    return <NotFoundMessage resourceName="danh mục" />
   }
 
   const categoryForEdit: CategoryEditClientProps["category"] = {

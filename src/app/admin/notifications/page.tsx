@@ -1,17 +1,7 @@
 import { AdminHeader } from "@/components/headers"
-import { PERMISSIONS, canPerformAction, isSuperAdmin } from "@/lib/permissions"
-import { getPermissions, getSession } from "@/lib/auth/auth-server"
+import { PERMISSIONS, canPerformAction } from "@/lib/permissions"
+import { getAuthInfo } from "@/features/admin/resources/server"
 import { NotificationsTable } from "@/features/admin/notifications/components/notifications-table"
-
-interface SessionWithMeta {
-  user?: {
-    id?: string
-    email?: string | null
-    name?: string | null
-  }
-  roles?: Array<{ name: string }>
-  permissions?: Array<string>
-}
 
 /**
  * Notifications Page - TẤT CẢ ROLES ĐƯỢC TRUY CẬP
@@ -25,16 +15,10 @@ interface SessionWithMeta {
  * - UI actions: canManage (dựa trên NOTIFICATIONS_MANAGE permission)
  */
 export default async function NotificationsPage() {
-  const session = (await getSession()) as SessionWithMeta | null
-  const permissions = await getPermissions()
-  const roles = session?.roles ?? []
-
-  
-  // Kiểm tra super admin để quyết định xem tất cả hay chỉ của user
-  const isSuperAdminUser = isSuperAdmin(roles)
+  const { permissions, roles, actorId, isSuperAdminUser } = await getAuthInfo()
   
   // Nếu không phải super admin, chỉ xem notifications của chính họ
-  const userId = isSuperAdminUser ? undefined : session?.user?.id
+  const userId = isSuperAdminUser ? undefined : actorId
 
   // Check permissions cho UI actions
   const canManage = canPerformAction(permissions, roles, PERMISSIONS.NOTIFICATIONS_MANAGE)

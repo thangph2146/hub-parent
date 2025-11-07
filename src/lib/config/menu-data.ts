@@ -1,10 +1,16 @@
 /**
  * Menu data với permissions mapping
+ * Sử dụng routes từ route-config.ts để đảm bảo consistency
  */
 import * as React from "react"
 import { MENU_PERMISSIONS, PERMISSIONS } from "@/lib/permissions"
 import type { Permission } from "@/lib/permissions"
-import { LayoutDashboard, Users, FileText, FolderTree, Tag, MessageSquare, Shield, Send, Bell, Phone, GraduationCap, LifeBuoy, Home } from "lucide-react"
+import {
+  getResourceMainRoute,
+  getResourceCreateRoute,
+  getResourceSubRoutes,
+} from "@/lib/permissions/route-helpers"
+import { LayoutDashboard, Users, FileText, FolderTree, Tag, MessageSquare, Shield, Send, Bell, Phone, GraduationCap, LifeBuoy, Home, LogIn } from "lucide-react"
 
 export interface MenuItem {
   title: string
@@ -37,7 +43,72 @@ export function getMenuData(userPermissions: Permission[]): {
     return permissions.some((perm) => userPermissions.includes(perm))
   }
 
+  // Helper function để tạo menu item từ route config
+  const createMenuItemFromRoute = (
+    resourceName: string,
+    title: string,
+    icon: React.ReactElement,
+    options?: {
+      isActive?: boolean
+      customSubItems?: Array<{ title: string; url: string; permissions?: Permission[] }>
+      iconOverride?: React.ReactElement
+    }
+  ): MenuItem | null => {
+    const mainRoute = getResourceMainRoute(resourceName)
+    if (!mainRoute) return null
+
+    const createRoute = getResourceCreateRoute(resourceName)
+    const subRoutes = getResourceSubRoutes(resourceName)
+
+    const items: MenuSubItem[] = []
+
+    // Add main route as "Danh sách"
+    items.push({
+      title: "Danh sách",
+      url: mainRoute.path,
+      permissions: mainRoute.permissions as Permission[],
+    })
+
+    // Add create route if exists
+    if (createRoute) {
+      items.push({
+        title: "Thêm mới",
+        url: createRoute.path,
+        permissions: createRoute.permissions as Permission[],
+      })
+    }
+
+    // Add custom sub routes
+    if (options?.customSubItems) {
+      items.push(...options.customSubItems)
+    } else {
+      // Add auto-detected sub routes
+      subRoutes.forEach((route) => {
+        const routeName = route.path.split("/").pop() || ""
+        const title = routeName
+          .split("-")
+          .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(" ")
+        items.push({
+          title,
+          url: route.path,
+          permissions: route.permissions as Permission[],
+        })
+      })
+    }
+
+    return {
+      title,
+      url: mainRoute.path,
+      icon: options?.iconOverride || icon,
+      isActive: options?.isActive,
+      permissions: mainRoute.permissions as Permission[],
+      items: items.length > 0 ? items : undefined,
+    }
+  }
+
   const navMain: MenuItem[] = [
+    // Dashboard - special case với custom items
     {
       title: "Dashboard",
       url: "/admin/dashboard",
@@ -56,24 +127,9 @@ export function getMenuData(userPermissions: Permission[]): {
         },
       ],
     },
-    {
-      title: "Người dùng",
-      url: "/admin/users",
-      icon: React.createElement(Users, { className: "h-4 w-4" }),
-      permissions: MENU_PERMISSIONS.users,
-      items: [
-        {
-          title: "Danh sách",
-          url: "/admin/users",
-          permissions: [PERMISSIONS.USERS_VIEW],
-        },
-        {
-          title: "Thêm mới",
-          url: "/admin/users/new",
-          permissions: [PERMISSIONS.USERS_CREATE],
-        }
-      ],
-    },
+    // Users
+    createMenuItemFromRoute("users", "Người dùng", React.createElement(Users, { className: "h-4 w-4" })),
+    // Posts - special case với custom items
     {
       title: "Bài viết",
       url: "/admin/posts",
@@ -102,78 +158,13 @@ export function getMenuData(userPermissions: Permission[]): {
         },
       ],
     },
-    {
-      title: "Danh mục",
-      url: "/admin/categories",
-      icon: React.createElement(FolderTree, { className: "h-4 w-4" }),
-      permissions: MENU_PERMISSIONS.categories,
-      items: [
-        {
-          title: "Danh sách",
-          url: "/admin/categories",
-          permissions: [PERMISSIONS.CATEGORIES_VIEW],
-        },
-        {
-          title: "Thêm mới",
-          url: "/admin/categories/new",
-          permissions: [PERMISSIONS.CATEGORIES_CREATE],
-        },
-      ],
-    },
-    {
-      title: "Thẻ",
-      url: "/admin/tags",
-      icon: React.createElement(Tag, { className: "h-4 w-4" }),
-      permissions: MENU_PERMISSIONS.tags,
-      items: [
-        {
-          title: "Danh sách",
-          url: "/admin/tags",
-          permissions: [PERMISSIONS.TAGS_VIEW],
-        },
-        {
-          title: "Thêm mới",
-          url: "/admin/tags/new",
-          permissions: [PERMISSIONS.TAGS_CREATE],
-        },
-      ],
-    },
-    {
-      title: "Bình luận",
-      url: "/admin/comments",
-      icon: React.createElement(MessageSquare, { className: "h-4 w-4" }),
-      permissions: MENU_PERMISSIONS.comments,
-      items: [
-        {
-          title: "Tất cả",
-          url: "/admin/comments",
-          permissions: [PERMISSIONS.COMMENTS_VIEW],
-        },
-        {
-          title: "Chờ duyệt",
-          url: "/admin/comments/pending",
-          permissions: [PERMISSIONS.COMMENTS_APPROVE],
-        },
-      ],
-    },
-    {
-      title: "Vai trò",
-      url: "/admin/roles",
-      icon: React.createElement(Shield, { className: "h-4 w-4" }),
-      permissions: MENU_PERMISSIONS.roles,
-      items: [
-        {
-          title: "Danh sách",
-          url: "/admin/roles",
-          permissions: [PERMISSIONS.ROLES_VIEW],
-        },
-        {
-          title: "Thêm mới",
-          url: "/admin/roles/new",
-          permissions: [PERMISSIONS.ROLES_CREATE],
-        },
-      ],
-    },
+    // Categories
+    createMenuItemFromRoute("categories", "Danh mục", React.createElement(FolderTree, { className: "h-4 w-4" })),
+    // Tags
+    createMenuItemFromRoute("tags", "Thẻ", React.createElement(Tag, { className: "h-4 w-4" })),
+    // Roles
+    createMenuItemFromRoute("roles", "Vai trò", React.createElement(Shield, { className: "h-4 w-4" })),
+    // Messages - special case với custom items
     {
       title: "Tin nhắn",
       url: "/admin/messages",
@@ -192,43 +183,39 @@ export function getMenuData(userPermissions: Permission[]): {
         },
       ],
     },
-    {
-      title: "Học sinh",
-      url: "/admin/students",
-      icon: React.createElement(GraduationCap, { className: "h-4 w-4" }),
-      permissions: MENU_PERMISSIONS.students,
-      items: [
-        {
-          title: "Danh sách",
-          url: "/admin/students",
-          permissions: [PERMISSIONS.STUDENTS_VIEW],
-        },
-        {
-          title: "Thêm mới",
-          url: "/admin/students/new",
-          permissions: [PERMISSIONS.STUDENTS_CREATE],
-        },
-      ],
-    },
+    // Students
+    createMenuItemFromRoute("students", "Học sinh", React.createElement(GraduationCap, { className: "h-4 w-4" })),
+    // Comments - no sub items
+    createMenuItemFromRoute("comments", "Bình luận", React.createElement(MessageSquare, { className: "h-4 w-4" })),
+    // Notifications - no sub items
     {
       title: "Thông báo",
       url: "/admin/notifications",
       icon: React.createElement(Bell, { className: "h-4 w-4" }),
       permissions: MENU_PERMISSIONS.notifications,
     },
+    // Contact Requests - special case với custom items
     {
       title: "Liên hệ",
       url: "/admin/contact-requests",
       icon: React.createElement(Phone, { className: "h-4 w-4" }),
       permissions: MENU_PERMISSIONS.contact_requests,
+      items: [
+        {
+          title: "Danh sách",
+          url: "/admin/contact-requests",
+          permissions: [PERMISSIONS.CONTACT_REQUESTS_VIEW],
+        },
+        {
+          title: "Đã giải quyết",
+          url: "/admin/contact-requests/resolved",
+          permissions: [PERMISSIONS.CONTACT_REQUESTS_VIEW],
+        },
+      ],
     },
-    {
-      title: "Phiên đăng nhập",
-      url: "/admin/sessions",
-      icon: React.createElement(Tag, { className: "h-4 w-4" }),
-      permissions: MENU_PERMISSIONS.sessions,
-    }
-  ]
+    // Sessions
+    createMenuItemFromRoute("sessions", "Phiên đăng nhập", React.createElement(LogIn, { className: "h-4 w-4" })),
+  ].filter((item): item is MenuItem => item !== null)
 
   const navSecondary: MenuItem[] = [
     {

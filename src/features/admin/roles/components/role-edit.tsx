@@ -9,6 +9,7 @@ import { getRoleDetailById, getAllPermissionsCached } from "../server/cache"
 import { serializeRoleDetail } from "../server/helpers"
 import { RoleEditClient } from "./role-edit.client"
 import type { RoleEditClientProps } from "./role-edit.client"
+import { NotFoundMessage } from "@/features/admin/resources/components"
 
 export interface RoleEditProps {
   roleId: string
@@ -35,7 +36,7 @@ export async function RoleEdit({
   ])
 
   if (!role) {
-    return null
+    return <NotFoundMessage resourceName="vai trò" />
   }
 
   const roleForEdit: RoleEditClientProps["role"] = {

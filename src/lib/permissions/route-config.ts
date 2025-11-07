@@ -8,6 +8,8 @@ import type { Permission } from "./permissions"
 
 export type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE"
 
+// Note: Route helpers are exported from index.ts to avoid circular dependencies
+
 export interface RoutePermissionConfig {
   path: string
   method?: HttpMethod
@@ -30,6 +32,22 @@ interface ResourceConfig {
   customPages?: Array<{ path: string; permissions: Permission[] }>
   customApi?: Array<{ path: string; method: HttpMethod; permissions: Permission[] }>
   adminApi?: boolean | Array<{ path: string; method: HttpMethod; permissions: Permission[] }> // Generate /api/admin/{name} routes
+}
+
+/**
+ * Generate standard admin API routes cho resource với soft delete
+ */
+function generateStandardAdminApiRoutes(name: string, permissions: ResourceConfig["permissions"]): Array<{ path: string; method: HttpMethod; permissions: Permission[] }> {
+  return [
+    { path: "", method: "GET", permissions: [permissions.view] },
+    { path: "", method: "POST", permissions: [permissions.create] },
+    { path: "/[id]", method: "GET", permissions: [permissions.view] },
+    { path: "/[id]", method: "PUT", permissions: [permissions.update] },
+    { path: "/[id]", method: "DELETE", permissions: [permissions.delete] },
+    { path: "/bulk", method: "POST", permissions: [permissions.manage || permissions.delete] },
+    { path: "/[id]/restore", method: "POST", permissions: [permissions.update] },
+    { path: "/[id]/hard-delete", method: "DELETE", permissions: [permissions.manage || permissions.delete] },
+  ]
 }
 
 /**
@@ -60,13 +78,15 @@ function generateResourceRoutes(config: ResourceConfig): RoutePermissionConfig[]
 
   // Admin API routes
   if (adminApi === true) {
-    // Generate default admin API route (GET /api/admin/{name})
-    routes.push({
-      path: `/api/admin/${name}`,
-      method: "GET",
-      permissions: [permissions.view],
-      type: "api",
-    })
+    // Generate standard admin API routes
+    routes.push(
+      ...generateStandardAdminApiRoutes(name, permissions).map((api) => ({
+        path: `/api/admin/${name}${api.path}`,
+        method: api.method,
+        permissions: api.permissions,
+        type: "api" as const,
+      }))
+    )
   } else if (Array.isArray(adminApi)) {
     // Generate custom admin API routes
     routes.push(
@@ -196,26 +216,40 @@ export const ROUTE_CONFIG: RoutePermissionConfig[] = [
     },
   }),
 
-  // Comments
+  // Comments (no CREATE/UPDATE permissions, only VIEW, APPROVE, DELETE, MANAGE)
   { path: "/admin/comments", permissions: [PERMISSIONS.COMMENTS_VIEW], type: "page" },
   { path: "/admin/comments/pending", permissions: [PERMISSIONS.COMMENTS_APPROVE], type: "page" },
+  { path: "/admin/comments/[id]", permissions: [PERMISSIONS.COMMENTS_VIEW], type: "page" },
   { path: "/api/comments", method: "GET", permissions: [PERMISSIONS.COMMENTS_VIEW], type: "api" },
-  { path: "/api/comments/[id]/approve", method: "POST", permissions: [PERMISSIONS.COMMENTS_APPROVE], type: "api" },
-  { path: "/api/comments/[id]", method: "DELETE", permissions: [PERMISSIONS.COMMENTS_DELETE], type: "api" },
+  { path: "/api/admin/comments", method: "GET", permissions: [PERMISSIONS.COMMENTS_VIEW], type: "api" },
+  { path: "/api/admin/comments/[id]", method: "GET", permissions: [PERMISSIONS.COMMENTS_VIEW], type: "api" },
+  { path: "/api/admin/comments/[id]", method: "DELETE", permissions: [PERMISSIONS.COMMENTS_DELETE], type: "api" },
+  { path: "/api/admin/comments/[id]/approve", method: "POST", permissions: [PERMISSIONS.COMMENTS_APPROVE], type: "api" },
+  { path: "/api/admin/comments/[id]/unapprove", method: "POST", permissions: [PERMISSIONS.COMMENTS_APPROVE], type: "api" },
+  { path: "/api/admin/comments/bulk", method: "POST", permissions: [PERMISSIONS.COMMENTS_MANAGE], type: "api" },
+  { path: "/api/admin/comments/[id]/restore", method: "POST", permissions: [PERMISSIONS.COMMENTS_MANAGE], type: "api" },
+  { path: "/api/admin/comments/[id]/hard-delete", method: "DELETE", permissions: [PERMISSIONS.COMMENTS_MANAGE], type: "api" },
+  { path: "/api/admin/comments/options", method: "GET", permissions: [PERMISSIONS.COMMENTS_VIEW], type: "api" },
 
   // Messages
   { path: "/admin/messages", permissions: [PERMISSIONS.MESSAGES_VIEW], type: "page" },
   { path: "/admin/messages/inbox", permissions: [PERMISSIONS.MESSAGES_VIEW], type: "page" },
   { path: "/admin/messages/sent", permissions: [PERMISSIONS.MESSAGES_VIEW], type: "page" },
 
-  // Contact Requests
+  // Contact Requests (no CREATE/DELETE permissions, only VIEW, UPDATE, ASSIGN, MANAGE)
   { path: "/admin/contact-requests", permissions: [PERMISSIONS.CONTACT_REQUESTS_VIEW], type: "page" },
   { path: "/admin/contact-requests/resolved", permissions: [PERMISSIONS.CONTACT_REQUESTS_VIEW], type: "page" },
   { path: "/admin/contact-requests/[id]", permissions: [PERMISSIONS.CONTACT_REQUESTS_VIEW], type: "page" },
   { path: "/admin/contact-requests/[id]/edit", permissions: [PERMISSIONS.CONTACT_REQUESTS_UPDATE], type: "page" },
   { path: "/api/contact-requests", method: "GET", permissions: [PERMISSIONS.CONTACT_REQUESTS_VIEW], type: "api" },
-  { path: "/api/contact-requests/[id]", method: "PUT", permissions: [PERMISSIONS.CONTACT_REQUESTS_UPDATE], type: "api" },
-  { path: "/api/contact-requests/[id]/assign", method: "POST", permissions: [PERMISSIONS.CONTACT_REQUESTS_ASSIGN], type: "api" },
+  { path: "/api/admin/contact-requests", method: "GET", permissions: [PERMISSIONS.CONTACT_REQUESTS_VIEW], type: "api" },
+  { path: "/api/admin/contact-requests/[id]", method: "GET", permissions: [PERMISSIONS.CONTACT_REQUESTS_VIEW], type: "api" },
+  { path: "/api/admin/contact-requests/[id]", method: "PUT", permissions: [PERMISSIONS.CONTACT_REQUESTS_UPDATE], type: "api" },
+  { path: "/api/admin/contact-requests/[id]/assign", method: "POST", permissions: [PERMISSIONS.CONTACT_REQUESTS_ASSIGN], type: "api" },
+  { path: "/api/admin/contact-requests/bulk", method: "POST", permissions: [PERMISSIONS.CONTACT_REQUESTS_MANAGE], type: "api" },
+  { path: "/api/admin/contact-requests/[id]/restore", method: "POST", permissions: [PERMISSIONS.CONTACT_REQUESTS_UPDATE], type: "api" },
+  { path: "/api/admin/contact-requests/[id]/hard-delete", method: "DELETE", permissions: [PERMISSIONS.CONTACT_REQUESTS_MANAGE], type: "api" },
+  { path: "/api/admin/contact-requests/options", method: "GET", permissions: [PERMISSIONS.CONTACT_REQUESTS_VIEW], type: "api" },
 
   // Students
   ...generateResourceRoutes({
@@ -227,6 +261,28 @@ export const ROUTE_CONFIG: RoutePermissionConfig[] = [
       delete: PERMISSIONS.STUDENTS_DELETE,
       manage: PERMISSIONS.STUDENTS_MANAGE,
     },
+    adminApi: true, // Use standard admin API routes
+  }),
+
+  // Sessions
+  ...generateResourceRoutes({
+    name: "sessions",
+    permissions: {
+      view: PERMISSIONS.SESSIONS_VIEW,
+      create: PERMISSIONS.SESSIONS_CREATE,
+      update: PERMISSIONS.SESSIONS_UPDATE,
+      delete: PERMISSIONS.SESSIONS_DELETE,
+      manage: PERMISSIONS.SESSIONS_MANAGE,
+    },
+    adminApi: [
+      { path: "", method: "GET", permissions: [PERMISSIONS.SESSIONS_VIEW] },
+      { path: "", method: "POST", permissions: [PERMISSIONS.SESSIONS_CREATE] },
+      { path: "/[id]", method: "GET", permissions: [PERMISSIONS.SESSIONS_VIEW] },
+      { path: "/[id]", method: "PUT", permissions: [PERMISSIONS.SESSIONS_UPDATE] },
+      { path: "/[id]", method: "DELETE", permissions: [PERMISSIONS.SESSIONS_DELETE] },
+      { path: "/bulk", method: "POST", permissions: [PERMISSIONS.SESSIONS_MANAGE] },
+      // Note: Sessions use isActive instead of deletedAt, so restore/hard-delete logic is different
+    ],
   }),
 
   // Settings

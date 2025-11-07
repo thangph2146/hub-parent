@@ -143,7 +143,7 @@ export function MultiCommandCombobox<T extends object = object>({
                     </div>
                 </Button>
             </PopoverTrigger>
-            <PopoverContent id={filterId} className="w-[250px] p-0" align="start">
+            <PopoverContent id={filterId} className="w-[--radix-popover-trigger-width] p-0" align="start">
                 <Command 
                     shouldFilter={!onSearchChange}
                     // Ngăn chặn tự động select option khi nhấn Enter trong search

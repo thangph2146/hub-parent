@@ -7,12 +7,10 @@
 
 "use client"
 
-import { useRouter } from "next/navigation"
 import { ResourceForm } from "@/features/admin/resources/components"
-import { apiClient } from "@/lib/api/axios"
+import { useResourceFormSubmit } from "@/features/admin/resources/hooks"
 import { apiRoutes } from "@/lib/api/routes"
 import { useToast } from "@/hooks/use-toast"
-import { extractAxiosErrorMessage } from "@/lib/utils/api-utils"
 import { useRoles } from "../hooks/use-roles"
 import { normalizeRoleIds, type Role } from "../utils"
 import { getBaseUserFields, getPasswordField, type UserFormData } from "../form-fields"
@@ -23,62 +21,39 @@ export interface UserCreateClientProps {
 }
 
 export function UserCreateClient({ backUrl = "/admin/users", roles: rolesFromServer }: UserCreateClientProps) {
-  const router = useRouter()
   const { toast } = useToast()
   const { roles } = useRoles({ initialRoles: rolesFromServer })
 
-  const handleSubmit = async (data: Partial<UserFormData>) => {
-    try {
+  const { handleSubmit } = useResourceFormSubmit({
+    apiRoute: apiRoutes.users.create,
+    method: "POST",
+    messages: {
+      successTitle: "Tạo người dùng thành công",
+      successDescription: "Người dùng mới đã được tạo thành công.",
+      errorTitle: "Lỗi tạo người dùng",
+    },
+    navigation: {
+      toDetail: (response) =>
+        response.data?.data?.id ? `/admin/users/${response.data.data.id}` : backUrl,
+      fallback: backUrl,
+    },
+    transformData: (data) => {
       const submitData: Record<string, unknown> = {
         ...data,
         roleIds: normalizeRoleIds(data.roleIds),
       }
-
+      // Validate required fields
       if (!submitData.email || !submitData.password) {
         toast({
           variant: "destructive",
           title: "Thiếu thông tin",
           description: "Email và mật khẩu là bắt buộc.",
         })
-        return { success: false, error: "Email và mật khẩu là bắt buộc" }
+        throw new Error("Email và mật khẩu là bắt buộc")
       }
-
-      const response = await apiClient.post(apiRoutes.users.create, submitData)
-
-      if (response.status === 201) {
-        toast({
-          variant: "success",
-          title: "Tạo người dùng thành công",
-          description: "Người dùng mới đã được tạo thành công.",
-        })
-
-        if (response.data?.data?.id) {
-          router.push(`/admin/users/${response.data.data.id}`)
-        } else {
-          router.push("/admin/users")
-        }
-
-        return { success: true }
-      }
-
-      toast({
-        variant: "destructive",
-        title: "Tạo người dùng thất bại",
-        description: "Không thể tạo người dùng. Vui lòng thử lại.",
-      })
-      return { success: false, error: "Không thể tạo người dùng" }
-    } catch (error: unknown) {
-      const errorMessage = extractAxiosErrorMessage(error, "Đã xảy ra lỗi khi tạo người dùng")
-
-      toast({
-        variant: "destructive",
-        title: "Lỗi tạo người dùng",
-        description: errorMessage,
-      })
-
-      return { success: false, error: errorMessage }
-    }
-  }
+      return submitData
+    },
+  })
 
   const createFields = [
     {

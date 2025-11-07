@@ -54,13 +54,12 @@ const FieldItem = ({ icon: Icon, label, children, iconColor = "bg-muted" }: Fiel
 // Status field with Switch
 interface StatusFieldProps {
   approved: boolean
-  commentId: string
   canApprove: boolean
   onToggle: (newStatus: boolean) => void
   isToggling: boolean
 }
 
-const StatusField = ({ approved, commentId, canApprove, onToggle, isToggling }: StatusFieldProps) => {
+const StatusField = ({ approved, canApprove, onToggle, isToggling }: StatusFieldProps) => {
   return (
     <div className="flex items-center gap-3">
       <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted">
@@ -146,7 +145,6 @@ export function CommentDetailClient({ comment, backUrl = "/admin/comments", canA
             {/* Status */}
             <StatusField 
               approved={approved} 
-              commentId={comment.id}
               canApprove={canApprove}
               onToggle={handleToggleApprove}
               isToggling={isToggling}

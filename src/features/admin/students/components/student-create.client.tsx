@@ -7,12 +7,9 @@
 
 "use client"
 
-import { useRouter } from "next/navigation"
 import { ResourceForm } from "@/features/admin/resources/components"
-import { apiClient } from "@/lib/api/axios"
+import { useResourceFormSubmit } from "@/features/admin/resources/hooks"
 import { apiRoutes } from "@/lib/api/routes"
-import { useToast } from "@/hooks/use-toast"
-import { extractAxiosErrorMessage } from "@/lib/utils/api-utils"
 import { getBaseStudentFields, getStudentFormSections, type StudentFormData } from "../form-fields"
 
 export interface StudentCreateClientProps {
@@ -26,60 +23,28 @@ export function StudentCreateClient({
   users: usersFromServer = [],
   isSuperAdmin = false,
 }: StudentCreateClientProps) {
-  const router = useRouter()
-  const { toast } = useToast()
-
-  const handleSubmit = async (data: Partial<StudentFormData>) => {
-    try {
-      const submitData: Record<string, unknown> = {
-        ...data,
-      }
-
-      // Nếu không phải super admin, tự động set userId = null (sẽ được set bởi server dựa trên actorId)
-      // Hoặc có thể để server tự động set userId = actorId khi tạo
-      // Ở đây ta không set userId nếu không phải super admin, để server xử lý
+  const { handleSubmit } = useResourceFormSubmit({
+    apiRoute: apiRoutes.students.create,
+    method: "POST",
+    messages: {
+      successTitle: "Tạo học sinh thành công",
+      successDescription: "Học sinh mới đã được tạo thành công.",
+      errorTitle: "Lỗi tạo học sinh",
+    },
+    navigation: {
+      toDetail: (response) =>
+        response.data?.data?.id ? `/admin/students/${response.data.data.id}` : backUrl,
+      fallback: backUrl,
+    },
+    transformData: (data) => {
+      const submitData = { ...data }
+      // Nếu không phải super admin, không gửi userId (server sẽ tự động set userId = actorId)
       if (!isSuperAdmin) {
-        // Không gửi userId nếu không phải super admin
         delete submitData.userId
       }
-
-      // Validation được xử lý bởi Zod ở server side
-      const response = await apiClient.post(apiRoutes.students.create, submitData)
-
-      if (response.status === 201) {
-        toast({
-          variant: "success",
-          title: "Tạo học sinh thành công",
-          description: "Học sinh mới đã được tạo thành công.",
-        })
-
-        if (response.data?.data?.id) {
-          router.push(`/admin/students/${response.data.data.id}`)
-        } else {
-          router.push("/admin/students")
-        }
-
-        return { success: true }
-      }
-
-      toast({
-        variant: "destructive",
-        title: "Tạo học sinh thất bại",
-        description: "Không thể tạo học sinh. Vui lòng thử lại.",
-      })
-      return { success: false, error: "Không thể tạo học sinh" }
-    } catch (error: unknown) {
-      const errorMessage = extractAxiosErrorMessage(error, "Đã xảy ra lỗi khi tạo học sinh")
-
-      toast({
-        variant: "destructive",
-        title: "Lỗi tạo học sinh",
-        description: errorMessage,
-      })
-
-      return { success: false, error: errorMessage }
-    }
-  }
+      return submitData
+    },
+  })
 
   const createFields = getBaseStudentFields(usersFromServer, isSuperAdmin)
   const formSections = getStudentFormSections()

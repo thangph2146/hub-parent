@@ -7,12 +7,9 @@
 
 "use client"
 
-import { useRouter } from "next/navigation"
 import { ResourceForm } from "@/features/admin/resources/components"
-import { apiClient } from "@/lib/api/axios"
+import { useResourceFormSubmit } from "@/features/admin/resources/hooks"
 import { apiRoutes } from "@/lib/api/routes"
-import { useToast } from "@/hooks/use-toast"
-import { extractAxiosErrorMessage } from "@/lib/utils/api-utils"
 import { getBaseCategoryFields, type CategoryFormData } from "../form-fields"
 import { generateSlug } from "../utils"
 
@@ -21,62 +18,25 @@ export interface CategoryCreateClientProps {
 }
 
 export function CategoryCreateClient({ backUrl = "/admin/categories" }: CategoryCreateClientProps) {
-  const router = useRouter()
-  const { toast } = useToast()
-
-  const handleSubmit = async (data: Partial<CategoryFormData>) => {
-    try {
-      const submitData: Record<string, unknown> = {
-        ...data,
-        // Auto-generate slug if not provided
-        slug: data.slug?.trim() || (data.name ? generateSlug(data.name) : ""),
-      }
-
-      if (!submitData.name || !submitData.slug) {
-        toast({
-          variant: "destructive",
-          title: "Thiếu thông tin",
-          description: "Tên danh mục là bắt buộc.",
-        })
-        return { success: false, error: "Tên danh mục là bắt buộc" }
-      }
-
-      const response = await apiClient.post(apiRoutes.categories.create, submitData)
-
-      if (response.status === 201) {
-        toast({
-          variant: "success",
-          title: "Tạo danh mục thành công",
-          description: "Danh mục mới đã được tạo thành công.",
-        })
-
-        if (response.data?.data?.id) {
-          router.push(`/admin/categories/${response.data.data.id}`)
-        } else {
-          router.push("/admin/categories")
-        }
-
-        return { success: true }
-      }
-
-      toast({
-        variant: "destructive",
-        title: "Tạo danh mục thất bại",
-        description: "Không thể tạo danh mục. Vui lòng thử lại.",
-      })
-      return { success: false, error: "Không thể tạo danh mục" }
-    } catch (error: unknown) {
-      const errorMessage = extractAxiosErrorMessage(error, "Đã xảy ra lỗi khi tạo danh mục")
-
-      toast({
-        variant: "destructive",
-        title: "Lỗi tạo danh mục",
-        description: errorMessage,
-      })
-
-      return { success: false, error: errorMessage }
-    }
-  }
+  const { handleSubmit } = useResourceFormSubmit({
+    apiRoute: apiRoutes.categories.create,
+    method: "POST",
+    messages: {
+      successTitle: "Tạo danh mục thành công",
+      successDescription: "Danh mục mới đã được tạo thành công.",
+      errorTitle: "Lỗi tạo danh mục",
+    },
+    navigation: {
+      toDetail: (response) =>
+        response.data?.data?.id ? `/admin/categories/${response.data.data.id}` : backUrl,
+      fallback: backUrl,
+    },
+    transformData: (data) => ({
+      ...data,
+      // Auto-generate slug if not provided
+      slug: (typeof data.slug === "string" ? data.slug.trim() : "") || (data.name ? generateSlug(String(data.name)) : ""),
+    }),
+  })
 
   const createFields = getBaseCategoryFields()
 

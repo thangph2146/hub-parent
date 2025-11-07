@@ -7,12 +7,9 @@
 
 "use client"
 
-import { useRouter } from "next/navigation"
 import { ResourceForm } from "@/features/admin/resources/components"
-import { apiClient } from "@/lib/api/axios"
+import { useResourceFormSubmit } from "@/features/admin/resources/hooks"
 import { apiRoutes } from "@/lib/api/routes"
-import { useToast } from "@/hooks/use-toast"
-import { extractAxiosErrorMessage } from "@/lib/utils/api-utils"
 import { getBaseContactRequestFields, type ContactRequestFormData } from "../form-fields"
 import type { ContactStatus, ContactPriority } from "../types"
 
@@ -54,63 +51,35 @@ export function ContactRequestEditClient({
   contactRequestId: _contactRequestId,
   usersOptions = [],
 }: ContactRequestEditClientProps) {
-  const router = useRouter()
-  const { toast } = useToast()
-
-  const handleSubmit = async (data: Partial<ContactRequestEditData>) => {
-    if (!contactRequest?.id) {
-      return { success: false, error: "Không tìm thấy yêu cầu liên hệ" }
-    }
-
-    try {
-      const submitData: Record<string, unknown> = {
-        ...data,
+  const { handleSubmit } = useResourceFormSubmit({
+    apiRoute: (id) => apiRoutes.contactRequests.update(id),
+    method: "PUT",
+    resourceId: contactRequest?.id,
+    messages: {
+      successTitle: "Cập nhật yêu cầu liên hệ thành công",
+      successDescription: "Yêu cầu liên hệ đã được cập nhật thành công.",
+      errorTitle: "Lỗi cập nhật yêu cầu liên hệ",
+    },
+    navigation: {
+      toDetail: variant === "page" && backUrl
+        ? backUrl
+        : variant === "page" && contactRequest?.id
+          ? `/admin/contact-requests/${contactRequest.id}`
+          : undefined,
+      fallback: backUrl,
+    },
+    onSuccess: async () => {
+      if (onSuccess) {
+        onSuccess()
       }
+    },
+  })
 
-      const response = await apiClient.put(apiRoutes.contactRequests.update(contactRequest.id), submitData)
-
-      if (response.status === 200) {
-        toast({
-          variant: "success",
-          title: "Cập nhật yêu cầu liên hệ thành công",
-          description: "Yêu cầu liên hệ đã được cập nhật thành công.",
-        })
-
-        if (onSuccess) {
-          onSuccess()
-        } else if (variant === "page" && backUrl) {
-          router.push(backUrl)
-        } else if (variant === "page") {
-          router.push(`/admin/contact-requests/${contactRequest.id}`)
-        }
-
-        return { success: true }
-      }
-
-      toast({
-        variant: "destructive",
-        title: "Cập nhật yêu cầu liên hệ thất bại",
-        description: "Không thể cập nhật yêu cầu liên hệ. Vui lòng thử lại.",
-      })
-      return { success: false, error: "Không thể cập nhật yêu cầu liên hệ" }
-    } catch (error: unknown) {
-      const errorMessage = extractAxiosErrorMessage(error, "Đã xảy ra lỗi khi cập nhật yêu cầu liên hệ")
-
-      toast({
-        variant: "destructive",
-        title: "Lỗi cập nhật yêu cầu liên hệ",
-        description: errorMessage,
-      })
-
-      return { success: false, error: errorMessage }
-    }
+  if (!contactRequest?.id) {
+    return null
   }
 
   const editFields = getBaseContactRequestFields(usersOptions)
-
-  if (!contactRequest) {
-    return null
-  }
 
   return (
     <ResourceForm<ContactRequestFormData>

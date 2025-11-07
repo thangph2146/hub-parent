@@ -7,12 +7,9 @@
 
 "use client"
 
-import { useRouter } from "next/navigation"
 import { ResourceForm } from "@/features/admin/resources/components"
-import { apiClient } from "@/lib/api/axios"
+import { useResourceFormSubmit } from "@/features/admin/resources/hooks"
 import { apiRoutes } from "@/lib/api/routes"
-import { useToast } from "@/hooks/use-toast"
-import { extractAxiosErrorMessage } from "@/lib/utils/api-utils"
 import { getBaseTagFields, type TagFormData } from "../form-fields"
 import type { TagRow } from "../types"
 
@@ -43,63 +40,35 @@ export function TagEditClient({
   backLabel = "Quay lại",
   tagId: _tagId,
 }: TagEditClientProps) {
-  const router = useRouter()
-  const { toast } = useToast()
-
-  const handleSubmit = async (data: Partial<TagEditData>) => {
-    if (!tag?.id) {
-      return { success: false, error: "Không tìm thấy thẻ tag" }
-    }
-
-    try {
-      const submitData: Record<string, unknown> = {
-        ...data,
+  const { handleSubmit } = useResourceFormSubmit({
+    apiRoute: (id) => apiRoutes.tags.update(id),
+    method: "PUT",
+    resourceId: tag?.id,
+    messages: {
+      successTitle: "Cập nhật thẻ tag thành công",
+      successDescription: "Thẻ tag đã được cập nhật thành công.",
+      errorTitle: "Lỗi cập nhật thẻ tag",
+    },
+    navigation: {
+      toDetail: variant === "page" && backUrl
+        ? backUrl
+        : variant === "page" && tag?.id
+          ? `/admin/tags/${tag.id}`
+          : undefined,
+      fallback: backUrl,
+    },
+    onSuccess: async () => {
+      if (onSuccess) {
+        onSuccess()
       }
+    },
+  })
 
-      const response = await apiClient.put(apiRoutes.tags.update(tag.id), submitData)
-
-      if (response.status === 200) {
-        toast({
-          variant: "success",
-          title: "Cập nhật thẻ tag thành công",
-          description: "Thẻ tag đã được cập nhật thành công.",
-        })
-
-        if (onSuccess) {
-          onSuccess()
-        } else if (variant === "page" && backUrl) {
-          router.push(backUrl)
-        } else if (variant === "page") {
-          router.push(`/admin/tags/${tag.id}`)
-        }
-
-        return { success: true }
-      }
-
-      toast({
-        variant: "destructive",
-        title: "Cập nhật thẻ tag thất bại",
-        description: "Không thể cập nhật thẻ tag. Vui lòng thử lại.",
-      })
-      return { success: false, error: "Không thể cập nhật thẻ tag" }
-    } catch (error: unknown) {
-      const errorMessage = extractAxiosErrorMessage(error, "Đã xảy ra lỗi khi cập nhật thẻ tag")
-
-      toast({
-        variant: "destructive",
-        title: "Lỗi cập nhật thẻ tag",
-        description: errorMessage,
-      })
-
-      return { success: false, error: errorMessage }
-    }
+  if (!tag?.id) {
+    return null
   }
 
   const editFields = getBaseTagFields()
-
-  if (!tag) {
-    return null
-  }
 
   return (
     <ResourceForm<TagFormData>

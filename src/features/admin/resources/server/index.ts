@@ -39,3 +39,17 @@ export {
   type AuthContext,
 } from "./mutations-helpers"
 
+// Auth helpers
+export {
+  getAuthInfo,
+  type SessionWithMeta,
+  type AuthInfo,
+} from "./auth-helpers"
+
+// Page helpers
+export {
+  getTablePermissions,
+  getTablePermissionsAsync,
+  type TablePermissions,
+} from "./page-helpers"
+

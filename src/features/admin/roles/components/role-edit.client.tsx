@@ -7,12 +7,9 @@
 
 "use client"
 
-import { useRouter } from "next/navigation"
 import { ResourceForm } from "@/features/admin/resources/components"
-import { apiClient } from "@/lib/api/axios"
+import { useResourceFormSubmit } from "@/features/admin/resources/hooks"
 import { apiRoutes } from "@/lib/api/routes"
-import { useToast } from "@/hooks/use-toast"
-import { extractAxiosErrorMessage } from "@/lib/utils/api-utils"
 import { getBaseRoleFields, getRoleFormSections, type RoleFormData } from "../form-fields"
 import type { RoleRow } from "../types"
 
@@ -44,73 +41,55 @@ export function RoleEditClient({
   roleId: _roleId,
   permissions: permissionsFromServer = [],
 }: RoleEditClientProps) {
-  const router = useRouter()
-  const { toast } = useToast()
+  // Capture role for use in hook callbacks
+  const currentRole = role
 
-  const handleSubmit = async (data: Partial<RoleEditData>) => {
-    if (!role?.id) {
-      return { success: false, error: "Không tìm thấy vai trò" }
-    }
-
-    try {
-      const submitData: Record<string, unknown> = {
+  const { handleSubmit } = useResourceFormSubmit({
+    apiRoute: (id) => apiRoutes.roles.update(id),
+    method: "PUT",
+    resourceId: currentRole?.id,
+    messages: {
+      successTitle: "Cập nhật vai trò thành công",
+      successDescription: "Vai trò đã được cập nhật thành công.",
+      errorTitle: "Lỗi cập nhật vai trò",
+    },
+    navigation: {
+      toDetail: variant === "page" && backUrl
+        ? backUrl
+        : variant === "page" && currentRole?.id
+          ? `/admin/roles/${currentRole.id}`
+          : undefined,
+      fallback: backUrl,
+    },
+    transformData: (data) => {
+      const submitData = {
         ...data,
         permissions: Array.isArray(data.permissions) ? data.permissions : [],
       }
-
       // Prevent editing super_admin name (client-side check for UX)
-      if (role.name === "super_admin" && submitData.name && submitData.name !== role.name) {
-        toast({
-          variant: "destructive",
-          title: "Không thể chỉnh sửa",
-          description: "Không thể thay đổi tên vai trò super_admin.",
-        })
-        return { success: false, error: "Không thể thay đổi tên vai trò super_admin" }
-      }
-
-      // Validation được xử lý bởi Zod ở server side
-      const response = await apiClient.put(apiRoutes.roles.update(role.id), submitData)
-
-      if (response.status === 200) {
-        toast({
-          variant: "success",
-          title: "Cập nhật vai trò thành công",
-          description: "Vai trò đã được cập nhật thành công.",
-        })
-
-        if (onSuccess) {
-          onSuccess()
-        } else if (variant === "page" && backUrl) {
-          router.push(backUrl)
-        } else if (variant === "page") {
-          router.push(`/admin/roles/${role.id}`)
+      if (currentRole) {
+        const roleName = (currentRole as RoleRow).name
+        if (roleName === "super_admin" && (submitData as RoleEditData).name && (submitData as RoleEditData).name !== roleName) {
+          // Throw error to be caught by hook's error handler
+          throw new Error("Không thể thay đổi tên vai trò super_admin")
         }
-
-        return { success: true }
       }
+      return submitData
+    },
+    onSuccess: async () => {
+      if (onSuccess) {
+        onSuccess()
+      }
+    },
+  })
 
-      toast({
-        variant: "destructive",
-        title: "Cập nhật vai trò thất bại",
-        description: "Không thể cập nhật vai trò. Vui lòng thử lại.",
-      })
-      return { success: false, error: "Không thể cập nhật vai trò" }
-    } catch (error: unknown) {
-      const errorMessage = extractAxiosErrorMessage(error, "Đã xảy ra lỗi khi cập nhật vai trò")
-
-      toast({
-        variant: "destructive",
-        title: "Lỗi cập nhật vai trò",
-        description: errorMessage,
-      })
-
-      return { success: false, error: errorMessage }
-    }
+  if (!role?.id) {
+    return null
   }
 
   const editFields = getBaseRoleFields(permissionsFromServer).map((field) => {
     // Disable name field for super_admin
-    if (field.name === "name" && role?.name === "super_admin") {
+    if (field.name === "name" && role.name === "super_admin") {
       return {
         ...field,
         disabled: true,
@@ -120,10 +99,6 @@ export function RoleEditClient({
     return field
   })
   const formSections = getRoleFormSections()
-
-  if (!role) {
-    return null
-  }
 
   return (
     <ResourceForm<RoleFormData>

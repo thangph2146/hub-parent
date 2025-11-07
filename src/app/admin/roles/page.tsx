@@ -1,13 +1,7 @@
 import { AdminHeader } from "@/components/headers"
-import { PERMISSIONS, canPerformAction, canPerformAnyAction } from "@/lib/permissions"
-import { getPermissions, getSession } from "@/lib/auth/auth-server"
-
+import { PERMISSIONS } from "@/lib/permissions"
+import { getTablePermissionsAsync } from "@/features/admin/resources/server"
 import { RolesTable } from "@/features/admin/roles/components/roles-table"
-
-interface SessionWithMeta {
-  roles?: Array<{ name: string }>
-  permissions?: Array<string>
-}
 
 /**
  * Roles Page
@@ -16,21 +10,12 @@ interface SessionWithMeta {
  * Chỉ cần check permissions cho UI actions (canDelete, canRestore, canManage, canCreate)
  */
 export default async function RolesPage() {
-  const session = (await getSession()) as SessionWithMeta | null
-  const permissions = await getPermissions()
-  const roles = session?.roles ?? []
-
-  // Check permissions cho UI actions (không phải page access)
-  const canDelete = canPerformAnyAction(permissions, roles, [
-    PERMISSIONS.ROLES_DELETE,
-    PERMISSIONS.ROLES_MANAGE,
-  ])
-  const canRestore = canPerformAnyAction(permissions, roles, [
-    PERMISSIONS.ROLES_UPDATE,
-    PERMISSIONS.ROLES_MANAGE,
-  ])
-  const canManage = canPerformAction(permissions, roles, PERMISSIONS.ROLES_MANAGE)
-  const canCreate = canPerformAction(permissions, roles, PERMISSIONS.ROLES_CREATE)
+  const { canDelete, canRestore, canManage, canCreate } = await getTablePermissionsAsync({
+    delete: [PERMISSIONS.ROLES_DELETE, PERMISSIONS.ROLES_MANAGE],
+    restore: [PERMISSIONS.ROLES_UPDATE, PERMISSIONS.ROLES_MANAGE],
+    manage: PERMISSIONS.ROLES_MANAGE,
+    create: PERMISSIONS.ROLES_CREATE,
+  })
 
   return (
     <>

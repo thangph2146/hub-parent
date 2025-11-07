@@ -1,13 +1,7 @@
 import { AdminHeader } from "@/components/headers"
-import { PERMISSIONS, canPerformAction, canPerformAnyAction } from "@/lib/permissions"
-import { getPermissions, getSession } from "@/lib/auth/auth-server"
-
+import { PERMISSIONS } from "@/lib/permissions"
+import { getTablePermissionsAsync } from "@/features/admin/resources/server"
 import { TagsTable } from "@/features/admin/tags/components/tags-table"
-
-interface SessionWithMeta {
-  roles?: Array<{ name: string }>
-  permissions?: Array<string>
-}
 
 /**
  * Tags Page
@@ -16,21 +10,12 @@ interface SessionWithMeta {
  * Chỉ cần check permissions cho UI actions (canDelete, canRestore, canManage, canCreate)
  */
 export default async function TagsPage() {
-  const session = (await getSession()) as SessionWithMeta | null
-  const permissions = await getPermissions()
-  const roles = session?.roles ?? []
-
-  // Check permissions cho UI actions (không phải page access)
-  const canDelete = canPerformAnyAction(permissions, roles, [
-    PERMISSIONS.TAGS_DELETE,
-    PERMISSIONS.TAGS_MANAGE,
-  ])
-  const canRestore = canPerformAnyAction(permissions, roles, [
-    PERMISSIONS.TAGS_UPDATE,
-    PERMISSIONS.TAGS_MANAGE,
-  ])
-  const canManage = canPerformAction(permissions, roles, PERMISSIONS.TAGS_MANAGE)
-  const canCreate = canPerformAction(permissions, roles, PERMISSIONS.TAGS_CREATE)
+  const { canDelete, canRestore, canManage, canCreate } = await getTablePermissionsAsync({
+    delete: [PERMISSIONS.TAGS_DELETE, PERMISSIONS.TAGS_MANAGE],
+    restore: [PERMISSIONS.TAGS_UPDATE, PERMISSIONS.TAGS_MANAGE],
+    manage: PERMISSIONS.TAGS_MANAGE,
+    create: PERMISSIONS.TAGS_CREATE,
+  })
 
   return (
     <>

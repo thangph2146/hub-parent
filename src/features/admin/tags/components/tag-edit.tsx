@@ -9,6 +9,7 @@ import { getTagDetailById } from "../server/cache"
 import { serializeTagDetail } from "../server/helpers"
 import { TagEditClient } from "./tag-edit.client"
 import type { TagEditClientProps } from "./tag-edit.client"
+import { NotFoundMessage } from "@/features/admin/resources/components"
 
 export interface TagEditProps {
   tagId: string
@@ -32,7 +33,7 @@ export async function TagEdit({
   const tag = await getTagDetailById(tagId)
 
   if (!tag) {
-    return null
+    return <NotFoundMessage resourceName="thẻ tag" />
   }
 
   const tagForEdit: TagEditClientProps["tag"] = {

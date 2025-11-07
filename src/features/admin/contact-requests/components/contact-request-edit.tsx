@@ -10,6 +10,7 @@ import { serializeContactRequestDetail } from "../server/helpers"
 import { ContactRequestEditClient } from "./contact-request-edit.client"
 import type { ContactRequestEditClientProps } from "./contact-request-edit.client"
 import { getActiveUsersForSelectCached } from "@/features/admin/users/server/cache"
+import { NotFoundMessage } from "@/features/admin/resources/components"
 
 export interface ContactRequestEditProps {
   contactRequestId: string
@@ -36,7 +37,7 @@ export async function ContactRequestEdit({
   ])
 
   if (!contactRequest) {
-    return null
+    return <NotFoundMessage resourceName="yêu cầu liên hệ" />
   }
 
   const contactRequestForEdit: ContactRequestEditClientProps["contactRequest"] = {

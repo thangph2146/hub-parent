@@ -9,6 +9,7 @@ import { getContactRequestDetailById } from "../server/cache"
 import { serializeContactRequestDetail } from "../server/helpers"
 import { ContactRequestDetailClient } from "./contact-request-detail.client"
 import type { ContactRequestDetailData } from "./contact-request-detail.client"
+import { NotFoundMessage } from "@/features/admin/resources/components"
 
 export interface ContactRequestDetailProps {
   contactRequestId: string
@@ -19,13 +20,7 @@ export async function ContactRequestDetail({ contactRequestId, backUrl = "/admin
   const contactRequest = await getContactRequestDetailById(contactRequestId)
 
   if (!contactRequest) {
-    return (
-      <div className="flex flex-1 flex-col items-center justify-center gap-4 p-4 md:p-6 lg:p-8">
-        <div className="text-center">
-          <p className="text-muted-foreground">Không tìm thấy yêu cầu liên hệ</p>
-        </div>
-      </div>
-    )
+    return <NotFoundMessage resourceName="yêu cầu liên hệ" />
   }
 
   return (

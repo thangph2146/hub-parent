@@ -9,6 +9,7 @@ import { getUserDetailById, getRolesCached } from "../server/cache"
 import { serializeUserDetail } from "../server/helpers"
 import { UserEditClient } from "./user-edit.client"
 import type { UserEditClientProps } from "./user-edit.client"
+import { NotFoundMessage } from "@/features/admin/resources/components"
 
 export interface UserEditProps {
   userId: string
@@ -35,7 +36,7 @@ export async function UserEdit({
   ])
 
   if (!user) {
-    return null
+    return <NotFoundMessage resourceName="người dùng" />
   }
 
   const userForEdit: UserEditClientProps["user"] = {

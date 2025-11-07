@@ -1,13 +1,7 @@
 import { AdminHeader } from "@/components/headers"
-import { PERMISSIONS, canPerformAction, canPerformAnyAction } from "@/lib/permissions"
-import { getPermissions, getSession } from "@/lib/auth/auth-server"
-
+import { PERMISSIONS } from "@/lib/permissions"
+import { getTablePermissionsAsync } from "@/features/admin/resources/server"
 import { CategoriesTable } from "@/features/admin/categories/components/categories-table"
-
-interface SessionWithMeta {
-  roles?: Array<{ name: string }>
-  permissions?: Array<string>
-}
 
 /**
  * Categories Page
@@ -16,21 +10,12 @@ interface SessionWithMeta {
  * Chỉ cần check permissions cho UI actions (canDelete, canRestore, canManage, canCreate)
  */
 export default async function CategoriesPage() {
-  const session = (await getSession()) as SessionWithMeta | null
-  const permissions = await getPermissions()
-  const roles = session?.roles ?? []
-
-  // Check permissions cho UI actions (không phải page access)
-  const canDelete = canPerformAnyAction(permissions, roles, [
-    PERMISSIONS.CATEGORIES_DELETE,
-    PERMISSIONS.CATEGORIES_MANAGE,
-  ])
-  const canRestore = canPerformAnyAction(permissions, roles, [
-    PERMISSIONS.CATEGORIES_UPDATE,
-    PERMISSIONS.CATEGORIES_MANAGE,
-  ])
-  const canManage = canPerformAction(permissions, roles, PERMISSIONS.CATEGORIES_MANAGE)
-  const canCreate = canPerformAction(permissions, roles, PERMISSIONS.CATEGORIES_CREATE)
+  const { canDelete, canRestore, canManage, canCreate } = await getTablePermissionsAsync({
+    delete: [PERMISSIONS.CATEGORIES_DELETE, PERMISSIONS.CATEGORIES_MANAGE],
+    restore: [PERMISSIONS.CATEGORIES_UPDATE, PERMISSIONS.CATEGORIES_MANAGE],
+    manage: PERMISSIONS.CATEGORIES_MANAGE,
+    create: PERMISSIONS.CATEGORIES_CREATE,
+  })
 
   return (
     <>

@@ -9,6 +9,7 @@ import { getRoleDetailById } from "../server/cache"
 import { serializeRoleDetail } from "../server/helpers"
 import { RoleDetailClient } from "./role-detail.client"
 import type { RoleDetailData } from "./role-detail.client"
+import { NotFoundMessage } from "@/features/admin/resources/components"
 
 export interface RoleDetailProps {
   roleId: string
@@ -19,13 +20,7 @@ export async function RoleDetail({ roleId, backUrl = "/admin/roles" }: RoleDetai
   const role = await getRoleDetailById(roleId)
 
   if (!role) {
-    return (
-      <div className="flex flex-1 flex-col items-center justify-center gap-4 p-4 md:p-6 lg:p-8">
-        <div className="text-center">
-          <p className="text-muted-foreground">Không tìm thấy vai trò</p>
-        </div>
-      </div>
-    )
+    return <NotFoundMessage resourceName="vai trò" />
   }
 
   return (

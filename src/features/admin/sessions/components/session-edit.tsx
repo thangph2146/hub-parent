@@ -10,6 +10,7 @@ import { serializeSessionDetail } from "../server/helpers"
 import { SessionEditClient } from "./session-edit.client"
 import type { SessionEditClientProps } from "./session-edit.client"
 import { getActiveUsersForSelectCached } from "@/features/admin/users/server/cache"
+import { NotFoundMessage } from "@/features/admin/resources/components"
 
 export interface SessionEditProps {
   sessionId: string
@@ -36,7 +37,7 @@ export async function SessionEdit({
   ])
 
   if (!session) {
-    return null
+    return <NotFoundMessage resourceName="session" />
   }
 
   const sessionForEdit: SessionEditClientProps["session"] = {

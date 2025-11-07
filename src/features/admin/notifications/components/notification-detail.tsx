@@ -11,6 +11,7 @@ import { getNotificationByIdCached } from "../server/cache"
 import { serializeNotificationDetail } from "../server/helpers"
 import { NotificationDetailClient } from "./notification-detail.client"
 import type { NotificationDetailData } from "./notification-detail.client"
+import { NotFoundMessage } from "@/features/admin/resources/components"
 
 export interface NotificationDetailProps {
   notificationId: string
@@ -31,13 +32,7 @@ export async function NotificationDetail({ notificationId, backUrl = "/admin/not
   const notification = await getNotificationByIdCached(notificationId)
 
   if (!notification) {
-    return (
-      <div className="flex flex-1 flex-col items-center justify-center gap-4 p-4 md:p-6 lg:p-8">
-        <div className="text-center">
-          <p className="text-muted-foreground">Không tìm thấy thông báo</p>
-        </div>
-      </div>
-    )
+    return <NotFoundMessage resourceName="thông báo" />
   }
 
   // Transform notification data to match NotificationDetailData format (serialize dates)

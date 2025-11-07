@@ -7,12 +7,9 @@
 
 "use client"
 
-import { useRouter } from "next/navigation"
 import { ResourceForm } from "@/features/admin/resources/components"
-import { apiClient } from "@/lib/api/axios"
+import { useResourceFormSubmit } from "@/features/admin/resources/hooks"
 import { apiRoutes } from "@/lib/api/routes"
-import { useToast } from "@/hooks/use-toast"
-import { extractAxiosErrorMessage } from "@/lib/utils/api-utils"
 import { getBaseSessionFields, getSessionFormSections, type SessionFormData } from "../form-fields"
 
 export interface SessionCreateClientProps {
@@ -21,52 +18,20 @@ export interface SessionCreateClientProps {
 }
 
 export function SessionCreateClient({ backUrl = "/admin/sessions", users: usersFromServer = [] }: SessionCreateClientProps) {
-  const router = useRouter()
-  const { toast } = useToast()
-
-  const handleSubmit = async (data: Partial<SessionFormData>) => {
-    try {
-      const submitData: Record<string, unknown> = {
-        ...data,
-      }
-
-      // Validation được xử lý bởi Zod ở server side
-      const response = await apiClient.post(apiRoutes.sessions.create, submitData)
-
-      if (response.status === 201) {
-        toast({
-          variant: "success",
-          title: "Tạo session thành công",
-          description: "Session mới đã được tạo thành công.",
-        })
-
-        if (response.data?.data?.id) {
-          router.push(`/admin/sessions/${response.data.data.id}`)
-        } else {
-          router.push("/admin/sessions")
-        }
-
-        return { success: true }
-      }
-
-      toast({
-        variant: "destructive",
-        title: "Tạo session thất bại",
-        description: "Không thể tạo session. Vui lòng thử lại.",
-      })
-      return { success: false, error: "Không thể tạo session" }
-    } catch (error: unknown) {
-      const errorMessage = extractAxiosErrorMessage(error, "Đã xảy ra lỗi khi tạo session")
-
-      toast({
-        variant: "destructive",
-        title: "Lỗi tạo session",
-        description: errorMessage,
-      })
-
-      return { success: false, error: errorMessage }
-    }
-  }
+  const { handleSubmit } = useResourceFormSubmit({
+    apiRoute: apiRoutes.sessions.create,
+    method: "POST",
+    messages: {
+      successTitle: "Tạo session thành công",
+      successDescription: "Session mới đã được tạo thành công.",
+      errorTitle: "Lỗi tạo session",
+    },
+    navigation: {
+      toDetail: (response) =>
+        response.data?.data?.id ? `/admin/sessions/${response.data.data.id}` : backUrl,
+      fallback: backUrl,
+    },
+  })
 
   const createFields = getBaseSessionFields(usersFromServer)
   const formSections = getSessionFormSections()

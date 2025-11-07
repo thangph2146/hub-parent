@@ -6,11 +6,16 @@
  * 
  * LƯU Ý: Không include `/api` prefix vì `apiClient` đã có `baseURL: "/api"`
  * Nếu sử dụng trực tiếp với fetch/axios khác, cần thêm `/api` prefix
+ * 
+ * Admin resources sử dụng routes từ route-config.ts để đảm bảo consistency
  */
+
+import { generateResourceApiRoutes, getResourceApiRoute } from "@/lib/permissions/api-route-helpers"
 
 /**
  * API Routes cho từng feature
  * Không include `/api` prefix vì apiClient đã có baseURL
+ * Admin resources được generate từ route-config.ts
  */
 export const apiRoutes = {
   // Auth
@@ -59,229 +64,35 @@ export const apiRoutes = {
     },
   },
 
-  // Users
-  users: {
-    list: (params?: { page?: number; limit?: number; search?: string; status?: string }) => {
-      const searchParams = new URLSearchParams()
-      if (params?.page) searchParams.set("page", params.page.toString())
-      if (params?.limit) searchParams.set("limit", params.limit.toString())
-      if (params?.search) searchParams.set("search", params.search)
-      if (params?.status) searchParams.set("status", params.status)
-      const queryString = searchParams.toString()
-      return `/admin/users${queryString ? `?${queryString}` : ""}`
-    },
-    detail: (id: string) => `/admin/users/${id}`,
-    create: "/admin/users",
-    update: (id: string) => `/admin/users/${id}`,
-    delete: (id: string) => `/admin/users/${id}`,
-    restore: (id: string) => `/admin/users/${id}/restore`,
-    hardDelete: (id: string) => `/admin/users/${id}/hard-delete`,
-    bulk: "/admin/users/bulk",
-    options: (params?: { column: string; search?: string; limit?: number }) => {
-      const searchParams = new URLSearchParams()
-      if (params?.column) searchParams.set("column", params.column)
-      if (params?.search) searchParams.set("search", params.search)
-      if (params?.limit) searchParams.set("limit", params.limit.toString())
-      const queryString = searchParams.toString()
-      return `/admin/users/options${queryString ? `?${queryString}` : ""}`
-    },
-  },
+  // Users - Generated from route-config.ts
+  users: generateResourceApiRoutes("users"),
 
-  // Roles
-  roles: {
-    list: (params?: { page?: number; limit?: number; search?: string; status?: string }) => {
-      const searchParams = new URLSearchParams()
-      if (params?.page) searchParams.set("page", params.page.toString())
-      if (params?.limit) searchParams.set("limit", params.limit.toString())
-      if (params?.search) searchParams.set("search", params.search)
-      if (params?.status) searchParams.set("status", params.status)
-      const queryString = searchParams.toString()
-      return `/admin/roles${queryString ? `?${queryString}` : ""}`
-    },
-    detail: (id: string) => `/admin/roles/${id}`,
-    create: "/admin/roles",
-    update: (id: string) => `/admin/roles/${id}`,
-    delete: (id: string) => `/admin/roles/${id}`,
-    restore: (id: string) => `/admin/roles/${id}/restore`,
-    hardDelete: (id: string) => `/admin/roles/${id}/hard-delete`,
-    bulk: "/admin/roles/bulk",
-    options: (params?: { column: string; search?: string; limit?: number }) => {
-      const searchParams = new URLSearchParams()
-      if (params?.column) searchParams.set("column", params.column)
-      if (params?.search) searchParams.set("search", params.search)
-      if (params?.limit) searchParams.set("limit", params.limit.toString())
-      const queryString = searchParams.toString()
-      return `/admin/roles/options${queryString ? `?${queryString}` : ""}`
-    },
-  },
+  // Roles - Generated from route-config.ts
+  roles: generateResourceApiRoutes("roles"),
 
-  // Categories
-  categories: {
-    list: (params?: { page?: number; limit?: number; search?: string; status?: string }) => {
-      const searchParams = new URLSearchParams()
-      if (params?.page) searchParams.set("page", params.page.toString())
-      if (params?.limit) searchParams.set("limit", params.limit.toString())
-      if (params?.search) searchParams.set("search", params.search)
-      if (params?.status) searchParams.set("status", params.status)
-      const queryString = searchParams.toString()
-      return `/admin/categories${queryString ? `?${queryString}` : ""}`
-    },
-    detail: (id: string) => `/admin/categories/${id}`,
-    create: "/admin/categories",
-    update: (id: string) => `/admin/categories/${id}`,
-    delete: (id: string) => `/admin/categories/${id}`,
-    restore: (id: string) => `/admin/categories/${id}/restore`,
-    hardDelete: (id: string) => `/admin/categories/${id}/hard-delete`,
-    bulk: "/admin/categories/bulk",
-    options: (params?: { column: string; search?: string; limit?: number }) => {
-      const searchParams = new URLSearchParams()
-      if (params?.column) searchParams.set("column", params.column)
-      if (params?.search) searchParams.set("search", params.search)
-      if (params?.limit) searchParams.set("limit", params.limit.toString())
-      const queryString = searchParams.toString()
-      return `/admin/categories/options${queryString ? `?${queryString}` : ""}`
-    },
-  },
+  // Categories - Generated from route-config.ts
+  categories: generateResourceApiRoutes("categories"),
 
-  // Tags
-  tags: {
-    list: (params?: { page?: number; limit?: number; search?: string; status?: string }) => {
-      const searchParams = new URLSearchParams()
-      if (params?.page) searchParams.set("page", params.page.toString())
-      if (params?.limit) searchParams.set("limit", params.limit.toString())
-      if (params?.search) searchParams.set("search", params.search)
-      if (params?.status) searchParams.set("status", params.status)
-      const queryString = searchParams.toString()
-      return `/admin/tags${queryString ? `?${queryString}` : ""}`
-    },
-    detail: (id: string) => `/admin/tags/${id}`,
-    create: "/admin/tags",
-    update: (id: string) => `/admin/tags/${id}`,
-    delete: (id: string) => `/admin/tags/${id}`,
-    restore: (id: string) => `/admin/tags/${id}/restore`,
-    hardDelete: (id: string) => `/admin/tags/${id}/hard-delete`,
-    bulk: "/admin/tags/bulk",
-    options: (params?: { column: string; search?: string; limit?: number }) => {
-      const searchParams = new URLSearchParams()
-      if (params?.column) searchParams.set("column", params.column)
-      if (params?.search) searchParams.set("search", params.search)
-      if (params?.limit) searchParams.set("limit", params.limit.toString())
-      const queryString = searchParams.toString()
-      return `/admin/tags/options${queryString ? `?${queryString}` : ""}`
-    },
-  },
+  // Tags - Generated from route-config.ts
+  tags: generateResourceApiRoutes("tags"),
 
-  // Contact Requests
+  // Contact Requests - Generated from route-config.ts với custom actions
   contactRequests: {
-    list: (params?: { page?: number; limit?: number; search?: string; status?: string }) => {
-      const searchParams = new URLSearchParams()
-      if (params?.page) searchParams.set("page", params.page.toString())
-      if (params?.limit) searchParams.set("limit", params.limit.toString())
-      if (params?.search) searchParams.set("search", params.search)
-      if (params?.status) searchParams.set("status", params.status)
-      const queryString = searchParams.toString()
-      return `/admin/contact-requests${queryString ? `?${queryString}` : ""}`
-    },
-    detail: (id: string) => `/admin/contact-requests/${id}`,
-    update: (id: string) => `/admin/contact-requests/${id}`,
-    assign: (id: string) => `/admin/contact-requests/${id}/assign`,
-    delete: (id: string) => `/admin/contact-requests/${id}`,
-    restore: (id: string) => `/admin/contact-requests/${id}/restore`,
-    hardDelete: (id: string) => `/admin/contact-requests/${id}/hard-delete`,
-    bulk: "/admin/contact-requests/bulk",
-    options: (params?: { column: string; search?: string; limit?: number }) => {
-      const searchParams = new URLSearchParams()
-      if (params?.column) searchParams.set("column", params.column)
-      if (params?.search) searchParams.set("search", params.search)
-      if (params?.limit) searchParams.set("limit", params.limit.toString())
-      const queryString = searchParams.toString()
-      return `/admin/contact-requests/options${queryString ? `?${queryString}` : ""}`
-    },
+    ...generateResourceApiRoutes("contact-requests"),
+    assign: (id: string) => getResourceApiRoute("contact-requests", "POST", "assign")?.replace("[id]", id) || `/admin/contact-requests/${id}/assign`,
   },
 
-  // Students
-  students: {
-    list: (params?: { page?: number; limit?: number; search?: string; status?: string }) => {
-      const searchParams = new URLSearchParams()
-      if (params?.page) searchParams.set("page", params.page.toString())
-      if (params?.limit) searchParams.set("limit", params.limit.toString())
-      if (params?.search) searchParams.set("search", params.search)
-      if (params?.status) searchParams.set("status", params.status)
-      const queryString = searchParams.toString()
-      return `/admin/students${queryString ? `?${queryString}` : ""}`
-    },
-    detail: (id: string) => `/admin/students/${id}`,
-    create: "/admin/students",
-    update: (id: string) => `/admin/students/${id}`,
-    delete: (id: string) => `/admin/students/${id}`,
-    restore: (id: string) => `/admin/students/${id}/restore`,
-    hardDelete: (id: string) => `/admin/students/${id}/hard-delete`,
-    bulk: "/admin/students/bulk",
-    options: (params?: { column: string; search?: string; limit?: number }) => {
-      const searchParams = new URLSearchParams()
-      if (params?.column) searchParams.set("column", params.column)
-      if (params?.search) searchParams.set("search", params.search)
-      if (params?.limit) searchParams.set("limit", params.limit.toString())
-      const queryString = searchParams.toString()
-      return `/admin/students/options${queryString ? `?${queryString}` : ""}`
-    },
-  },
+  // Students - Generated from route-config.ts
+  students: generateResourceApiRoutes("students"),
 
-  // Sessions
-  sessions: {
-    list: (params?: { page?: number; limit?: number; search?: string; status?: string }) => {
-      const searchParams = new URLSearchParams()
-      if (params?.page) searchParams.set("page", params.page.toString())
-      if (params?.limit) searchParams.set("limit", params.limit.toString())
-      if (params?.search) searchParams.set("search", params.search)
-      if (params?.status) searchParams.set("status", params.status)
-      const queryString = searchParams.toString()
-      return `/admin/sessions${queryString ? `?${queryString}` : ""}`
-    },
-    detail: (id: string) => `/admin/sessions/${id}`,
-    create: "/admin/sessions",
-    update: (id: string) => `/admin/sessions/${id}`,
-    delete: (id: string) => `/admin/sessions/${id}`,
-    restore: (id: string) => `/admin/sessions/${id}/restore`,
-    hardDelete: (id: string) => `/admin/sessions/${id}/hard-delete`,
-    bulk: "/admin/sessions/bulk",
-    options: (params?: { column: string; search?: string; limit?: number }) => {
-      const searchParams = new URLSearchParams()
-      if (params?.column) searchParams.set("column", params.column)
-      if (params?.search) searchParams.set("search", params.search)
-      if (params?.limit) searchParams.set("limit", params.limit.toString())
-      const queryString = searchParams.toString()
-      return `/admin/sessions/options${queryString ? `?${queryString}` : ""}`
-    },
-  },
+  // Sessions - Generated from route-config.ts
+  sessions: generateResourceApiRoutes("sessions"),
 
-  // Comments
+  // Comments - Generated from route-config.ts với custom actions (approve/unapprove)
   comments: {
-    list: (params?: { page?: number; limit?: number; search?: string; status?: string }) => {
-      const searchParams = new URLSearchParams()
-      if (params?.page) searchParams.set("page", params.page.toString())
-      if (params?.limit) searchParams.set("limit", params.limit.toString())
-      if (params?.search) searchParams.set("search", params.search)
-      if (params?.status) searchParams.set("status", params.status)
-      const queryString = searchParams.toString()
-      return `/admin/comments${queryString ? `?${queryString}` : ""}`
-    },
-    detail: (id: string) => `/admin/comments/${id}`,
-    update: (id: string) => `/admin/comments/${id}`,
-    approve: (id: string) => `/admin/comments/${id}/approve`,
-    unapprove: (id: string) => `/admin/comments/${id}/unapprove`,
-    delete: (id: string) => `/admin/comments/${id}`,
-    restore: (id: string) => `/admin/comments/${id}/restore`,
-    hardDelete: (id: string) => `/admin/comments/${id}/hard-delete`,
-    bulk: "/admin/comments/bulk",
-    options: (params?: { column: string; search?: string; limit?: number }) => {
-      const searchParams = new URLSearchParams()
-      if (params?.column) searchParams.set("column", params.column)
-      if (params?.search) searchParams.set("search", params.search)
-      if (params?.limit) searchParams.set("limit", params.limit.toString())
-      const queryString = searchParams.toString()
-      return `/admin/comments/options${queryString ? `?${queryString}` : ""}`
-    },
+    ...generateResourceApiRoutes("comments"),
+    approve: (id: string) => getResourceApiRoute("comments", "POST", "approve")?.replace("[id]", id) || `/admin/comments/${id}/approve`,
+    unapprove: (id: string) => getResourceApiRoute("comments", "POST", "unapprove")?.replace("[id]", id) || `/admin/comments/${id}/unapprove`,
   },
 
   // Socket
