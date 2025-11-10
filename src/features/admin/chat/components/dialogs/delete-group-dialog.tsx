@@ -10,10 +10,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { Loader2, AlertTriangle, Trash2, Trash } from "lucide-react"
+import { Loader2, AlertTriangle, Trash } from "lucide-react"
 import type { Group } from "@/components/chat/types"
 import { apiRoutes } from "@/lib/api/routes"
 import { useToast } from "@/hooks/use-toast"
+import { HardDeleteGroupDialog } from "./hard-delete-group-dialog"
 
 interface DeleteGroupDialogProps {
   open: boolean
@@ -24,20 +25,15 @@ interface DeleteGroupDialogProps {
 
 export function DeleteGroupDialog({ open, onOpenChange, group, onSuccess }: DeleteGroupDialogProps) {
   const [isDeleting, setIsDeleting] = useState(false)
-  const [deleteType, setDeleteType] = useState<"soft" | "hard" | null>(null)
+  const [hardDeleteDialogOpen, setHardDeleteDialogOpen] = useState(false)
   const { toast } = useToast()
 
-  const handleDelete = async (type: "soft" | "hard") => {
+  const handleSoftDelete = async () => {
     if (!group) return
 
     setIsDeleting(true)
-    setDeleteType(type)
     try {
-      const url = type === "hard" 
-        ? `/api${apiRoutes.adminGroups.hardDelete(group.id)}`
-        : `/api${apiRoutes.adminGroups.delete(group.id)}`
-      
-      const response = await fetch(url, {
+      const response = await fetch(`/api${apiRoutes.adminGroups.delete(group.id)}`, {
         method: "DELETE",
       })
 
@@ -48,11 +44,10 @@ export function DeleteGroupDialog({ open, onOpenChange, group, onSuccess }: Dele
 
       toast({
         title: "Thành công",
-        description: type === "hard" ? "Đã xóa vĩnh viễn nhóm" : "Đã xóa nhóm (có thể khôi phục)",
+        description: "Đã xóa nhóm (có thể khôi phục)",
       })
 
       onOpenChange(false)
-      // Delay onSuccess để đảm bảo dialog đã đóng
       setTimeout(() => {
         onSuccess?.()
       }, 100)
@@ -65,8 +60,12 @@ export function DeleteGroupDialog({ open, onOpenChange, group, onSuccess }: Dele
       })
     } finally {
       setIsDeleting(false)
-      setDeleteType(null)
     }
+  }
+
+  const handleHardDeleteClick = () => {
+    onOpenChange(false)
+    setHardDeleteDialogOpen(true)
   }
 
   return (
@@ -85,30 +84,29 @@ export function DeleteGroupDialog({ open, onOpenChange, group, onSuccess }: Dele
           <Button
             variant="outline"
             className="w-full justify-start"
-            onClick={() => handleDelete("soft")}
+            onClick={handleSoftDelete}
             disabled={isDeleting}
           >
             <Trash className="mr-2 h-4 w-4" />
             <div className="flex-1 text-left">
               <div className="font-medium">Xóa tạm thời</div>
+              <div className="text-xs text-muted-foreground">Có thể khôi phục sau</div>
             </div>
-            {isDeleting && deleteType === "soft" && (
+            {isDeleting && (
               <Loader2 className="ml-2 h-4 w-4 animate-spin" />
             )}
           </Button>
           <Button
             variant="destructive"
             className="w-full justify-start"
-            onClick={() => handleDelete("hard")}
+            onClick={handleHardDeleteClick}
             disabled={isDeleting}
           >
-            <Trash2 className="mr-2 h-4 w-4" />
+            <AlertTriangle className="mr-2 h-4 w-4" />
             <div className="flex-1 text-left">
               <div className="font-medium">Xóa vĩnh viễn</div>
+              <div className="text-xs text-muted-foreground">Không thể hoàn tác</div>
             </div>
-            {isDeleting && deleteType === "hard" && (
-              <Loader2 className="ml-2 h-4 w-4 animate-spin" />
-            )}
           </Button>
         </div>
         <DialogFooter>
@@ -117,6 +115,13 @@ export function DeleteGroupDialog({ open, onOpenChange, group, onSuccess }: Dele
           </Button>
         </DialogFooter>
       </DialogContent>
+
+      <HardDeleteGroupDialog
+        open={hardDeleteDialogOpen}
+        onOpenChange={setHardDeleteDialogOpen}
+        group={group}
+        onSuccess={onSuccess}
+      />
     </Dialog>
   )
 }

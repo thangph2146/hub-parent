@@ -96,6 +96,7 @@ export function ChatWindow({
         searchQuery={searchQuery}
         isGroupDeleted={isGroupDeleted}
         currentUserRole={currentUserRole}
+        group={currentChat.type === "GROUP" ? currentChat.group : null}
         onHardDeleteGroup={onHardDeleteGroup}
       />
       <ChatInput

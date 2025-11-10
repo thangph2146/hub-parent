@@ -20,6 +20,7 @@ interface MessagesAreaProps {
   searchQuery?: string
   isGroupDeleted?: boolean
   currentUserRole?: GroupRole
+  group?: import("../types").Group | null
   onHardDeleteGroup?: () => void
 }
 
@@ -36,6 +37,7 @@ export function MessagesArea({
   searchQuery = "",
   isGroupDeleted = false,
   currentUserRole,
+  group,
   onHardDeleteGroup,
 }: MessagesAreaProps) {
   // Deduplicate messages by ID (tránh duplicate key error)
@@ -53,12 +55,6 @@ export function MessagesArea({
       style={style}
     >
       <div className="flex flex-col p-4 gap-2" ref={scrollAreaRef}>
-        {isGroupDeleted && (
-          <DeletedGroupBanner
-            currentUserRole={currentUserRole}
-            onHardDeleteGroup={onHardDeleteGroup}
-          />
-        )}
         {filteredMessages.length > 0 ? (
           <>
             {searchQuery.trim() && (
@@ -80,6 +76,13 @@ export function MessagesArea({
               />
             ))}
             <div ref={messagesEndRef} />
+            {isGroupDeleted && (
+              <DeletedGroupBanner
+                currentUserRole={currentUserRole}
+                group={group}
+                onHardDeleteGroup={onHardDeleteGroup}
+              />
+            )}
           </>
         ) : searchQuery.trim() ? (
           <div className="flex flex-col items-center justify-center py-8 text-center">
