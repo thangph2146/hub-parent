@@ -115,12 +115,102 @@ const formatMessageTime = (date: Date): string => {
 
 // ** Home Component **
 export const ChatTemplate = ({ contacts, currentUserId }: ChatTemplateProps) => {
+  const [contactsState, setContactsState] = useState<Contact[]>(contacts)
   const [currentChat, setCurrentChat] = useState<Contact | null>(contacts[0] || null)
+  const [messageInput, setMessageInput] = useState("")
   const isMobile = useIsMobile()
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const scrollAreaRef = useRef<HTMLDivElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
+  const isSendingRef = useRef(false)
+
+  // Update currentChat when contactsState changes
+  useEffect(() => {
+    if (currentChat) {
+      const updatedChat = contactsState.find((c) => c.id === currentChat.id)
+      if (updatedChat) {
+        // Only update if messages actually changed to avoid unnecessary re-renders
+        const messagesChanged = updatedChat.messages.length !== currentChat.messages.length ||
+          updatedChat.messages[updatedChat.messages.length - 1]?.id !== currentChat.messages[currentChat.messages.length - 1]?.id
+        if (messagesChanged) {
+          setCurrentChat(updatedChat)
+        }
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [contactsState])
+
+  // Clear input when switching chats (but not when sending messages)
+  const prevChatIdRef = useRef<string | undefined>(currentChat?.id)
+  useEffect(() => {
+    // Only clear if chat actually changed (not just messages updated)
+    if (prevChatIdRef.current !== currentChat?.id) {
+      setMessageInput("")
+      prevChatIdRef.current = currentChat?.id
+    }
+  }, [currentChat?.id])
 
   const currentMessages = currentChat?.messages || []
+
+  // Handle send message
+  const handleSendMessage = () => {
+    // Prevent duplicate sends
+    if (isSendingRef.current || !messageInput.trim() || !currentChat) return
+
+    isSendingRef.current = true
+
+    // Get message content BEFORE clearing
+    const messageContent = messageInput.trim()
+
+    const newMessage: Message = {
+      id: `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      content: messageContent,
+      senderId: currentUserId,
+      receiverId: currentChat.id,
+      timestamp: new Date(),
+      isRead: false,
+      type: "PERSONAL",
+      parentId: null,
+    }
+
+    // Clear input state immediately - MUST be empty string
+    setMessageInput("")
+
+    // Update contacts state with new message
+    setContactsState((prevContacts) =>
+      prevContacts.map((contact) => {
+        if (contact.id === currentChat.id) {
+          const updatedMessages = [...contact.messages, newMessage]
+          return {
+            ...contact,
+            messages: updatedMessages,
+            lastMessage: newMessage.content,
+            lastMessageTime: newMessage.timestamp,
+          }
+        }
+        return contact
+      })
+    )
+    
+    // Reset sending flag and ensure input is cleared
+    setTimeout(() => {
+      isSendingRef.current = false
+      // Double-check and force clear if needed
+      if (inputRef.current) {
+        inputRef.current.value = ""
+      }
+      setMessageInput("")
+      inputRef.current?.focus()
+    }, 50)
+  }
+
+  // Handle Enter key to send message
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault()
+      handleSendMessage()
+    }
+  }
 
   // Auto scroll to bottom when chat or messages change
   useEffect(() => {
@@ -154,7 +244,7 @@ export const ChatTemplate = ({ contacts, currentUserId }: ChatTemplateProps) => 
         direction="horizontal" 
         className="flex-1 h-full"
       >
-        {/* Left Panel - Chat List */}
+          {/* Left Panel - Chat List */}
         <ResizablePanel 
           defaultSize={isMobile ? 100 : 30} 
           minSize={isMobile ? 100 : 25} 
@@ -166,80 +256,80 @@ export const ChatTemplate = ({ contacts, currentUserId }: ChatTemplateProps) => 
             <div className="flex items-center justify-between h-14 px-4 border-b shrink-0">
               <h2 className="text-lg font-semibold">Chats</h2>
               <div className="flex items-center gap-1">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="icon" className="h-8 w-8">
                       <SquarePen className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
+                      </Button>
+                    </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem>
+                      <DropdownMenuItem>
                       <User className="mr-2 h-4 w-4" /> 
                       New Contact
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem>
                       <Users className="mr-2 h-4 w-4" /> 
                       New Group
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
 
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="icon" className="h-8 w-8">
                       <ListFilter className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
+                      </Button>
+                    </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-56">
-                    <DropdownMenuLabel>Filter Chats By</DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuGroup>
-                      <DropdownMenuItem>
+                      <DropdownMenuLabel>Filter Chats By</DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuGroup>
+                        <DropdownMenuItem>
                         <MessageSquareDot className="mr-2 h-4 w-4" /> 
                         Unread
-                      </DropdownMenuItem>
-                      <DropdownMenuItem>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem>
                         <Star className="mr-2 h-4 w-4" /> 
                         Favorites
-                      </DropdownMenuItem>
-                      <DropdownMenuItem>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem>
                         <CircleUserRound className="mr-2 h-4 w-4" /> 
                         Contacts
-                      </DropdownMenuItem>
-                      <DropdownMenuItem>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem>
                         <CircleOff className="mr-2 h-4 w-4" /> 
                         Non Contacts
-                      </DropdownMenuItem>
-                    </DropdownMenuGroup>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuGroup>
-                      <DropdownMenuItem>
+                        </DropdownMenuItem>
+                      </DropdownMenuGroup>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuGroup>
+                        <DropdownMenuItem>
                         <Users className="mr-2 h-4 w-4" /> 
                         Groups
-                      </DropdownMenuItem>
-                      <DropdownMenuItem>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem>
                         <MessageSquareDashed className="mr-2 h-4 w-4" /> 
                         Drafts
-                      </DropdownMenuItem>
-                    </DropdownMenuGroup>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                        </DropdownMenuItem>
+                      </DropdownMenuGroup>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
               </div>
-            </div>
 
-            {/* Search Bar */}
+              {/* Search Bar */}
             <div className="relative px-4 py-3 border-b shrink-0">
               <Search className="absolute left-6 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search or start new chat"
+                <Input
+                  placeholder="Search or start new chat"
                 className="pl-9 h-9"
-              />
-            </div>
+                />
+              </div>
 
-            {/* Contact List */}
+              {/* Contact List */}
             <ScrollArea className="max-h-[calc(100dvh-12.5rem)] overflow-y-auto">
               <div className="divide-y">
-                {contacts.map((contact) => (
+                {contactsState.map((contact) => (
                   <button
                     key={contact.id}
                     onClick={() => setCurrentChat(contact)}
@@ -255,7 +345,7 @@ export const ChatTemplate = ({ contacts, currentUserId }: ChatTemplateProps) => 
                           <AvatarFallback className="text-sm">
                             {contact.name[0]}
                           </AvatarFallback>
-                        </Avatar>
+                      </Avatar>
                         {contact.isOnline && (
                           <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-green-500 border-2 border-background" />
                         )}
@@ -284,13 +374,13 @@ export const ChatTemplate = ({ contacts, currentUserId }: ChatTemplateProps) => 
                   </button>
                 ))}
               </div>
-            </ScrollArea>
-          </div>
-        </ResizablePanel>
+              </ScrollArea>
+            </div>
+          </ResizablePanel>
 
         {!isMobile && <ResizableHandle withHandle />}
 
-        {/* Right Panel - Chat Window */}
+          {/* Right Panel - Chat Window */}
         {/* Luôn render để tránh lỗi "Previous layout not found" */}
         <ResizablePanel 
           defaultSize={isMobile ? 0 : 70} 
@@ -413,10 +503,21 @@ export const ChatTemplate = ({ contacts, currentUserId }: ChatTemplateProps) => 
                   </DropdownMenuContent>
                 </DropdownMenu>
                 <Input
+                  ref={inputRef}
                   className="flex-1 h-9"
                   placeholder="Type a message"
+                  value={messageInput}
+                  onChange={(e) => setMessageInput(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  disabled={!currentChat}
                 />
-                <Button variant="ghost" size="icon" className="h-9 w-9 shrink-0">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-9 w-9 shrink-0"
+                  onClick={handleSendMessage}
+                  disabled={!messageInput.trim() || !currentChat}
+                >
                   <Send className="h-4 w-4" />
                 </Button>
                 <Button variant="ghost" size="icon" className="h-9 w-9 shrink-0">
@@ -433,7 +534,7 @@ export const ChatTemplate = ({ contacts, currentUserId }: ChatTemplateProps) => 
               </div>
             </div>
           )}
-        </ResizablePanel>
+          </ResizablePanel>
 
         {/* Mobile Chat Window - Full Screen Overlay */}
         {isMobile && currentChat && (
@@ -560,10 +661,21 @@ export const ChatTemplate = ({ contacts, currentUserId }: ChatTemplateProps) => 
                 </DropdownMenuContent>
               </DropdownMenu>
               <Input
+                ref={inputRef}
                 className="flex-1 h-9"
                 placeholder="Type a message"
+                value={messageInput}
+                onChange={(e) => setMessageInput(e.target.value)}
+                onKeyDown={handleKeyDown}
+                disabled={!currentChat}
               />
-              <Button variant="ghost" size="icon" className="h-9 w-9 shrink-0">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-9 w-9 shrink-0"
+                onClick={handleSendMessage}
+                disabled={!messageInput.trim() || !currentChat}
+              >
                 <Send className="h-4 w-4" />
               </Button>
               <Button variant="ghost" size="icon" className="h-9 w-9 shrink-0">
@@ -572,7 +684,7 @@ export const ChatTemplate = ({ contacts, currentUserId }: ChatTemplateProps) => 
             </div>
           </div>
         )}
-      </ResizablePanelGroup>
+        </ResizablePanelGroup>
     </div>
   )
 }
