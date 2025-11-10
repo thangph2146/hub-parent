@@ -14,6 +14,7 @@ export { ContactItem } from "./components/contact-item"
 export { ContactList } from "./components/contact-list"
 export { MessagesArea } from "./components/messages-area"
 export { ChatInput } from "./components/chat-input"
+export { ChatWindow } from "./components/chat-window"
 
 // Hooks
 export { useChat } from "./hooks/use-chat"

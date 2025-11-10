@@ -6,9 +6,7 @@ import type { ChatTemplateProps } from "./types"
 import { useChat } from "./hooks/use-chat"
 import { ChatListHeader } from "./components/chat-list-header"
 import { ContactList } from "./components/contact-list"
-import { ChatHeader } from "./components/chat-header"
-import { MessagesArea } from "./components/messages-area"
-import { ChatInput } from "./components/chat-input"
+import { ChatWindow } from "./components/chat-window"
 import { EmptyState } from "./components/empty-state"
 
 export function ChatTemplate({ contacts, currentUserId, role, onNewConversation }: ChatTemplateProps) {
@@ -73,28 +71,25 @@ export function ChatTemplate({ contacts, currentUserId, role, onNewConversation 
         >
           {currentChat ? (
             <div className="flex flex-col h-full bg-background">
-              <ChatHeader contact={currentChat} />
-              <MessagesArea
-                messages={currentMessages}
+              <ChatWindow
+                currentChat={currentChat}
                 currentUserId={currentUserId}
+                currentMessages={currentMessages}
                 messagesMaxHeight={messagesMaxHeight}
                 messagesMinHeight={messagesMinHeight}
                 scrollAreaRef={scrollAreaRef}
                 messagesEndRef={messagesEndRef}
-                onReply={handleReplyToMessage}
-                onMarkAsRead={markMessageAsRead}
-                onMarkAsUnread={markMessageAsUnread}
-              />
-              <ChatInput
                 inputRef={inputRef}
+                replyBannerRef={replyBannerRef}
                 messageInput={messageInput}
                 setMessageInput={setMessageInput}
-                handleKeyDown={handleKeyDown}
-                handleSendMessage={handleSendMessage}
-                currentChat={currentChat}
                 replyingTo={replyingTo}
-                onCancelReply={handleCancelReply}
-                replyBannerRef={replyBannerRef}
+                handleSendMessage={handleSendMessage}
+                handleKeyDown={handleKeyDown}
+                handleReplyToMessage={handleReplyToMessage}
+                handleCancelReply={handleCancelReply}
+                markMessageAsRead={markMessageAsRead}
+                markMessageAsUnread={markMessageAsUnread}
               />
             </div>
           ) : (
@@ -105,28 +100,27 @@ export function ChatTemplate({ contacts, currentUserId, role, onNewConversation 
         {/* Mobile Chat Window */}
         {isMobile && currentChat && (
           <div className="fixed inset-0 z-50 flex flex-col bg-background md:hidden">
-            <ChatHeader contact={currentChat} onBack={() => setCurrentChat(null)} showBackButton />
-            <MessagesArea
-              messages={currentMessages}
+            <ChatWindow
+              currentChat={currentChat}
               currentUserId={currentUserId}
+              currentMessages={currentMessages}
               messagesMaxHeight={messagesMaxHeight}
               messagesMinHeight={messagesMinHeight}
               scrollAreaRef={scrollAreaRef}
               messagesEndRef={messagesEndRef}
-              onReply={handleReplyToMessage}
-              onMarkAsRead={markMessageAsRead}
-              onMarkAsUnread={markMessageAsUnread}
-            />
-            <ChatInput
               inputRef={inputRef}
+              replyBannerRef={replyBannerRef}
               messageInput={messageInput}
               setMessageInput={setMessageInput}
-              handleKeyDown={handleKeyDown}
-              handleSendMessage={handleSendMessage}
-              currentChat={currentChat}
               replyingTo={replyingTo}
-              onCancelReply={handleCancelReply}
-              replyBannerRef={replyBannerRef}
+              handleSendMessage={handleSendMessage}
+              handleKeyDown={handleKeyDown}
+              handleReplyToMessage={handleReplyToMessage}
+              handleCancelReply={handleCancelReply}
+              markMessageAsRead={markMessageAsRead}
+              markMessageAsUnread={markMessageAsUnread}
+              onBack={() => setCurrentChat(null)}
+              showBackButton
             />
           </div>
         )}

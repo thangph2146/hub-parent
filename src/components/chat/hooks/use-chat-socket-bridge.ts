@@ -46,13 +46,14 @@ export function useChatSocketBridge({
       toUserId: string
       timestamp?: number
       parentMessageId?: string
+      isRead?: boolean
     }): Message => ({
       id: payload.id || `msg-${payload.timestamp || Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       content: payload.content,
       senderId: payload.fromUserId,
       receiverId: payload.toUserId,
       timestamp: new Date(payload.timestamp || Date.now()),
-      isRead: payload.toUserId !== currentUserId, // Unread nếu là receiver
+      isRead: payload.isRead ?? payload.toUserId !== currentUserId,
       type: "PERSONAL",
       parentId: payload.parentMessageId || null,
     })

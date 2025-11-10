@@ -1,0 +1,86 @@
+/**
+ * Shared ChatWindow component để tránh duplicate code
+ * Sử dụng cho cả desktop và mobile
+ */
+
+"use client"
+
+import type { Contact, Message } from "../types"
+import { ChatHeader } from "./chat-header"
+import { MessagesArea } from "./messages-area"
+import { ChatInput } from "./chat-input"
+
+interface ChatWindowProps {
+  currentChat: Contact
+  currentUserId: string
+  currentMessages: Message[]
+  messagesMaxHeight?: number
+  messagesMinHeight?: number
+  scrollAreaRef: React.RefObject<HTMLDivElement | null>
+  messagesEndRef: React.RefObject<HTMLDivElement | null>
+  inputRef: React.RefObject<HTMLTextAreaElement | null>
+  replyBannerRef: React.RefObject<HTMLDivElement | null>
+  messageInput: string
+  setMessageInput: (value: string) => void
+  replyingTo: Message | null
+  handleSendMessage: () => void
+  handleKeyDown: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void
+  handleReplyToMessage: (message: Message) => void
+  handleCancelReply: () => void
+  markMessageAsRead: (messageId: string) => void
+  markMessageAsUnread: (messageId: string) => void
+  onBack?: () => void
+  showBackButton?: boolean
+}
+
+export function ChatWindow({
+  currentChat,
+  currentUserId,
+  currentMessages,
+  messagesMaxHeight,
+  messagesMinHeight,
+  scrollAreaRef,
+  messagesEndRef,
+  inputRef,
+  replyBannerRef,
+  messageInput,
+  setMessageInput,
+  replyingTo,
+  handleSendMessage,
+  handleKeyDown,
+  handleReplyToMessage,
+  handleCancelReply,
+  markMessageAsRead,
+  markMessageAsUnread,
+  onBack,
+  showBackButton,
+}: ChatWindowProps) {
+  return (
+    <>
+      <ChatHeader contact={currentChat} onBack={onBack} showBackButton={showBackButton} />
+      <MessagesArea
+        messages={currentMessages}
+        currentUserId={currentUserId}
+        messagesMaxHeight={messagesMaxHeight}
+        messagesMinHeight={messagesMinHeight}
+        scrollAreaRef={scrollAreaRef}
+        messagesEndRef={messagesEndRef}
+        onReply={handleReplyToMessage}
+        onMarkAsRead={markMessageAsRead}
+        onMarkAsUnread={markMessageAsUnread}
+      />
+      <ChatInput
+        inputRef={inputRef}
+        messageInput={messageInput}
+        setMessageInput={setMessageInput}
+        handleKeyDown={handleKeyDown}
+        handleSendMessage={handleSendMessage}
+        currentChat={currentChat}
+        replyingTo={replyingTo}
+        onCancelReply={handleCancelReply}
+        replyBannerRef={replyBannerRef}
+      />
+    </>
+  )
+}
+
