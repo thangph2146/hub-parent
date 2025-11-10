@@ -5,7 +5,7 @@ import type { Message, GroupRole } from "../types"
 import { EmptyState } from "./empty-state"
 import { MessageBubble } from "./message-bubble"
 import { DeletedGroupBanner } from "./deleted-group-banner"
-import { filterMessagesByQuery, createMessageMap, getParentMessage } from "../utils/message-helpers"
+import { filterMessagesByQuery, createMessageMap, getParentMessage, deduplicateMessages } from "../utils/message-helpers"
 
 interface MessagesAreaProps {
   messages: Message[]
@@ -38,8 +38,10 @@ export function MessagesArea({
   currentUserRole,
   onHardDeleteGroup,
 }: MessagesAreaProps) {
-  const messageMap = createMessageMap(messages)
-  const filteredMessages = filterMessagesByQuery(messages, searchQuery)
+  // Deduplicate messages by ID (tránh duplicate key error)
+  const uniqueMessages = deduplicateMessages(messages)
+  const messageMap = createMessageMap(uniqueMessages)
+  const filteredMessages = filterMessagesByQuery(uniqueMessages, searchQuery)
 
   const style = {
     maxHeight: messagesMaxHeight ? `${messagesMaxHeight}px` : "calc(100dvh - 13rem)",

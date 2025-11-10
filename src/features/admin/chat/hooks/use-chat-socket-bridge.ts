@@ -31,7 +31,7 @@ interface UseChatSocketBridgeProps {
   setCurrentChat?: (contact: Contact | null) => void
   currentChatId?: string | null
   setIsGroupDeleted?: (deleted: boolean) => void
-  onMessageReceived?: (messageId: string, contactId: string) => void // Callback khi nhận tin nhắn mới
+  onMessageReceived?: (messageId: string, contactId: string, message: Message) => void // Callback khi nhận tin nhắn mới
 }
 
 export function useChatSocketBridge({
@@ -115,7 +115,7 @@ export function useChatSocketBridge({
 
         // Auto mark as read nếu đang ở conversation này
         if (isCurrentChat && isUnread && payload.id) {
-          onMessageReceived?.(payload.id, contactId)
+          onMessageReceived?.(payload.id, contactId, newMessage)
         }
 
         return prev.map((contact) => {

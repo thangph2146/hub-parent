@@ -33,3 +33,11 @@ export function getParentMessage(
   return message.parentId ? messageMap.get(message.parentId) || null : null
 }
 
+/**
+ * Deduplicate messages by ID (tránh duplicate key error trong React)
+ */
+export function deduplicateMessages(messages: Message[]): Message[] {
+  return messages.filter((msg, index, self) => 
+    index === self.findIndex((m) => m.id === msg.id)
+  )
+}

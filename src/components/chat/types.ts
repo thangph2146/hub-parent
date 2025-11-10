@@ -13,6 +13,24 @@ export interface Message {
   isRead: boolean
   type?: MessageType
   parentId?: string | null
+  sender?: {
+    id: string
+    name: string | null
+    email: string
+    avatar: string | null
+  } | null
+  receiver?: {
+    id: string
+    name: string | null
+    email: string
+    avatar: string | null
+  } | null
+  readers?: {
+    id: string
+    name: string | null
+    email: string
+    avatar: string | null
+  }[] // List of users who have read this message (for group messages)
 }
 
 export interface Group {

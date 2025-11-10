@@ -3,6 +3,7 @@
 import type { Message } from "../types"
 import { formatMessageTime } from "../utils"
 import { highlightText } from "../utils/text-helpers"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 interface MessageBubbleProps {
   message: Message
@@ -27,19 +28,38 @@ export function MessageBubble({
 }: MessageBubbleProps) {
   const isParentOwnMessage = parentMessage?.senderId === currentUserId
   const canMarkRead = !isOwnMessage && (message.receiverId === currentUserId || (message.groupId && message.senderId !== currentUserId))
+  
+  // Hiển thị sender info cho group messages (không phải own message)
+  const showSenderInfo = message.groupId && !isOwnMessage && message.sender
+  const senderName = message.sender?.name || message.sender?.email || "Unknown"
 
   return (
     <div 
-      className={`flex ${isOwnMessage ? "justify-end" : "justify-start"} group`}
+      className={`flex ${isOwnMessage ? "justify-end" : "justify-start"} group gap-2`}
       data-message-id={message.id}
       id={`message-${message.id}`}
     >
+      {showSenderInfo && message.sender && (
+        <Avatar className="h-8 w-8 flex-shrink-0">
+          <AvatarImage src={message.sender.avatar || undefined} alt={senderName} />
+          <AvatarFallback>
+            {senderName.charAt(0).toUpperCase()}
+          </AvatarFallback>
+        </Avatar>
+      )}
       <div
         className={`max-w-[70%] rounded-lg px-4 py-2 cursor-pointer hover:opacity-90 transition-opacity relative ${
           isOwnMessage ? "bg-primary text-primary-foreground" : "bg-muted"
         }`}
         onClick={() => onReply?.(message)}
       >
+        {showSenderInfo && (
+          <p className={`text-xs font-medium mb-1 ${
+            isOwnMessage ? "text-primary-foreground/80" : "text-muted-foreground"
+          }`}>
+            {senderName}
+          </p>
+        )}
         {parentMessage && (
           <div className={`mb-2 pb-2 border-l-2 pl-2 ${
             isOwnMessage ? "border-primary-foreground/30" : "border-muted-foreground/30"
@@ -60,11 +80,31 @@ export function MessageBubble({
           {searchQuery ? highlightText(message.content, searchQuery) : message.content}
         </p>
         <div className="flex items-center justify-between gap-2 mt-1">
-          <p className={`text-xs ${
-            isOwnMessage ? "text-primary-foreground/70" : "text-muted-foreground"
-          }`}>
-            {formatMessageTime(message.timestamp)}
-          </p>
+          <div className="flex items-center gap-2">
+            <p className={`text-xs ${
+              isOwnMessage ? "text-primary-foreground/70" : "text-muted-foreground"
+            }`}>
+              {formatMessageTime(message.timestamp)}
+            </p>
+            {/* Hiển thị avatar list của readers cho group messages */}
+            {message.groupId && message.readers && message.readers.length > 0 && (
+              <div className="flex items-center gap-1 -ml-1">
+                {message.readers.slice(0, 5).map((reader) => (
+                  <Avatar key={reader.id} className="h-5 w-5 border-2 border-background">
+                    <AvatarImage src={reader.avatar || undefined} alt={reader.name || reader.email} />
+                    <AvatarFallback className="text-[10px]">
+                      {(reader.name || reader.email).charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                ))}
+                {message.readers.length > 5 && (
+                  <span className="text-[10px] text-muted-foreground ml-1">
+                    +{message.readers.length - 5}
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
           {canMarkRead && (
             <button
               onClick={(e) => {

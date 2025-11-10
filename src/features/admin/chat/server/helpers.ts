@@ -35,6 +35,18 @@ export type MessageWithRelations = Prisma.MessageGetPayload<{
         parentId: true
       }
     }
+    reads?: {
+      include: {
+        user: {
+          select: {
+            id: true
+            name: true
+            email: true
+            avatar: true
+          }
+        }
+      }
+    }
   }
 }>
 
@@ -91,6 +103,18 @@ export function mapMessageRecord(message: MessageWithRelations): MessageDetail {
           avatar: message.receiver.avatar,
         }
       : null,
+    readers: message.reads && Array.isArray(message.reads) && message.reads.length > 0
+      ? message.reads
+          .filter((read): read is typeof read & { user: { id: string; name: string | null; email: string; avatar: string | null } } => 
+            'user' in read && read.user !== null && typeof read.user === 'object' && 'id' in read.user
+          )
+          .map((read) => ({
+            id: read.user.id,
+            name: read.user.name,
+            email: read.user.email,
+            avatar: read.user.avatar,
+          }))
+      : undefined,
   }
 }
 

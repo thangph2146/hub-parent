@@ -77,6 +77,12 @@ export interface MessageDetail {
     email: string
     avatar: string | null
   } | null
+  readers?: {
+    id: string
+    name: string | null
+    email: string
+    avatar: string | null
+  }[] // List of users who have read this message (for group messages)
 }
 
 /**
@@ -284,6 +290,18 @@ export async function getMessagesBetweenUsers(
           parentId: true,
         },
       },
+      reads: {
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              avatar: true,
+            },
+          },
+        },
+      },
     },
     orderBy: { createdAt: "asc" },
     take: limit,
@@ -347,6 +365,18 @@ export async function getMessagesForGroup(
           parentId: true,
         },
       },
+      reads: {
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              avatar: true,
+            },
+          },
+        },
+      },
     },
     orderBy: { createdAt: "asc" },
     take: limit,
@@ -388,6 +418,18 @@ export async function getMessageById(id: string): Promise<MessageDetail | null> 
           isRead: true,
           type: true,
           parentId: true,
+        },
+      },
+      reads: {
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              avatar: true,
+            },
+          },
         },
       },
     },

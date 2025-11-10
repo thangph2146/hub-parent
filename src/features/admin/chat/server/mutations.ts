@@ -45,12 +45,12 @@ export async function createMessage(ctx: AuthContext, input: CreateMessageInput)
 
   // Verify receiver exists (for personal messages)
   if (input.receiverId) {
-    const receiver = await prisma.user.findUnique({
-      where: { id: input.receiverId },
-    })
+  const receiver = await prisma.user.findUnique({
+    where: { id: input.receiverId },
+  })
 
-    if (!receiver) {
-      throw new NotFoundError("Người nhận không tồn tại")
+  if (!receiver) {
+    throw new NotFoundError("Người nhận không tồn tại")
     }
   }
 
@@ -123,6 +123,18 @@ export async function createMessage(ctx: AuthContext, input: CreateMessageInput)
           parentId: true,
         },
       },
+      reads: {
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              avatar: true,
+            },
+          },
+        },
+      },
     },
   })
 
@@ -191,20 +203,93 @@ export async function markMessageAsRead(ctx: AuthContext, messageId: string, use
     throw new ApplicationError("Unauthorized", 401)
   }
 
-  // Verify message exists and belongs to user
+  // Verify message exists
   const message = await prisma.message.findUnique({
     where: { id: messageId },
-    select: { id: true, receiverId: true, isRead: true, senderId: true },
+    select: { id: true, receiverId: true, groupId: true, isRead: true, senderId: true },
   })
 
   if (!message) {
     throw new NotFoundError("Message not found")
   }
 
-  if (message.receiverId !== userId) {
+  // For personal messages: check receiverId
+  if (message.receiverId && message.receiverId !== userId) {
     throw new ApplicationError("Forbidden: You can only mark your own received messages as read", 403)
   }
 
+  // For group messages: check if user is a member of the group
+  if (message.groupId) {
+    const member = await prisma.groupMember.findFirst({
+      where: {
+        groupId: message.groupId,
+        userId: userId,
+        leftAt: null,
+      },
+    })
+
+    if (!member) {
+      throw new ApplicationError("Forbidden: You must be a member of the group to mark messages as read", 403)
+    }
+
+    // Don't allow marking own messages as read in groups
+    if (message.senderId === userId) {
+      throw new ApplicationError("Forbidden: You cannot mark your own sent messages as read", 403)
+    }
+  }
+
+  // For group messages: use MessageRead table
+  if (message.groupId) {
+    // Check if already read by this user
+    const existingRead = await prisma.messageRead.findUnique({
+      where: {
+        messageId_userId: {
+          messageId,
+          userId,
+        },
+      },
+    })
+
+    if (existingRead) {
+      // Already read, return message with reads
+      return await prisma.message.findUnique({
+        where: { id: messageId },
+        include: {
+          sender: { select: { id: true, name: true, email: true, avatar: true } },
+          receiver: { select: { id: true, name: true, email: true, avatar: true } },
+          reads: {
+            include: {
+              user: { select: { id: true, name: true, email: true, avatar: true } },
+            },
+          },
+        },
+      })
+    }
+
+    // Create MessageRead record
+    await prisma.messageRead.create({
+      data: {
+        messageId,
+        userId,
+      },
+    })
+
+    // Return message with reads
+    return await prisma.message.findUnique({
+      where: { id: messageId },
+      include: {
+        sender: { select: { id: true, name: true, email: true, avatar: true } },
+        receiver: { select: { id: true, name: true, email: true, avatar: true } },
+        reads: {
+          include: {
+            user: { select: { id: true, name: true, email: true, avatar: true } },
+          },
+        },
+      },
+    })
+  }
+
+  // For personal messages: use legacy isRead field
   // Skip update if already read
   if (message.isRead) {
     return await prisma.message.findUnique({
@@ -235,11 +320,25 @@ export async function markMessageAsRead(ctx: AuthContext, messageId: string, use
         content: updated.content,
         fromUserId: updated.senderId || "",
         toUserId: updated.receiverId,
+        groupId: updated.groupId || undefined,
         timestamp: updated.createdAt.getTime(),
         isRead: updated.isRead, // Include isRead status
       }
-      io.to(`user:${userId}`).emit("message:updated", payload)
-      logger.debug("Socket message:updated emitted", { messageId, userId })
+      
+      // Emit to user for personal messages, or to all group members for group messages
+      if (updated.groupId) {
+        const members = await prisma.groupMember.findMany({
+          where: { groupId: updated.groupId, leftAt: null },
+          select: { userId: true },
+        })
+        members.forEach((member) => {
+          io.to(`user:${member.userId}`).emit("message:updated", payload)
+        })
+        logger.debug("Socket message:updated emitted (group)", { messageId, groupId: updated.groupId, userId })
+      } else {
+        io.to(`user:${userId}`).emit("message:updated", payload)
+        logger.debug("Socket message:updated emitted", { messageId, userId })
+      }
     } catch (error) {
       logger.error("Failed to emit socket message update", error instanceof Error ? error : new Error(String(error)))
     }
@@ -260,18 +359,39 @@ export async function markMessageAsUnread(ctx: AuthContext, messageId: string, u
     throw new ApplicationError("Unauthorized", 401)
   }
 
-  // Verify message exists and belongs to user
+  // Verify message exists
   const message = await prisma.message.findUnique({
     where: { id: messageId },
-    select: { id: true, receiverId: true, isRead: true, senderId: true },
+    select: { id: true, receiverId: true, groupId: true, isRead: true, senderId: true },
   })
 
   if (!message) {
     throw new NotFoundError("Message not found")
   }
 
-  if (message.receiverId !== userId) {
+  // For personal messages: check receiverId
+  if (message.receiverId && message.receiverId !== userId) {
     throw new ApplicationError("Forbidden: You can only mark your own received messages as unread", 403)
+  }
+
+  // For group messages: check if user is a member of the group
+  if (message.groupId) {
+    const member = await prisma.groupMember.findFirst({
+      where: {
+        groupId: message.groupId,
+        userId: userId,
+        leftAt: null,
+      },
+    })
+
+    if (!member) {
+      throw new ApplicationError("Forbidden: You must be a member of the group to mark messages as unread", 403)
+    }
+
+    // Don't allow marking own messages as unread in groups
+    if (message.senderId === userId) {
+      throw new ApplicationError("Forbidden: You cannot mark your own sent messages as unread", 403)
+    }
   }
 
   // Skip update if already unread
@@ -304,11 +424,25 @@ export async function markMessageAsUnread(ctx: AuthContext, messageId: string, u
         content: updated.content,
         fromUserId: updated.senderId || "",
         toUserId: updated.receiverId,
+        groupId: updated.groupId || undefined,
         timestamp: updated.createdAt.getTime(),
         isRead: updated.isRead, // Include isRead status
       }
-      io.to(`user:${userId}`).emit("message:updated", payload)
-      logger.debug("Socket message:updated emitted", { messageId, userId })
+      
+      // Emit to user for personal messages, or to all group members for group messages
+      if (updated.groupId) {
+        const members = await prisma.groupMember.findMany({
+          where: { groupId: updated.groupId, leftAt: null },
+          select: { userId: true },
+        })
+        members.forEach((member) => {
+          io.to(`user:${member.userId}`).emit("message:updated", payload)
+        })
+        logger.debug("Socket message:updated emitted (group)", { messageId, groupId: updated.groupId, userId })
+      } else {
+        io.to(`user:${userId}`).emit("message:updated", payload)
+        logger.debug("Socket message:updated emitted", { messageId, userId })
+      }
     } catch (error) {
       logger.error("Failed to emit socket message update", error instanceof Error ? error : new Error(String(error)))
     }

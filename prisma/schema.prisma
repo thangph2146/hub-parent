@@ -36,6 +36,7 @@ model User {
   contactRequestsAssigned  ContactRequest[] @relation("ContactAssignedTo")
   groupsCreated            Group[]          @relation("GroupCreator")
   groupMemberships         GroupMember[]    @relation("GroupMembers")
+  messageReads             MessageRead[]    @relation("MessageReads")
 
   @@map("users")
 }
@@ -212,28 +213,43 @@ model GroupMember {
 }
 
 model Message {
-  id         String      @id @default(cuid())
+  id         String        @id @default(cuid())
   senderId   String?
   receiverId String? // Nullable for group messages
   groupId    String? // Nullable for personal messages
   subject    String
   content    String
-  isRead     Boolean     @default(false)
-  type       MessageType @default(NOTIFICATION)
-  createdAt  DateTime    @default(now())
-  updatedAt  DateTime    @updatedAt
+  isRead     Boolean       @default(false) // Legacy field for personal messages
+  type       MessageType   @default(NOTIFICATION)
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
   deletedAt  DateTime?
   parentId   String?
-  parent     Message?    @relation("MessageReplies", fields: [parentId], references: [id], onDelete: Cascade)
-  replies    Message[]   @relation("MessageReplies")
-  receiver   User?       @relation("MessageReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
-  sender     User?       @relation("MessageSender", fields: [senderId], references: [id])
-  group      Group?      @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  parent     Message?      @relation("MessageReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies    Message[]     @relation("MessageReplies")
+  receiver   User?         @relation("MessageReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
+  sender     User?         @relation("MessageSender", fields: [senderId], references: [id])
+  group      Group?        @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  reads      MessageRead[] // Track who has read this message
 
   @@index([groupId, createdAt])
   @@index([receiverId, createdAt])
   @@index([senderId, createdAt])
   @@map("messages")
+}
+
+model MessageRead {
+  id        String   @id @default(cuid())
+  messageId String
+  userId    String
+  readAt    DateTime @default(now())
+  message   Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user      User     @relation("MessageReads", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([messageId, userId])
+  @@index([messageId])
+  @@index([userId])
+  @@map("message_reads")
 }
 
 model Notification {

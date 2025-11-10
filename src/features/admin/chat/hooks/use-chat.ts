@@ -18,7 +18,6 @@ import {
   removeContactMessage,
   addContactMessage,
 } from "./use-chat-message-helpers"
-import { logger } from "@/lib/config"
 
 interface UseChatProps {
   contacts: Contact[]
@@ -74,12 +73,21 @@ export function useChat({ contacts, currentUserId, role }: UseChatProps) {
   
   // Auto mark as read callback khi nhận tin nhắn mới trong conversation hiện tại
   const handleMessageReceived = useCallback(
-    async (messageId: string, contactId: string) => {
+    async (messageId: string, contactId: string, message?: Message) => {
       if (contactId === currentChat?.id && currentUserId) {
-        try {
-          await markMessageAPI(messageId, true)
-        } catch (error) {
-          logger.error("Failed to auto-mark message as read", error)
+        // Chỉ mark as read nếu message đó là message mà user nhận được
+        // Personal: receiverId === currentUserId
+        // Group: groupId exists và senderId !== currentUserId
+        const isPersonalMessage = message && message.receiverId === currentUserId
+        const isGroupMessage = message && message.groupId && message.senderId !== currentUserId
+        
+        if ((isPersonalMessage || isGroupMessage) && !message.isRead) {
+          try {
+            await markMessageAPI(messageId, true)
+          } catch {
+            // Silently fail - không log error vì có thể message không phải của user
+            // hoặc đã được mark as read bởi socket event
+          }
         }
       }
     },
