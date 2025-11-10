@@ -35,43 +35,46 @@ const createConversation = (
   contactId: string,
   currentUserId: string,
   startMinutesAgo: number,
-  messageCount: number = 20
+  messageCount: number = 20,
+  customMessages?: string[]
 ): Message[] => {
   const messages: Message[] = []
   let currentMinutes = startMinutesAgo
+
+  const defaultMessageContents = [
+    "Hello! How are you doing today?",
+    "I'm doing great, thanks for asking!",
+    "That's wonderful to hear!",
+    "What are you up to?",
+    "Just working on some projects. How about you?",
+    "Same here, busy day!",
+    "I hope everything is going well for you.",
+    "Yes, everything is great! Thanks for checking in.",
+    "Do you have any plans for the weekend?",
+    "Not really, just planning to relax. What about you?",
+    "I'm thinking of going hiking. Would you like to join?",
+    "That sounds amazing! I'd love to join you.",
+    "Perfect! Let's plan the details.",
+    "Sure, let me know the time and place.",
+    "I'll send you the details later today.",
+    "Great! Looking forward to it.",
+    "By the way, did you finish that project?",
+    "Yes, I just completed it yesterday.",
+    "That's excellent! Congratulations!",
+    "Thank you! I'm really happy with how it turned out.",
+    "You should be proud of your work!",
+    "I appreciate your support throughout this.",
+    "Anytime! That's what friends are for.",
+    "I'm really grateful to have you as a friend.",
+    "The feeling is mutual!",
+  ]
+
+  const messageContents = customMessages || defaultMessageContents
 
   for (let i = 0; i < messageCount; i++) {
     const isFromContact = i % 2 === 0
     const senderId = isFromContact ? contactId : currentUserId
     const receiverId = isFromContact ? currentUserId : contactId
-
-    const messageContents = [
-      "Hello! How are you doing today?",
-      "I'm doing great, thanks for asking!",
-      "That's wonderful to hear!",
-      "What are you up to?",
-      "Just working on some projects. How about you?",
-      "Same here, busy day!",
-      "I hope everything is going well for you.",
-      "Yes, everything is great! Thanks for checking in.",
-      "Do you have any plans for the weekend?",
-      "Not really, just planning to relax. What about you?",
-      "I'm thinking of going hiking. Would you like to join?",
-      "That sounds amazing! I'd love to join you.",
-      "Perfect! Let's plan the details.",
-      "Sure, let me know the time and place.",
-      "I'll send you the details later today.",
-      "Great! Looking forward to it.",
-      "By the way, did you finish that project?",
-      "Yes, I just completed it yesterday.",
-      "That's excellent! Congratulations!",
-      "Thank you! I'm really happy with how it turned out.",
-      "You should be proud of your work!",
-      "I appreciate your support throughout this.",
-      "Anytime! That's what friends are for.",
-      "I'm really grateful to have you as a friend.",
-      "The feeling is mutual!",
-    ]
 
     const content = messageContents[i % messageContents.length]
     const isRead = !isFromContact || i < messageCount - 3 // Last 3 messages from contact are unread
@@ -105,39 +108,118 @@ const createConversation = (
  * Tổng cộng: 20 contacts, mỗi contact có ít nhất 20 tin nhắn
  */
 const currentUserId = "current-user"
+
+// Tin nhắn mẫu về Phụ huynh
+const phuHuynhMessages = [
+  "Xin chào, tôi là phụ huynh của em Nguyễn Văn A, lớp K22.",
+  "Chào anh/chị, tôi có thể hỗ trợ gì cho anh/chị?",
+  "Tôi muốn hỏi về kết quả học tập của con tôi trong học kỳ vừa qua.",
+  "Vâng, tôi sẽ kiểm tra và gửi báo cáo học tập cho anh/chị.",
+  "Con tôi có vấn đề về việc nộp học phí, có thể gia hạn được không?",
+  "Được ạ, phụ huynh có thể liên hệ phòng Tài chính để được hỗ trợ.",
+  "Cảm ơn anh/chị rất nhiều.",
+  "Không có gì, nếu có thắc mắc gì anh/chị cứ liên hệ nhé.",
+  "Tôi muốn đăng ký cho con tham gia hoạt động ngoại khóa của trường.",
+  "Vâng, tôi sẽ gửi thông tin chi tiết về các hoạt động ngoại khóa.",
+  "Trường Đại học Ngân hàng TP.HCM có chương trình học bổng nào không?",
+  "Có ạ, trường có nhiều chương trình học bổng, tôi sẽ gửi thông tin chi tiết.",
+  "Con tôi muốn chuyển ngành học, thủ tục như thế nào?",
+  "Phụ huynh cần nộp đơn xin chuyển ngành tại phòng Đào tạo.",
+  "Cảm ơn anh/chị đã hỗ trợ.",
+  "Rất hân hạnh được phục vụ anh/chị.",
+  "Tôi muốn gặp giáo viên chủ nhiệm của con, có thể sắp xếp được không?",
+  "Được ạ, tôi sẽ liên hệ và sắp xếp lịch hẹn cho anh/chị.",
+  "Trường có dịch vụ tư vấn tâm lý cho sinh viên không?",
+  "Có ạ, trường có phòng Tư vấn tâm lý học đường, phụ huynh có thể đăng ký.",
+  "Cảm ơn anh/chị rất nhiều về thông tin này.",
+  "Không có gì, chúc gia đình anh/chị sức khỏe.",
+]
+
+// Tin nhắn mẫu về Giảng viên
+const giangVienMessages = [
+  "Xin chào, tôi là giảng viên Nguyễn Thị B, khoa Tài chính Ngân hàng.",
+  "Chào cô, tôi có thể hỗ trợ gì cho cô?",
+  "Tôi muốn trao đổi về chương trình giảng dạy môn Tài chính Doanh nghiệp.",
+  "Vâng, tôi sẽ sắp xếp cuộc họp để trao đổi về chương trình giảng dạy.",
+  "Tôi cần hỗ trợ về việc đăng ký phòng học cho lớp của tôi.",
+  "Được ạ, cô có thể đăng ký phòng học qua hệ thống quản lý của trường.",
+  "Cảm ơn anh/chị.",
+  "Không có gì, nếu cần hỗ trợ gì thêm cô cứ liên hệ nhé.",
+  "Tôi muốn đề xuất tổ chức hội thảo chuyên đề về Ngân hàng số.",
+  "Ý tưởng rất hay, tôi sẽ trình lên Ban Giám hiệu để xem xét.",
+  "Trường có hỗ trợ kinh phí cho nghiên cứu khoa học không?",
+  "Có ạ, trường có quỹ hỗ trợ nghiên cứu khoa học, tôi sẽ gửi thông tin chi tiết.",
+  "Tôi cần phản ánh về tình trạng thiết bị trong phòng thực hành.",
+  "Vâng, tôi sẽ báo cáo lên phòng Cơ sở vật chất để xử lý.",
+  "Cảm ơn anh/chị đã quan tâm.",
+  "Rất hân hạnh được hỗ trợ cô.",
+  "Tôi muốn tham gia chương trình đào tạo giảng viên của trường.",
+  "Được ạ, tôi sẽ gửi thông tin về các khóa đào tạo giảng viên.",
+  "Trường có chính sách hỗ trợ giảng viên nghiên cứu không?",
+  "Có ạ, trường có nhiều chính sách hỗ trợ, tôi sẽ gửi chi tiết cho cô.",
+  "Cảm ơn anh/chị rất nhiều.",
+  "Chúc cô công tác tốt.",
+]
+
+// Tin nhắn mẫu về Quản trị viên
+const quanTriVienMessages = [
+  "Xin chào, tôi là quản trị viên Trần Văn C, phòng Hành chính.",
+  "Chào anh, tôi có thể hỗ trợ gì cho anh?",
+  "Tôi cần hỗ trợ về việc quản lý hệ thống thông tin sinh viên.",
+  "Vâng, tôi sẽ kiểm tra và hỗ trợ anh về hệ thống quản lý.",
+  "Tôi muốn báo cáo về tình trạng cơ sở hạ tầng của trường.",
+  "Được ạ, anh có thể gửi báo cáo chi tiết, tôi sẽ xử lý.",
+  "Cảm ơn anh/chị.",
+  "Không có gì, nếu có vấn đề gì anh cứ liên hệ nhé.",
+  "Tôi cần phê duyệt đơn xin nghỉ phép của nhân viên.",
+  "Vâng, anh có thể xử lý qua hệ thống quản lý nhân sự.",
+  "Trường có kế hoạch nâng cấp hệ thống công nghệ thông tin không?",
+  "Có ạ, trường đang có kế hoạch nâng cấp trong năm tới.",
+  "Tôi muốn tổ chức buổi tập huấn về an toàn thông tin.",
+  "Ý tưởng rất tốt, tôi sẽ sắp xếp và thông báo đến các phòng ban.",
+  "Cảm ơn anh/chị đã hỗ trợ.",
+  "Rất hân hạnh được làm việc với anh.",
+  "Tôi cần hỗ trợ về việc quản lý tài sản của trường.",
+  "Được ạ, tôi sẽ hướng dẫn anh về quy trình quản lý tài sản.",
+  "Trường có chính sách bảo mật thông tin như thế nào?",
+  "Trường có quy định nghiêm ngặt về bảo mật, tôi sẽ gửi tài liệu chi tiết.",
+  "Cảm ơn anh/chị rất nhiều.",
+  "Chúc anh công tác tốt.",
+]
+
 const mockContacts: Contact[] = [
   {
     id: "user-1",
-    name: "Manoj Rayi",
-    email: "manoj.rayi@example.com",
-    image: "https://github.com/rayimanoj8.png",
-    lastMessage: "I'll send you the details later today.",
+    name: "Nguyễn Văn Phụ Huynh",
+    email: "phuhuynh.nguyen@hubb.edu.vn",
+    image: null,
+    lastMessage: "Cảm ơn anh/chị rất nhiều về thông tin này.",
     lastMessageTime: new Date(Date.now() - 5 * 60 * 1000),
-    unreadCount: 3,
+    unreadCount: 2,
     isOnline: true,
-    messages: createConversation("user-1", currentUserId, 120, 22),
+    messages: createConversation("user-1", currentUserId, 120, 22, phuHuynhMessages),
   },
   {
     id: "user-2",
-    name: "Anjali Kumar",
-    email: "anjali.kumar@example.com",
-    image: "https://randomuser.me/api/portraits/women/2.jpg",
-    lastMessage: "That sounds amazing! I'd love to join you.",
+    name: "Nguyễn Thị Giảng Viên",
+    email: "giangvien.nguyen@hubb.edu.vn",
+    image: null,
+    lastMessage: "Cảm ơn anh/chị rất nhiều.",
     lastMessageTime: new Date(Date.now() - 15 * 60 * 1000),
     unreadCount: 0,
     isOnline: false,
-    messages: createConversation("user-2", currentUserId, 180, 20),
+    messages: createConversation("user-2", currentUserId, 180, 22, giangVienMessages),
   },
   {
     id: "user-3",
-    name: "Ravi Teja",
-    email: "ravi.teja@example.com",
-    image: "https://randomuser.me/api/portraits/men/3.jpg",
-    lastMessage: "Perfect! Let's plan the details.",
+    name: "Trần Văn Quản Trị",
+    email: "quantri.tran@hubb.edu.vn",
+    image: null,
+    lastMessage: "Cảm ơn anh/chị rất nhiều.",
     lastMessageTime: new Date(Date.now() - 30 * 60 * 1000),
     unreadCount: 1,
     isOnline: true,
-    messages: createConversation("user-3", currentUserId, 240, 21),
+    messages: createConversation("user-3", currentUserId, 240, 22, quanTriVienMessages),
   },
   {
     id: "user-4",
