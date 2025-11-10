@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import { AdminHeader } from "@/components/headers"
-import { MessagesPageClient } from "@/features/admin/chat/messages-page-client"
+import { MessagesPage } from "@/features/admin/chat/components/messages-page"
+import { TablePageSuspense } from "@/features/admin/resources/components"
 
 /**
  * Messages Page Metadata
@@ -19,9 +20,10 @@ export const metadata: Metadata = {
  * 
  * Trang quản lý tin nhắn và chat
  * - Sử dụng AdminHeader với breadcrumbs
- * - ChatTemplate được render trong flex container để phù hợp với layout
+ * - Server Component fetch data và pass xuống client component
+ * - Suspense boundary cho progressive loading
  */
-export default function MessagesPage() {
+export default async function MessagesPageRoute() {
   return (
     <>
       <AdminHeader
@@ -30,7 +32,9 @@ export default function MessagesPage() {
         ]}
       />
       <div className="flex flex-1 flex-col overflow-hidden">
-        <MessagesPageClient />
+        <TablePageSuspense columnCount={2} rowCount={10}>
+          <MessagesPage />
+        </TablePageSuspense>
       </div>
     </>
   )

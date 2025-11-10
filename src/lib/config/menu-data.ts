@@ -164,27 +164,15 @@ export function getMenuData(userPermissions: Permission[]): {
     createMenuItemFromRoute("tags", "Thẻ", React.createElement(Tag, { className: "h-4 w-4" })),
     // Roles
     createMenuItemFromRoute("roles", "Vai trò", React.createElement(Shield, { className: "h-4 w-4" })),
-    // Messages - special case với custom items
-    {
+    // Students
+    createMenuItemFromRoute("students", "Học sinh", React.createElement(GraduationCap, { className: "h-4 w-4" })),
+     // Messages - special case với custom items
+     {
       title: "Tin nhắn",
       url: "/admin/messages",
       icon: React.createElement(Send, { className: "h-4 w-4" }),
       permissions: MENU_PERMISSIONS.messages,
-      items: [
-        {
-          title: "Hộp thư đến",
-          url: "/admin/messages/inbox",
-          permissions: [PERMISSIONS.MESSAGES_VIEW],
-        },
-        {
-          title: "Đã gửi",
-          url: "/admin/messages/sent",
-          permissions: [PERMISSIONS.MESSAGES_VIEW],
-        },
-      ],
     },
-    // Students
-    createMenuItemFromRoute("students", "Học sinh", React.createElement(GraduationCap, { className: "h-4 w-4" })),
     // Comments - no sub items
     {
       title: "Bình luận",

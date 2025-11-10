@@ -19,6 +19,7 @@ interface ChatInputProps {
   currentChat: Contact | null
   replyingTo: Message | null
   onCancelReply: () => void
+  replyBannerRef?: React.RefObject<HTMLDivElement | null>
 }
 
 export function ChatInput({
@@ -30,11 +31,12 @@ export function ChatInput({
   currentChat,
   replyingTo,
   onCancelReply,
+  replyBannerRef,
 }: ChatInputProps) {
   return (
     <div className="flex flex-col border-t shrink-0">
       {replyingTo && (
-        <div className="flex items-center justify-between px-4 py-2 bg-muted/50 border-b">
+        <div ref={replyBannerRef} className="flex items-center justify-between px-4 py-2 bg-muted/50 border-b">
           <div className="flex-1 min-w-0">
             <p className="text-xs font-medium text-muted-foreground mb-0.5">Replying to:</p>
             <p className="text-xs truncate">{replyingTo.content}</p>

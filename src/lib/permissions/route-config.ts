@@ -231,10 +231,16 @@ export const ROUTE_CONFIG: RoutePermissionConfig[] = [
   { path: "/api/admin/comments/[id]/hard-delete", method: "DELETE", permissions: [PERMISSIONS.COMMENTS_MANAGE], type: "api" },
   { path: "/api/admin/comments/options", method: "GET", permissions: [PERMISSIONS.COMMENTS_VIEW], type: "api" },
 
-  // Messages
+  // Messages/Chat
   { path: "/admin/messages", permissions: [PERMISSIONS.MESSAGES_VIEW], type: "page" },
   { path: "/admin/messages/inbox", permissions: [PERMISSIONS.MESSAGES_VIEW], type: "page" },
   { path: "/admin/messages/sent", permissions: [PERMISSIONS.MESSAGES_VIEW], type: "page" },
+  // Messages API routes
+  { path: "/api/admin/messages", method: "POST", permissions: [PERMISSIONS.MESSAGES_SEND], type: "api" },
+  // Conversations API routes
+  { path: "/api/admin/conversations", method: "GET", permissions: [PERMISSIONS.MESSAGES_VIEW], type: "api" },
+  // Users search for conversations (requires MESSAGES_SEND to create new conversation)
+  { path: "/api/admin/users/search", method: "GET", permissions: [PERMISSIONS.MESSAGES_SEND, PERMISSIONS.USERS_VIEW], type: "api" },
 
   // Contact Requests (no CREATE/DELETE permissions, only VIEW, UPDATE, ASSIGN, MANAGE)
   { path: "/admin/contact-requests", permissions: [PERMISSIONS.CONTACT_REQUESTS_VIEW], type: "page" },

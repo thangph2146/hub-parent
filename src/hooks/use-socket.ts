@@ -10,11 +10,13 @@ export interface UseSocketOptions {
 }
 
 export interface SocketMessagePayload {
+  id?: string // Message ID từ database (nếu có)
   parentMessageId?: string
   content: string
   fromUserId: string
   toUserId: string
   timestamp?: number
+  isRead?: boolean // Include isRead status for message:updated events
 }
 
 export interface SocketNotificationPayload {
@@ -347,6 +349,12 @@ export function useSocket({ userId, role }: UseSocketOptions) {
     [createSocketListener],
   )
 
+  const onMessageUpdated = useCallback(
+    (handler: (payload: SocketMessagePayload) => void) =>
+      createSocketListener("message:updated", handler),
+    [createSocketListener],
+  )
+
   const onNotification = useCallback(
     (handler: (payload: SocketNotificationPayload) => void) => {
       const offNew = createSocketListener("notification:new", handler)
@@ -401,6 +409,7 @@ export function useSocket({ userId, role }: UseSocketOptions) {
     leaveConversation,
     sendMessage,
     onMessageNew,
+    onMessageUpdated,
     onNotification,
     onNotificationsSync,
     onNotificationUpdated,

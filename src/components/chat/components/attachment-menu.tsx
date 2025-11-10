@@ -8,7 +8,7 @@ export function AttachmentMenu() {
   return (
     <DropdownMenuContent side="top" align="start">
       <DropdownMenuItem>
-        <Image className="mr-2 h-4 w-4" /> Photos & Videos
+        <Image className="mr-2 h-4 w-4" aria-label="Photos & Videos" /> Photos & Videos
       </DropdownMenuItem>
       <DropdownMenuItem>
         <Camera className="mr-2 h-4 w-4" /> Camera

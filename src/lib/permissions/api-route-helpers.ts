@@ -19,8 +19,8 @@ export function getResourceAdminApiRoutes(resourceName: string): RoutePermission
   return ROUTE_CONFIG.filter(
     (config) =>
       config.type === "api" &&
-      config.path.startsWith(`/api/admin/${resourceName}`) &&
-      config.method !== undefined
+      config.method !== undefined &&
+      (config.path.startsWith(`/api/admin/${resourceName}/`) || config.path === `/api/admin/${resourceName}`)
   )
 }
 
@@ -30,7 +30,7 @@ export function getResourceAdminApiRoutes(resourceName: string): RoutePermission
 export function getResourceApiRoute(
   resourceName: string,
   method: HttpMethod,
-  action?: "detail" | "create" | "update" | "delete" | "restore" | "hard-delete" | "bulk" | "approve" | "unapprove" | "assign"
+  action?: "detail" | "create" | "update" | "delete" | "restore" | "hard-delete" | "bulk" | "approve" | "unapprove" | "assign" | "search" | "send" | "list"
 ): string | undefined {
   const routes = getResourceAdminApiRoutes(resourceName)
 
@@ -39,8 +39,13 @@ export function getResourceApiRoute(
     return route?.path.replace("/api", "") // Remove /api prefix vì apiClient đã có baseURL
   }
 
-  if (action === "create") {
+  if (action === "create" || action === "send") {
     const route = routes.find((r) => r.method === "POST" && r.path === `/api/admin/${resourceName}`)
+    return route?.path.replace("/api", "")
+  }
+
+  if (action === "list") {
+    const route = routes.find((r) => r.method === "GET" && r.path === `/api/admin/${resourceName}`)
     return route?.path.replace("/api", "")
   }
 
@@ -81,6 +86,11 @@ export function getResourceApiRoute(
 
   if (action === "assign") {
     const route = routes.find((r) => r.method === "POST" && r.path.includes("/[id]/assign"))
+    return route?.path.replace("/api", "")
+  }
+
+  if (action === "search") {
+    const route = routes.find((r) => r.method === "GET" && r.path.includes("/search"))
     return route?.path.replace("/api", "")
   }
 

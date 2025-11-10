@@ -9,27 +9,37 @@ interface MessagesAreaProps {
   messages: Message[]
   currentUserId: string
   messagesMaxHeight?: number
+  messagesMinHeight?: number
   scrollAreaRef: React.RefObject<HTMLDivElement | null>
   messagesEndRef: React.RefObject<HTMLDivElement | null>
   onReply?: (message: Message) => void
+  onMarkAsRead?: (messageId: string) => void
+  onMarkAsUnread?: (messageId: string) => void
 }
 
 export function MessagesArea({
   messages,
   currentUserId,
   messagesMaxHeight,
+  messagesMinHeight,
   scrollAreaRef,
   messagesEndRef,
   onReply,
+  onMarkAsRead,
+  onMarkAsUnread,
 }: MessagesAreaProps) {
   // Create a map for quick parent message lookup
   const messageMap = new Map<string, Message>()
   messages.forEach((msg) => messageMap.set(msg.id, msg))
 
+  const style = {
+    maxHeight: messagesMaxHeight ? `${messagesMaxHeight}px` : "calc(100dvh - 13rem)",
+    minHeight: messagesMinHeight ? `${messagesMinHeight}px` : "calc(100dvh - 13rem)",
+  }
+
   return (
     <ScrollArea
-      className="overflow-y-auto min-h-0"
-      style={messagesMaxHeight ? { maxHeight: `${messagesMaxHeight}px` } : { maxHeight: "calc(100dvh - 13rem)" }}
+      style={style}
     >
       <div className="flex flex-col p-4 gap-2" ref={scrollAreaRef}>
         {messages.length > 0 ? (
@@ -44,6 +54,8 @@ export function MessagesArea({
                   parentMessage={parentMessage}
                   currentUserId={currentUserId}
                   onReply={onReply}
+                  onMarkAsRead={onMarkAsRead}
+                  onMarkAsUnread={onMarkAsUnread}
                 />
               )
             })}

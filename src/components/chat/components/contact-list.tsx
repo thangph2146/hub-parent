@@ -19,7 +19,7 @@ export function ContactList({ contacts, selectedContactId, onContactSelect }: Co
         <Search className="absolute left-6 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input placeholder="Search or start new chat" className="pl-9 h-9" />
       </div>
-      <ScrollArea className="max-h-[calc(100dvh-12.5rem)] overflow-y-auto">
+      <ScrollArea className="max-h-[calc(100dvh-12.5rem)]">
         <div className="divide-y">
           {contacts.map((contact) => (
             <ContactItem

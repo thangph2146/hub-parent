@@ -27,5 +27,7 @@ export interface Contact {
 export interface ChatTemplateProps {
   contacts: Contact[]
   currentUserId: string
+  role?: string | null
+  onNewConversation?: (contact: Contact) => void
 }
 

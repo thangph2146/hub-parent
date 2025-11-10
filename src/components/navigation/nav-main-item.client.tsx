@@ -15,6 +15,7 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar"
+import { useClientOnly } from "@/hooks/use-client-only"
 import * as React from "react"
 
 export interface NavMainItemProps {
@@ -35,9 +36,40 @@ export function NavMainItem({
   isActive = false,
   items,
 }: NavMainItemProps) {
+  // Chỉ render Collapsible sau khi component đã mount trên client để tránh hydration mismatch
+  // Radix UI generate ID random khác nhau giữa server và client
+  const isMounted = useClientOnly()
+
   if (!React.isValidElement(icon)) {
     console.warn(`Icon is not a valid React element for "${title}"`)
     return null
+  }
+
+  // Render placeholder trên server để tránh hydration mismatch
+  if (!isMounted) {
+    return (
+      <SidebarMenuItem>
+        <SidebarMenuButton asChild tooltip={title}>
+          <Link href={url}>
+            {icon}
+            <span>{title}</span>
+          </Link>
+        </SidebarMenuButton>
+        {items?.length && isActive ? (
+          <SidebarMenuSub>
+            {items.map((subItem) => (
+              <SidebarMenuSubItem key={subItem.title}>
+                <SidebarMenuSubButton asChild>
+                  <Link href={subItem.url}>
+                    <span>{subItem.title}</span>
+                  </Link>
+                </SidebarMenuSubButton>
+              </SidebarMenuSubItem>
+            ))}
+          </SidebarMenuSub>
+        ) : null}
+      </SidebarMenuItem>
+    )
   }
 
   return (

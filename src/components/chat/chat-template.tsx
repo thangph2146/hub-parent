@@ -11,7 +11,7 @@ import { MessagesArea } from "./components/messages-area"
 import { ChatInput } from "./components/chat-input"
 import { EmptyState } from "./components/empty-state"
 
-export function ChatTemplate({ contacts, currentUserId }: ChatTemplateProps) {
+export function ChatTemplate({ contacts, currentUserId, role, onNewConversation }: ChatTemplateProps) {
   const isMobile = useIsMobile()
   const {
     contactsState,
@@ -21,15 +21,20 @@ export function ChatTemplate({ contacts, currentUserId }: ChatTemplateProps) {
     setMessageInput,
     replyingTo,
     messagesMaxHeight,
+    messagesMinHeight,
     messagesEndRef,
     scrollAreaRef,
     inputRef,
+    replyBannerRef,
     currentMessages,
     handleSendMessage,
     handleKeyDown,
     handleReplyToMessage,
     handleCancelReply,
-  } = useChat({ contacts, currentUserId })
+    addContact,
+    markMessageAsRead,
+    markMessageAsUnread,
+  } = useChat({ contacts, currentUserId, role })
 
   return (
     <div className="flex flex-1 flex-col h-full overflow-hidden">
@@ -42,7 +47,14 @@ export function ChatTemplate({ contacts, currentUserId }: ChatTemplateProps) {
           className="flex flex-col min-w-0"
         >
           <div className="flex flex-col h-full border-r bg-background">
-            <ChatListHeader />
+            <ChatListHeader
+              onNewConversation={(contact) => {
+                addContact(contact)
+                setCurrentChat(contact)
+                onNewConversation?.(contact)
+              }}
+              existingContactIds={contactsState.map((c) => c.id)}
+            />
             <ContactList
               contacts={contactsState}
               selectedContactId={currentChat?.id}
@@ -66,9 +78,12 @@ export function ChatTemplate({ contacts, currentUserId }: ChatTemplateProps) {
                 messages={currentMessages}
                 currentUserId={currentUserId}
                 messagesMaxHeight={messagesMaxHeight}
+                messagesMinHeight={messagesMinHeight}
                 scrollAreaRef={scrollAreaRef}
                 messagesEndRef={messagesEndRef}
                 onReply={handleReplyToMessage}
+                onMarkAsRead={markMessageAsRead}
+                onMarkAsUnread={markMessageAsUnread}
               />
               <ChatInput
                 inputRef={inputRef}
@@ -79,6 +94,7 @@ export function ChatTemplate({ contacts, currentUserId }: ChatTemplateProps) {
                 currentChat={currentChat}
                 replyingTo={replyingTo}
                 onCancelReply={handleCancelReply}
+                replyBannerRef={replyBannerRef}
               />
             </div>
           ) : (
@@ -93,9 +109,13 @@ export function ChatTemplate({ contacts, currentUserId }: ChatTemplateProps) {
             <MessagesArea
               messages={currentMessages}
               currentUserId={currentUserId}
+              messagesMaxHeight={messagesMaxHeight}
+              messagesMinHeight={messagesMinHeight}
               scrollAreaRef={scrollAreaRef}
               messagesEndRef={messagesEndRef}
               onReply={handleReplyToMessage}
+              onMarkAsRead={markMessageAsRead}
+              onMarkAsUnread={markMessageAsUnread}
             />
             <ChatInput
               inputRef={inputRef}
@@ -106,6 +126,7 @@ export function ChatTemplate({ contacts, currentUserId }: ChatTemplateProps) {
               currentChat={currentChat}
               replyingTo={replyingTo}
               onCancelReply={handleCancelReply}
+              replyBannerRef={replyBannerRef}
             />
           </div>
         )}

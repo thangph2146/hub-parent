@@ -38,10 +38,15 @@ import { getMenuData } from "@/lib/config/menu-data"
 import type { Permission } from "@/lib/permissions"
 import { canPerformAnyAction } from "@/lib/permissions"
 import { cn } from "@/lib/utils"
+import { useClientOnly } from "@/hooks/use-client-only"
 
 
 export function NavUser({ className }: { className?: string }) {
   const { data: session, status } = useSession()
+  
+  // Chỉ render DropdownMenu sau khi component đã mount trên client để tránh hydration mismatch
+  // Radix UI generate ID random khác nhau giữa server và client
+  const isMounted = useClientOnly()
   
   // Auto-detect sidebar context
   const sidebar = useSidebarOptional()
@@ -180,6 +185,41 @@ export function NavUser({ className }: { className?: string }) {
       </DropdownMenuItem>
     </DropdownMenuContent>
   )
+
+  // Render placeholder trên server để tránh hydration mismatch
+  if (!isMounted) {
+    if (!isInSidebar) {
+      return (
+        <div className="flex items-center gap-2">
+          <Avatar className="h-8 w-8">
+            <AvatarImage src={user.image || "/avatars/default.jpg"} alt={user.name || ""} />
+            <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
+          </Avatar>
+          <span className="inline-block text-sm font-medium truncate max-w-[120px]">
+            {user.name || user.email}
+          </span>
+        </div>
+      )
+    }
+    return (
+      <SidebarMenu>
+        <SidebarMenuItem>
+          <SidebarMenuButton size="lg" disabled>
+            <Avatar className="h-8 w-8 rounded-lg">
+              <AvatarImage src={user.image || "/avatars/default.jpg"} alt={user.name || ""} />
+              <AvatarFallback className="rounded-lg">{getInitials(user.name)}</AvatarFallback>
+            </Avatar>
+            <div className="grid flex-1 text-left text-sm leading-tight">
+              <span className="truncate font-medium">{user.name || user.email}</span>
+              <span className="truncate text-xs">
+                {primaryRole?.displayName || primaryRole?.name || user.email}
+              </span>
+            </div>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+      </SidebarMenu>
+    )
+  }
 
   // Auto-detect: render header style if not in sidebar, otherwise render sidebar style
   if (!isInSidebar) {

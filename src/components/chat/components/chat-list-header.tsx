@@ -18,15 +18,24 @@ import {
   MessageSquareDot,
   SquarePen,
   Star,
-  User,
   Users,
 } from "lucide-react"
+import type { Contact } from "../types"
+import { NewConversationDialog } from "@/features/admin/chat/components/new-conversation-dialog"
 
-export function ChatListHeader() {
+interface ChatListHeaderProps {
+  onNewConversation?: (contact: Contact) => void
+  existingContactIds?: string[]
+}
+
+export function ChatListHeader({ onNewConversation, existingContactIds }: ChatListHeaderProps) {
   return (
     <div className="flex items-center justify-between h-14 px-4 border-b shrink-0">
       <h2 className="text-lg font-semibold">Chats</h2>
       <div className="flex items-center gap-1">
+        {onNewConversation && (
+          <NewConversationDialog onSelectUser={onNewConversation} existingContactIds={existingContactIds} />
+        )}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className="h-8 w-8">
@@ -34,9 +43,6 @@ export function ChatListHeader() {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem>
-              <User className="mr-2 h-4 w-4" /> New Contact
-            </DropdownMenuItem>
             <DropdownMenuItem>
               <Users className="mr-2 h-4 w-4" /> New Group
             </DropdownMenuItem>

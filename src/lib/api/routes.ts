@@ -10,7 +10,7 @@
  * Admin resources sử dụng routes từ route-config.ts để đảm bảo consistency
  */
 
-import { generateResourceApiRoutes, getResourceApiRoute } from "@/lib/permissions/api-route-helpers"
+import { generateResourceApiRoutes, getResourceApiRoute, getResourceAdminApiRoutes } from "@/lib/permissions/api-route-helpers"
 
 /**
  * API Routes cho từng feature
@@ -97,6 +97,35 @@ export const apiRoutes = {
 
   // Socket
   socket: "/socket",
+
+  // Chat/Messages - Admin routes (sử dụng routes từ route-config)
+  adminMessages: {
+    send: getResourceApiRoute("messages", "POST", "send") || "/admin/messages",
+    markRead: (id: string) => `/admin/messages/${id}`,
+  },
+  adminConversations: {
+    list: (params?: { page?: number; limit?: number; search?: string; otherUserId?: string }) => {
+      // Get route từ route-config
+      const routes = getResourceAdminApiRoutes("conversations")
+      const route = routes.find((r: { method?: string; path: string }) => r.method === "GET")?.path.replace("/api", "") || "/admin/conversations"
+      const searchParams = new URLSearchParams()
+      if (params?.page) searchParams.set("page", params.page.toString())
+      if (params?.limit) searchParams.set("limit", params.limit.toString())
+      if (params?.search) searchParams.set("search", params.search)
+      if (params?.otherUserId) searchParams.set("otherUserId", params.otherUserId)
+      const queryString = searchParams.toString()
+      return `${route}${queryString ? `?${queryString}` : ""}`
+    },
+  },
+  adminUsers: {
+    ...generateResourceApiRoutes("users"),
+    search: (query: string) => {
+      // Get route từ route-config
+      const routes = getResourceAdminApiRoutes("users")
+      const route = routes.find((r: { path: string }) => r.path.includes("/search"))?.path.replace("/api", "") || "/admin/users/search"
+      return `${route}?q=${encodeURIComponent(query)}`
+    },
+  },
 } as const
 
 /**
