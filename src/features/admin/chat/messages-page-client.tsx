@@ -1,7 +1,6 @@
 "use client"
 
-import { ChatTemplate } from "@/components/chat/chat-template"
-import type { Contact, Message, MessageType } from "@/components/chat/chat-template"
+import { ChatTemplate, type Contact, type Message, type MessageType } from "@/components/chat"
 
 /**
  * Helper function để tạo messages với timestamp tự động
