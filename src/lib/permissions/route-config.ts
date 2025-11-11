@@ -234,6 +234,7 @@ export const ROUTE_CONFIG: RoutePermissionConfig[] = [
   // Messages/Chat
   { path: "/admin/messages", permissions: [PERMISSIONS.MESSAGES_VIEW], type: "page" },
   { path: "/admin/messages/inbox", permissions: [PERMISSIONS.MESSAGES_VIEW], type: "page" },
+  { path: "/admin/messages/deleted", permissions: [PERMISSIONS.MESSAGES_VIEW], type: "page" },
   { path: "/admin/messages/sent", permissions: [PERMISSIONS.MESSAGES_VIEW], type: "page" },
   // Messages API routes
   { path: "/api/admin/messages", method: "POST", permissions: [PERMISSIONS.MESSAGES_SEND], type: "api" },

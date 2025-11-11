@@ -9,4 +9,4 @@ export { NavMainSkeleton } from "./nav-main-skeleton"
 export { ResourceTableSkeleton } from "./resource-table-skeleton"
 export { ResourceDetailSkeleton } from "./resource-detail-skeleton"
 export { ResourceFormSkeleton } from "./resource-form-skeleton"
-
+export { MessagesPageSkeleton } from "./messages-page-skeleton"

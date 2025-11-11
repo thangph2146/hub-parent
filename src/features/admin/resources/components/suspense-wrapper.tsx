@@ -11,7 +11,7 @@
  */
 
 import { Suspense, type ReactNode } from "react"
-import { ResourceDetailSkeleton, ResourceTableSkeleton } from "@/components/skeletons"
+import { MessagesPageSkeleton, ResourceDetailSkeleton, ResourceTableSkeleton } from "@/components/skeletons"
 
 /**
  * SuspenseWrapper - Generic wrapper cho async components
@@ -117,3 +117,13 @@ export function TablePageSuspense({
   )
 }
 
+/**
+ * MessagesPageSuspense - Skeleton cho trang admin/messages
+ */
+export interface MessagesPageSuspenseProps {
+  children: ReactNode
+}
+
+export function MessagesPageSuspense({ children }: MessagesPageSuspenseProps) {
+  return <SuspenseWrapper fallback={<MessagesPageSkeleton />}>{children}</SuspenseWrapper>
+}

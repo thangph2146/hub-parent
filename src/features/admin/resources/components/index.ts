@@ -22,11 +22,13 @@ export {
   SuspenseWrapper,
   FormPageSuspense,
   TablePageSuspense,
+  MessagesPageSuspense,
 } from "./suspense-wrapper"
 export type {
   SuspenseWrapperProps,
   FormPageSuspenseProps,
   TablePageSuspenseProps,
+  MessagesPageSuspenseProps,
 } from "./suspense-wrapper"
 
 // Types
@@ -35,4 +37,3 @@ export type { ResourceDetailProps } from "./resource-detail"
 export type { ResourceTableClientProps } from "./resource-table.client"
 export type { ResourceFormProps, ResourceFormField, ResourceFormSection } from "./resource-form"
 export type { ResourceDetailPageProps, ResourceDetailField, ResourceDetailSection } from "./resource-detail-page"
-

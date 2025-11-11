@@ -6,11 +6,16 @@
 
 export { logger } from "./logger"
 
-export {
-  getMenuData,
-  type MenuItem,
-  type MenuSubItem,
-  type MenuProject,
-} from "./menu-data"
+export { getMenuData } from "./menu-data"
+export type { MenuItem, MenuSubItem, MenuProject } from "./navigation-types"
 
 export { appConfig } from "./app-config"
+
+export {
+  appFeatures,
+  buildNavigationMenu,
+  getFeatureApiConfig,
+  getFeatureComponentStrategies,
+  type FeatureComponentStrategy,
+  type FeatureKey,
+} from "./app-features"

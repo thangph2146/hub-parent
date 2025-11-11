@@ -13,10 +13,20 @@ import {
   getMessagesForGroupCached,
 } from "../server/cache"
 import { MessagesPageClient } from "./messages-page-client"
-import type { Contact } from "@/components/chat/types"
+import type { ChatFilterType, Contact } from "@/components/chat/types"
 import { ensureDate, mapGroupListItemToContact, mapMessageDetailToMessage } from "../utils/contact-transformers"
 
-export async function MessagesPage() {
+type ContactScope = "all" | "active" | "deleted"
+
+interface MessagesPageProps {
+  initialFilterType?: ChatFilterType
+  contactScope?: ContactScope
+}
+
+export async function MessagesPage({
+  initialFilterType = "ACTIVE",
+  contactScope = "all",
+}: MessagesPageProps = {}) {
   const authInfo = await getAuthInfo()
 
   if (!authInfo.actorId) {
@@ -32,12 +42,14 @@ export async function MessagesPage() {
     limit: 50,
   })
 
-  // Fetch groups (active + deleted)
+  const includeDeletedGroups = contactScope !== "active"
+
+  // Fetch groups (toggle includeDeleted based on scope)
   const groupsResult = await listGroupsCached({
     userId: currentUserId,
     page: 1,
     limit: 50,
-    includeDeleted: true,
+    includeDeleted: includeDeletedGroups,
   })
 
   // Map conversations to Contact format
@@ -76,18 +88,25 @@ export async function MessagesPage() {
   )
 
   // Merge personal contacts and groups, sort by lastMessageTime
-  const contacts: Contact[] = [...personalContacts, ...groupContacts].sort((a, b) => {
+  const mergedContacts: Contact[] = [...personalContacts, ...groupContacts].sort((a, b) => {
     const timeA = a.lastMessageTime?.getTime() || 0
     const timeB = b.lastMessageTime?.getTime() || 0
     return timeB - timeA
   })
+
+  const contacts: Contact[] =
+    contactScope === "active"
+      ? mergedContacts.filter((contact) => !contact.isDeleted)
+      : contactScope === "deleted"
+        ? mergedContacts.filter((contact) => contact.type === "GROUP" && contact.isDeleted)
+        : mergedContacts
 
   return (
     <MessagesPageClient
       initialContacts={contacts}
       currentUserId={currentUserId}
       currentUserRole={authInfo.roles[0]?.name || null}
+      initialFilterType={initialFilterType}
     />
   )
 }
-

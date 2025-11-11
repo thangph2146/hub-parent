@@ -11,16 +11,23 @@ import { GroupManagementMenu } from "./group-management-menu"
 import { ContactList } from "@/components/chat/components/contact-list"
 import { ChatWindow } from "@/components/chat/components/chat-window"
 import { EmptyState } from "@/components/chat/components/empty-state"
-import { useState, useMemo, useCallback } from "react"
+import { useState, useMemo, useCallback, useEffect } from "react"
 import { getCurrentUserRole, createGroupContact } from "./chat-template-helpers"
 import { useGroupActions } from "../hooks/use-group-actions"
 import { filterContacts } from "@/components/chat/utils/contact-helpers"
-import { mapGroupListItemToContact } from "../utils/contact-transformers"
+import { mapGroupListItemToContact, type GroupListItemLike } from "../utils/contact-transformers"
 import type { ChatWindowProps } from "@/components/chat/components/chat-window"
 
-export function ChatTemplate({ contacts, currentUserId, role, onNewConversation, onNewGroup }: ChatTemplateProps) {
+export function ChatTemplate({
+  contacts,
+  currentUserId,
+  role,
+  initialFilterType = "ACTIVE",
+  onNewConversation,
+  onNewGroup,
+}: ChatTemplateProps) {
   const isMobile = useIsMobile()
-  const [filterType, setFilterType] = useState<ChatFilterType>("ACTIVE")
+  const [filterType, setFilterType] = useState<ChatFilterType>(initialFilterType)
   
   const {
     contactsState,
@@ -52,6 +59,7 @@ export function ChatTemplate({ contacts, currentUserId, role, onNewConversation,
   } = useChat({ contacts, currentUserId, role })
 
   const currentUserRole = getCurrentUserRole(currentChat, currentUserId)
+  const currentChatId = currentChat?.id ?? null
 
   // Function to fetch deleted groups
   const fetchDeletedGroups = useCallback(async () => {
@@ -65,9 +73,9 @@ export function ChatTemplate({ contacts, currentUserId, role, onNewConversation,
         const deletedGroups = result.data || []
         
         // Map deleted groups to Contact format
-        const deletedGroupContacts: Contact[] = deletedGroups
-          .filter((groupData: { deletedAt?: string | Date | null }) => Boolean(groupData.deletedAt))
-          .map((groupData: any) =>
+        const deletedGroupContacts: Contact[] = (deletedGroups as GroupListItemLike[])
+          .filter((groupData) => Boolean(groupData.deletedAt))
+          .map((groupData) =>
             mapGroupListItemToContact({
               groupData,
               messages: [],
@@ -122,6 +130,24 @@ export function ChatTemplate({ contacts, currentUserId, role, onNewConversation,
     () => filterContacts(contactsState, filterType),
     [contactsState, filterType]
   )
+
+  // Ensure current chat always belongs to the visible filter bucket
+  useEffect(() => {
+    if (!filteredContacts.length) {
+      if (currentChatId) {
+        setCurrentChat(null)
+      }
+      return
+    }
+
+    const isCurrentVisible = currentChatId
+      ? filteredContacts.some((contact) => contact.id === currentChatId)
+      : false
+
+    if (!isCurrentVisible) {
+      setCurrentChat(filteredContacts[0])
+    }
+  }, [filteredContacts, currentChatId, setCurrentChat])
 
   // Shared ChatWindow props để tránh duplicate
   const chatWindowProps: ChatWindowProps | null = useMemo(

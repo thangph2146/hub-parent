@@ -1,7 +1,7 @@
 import type { Metadata } from "next"
 import { AdminHeader } from "@/components/headers"
 import { MessagesPage } from "@/features/admin/chat/components/messages-page"
-import { TablePageSuspense } from "@/features/admin/resources/components"
+import { MessagesPageSuspense } from "@/features/admin/resources/components"
 
 /**
  * Messages Page Metadata
@@ -32,9 +32,9 @@ export default async function MessagesPageRoute() {
         ]}
       />
       <div className="flex flex-1 flex-col overflow-hidden">
-        <TablePageSuspense columnCount={2} rowCount={10}>
+        <MessagesPageSuspense>
           <MessagesPage />
-        </TablePageSuspense>
+        </MessagesPageSuspense>
       </div>
     </>
   )

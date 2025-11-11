@@ -10,7 +10,24 @@
  * Admin resources sử dụng routes từ route-config.ts để đảm bảo consistency
  */
 
+import { appFeatures } from "@/lib/config/app-features"
 import { generateResourceApiRoutes, getResourceApiRoute, getResourceAdminApiRoutes } from "@/lib/permissions/api-route-helpers"
+
+type ResourceRouteBuilder = ReturnType<typeof generateResourceApiRoutes>
+
+const featureResourceRoutes = appFeatures.reduce<Record<string, ResourceRouteBuilder>>((acc, feature) => {
+  if (feature.api?.type !== "resource") {
+    return acc
+  }
+  const resourceName = feature.api.resourceName ?? feature.key
+  const alias = feature.api.alias ?? feature.key
+  acc[alias] = generateResourceApiRoutes(resourceName)
+  return acc
+}, {})
+
+const getResourceRoutesOrFallback = (key: string, resourceName: string): ResourceRouteBuilder => {
+  return featureResourceRoutes[key] ?? generateResourceApiRoutes(resourceName)
+}
 
 /**
  * API Routes cho từng feature
@@ -64,33 +81,18 @@ export const apiRoutes = {
     },
   },
 
-  // Users - Generated from route-config.ts
-  users: generateResourceApiRoutes("users"),
+  // Spread standard resource routes registered từ feature config
+  ...featureResourceRoutes,
 
-  // Roles - Generated from route-config.ts
-  roles: generateResourceApiRoutes("roles"),
-
-  // Categories - Generated from route-config.ts
-  categories: generateResourceApiRoutes("categories"),
-
-  // Tags - Generated from route-config.ts
-  tags: generateResourceApiRoutes("tags"),
-
-  // Contact Requests - Generated from route-config.ts với custom actions
+  // Contact Requests - thêm custom actions
   contactRequests: {
-    ...generateResourceApiRoutes("contact-requests"),
+    ...getResourceRoutesOrFallback("contactRequests", "contact-requests"),
     assign: (id: string) => getResourceApiRoute("contact-requests", "POST", "assign")?.replace("[id]", id) || `/admin/contact-requests/${id}/assign`,
   },
 
-  // Students - Generated from route-config.ts
-  students: generateResourceApiRoutes("students"),
-
-  // Sessions - Generated from route-config.ts
-  sessions: generateResourceApiRoutes("sessions"),
-
-  // Comments - Generated from route-config.ts với custom actions (approve/unapprove)
+  // Comments - thêm approve/unapprove
   comments: {
-    ...generateResourceApiRoutes("comments"),
+    ...getResourceRoutesOrFallback("comments", "comments"),
     approve: (id: string) => getResourceApiRoute("comments", "POST", "approve")?.replace("[id]", id) || `/admin/comments/${id}/approve`,
     unapprove: (id: string) => getResourceApiRoute("comments", "POST", "unapprove")?.replace("[id]", id) || `/admin/comments/${id}/unapprove`,
   },
@@ -163,4 +165,3 @@ export function buildQueryString(params: Record<string, string | number | boolea
   })
   return searchParams.toString()
 }
-

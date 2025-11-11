@@ -1,7 +1,7 @@
 "use client"
 
 import { ChatTemplate } from "./chat-template"
-import type { Contact, Message } from "@/components/chat/types"
+import type { ChatFilterType, Contact, Message } from "@/components/chat/types"
 
 /**
  * Messages Page Client Component
@@ -15,9 +15,15 @@ interface MessagesPageClientProps {
   initialContacts: Contact[]
   currentUserId: string
   currentUserRole?: string | null
+  initialFilterType?: ChatFilterType
 }
 
-function MessagesPageClient({ initialContacts, currentUserId, currentUserRole }: MessagesPageClientProps) {
+function MessagesPageClient({
+  initialContacts,
+  currentUserId,
+  currentUserRole,
+  initialFilterType = "ACTIVE",
+}: MessagesPageClientProps) {
   const handleNewConversation = async (contact: Contact) => {
     // Optionally fetch messages for new conversation
     try {
@@ -37,6 +43,7 @@ function MessagesPageClient({ initialContacts, currentUserId, currentUserRole }:
       contacts={initialContacts}
       currentUserId={currentUserId}
       role={currentUserRole}
+      initialFilterType={initialFilterType}
       onNewConversation={handleNewConversation}
     />
   )

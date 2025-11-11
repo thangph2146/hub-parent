@@ -112,25 +112,37 @@ export function useChat({ contacts, currentUserId, role }: UseChatProps) {
     onMessageReceived: handleMessageReceived,
   })
   
-  // Reset isGroupDeleted when switching chats
+  // Reset isGroupDeleted when switching chats, with guard against stale async responses
   useEffect(() => {
+    let isMounted = true
+
     if (currentChat?.type === "GROUP") {
-      setIsGroupDeleted(false)
-      // Check if group still exists
+      const immediateState = Boolean(currentChat.isDeleted)
+      setIsGroupDeleted(immediateState)
+
       const checkGroupExists = async () => {
         try {
           const { apiRoutes } = await import("@/lib/api/routes")
           const response = await fetch(`/api${apiRoutes.adminGroups.detail(currentChat.id)}`)
+          if (!isMounted) return
           setIsGroupDeleted(response.status === 404)
         } catch {
-          setIsGroupDeleted(false)
+          if (!isMounted) return
+          setIsGroupDeleted(immediateState)
         }
       }
-      checkGroupExists()
+
+      if (!immediateState) {
+        void checkGroupExists()
+      }
     } else {
       setIsGroupDeleted(false)
     }
-  }, [currentChat?.id, currentChat?.type])
+
+    return () => {
+      isMounted = false
+    }
+  }, [currentChat?.id, currentChat?.type, currentChat?.isDeleted])
 
   const currentMessages = currentChat?.messages || []
 
@@ -384,4 +396,3 @@ export function useChat({ contacts, currentUserId, role }: UseChatProps) {
     isGroupDeleted,
   }
 }
-

@@ -81,7 +81,7 @@ export interface ChatTemplateProps {
   contacts: Contact[]
   currentUserId: string
   role?: string | null
+  initialFilterType?: ChatFilterType
   onNewConversation?: (contact: Contact) => void
   onNewGroup?: (group: Group) => void
 }
-
