@@ -7,7 +7,7 @@
 
 "use client"
 
-import { useState, useTransition } from "react"
+import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Loader2, Save, ArrowLeft, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -114,7 +114,7 @@ export function ResourceForm<T extends Record<string, unknown>>({
   onOpenChange,
 }: ResourceFormProps<T>) {
   const router = useRouter()
-  const [isPending, startTransition] = useTransition()
+  const [isPending, setIsPending] = useState(false)
   const [formData, setFormData] = useState<Partial<T>>(() => {
     const initial: Partial<T> = {}
     fields.forEach((field) => {
@@ -176,23 +176,24 @@ export function ResourceForm<T extends Record<string, unknown>>({
       return
     }
 
-    startTransition(async () => {
-      try {
-        const result = await onSubmit(formData)
-        if (result.success) {
-          onSuccess?.()
-          if (variant === "page") {
-            router.refresh()
-          } else {
-            onOpenChange?.(false)
-          }
+    setIsPending(true)
+    try {
+      const result = await onSubmit(formData)
+      if (result.success) {
+        onSuccess?.()
+        if (variant === "page") {
+          router.refresh()
         } else {
-          setSubmitError(result.error ?? "Đã xảy ra lỗi khi lưu")
+          onOpenChange?.(false)
         }
-      } catch (error) {
-        setSubmitError(error instanceof Error ? error.message : "Đã xảy ra lỗi khi lưu")
+      } else {
+        setSubmitError(result.error ?? "Đã xảy ra lỗi khi lưu")
       }
-    })
+    } catch (error) {
+      setSubmitError(error instanceof Error ? error.message : "Đã xảy ra lỗi khi lưu")
+    } finally {
+      setIsPending(false)
+    }
   }
 
   const handleCancel = () => {

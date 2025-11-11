@@ -6,18 +6,16 @@ type Props = {
   placeholder: string
   className?: string
   placeholderClassName?: string
-  readOnly?: boolean
 }
 
 export function ContentEditable({
   placeholder,
   className,
   placeholderClassName,
-  readOnly = false,
 }: Props): JSX.Element {
   return (
     <LexicalContentEditable
-      className={cn("ContentEditable__root relative block min-h-72 min-h-full overflow-auto px-8 py-4 focus:outline-none", className, readOnly && "px-0 py-0")}
+      className={cn("ContentEditable__root relative block min-h-72 min-h-full overflow-auto px-8 py-4 focus:outline-none", className)}
       aria-placeholder={placeholder}
       placeholder={
         <div

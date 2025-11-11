@@ -176,7 +176,6 @@ export function Plugins({ readOnly = false }: { readOnly?: boolean }) {
                 <ContentEditable
                   placeholder={readOnly ? "" : placeholder}
                   className={`ContentEditable__root relative block ${readOnly ? "min-h-72" : "h-[calc(100vh-90px)] min-h-72"} overflow-auto px-8 py-4 focus:outline-none ${readOnly ? "cursor-default select-text" : ""}`}
-                  readOnly={readOnly}
                 />
               </div>
             </div>

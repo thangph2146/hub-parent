@@ -71,7 +71,7 @@ export function PostDetailClient({ postId, post, backUrl = "/admin/posts" }: Pos
       description: "Thông tin chính về bài viết",
       fieldsContent: (_fields, data) => {
         const postData = data as PostDetailData
-        
+
         return (
           <Card className="border border-border/50 bg-card">
             <CardContent>
@@ -139,6 +139,64 @@ export function PostDetailClient({ postId, post, backUrl = "/admin/posts" }: Pos
                       </div>
                     </div>
                   </div>
+                    {/* Published Status */}
+                    <div className="grid gap-4 sm:grid-cols-2">
+                    <FieldItem icon={postData.published ? Eye : EyeOff} label="Trạng thái">
+                      <div className="flex items-center gap-2">
+                        {postData.published ? (
+                          <>
+                            <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-500" />
+                            <span className="text-sm font-medium text-foreground">Đã xuất bản</span>
+                          </>
+                        ) : (
+                          <>
+                            <EyeOff className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                            <span className="text-sm font-medium text-foreground">Bản nháp</span>
+                          </>
+                        )}
+                      </div>
+                    </FieldItem>
+
+                    {postData.publishedAt && (
+                      <FieldItem icon={Calendar} label="Ngày xuất bản">
+                        <div className="text-sm font-medium text-foreground">
+                          {formatDateVi(postData.publishedAt)}
+                        </div>
+                      </FieldItem>
+                    )}
+                  </div>
+                </div>
+
+                <div className="space-y-6">
+                
+
+                  <Separator />
+
+                  {/* Timestamps */}
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <FieldItem icon={Clock} label="Ngày tạo">
+                      <div className="text-sm font-medium text-foreground">
+                        {formatDateVi(postData.createdAt)}
+                      </div>
+                    </FieldItem>
+
+                    <FieldItem icon={Clock} label="Cập nhật lần cuối">
+                      <div className="text-sm font-medium text-foreground">
+                        {formatDateVi(postData.updatedAt)}
+                      </div>
+                    </FieldItem>
+                  </div>
+
+                  {postData.deletedAt && (
+                    <>
+                      <Separator />
+                      <FieldItem icon={Clock} label="Ngày xóa">
+                        <div className="text-sm font-medium text-rose-600 dark:text-rose-400">
+                          {formatDateVi(postData.deletedAt)}
+                        </div>
+                      </FieldItem>
+                    </>
+                  )}
                 </div>
               </div>
             </CardContent>
@@ -152,7 +210,7 @@ export function PostDetailClient({ postId, post, backUrl = "/admin/posts" }: Pos
       description: "Nội dung bài viết",
       fieldsContent: (_fields, data) => {
         const postData = data as PostDetailData
-        
+
         // Parse content as SerializedEditorState
         let editorState: SerializedEditorState | null = null
         try {
@@ -166,83 +224,16 @@ export function PostDetailClient({ postId, post, backUrl = "/admin/posts" }: Pos
         return (
           <div className="max-w-5xl mx-auto space-y-4">
             {editorState ? (
-                <Editor
-                  editorSerializedState={editorState}
-                  readOnly={true}
-                />
+              <Editor
+                editorSerializedState={editorState}
+                readOnly={true}
+              />
             ) : (
               <Card className="border border-border/50 bg-card p-5">
                 <div className="text-sm text-muted-foreground">
                   Không có nội dung hoặc định dạng không hợp lệ
                 </div>
               </Card>
-            )}
-          </div>
-        )
-      },
-    },
-    {
-      id: "metadata",
-      title: "Thông tin hệ thống",
-      description: "Thông tin về trạng thái và thời gian",
-      fieldsContent: (_fields, data) => {
-        const postData = data as PostDetailData
-        
-        return (
-          <div className="space-y-6">
-            {/* Published Status */}
-            <div className="grid gap-4 sm:grid-cols-2">
-              <FieldItem icon={postData.published ? Eye : EyeOff} label="Trạng thái">
-                <div className="flex items-center gap-2">
-                  {postData.published ? (
-                    <>
-                      <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-500" />
-                      <span className="text-sm font-medium text-foreground">Đã xuất bản</span>
-                    </>
-                  ) : (
-                    <>
-                      <EyeOff className="h-4 w-4 text-gray-600 dark:text-gray-400" />
-                      <span className="text-sm font-medium text-foreground">Bản nháp</span>
-                    </>
-                  )}
-                </div>
-              </FieldItem>
-
-              {postData.publishedAt && (
-                <FieldItem icon={Calendar} label="Ngày xuất bản">
-                  <div className="text-sm font-medium text-foreground">
-                    {formatDateVi(postData.publishedAt)}
-                  </div>
-                </FieldItem>
-              )}
-            </div>
-
-            <Separator />
-
-            {/* Timestamps */}
-            <div className="grid gap-4 sm:grid-cols-2">
-              <FieldItem icon={Clock} label="Ngày tạo">
-                <div className="text-sm font-medium text-foreground">
-                  {formatDateVi(postData.createdAt)}
-                </div>
-              </FieldItem>
-
-              <FieldItem icon={Clock} label="Cập nhật lần cuối">
-                <div className="text-sm font-medium text-foreground">
-                  {formatDateVi(postData.updatedAt)}
-                </div>
-              </FieldItem>
-            </div>
-
-            {postData.deletedAt && (
-              <>
-                <Separator />
-                <FieldItem icon={Clock} label="Ngày xóa">
-                  <div className="text-sm font-medium text-rose-600 dark:text-rose-400">
-                    {formatDateVi(postData.deletedAt)}
-                  </div>
-                </FieldItem>
-              </>
             )}
           </div>
         )
