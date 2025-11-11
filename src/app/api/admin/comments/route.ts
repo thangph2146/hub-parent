@@ -1,12 +1,13 @@
 /**
  * API Route: GET /api/admin/comments - List comments
  */
-import { NextRequest, NextResponse } from "next/server"
+import { NextRequest } from "next/server"
 import { listCommentsCached } from "@/features/admin/comments/server/cache"
 import { serializeCommentsList } from "@/features/admin/comments/server/helpers"
 import { createGetRoute } from "@/lib/api/api-route-wrapper"
 import type { ApiRouteContext } from "@/lib/api/types"
 import { validatePagination, sanitizeSearchQuery } from "@/lib/api/validation"
+import { createErrorResponse, createSuccessResponse } from "@/lib/config"
 
 async function getCommentsHandler(req: NextRequest, _context: ApiRouteContext) {
   const searchParams = req.nextUrl.searchParams
@@ -17,7 +18,7 @@ async function getCommentsHandler(req: NextRequest, _context: ApiRouteContext) {
   })
 
   if (!paginationValidation.valid) {
-    return NextResponse.json({ error: paginationValidation.error }, { status: 400 })
+    return createErrorResponse(paginationValidation.error || "Invalid pagination params", { status: 400 })
   }
 
   const searchValidation = sanitizeSearchQuery(searchParams.get("search") || "", 200)
@@ -70,7 +71,7 @@ async function getCommentsHandler(req: NextRequest, _context: ApiRouteContext) {
 
   // Serialize result to match CommentsResponse format
   const serialized = serializeCommentsList(result)
-  return NextResponse.json({
+  return createSuccessResponse({
     data: serialized.rows,
     pagination: {
       page: serialized.page,
@@ -82,4 +83,3 @@ async function getCommentsHandler(req: NextRequest, _context: ApiRouteContext) {
 }
 
 export const GET = createGetRoute(getCommentsHandler)
-

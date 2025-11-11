@@ -8,16 +8,17 @@
  * - limit: number of notifications per page (default: 10)
  * - search: search term to filter notifications
  */
-import { NextRequest, NextResponse } from "next/server"
+import { NextRequest } from "next/server"
 import { auth } from "@/lib/auth/auth"
 import { isSuperAdmin } from "@/lib/permissions"
 import { listNotificationsCached } from "@/features/admin/notifications/server/cache"
+import { createErrorResponse, createSuccessResponse } from "@/lib/config"
 
 async function getAdminNotificationsHandler(req: NextRequest) {
   const session = await auth()
 
   if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    return createErrorResponse("Unauthorized", { status: 401 })
   }
 
   const roles = session?.roles ?? []
@@ -36,19 +37,13 @@ async function getAdminNotificationsHandler(req: NextRequest) {
   // Validate and parse page
   const page = pageParam ? parseInt(pageParam, 10) : 1
   if (isNaN(page) || page < 1) {
-    return NextResponse.json(
-      { error: "Page must be a positive number" },
-      { status: 400 }
-    )
+    return createErrorResponse("Page must be a positive number", { status: 400 })
   }
 
   // Validate and parse limit
   const limit = limitParam ? parseInt(limitParam, 10) : 10
   if (isNaN(limit) || limit < 1 || limit > 100) {
-    return NextResponse.json(
-      { error: "Limit must be a number between 1 and 100" },
-      { status: 400 }
-    )
+    return createErrorResponse("Limit must be a number between 1 and 100", { status: 400 })
   }
 
   // Parse search
@@ -65,7 +60,7 @@ async function getAdminNotificationsHandler(req: NextRequest) {
       userId,
     })
 
-    return NextResponse.json({
+    return createSuccessResponse({
       data: result.data.map((notification) => ({
         id: notification.id,
         userId: notification.userId,
@@ -84,10 +79,7 @@ async function getAdminNotificationsHandler(req: NextRequest) {
     })
   } catch (error) {
     console.error("Error fetching admin notifications:", error)
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    )
+    return createErrorResponse("Internal server error", { status: 500 })
   }
 }
 
@@ -96,10 +88,6 @@ export async function GET(req: NextRequest) {
     return await getAdminNotificationsHandler(req)
   } catch (error) {
     console.error("Error in admin notifications route:", error)
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    )
+    return createErrorResponse("Internal server error", { status: 500 })
   }
 }
-

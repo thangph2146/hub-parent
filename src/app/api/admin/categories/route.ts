@@ -2,7 +2,7 @@
  * API Route: GET /api/admin/categories - List categories
  * POST /api/admin/categories - Create category
  */
-import { NextRequest, NextResponse } from "next/server"
+import { NextRequest } from "next/server"
 import { listCategoriesCached } from "@/features/admin/categories/server/cache"
 import { serializeCategoriesList } from "@/features/admin/categories/server/helpers"
 import {
@@ -14,6 +14,7 @@ import {
 import { createGetRoute, createPostRoute } from "@/lib/api/api-route-wrapper"
 import type { ApiRouteContext } from "@/lib/api/types"
 import { validatePagination, sanitizeSearchQuery } from "@/lib/api/validation"
+import { createErrorResponse, createSuccessResponse } from "@/lib/config"
 
 async function getCategoriesHandler(req: NextRequest, _context: ApiRouteContext) {
   const searchParams = req.nextUrl.searchParams
@@ -24,7 +25,7 @@ async function getCategoriesHandler(req: NextRequest, _context: ApiRouteContext)
   })
 
   if (!paginationValidation.valid) {
-    return NextResponse.json({ error: paginationValidation.error }, { status: 400 })
+    return createErrorResponse(paginationValidation.error || "Invalid pagination parameters", { status: 400 })
   }
 
   const searchValidation = sanitizeSearchQuery(searchParams.get("search") || "", 200)
@@ -52,7 +53,7 @@ async function getCategoriesHandler(req: NextRequest, _context: ApiRouteContext)
 
   // Serialize result to match CategoriesResponse format
   const serialized = serializeCategoriesList(result)
-  return NextResponse.json({
+  return createSuccessResponse({
     data: serialized.rows,
     pagination: {
       page: serialized.page,
@@ -68,7 +69,7 @@ async function postCategoriesHandler(req: NextRequest, context: ApiRouteContext)
   try {
     body = await req.json()
   } catch {
-    return NextResponse.json({ error: "Dữ liệu không hợp lệ. Vui lòng kiểm tra lại." }, { status: 400 })
+    return createErrorResponse("Dữ liệu không hợp lệ. Vui lòng kiểm tra lại.", { status: 400 })
   }
 
   const ctx: AuthContext = {
@@ -88,19 +89,18 @@ async function postCategoriesHandler(req: NextRequest, context: ApiRouteContext)
       createdAt: category.createdAt.toISOString(),
       deletedAt: category.deletedAt ? category.deletedAt.toISOString() : null,
     }
-    return NextResponse.json({ data: serialized }, { status: 201 })
+    return createSuccessResponse(serialized, { status: 201 })
   } catch (error) {
     if (error instanceof ApplicationError) {
-      return NextResponse.json({ error: error.message || "Không thể tạo danh mục" }, { status: error.status || 400 })
+      return createErrorResponse(error.message || "Không thể tạo danh mục", { status: error.status || 400 })
     }
     if (error instanceof NotFoundError) {
-      return NextResponse.json({ error: error.message || "Không tìm thấy" }, { status: 404 })
+      return createErrorResponse(error.message || "Không tìm thấy", { status: 404 })
     }
     console.error("Error creating category:", error)
-    return NextResponse.json({ error: "Đã xảy ra lỗi khi tạo danh mục" }, { status: 500 })
+    return createErrorResponse("Đã xảy ra lỗi khi tạo danh mục", { status: 500 })
   }
 }
 
 export const GET = createGetRoute(getCategoriesHandler)
 export const POST = createPostRoute(postCategoriesHandler)
-

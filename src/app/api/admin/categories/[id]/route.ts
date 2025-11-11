@@ -3,7 +3,7 @@
  * PUT /api/admin/categories/[id] - Update category
  * DELETE /api/admin/categories/[id] - Soft delete category
  */
-import { NextRequest, NextResponse } from "next/server"
+import { NextRequest } from "next/server"
 import { getCategoryDetailById } from "@/features/admin/categories/server/cache"
 import { serializeCategoryDetail } from "@/features/admin/categories/server/helpers"
 import {
@@ -15,22 +15,23 @@ import {
 } from "@/features/admin/categories/server/mutations"
 import { createGetRoute, createPutRoute, createDeleteRoute } from "@/lib/api/api-route-wrapper"
 import type { ApiRouteContext } from "@/lib/api/types"
+import { createErrorResponse, createSuccessResponse } from "@/lib/config"
 
 async function getCategoryHandler(_req: NextRequest, _context: ApiRouteContext, ...args: unknown[]) {
   const { params } = args[0] as { params: Promise<{ id: string }> }
   const { id: categoryId } = await params
 
   if (!categoryId) {
-    return NextResponse.json({ error: "Category ID is required" }, { status: 400 })
+    return createErrorResponse("Category ID is required", { status: 400 })
   }
 
   const category = await getCategoryDetailById(categoryId)
 
   if (!category) {
-    return NextResponse.json({ error: "Category not found" }, { status: 404 })
+    return createErrorResponse("Category not found", { status: 404 })
   }
 
-  return NextResponse.json({ data: serializeCategoryDetail(category) })
+  return createSuccessResponse(serializeCategoryDetail(category))
 }
 
 async function putCategoryHandler(req: NextRequest, context: ApiRouteContext, ...args: unknown[]) {
@@ -38,14 +39,14 @@ async function putCategoryHandler(req: NextRequest, context: ApiRouteContext, ..
   const { id: categoryId } = await params
 
   if (!categoryId) {
-    return NextResponse.json({ error: "Category ID is required" }, { status: 400 })
+    return createErrorResponse("Category ID is required", { status: 400 })
   }
 
   let body: Record<string, unknown>
   try {
     body = await req.json()
   } catch {
-    return NextResponse.json({ error: "Dữ liệu không hợp lệ. Vui lòng kiểm tra lại." }, { status: 400 })
+    return createErrorResponse("Dữ liệu không hợp lệ. Vui lòng kiểm tra lại.", { status: 400 })
   }
 
   const ctx: AuthContext = {
@@ -65,16 +66,16 @@ async function putCategoryHandler(req: NextRequest, context: ApiRouteContext, ..
       createdAt: category.createdAt.toISOString(),
       deletedAt: category.deletedAt ? category.deletedAt.toISOString() : null,
     }
-    return NextResponse.json({ data: serialized })
+    return createSuccessResponse(serialized)
   } catch (error) {
     if (error instanceof ApplicationError) {
-      return NextResponse.json({ error: error.message || "Không thể cập nhật danh mục" }, { status: error.status || 400 })
+      return createErrorResponse(error.message || "Không thể cập nhật danh mục", { status: error.status || 400 })
     }
     if (error instanceof NotFoundError) {
-      return NextResponse.json({ error: error.message || "Không tìm thấy" }, { status: 404 })
+      return createErrorResponse(error.message || "Không tìm thấy", { status: 404 })
     }
     console.error("Error updating category:", error)
-    return NextResponse.json({ error: "Đã xảy ra lỗi khi cập nhật danh mục" }, { status: 500 })
+    return createErrorResponse("Đã xảy ra lỗi khi cập nhật danh mục", { status: 500 })
   }
 }
 
@@ -83,7 +84,7 @@ async function deleteCategoryHandler(_req: NextRequest, context: ApiRouteContext
   const { id: categoryId } = await params
 
   if (!categoryId) {
-    return NextResponse.json({ error: "Category ID is required" }, { status: 400 })
+    return createErrorResponse("Category ID is required", { status: 400 })
   }
 
   const ctx: AuthContext = {
@@ -94,20 +95,19 @@ async function deleteCategoryHandler(_req: NextRequest, context: ApiRouteContext
 
   try {
     await softDeleteCategory(ctx, categoryId)
-    return NextResponse.json({ message: "Category deleted successfully" })
+    return createSuccessResponse({ message: "Category deleted successfully" })
   } catch (error) {
     if (error instanceof ApplicationError) {
-      return NextResponse.json({ error: error.message || "Không thể xóa danh mục" }, { status: error.status || 400 })
+      return createErrorResponse(error.message || "Không thể xóa danh mục", { status: error.status || 400 })
     }
     if (error instanceof NotFoundError) {
-      return NextResponse.json({ error: error.message || "Không tìm thấy" }, { status: 404 })
+      return createErrorResponse(error.message || "Không tìm thấy", { status: 404 })
     }
     console.error("Error deleting category:", error)
-    return NextResponse.json({ error: "Đã xảy ra lỗi khi xóa danh mục" }, { status: 500 })
+    return createErrorResponse("Đã xảy ra lỗi khi xóa danh mục", { status: 500 })
   }
 }
 
 export const GET = createGetRoute(getCategoryHandler)
 export const PUT = createPutRoute(putCategoryHandler)
 export const DELETE = createDeleteRoute(deleteCategoryHandler)
-

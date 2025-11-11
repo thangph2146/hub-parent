@@ -1,17 +1,18 @@
 /**
  * API Route: PATCH /api/notifications/[id] - Update notification (mark as read/unread)
  */
-import { NextRequest, NextResponse } from "next/server"
+import { NextRequest } from "next/server"
 import { auth } from "@/lib/auth/auth"
 import { prisma } from "@/lib/database"
 import { getSocketServer } from "@/lib/socket/state"
 import { mapNotificationToPayload } from "@/lib/socket/state"
+import { createErrorResponse, createSuccessResponse } from "@/lib/config"
 
 async function patchNotificationHandler(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await auth()
 
   if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    return createErrorResponse("Unauthorized", { status: 401 })
   }
 
   const { id } = await params
@@ -24,20 +25,14 @@ async function patchNotificationHandler(req: NextRequest, { params }: { params: 
   })
 
   if (!notification) {
-    return NextResponse.json({ error: "Notification not found" }, { status: 404 })
+    return createErrorResponse("Notification not found", { status: 404 })
   }
 
   // Check permissions: user chỉ có thể đánh dấu đã đọc notification của chính mình
   const isOwner = notification.userId === session.user.id
   
   if (!isOwner) {
-    return NextResponse.json(
-      { 
-        error: "Forbidden",
-        message: "Bạn chỉ có thể đánh dấu đã đọc thông báo của chính mình."
-      },
-      { status: 403 }
-    )
+    return createErrorResponse("Bạn chỉ có thể thao tác thông báo của chính mình.", { status: 403, error: "Forbidden" })
   }
 
   // Update notification
@@ -67,7 +62,7 @@ async function patchNotificationHandler(req: NextRequest, { params }: { params: 
     }
   }
 
-  return NextResponse.json({
+  return createSuccessResponse({
     id: updated.id,
     userId: updated.userId,
     kind: updated.kind,
@@ -88,11 +83,6 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ id: s
     return await patchNotificationHandler(req, context)
   } catch (error) {
     console.error("Error updating notification:", error)
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    )
+    return createErrorResponse("Internal server error", { status: 500 })
   }
 }
-
-

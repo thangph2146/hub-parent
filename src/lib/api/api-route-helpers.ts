@@ -3,9 +3,10 @@
  * Tách logic chung để code ngắn gọn và dễ maintain
  */
 
-import { NextRequest, NextResponse } from "next/server"
+import { NextRequest } from "next/server"
 import { ApplicationError, NotFoundError } from "@/features/admin/resources/server"
 import type { ApiRouteContext } from "./types"
+import { createErrorResponse } from "@/lib/config"
 
 /**
  * Parse request body với error handling
@@ -60,15 +61,15 @@ export function handleApiError(
   error: unknown,
   defaultMessage: string,
   defaultStatus: number = 500
-): NextResponse {
+) {
   if (error instanceof ApplicationError) {
-    return NextResponse.json({ error: error.message }, { status: error.status || defaultStatus })
+    return createErrorResponse(error.message, { status: error.status || defaultStatus })
   }
   if (error instanceof NotFoundError) {
-    return NextResponse.json({ error: error.message }, { status: 404 })
+    return createErrorResponse(error.message, { status: 404 })
   }
   console.error("API error:", error)
-  return NextResponse.json({ error: defaultMessage }, { status: defaultStatus })
+  return createErrorResponse(defaultMessage, { status: defaultStatus })
 }
 
 /**
@@ -106,4 +107,3 @@ export function getArrayValue<T>(
   }
   return body[key] as T[]
 }
-

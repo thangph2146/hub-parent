@@ -6,16 +6,17 @@
  * - offset: number of notifications to skip (default: 0)
  * - unreadOnly: boolean to filter only unread notifications (default: false)
  */
-import { NextRequest, NextResponse } from "next/server"
+import { NextRequest } from "next/server"
 import { auth } from "@/lib/auth/auth"
 import { prisma } from "@/lib/database"
 import type { Prisma } from "@prisma/client"
+import { createErrorResponse, createSuccessResponse } from "@/lib/config"
 
 async function getUserNotificationsHandler(req: NextRequest) {
   const session = await auth()
 
   if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    return createErrorResponse("Unauthorized", { status: 401 })
   }
 
   const searchParams = req.nextUrl.searchParams
@@ -28,19 +29,13 @@ async function getUserNotificationsHandler(req: NextRequest) {
   // Validate and parse limit
   const limit = limitParam ? parseInt(limitParam, 10) : 20
   if (isNaN(limit) || limit < 1 || limit > 100) {
-    return NextResponse.json(
-      { error: "Limit must be a number between 1 and 100" },
-      { status: 400 }
-    )
+    return createErrorResponse("Limit must be a number between 1 và 100", { status: 400 })
   }
 
   // Validate and parse offset
   const offset = offsetParam ? parseInt(offsetParam, 10) : 0
   if (isNaN(offset) || offset < 0) {
-    return NextResponse.json(
-      { error: "Offset must be a non-negative number" },
-      { status: 400 }
-    )
+    return createErrorResponse("Offset must be số không âm", { status: 400 })
   }
 
   // Parse unreadOnly
@@ -89,7 +84,7 @@ async function getUserNotificationsHandler(req: NextRequest) {
     readAt: n.readAt,
   }))
 
-  return NextResponse.json({
+  return createSuccessResponse({
     notifications: mappedNotifications,
     total,
     unreadCount,
@@ -102,10 +97,6 @@ export async function GET(req: NextRequest) {
     return await getUserNotificationsHandler(req)
   } catch (error) {
     console.error("Error fetching notifications:", error)
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    )
+    return createErrorResponse("Internal server error", { status: 500 })
   }
 }
-

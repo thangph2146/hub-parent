@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server"
+import { NextRequest } from "next/server"
 import { createGetRoute, createPostRoute } from "@/lib/api/api-route-wrapper"
 import { createGroup, listGroups } from "@/features/admin/chat/server"
 import {
@@ -9,6 +9,7 @@ import {
   getStringValue,
   getArrayValue,
 } from "@/lib/api/api-route-helpers"
+import { createSuccessResponse, createErrorResponse } from "@/lib/config"
 import type { ApiRouteContext } from "@/lib/api/types"
 
 async function createGroupHandler(req: NextRequest, context: ApiRouteContext) {
@@ -21,7 +22,7 @@ async function createGroupHandler(req: NextRequest, context: ApiRouteContext) {
   const memberIds = getArrayValue<string>(body, "memberIds", (id): id is string => typeof id === "string")
 
   if (!name) {
-    return NextResponse.json({ error: "Tên nhóm là bắt buộc" }, { status: 400 })
+    return createErrorResponse("Tên nhóm là bắt buộc", { status: 400 })
   }
 
   try {
@@ -32,7 +33,7 @@ async function createGroupHandler(req: NextRequest, context: ApiRouteContext) {
       memberIds,
     })
 
-    return NextResponse.json({
+    return createSuccessResponse({
       id: group.id,
       name: group.name,
       description: group.description,
@@ -64,7 +65,7 @@ async function listGroupsHandler(req: NextRequest, context: ApiRouteContext) {
 
   try {
     const result = await listGroups({ userId, page, limit, search, includeDeleted })
-    return NextResponse.json(result)
+    return createSuccessResponse(result)
   } catch (error) {
     return handleApiError(error, "Đã xảy ra lỗi khi lấy danh sách nhóm", 500)
   }
@@ -72,4 +73,3 @@ async function listGroupsHandler(req: NextRequest, context: ApiRouteContext) {
 
 export const POST = createPostRoute(createGroupHandler)
 export const GET = createGetRoute(listGroupsHandler)
-
