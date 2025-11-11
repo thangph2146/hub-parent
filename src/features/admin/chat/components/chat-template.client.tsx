@@ -12,10 +12,12 @@ import { ContactList } from "@/components/chat/components/contact-list"
 import { ChatWindow } from "@/components/chat/components/chat-window"
 import { EmptyState } from "@/components/chat/components/empty-state"
 import { useState, useMemo, useCallback, useEffect } from "react"
+import { useDebouncedCallback } from "@/hooks/use-debounced-callback"
+import { requestJson } from "@/lib/api/client"
 import { getCurrentUserRole, createGroupContact } from "./chat-template-helpers"
 import { useGroupActions } from "../hooks/use-group-actions"
 import { filterContacts } from "@/components/chat/utils/contact-helpers"
-import { mapGroupListItemToContact, type GroupListItemLike } from "../utils/contact-transformers"
+import { mapGroupListItemToContact, type GroupListItemLike, type MessageDetailLike } from "../utils/contact-transformers"
 import type { ChatWindowProps } from "@/components/chat/components/chat-window"
 
 export function ChatTemplate({
@@ -29,6 +31,8 @@ export function ChatTemplate({
   const isMobile = useIsMobile()
   const [filterType, setFilterType] = useState<ChatFilterType>(initialFilterType)
   const [contactSearch, setContactSearch] = useState("")
+  const [searchedContacts, setSearchedContacts] = useState<Contact[] | null>(null)
+  const [isSearching, setIsSearching] = useState(false)
   
   const {
     contactsState,
@@ -126,20 +130,139 @@ export function ChatTemplate({
 
 
   // Filter contacts based on filterType
+  const baseFilteredContacts = useMemo(
+    () => filterContacts(contactsState, filterType),
+    [contactsState, filterType]
+  )
+
+  // Debounced API search for contacts (conversations + groups)
+  const debouncedSearchContacts = useDebouncedCallback(async (query: string) => {
+    const q = query.trim()
+    if (q.length < 2) {
+      setSearchedContacts(null)
+      setIsSearching(false)
+      return
+    }
+
+    setIsSearching(true)
+    try {
+      const { apiRoutes } = await import("@/lib/api/routes")
+
+      // Build endpoints
+      const convUrl = `/api${apiRoutes.adminConversations.list({ page: 1, limit: 50, search: q })}`
+      const groupsBase = apiRoutes.adminGroups.list({ page: 1, limit: 50, search: q })
+      const groupsUrl = `/api${groupsBase}${groupsBase.includes("?") ? "&" : "?"}includeDeleted=${filterType === "DELETED"}`
+
+      const [convRes, groupsRes] = await Promise.all([
+        requestJson(convUrl),
+        requestJson(groupsUrl),
+      ])
+
+      const results: Contact[] = []
+
+      // Map conversations to Contact
+      if (convRes.ok && convRes.data) {
+        // Handle both nested structure { data: { data: [...] } } and direct array
+        let conversationsList: Array<{
+          otherUser: { id: string; name: string | null; email: string; avatar: string | null }
+          lastMessage: { content: string; timestamp: string | Date } | null
+          unreadCount: number
+          updatedAt: string | Date
+        }> = []
+
+        // Check if data is nested (has .data property) or direct array
+        if (Array.isArray(convRes.data)) {
+          conversationsList = convRes.data
+        } else if (typeof convRes.data === 'object' && convRes.data !== null && 'data' in convRes.data) {
+          const responseData = convRes.data as { data?: Array<{
+            otherUser: { id: string; name: string | null; email: string; avatar: string | null }
+            lastMessage: { content: string; timestamp: string | Date } | null
+            unreadCount: number
+            updatedAt: string | Date
+          }> }
+          if (Array.isArray(responseData.data)) {
+            conversationsList = responseData.data
+          }
+        }
+
+        for (const conv of conversationsList) {
+          const existing = contactsState.find((c) => c.id === conv.otherUser.id && c.type !== "GROUP")
+          results.push({
+            id: conv.otherUser.id,
+            name: conv.otherUser.name || conv.otherUser.email,
+            email: conv.otherUser.email,
+            image: conv.otherUser.avatar,
+            lastMessage: conv.lastMessage?.content || "",
+            lastMessageTime: new Date(conv.lastMessage?.timestamp || conv.updatedAt),
+            unreadCount: conv.unreadCount ?? (existing?.unreadCount || 0),
+            isOnline: existing?.isOnline || false,
+            messages: existing?.messages || [],
+            type: "PERSONAL",
+            isDeleted: false,
+          })
+        }
+      }
+
+      // Map groups to Contact
+      if (groupsRes.ok && groupsRes.data) {
+        // Handle both nested structure { data: { data: [...] } } and direct array
+        let groupsList: Array<GroupListItemLike> = []
+
+        // Check if data is nested (has .data property) or direct array
+        if (Array.isArray(groupsRes.data)) {
+          groupsList = groupsRes.data
+        } else if (typeof groupsRes.data === 'object' && groupsRes.data !== null && 'data' in groupsRes.data) {
+          const responseData = groupsRes.data as { data?: Array<GroupListItemLike> }
+          if (Array.isArray(responseData.data)) {
+            groupsList = responseData.data
+          }
+        }
+
+        for (const groupData of groupsList) {
+          const mapped = mapGroupListItemToContact({ groupData, messages: [], currentUserId })
+          // Try to reuse existing messages if we already have this group
+          const existing = contactsState.find((c) => c.id === mapped.id && c.type === "GROUP")
+          if (existing) {
+            mapped.messages = existing.messages
+            mapped.unreadCount = existing.unreadCount
+          }
+          // Respect deleted filter
+          if (filterType === "DELETED" && !mapped.isDeleted) continue
+          if (filterType === "ACTIVE" && mapped.isDeleted) continue
+          results.push(mapped)
+        }
+      }
+
+      // Sort by lastMessageTime desc
+      results.sort((a, b) => (b.lastMessageTime?.getTime?.() || 0) - (a.lastMessageTime?.getTime?.() || 0))
+
+      setSearchedContacts(results)
+    } catch (err) {
+      console.error("Search contacts failed", err)
+      setSearchedContacts([])
+    } finally {
+      setIsSearching(false)
+    }
+  }, 300)
+
+  // Trigger debounced search when typing, filter, or contacts change
+  useEffect(() => {
+    debouncedSearchContacts(contactSearch)
+    return () => {
+      debouncedSearchContacts.cancel()
+    }
+  }, [contactSearch, debouncedSearchContacts, filterType, contactsState])
+
   const filteredContacts = useMemo(() => {
-    const base = filterContacts(contactsState, filterType)
-    const query = contactSearch.trim().toLowerCase()
-    if (!query) return base
-    return base.filter((c) => {
-      const haystacks: string[] = [
-        c.name || "",
-        c.email || "",
-        c.lastMessage || "",
-        c.group?.name || "",
-      ].filter(Boolean) as string[]
-      return haystacks.some((h) => h.toLowerCase().includes(query))
-    })
-  }, [contactsState, filterType, contactSearch])
+    const query = contactSearch.trim()
+    // If query is less than 2 characters, show base filtered contacts
+    if (query.length < 2) {
+      return baseFilteredContacts
+    }
+    // If query is 2+ characters, show search results
+    // Use empty array if searchedContacts is null (still loading) to show empty state
+    return searchedContacts ?? []
+  }, [contactSearch, searchedContacts, baseFilteredContacts])
 
   // Ensure current chat always belongs to the visible filter bucket
   useEffect(() => {
@@ -264,7 +387,34 @@ export function ChatTemplate({
             <ContactList
               contacts={filteredContacts}
               selectedContactId={currentChat?.id}
-              onContactSelect={setCurrentChat}
+              onContactSelect={async (contact) => {
+                // If personal contact and no messages loaded, fetch messages via API
+                if (contact.type !== "GROUP" && (!contact.messages || contact.messages.length === 0)) {
+                  try {
+                    const { apiRoutes } = await import("@/lib/api/routes")
+                    const url = `/api${apiRoutes.adminConversations.list({ otherUserId: contact.id })}`
+                    const res = await requestJson(url)
+                    if (res.ok && Array.isArray(res.data)) {
+                      const { mapMessageDetailToMessage } = await import("../utils/contact-transformers")
+                      const messages = (res.data as Array<MessageDetailLike>).map(
+                        mapMessageDetailToMessage,
+                      )
+                      setContactsState((prev) => {
+                        const exists = prev.find((c) => c.id === contact.id && c.type !== "GROUP")
+                        if (exists) {
+                          return prev.map((c) => (c.id === contact.id && c.type !== "GROUP" ? { ...c, messages } : c))
+                        }
+                        return [{ ...contact, messages }, ...prev]
+                      })
+                      setCurrentChat({ ...contact, messages })
+                      return
+                    }
+                  } catch (e) {
+                    console.error("Failed to fetch conversation messages", e)
+                  }
+                }
+                setCurrentChat(contact)
+              }}
               searchValue={contactSearch}
               onSearchChange={setContactSearch}
             />

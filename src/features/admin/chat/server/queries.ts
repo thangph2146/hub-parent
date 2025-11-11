@@ -90,7 +90,36 @@ export interface MessageDetail {
  * Returns unique conversations between the user and others
  */
 export async function listConversations(params: ListConversationsInput): Promise<ListConversationsResult> {
-  const { userId, page = 1, limit = 50 } = params
+  const { userId, page = 1, limit = 50, search } = params
+
+  // If search is provided, first find matching users
+  let matchingUserIds: string[] | undefined = undefined
+  if (search && search.trim().length > 0) {
+    const searchValue = search.trim()
+    const matchingUsers = await prisma.user.findMany({
+      where: {
+        OR: [
+          { name: { contains: searchValue, mode: "insensitive" } },
+          { email: { contains: searchValue, mode: "insensitive" } },
+        ],
+      },
+      select: { id: true },
+    })
+    matchingUserIds = matchingUsers.map((u) => u.id)
+    
+    // If no users match, return empty result
+    if (matchingUserIds.length === 0) {
+      return {
+        data: [],
+        pagination: {
+          page,
+          limit,
+          total: 0,
+          totalPages: 0,
+        },
+      }
+    }
+  }
 
   // Get distinct conversation partners
   const [sentMessages, receivedMessages] = await Promise.all([
@@ -98,6 +127,7 @@ export async function listConversations(params: ListConversationsInput): Promise
       where: {
         senderId: userId,
         deletedAt: null,
+        ...(matchingUserIds ? { receiverId: { in: matchingUserIds } } : {}),
       },
       select: {
         receiverId: true,
@@ -116,6 +146,7 @@ export async function listConversations(params: ListConversationsInput): Promise
       where: {
         receiverId: userId,
         deletedAt: null,
+        ...(matchingUserIds ? { senderId: { in: matchingUserIds } } : {}),
       },
       select: {
         senderId: true,
@@ -450,18 +481,27 @@ export async function listGroups(input: ListGroupsInput) {
   const limit = input.limit || 50
   const skip = (page - 1) * limit
 
+  // Build search filter for group name if search is provided
+  const groupSearchFilter = input.search && input.search.trim().length > 0
+    ? { name: { contains: input.search.trim(), mode: "insensitive" as const } }
+    : undefined
+
   const where: {
     userId: string
     leftAt: null
     group: {
       deletedAt?: null | { not: null }
+      name?: { contains: string; mode: "insensitive" }
     }
   } = {
     userId: input.userId,
     leftAt: null,
-    group: input.includeDeleted
-      ? {} // Include all groups (deleted and active)
-      : { deletedAt: null }, // Only active groups
+    group: {
+      ...(input.includeDeleted
+        ? {} // Include all groups (deleted and active)
+        : { deletedAt: null }), // Only active groups
+      ...(groupSearchFilter ? groupSearchFilter : {}),
+    },
   }
 
   const groupMembers = await prisma.groupMember.findMany({
