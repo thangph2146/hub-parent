@@ -11,9 +11,9 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Settings, Edit, Users, Trash2 } from "lucide-react"
 import type { Group, GroupRole } from "@/components/chat/types"
-import { EditGroupDialog } from "./edit-group-dialog"
-import { ManageMembersDialog } from "./dialogs/manage-members-dialog"
-import { DeleteGroupDialog } from "./dialogs/delete-group-dialog"
+import { EditGroupDialog } from "./dialogs/edit-group-dialog.client"
+import { ManageMembersDialog } from "./dialogs/manage-members-dialog.client"
+import { DeleteGroupDialog } from "./dialogs/delete-group-dialog.client"
 
 interface GroupManagementMenuProps {
   group: Group | null
@@ -32,7 +32,7 @@ export function GroupManagementMenu({
 
   const canEdit = currentUserRole === "OWNER" || currentUserRole === "ADMIN"
   const canManageMembers = currentUserRole === "OWNER" || currentUserRole === "ADMIN"
-  const canViewMembers = true // Tất cả thành viên đều có thể xem danh sách
+  const canViewMembers = true
   const canDelete = currentUserRole === "OWNER"
 
   if (!group || !currentUserRole) return null
@@ -99,8 +99,6 @@ export function GroupManagementMenu({
         group={group}
         onSuccess={() => {
           onGroupUpdated?.()
-          // Group sẽ được xóa khỏi contactsState qua socket event
-          // Nhưng cần đảm bảo currentChat được clear nếu đang chat group đó
         }}
       />
     </>

@@ -20,9 +20,9 @@ features/admin/chat/
 │   ├── use-chat-api.ts                # API functions
 │   └── index.ts
 ├── components/         # Feature components
-│   ├── chat-template.tsx              # Main template (uses hooks)
+│   ├── chat-template.client.tsx       # Main template (uses hooks)
 │   ├── messages-page.tsx              # Server component
-│   ├── messages-page-client.tsx       # Client component
+│   ├── messages-page.client.tsx       # Client component
 │   ├── new-conversation-dialog.tsx    # Business dialog
 │   └── index.ts
 ├── server/            # Server-side logic
@@ -52,11 +52,11 @@ import { listConversationsCached } from "@/features/admin/chat/server"
    - Fetch data từ database
    - Pass xuống client component
 
-2. **Client Component** (`messages-page-client.tsx`)
+2. **Client Component** (`messages-page.client.tsx`)
    - Nhận initial data
    - Render `ChatTemplate`
 
-3. **ChatTemplate** (`chat-template.tsx`)
+3. **ChatTemplate** (`chat-template.client.tsx`)
    - Sử dụng `useChat` hook
    - Quản lý state và business logic
    - Render UI components từ `@/components/chat`
@@ -64,4 +64,3 @@ import { listConversationsCached } from "@/features/admin/chat/server"
 4. **UI Components** (`@/components/chat`)
    - Pure presentation components
    - Nhận data và callbacks qua props
-

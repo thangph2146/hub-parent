@@ -22,6 +22,7 @@ interface MessagesAreaProps {
   currentUserRole?: GroupRole
   group?: import("../types").Group | null
   onHardDeleteGroup?: () => void
+  onScrollToMessage?: (messageId: string) => void
 }
 
 export function MessagesArea({
@@ -39,6 +40,7 @@ export function MessagesArea({
   currentUserRole,
   group,
   onHardDeleteGroup,
+  onScrollToMessage,
 }: MessagesAreaProps) {
   // Deduplicate messages by ID (tránh duplicate key error)
   const uniqueMessages = deduplicateMessages(messages)
@@ -73,6 +75,7 @@ export function MessagesArea({
                 onMarkAsRead={onMarkAsRead}
                 onMarkAsUnread={onMarkAsUnread}
                 searchQuery={searchQuery}
+                onScrollToMessage={onScrollToMessage}
               />
             ))}
             <div ref={messagesEndRef} />
@@ -105,4 +108,3 @@ export function MessagesArea({
     </ScrollArea>
   )
 }
-

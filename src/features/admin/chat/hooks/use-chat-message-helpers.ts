@@ -103,29 +103,67 @@ export function updateMessageReadStatusOptimistic(
   isRead: boolean,
   currentUserId: string
 ): Contact[] {
-  return contacts.map((contact) => {
-    if (contact.id !== contactId) return contact
-    
-    const message = contact.messages.find((m) => m.id === messageId)
-    if (!message) return contact
-    
-    // Check current read status using helper
-    const wasRead = isMessageReadByUser(message, currentUserId)
-    if (wasRead === isRead) return contact // No change needed
-    
-    // Update message based on type
-    const isGroupMessage = !!message.groupId
-    const updatedMessage = isGroupMessage
-      ? message // For group messages, readers array is updated via socket
-      : { ...message, isRead }
-    
-    return {
-      ...contact,
-      messages: contact.messages.map((m) => (m.id === messageId ? updatedMessage : m)),
-      unreadCount: isRead
-        ? Math.max(0, contact.unreadCount - 1)
-        : contact.unreadCount + 1,
-    }
+  return applyReadStatus(contacts, {
+    contactId,
+    messageId,
+    isRead,
+    mode: "optimistic",
+    currentUserId,
   })
 }
 
+/**
+ * Shared helper: apply read status changes (socket or optimistic)
+ */
+export function applyReadStatus(
+  contacts: Contact[],
+  params: {
+    contactId: string
+    messageId: string
+    isRead: boolean
+    currentUserId?: string
+    readers?: { id: string; name: string | null; email: string; avatar: string | null }[]
+    mode: "socket" | "optimistic"
+  }
+): Contact[] {
+  const { contactId, messageId, isRead, readers, currentUserId, mode } = params
+  return contacts.map((contact) => {
+    if (contact.id !== contactId) return contact
+
+    const idx = contact.messages.findIndex((m) => m.id === messageId)
+    if (idx === -1) return contact
+
+    const prev = contact.messages[idx]
+    const wasRead = currentUserId ? isMessageReadByUser(prev, currentUserId) : prev.isRead
+
+    let next: Message = prev
+    const isGroupMessage = !!prev.groupId
+
+    if (mode === "socket") {
+      // Socket payloads provide readers for group; update isRead for personal
+      next = {
+        ...prev,
+        ...(isGroupMessage && readers ? { readers } : {}),
+        ...(!isGroupMessage ? { isRead } : {}),
+      }
+    } else {
+      // Optimistic: only update isRead for personal; leave group to socket
+      next = {
+        ...prev,
+        ...(!isGroupMessage ? { isRead } : {}),
+      }
+    }
+
+    const updatedMessages = [...contact.messages]
+    updatedMessages[idx] = next
+
+    const nowRead = currentUserId ? isMessageReadByUser(next, currentUserId) : isRead
+    const unreadCount = wasRead === nowRead
+      ? contact.unreadCount
+      : nowRead
+        ? Math.max(0, contact.unreadCount - 1)
+        : contact.unreadCount + 1
+
+    return { ...contact, messages: updatedMessages, unreadCount }
+  })
+}

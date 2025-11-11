@@ -1,6 +1,6 @@
 "use client"
 
-import { ChatTemplate } from "./chat-template"
+import { ChatTemplate } from "./chat-template.client"
 import type { ChatFilterType, Contact, Message } from "@/components/chat/types"
 
 /**

@@ -12,11 +12,11 @@ import {
   listGroupsCached,
   getMessagesForGroupCached,
 } from "../server/cache"
-import { MessagesPageClient } from "./messages-page-client"
+import { MessagesPageClient } from "./messages-page.client"
 import type { ChatFilterType, Contact } from "@/components/chat/types"
 import { ensureDate, mapGroupListItemToContact, mapMessageDetailToMessage } from "../utils/contact-transformers"
 
-type ContactScope = "all" | "active" | "deleted"
+type ContactScope = "active" | "deleted"
 
 interface MessagesPageProps {
   initialFilterType?: ChatFilterType
@@ -25,7 +25,7 @@ interface MessagesPageProps {
 
 export async function MessagesPage({
   initialFilterType = "ACTIVE",
-  contactScope = "all",
+  contactScope = "active",
 }: MessagesPageProps = {}) {
   const authInfo = await getAuthInfo()
 

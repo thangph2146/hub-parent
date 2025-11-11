@@ -8,7 +8,7 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Trash2 } from "lucide-react"
 import type { GroupRole, Group } from "../types"
-import { HardDeleteGroupDialog } from "@/features/admin/chat/components/dialogs/hard-delete-group-dialog"
+import { HardDeleteGroupDialog } from "@/features/admin/chat/components/dialogs/hard-delete-group-dialog.client"
 
 interface DeletedGroupBannerProps {
   currentUserRole?: GroupRole

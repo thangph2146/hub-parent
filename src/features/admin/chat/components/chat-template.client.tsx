@@ -5,9 +5,9 @@ import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/componen
 import type { ChatTemplateProps, Contact, Group } from "@/components/chat/types"
 import { useChat } from "../hooks/use-chat"
 import { ChatListHeader, type ChatFilterType } from "@/components/chat/components/chat-list-header"
-import { NewConversationDialog } from "./dialogs/new-conversation-dialog"
-import { NewGroupDialog } from "./dialogs/new-group-dialog"
-import { GroupManagementMenu } from "./group-management-menu"
+import { NewConversationDialog } from "./dialogs/new-conversation-dialog.client"
+import { NewGroupDialog } from "./dialogs/new-group-dialog.client"
+import { GroupManagementMenu } from "./group-management-menu.client"
 import { ContactList } from "@/components/chat/components/contact-list"
 import { ChatWindow } from "@/components/chat/components/chat-window"
 import { EmptyState } from "@/components/chat/components/empty-state"
@@ -28,6 +28,7 @@ export function ChatTemplate({
 }: ChatTemplateProps) {
   const isMobile = useIsMobile()
   const [filterType, setFilterType] = useState<ChatFilterType>(initialFilterType)
+  const [contactSearch, setContactSearch] = useState("")
   
   const {
     contactsState,
@@ -125,13 +126,26 @@ export function ChatTemplate({
 
 
   // Filter contacts based on filterType
-  const filteredContacts = useMemo(
-    () => filterContacts(contactsState, filterType),
-    [contactsState, filterType]
-  )
+  const filteredContacts = useMemo(() => {
+    const base = filterContacts(contactsState, filterType)
+    const query = contactSearch.trim().toLowerCase()
+    if (!query) return base
+    return base.filter((c) => {
+      const haystacks: string[] = [
+        c.name || "",
+        c.email || "",
+        c.lastMessage || "",
+        c.group?.name || "",
+      ].filter(Boolean) as string[]
+      return haystacks.some((h) => h.toLowerCase().includes(query))
+    })
+  }, [contactsState, filterType, contactSearch])
 
   // Ensure current chat always belongs to the visible filter bucket
   useEffect(() => {
+    // While searching contacts, don't auto-switch the current chat selection
+    if (contactSearch.trim()) return
+
     if (!filteredContacts.length) {
       if (currentChatId) {
         setCurrentChat(null)
@@ -146,7 +160,7 @@ export function ChatTemplate({
     if (!isCurrentVisible) {
       setCurrentChat(filteredContacts[0])
     }
-  }, [filteredContacts, currentChatId, setCurrentChat])
+  }, [filteredContacts, currentChatId, setCurrentChat, contactSearch])
 
   // Shared ChatWindow props để tránh duplicate
   const chatWindowProps: ChatWindowProps | null = useMemo(
@@ -251,6 +265,8 @@ export function ChatTemplate({
               contacts={filteredContacts}
               selectedContactId={currentChat?.id}
               onContactSelect={setCurrentChat}
+              searchValue={contactSearch}
+              onSearchChange={setContactSearch}
             />
           </div>
         </ResizablePanel>

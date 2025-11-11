@@ -58,11 +58,11 @@ export function calculateMessagesHeight(params: {
  */
 async function markConversationAsReadAPI(contactId: string, contactType?: "PERSONAL" | "GROUP"): Promise<void> {
   try {
-    // For groups: use group mark-read endpoint
-    // For personal: use conversation mark-read endpoint
+    const { apiRoutes } = await import("@/lib/api/routes")
+    // For groups: use group mark-read endpoint; personal uses conversations
     const endpoint = contactType === "GROUP"
-      ? `/api/admin/groups/${contactId}/mark-read`
-      : `/api/admin/conversations/${contactId}/mark-read`
+      ? `/api${apiRoutes.adminGroups.markRead(contactId)}`
+      : `/api${apiRoutes.adminConversations.markRead(contactId)}`
     
     const response = await fetch(endpoint, {
       method: "POST",

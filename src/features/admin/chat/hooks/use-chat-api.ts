@@ -4,11 +4,14 @@
  */
 
 import { toast } from "@/hooks/use-toast"
+import { requestJson, toJsonBody } from "@/lib/api/client"
 
 /**
  * Parse API error response
  * Internal helper - not exported
  */
+// Kept for reference when using raw fetch in other areas
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function parseErrorResponse(response: Response, defaultMessage: string): Promise<string> {
   try {
     const errorData = await response.json()
@@ -23,16 +26,12 @@ async function parseErrorResponse(response: Response, defaultMessage: string): P
  */
 export async function markMessageAPI(messageId: string, isRead: boolean): Promise<void> {
   const { apiRoutes } = await import("@/lib/api/routes")
-  const response = await fetch(`/api${apiRoutes.adminMessages.markRead(messageId)}`, {
+  const res = await requestJson(`/api${apiRoutes.adminMessages.markRead(messageId)}`, {
     method: "PATCH",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ isRead }),
+    ...toJsonBody({ isRead }),
   })
-
-  if (!response.ok) {
-    const defaultMessage = isRead ? "Không thể đánh dấu đã đọc" : "Không thể đánh dấu chưa đọc"
-    const errorMessage = await parseErrorResponse(response, defaultMessage)
-    throw new Error(errorMessage)
+  if (!res.ok) {
+    throw new Error(res.error || (isRead ? "Không thể đánh dấu đã đọc" : "Không thể đánh dấu chưa đọc"))
   }
 }
 
@@ -46,10 +45,9 @@ export async function sendMessageAPI(params: {
   parentId?: string
 }): Promise<{ id: string; timestamp: string }> {
   const { apiRoutes } = await import("@/lib/api/routes")
-  const response = await fetch(`/api${apiRoutes.adminMessages.send}`, {
+  const res = await requestJson<{ id: string; timestamp: string }>(`/api${apiRoutes.adminMessages.send}`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
+    ...toJsonBody({
       content: params.content,
       receiverId: params.receiverId,
       groupId: params.groupId,
@@ -57,13 +55,10 @@ export async function sendMessageAPI(params: {
       type: "PERSONAL",
     }),
   })
-
-  if (!response.ok) {
-    const errorMessage = await parseErrorResponse(response, "Không thể gửi tin nhắn")
-    throw new Error(errorMessage)
+  if (!res.ok || !res.data) {
+    throw new Error(res.error || "Không thể gửi tin nhắn")
   }
-
-  return response.json()
+  return res.data
 }
 
 /**

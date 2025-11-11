@@ -323,7 +323,7 @@ export const appFeatures: FeatureDefinition[] = [
     navigation: {
       group: "main",
       order: 80,
-      href: "/admin/messages",
+      href: "/admin/messages/inbox",
       subItems: [
         {
           title: "Hộp thư đến",

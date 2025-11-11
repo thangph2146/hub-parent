@@ -94,6 +94,7 @@ export function ChatWindow({
         onMarkAsRead={markMessageAsRead}
         onMarkAsUnread={markMessageAsUnread}
         searchQuery={searchQuery}
+        onScrollToMessage={onScrollToMessage}
         isGroupDeleted={isGroupDeleted}
         currentUserRole={currentUserRole}
         group={currentChat.type === "GROUP" ? currentChat.group : null}

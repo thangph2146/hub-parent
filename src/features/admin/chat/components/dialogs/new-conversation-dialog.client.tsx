@@ -1,5 +1,7 @@
 "use client"
 
+"use client"
+
 import { useState, useCallback, useEffect } from "react"
 import { useAuth } from "@/hooks/use-session"
 import { Button } from "@/components/ui/button"
@@ -21,6 +23,7 @@ import {
 } from "@/components/ui/command"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Loader2, User } from "lucide-react"
+import { requestJson } from "@/lib/api/client"
 import type { Contact } from "@/components/chat/types"
 
 interface UserOption {
@@ -46,12 +49,9 @@ export function NewConversationDialog({ onSelectUser, existingContactIds = [] }:
     setIsLoading(true)
     try {
       const { apiRoutes } = await import("@/lib/api/routes")
-      // Gọi API với query (có thể rỗng để lấy danh sách mặc định)
-      const response = await fetch(`/api${apiRoutes.adminUsers.search(query)}`)
-      if (!response.ok) throw new Error("Failed to search users")
-      const data = await response.json()
-      
-      // Filter out current user and existing contacts
+      const res = await requestJson<UserOption[]>(`/api${apiRoutes.adminUsers.search(query)}`)
+      if (!res.ok) throw new Error(res.error || "Failed to search users")
+      const data = Array.isArray(res.data) ? res.data : []
       const filtered = data.filter(
         (u: UserOption) => u.id !== currentUser?.id && !existingContactIds.includes(u.id)
       )
@@ -67,26 +67,18 @@ export function NewConversationDialog({ onSelectUser, existingContactIds = [] }:
   const handleSearchChange = useCallback(
     (value: string) => {
       setSearchValue(value)
-      // Debounce search - chỉ search khi có ít nhất 2 ký tự hoặc rỗng (để lấy danh sách mặc định)
       if (value.length === 0 || value.length >= 2) {
         searchUsers(value)
-      } else if (value.length < 2) {
-        // Nếu < 2 ký tự, vẫn giữ danh sách hiện tại hoặc clear
-        // Không gọi API để tránh spam
       }
     },
     [searchUsers]
   )
 
-  // Tự động load danh sách người dùng khi dialog mở
   useEffect(() => {
     if (open) {
-      // Reset state khi mở dialog
       setSearchValue("")
-      // Load danh sách người dùng mặc định
       searchUsers("")
     } else {
-      // Clear khi đóng dialog
       setUsers([])
       setSearchValue("")
     }
@@ -170,4 +162,3 @@ export function NewConversationDialog({ onSelectUser, existingContactIds = [] }:
     </Dialog>
   )
 }
-

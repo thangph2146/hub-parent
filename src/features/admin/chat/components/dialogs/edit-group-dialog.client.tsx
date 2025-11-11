@@ -78,45 +78,28 @@ export function EditGroupDialog({ open, onOpenChange, group, onSuccess }: EditGr
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[540px]">
         <DialogHeader>
           <DialogTitle>Chỉnh sửa nhóm</DialogTitle>
-          <DialogDescription>Cập nhật thông tin nhóm chat</DialogDescription>
+          <DialogDescription>Cập nhật tên và mô tả cho nhóm</DialogDescription>
         </DialogHeader>
-        <div className="space-y-4 py-4">
+        <div className="space-y-4 py-2">
           <div className="space-y-2">
-            <Label htmlFor="edit-group-name">Tên nhóm *</Label>
-            <Input
-              id="edit-group-name"
-              placeholder="Nhập tên nhóm..."
-              value={groupName}
-              onChange={(e) => setGroupName(e.target.value)}
-            />
+            <Label htmlFor="group-name">Tên nhóm</Label>
+            <Input id="group-name" value={groupName} onChange={(e) => setGroupName(e.target.value)} />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="edit-group-description">Mô tả</Label>
-            <Textarea
-              id="edit-group-description"
-              placeholder="Nhập mô tả nhóm..."
-              value={groupDescription}
-              onChange={(e) => setGroupDescription(e.target.value)}
-              rows={3}
-            />
+            <Label htmlFor="group-description">Mô tả</Label>
+            <Textarea id="group-description" value={groupDescription} onChange={(e) => setGroupDescription(e.target.value)} />
           </div>
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isSaving}>
             Hủy
           </Button>
-          <Button onClick={handleSave} disabled={!groupName.trim() || isSaving}>
-            {isSaving ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Đang lưu...
-              </>
-            ) : (
-              "Lưu"
-            )}
+          <Button onClick={handleSave} disabled={isSaving}>
+            {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            Lưu thay đổi
           </Button>
         </DialogFooter>
       </DialogContent>

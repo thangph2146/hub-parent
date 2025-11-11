@@ -121,6 +121,7 @@ export const apiRoutes = {
       const queryString = searchParams.toString()
       return `${route}${queryString ? `?${queryString}` : ""}`
     },
+    markRead: (otherUserId: string) => `/admin/conversations/${otherUserId}/mark-read`,
   },
   adminUsers: {
     ...generateResourceApiRoutes("users"),
@@ -150,6 +151,7 @@ export const apiRoutes = {
     addMembers: (id: string) => `/admin/groups/${id}/members`,
     removeMember: (id: string, userId: string) => `/admin/groups/${id}/members/${userId}`,
     updateMemberRole: (id: string, userId: string) => `/admin/groups/${id}/members/${userId}/role`,
+    markRead: (id: string) => `/admin/groups/${id}/mark-read`,
   },
 } as const
 

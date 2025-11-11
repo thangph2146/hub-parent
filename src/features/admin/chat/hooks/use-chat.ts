@@ -352,16 +352,37 @@ export function useChat({ contacts, currentUserId, role }: UseChatProps) {
     // Use requestAnimationFrame để đảm bảo DOM đã render
     requestAnimationFrame(() => {
       const messageElement = document.getElementById(`message-${messageId}`)
-      if (messageElement) {
-        const viewport = scrollAreaRef.current?.closest('[data-slot="scroll-area"]')?.querySelector('[data-slot="scroll-area-viewport"]') as HTMLElement
-        if (viewport) {
-          const elementRect = messageElement.getBoundingClientRect()
-          const viewportRect = viewport.getBoundingClientRect()
-          const scrollTop = viewport.scrollTop + (elementRect.top - viewportRect.top) - 20 // 20px offset from top
-          viewport.scrollTo({ top: scrollTop, behavior: "smooth" })
-        } else {
-          messageElement.scrollIntoView({ behavior: "smooth", block: "center" })
-        }
+      if (!messageElement) return
+
+      const viewport = scrollAreaRef.current
+        ?.closest('[data-slot="scroll-area"]')
+        ?.querySelector('[data-slot="scroll-area-viewport"]') as HTMLElement | null
+
+      if (viewport) {
+        const elementRect = messageElement.getBoundingClientRect()
+        const viewportRect = viewport.getBoundingClientRect()
+        const scrollTop = viewport.scrollTop + (elementRect.top - viewportRect.top) - 20 // 20px offset from top
+        viewport.scrollTo({ top: scrollTop, behavior: "smooth" })
+      } else {
+        messageElement.scrollIntoView({ behavior: "smooth", block: "center" })
+      }
+
+      // Highlight bubble (inner) with a light yellow ring/background temporarily
+      const bubbleEl = messageElement.querySelector('[data-role="bubble"]') as HTMLElement | null
+      if (bubbleEl) {
+        const prevBg = bubbleEl.style.backgroundColor
+        const prevBoxShadow = bubbleEl.style.boxShadow
+        const prevTransition = bubbleEl.style.transition
+
+        bubbleEl.style.transition = "background-color 0.2s ease, box-shadow 0.2s ease"
+        bubbleEl.style.boxShadow = "0 0 0 3px rgba(250, 204, 21, 0.8)" // ring-yellow-300
+        bubbleEl.style.backgroundColor = "rgba(250, 204, 21, 0.20)" // bg-yellow-300 at ~20%
+
+        window.setTimeout(() => {
+          bubbleEl.style.backgroundColor = prevBg
+          bubbleEl.style.boxShadow = prevBoxShadow
+          bubbleEl.style.transition = prevTransition
+        }, 900)
       }
     })
   }, [scrollAreaRef])

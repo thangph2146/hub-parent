@@ -48,7 +48,7 @@ export function PermissionGateClient({ children, permissions, roles }: Permissio
 
   // Loading states
   if (!pathname || isChecking || status === "loading" || (!mounted && pathname?.startsWith("/admin"))) {
-    return 
+    return null
   }
 
   const isAdminRoute = pathname.startsWith("/admin")

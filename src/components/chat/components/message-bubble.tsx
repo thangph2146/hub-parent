@@ -15,6 +15,7 @@ interface MessageBubbleProps {
   onMarkAsRead?: (messageId: string) => void
   onMarkAsUnread?: (messageId: string) => void
   searchQuery?: string
+  onScrollToMessage?: (messageId: string) => void
 }
 
 export function MessageBubble({
@@ -26,6 +27,7 @@ export function MessageBubble({
   onMarkAsRead,
   onMarkAsUnread,
   searchQuery = "",
+  onScrollToMessage,
 }: MessageBubbleProps) {
   const isParentOwnMessage = parentMessage?.senderId === currentUserId
   const canMarkRead = !isOwnMessage && (message.receiverId === currentUserId || (message.groupId && message.senderId !== currentUserId))
@@ -56,7 +58,27 @@ export function MessageBubble({
           className={`max-w-[70%] rounded-lg px-4 py-2 cursor-pointer hover:opacity-90 transition-opacity relative ${
             isOwnMessage ? "bg-primary text-primary-foreground" : "bg-muted"
           }`}
-          onClick={() => onReply?.(message)}
+          data-role="bubble"
+          onClick={() => {
+            if (parentMessage?.id && onScrollToMessage) {
+              // If this message is a reply, clicking the bubble scrolls to the original message
+              onScrollToMessage(parentMessage.id)
+              return
+            }
+            onReply?.(message)
+          }}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault()
+              if (parentMessage?.id && onScrollToMessage) {
+                onScrollToMessage(parentMessage.id)
+              } else {
+                onReply?.(message)
+              }
+            }
+          }}
         >
           {showSenderInfo && (
             <p className={`text-xs font-medium mb-1 ${
@@ -66,9 +88,27 @@ export function MessageBubble({
             </p>
           )}
           {parentMessage && (
-            <div className={`mb-2 pb-2 border-l-2 pl-2 ${
-              isOwnMessage ? "border-primary-foreground/30" : "border-muted-foreground/30"
-            }`}>
+            <div
+              className={`mb-2 pb-2 border-l-2 pl-2 ${
+                isOwnMessage ? "border-primary-foreground/30" : "border-muted-foreground/30"
+              }`}
+              onClick={(e) => {
+                e.stopPropagation()
+                if (parentMessage?.id) {
+                  onScrollToMessage?.(parentMessage.id)
+                }
+              }}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault()
+                  if (parentMessage?.id) {
+                    onScrollToMessage?.(parentMessage.id)
+                  }
+                }
+              }}
+            >
               <p className={`text-xs font-medium ${
                 isOwnMessage ? "text-primary-foreground/80" : "text-muted-foreground"
               }`}>
@@ -134,4 +174,3 @@ export function MessageBubble({
     </div>
   )
 }
-
