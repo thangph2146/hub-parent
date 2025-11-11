@@ -84,6 +84,14 @@ export const apiRoutes = {
   // Spread standard resource routes registered từ feature config
   ...featureResourceRoutes,
 
+  // Explicitly add resource routes to ensure TypeScript recognizes them
+  categories: getResourceRoutesOrFallback("categories", "categories"),
+  tags: getResourceRoutesOrFallback("tags", "tags"),
+  roles: getResourceRoutesOrFallback("roles", "roles"),
+  users: getResourceRoutesOrFallback("users", "users"),
+  students: getResourceRoutesOrFallback("students", "students"),
+  sessions: getResourceRoutesOrFallback("sessions", "sessions"),
+
   // Contact Requests - thêm custom actions
   contactRequests: {
     ...getResourceRoutesOrFallback("contactRequests", "contact-requests"),

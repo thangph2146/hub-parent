@@ -32,7 +32,6 @@ export function ChatTemplate({
   const [filterType, setFilterType] = useState<ChatFilterType>(initialFilterType)
   const [contactSearch, setContactSearch] = useState("")
   const [searchedContacts, setSearchedContacts] = useState<Contact[] | null>(null)
-  const [isSearching, setIsSearching] = useState(false)
   
   const {
     contactsState,
@@ -140,11 +139,8 @@ export function ChatTemplate({
     const q = query.trim()
     if (q.length < 2) {
       setSearchedContacts(null)
-      setIsSearching(false)
       return
     }
-
-    setIsSearching(true)
     try {
       const { apiRoutes } = await import("@/lib/api/routes")
 
@@ -240,8 +236,6 @@ export function ChatTemplate({
     } catch (err) {
       console.error("Search contacts failed", err)
       setSearchedContacts([])
-    } finally {
-      setIsSearching(false)
     }
   }, 300)
 
