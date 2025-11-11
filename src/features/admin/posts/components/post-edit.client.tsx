@@ -92,10 +92,11 @@ export function PostEditClient({
         {
             name: "slug",
             label: "Slug",
-            type: "text",
+            type: "slug",
+            sourceField: "title",
             required: true,
             placeholder: "bai-viet-slug",
-            description: "URL-friendly version của tiêu đề (ví dụ: bai-viet-slug)",
+            description: "URL-friendly version của tiêu đề (tự động tạo từ tiêu đề)",
             section: "basic",
         },
         {

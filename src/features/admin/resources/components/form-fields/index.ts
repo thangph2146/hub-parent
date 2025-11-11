@@ -16,5 +16,6 @@ export { ImageField } from "./image-field"
 export type { ImageFieldProps } from "./image-field"
 export { EditorField } from "./editor-field"
 export type { EditorFieldProps } from "./editor-field"
+export { SlugField } from "./slug-field"
 export { renderFieldInput } from "./render-field"
 

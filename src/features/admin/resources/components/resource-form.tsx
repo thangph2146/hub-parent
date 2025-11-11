@@ -41,7 +41,8 @@ export interface ResourceFormField<T = unknown> {
   name: keyof T | string
   label: string
   description?: string
-  type?: "text" | "email" | "password" | "number" | "textarea" | "select" | "multiple-select" | "checkbox" | "switch" | "date" | "image" | "editor"
+  type?: "text" | "email" | "password" | "number" | "textarea" | "select" | "multiple-select" | "checkbox" | "switch" | "date" | "image" | "editor" | "slug"
+  sourceField?: string // Field name để auto-generate slug (ví dụ: "title")
   placeholder?: string
   required?: boolean
   disabled?: boolean
@@ -228,7 +229,9 @@ export function ResourceForm<T extends Record<string, unknown>>({
     const fieldName = String(field.name)
     const value = formData[field.name as keyof T]
     const error = errors[fieldName]
-    const isFullWidth = field.type === "textarea" || field.type === "select" || field.type === "image" || field.type === "editor" || field.render
+    // Get source field value for slug auto-generation
+    const sourceValue = field.sourceField ? formData[field.sourceField as keyof T] : undefined
+    const isFullWidth = field.type === "textarea" || field.type === "select" || field.type === "image" || field.type === "editor" || field.type === "slug" || field.render
 
     if (field.type === "checkbox") {
       return (
@@ -256,6 +259,7 @@ export function ResourceForm<T extends Record<string, unknown>>({
               error,
               onChange: (newValue) => handleFieldChange(field.name as string, newValue),
               isPending,
+              sourceValue,
             })}
             {field.description && (
               <FieldDescription>{field.description}</FieldDescription>
@@ -288,6 +292,7 @@ export function ResourceForm<T extends Record<string, unknown>>({
             error,
             onChange: (newValue) => handleFieldChange(field.name as string, newValue),
             isPending,
+            sourceValue,
           })}
           {field.description && (
             <FieldDescription>{field.description}</FieldDescription>

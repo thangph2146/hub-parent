@@ -17,6 +17,7 @@ import { SelectField } from "./select-field"
 import { MultipleSelectField } from "./multiple-select-field"
 import { ImageField } from "./image-field"
 import { EditorField } from "./editor-field"
+import { SlugField } from "./slug-field"
 import type { ResourceFormField } from "../resource-form"
 
 interface RenderFieldProps<T> {
@@ -25,6 +26,7 @@ interface RenderFieldProps<T> {
   error?: string
   onChange: (value: unknown) => void
   isPending?: boolean
+  sourceValue?: unknown // Giá trị của source field để auto-generate slug
 }
 
 export function renderFieldInput<T>({
@@ -33,6 +35,7 @@ export function renderFieldInput<T>({
   error,
   onChange,
   isPending = false,
+  sourceValue,
 }: RenderFieldProps<T>) {
   // Default value for multiple-select should be array
   const defaultValue = field.type === "multiple-select" 
@@ -151,6 +154,18 @@ export function renderFieldInput<T>({
           onChange={onChange}
           error={error}
           disabled={field.disabled || isPending}
+        />
+      )
+
+    case "slug":
+      return (
+        <SlugField
+          field={field}
+          value={fieldValue}
+          onChange={onChange}
+          error={error}
+          isPending={isPending}
+          sourceValue={sourceValue}
         />
       )
 
