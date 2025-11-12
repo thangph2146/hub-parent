@@ -1,14 +1,15 @@
-export const unlockImageBoundaries = (image: HTMLImageElement) => {
+export const unlockImageBoundaries = (image: HTMLElement) => {
   image.style.setProperty("max-width", "none", "important")
   image.style.setProperty("max-height", "none", "important")
 }
 
-export const getImageAspectRatio = (image: HTMLImageElement | null) => {
+export const getImageAspectRatio = (image: HTMLElement | null) => {
   if (!image) {
     return 1
   }
-  if (image.naturalWidth > 0 && image.naturalHeight > 0) {
-    return image.naturalWidth / image.naturalHeight
+  const anyImg = image as any
+  if (anyImg.naturalWidth > 0 && anyImg.naturalHeight > 0) {
+    return anyImg.naturalWidth / anyImg.naturalHeight
   }
   const { width, height } = image.getBoundingClientRect()
   if (!height) {
@@ -58,7 +59,7 @@ export const getNearestContentWidth = (image: HTMLElement) => {
 }
 
 export const getContainerWidth = (
-  image: HTMLImageElement,
+  image: HTMLElement,
   editorRoot: HTMLElement | null
 ) => {
   const contentWidth = getNearestContentWidth(image)

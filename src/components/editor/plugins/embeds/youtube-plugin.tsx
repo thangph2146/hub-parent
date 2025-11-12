@@ -17,9 +17,10 @@ import {
   YouTubeNode,
 } from "@/components/editor/nodes/embeds/youtube-node"
 
-export const INSERT_YOUTUBE_COMMAND: LexicalCommand<string> = createCommand(
-  "INSERT_YOUTUBE_COMMAND"
-)
+export type InsertYouTubePayload = string | { id: string; width?: number; height?: number; maxWidth?: number }
+
+export const INSERT_YOUTUBE_COMMAND: LexicalCommand<InsertYouTubePayload> =
+  createCommand("INSERT_YOUTUBE_COMMAND")
 
 export function YouTubePlugin(): JSX.Element | null {
   const [editor] = useLexicalComposerContext()
@@ -29,10 +30,18 @@ export function YouTubePlugin(): JSX.Element | null {
       throw new Error("YouTubePlugin: YouTubeNode not registered on editor")
     }
 
-    return editor.registerCommand<string>(
+    return editor.registerCommand<InsertYouTubePayload>(
       INSERT_YOUTUBE_COMMAND,
       (payload) => {
-        const youTubeNode = $createYouTubeNode(payload)
+        const youTubeNode =
+          typeof payload === "string"
+            ? $createYouTubeNode(payload)
+            : $createYouTubeNode(
+                payload.id,
+                payload.width,
+                payload.height,
+                payload.maxWidth
+              )
         $insertNodeToNearestRoot(youTubeNode)
 
         return true
