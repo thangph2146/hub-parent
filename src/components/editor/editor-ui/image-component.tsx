@@ -1,7 +1,13 @@
 import * as React from "react"
-import { JSX, Suspense, useCallback, useEffect, useRef, useState } from "react"
+import {
+  JSX,
+  Suspense,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react"
 import { AutoFocusPlugin } from "@lexical/react/LexicalAutoFocusPlugin"
-import { useCollaborationContext } from "@lexical/react/LexicalCollaborationContext"
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext"
 import { LexicalErrorBoundary } from "@lexical/react/LexicalErrorBoundary"
 import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin"
@@ -39,7 +45,13 @@ import {
 // import brokenImage from '@/registry/new-york-v4/editor/images/image-broken.svg';
 import { ContentEditable } from "@/components/editor/editor-ui/content-editable"
 import { ImageResizer } from "@/components/editor/editor-ui/image-resizer"
+import {
+  getContainerWidth,
+  getImageAspectRatio,
+} from "@/components/editor/editor-ui/image-sizing"
 import { $isImageNode } from "@/components/editor/nodes/image-node"
+import { useCollaborationContextSafe } from "@/components/editor/editor-hooks/use-collaboration-context-safe"
+import { cn } from "@/lib/utils"
 
 const imageCache = new Set()
 
@@ -62,6 +74,8 @@ function useSuspenseImage(src: string) {
   }
 }
 
+type DimensionValue = "inherit" | number
+
 function LazyImage({
   altText,
   className,
@@ -74,11 +88,11 @@ function LazyImage({
 }: {
   altText: string
   className: string | null
-  height: "inherit" | number
+  height: DimensionValue
   imageRef: { current: null | HTMLImageElement }
   maxWidth: number
   src: string
-  width: "inherit" | number
+  width: DimensionValue
   onError: () => void
 }): JSX.Element {
   useSuspenseImage(src)
@@ -90,13 +104,122 @@ function LazyImage({
       ref={imageRef}
       style={{
         height,
-        maxWidth,
         width,
+        maxWidth: "100%",
       }}
       onError={onError}
       draggable="false"
     />
   )
+}
+
+function useResponsiveImageDimensions({
+  editor,
+  height,
+  imageRef,
+  width,
+  isResizing,
+}: {
+  editor: LexicalEditor
+  height: DimensionValue
+  imageRef: { current: null | HTMLImageElement }
+  width: DimensionValue
+  isResizing: boolean
+}) {
+  const [dimensions, setDimensions] = useState<{
+    width: DimensionValue
+    height: DimensionValue
+  }>({
+    width,
+    height,
+  })
+
+  useEffect(() => {
+    if (isResizing) {
+      return
+    }
+
+    const image = imageRef.current
+    if (!image) {
+      setDimensions({ width, height })
+      return
+    }
+
+    const editorRoot = editor.getRootElement()
+
+    const updateDimensions = () => {
+      const containerWidth = getContainerWidth(image, editorRoot)
+
+      if (!containerWidth) {
+        setDimensions({ width, height })
+        return
+      }
+
+      const baseWidth =
+        typeof width === "number"
+          ? width
+          : image.naturalWidth || image.getBoundingClientRect().width || containerWidth
+
+      let baseHeight: DimensionValue
+      if (typeof height === "number") {
+        baseHeight = height
+      } else if (image.naturalHeight > 0) {
+        baseHeight = image.naturalHeight
+      } else {
+        const ratio = getImageAspectRatio(image)
+        baseHeight = ratio > 0 ? Math.round(baseWidth / ratio) : "inherit"
+      }
+
+      let nextWidth: DimensionValue = baseWidth
+      let nextHeight: DimensionValue = baseHeight
+
+      if (typeof baseWidth === "number" && baseWidth > containerWidth) {
+        const scale = containerWidth / baseWidth
+        nextWidth = containerWidth
+        if (typeof baseHeight === "number") {
+          nextHeight = Math.max(Math.round(baseHeight * scale), 1)
+        } else if (baseHeight === "inherit") {
+          const ratio = getImageAspectRatio(image)
+          nextHeight =
+            ratio > 0 ? Math.max(Math.round(containerWidth / ratio), 1) : baseHeight
+        }
+      }
+
+      setDimensions((prev) => {
+        if (prev.width === nextWidth && prev.height === nextHeight) {
+          return prev
+        }
+        return {
+          width: nextWidth,
+          height: nextHeight,
+        }
+      })
+    }
+
+    updateDimensions()
+
+    if (typeof ResizeObserver !== "undefined") {
+      const resizeObserver = new ResizeObserver(updateDimensions)
+      if (editorRoot) {
+        resizeObserver.observe(editorRoot)
+      }
+      if (image.parentElement) {
+        resizeObserver.observe(image.parentElement)
+      }
+      return () => {
+        resizeObserver.disconnect()
+      }
+    }
+
+    if (typeof window !== "undefined") {
+      window.addEventListener("resize", updateDimensions)
+      return () => {
+        window.removeEventListener("resize", updateDimensions)
+      }
+    }
+  }, [editor, height, imageRef, isResizing, width])
+
+  return dimensions
 }
 
 function BrokenImage(): JSX.Element {
@@ -141,12 +264,20 @@ export default function ImageComponent({
   const [isSelected, setSelected, clearSelection] =
     useLexicalNodeSelection(nodeKey)
   const [isResizing, setIsResizing] = useState<boolean>(false)
-  const { isCollabActive } = useCollaborationContext()
+  // Safely get collaboration context - may not exist if collaboration is not enabled
+  const { isCollabActive } = useCollaborationContextSafe()
   const [editor] = useLexicalComposerContext()
   const [selection, setSelection] = useState<BaseSelection | null>(null)
   const activeEditorRef = useRef<LexicalEditor | null>(null)
   const [isLoadError, setIsLoadError] = useState<boolean>(false)
   const isEditable = useLexicalEditable()
+  const responsiveDimensions = useResponsiveImageDimensions({
+    editor,
+    imageRef,
+    width,
+    height,
+    isResizing,
+  })
 
   const $onDelete = useCallback(
     (payload: KeyboardEvent) => {
@@ -344,6 +475,7 @@ export default function ImageComponent({
     })
   }
 
+
   const onResizeEnd = (
     nextWidth: "inherit" | number,
     nextHeight: "inherit" | number
@@ -365,6 +497,23 @@ export default function ImageComponent({
     setIsResizing(true)
   }
 
+  // Bridge nested caption editor updates to the parent editor so that
+  // outer OnChange subscribers (e.g., form save) get the latest caption state.
+  useEffect(() => {
+    const unregister = caption.registerUpdateListener(() => {
+      // Trigger a benign mutation on the ImageNode to mark the outer editor state dirty
+      editor.update(() => {
+        const node = $getNodeByKey(nodeKey)
+        if ($isImageNode(node)) {
+          node.setShowCaption(showCaption)
+        }
+      })
+    })
+    return () => {
+      unregister()
+    }
+  }, [caption, editor, nodeKey, showCaption])
+
   const draggable = isSelected && $isNodeSelection(selection) && !isResizing
   const isFocused = (isSelected || isResizing) && isEditable
   return (
@@ -375,7 +524,7 @@ export default function ImageComponent({
             <BrokenImage />
           ) : (
             <LazyImage
-              className={`max-w-full cursor-default ${
+              className={`cursor-default ${
                 isFocused
                   ? `${$isNodeSelection(selection) ? "draggable cursor-grab active:cursor-grabbing" : ""} focused ring-primary ring-2 ring-offset-2`
                   : null
@@ -383,8 +532,8 @@ export default function ImageComponent({
               src={src}
               altText={altText}
               imageRef={imageRef}
-              width={width}
-              height={height}
+              width={responsiveDimensions.width}
+              height={responsiveDimensions.height}
               maxWidth={maxWidth}
               onError={() => setIsLoadError(true)}
             />
@@ -392,23 +541,26 @@ export default function ImageComponent({
         </div>
 
         {showCaption && (
-          <div className="image-caption-container absolute right-0 bottom-1 left-0 m-0 block min-w-[100px] overflow-hidden border-t bg-white/90 p-0">
+          <div className={cn("image-caption-container mt-2 block min-w-[100px] overflow-hidden p-0", isEditable ? "border-1 rounded-md bg-white/90" : "border-0 bg-transparent")}>
             <LexicalNestedComposer
               initialEditor={caption}
               initialNodes={[RootNode, TextNode, ParagraphNode]}
             >
               <AutoFocusPlugin />
               <HistoryPlugin />
-              <RichTextPlugin
-                contentEditable={
-                  <ContentEditable
-                    className="ImageNode__contentEditable user-select-text word-break-break-word caret-primary relative block min-h-5 w-[calc(100%-20px)] cursor-text resize-none border-0 p-2.5 text-sm whitespace-pre-wrap outline-none"
-                    placeholderClassName="ImageNode__placeholder text-sm text-muted-foreground overflow-hidden absolute top-2.5 left-2.5 pointer-events-none text-ellipsis user-select-none whitespace-nowrap inline-block"
-                    placeholder="Enter a caption..."
-                  />
-                }
-                ErrorBoundary={LexicalErrorBoundary}
-              />
+                <RichTextPlugin
+                  contentEditable={
+                    <div className="relative">
+                      <ContentEditable
+                        className={`ImageNode__contentEditable relative block min-h-5 w-full resize-none border-0 bg-transparent px-2.5 py-2 text-sm whitespace-pre-wrap outline-none word-break-break-word ${isEditable ? "box-border cursor-text caret-primary user-select-text" : "cursor-default select-text"}`}
+                        placeholder={isEditable ? "Enter a caption..." : ""}
+                        placeholderDefaults={false}
+                        placeholderClassName="ImageNode__placeholder absolute top-0 left-0 overflow-hidden px-2.5 py-2 text-ellipsis text-sm"
+                      />
+                    </div>
+                  }
+                  ErrorBoundary={LexicalErrorBoundary}
+                />
             </LexicalNestedComposer>
           </div>
         )}

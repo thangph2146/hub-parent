@@ -103,6 +103,7 @@ import { IMAGE } from "@/components/editor/transformers/markdown-image-transform
 import { TABLE } from "@/components/editor/transformers/markdown-table-transformer"
 import { TWEET } from "@/components/editor/transformers/markdown-tweet-transformer"
 import { Separator } from "@/components/ui/separator"
+import { ScrollArea } from "@/components/ui/scroll-area"
 
 const placeholder = "Press / for commands..."
 const maxLength = 500
@@ -167,7 +168,7 @@ export function Plugins({ readOnly = false }: { readOnly?: boolean }) {
         )}
       </ToolbarPlugin>
       )}
-      <div className="relative">
+      <ScrollArea className="relative h-[calc(68dvh)] overflow-y-auto">
         {!readOnly && <AutoFocusPlugin />}
         <RichTextPlugin
           contentEditable={
@@ -175,7 +176,7 @@ export function Plugins({ readOnly = false }: { readOnly?: boolean }) {
               <div className="" ref={onRef}>
                 <ContentEditable
                   placeholder={readOnly ? "" : placeholder}
-                  className={`ContentEditable__root relative block ${readOnly ? "min-h-72" : "h-[calc(100vh-90px)] min-h-72"} overflow-auto px-8 py-4 focus:outline-none ${readOnly ? "cursor-default select-text  px-0 py-0" : ""}`}
+                  className={`ContentEditable__root relative block ${readOnly ? "min-h-72" : "min-h-72"} px-8 py-4 focus:outline-none ${readOnly ? "cursor-default select-text px-0 py-0" : ""}`}
                 />
               </div>
             </div>
@@ -280,7 +281,7 @@ export function Plugins({ readOnly = false }: { readOnly?: boolean }) {
             <ListMaxIndentLevelPlugin />
           </>
         )}
-      </div>
+      </ScrollArea>
       {!readOnly && (
         <ActionsPlugin>
         <div className="clear-both flex items-center justify-between gap-2 overflow-auto border-t p-1">

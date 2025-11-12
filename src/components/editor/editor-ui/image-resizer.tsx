@@ -1,11 +1,20 @@
 import * as React from "react"
-import { JSX, useRef } from "react"
+import { JSX, useCallback, useRef } from "react"
 import { calculateZoomLevel } from "@lexical/utils"
 import type { LexicalEditor } from "lexical"
 
 import { Button } from "@/components/ui/button"
+import {
+  getContainerWidth,
+  getImageAspectRatio,
+  unlockImageBoundaries,
+} from "@/components/editor/editor-ui/image-sizing"
 
 function clamp(value: number, min: number, max: number) {
+  // Nếu max là Infinity, chỉ giới hạn min
+  if (max === Infinity) {
+    return Math.max(value, min)
+  }
   return Math.min(Math.max(value, min), max)
 }
 
@@ -29,7 +38,7 @@ export function ImageResizer({
 }: {
   editor: LexicalEditor
   buttonRef: { current: null | HTMLButtonElement }
-  imageRef: { current: null | HTMLElement }
+  imageRef: { current: null | HTMLImageElement }
   maxWidth?: number
   onResizeEnd: (width: "inherit" | number, height: "inherit" | number) => void
   onResizeStart: () => void
@@ -52,6 +61,7 @@ export function ImageResizer({
     startWidth: number
     startX: number
     startY: number
+    maxWidthLimit: number
   }>({
     currentHeight: 0,
     currentWidth: 0,
@@ -62,21 +72,19 @@ export function ImageResizer({
     startWidth: 0,
     startX: 0,
     startY: 0,
+    maxWidthLimit: Infinity,
   })
   const editorRootElement = editor.getRootElement()
-  // Find max width, accounting for editor padding.
-  const maxWidthContainer = maxWidth
-    ? maxWidth
-    : editorRootElement !== null
-      ? editorRootElement.getBoundingClientRect().width - 20
-      : 100
-  const maxHeightContainer =
-    editorRootElement !== null
-      ? editorRootElement.getBoundingClientRect().height - 20
-      : 100
+  const maxHeightContainer = Infinity
 
   const minWidth = 100
   const minHeight = 100
+
+  React.useEffect(() => {
+    if (imageRef.current) {
+      unlockImageBoundaries(imageRef.current)
+    }
+  })
 
   const setStartCursor = (direction: number) => {
     const ew = direction === Direction.east || direction === Direction.west
@@ -141,18 +149,20 @@ export function ImageResizer({
 
     if (image !== null && controlWrapper !== null) {
       event.preventDefault()
+      unlockImageBoundaries(image)
       const { width, height } = image.getBoundingClientRect()
       const zoom = calculateZoomLevel(image)
       const positioning = positioningRef.current
       positioning.startWidth = width
       positioning.startHeight = height
-      positioning.ratio = width / height
+      positioning.ratio = getImageAspectRatio(image)
       positioning.currentWidth = width
       positioning.currentHeight = height
       positioning.startX = event.clientX / zoom
       positioning.startY = event.clientY / zoom
       positioning.isResizing = true
       positioning.direction = direction
+      positioning.maxWidthLimit = getContainerWidth(image, editorRootElement)
 
       setStartCursor(direction)
       onResizeStart()
@@ -184,7 +194,7 @@ export function ImageResizer({
         const width = clamp(
           positioning.startWidth + diff,
           minWidth,
-          maxWidthContainer
+          positioning.maxWidthLimit || Infinity
         )
 
         const height = width / positioning.ratio
@@ -211,7 +221,7 @@ export function ImageResizer({
         const width = clamp(
           positioning.startWidth + diff,
           minWidth,
-          maxWidthContainer
+          positioning.maxWidthLimit || Infinity
         )
 
         image.style.width = `${width}px`
@@ -244,20 +254,30 @@ export function ImageResizer({
       document.removeEventListener("pointerup", handlePointerUp)
     }
   }
+
+  const handleFullWidthResize = useCallback(() => {
+    const image = imageRef.current
+    if (!image) {
+      return
+    }
+
+    unlockImageBoundaries(image)
+    const containerWidth = getContainerWidth(image, editor.getRootElement())
+    if (!containerWidth) {
+      return
+    }
+
+    const ratio = getImageAspectRatio(image)
+    const width = clamp(containerWidth, minWidth, containerWidth)
+    const height = width / ratio
+    image.style.width = `${width}px`
+    image.style.height = `${height}px`
+    onResizeEnd(width, height)
+  }, [editor, imageRef, onResizeEnd])
+
   return (
-    <div ref={controlWrapperRef}>
-      {!showCaption && captionsEnabled && (
-        <Button
-          className="image-caption-button absolute bottom-1 left-1/2 -translate-x-1/2"
-          ref={buttonRef}
-          variant={"outline"}
-          onClick={() => {
-            setShowCaption(!showCaption)
-          }}
-        >
-          Add Caption
-        </Button>
-      )}
+    <>
+      <div ref={controlWrapperRef}>
       <div
         className="image-resizer image-resizer-n bg-primary absolute -top-2.5 left-1/2 h-2 w-2 -translate-x-1/2 cursor-ns-resize"
         onPointerDown={(event) => {
@@ -306,6 +326,30 @@ export function ImageResizer({
           handlePointerDown(event, Direction.north | Direction.west)
         }}
       />
-    </div>
+      </div>
+      <div className="mt-2 flex flex-wrap justify-center gap-2">
+        {!showCaption && captionsEnabled && (
+          <Button
+            className="image-caption-button"
+            ref={buttonRef}
+            type="button"
+            variant={"outline"}
+            onClick={() => {
+              setShowCaption(!showCaption)
+            }}
+          >
+            Add Caption
+          </Button>
+        )}
+        <Button
+          className="image-full-width-button"
+          type="button"
+          variant={"outline"}
+          onClick={handleFullWidthResize}
+        >
+          Full width
+        </Button>
+      </div>
+    </>
   )
 }

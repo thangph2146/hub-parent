@@ -1,16 +1,19 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { type ReactNode, useEffect, useState } from "react"
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext"
 import { COMMAND_PRIORITY_CRITICAL, SELECTION_CHANGE_COMMAND } from "lexical"
 
 import { ToolbarContext } from "@/components/editor/context/toolbar-context"
 import { useEditorModal } from "@/components/editor/editor-hooks/use-modal"
+import { cn } from "@/lib/utils/utils"
 
 export function ToolbarPlugin({
   children,
+  className,
 }: {
-  children: (props: { blockType: string }) => React.ReactNode
+  children: (props: { blockType: string }) => ReactNode
+  className?: string
 }) {
   const [editor] = useLexicalComposerContext()
 
@@ -42,7 +45,14 @@ export function ToolbarPlugin({
     >
       {modal}
 
-      {children({ blockType })}
+      <div
+        className={cn(
+          "vertical-align-middle sticky top-0 z-20 flex flex-wrap items-center gap-2 overflow-x-auto border-b bg-background/95 p-1 shadow-sm supports-[backdrop-filter]:bg-background/60",
+          className
+        )}
+      >
+        {children({ blockType })}
+      </div>
     </ToolbarContext>
   )
 }

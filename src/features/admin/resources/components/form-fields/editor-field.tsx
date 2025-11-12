@@ -2,11 +2,12 @@
  * Editor Field Component
  * 
  * Component để hiển thị Lexical Editor cho rich text content
+ * Sử dụng debounce để tránh gọi onChange quá thường xuyên khi user đang gõ
  */
 
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Editor } from "@/components/blocks/editor-x/editor"
 import { FieldContent } from "@/components/ui/field"
 import type { SerializedEditorState } from "lexical"
@@ -40,6 +41,9 @@ export function EditorField({
     return null
   })
 
+  // Ref để track xem có đang sync từ external value không
+  const isSyncingRef = useRef(false)
+
   // Sync external value changes to internal state
   useEffect(() => {
     if (value && typeof value === "object" && value !== null) {
@@ -49,14 +53,23 @@ export function EditorField({
         const currentStateStr = editorState ? JSON.stringify(editorState) : null
         const newStateStr = JSON.stringify(newState)
         if (currentStateStr !== newStateStr) {
+          isSyncingRef.current = true
           setEditorState(newState)
+          // Reset sync flag sau một tick
+          setTimeout(() => {
+            isSyncingRef.current = false
+          }, 0)
         }
       } catch {
         // Invalid value, keep current state
       }
     } else if (value === null || value === undefined) {
       if (editorState !== null) {
+        isSyncingRef.current = true
         setEditorState(null)
+        setTimeout(() => {
+          isSyncingRef.current = false
+        }, 0)
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -64,7 +77,9 @@ export function EditorField({
 
   const handleChange = (newState: SerializedEditorState) => {
     setEditorState(newState)
-    onChange(newState)
+    if (!isSyncingRef.current) {
+      onChange(newState)
+    }
   }
 
   return (
@@ -82,4 +97,3 @@ export function EditorField({
     </FieldContent>
   )
 }
-

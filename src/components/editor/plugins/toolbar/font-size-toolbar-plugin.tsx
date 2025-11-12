@@ -65,13 +65,20 @@ export function FontSizeToolbarPlugin() {
         <Minus className="size-3" />
       </Button>
       <Input
+        type="number"
         value={fontSize}
         onChange={(e) =>
           updateFontSize(parseInt(e.target.value) || DEFAULT_FONT_SIZE)
         }
-        className="!h-8 w-12 text-center"
+        className="!h-8 w-fit text-center"
         min={MIN_FONT_SIZE}
         max={MAX_FONT_SIZE}
+        onKeyDown={(event) => {
+          if (event.key === "Enter") {
+            event.preventDefault()
+          }
+          event.stopPropagation()
+        }}
       />
       <Button
         variant="outline"
