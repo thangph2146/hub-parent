@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button"
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -27,6 +28,9 @@ export function TreeViewPlugin(): JSX.Element {
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Tree View</DialogTitle>
+          <DialogDescription>
+            Xem cấu trúc cây của nội dung editor
+          </DialogDescription>
         </DialogHeader>
         <ScrollArea className="bg-foreground text-background h-96 overflow-hidden rounded-lg p-2">
           <TreeView

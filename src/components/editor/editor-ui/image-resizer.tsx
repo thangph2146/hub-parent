@@ -162,7 +162,9 @@ export function ImageResizer({
       positioning.startY = event.clientY / zoom
       positioning.isResizing = true
       positioning.direction = direction
-      positioning.maxWidthLimit = getContainerWidth(image, editorRootElement)
+      // Luôn cho phép resize không giới hạn khi resize thủ công
+      // Container width chỉ được sử dụng cho full width button
+      positioning.maxWidthLimit = Infinity
 
       setStartCursor(direction)
       onResizeStart()
@@ -263,12 +265,17 @@ export function ImageResizer({
 
     unlockImageBoundaries(image)
     const containerWidth = getContainerWidth(image, editor.getRootElement())
-    if (!containerWidth) {
+    if (!containerWidth || containerWidth <= 0) {
       return
     }
 
     const ratio = getImageAspectRatio(image)
-    const width = clamp(containerWidth, minWidth, containerWidth)
+    if (ratio <= 0) {
+      return
+    }
+
+    // Set width to container width (full width)
+    const width = containerWidth
     const height = width / ratio
     image.style.width = `${width}px`
     image.style.height = `${height}px`

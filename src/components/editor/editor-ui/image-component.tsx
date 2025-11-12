@@ -105,7 +105,8 @@ function LazyImage({
       style={{
         height,
         width,
-        maxWidth: "100%",
+        // Không set maxWidth để cho phép resize không giới hạn
+        // maxWidth sẽ được xử lý bởi unlockImageBoundaries khi resize
       }}
       onError={onError}
       draggable="false"
@@ -145,6 +146,13 @@ function useResponsiveImageDimensions({
       return
     }
 
+    // Nếu width và height đã được set cụ thể (không phải "inherit"), 
+    // không tự động điều chỉnh để cho phép resize không giới hạn
+    if (typeof width === "number" && typeof height === "number") {
+      setDimensions({ width, height })
+      return
+    }
+
     const editorRoot = editor.getRootElement()
 
     const updateDimensions = () => {
@@ -170,10 +178,12 @@ function useResponsiveImageDimensions({
         baseHeight = ratio > 0 ? Math.round(baseWidth / ratio) : "inherit"
       }
 
+      // Chỉ tự động scale down nếu width là "inherit" (chưa được resize thủ công)
+      // Nếu width đã được set cụ thể, giữ nguyên để cho phép resize không giới hạn
       let nextWidth: DimensionValue = baseWidth
       let nextHeight: DimensionValue = baseHeight
 
-      if (typeof baseWidth === "number" && baseWidth > containerWidth) {
+      if (width === "inherit" && typeof baseWidth === "number" && baseWidth > containerWidth) {
         const scale = containerWidth / baseWidth
         nextWidth = containerWidth
         if (typeof baseHeight === "number") {
@@ -542,10 +552,7 @@ export default function ImageComponent({
 
         {showCaption && (
           <div className={cn("image-caption-container mt-2 block min-w-[100px] overflow-hidden p-0", isEditable ? "border-1 rounded-md bg-white/90" : "border-0 bg-transparent")}>
-            <LexicalNestedComposer
-              initialEditor={caption}
-              initialNodes={[RootNode, TextNode, ParagraphNode]}
-            >
+            <LexicalNestedComposer initialEditor={caption}>
               <AutoFocusPlugin />
               <HistoryPlugin />
                 <RichTextPlugin

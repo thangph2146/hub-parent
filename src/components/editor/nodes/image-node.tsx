@@ -12,7 +12,14 @@ import type {
   SerializedLexicalNode,
   Spread,
 } from "lexical"
-import { $applyNodeReplacement, createEditor, DecoratorNode } from "lexical"
+import {
+  $applyNodeReplacement,
+  createEditor,
+  DecoratorNode,
+  ParagraphNode,
+  RootNode,
+  TextNode,
+} from "lexical"
 
 const ImageComponent = React.lazy(() => import("../editor-ui/image-component"))
 
@@ -152,7 +159,8 @@ export class ImageNode extends DecoratorNode<JSX.Element> {
     this.__caption =
       caption ||
       createEditor({
-        nodes: [],
+        namespace: "ImageCaption",
+        nodes: [RootNode, TextNode, ParagraphNode],
       })
     this.__captionsEnabled = captionsEnabled || captionsEnabled === undefined
   }

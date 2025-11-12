@@ -41,8 +41,8 @@ function addListener(element: HTMLElement, cb: Listener): () => void {
         }
       }
     }
-    element.addEventListener("touchstart", handleTouchstart)
-    element.addEventListener("touchend", handleTouchend)
+    element.addEventListener("touchstart", handleTouchstart, { passive: true })
+    element.addEventListener("touchend", handleTouchend, { passive: true })
 
     elementValues = {
       handleTouchend,

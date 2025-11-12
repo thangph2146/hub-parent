@@ -169,6 +169,7 @@ export function Plugins({ readOnly = false }: { readOnly?: boolean }) {
       </ToolbarPlugin>
       )}
       <ScrollArea className="relative h-[calc(68dvh)] overflow-y-auto">
+        <div className="relative">
         {!readOnly && <AutoFocusPlugin />}
         <RichTextPlugin
           contentEditable={
@@ -281,6 +282,7 @@ export function Plugins({ readOnly = false }: { readOnly?: boolean }) {
             <ListMaxIndentLevelPlugin />
           </>
         )}
+        </div>
       </ScrollArea>
       {!readOnly && (
         <ActionsPlugin>
