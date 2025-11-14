@@ -381,7 +381,7 @@ export function useAdminNotificationsSocketBridge() {
 
   useEffect(() => {
     const userId = session?.user?.id
-    if (!userId) return
+    if (!userId || !socket) return
 
     const invalidate = () => {
       // Invalidate cả user và admin notifications để đồng bộ giữa Notification Bell và Admin Table
@@ -401,12 +401,29 @@ export function useAdminNotificationsSocketBridge() {
       invalidate()
     })
 
+    // Lắng nghe events xóa notification
+    const handleDeleted = () => {
+      logger.debug("Socket notification:deleted received (admin)", { userId })
+      invalidate()
+    }
+    const handleBulkDeleted = () => {
+      logger.debug("Socket notifications:deleted received (admin)", { userId })
+      invalidate()
+    }
+
+    socket.on("notification:deleted", handleDeleted)
+    socket.on("notifications:deleted", handleBulkDeleted)
+
     return () => {
       stopNew?.()
       stopUpdated?.()
       stopSync?.()
+      if (socket) {
+        socket.off("notification:deleted", handleDeleted)
+        socket.off("notifications:deleted", handleBulkDeleted)
+      }
     }
-  }, [session?.user?.id, onNotification, onNotificationUpdated, onNotificationsSync, queryClient])
+  }, [session?.user?.id, socket, onNotification, onNotificationUpdated, onNotificationsSync, queryClient])
 
   return { socket }
 }

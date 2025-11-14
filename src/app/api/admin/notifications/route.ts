@@ -28,7 +28,7 @@ async function getAdminNotificationsHandler(req: NextRequest) {
   const isSuperAdminUser = isSuperAdmin(roles)
   
   // Luôn truyền userId để chỉ hiển thị thông báo cá nhân của user đang đăng nhập
-  // Thông báo hệ thống (SYSTEM) sẽ được hiển thị cho tất cả users
+  // Thông báo hệ thống (SYSTEM) chỉ được hiển thị cho super admin
   const userId = session.user.id
 
   const searchParams = req.nextUrl.searchParams
@@ -87,6 +87,7 @@ async function getAdminNotificationsHandler(req: NextRequest) {
       search: searchValidation.value || undefined,
       filters: Object.keys(columnFilters).length > 0 ? columnFilters : undefined,
       userId,
+      isSuperAdmin: isSuperAdminUser,
     })
 
     // Log kết quả

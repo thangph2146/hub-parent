@@ -5,12 +5,17 @@
  * - limit: number of notifications to return (default: 20)
  * - offset: number of notifications to skip (default: 0)
  * - unreadOnly: boolean to filter only unread notifications (default: false)
+ * 
+ * Logic:
+ * - Super admin: hiển thị tất cả SYSTEM notifications + thông báo cá nhân
+ * - User thường: chỉ hiển thị thông báo cá nhân (không phải SYSTEM)
  */
 import { NextRequest } from "next/server"
 import { auth } from "@/lib/auth/auth"
 import { prisma } from "@/lib/database"
-import type { Prisma } from "@prisma/client"
+import { NotificationKind, type Prisma } from "@prisma/client"
 import { createErrorResponse, createSuccessResponse } from "@/lib/config"
+import { isSuperAdmin } from "@/lib/permissions"
 
 async function getUserNotificationsHandler(req: NextRequest) {
   const session = await auth()
@@ -41,10 +46,26 @@ async function getUserNotificationsHandler(req: NextRequest) {
   // Parse unreadOnly
   const unreadOnly = unreadOnlyParam === "true"
 
+  // Check if user is super admin
+  const roles = (session as typeof session & { roles?: Array<{ name: string }> })?.roles || []
+  const isSuperAdminUser = isSuperAdmin(roles)
+
   // Build where clause
-  // Không filter theo expiresAt - giữ nguyên thông báo cho đến khi user tự xóa
+  // Logic giống như admin notifications:
+  // - Super admin: tất cả SYSTEM notifications + thông báo cá nhân
+  // - User thường: chỉ thông báo cá nhân (không phải SYSTEM)
   const where: Prisma.NotificationWhereInput = {
-    userId: session.user.id,
+    OR: isSuperAdminUser
+      ? [
+          // Super admin: tất cả SYSTEM notifications
+          { kind: NotificationKind.SYSTEM },
+          // + thông báo cá nhân của user
+          { userId: session.user.id, kind: { not: NotificationKind.SYSTEM } },
+        ]
+      : [
+          // User thường: chỉ thông báo cá nhân (không phải SYSTEM)
+          { userId: session.user.id, kind: { not: NotificationKind.SYSTEM } },
+        ],
   }
 
   if (unreadOnly) {

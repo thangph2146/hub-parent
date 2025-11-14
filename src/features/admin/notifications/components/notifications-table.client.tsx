@@ -113,6 +113,8 @@ export function NotificationsTableClient({
       socket.on("notification:admin", handleEvent)
       socket.on("notification:updated", handleEvent)
       socket.on("notifications:sync", handleEvent)
+      socket.on("notification:deleted", handleEvent)
+      socket.on("notifications:deleted", handleEvent)
     } else {
       logger.debug("Socket not connected yet, waiting for connection")
       const onConnect = () => {
@@ -123,6 +125,8 @@ export function NotificationsTableClient({
         socket.on("notification:admin", handleEvent)
         socket.on("notification:updated", handleEvent)
         socket.on("notifications:sync", handleEvent)
+        socket.on("notification:deleted", handleEvent)
+        socket.on("notifications:deleted", handleEvent)
       }
       socket.once("connect", onConnect)
     }
@@ -133,6 +137,8 @@ export function NotificationsTableClient({
         socket.off("notification:admin", handleEvent)
         socket.off("notification:updated", handleEvent)
         socket.off("notifications:sync", handleEvent)
+        socket.off("notification:deleted", handleEvent)
+        socket.off("notifications:deleted", handleEvent)
       }
     }
   }, [socket, session?.user?.id, triggerTableRefresh])

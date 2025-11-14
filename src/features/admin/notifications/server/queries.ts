@@ -17,6 +17,7 @@ export interface ListNotificationsInput {
   userId?: string
   kind?: string
   isRead?: boolean
+  isSuperAdmin?: boolean
 }
 
 export interface ListedNotification {
@@ -49,34 +50,57 @@ function isValidKind(value: string): value is NotificationKind {
 
 function buildWhereClause(params: ListNotificationsInput): Prisma.NotificationWhereInput {
   const where: Prisma.NotificationWhereInput = {}
+  const isSuperAdminUser = params.isSuperAdmin ?? false
 
-  // Chỉ hiển thị thông báo hệ thống (SYSTEM) và thông báo cá nhân (MESSAGE và các loại khác ngoài SYSTEM)
-  // Luôn yêu cầu userId để chỉ hiển thị thông báo cá nhân của user đó
-  // Thông báo hệ thống (SYSTEM) được hiển thị cho tất cả users
+  // Logic mới:
+  // - Super admin: thấy tất cả thông báo hệ thống (SYSTEM) + thông báo cá nhân của mình
+  // - User khác: chỉ thấy thông báo cá nhân của mình (KHÔNG thấy thông báo hệ thống)
 
   // Nếu có filter kind cụ thể, sử dụng filter đó (để giữ tính năng filter theo kind)
   if (params.kind && isValidKind(params.kind)) {
     where.kind = params.kind
-    // Nếu có userId và filter kind cụ thể, chỉ hiển thị notifications của user đó
-    if (params.userId && params.kind !== NotificationKind.SYSTEM) {
-      where.userId = params.userId
+    // Nếu có userId và filter kind cụ thể
+    if (params.userId) {
+      if (params.kind === NotificationKind.SYSTEM) {
+        // Nếu filter SYSTEM, chỉ super admin mới thấy
+        if (!isSuperAdminUser) {
+          // User không phải super admin không được thấy SYSTEM notifications
+          // Set điều kiện không thể thỏa mãn (sử dụng AND với điều kiện không bao giờ đúng)
+          where.AND = [{ id: { not: { in: [] } } }]
+        }
+        // Super admin thấy tất cả SYSTEM notifications (không cần filter userId)
+      } else {
+        // Filter các loại khác, chỉ hiển thị notifications của user đó
+        where.userId = params.userId
+      }
     }
   } else {
-    // Nếu không có filter kind cụ thể, áp dụng logic chỉ hiển thị SYSTEM và thông báo cá nhân
-    // Luôn yêu cầu userId để chỉ hiển thị thông báo cá nhân của user đó
+    // Nếu không có filter kind cụ thể
     if (params.userId) {
-      // Chỉ hiển thị: SYSTEM (tất cả) hoặc các loại khác ngoài SYSTEM mà user sở hữu
-      where.OR = [
-        { kind: NotificationKind.SYSTEM }, // Tất cả thông báo hệ thống
-        {
-          userId: params.userId,
-          kind: { not: NotificationKind.SYSTEM }, // Thông báo cá nhân của user này
-        },
-      ]
+      if (isSuperAdminUser) {
+        // Super admin: thấy SYSTEM (tất cả) + thông báo cá nhân của mình
+        where.OR = [
+          { kind: NotificationKind.SYSTEM }, // Tất cả thông báo hệ thống
+          {
+            userId: params.userId,
+            kind: { not: NotificationKind.SYSTEM }, // Thông báo cá nhân của user này
+          },
+        ]
+      } else {
+        // User khác: chỉ thấy thông báo cá nhân của mình (KHÔNG thấy SYSTEM)
+        where.userId = params.userId
+        where.kind = { not: NotificationKind.SYSTEM }
+      }
     } else {
-      // Nếu không có userId, chỉ hiển thị thông báo hệ thống
+      // Nếu không có userId, chỉ hiển thị thông báo hệ thống (chỉ cho super admin)
       // (Trường hợp này không nên xảy ra vì API route luôn truyền userId)
-      where.kind = NotificationKind.SYSTEM
+      if (isSuperAdminUser) {
+        where.kind = NotificationKind.SYSTEM
+      } else {
+        // User không phải super admin không được thấy gì
+        // Set điều kiện không thể thỏa mãn (sử dụng AND với điều kiện không bao giờ đúng)
+        where.AND = [{ id: { not: { in: [] } } }]
+      }
     }
   }
 
@@ -149,12 +173,30 @@ function buildWhereClause(params: ListNotificationsInput): Prisma.NotificationWh
           break
         case "kind":
           if (isValidKind(value)) {
+            const kindValue = value as NotificationKind
             // Nếu đã có OR clause, thay thế bằng filter kind cụ thể
             if (where.OR && !params.kind) {
               delete where.OR
-              where.kind = value as NotificationKind
+              // Nếu filter SYSTEM và không phải super admin, không cho phép
+              if (kindValue === NotificationKind.SYSTEM && !isSuperAdminUser) {
+                // Set điều kiện không thể thỏa mãn
+                where.AND = [{ id: { not: { in: [] } } }]
+              } else {
+                where.kind = kindValue
+                // Nếu không phải SYSTEM, cần filter theo userId
+                if (kindValue !== NotificationKind.SYSTEM && params.userId) {
+                  where.userId = params.userId
+                }
+              }
             } else {
-              where.kind = value as NotificationKind
+              where.kind = kindValue
+              // Nếu filter SYSTEM và không phải super admin, không cho phép
+              if (kindValue === NotificationKind.SYSTEM && !isSuperAdminUser) {
+                // Set điều kiện không thể thỏa mãn
+                where.AND = [{ id: { not: { in: [] } } }]
+              } else if (kindValue !== NotificationKind.SYSTEM && params.userId) {
+                where.userId = params.userId
+              }
             }
           }
           break
