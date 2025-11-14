@@ -691,18 +691,18 @@ export function NotificationsTableClient({
             const canDelete = isOwner && row.kind !== "SYSTEM"
             
             return (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-8 w-8">
-                    <span className="sr-only">Mở menu</span>
-                    <MoreHorizontal className="h-5 w-5" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => router.push(`/admin/notifications/${row.id}`)}>
-                    <Eye className="mr-2 h-5 w-5" />
-                    Xem chi tiết
-                  </DropdownMenuItem>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-8 w-8">
+                  <span className="sr-only">Mở menu</span>
+                  <MoreHorizontal className="h-5 w-5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => router.push(`/admin/notifications/${row.id}`)}>
+                  <Eye className="mr-2 h-5 w-5" />
+                  Xem chi tiết
+                </DropdownMenuItem>
                   {canDelete && (
                     <>
                       <DropdownMenuSeparator />
@@ -714,14 +714,14 @@ export function NotificationsTableClient({
                         }}
                         className="text-destructive focus:text-destructive"
                       >
-                        <Trash2 className="mr-2 h-5 w-5" />
+                        <Trash2 className="mr-2 h-5 w-5 text-destructive" />
                         Xóa
                       </DropdownMenuItem>
                     </>
                   )}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )
           }
         : (row) => {
             const isOwner = session?.user?.id === row.userId
@@ -729,14 +729,14 @@ export function NotificationsTableClient({
             
             return (
               <div className="flex items-center gap-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => router.push(`/admin/notifications/${row.id}`)}
-                >
-                  <Eye className="mr-2 h-5 w-5" />
-                  Xem chi tiết
-                </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => router.push(`/admin/notifications/${row.id}`)}
+            >
+              <Eye className="mr-2 h-5 w-5" />
+              Xem chi tiết
+            </Button>
                 {canDelete && (
                   <Button
                     variant="ghost"
@@ -748,7 +748,7 @@ export function NotificationsTableClient({
                     }}
                     className="text-destructive hover:text-destructive"
                   >
-                    <Trash2 className="mr-2 h-5 w-5" />
+                    <Trash2 className="mr-2 h-5 w-5 text-destructive" />
                     Xóa
                   </Button>
                 )}

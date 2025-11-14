@@ -53,7 +53,7 @@ function buildWhereClause(params: ListNotificationsInput): Prisma.NotificationWh
   // Chỉ hiển thị thông báo hệ thống (SYSTEM) và thông báo cá nhân (MESSAGE và các loại khác ngoài SYSTEM)
   // Luôn yêu cầu userId để chỉ hiển thị thông báo cá nhân của user đó
   // Thông báo hệ thống (SYSTEM) được hiển thị cho tất cả users
-  
+
   // Nếu có filter kind cụ thể, sử dụng filter đó (để giữ tính năng filter theo kind)
   if (params.kind && isValidKind(params.kind)) {
     where.kind = params.kind
