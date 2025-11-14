@@ -140,7 +140,10 @@ export async function updatePost(
   if (input.published !== undefined) updateData.published = input.published
   if (publishedAt !== undefined) updateData.publishedAt = publishedAt
   if (input.authorId !== undefined && isSuperAdminUser) {
-    updateData.authorId = input.authorId
+    // Update author relation using connect
+    updateData.author = {
+      connect: { id: input.authorId },
+    }
   }
 
   const post = await prisma.post.update({
