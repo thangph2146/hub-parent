@@ -22,13 +22,11 @@ import { TablePlugin } from "@lexical/react/LexicalTablePlugin"
 
 import { ContentEditable } from "@/components/editor/editor-ui/content-editable"
 import { ActionsPlugin } from "@/components/editor/plugins/actions/actions-plugin"
-import { CharacterLimitPlugin } from "@/components/editor/plugins/actions/character-limit-plugin"
 import { ClearEditorActionPlugin } from "@/components/editor/plugins/actions/clear-editor-plugin"
 import { CounterCharacterPlugin } from "@/components/editor/plugins/actions/counter-character-plugin"
 import { EditModeTogglePlugin } from "@/components/editor/plugins/actions/edit-mode-toggle-plugin"
 import { ImportExportPlugin } from "@/components/editor/plugins/actions/import-export-plugin"
 import { MarkdownTogglePlugin } from "@/components/editor/plugins/actions/markdown-toggle-plugin"
-import { MaxLengthPlugin } from "@/components/editor/plugins/actions/max-length-plugin"
 import { ShareContentPlugin } from "@/components/editor/plugins/actions/share-content-plugin"
 import { SpeechToTextPlugin } from "@/components/editor/plugins/actions/speech-to-text-plugin"
 import { TreeViewPlugin } from "@/components/editor/plugins/actions/tree-view-plugin"
@@ -108,7 +106,6 @@ import { cn } from "@/lib/utils"
 import { useEditorContainer } from "@/components/editor/context/editor-container-context"
 
 const placeholder = "Press / for commands..."
-const maxLength = 500
 
 export function Plugins({
   readOnly = false,
@@ -317,10 +314,7 @@ export function Plugins({
             className="clear-both flex w-full items-center justify-between gap-2 overflow-auto border-t p-1"
             style={constrainedWidthStyle}
           >
-            <div className="flex flex-1 justify-start">
-              <MaxLengthPlugin maxLength={maxLength} />
-              <CharacterLimitPlugin maxLength={maxLength} charset="UTF-16" />
-            </div>
+            <div className="flex flex-1 justify-start" />
             <div>
               <CounterCharacterPlugin charset="UTF-16" />
             </div>
