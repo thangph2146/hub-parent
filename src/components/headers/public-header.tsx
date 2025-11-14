@@ -76,6 +76,9 @@ export function PublicHeader() {
           <Link href="/" className="hover:bg-accent rounded-md p-2">
             <span className="text-lg font-bold">CMS System</span>
           </Link>
+          <Link href="/post" className="hover:bg-accent rounded-md px-3 py-2 text-sm font-medium">
+            Bài viết
+          </Link>
           {mounted ? (
             <NavigationMenu className="hidden md:flex">
               <NavigationMenuList>
