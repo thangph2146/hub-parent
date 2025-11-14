@@ -1,5 +1,6 @@
 import type { Prisma } from "@prisma/client"
 import { PERMISSIONS } from "@/lib/permissions"
+import { isSuperAdmin } from "@/lib/permissions"
 import { prisma } from "@/lib/database"
 import { mapPostRecord, type PostWithAuthor } from "./helpers"
 import {
@@ -32,6 +33,7 @@ export interface UpdatePostInput {
   image?: string | null
   published?: boolean
   publishedAt?: Date | null
+  authorId?: string
 }
 
 export interface BulkActionResult {
@@ -47,6 +49,12 @@ export async function createPost(ctx: AuthContext, input: CreatePostInput) {
 
   if (!input.title || !input.slug || !input.authorId) {
     throw new ApplicationError("Tiêu đề, slug và tác giả là bắt buộc", 400)
+  }
+
+  // Chỉ super admin mới được chọn tác giả khác, user khác chỉ được set là chính mình
+  const isSuperAdminUser = isSuperAdmin(ctx.roles)
+  if (!isSuperAdminUser && input.authorId !== ctx.actorId) {
+    throw new ForbiddenError("Bạn không có quyền tạo bài viết cho người khác")
   }
 
   // Check if slug already exists
@@ -95,6 +103,15 @@ export async function updatePost(
     throw new NotFoundError("Bài viết không tồn tại")
   }
 
+  // Chỉ super admin mới được thay đổi tác giả, user khác không được phép
+  const isSuperAdminUser = isSuperAdmin(ctx.roles)
+  if (input.authorId !== undefined) {
+    if (!isSuperAdminUser) {
+      throw new ForbiddenError("Bạn không có quyền thay đổi tác giả bài viết")
+    }
+    // Super admin có thể thay đổi tác giả
+  }
+
   // Check if slug is being changed and if new slug already exists
   if (input.slug && input.slug !== existing.slug) {
     const slugExists = await prisma.post.findUnique({ where: { slug: input.slug } })
@@ -122,6 +139,9 @@ export async function updatePost(
   if (input.image !== undefined) updateData.image = input.image
   if (input.published !== undefined) updateData.published = input.published
   if (publishedAt !== undefined) updateData.publishedAt = publishedAt
+  if (input.authorId !== undefined && isSuperAdminUser) {
+    updateData.authorId = input.authorId
+  }
 
   const post = await prisma.post.update({
     where: { id: postId },

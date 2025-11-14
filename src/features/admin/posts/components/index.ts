@@ -13,4 +13,7 @@ export type { PostDetailClientProps, PostDetailData } from "./post-detail.client
 export { PostEdit, type PostEditProps } from "./post-edit"
 export { PostEditClient } from "./post-edit.client"
 export type { PostEditClientProps, PostEditData } from "./post-edit.client"
+export { PostCreate, type PostCreateProps } from "./post-create"
+export { PostCreateClient } from "./post-create.client"
+export type { PostCreateClientProps, PostCreateData } from "./post-create.client"
 

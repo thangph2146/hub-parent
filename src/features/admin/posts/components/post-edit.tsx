@@ -10,6 +10,8 @@ import { serializePostDetail } from "../server/helpers"
 import { PostEditClient } from "./post-edit.client"
 import type { PostEditData } from "./post-edit.client"
 import { NotFoundMessage } from "@/features/admin/resources/components"
+import { getActiveUsersForSelectCached } from "@/features/admin/users/server/cache"
+import { getAuthInfo } from "@/features/admin/resources/server"
 
 export interface PostEditProps {
   postId: string
@@ -36,6 +38,11 @@ export async function PostEdit({
     return <NotFoundMessage resourceName="bài viết" />
   }
 
+  const { isSuperAdminUser } = await getAuthInfo()
+  
+  // Chỉ fetch users options nếu là super admin
+  const usersOptions = isSuperAdminUser ? await getActiveUsersForSelectCached(100) : []
+
   const postForEdit: PostEditData = {
     ...serializePostDetail(post),
     authorId: post.author.id,
@@ -51,6 +58,8 @@ export async function PostEdit({
       backUrl={backUrl}
       backLabel={backLabel}
       postId={postId}
+      users={usersOptions}
+      isSuperAdmin={isSuperAdminUser}
     />
   )
 }

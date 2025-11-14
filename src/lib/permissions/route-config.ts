@@ -190,6 +190,7 @@ export const ROUTE_CONFIG: RoutePermissionConfig[] = [
       { path: "/admin/posts/my-posts", permissions: [PERMISSIONS.POSTS_VIEW] },
       { path: "/admin/posts/published", permissions: [PERMISSIONS.POSTS_PUBLISH] },
     ],
+    adminApi: true, // Enable standard admin API routes including /bulk
   }),
 
   // Categories

@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server"
-import { updatePost, deletePost, type AuthContext, ApplicationError, NotFoundError } from "@/features/admin/posts/server/mutations"
+import { updatePost, deletePost, type AuthContext, type UpdatePostInput, ApplicationError, NotFoundError } from "@/features/admin/posts/server/mutations"
 import { createPutRoute, createDeleteRoute } from "@/lib/api/api-route-wrapper"
 import type { ApiRouteContext } from "@/lib/api/types"
 import { validateID } from "@/lib/api/validation"
+import type { Prisma } from "@prisma/client"
 
 async function putPostHandler(req: NextRequest, context: ApiRouteContext, ...args: unknown[]) {
   const { params } = args[0] as { params: Promise<{ id: string }> }
@@ -26,8 +27,42 @@ async function putPostHandler(req: NextRequest, context: ApiRouteContext, ...arg
     roles: context.roles,
   }
 
+  // Validate và transform payload thành UpdatePostInput
+  const updateInput: UpdatePostInput = {}
+  
+  if (payload.title !== undefined) {
+    updateInput.title = typeof payload.title === "string" ? payload.title : String(payload.title)
+  }
+  if (payload.content !== undefined) {
+    updateInput.content = payload.content as Prisma.InputJsonValue
+  }
+  if (payload.excerpt !== undefined) {
+    updateInput.excerpt = payload.excerpt === null ? null : typeof payload.excerpt === "string" ? payload.excerpt : String(payload.excerpt)
+  }
+  if (payload.slug !== undefined) {
+    updateInput.slug = typeof payload.slug === "string" ? payload.slug : String(payload.slug)
+  }
+  if (payload.image !== undefined) {
+    updateInput.image = payload.image === null ? null : typeof payload.image === "string" ? payload.image : String(payload.image)
+  }
+  if (payload.published !== undefined) {
+    updateInput.published = typeof payload.published === "boolean" ? payload.published : Boolean(payload.published)
+  }
+  if (payload.publishedAt !== undefined) {
+    updateInput.publishedAt = payload.publishedAt === null 
+      ? null 
+      : payload.publishedAt instanceof Date 
+        ? payload.publishedAt 
+        : typeof payload.publishedAt === "string" 
+          ? new Date(payload.publishedAt) 
+          : null
+  }
+  if (payload.authorId !== undefined) {
+    updateInput.authorId = typeof payload.authorId === "string" ? payload.authorId : String(payload.authorId)
+  }
+
   try {
-    const updated = await updatePost(ctx, id, payload)
+    const updated = await updatePost(ctx, id, updateInput)
     return NextResponse.json({ data: updated })
   } catch (error) {
     if (error instanceof NotFoundError) {

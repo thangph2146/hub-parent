@@ -1,10 +1,12 @@
 "use client"
 
 import { useRouter } from "next/navigation"
+import { useSession } from "next-auth/react"
 import { ResourceForm, type ResourceFormField, type ResourceFormSection } from "@/features/admin/resources/components"
 import { useResourceFormSubmit } from "@/features/admin/resources/hooks"
 import { apiRoutes } from "@/lib/api/routes"
 import type { Prisma } from "@prisma/client"
+import { isSuperAdmin } from "@/lib/permissions"
 
 export interface PostEditData {
     id: string
@@ -28,6 +30,8 @@ export interface PostEditClientProps {
     backUrl?: string
     backLabel?: string
     postId?: string
+    users?: Array<{ label: string; value: string }>
+    isSuperAdmin?: boolean
 }
 
 export function PostEditClient({
@@ -39,8 +43,13 @@ export function PostEditClient({
     backUrl,
     backLabel = "Quay lại",
     postId,
+    users = [],
+    isSuperAdmin: isSuperAdminProp = false,
 }: PostEditClientProps) {
     const router = useRouter()
+    const { data: session } = useSession()
+    const userRoles = session?.roles || []
+    const isSuperAdminUser = isSuperAdminProp || isSuperAdmin(userRoles)
 
     const { handleSubmit } = useResourceFormSubmit({
         apiRoute: (id) => apiRoutes.posts.update(id),
@@ -64,6 +73,10 @@ export function PostEditClient({
                 submitData.publishedAt = new Date().toISOString()
             } else if (data.published === false) {
                 submitData.publishedAt = null
+            }
+            // Nếu không phải super admin, không gửi authorId (server sẽ giữ nguyên authorId hiện tại)
+            if (!isSuperAdminUser && "authorId" in submitData) {
+                delete submitData.authorId
             }
             return submitData
         },
@@ -107,6 +120,20 @@ export function PostEditClient({
             description: "Mô tả ngắn gọn về nội dung bài viết",
             section: "basic",
         },
+        // Chỉ super admin mới thấy field author
+        ...(isSuperAdminUser && users.length > 0
+            ? [
+                  {
+                      name: "authorId",
+                      label: "Tác giả",
+                      type: "select",
+                      options: users,
+                      required: true,
+                      description: "Chọn tác giả của bài viết",
+                      section: "basic",
+                  } as ResourceFormField<PostEditData>,
+              ]
+            : []),
         {
             name: "published",
             label: "Trạng thái xuất bản",
