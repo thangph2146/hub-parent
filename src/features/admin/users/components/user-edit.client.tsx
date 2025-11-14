@@ -79,6 +79,12 @@ export function UserEditClient({
       if (!submitData.password || submitData.password === "") {
         delete submitData.password
       }
+      // Không cho phép vô hiệu hóa super admin
+      const PROTECTED_SUPER_ADMIN_EMAIL = "superadmin@hub.edu.vn"
+      if (user?.email === PROTECTED_SUPER_ADMIN_EMAIL && submitData.isActive === false) {
+        // Giữ nguyên isActive = true cho super admin
+        submitData.isActive = true
+      }
       return submitData
     },
     onSuccess: async () => {
@@ -101,15 +107,31 @@ export function UserEditClient({
     : null
 
   const roleDefaultValue = typeof userForEdit?.roleIds === "string" ? userForEdit.roleIds : ""
-  const editFields = [
-    ...(getBaseUserFields(roles, roleDefaultValue) as unknown as ResourceFormField<UserEditData>[]),
+  const baseFields = getBaseUserFields(roles, roleDefaultValue) as unknown as ResourceFormField<UserEditData>[]
+  
+  // Điều chỉnh isActive field: disable nếu là super admin và đang active
+  const PROTECTED_SUPER_ADMIN_EMAIL = "superadmin@hub.edu.vn"
+  const isEditingSuperAdmin = user?.email === PROTECTED_SUPER_ADMIN_EMAIL
+  const editFields = baseFields.map((field) => {
+    if (field.name === "isActive" && isEditingSuperAdmin && user?.isActive) {
+      return {
+        ...field,
+        disabled: true,
+        description: "Không thể vô hiệu hóa tài khoản super admin",
+      }
+    }
+    return field
+  })
+  
+  const finalEditFields = [
+    ...editFields,
     ...(isSuperAdminUser ? [getPasswordEditField() as unknown as ResourceFormField<UserEditData>] : []),
   ]
 
   return (
     <ResourceForm<UserEditData>
       data={userForEdit}
-      fields={editFields}
+      fields={finalEditFields}
       onSubmit={handleSubmit}
       open={open}
       onOpenChange={onOpenChange}

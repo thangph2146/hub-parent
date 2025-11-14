@@ -15,6 +15,9 @@ import {
 // Re-export for backward compatibility with API routes
 export { ApplicationError, ForbiddenError, NotFoundError, type AuthContext }
 
+// Email của super admin không được phép xóa
+const PROTECTED_SUPER_ADMIN_EMAIL = "superadmin@hub.edu.vn"
+
 export interface CreateUserInput {
   email: string
   password: string
@@ -216,6 +219,11 @@ export async function updateUser(ctx: AuthContext, id: string, input: UpdateUser
   }
   if (input.name !== undefined) updateData.name = input.name?.trim() || null
   if (input.isActive !== undefined) {
+    // Không cho phép vô hiệu hóa super admin
+    if (existing.email === PROTECTED_SUPER_ADMIN_EMAIL && input.isActive === false) {
+      throw new ForbiddenError("Không thể vô hiệu hóa tài khoản super admin")
+    }
+    
     // Track isActive changes - luôn track ngay cả khi giá trị không đổi để đảm bảo notification được tạo
     if (input.isActive !== existing.isActive) {
       changes.isActive = { old: existing.isActive, new: input.isActive }
@@ -334,6 +342,11 @@ export async function softDeleteUser(ctx: AuthContext, id: string): Promise<void
     throw new NotFoundError("User không tồn tại")
   }
 
+  // Không cho phép xóa super admin
+  if (user.email === PROTECTED_SUPER_ADMIN_EMAIL) {
+    throw new ForbiddenError("Không thể xóa tài khoản super admin")
+  }
+
   await prisma.user.update({
     where: { id },
     data: {
@@ -361,7 +374,7 @@ export async function bulkSoftDeleteUsers(ctx: AuthContext, ids: string[]): Prom
     throw new ApplicationError("Danh sách người dùng trống", 400)
   }
 
-  // Lấy thông tin users trước khi delete để tạo notifications
+  // Lấy thông tin users trước khi delete để kiểm tra và tạo notifications
   const users = await prisma.user.findMany({
     where: {
       id: { in: ids },
@@ -370,9 +383,24 @@ export async function bulkSoftDeleteUsers(ctx: AuthContext, ids: string[]): Prom
     select: { id: true, email: true, name: true },
   })
 
+  // Kiểm tra xem có super admin trong danh sách không
+  const superAdminUser = users.find((u) => u.email === PROTECTED_SUPER_ADMIN_EMAIL)
+  if (superAdminUser) {
+    throw new ForbiddenError("Không thể xóa tài khoản super admin")
+  }
+
+  // Filter ra super admin từ danh sách IDs (nếu có)
+  const filteredIds = users
+    .filter((u) => u.email !== PROTECTED_SUPER_ADMIN_EMAIL)
+    .map((u) => u.id)
+
+  if (filteredIds.length === 0) {
+    throw new ApplicationError("Không có người dùng nào có thể xóa", 400)
+  }
+
   const result = await prisma.user.updateMany({
     where: {
-      id: { in: ids },
+      id: { in: filteredIds },
       deletedAt: null,
     },
     data: {
@@ -382,7 +410,7 @@ export async function bulkSoftDeleteUsers(ctx: AuthContext, ids: string[]): Prom
   })
 
   // Tạo system notifications cho từng user
-  for (const user of users) {
+  for (const user of users.filter((u) => u.email !== PROTECTED_SUPER_ADMIN_EMAIL)) {
     await notifySuperAdminsOfUserAction(
       "delete",
       ctx.actorId,
@@ -473,28 +501,35 @@ export async function hardDeleteUser(ctx: AuthContext, id: string): Promise<void
     throw new ForbiddenError()
   }
 
-  // Lấy thông tin user trước khi delete để tạo notification
+  // Lấy thông tin user trước khi delete để kiểm tra và tạo notification
   const user = await prisma.user.findUnique({
     where: { id },
     select: { id: true, email: true, name: true },
   })
+
+  if (!user) {
+    throw new NotFoundError("User không tồn tại")
+  }
+
+  // Không cho phép xóa super admin
+  if (user.email === PROTECTED_SUPER_ADMIN_EMAIL) {
+    throw new ForbiddenError("Không thể xóa vĩnh viễn tài khoản super admin")
+  }
 
   await prisma.user.delete({
     where: { id },
   })
 
   // Tạo system notification cho super admin
-  if (user) {
-    await notifySuperAdminsOfUserAction(
-      "hard-delete",
-      ctx.actorId,
-      {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-      }
-    )
-  }
+  await notifySuperAdminsOfUserAction(
+    "hard-delete",
+    ctx.actorId,
+    {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+    }
+  )
 }
 
 export async function bulkHardDeleteUsers(ctx: AuthContext, ids: string[]): Promise<BulkActionResult> {
@@ -506,7 +541,7 @@ export async function bulkHardDeleteUsers(ctx: AuthContext, ids: string[]): Prom
     throw new ApplicationError("Danh sách người dùng trống", 400)
   }
 
-  // Lấy thông tin users trước khi delete để tạo notifications
+  // Lấy thông tin users trước khi delete để kiểm tra và tạo notifications
   const users = await prisma.user.findMany({
     where: {
       id: { in: ids },
@@ -514,14 +549,29 @@ export async function bulkHardDeleteUsers(ctx: AuthContext, ids: string[]): Prom
     select: { id: true, email: true, name: true },
   })
 
+  // Kiểm tra xem có super admin trong danh sách không
+  const superAdminUser = users.find((u) => u.email === PROTECTED_SUPER_ADMIN_EMAIL)
+  if (superAdminUser) {
+    throw new ForbiddenError("Không thể xóa vĩnh viễn tài khoản super admin")
+  }
+
+  // Filter ra super admin từ danh sách IDs (nếu có)
+  const filteredIds = users
+    .filter((u) => u.email !== PROTECTED_SUPER_ADMIN_EMAIL)
+    .map((u) => u.id)
+
+  if (filteredIds.length === 0) {
+    throw new ApplicationError("Không có người dùng nào có thể xóa", 400)
+  }
+
   const result = await prisma.user.deleteMany({
     where: {
-      id: { in: ids },
+      id: { in: filteredIds },
     },
   })
 
   // Tạo system notifications cho từng user
-  for (const user of users) {
+  for (const user of users.filter((u) => u.email !== PROTECTED_SUPER_ADMIN_EMAIL)) {
     await notifySuperAdminsOfUserAction(
       "hard-delete",
       ctx.actorId,

@@ -77,6 +77,12 @@ export function UsersTableClient({
         return
       }
 
+      // Không cho phép vô hiệu hóa super admin
+      if (row.email === PROTECTED_SUPER_ADMIN_EMAIL && newStatus === false) {
+        showFeedback("error", "Không thể vô hiệu hóa", "Không thể vô hiệu hóa tài khoản super admin")
+        return
+      }
+
       // Thêm user vào set toggling
       setTogglingUsers((prev) => new Set(prev).add(row.id))
 
@@ -93,10 +99,12 @@ export function UsersTableClient({
         refresh()
       } catch (error) {
         console.error("Error toggling user status:", error)
+        const errorMessage = error instanceof Error ? error.message : "Đã xảy ra lỗi không xác định"
         showFeedback(
           "error",
           "Lỗi cập nhật",
-          `Không thể ${newStatus ? "kích hoạt" : "vô hiệu hóa"} người dùng. Vui lòng thử lại.`
+          `Không thể ${newStatus ? "kích hoạt" : "vô hiệu hóa"} người dùng. Vui lòng thử lại.`,
+          errorMessage
         )
       } finally {
         // Xóa user khỏi set toggling
@@ -206,8 +214,12 @@ export function UsersTableClient({
         },
         className: "w-[120px]",
         headerClassName: "w-[120px]",
-        cell: (row) =>
-          row.deletedAt ? (
+        cell: (row) => {
+          const isSuperAdmin = row.email === PROTECTED_SUPER_ADMIN_EMAIL
+          // Disable switch nếu là super admin và đang ở trạng thái active (không cho toggle OFF)
+          const isDisabled = togglingUsers.has(row.id) || !canManage || (isSuperAdmin && row.isActive)
+          
+          return row.deletedAt ? (
             <span className="inline-flex min-w-[88px] items-center justify-center rounded-full bg-rose-100 px-2 py-1 text-xs font-medium text-rose-700">
               Đã xóa
             </span>
@@ -215,19 +227,29 @@ export function UsersTableClient({
             <div className="flex items-center gap-2">
               <Switch
                 checked={row.isActive}
-                disabled={togglingUsers.has(row.id) || !canManage}
+                disabled={isDisabled}
                 onCheckedChange={(checked) => {
                   if (tableRefreshRef.current) {
+                    // Chặn toggle OFF cho super admin
+                    if (isSuperAdmin && checked === false) {
+                      showFeedback("error", "Không thể vô hiệu hóa", "Không thể vô hiệu hóa tài khoản super admin")
+                      return
+                    }
                     handleToggleStatus(row, checked, tableRefreshRef.current)
                   }
                 }}
                 aria-label={row.isActive ? "Vô hiệu hóa người dùng" : "Kích hoạt người dùng"}
+                title={isSuperAdmin && row.isActive ? "Không thể vô hiệu hóa tài khoản super admin" : undefined}
               />
               <span className="text-xs text-muted-foreground">
                 {row.isActive ? "Hoạt động" : "Tạm khóa"}
+                {isSuperAdmin && (
+                  <span className="ml-1 text-xs text-muted-foreground">(Super Admin)</span>
+                )}
               </span>
             </div>
-          ),
+          )
+        },
       },
       {
         accessorKey: "createdAt",
@@ -313,9 +335,17 @@ export function UsersTableClient({
     [],
   )
 
+  // Email của super admin không được phép xóa
+  const PROTECTED_SUPER_ADMIN_EMAIL = "superadmin@hub.edu.vn"
+
   const handleDeleteSingle = useCallback(
     (row: UserRow, refresh: () => void) => {
       if (!canDelete) return
+      // Không cho phép xóa super admin
+      if (row.email === PROTECTED_SUPER_ADMIN_EMAIL) {
+        showFeedback("error", "Không thể xóa", "Không thể xóa tài khoản super admin")
+        return
+      }
       setDeleteConfirm({
         open: true,
         type: "soft",
@@ -339,6 +369,11 @@ export function UsersTableClient({
   const handleHardDeleteSingle = useCallback(
     (row: UserRow, refresh: () => void) => {
       if (!canManage) return
+      // Không cho phép xóa super admin
+      if (row.email === PROTECTED_SUPER_ADMIN_EMAIL) {
+        showFeedback("error", "Không thể xóa", "Không thể xóa vĩnh viễn tài khoản super admin")
+        return
+      }
       setDeleteConfirm({
         open: true,
         type: "hard",
@@ -448,40 +483,51 @@ export function UsersTableClient({
         status: "active",
         selectionEnabled: canDelete,
         selectionActions: canDelete
-          ? ({ selectedIds, clearSelection, refresh }) => (
-              <div className="flex flex-wrap items-center justify-between gap-3 text-sm">
-                <span>
-                  Đã chọn <strong>{selectedIds.length}</strong> người dùng
-                </span>
-                <div className="flex items-center gap-2">
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="destructive"
-                    disabled={isBulkProcessing}
-                    onClick={() => executeBulk("delete", selectedIds, refresh, clearSelection)}
-                  >
-                    <Trash2 className="mr-2 h-5 w-5" />
-                    Xóa đã chọn
-                  </Button>
-                  {canManage && (
+          ? ({ selectedIds, selectedRows, clearSelection, refresh }) => {
+              // Filter ra super admin từ danh sách đã chọn
+              const deletableRows = selectedRows.filter((row) => row.email !== PROTECTED_SUPER_ADMIN_EMAIL)
+              const hasSuperAdmin = selectedRows.some((row) => row.email === PROTECTED_SUPER_ADMIN_EMAIL)
+              
+              return (
+                <div className="flex flex-wrap items-center justify-between gap-3 text-sm">
+                  <span>
+                    Đã chọn <strong>{selectedIds.length}</strong> người dùng
+                    {hasSuperAdmin && (
+                      <span className="ml-2 text-xs text-muted-foreground">
+                        (Tài khoản super admin không thể xóa)
+                      </span>
+                    )}
+                  </span>
+                  <div className="flex items-center gap-2">
                     <Button
                       type="button"
                       size="sm"
                       variant="destructive"
-                      disabled={isBulkProcessing}
-                      onClick={() => executeBulk("hard-delete", selectedIds, refresh, clearSelection)}
+                      disabled={isBulkProcessing || deletableRows.length === 0}
+                      onClick={() => executeBulk("delete", deletableRows.map((r) => r.id), refresh, clearSelection)}
                     >
-                      <AlertTriangle className="mr-2 h-5 w-5" />
-                      Xóa vĩnh viễn
+                      <Trash2 className="mr-2 h-5 w-5" />
+                      Xóa đã chọn ({deletableRows.length})
                     </Button>
-                  )}
-                  <Button type="button" size="sm" variant="ghost" onClick={clearSelection}>
-                    Bỏ chọn
-                  </Button>
+                    {canManage && (
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="destructive"
+                        disabled={isBulkProcessing || deletableRows.length === 0}
+                        onClick={() => executeBulk("hard-delete", deletableRows.map((r) => r.id), refresh, clearSelection)}
+                      >
+                        <AlertTriangle className="mr-2 h-5 w-5" />
+                        Xóa vĩnh viễn ({deletableRows.length})
+                      </Button>
+                    )}
+                    <Button type="button" size="sm" variant="ghost" onClick={clearSelection}>
+                      Bỏ chọn
+                    </Button>
+                  </div>
                 </div>
-              </div>
-            )
+              )
+            }
           : undefined,
         rowActions:
           canDelete || canRestore
@@ -500,10 +546,12 @@ export function UsersTableClient({
                     {canDelete && (
                       <DropdownMenuItem 
                         onClick={() => handleDeleteSingle(row, refresh)}
-                        className="text-destructive focus:text-destructive"
+                        disabled={row.email === PROTECTED_SUPER_ADMIN_EMAIL}
+                        className="text-destructive focus:text-destructive disabled:opacity-50"
                       >
                         <Trash2 className="mr-2 h-5 w-5 text-destructive" />
                         Xóa
+                        {row.email === PROTECTED_SUPER_ADMIN_EMAIL && " (Không được phép)"}
                       </DropdownMenuItem>
                     )}
                   </DropdownMenuContent>
@@ -585,10 +633,12 @@ export function UsersTableClient({
                   {canManage && (
                     <DropdownMenuItem
                       onClick={() => handleHardDeleteSingle(row, refresh)}
-                      className="text-destructive focus:text-destructive"
+                      disabled={row.email === PROTECTED_SUPER_ADMIN_EMAIL}
+                      className="text-destructive focus:text-destructive disabled:opacity-50"
                     >
                       <AlertTriangle className="mr-2 h-5 w-5" />
                       Xóa vĩnh viễn
+                      {row.email === PROTECTED_SUPER_ADMIN_EMAIL && " (Không được phép)"}
                     </DropdownMenuItem>
                   )}
                 </DropdownMenuContent>
