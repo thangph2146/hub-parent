@@ -36,10 +36,9 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { getMenuData } from "@/lib/config/menu-data"
 import type { Permission } from "@/lib/permissions"
-import { canPerformAnyAction } from "@/lib/permissions"
+import { canPerformAnyAction, getResourceSegmentForRoles } from "@/lib/permissions"
 import { cn } from "@/lib/utils"
 import { useClientOnly } from "@/hooks/use-client-only"
-import { useResourceSegment } from "@/hooks/use-resource-segment"
 
 
 export function NavUser({ className }: { className?: string }) {
@@ -55,7 +54,6 @@ export function NavUser({ className }: { className?: string }) {
   const isMobile = sidebar?.isMobile ?? false
   
   const user = session?.user
-  const resourceSegment = useResourceSegment()
   const primaryRole = session?.roles?.[0]
   
   const getInitials = (name?: string | null) => {
@@ -72,10 +70,13 @@ export function NavUser({ className }: { className?: string }) {
     
     if (!permissions.length) return []
     
+    // Tính resource segment dựa trên roles của user, không phụ thuộc vào URL hiện tại
+    const resourceSegment = getResourceSegmentForRoles(roles)
+    
     return getMenuData(permissions, roles, resourceSegment).navMain.filter((item) =>
       canPerformAnyAction(permissions, roles, [...item.permissions])
     )
-  }, [session?.permissions, session?.roles, resourceSegment])
+  }, [session?.permissions, session?.roles])
   
   // Loading state
   if (status === "loading" || !user) {
