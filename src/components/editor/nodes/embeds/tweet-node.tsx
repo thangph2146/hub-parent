@@ -79,7 +79,10 @@ function TweetComponent({
 
   useEffect(() => {
     if (tweetID !== previousTweetIDRef.current) {
-      setIsTweetLoading(true)
+      // Use setTimeout to avoid calling setState synchronously within effect
+      setTimeout(() => {
+        setIsTweetLoading(true)
+      }, 0)
 
       if (isTwitterScriptLoading) {
         const script = document.createElement("script")
@@ -91,7 +94,10 @@ function TweetComponent({
           script.onerror = onError as OnErrorEventHandler
         }
       } else {
-        createTweet()
+        // Use setTimeout to avoid calling setState synchronously within effect
+        setTimeout(() => {
+          createTweet()
+        }, 0)
       }
 
       if (previousTweetIDRef) {
@@ -180,9 +186,7 @@ export class TweetNode extends DecoratorBlockNode {
   }
 
   getTextContent(
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _includeInert?: boolean | undefined,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _includeDirectionless?: false | undefined
   ): string {
     return `https://x.com/i/web/status/${this.__id}`

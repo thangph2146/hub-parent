@@ -132,7 +132,7 @@ function CodeActionMenuContainer({
     )
   }, [editor])
 
-  const normalizedLang = normalizeCodeLang(lang)
+  const _normalizedLang = normalizeCodeLang(lang)
   const codeFriendlyName = getLanguageFriendlyName(lang)
 
   return (

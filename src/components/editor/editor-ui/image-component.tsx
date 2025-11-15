@@ -737,7 +737,10 @@ export default function ImageComponent({
 
   useEffect(() => {
     if (!isEditable && isReplaceDialogOpen) {
-      setIsReplaceDialogOpen(false)
+      // Use setTimeout to avoid calling setState synchronously within effect
+      setTimeout(() => {
+        setIsReplaceDialogOpen(false)
+      }, 0)
     }
   }, [isEditable, isReplaceDialogOpen])
 

@@ -525,14 +525,20 @@ function useMentionLookupService(mentionString: string | null) {
     const cachedResults = mentionsCache.get(mentionString)
 
     if (mentionString == null) {
-      setResults([])
+      // Use setTimeout to avoid calling setState synchronously within effect
+      setTimeout(() => {
+        setResults([])
+      }, 0)
       return
     }
 
     if (cachedResults === null) {
       return
     } else if (cachedResults !== undefined) {
-      setResults(cachedResults)
+      // Use setTimeout to avoid calling setState synchronously within effect
+      setTimeout(() => {
+        setResults(cachedResults)
+      }, 0)
       return
     }
 

@@ -8,9 +8,10 @@ export const getImageAspectRatio = (image: HTMLElement | null) => {
   if (!image) {
     return 1
   }
-  const anyImg = image as any
-  if (anyImg.naturalWidth > 0 && anyImg.naturalHeight > 0) {
-    return anyImg.naturalWidth / anyImg.naturalHeight
+  // HTMLImageElement has naturalWidth and naturalHeight properties
+  const imgElement = image as HTMLImageElement
+  if (imgElement.naturalWidth > 0 && imgElement.naturalHeight > 0) {
+    return imgElement.naturalWidth / imgElement.naturalHeight
   }
   const { width, height } = image.getBoundingClientRect()
   if (!height) {

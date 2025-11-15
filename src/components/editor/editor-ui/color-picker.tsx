@@ -82,7 +82,13 @@ function composeRefs<T>(...refs: PossibleRef<T>[]): React.RefCallback<T> {
  */
 function useComposedRefs<T>(...refs: PossibleRef<T>[]): React.RefCallback<T> {
   // biome-ignore lint/correctness/useExhaustiveDependencies: we want to memoize by all values
-  return React.useCallback(composeRefs(...refs), refs)
+  return React.useCallback(
+    (value: T) => {
+      composeRefs(...refs)(value)
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    refs
+  )
 }
 
 type InputValue = string[] | string
@@ -125,13 +131,18 @@ function VisuallyHiddenInput<T = InputValue>(
     previous: isCheckInput ? checked : value,
   })
 
-  const prevValue = React.useMemo(() => {
+  // Use useEffect to update ref instead of useMemo to avoid accessing refs during render
+  const [prevValue, setPrevValue] = React.useState<T | boolean | undefined>(
+    isCheckInput ? checked : value
+  )
+
+  React.useEffect(() => {
     const currentValue = isCheckInput ? checked : value
     if (prevValueRef.current.value !== currentValue) {
       prevValueRef.current.previous = prevValueRef.current.value
       prevValueRef.current.value = currentValue
+      setPrevValue(prevValueRef.current.previous)
     }
-    return prevValueRef.current.previous
   }, [isCheckInput, value, checked])
 
   const [controlSize, setControlSize] = React.useState<{
@@ -795,7 +806,7 @@ interface ColorPickerRootProps
   required?: boolean
 }
 
-const ColorPickerRoot = React.memo((props: ColorPickerRootProps) => {
+const ColorPickerRoot = React.memo(function ColorPickerRoot(props: ColorPickerRootProps) {
   const {
     value: valueProp,
     defaultValue = "#000000",
@@ -868,15 +879,15 @@ const ColorPickerRoot = React.memo((props: ColorPickerRootProps) => {
   )
 })
 
-interface ColorPickerRootImplProps
-  extends Omit<
-    ColorPickerRootProps,
-    | "defaultValue"
-    | "onValueChange"
-    | "format"
-    | "defaultFormat"
-    | "onFormatChange"
-  > {}
+// Type alias instead of empty interface to avoid lint error
+type ColorPickerRootImplProps = Omit<
+  ColorPickerRootProps,
+  | "defaultValue"
+  | "onValueChange"
+  | "format"
+  | "defaultFormat"
+  | "onFormatChange"
+>
 
 function ColorPickerRootImpl(props: ColorPickerRootImplProps) {
   const {
@@ -943,7 +954,7 @@ function ColorPickerRootImpl(props: ColorPickerRootImplProps) {
       store.setOpen(newOpen)
       onOpenChange?.(newOpen)
     },
-    [store.setOpen, onOpenChange]
+    [store, onOpenChange]
   )
 
   const RootPrimitive = asChild ? Slot : "div"
@@ -992,8 +1003,8 @@ function ColorPickerRootImpl(props: ColorPickerRootImplProps) {
   )
 }
 
-interface ColorPickerTriggerProps
-  extends React.ComponentProps<typeof PopoverTrigger> {}
+// Type alias instead of empty interface to avoid lint error
+type ColorPickerTriggerProps = React.ComponentProps<typeof PopoverTrigger>
 
 function ColorPickerTrigger(props: ColorPickerTriggerProps) {
   const { asChild, ...triggerProps } = props
@@ -1008,8 +1019,8 @@ function ColorPickerTrigger(props: ColorPickerTriggerProps) {
   )
 }
 
-interface ColorPickerContentProps
-  extends React.ComponentProps<typeof PopoverContent> {}
+// Type alias instead of empty interface to avoid lint error
+type ColorPickerContentProps = React.ComponentProps<typeof PopoverContent>
 
 function ColorPickerContent(props: ColorPickerContentProps) {
   const { asChild, className, children, ...popoverContentProps } = props
@@ -1152,8 +1163,8 @@ function ColorPickerArea(props: ColorPickerAreaProps) {
   )
 }
 
-interface ColorPickerHueSliderProps
-  extends React.ComponentProps<typeof SliderPrimitive.Root> {}
+// Type alias instead of empty interface to avoid lint error
+type ColorPickerHueSliderProps = React.ComponentProps<typeof SliderPrimitive.Root>
 
 function ColorPickerHueSlider(props: ColorPickerHueSliderProps) {
   const { className, ...sliderProps } = props
@@ -1198,8 +1209,8 @@ function ColorPickerHueSlider(props: ColorPickerHueSliderProps) {
   )
 }
 
-interface ColorPickerAlphaSliderProps
-  extends React.ComponentProps<typeof SliderPrimitive.Root> {}
+// Type alias instead of empty interface to avoid lint error
+type ColorPickerAlphaSliderProps = React.ComponentProps<typeof SliderPrimitive.Root>
 
 function ColorPickerAlphaSlider(props: ColorPickerAlphaSliderProps) {
   const { className, ...sliderProps } = props
@@ -1315,8 +1326,8 @@ function ColorPickerSwatch(props: ColorPickerSwatchProps) {
   )
 }
 
-interface ColorPickerEyeDropperProps
-  extends React.ComponentProps<typeof Button> {}
+// Type alias instead of empty interface to avoid lint error
+type ColorPickerEyeDropperProps = React.ComponentProps<typeof Button>
 
 function ColorPickerEyeDropper(props: ColorPickerEyeDropperProps) {
   const { children, size, ...buttonProps } = props

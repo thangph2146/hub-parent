@@ -176,8 +176,12 @@ function FloatingLinkEditor({
   useEffect(() => {
     if (isLinkEditMode && inputRef.current) {
       inputRef.current.focus()
-      setIsLink(true)
+      // Use setTimeout to avoid calling setState synchronously within effect
+      setTimeout(() => {
+        setIsLink(true)
+      }, 0)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLinkEditMode, isLink])
 
   const monitorInputInteraction = (

@@ -35,7 +35,7 @@ export function ToolbarPlugin({
       },
       COMMAND_PRIORITY_CRITICAL
     )
-  }, [editor])
+  }, [activeEditor, editor])
 
   return (
     <ToolbarContext

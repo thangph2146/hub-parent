@@ -14,9 +14,11 @@ export function caretFromPoint(
       node: range.startContainer,
       offset: range.startOffset,
     }
-    // @ts-ignore
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore - caretPositionFromPoint is a Firefox-specific API not in TypeScript types
   } else if (document.caretPositionFromPoint !== "undefined") {
-    // @ts-ignore FF - no types
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore - FF - no types
     const range = document.caretPositionFromPoint(x, y)
     if (range === null) {
       return null
