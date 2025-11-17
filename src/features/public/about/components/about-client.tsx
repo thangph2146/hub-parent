@@ -1,7 +1,5 @@
 "use client"
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
 import {
   Dialog,
   DialogContent,
@@ -9,28 +7,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { 
-  GraduationCap, 
-  Target,
-  Eye,
-  Users,
-  Building2,
-  Award,
-  BookOpen,
-  MapPin,
-  Phone,
-  Mail,
-  Clock,
-  ArrowRight,
-  CheckCircle2,
+import {
   ChevronDown
 } from "lucide-react"
-import Link from "next/link"
 import Image from "next/image"
 import { useState } from "react"
 import { appFeatures } from "@/lib/config/app-features"
 import { getResourceMainRoute } from "@/lib/permissions/route-helpers"
-import { Logo } from "../../../../../public/svg/Logo"
 
 /**
  * Helper function để lấy route từ appFeatures
@@ -50,55 +33,8 @@ function getRouteFromFeature(key: string): string | null {
   return null
 }
 
-// Routes constants - Lấy từ appFeatures
-const ABOUT_ROUTES = {
-  home: getRouteFromFeature("home") || "/",
-  contact: getRouteFromFeature("contact") || "/lien-he",
-  blog: getRouteFromFeature("blog") || "/bai-viet",
-} as const
-
-export interface AboutClientProps {
-  // Có thể thêm props từ server component nếu cần
-}
-
-export function AboutClient({}: AboutClientProps) {
+export function AboutClient() {
   const [showMoreDialog, setShowMoreDialog] = useState(false)
-
-  const campuses = [
-    {
-      name: "Trụ sở chính",
-      address: "36 Tôn Thất Đạm, Phường Sài Gòn, TP.Hồ Chí Minh",
-      icon: Building2,
-    },
-    {
-      name: "Cơ sở Hàm Nghi",
-      address: "39 Hàm Nghi, Phường Sài Gòn, TP. Hồ Chí Minh",
-      icon: Building2,
-    },
-    {
-      name: "Cơ sở Hoàng Diệu",
-      address: "56 Hoàng Diệu 2, Phường Thủ Đức, TP. Hồ Chí Minh",
-      icon: Building2,
-    },
-  ]
-
-  const achievements = [
-    {
-      title: "Chứng nhận kiểm định Chương trình đào tạo",
-      description: "Theo tiêu chuẩn AUN-QA",
-      icon: Award,
-    },
-    {
-      title: "Chứng nhận kiểm định Cơ sở giáo dục",
-      description: "Theo tiêu chuẩn MOET",
-      icon: Award,
-    },
-    {
-      title: "Chứng nhận hệ thống quản lý",
-      description: "Theo tiêu chuẩn ISO 21001:2018",
-      icon: Award,
-    },
-  ]
 
   const coreValues = [
     {
@@ -160,7 +96,7 @@ export function AboutClient({}: AboutClientProps) {
                 <div>
                   <div className="prose prose-sm sm:prose-base text-foreground leading-relaxed dark:prose-invert mb-4">
                     <p className="text-base sm:text-lg text-muted-foreground">
-                      Trường Đại học Ngân hàng Thành phố Hồ Chí Minh (Ho Chi Minh University of Banking - HUB) 
+                      Trường Đại học Ngân hàng Thành phố Hồ Chí Minh (Ho Chi Minh University of Banking - HUB)
                       là trường đại học công lập trực thuộc Ngân hàng Nhà nước Việt Nam được thành lập từ ngày <strong className="text-foreground">16/12/1976</strong>.
                     </p>
                   </div>
@@ -239,7 +175,7 @@ export function AboutClient({}: AboutClientProps) {
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground uppercase mb-8">
               Về HUB
             </h2>
-            
+
             <div className="mb-8">
               <div className="prose prose-sm sm:prose-base md:prose-lg text-foreground leading-relaxed dark:prose-invert">
                 <p className="text-base sm:text-lg text-muted-foreground mb-4">
@@ -375,7 +311,7 @@ export function AboutClient({}: AboutClientProps) {
                 <div className="space-y-6">
                   {coreValues.map((value, index) => (
                     <div key={index} className={index < coreValues.length - 1 ? "pb-6 border-b border-border" : ""}>
-                      <h3 
+                      <h3
                         className="text-xl sm:text-2xl font-bold mb-3"
                         style={{ color: value.color }}
                       >
@@ -419,7 +355,7 @@ export function AboutClient({}: AboutClientProps) {
                 <div className="space-y-6">
                   {educationPhilosophy.map((philosophy, index) => (
                     <div key={index} className={index < educationPhilosophy.length - 1 ? "pb-6 border-b border-border" : ""}>
-                      <h3 
+                      <h3
                         className="text-xl sm:text-2xl font-bold mb-3"
                         style={{ color: philosophy.color }}
                       >
@@ -473,14 +409,13 @@ export function AboutClient({}: AboutClientProps) {
             </div>
 
             {/* Image */}
-            <div className="relative w-full overflow-hidden rounded-2xl border border-border">
-              <div className="aspect-video relative w-full">
+            <div className="relative w-full overflow-hidden p-2">
+              <div className="relative w-full aspect-[16/12]">
                 <Image
                   src="https://fileserver2.hub.edu.vn/IMAGES/2025/09/22/20250922082406Bộ-máy-tổ-chức-2.png"
                   alt="Bộ máy tổ chức"
                   fill
-                  className="object-contain bg-muted/30"
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1200px"
+                  className="object-cover"
                 />
               </div>
             </div>
@@ -544,107 +479,6 @@ export function AboutClient({}: AboutClientProps) {
                 Thư viện, trung tâm học liệu với diện tích sàn 6,666 m2 ; với gần 47,000 đầu sách, giáo trình, tài liệu tham khảo tiếng Việt và tiếng nước ngoài, gần 359,000 bản sách các loại, 20 máy tính trang bị riêng cho Thư viện được nối mạng tốc độ cao dùng để tra cứu internet và truy cập các cơ sở dữ liệu, phục vụ 600 người đọc cùng một thời điểm.
               </p>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Campuses Section */}
-      <section className="py-12 sm:py-16 lg:py-20 bg-background">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-12">
-              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground mb-4">
-                Cơ sở đào tạo
-              </h2>
-              <p className="text-lg text-muted-foreground">
-                HUB có 3 cơ sở đào tạo tại TP. Hồ Chí Minh
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {campuses.map((campus, index) => {
-                const Icon = campus.icon
-                return (
-                  <Card key={index} className="border-border">
-                    <CardHeader>
-                      <div className="flex items-center gap-3 mb-2">
-                        <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                          <Icon className="h-5 w-5 text-primary" />
-                        </div>
-                        <CardTitle className="text-lg font-semibold text-card-foreground">
-                          {campus.name}
-                        </CardTitle>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="flex items-start gap-3">
-                        <MapPin className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                        <p className="text-muted-foreground leading-relaxed">
-                          {campus.address}
-                        </p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )
-              })}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Contact CTA Section */}
-      <section className="py-12 sm:py-16 lg:py-20 bg-card">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-4xl mx-auto">
-            <Card className="border-border bg-background">
-              <CardHeader className="text-center">
-                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-6 mx-auto">
-                  <Mail className="h-8 w-8 text-primary" />
-                </div>
-                <CardTitle className="text-2xl sm:text-3xl font-bold text-card-foreground mb-4">
-                  Liên hệ với chúng tôi
-                </CardTitle>
-                <CardDescription className="text-lg text-muted-foreground">
-                  Có câu hỏi? Chúng tôi luôn sẵn sàng hỗ trợ bạn
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                  <div className="flex items-center gap-4 p-4 rounded-lg bg-muted/50 dark:bg-muted border border-border">
-                    <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                      <Phone className="h-6 w-6 text-primary" />
-                    </div>
-                    <div>
-                      <p className="font-semibold text-card-foreground">Hotline Đào tạo</p>
-                      <p className="text-muted-foreground">(028) 38 212 430</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-4 p-4 rounded-lg bg-muted/50 dark:bg-muted border border-border">
-                    <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                      <Mail className="h-6 w-6 text-primary" />
-                    </div>
-                    <div>
-                      <p className="font-semibold text-card-foreground">Email</p>
-                      <p className="text-muted-foreground">dhnhtphcm@hub.edu.vn</p>
-                    </div>
-                  </div>
-                </div>
-                <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <Button size="lg" asChild>
-                    <Link href={ABOUT_ROUTES.contact}>
-                      <Mail className="h-4 w-4 mr-2" />
-                      Gửi tin nhắn
-                    </Link>
-                  </Button>
-                  <Button variant="outline" size="lg" asChild>
-                    <Link href={ABOUT_ROUTES.home}>
-                      <ArrowRight className="h-4 w-4 mr-2" />
-                      Về trang chủ
-                    </Link>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
           </div>
         </div>
       </section>
