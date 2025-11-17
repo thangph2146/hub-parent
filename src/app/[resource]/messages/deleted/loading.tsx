@@ -1,5 +1,5 @@
-import { AdminHeader } from "@/components/headers"
-import { MessagesPageSkeleton } from "@/components/skeletons"
+import { AdminHeader } from "@/components/layouts/headers"
+import { MessagesPageSkeleton } from "@/components/layouts/skeletons"
 
 export default function Loading() {
   return (

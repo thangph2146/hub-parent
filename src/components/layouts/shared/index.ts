@@ -4,7 +4,7 @@
  * Export các shared/common components từ một nơi
  * 
  * Note: PermissionRouter là Server Component, không export từ đây
- * Import trực tiếp từ "@/components/shared/permission/permission-router"
+ * Import trực tiếp từ "@/components/layouts/shared/permission/permission-router"
  */
 
 export { HeroSection } from "./hero-section"

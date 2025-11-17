@@ -6,8 +6,8 @@ import { useSession } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { MenuToggleIcon } from "@/components/ui/menu-toggle-icon"
-import { ModeToggle } from "@/components/shared"
-import { NavUser } from "@/components/navigation"
+import { ModeToggle } from "@/components/layouts/shared"
+import { NavUser } from "@/components/layouts/navigation"
 import { createPortal } from "react-dom"
 import {
   NavigationMenu,
@@ -30,6 +30,8 @@ import {
   LogIn,
   UserPlus,
 } from "lucide-react"
+import { Logo } from "../../../../public/svg/Logo"
+import { ROUTES } from "@/lib/config/routes"
 
 type LinkItem = {
   title: string
@@ -73,8 +75,8 @@ export function PublicHeader() {
     >
       <nav className="mx-auto flex h-14 w-full max-w-7xl items-center justify-between px-4">
         <div className="flex items-center gap-5">
-          <Link href="/" className="hover:bg-accent rounded-md p-2">
-            <span className="text-lg font-bold">CMS System</span>
+          <Link href={ROUTES.home} className="hover:bg-accent rounded-md p-2">
+            <Logo className="h-10 w-10 text-blue-100" />
           </Link>
           <Link href="/bai-viet" className="hover:bg-accent rounded-md px-3 py-2 text-sm font-medium">
             Bài viết

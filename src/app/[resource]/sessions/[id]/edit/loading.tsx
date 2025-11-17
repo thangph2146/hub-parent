@@ -1,5 +1,5 @@
-import { AdminHeader } from "@/components/headers"
-import { ResourceFormSkeleton } from "@/components/skeletons"
+import { AdminHeader } from "@/components/layouts/headers"
+import { ResourceFormSkeleton } from "@/components/layouts/skeletons"
 
 export default function SessionEditPageLoading() {
   return (

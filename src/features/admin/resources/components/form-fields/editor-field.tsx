@@ -8,7 +8,7 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { Editor } from "@/components/blocks/editor-x/editor"
+import { Editor } from "@/components/editor/editor-x/editor"
 import { FieldContent } from "@/components/ui/field"
 import type { SerializedEditorState } from "lexical"
 

@@ -1,5 +1,5 @@
 import type { Metadata } from "next"
-import { AdminHeader } from "@/components/headers"
+import { AdminHeader } from "@/components/layouts/headers"
 import { PERMISSIONS } from "@/lib/permissions"
 import { getTablePermissionsAsync } from "@/features/admin/resources/server"
 import { PostsTable } from "@/features/admin/posts/components/posts-table"

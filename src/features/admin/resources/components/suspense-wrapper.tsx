@@ -11,7 +11,7 @@
  */
 
 import { Suspense, type ReactNode } from "react"
-import { MessagesPageSkeleton, ResourceDetailSkeleton, ResourceTableSkeleton } from "@/components/skeletons"
+import { MessagesPageSkeleton, ResourceDetailSkeleton, ResourceTableSkeleton } from "@/components/layouts/skeletons"
 
 /**
  * SuspenseWrapper - Generic wrapper cho async components

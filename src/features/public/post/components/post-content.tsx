@@ -1,6 +1,6 @@
 "use client"
 
-import { Editor } from "@/components/blocks/editor-x/editor"
+import { Editor } from "@/components/editor/editor-x/editor"
 import { Card } from "@/components/ui/card"
 import type { SerializedEditorState } from "lexical"
 

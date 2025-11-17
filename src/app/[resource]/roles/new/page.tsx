@@ -1,5 +1,5 @@
 import type { Metadata } from "next"
-import { AdminHeader } from "@/components/headers"
+import { AdminHeader } from "@/components/layouts/headers"
 import { RoleCreate } from "@/features/admin/roles/components/role-create"
 import { FormPageSuspense } from "@/features/admin/resources/components"
 

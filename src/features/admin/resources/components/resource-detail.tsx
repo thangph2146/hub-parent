@@ -43,7 +43,7 @@
 import { Suspense } from "react"
 import { ResourceDetailPage } from "./resource-detail-page"
 import type { ResourceDetailPageProps } from "./resource-detail-page"
-import { ResourceDetailSkeleton } from "@/components/skeletons"
+import { ResourceDetailSkeleton } from "@/components/layouts/skeletons"
 
 export type ResourceDetailProps<T extends Record<string, unknown>> = ResourceDetailPageProps<T>
 

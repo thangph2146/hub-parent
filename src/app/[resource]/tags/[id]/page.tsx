@@ -1,5 +1,5 @@
 import type { Metadata } from "next"
-import { AdminHeader } from "@/components/headers"
+import { AdminHeader } from "@/components/layouts/headers"
 import { TagDetail } from "@/features/admin/tags/components/tag-detail"
 import { validateRouteId } from "@/lib/validation/route-params"
 import { FormPageSuspense } from "@/features/admin/resources/components"

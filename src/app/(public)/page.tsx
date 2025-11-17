@@ -1,6 +1,6 @@
 import type { Metadata } from "next"
-import { HeroSection } from "@/components/shared"
 import { appConfig } from "@/lib/config"
+import HomeClient from "@/features/public/home-client"
 
 /**
  * Home Page Metadata
@@ -26,6 +26,6 @@ export const metadata: Metadata = {
 }
 
 export default function Home() {
-  return <HeroSection />
+  return <HomeClient />
 }
 

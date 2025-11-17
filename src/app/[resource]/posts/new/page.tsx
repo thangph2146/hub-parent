@@ -1,5 +1,5 @@
 import type { Metadata } from "next"
-import { AdminHeader } from "@/components/headers"
+import { AdminHeader } from "@/components/layouts/headers"
 import { PostCreate } from "@/features/admin/posts/components/post-create"
 import { FormPageSuspense } from "@/features/admin/resources/components"
 import { applyResourceSegmentToPath, DEFAULT_RESOURCE_SEGMENT } from "@/lib/permissions"

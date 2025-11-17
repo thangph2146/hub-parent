@@ -1,5 +1,5 @@
-import { AdminHeader } from "@/components/headers"
-import { ResourceDetailSkeleton } from "@/components/skeletons"
+import { AdminHeader } from "@/components/layouts/headers"
+import { ResourceDetailSkeleton } from "@/components/layouts/skeletons"
 
 export default function PostDetailLoading() {
   return (

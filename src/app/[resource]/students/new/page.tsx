@@ -1,5 +1,5 @@
 import type { Metadata } from "next"
-import { AdminHeader } from "@/components/headers"
+import { AdminHeader } from "@/components/layouts/headers"
 import { StudentCreate } from "@/features/admin/students/components/student-create"
 import { FormPageSuspense } from "@/features/admin/resources/components"
 

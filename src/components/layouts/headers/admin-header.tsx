@@ -15,8 +15,8 @@ import {
 } from "@/components/ui/breadcrumb"
 import { Separator } from "@/components/ui/separator"
 import { SidebarTrigger } from "@/components/ui/sidebar"
-import { NotificationBell } from "@/components/notifications"
-import { ModeToggle } from "@/components/shared"
+import { NotificationBell } from "@/components/layouts/notifications"
+import { ModeToggle } from "@/components/layouts/shared"
 import { useResourceSegment } from "@/hooks/use-resource-segment"
 import { applyResourceSegmentToPath } from "@/lib/permissions"
 

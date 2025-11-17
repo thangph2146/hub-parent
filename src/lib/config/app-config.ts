@@ -16,7 +16,18 @@ export const appConfig = {
   
   // Application info
   name: "CMS",
+  namePublic: "Trường Đại học Ngân hàng TP.Hồ Chí Minh",
+  company: "PHGroup",
   url: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
+  
+  // Social media
+  social: {
+    facebook: "",
+    twitter: "",
+    linkedin: "",
+    instagram: "",
+    youtube: "",
+  },
   
   // SEO
   keywords: ["CMS", "Content Management System", "Quản trị nội dung", "Admin Panel"] as string[],

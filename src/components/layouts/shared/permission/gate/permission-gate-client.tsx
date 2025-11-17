@@ -18,7 +18,7 @@ import {
   applyResourceSegmentToPath,
 } from "@/lib/permissions"
 import type { Permission } from "@/lib/permissions"
-import { ForbiddenNotice, UnauthenticatedNotice } from "@/components/shared"
+import { ForbiddenNotice, UnauthenticatedNotice } from "@/components/layouts/shared"
 import { AlreadyAuthenticatedNotice } from "../already-authenticated-notice"
 import { useClientOnly } from "@/hooks/use-client-only"
 import { useSession } from "@/lib/auth"

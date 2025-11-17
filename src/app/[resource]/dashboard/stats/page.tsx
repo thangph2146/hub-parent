@@ -1,5 +1,5 @@
 import type { Metadata } from "next"
-import { AdminHeader } from "@/components/headers"
+import { AdminHeader } from "@/components/layouts/headers"
 import { DashboardStats } from "@/features/admin/dashboard/dashboard-stats"
 
 /**

@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
-import { PublicHeader } from "@/components/headers"
+import { PublicHeader } from "@/components/layouts/headers"
+import { PublicFooter } from "@/components/layouts/footers"
 import { appConfig } from "@/lib/config"
 
 /**
@@ -34,6 +35,7 @@ export default function PublicLayout({
     <>
       <PublicHeader />
       {children}
+      <PublicFooter />
     </>
   )
 }

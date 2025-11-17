@@ -9,7 +9,7 @@ import { Separator } from "@/components/ui/separator"
 import { Badge } from "@/components/ui/badge"
 import { useResourcePath, useResourceRouter } from "@/hooks/use-resource-segment"
 import { formatDateVi } from "../utils"
-import { Editor } from "@/components/blocks/editor-x/editor"
+import { Editor } from "@/components/editor/editor-x/editor"
 import type { SerializedEditorState } from "lexical"
 import type { Prisma } from "@prisma/client"
 

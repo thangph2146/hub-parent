@@ -1,5 +1,5 @@
-import { AdminHeader } from "@/components/headers"
-import { ResourceTableSkeleton } from "@/components/skeletons"
+import { AdminHeader } from "@/components/layouts/headers"
+import { ResourceTableSkeleton } from "@/components/layouts/skeletons"
 
 export default function PostsPageLoading() {
   return (

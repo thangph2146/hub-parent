@@ -1,5 +1,5 @@
 import type { Metadata } from "next"
-import { AdminHeader } from "@/components/headers"
+import { AdminHeader } from "@/components/layouts/headers"
 import { MessagesPage } from "@/features/admin/chat/components/messages-page"
 import { MessagesPageSuspense } from "@/features/admin/resources/components"
 

@@ -4,8 +4,8 @@ import * as React from "react"
 import { Command } from "lucide-react"
 import { useSession } from "next-auth/react"
 import { appConfig, getAppBranding, getMenuData } from "@/lib/config"
-import { NavProjects, NavSecondary, NavUser } from "./"
-import { AppSidebarSkeleton } from "@/components/skeletons"
+import { NavProjects, NavSecondary, NavUser } from "."
+import { AppSidebarSkeleton } from "@/components/layouts/skeletons"
 import {
   Sidebar,
   SidebarContent,
