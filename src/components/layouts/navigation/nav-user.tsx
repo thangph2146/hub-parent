@@ -309,7 +309,7 @@ export function NavUser({ className }: { className?: string }) {
                         href={item.url} 
                         className={cn(
                           "flex items-center justify-between w-full",
-                          isActive && "bg-accent/10 text-accent-foreground"
+                          isActive && "bg-accent text-accent-foreground"
                         )}
                       >
                         <div className="flex items-center gap-2">
@@ -332,7 +332,7 @@ export function NavUser({ className }: { className?: string }) {
                       href={item.url} 
                       className={cn(
                         "flex items-center justify-between w-full",
-                        isActive && "bg-accent/10 text-accent-foreground"
+                        isActive && "bg-accent text-accent-foreground"
                       )}
                     >
                       <div className="flex items-center gap-2">
