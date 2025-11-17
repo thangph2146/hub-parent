@@ -57,6 +57,12 @@ export const apiRoutes = {
   users: getResourceRoutesOrFallback("users", "users"),
   students: getResourceRoutesOrFallback("students", "students"),
   tags: getResourceRoutesOrFallback("tags", "tags"),
+  
+  // Accounts - Personal account management
+  accounts: {
+    get: "/admin/accounts",
+    update: "/admin/accounts",
+  },
 
   // Auth
   auth: {

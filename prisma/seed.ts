@@ -286,8 +286,8 @@ const ROLE_DESCRIPTIONS: Record<RoleKey, string> = {
   ADMIN: "Quản trị viên, quản lý nội dung và người dùng.",
   EDITOR: "Biên tập viên, tạo và chỉnh sửa nội dung.",
   AUTHOR: "Tác giả, quản lý nội dung của riêng mình.",
-  USER: "Người dùng thông thường với quyền hạn cơ bản.",
-  PARENT: "Phụ huynh học sinh, truy cập thông tin liên quan học sinh.",
+  USER: "Người dùng thông thường với quyền hạn cơ bản, có thể quản lý tài khoản cá nhân.",
+  PARENT: "Phụ huynh học sinh, truy cập thông tin liên quan học sinh, có thể quản lý tài khoản cá nhân.",
 }
 
 type RoleConfig<T extends RoleKey = RoleKey> = {

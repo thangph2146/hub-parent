@@ -15,11 +15,11 @@ import {
   Shield,
   Tag,
   Users,
+  UserCircle,
   Home,
   Info,
   Mail,
   HelpCircle,
-  BookOpen,
 } from "lucide-react"
 
 import {
@@ -435,6 +435,37 @@ export const appFeatures: FeatureDefinition[] = [
       type: "resource",
       resourceName: "sessions",
     },
+  },
+  {
+    key: "accounts",
+    title: "Tài khoản",
+    description: "Quản lý thông tin cá nhân",
+    permissions: MENU_PERMISSIONS.accounts,
+    icon: createIcon(UserCircle),
+    navigation: {
+      group: "main",
+      order: 130,
+      resourceName: "accounts",
+      autoGenerateSubRoutes: true,
+    },
+    api: {
+      type: "resource",
+      resourceName: "accounts",
+    },
+    components: [
+      {
+        id: "accounts.profile.server",
+        label: "AccountProfile",
+        mode: "static",
+        modulePath: "@/features/admin/accounts/components/account-profile",
+      },
+      {
+        id: "accounts.profile.client",
+        label: "AccountProfileClient",
+        mode: "dynamic",
+        modulePath: "@/features/admin/accounts/components/account-profile.client",
+      },
+    ],
   },
   {
     key: "support",

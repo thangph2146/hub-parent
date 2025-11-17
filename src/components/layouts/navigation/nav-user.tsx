@@ -77,6 +77,13 @@ export function NavUser({ className }: { className?: string }) {
       canPerformAnyAction(permissions, roles, [...item.permissions])
     )
   }, [session?.permissions, session?.roles])
+
+  // Tính route cho accounts dựa trên resource segment
+  const accountsRoute = useMemo(() => {
+    const roles = (session?.roles || []) as Array<{ name: string }>
+    const resourceSegment = getResourceSegmentForRoles(roles)
+    return `/${resourceSegment}/accounts`
+  }, [session?.roles])
   
   // Loading state
   if (status === "loading" || !user) {
@@ -134,13 +141,11 @@ export function NavUser({ className }: { className?: string }) {
       </DropdownMenuLabel>
       <DropdownMenuSeparator />
       <DropdownMenuGroup>
-        <DropdownMenuItem>
-          <BadgeCheck className={!isInSidebar ? "mr-2 h-5 w-5" : ""} />
-          <span>Tài khoản</span>
-        </DropdownMenuItem>
-        <DropdownMenuItem>
-          <CreditCard className={!isInSidebar ? "mr-2 h-5 w-5" : ""} />
-          <span>Thanh toán</span>
+        <DropdownMenuItem asChild>
+          <Link href={accountsRoute} className="flex items-center">
+            <BadgeCheck className={!isInSidebar ? "mr-2 h-5 w-5" : ""} />
+            <span>Tài khoản</span>
+          </Link>
         </DropdownMenuItem>
       </DropdownMenuGroup>
       {adminMenuItems.length > 0 && (

@@ -18,6 +18,7 @@ export const RESOURCES = {
   STUDENTS: "students",
   SESSIONS: "sessions",
   SETTINGS: "settings",
+  ACCOUNTS: "accounts",
 } as const
 
 // Action types
@@ -124,6 +125,10 @@ export const PERMISSIONS = {
   SETTINGS_VIEW: `${RESOURCES.SETTINGS}:${ACTIONS.VIEW}` as Permission,
   SETTINGS_UPDATE: `${RESOURCES.SETTINGS}:${ACTIONS.UPDATE}` as Permission,
   SETTINGS_MANAGE: `${RESOURCES.SETTINGS}:${ACTIONS.MANAGE}` as Permission,
+
+  // Accounts (Personal Account Management)
+  ACCOUNTS_VIEW: `${RESOURCES.ACCOUNTS}:${ACTIONS.VIEW}` as Permission,
+  ACCOUNTS_UPDATE: `${RESOURCES.ACCOUNTS}:${ACTIONS.UPDATE}` as Permission,
 } as const
 
 // Mapping menu items với permissions
@@ -141,6 +146,7 @@ export const MENU_PERMISSIONS = {
   students: [PERMISSIONS.STUDENTS_VIEW],
   sessions: [PERMISSIONS.SESSIONS_VIEW],
   settings: [PERMISSIONS.SETTINGS_VIEW],
+  accounts: [PERMISSIONS.ACCOUNTS_VIEW],
 } as const
 
 // Default roles và permissions của chúng
@@ -155,6 +161,8 @@ export const DEFAULT_ROLES = {
     displayName: "Admin",
     permissions: [
       PERMISSIONS.DASHBOARD_VIEW,
+      PERMISSIONS.ACCOUNTS_VIEW,
+      PERMISSIONS.ACCOUNTS_UPDATE,
       PERMISSIONS.USERS_VIEW,
       PERMISSIONS.USERS_CREATE,
       PERMISSIONS.USERS_UPDATE,
@@ -187,6 +195,8 @@ export const DEFAULT_ROLES = {
     displayName: "Editor",
     permissions: [
       PERMISSIONS.DASHBOARD_VIEW,
+      PERMISSIONS.ACCOUNTS_VIEW,
+      PERMISSIONS.ACCOUNTS_UPDATE,
       PERMISSIONS.POSTS_VIEW,
       PERMISSIONS.POSTS_CREATE,
       PERMISSIONS.POSTS_UPDATE,
@@ -209,6 +219,8 @@ export const DEFAULT_ROLES = {
     displayName: "Author",
     permissions: [
       PERMISSIONS.DASHBOARD_VIEW,
+      PERMISSIONS.ACCOUNTS_VIEW,
+      PERMISSIONS.ACCOUNTS_UPDATE,
       PERMISSIONS.POSTS_VIEW,
       PERMISSIONS.POSTS_CREATE,
       PERMISSIONS.POSTS_UPDATE,
@@ -228,6 +240,8 @@ export const DEFAULT_ROLES = {
     displayName: "User",
     permissions: [
       PERMISSIONS.DASHBOARD_VIEW,
+      PERMISSIONS.ACCOUNTS_VIEW,
+      PERMISSIONS.ACCOUNTS_UPDATE,
       PERMISSIONS.MESSAGES_VIEW,
       PERMISSIONS.MESSAGES_SEND,
       PERMISSIONS.MESSAGES_UPDATE,
@@ -242,6 +256,8 @@ export const DEFAULT_ROLES = {
     displayName: "Parent",
     permissions: [
       PERMISSIONS.DASHBOARD_VIEW,
+      PERMISSIONS.ACCOUNTS_VIEW,
+      PERMISSIONS.ACCOUNTS_UPDATE,
       PERMISSIONS.STUDENTS_VIEW,
       PERMISSIONS.STUDENTS_CREATE,
       PERMISSIONS.STUDENTS_UPDATE,
