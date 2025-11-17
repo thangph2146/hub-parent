@@ -44,25 +44,8 @@ export interface ContactClientProps {
 export function ContactClient({}: ContactClientProps) {
   return (
     <div className="relative isolate bg-background">
-      {/* Hero Section */}
-      <section className="py-12 sm:py-16 lg:py-20 bg-card border-b border-border">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-4xl mx-auto text-center">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-6">
-              <MessageSquare className="h-8 w-8 text-primary" />
-            </div>
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-card-foreground mb-4 sm:mb-6">
-              Liên hệ với chúng tôi
-            </h1>
-            <p className="text-lg sm:text-xl text-muted-foreground leading-relaxed">
-              Chúng tôi luôn sẵn sàng lắng nghe và hỗ trợ bạn. Hãy gửi tin nhắn cho chúng tôi!
-            </p>
-          </div>
-        </div>
-      </section>
-
       {/* Main Content */}
-      <section className="py-12 sm:py-16 lg:py-20">
+      <section className="py-6">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-7xl mx-auto">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
