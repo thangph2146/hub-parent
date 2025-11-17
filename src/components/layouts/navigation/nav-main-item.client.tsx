@@ -43,7 +43,13 @@ export function NavMainItem({
   // Radix UI generate ID random khác nhau giữa server và client
   const isMounted = useClientOnly()
 
-  if (!React.isValidElement(icon)) {
+  // Clone icon element để đảm bảo tính hợp lệ khi truyền từ server component
+  // Giữ nguyên tất cả props gốc để đảm bảo icon hoạt động đúng
+  const iconElement = React.isValidElement(icon) 
+    ? React.cloneElement(icon, { ...(icon.props as React.PropsWithChildren<React.SVGProps<SVGSVGElement>>) })
+    : null
+
+  if (!iconElement) {
     console.warn(`Icon is not a valid React element for "${title}"`)
     return null
   }
@@ -57,7 +63,7 @@ export function NavMainItem({
         <SidebarMenuButton asChild tooltip={title} isActive={isActive}>
           <Link href={url} className="flex items-center justify-between w-full">
             <div className="flex items-center gap-2 flex-1 min-w-0">
-              {icon}
+              {iconElement}
               <span>{title}</span>
             </div>
             {showBadge && (
@@ -90,7 +96,7 @@ export function NavMainItem({
         <SidebarMenuButton asChild tooltip={title} isActive={isActive}>
           <Link href={url} className="flex items-center justify-between w-full">
             <div className="flex items-center gap-2 flex-1 min-w-0">
-              {icon}
+              {iconElement}
               <span>{title}</span>
             </div>
             {showBadge && (

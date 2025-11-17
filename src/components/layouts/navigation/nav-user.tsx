@@ -11,7 +11,42 @@ import {
   ChevronsUpDown,
   LogOut,
   LayoutDashboard,
+  BadgeHelp,
+  Bell,
+  FileText,
+  FolderTree,
+  GraduationCap,
+  LifeBuoy,
+  LogIn,
+  MessageSquare,
+  Send,
+  Shield,
+  Tag,
+  Users,
+  UserCircle,
 } from "lucide-react"
+import type { LucideIcon } from "lucide-react"
+
+// Icon mapping để tạo lại icon trong client component
+const iconMap: Record<string, LucideIcon> = {
+  dashboard: LayoutDashboard,
+  users: Users,
+  posts: FileText,
+  categories: FolderTree,
+  tags: Tag,
+  roles: Shield,
+  students: GraduationCap,
+  messages: Send,
+  comments: MessageSquare,
+  notifications: Bell,
+  contactRequests: BadgeHelp,
+  sessions: LogIn,
+  accounts: UserCircle,
+  support: LifeBuoy,
+}
+
+const createIcon = (Icon: LucideIcon) =>
+  React.createElement(Icon, { className: "h-4 w-4" })
 
 import {
   Avatar,
@@ -193,11 +228,18 @@ export function NavUser({ className }: { className?: string }) {
     )
     
     // Map unread counts và active state vào menu items dựa trên key
+    // Tạo lại icon trong client component vì React elements không thể serialize qua server/client boundary
     return menuItems.map((item) => {
       const isActive = isItemActive(item)
       
+      // Tạo lại icon dựa trên feature key
+      const iconKey = item.key || ""
+      const IconComponent = iconMap[iconKey]
+      const icon = IconComponent ? createIcon(IconComponent) : item.icon
+      
       let updatedItem = {
         ...item,
+        icon,
         isActive,
       }
       
@@ -216,7 +258,7 @@ export function NavUser({ className }: { className?: string }) {
       
       return updatedItem
     })
-  }, [session?.permissions, session?.roles, unreadMessagesCount, unreadNotificationsCount, isItemActive])
+  }, [session, unreadMessagesCount, unreadNotificationsCount, isItemActive])
 
   // Tính route cho accounts dựa trên resource segment
   const accountsRoute = useMemo(() => {

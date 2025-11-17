@@ -4,12 +4,59 @@ import * as React from "react"
 import { usePathname } from "next/navigation"
 import { useSession } from "next-auth/react"
 import { useQueryClient } from "@tanstack/react-query"
+import {
+  BadgeHelp,
+  Bell,
+  FileText,
+  FolderTree,
+  GraduationCap,
+  LayoutDashboard,
+  LifeBuoy,
+  LogIn,
+  MessageSquare,
+  Send,
+  Shield,
+  Tag,
+  Users,
+  UserCircle,
+  Home,
+  Info,
+  Mail,
+  HelpCircle,
+} from "lucide-react"
 import { NavMain } from "./nav-main"
 import { useUnreadCounts } from "@/hooks/use-unread-counts"
 import { useNotificationsSocketBridge } from "@/hooks/use-notifications"
 import { useSocket } from "@/hooks/use-socket"
 import { queryKeys } from "@/lib/query-keys"
 import type { MenuItem } from "@/lib/config"
+import type { LucideIcon } from "lucide-react"
+
+// Icon mapping để tạo lại icon trong client component
+const iconMap: Record<string, LucideIcon> = {
+  dashboard: LayoutDashboard,
+  users: Users,
+  posts: FileText,
+  categories: FolderTree,
+  tags: Tag,
+  roles: Shield,
+  students: GraduationCap,
+  messages: Send,
+  comments: MessageSquare,
+  notifications: Bell,
+  contactRequests: BadgeHelp,
+  sessions: LogIn,
+  accounts: UserCircle,
+  support: LifeBuoy,
+  home: Home,
+  blog: FileText,
+  about: Info,
+  contact: Mail,
+  help: HelpCircle,
+}
+
+const createIcon = (Icon: LucideIcon) =>
+  React.createElement(Icon, { className: "h-4 w-4" })
 
 interface NavMainWithBadgesProps {
   items: MenuItem[]
@@ -136,12 +183,19 @@ export function NavMainWithBadges({ items }: NavMainWithBadgesProps) {
   }, [socket, userId, queryClient])
 
   // Map unread counts và active state to menu items
+  // Tạo lại icon trong client component vì React elements không thể serialize qua server/client boundary
   const itemsWithBadges = React.useMemo(() => {
     return items.map((item) => {
       const isActive = isItemActive(item)
       
+      // Tạo lại icon dựa trên feature key
+      const iconKey = item.key || ""
+      const IconComponent = iconMap[iconKey]
+      const icon = IconComponent ? createIcon(IconComponent) : item.icon
+      
       let updatedItem: MenuItem = {
         ...item,
+        icon,
         isActive,
       }
       

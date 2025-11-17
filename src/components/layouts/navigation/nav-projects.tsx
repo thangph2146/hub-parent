@@ -48,14 +48,20 @@ export function NavProjects({
         <SidebarGroupLabel>Projects</SidebarGroupLabel>
         <SidebarMenu>
           {projects.map((item) => {
-            if (!React.isValidElement(item.icon)) {
+            // Clone icon element để đảm bảo tính hợp lệ khi truyền từ server component
+            // Giữ nguyên tất cả props gốc để đảm bảo icon hoạt động đúng
+            const iconElement = React.isValidElement(item.icon)
+              ? React.cloneElement(item.icon, { ...(item.icon.props as React.PropsWithChildren<React.SVGProps<SVGSVGElement>>) })
+              : null
+
+            if (!iconElement) {
               return null
             }
             return (
               <SidebarMenuItem key={item.name}>
                 <SidebarMenuButton asChild>
                   <a href={item.url}>
-                    {item.icon}
+                    {iconElement}
                   </a>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -71,7 +77,12 @@ export function NavProjects({
       <SidebarGroupLabel>Projects</SidebarGroupLabel>
       <SidebarMenu>
         {projects.map((item) => {
-          if (!React.isValidElement(item.icon)) {
+          // Clone icon element để đảm bảo tính hợp lệ khi truyền từ server component
+          const iconElement = React.isValidElement(item.icon)
+            ? React.cloneElement(item.icon, { key: `icon-${item.name}` })
+            : null
+
+          if (!iconElement) {
             console.warn(`Icon is not a valid React element for project "${item.name}"`)
             return null
           }
@@ -80,7 +91,7 @@ export function NavProjects({
             <SidebarMenuItem key={item.name}>
               <SidebarMenuButton asChild>
                 <a href={item.url}>
-                  {item.icon}
+                  {iconElement}
                   <span>{item.name}</span>
                 </a>
               </SidebarMenuButton>

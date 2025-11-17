@@ -23,7 +23,13 @@ export function NavSecondary({
       <SidebarGroupContent>
         <SidebarMenu>
           {items.map((item) => {
-            if (!React.isValidElement(item.icon)) {
+            // Clone icon element để đảm bảo tính hợp lệ khi truyền từ server component
+            // Giữ nguyên tất cả props gốc để đảm bảo icon hoạt động đúng
+            const iconElement = React.isValidElement(item.icon)
+              ? React.cloneElement(item.icon, { ...item.icon.props })
+              : null
+
+            if (!iconElement) {
               console.warn(`Icon is not a valid React element for "${item.title}"`)
               return null
             }
@@ -32,7 +38,7 @@ export function NavSecondary({
               <SidebarMenuItem key={item.url}>
                 <SidebarMenuButton asChild size="sm">
                   <a href={item.url}>
-                    {item.icon}
+                    {iconElement}
                     <span>{item.title}</span>
                   </a>
                 </SidebarMenuButton>
