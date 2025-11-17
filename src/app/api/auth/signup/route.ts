@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/database"
 import bcrypt from "bcryptjs"
 import { createPostRoute } from "@/lib/api/api-route-wrapper"
+import { DEFAULT_ROLES } from "@/lib/permissions"
 import {
   validateEmail,
   validatePassword,
@@ -83,19 +84,29 @@ async function signupHandler(
       },
     })
 
-  // Get default user role if exists
-  const defaultRole = await prisma.role.findUnique({
-    where: { name: "user" },
+  // Get or create parent role (role mặc định cho user đăng ký thủ công)
+  let parentRole = await prisma.role.findUnique({
+    where: { name: DEFAULT_ROLES.PARENT.name },
   })
 
-  if (defaultRole) {
-    await prisma.userRole.create({
+  if (!parentRole) {
+    parentRole = await prisma.role.create({
       data: {
-        userId: user.id,
-        roleId: defaultRole.id,
+        name: DEFAULT_ROLES.PARENT.name,
+        displayName: DEFAULT_ROLES.PARENT.displayName,
+        permissions: [...DEFAULT_ROLES.PARENT.permissions],
+        isActive: true,
       },
     })
   }
+
+  // Gán role parent cho user mới đăng ký
+  await prisma.userRole.create({
+    data: {
+      userId: user.id,
+      roleId: parentRole.id,
+    },
+  })
 
   return NextResponse.json({
     message: "Đăng ký thành công",

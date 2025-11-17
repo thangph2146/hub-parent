@@ -52,6 +52,25 @@ async function getOrCreateDefaultRole() {
   return defaultRole
 }
 
+async function getOrCreateParentRole() {
+  let parentRole = await prisma.role.findUnique({
+    where: { name: DEFAULT_ROLES.PARENT.name },
+  })
+
+  if (!parentRole) {
+    parentRole = await prisma.role.create({
+      data: {
+        name: DEFAULT_ROLES.PARENT.name,
+        displayName: DEFAULT_ROLES.PARENT.displayName,
+        permissions: [...DEFAULT_ROLES.PARENT.permissions],
+        isActive: true,
+      },
+    })
+  }
+
+  return parentRole
+}
+
 async function createUserFromOAuth({
   email,
   name,
@@ -61,8 +80,8 @@ async function createUserFromOAuth({
   name?: string | null
   image?: string | null
 }): Promise<DbUser> {
-  // Tìm hoặc tạo default role nếu chưa tồn tại
-  const defaultRole = await getOrCreateDefaultRole()
+  // Tìm hoặc tạo parent role cho user đăng ký/đăng nhập bằng Google
+  const parentRole = await getOrCreateParentRole()
 
   const password = await bcrypt.hash(randomBytes(16).toString("hex"), 10)
 
@@ -76,11 +95,11 @@ async function createUserFromOAuth({
     },
   })
 
-  // Gán role cho user (luôn có role vì đã tạo ở trên)
+  // Gán role parent cho user đăng ký/đăng nhập bằng Google
   await prisma.userRole.create({
     data: {
       userId: newUser.id,
-      roleId: defaultRole.id,
+      roleId: parentRole.id,
     },
   })
 
@@ -256,16 +275,17 @@ export const authConfig: NextAuthConfig = {
         const lookupEmail = dbUser?.email ?? normalizedEmail
 
         // Đảm bảo user có role (chỉ cho user mới tạo hoặc user đã tồn tại nhưng chưa có role)
+        // Nếu đăng nhập bằng Google và chưa có role, gán role parent
         if (
           dbUser &&
           account?.provider === "google" &&
           (!dbUser.userRoles || dbUser.userRoles.length === 0)
         ) {
-          const defaultRole = await getOrCreateDefaultRole()
+          const parentRole = await getOrCreateParentRole()
           await prisma.userRole.create({
             data: {
               userId: dbUser.id,
-              roleId: defaultRole.id,
+              roleId: parentRole.id,
             },
           })
           // Refresh user từ database sau khi thêm role
