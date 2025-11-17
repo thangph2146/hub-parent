@@ -20,6 +20,26 @@ type PostWithAuthor = Prisma.PostGetPayload<{
         email: true
       }
     }
+    categories: {
+      include: {
+        category: {
+          select: {
+            id: true
+            name: true
+          }
+        }
+      }
+    }
+    tags: {
+      include: {
+        tag: {
+          select: {
+            id: true
+            name: true
+          }
+        }
+      }
+    }
   }
 }>
 
@@ -39,6 +59,14 @@ export function mapPostRecord(post: PostWithAuthor): ListedPost {
     updatedAt: post.updatedAt,
     deletedAt: post.deletedAt,
     author: post.author,
+    categories: post.categories?.map((pc) => ({
+      id: pc.category.id,
+      name: pc.category.name,
+    })) || [],
+    tags: post.tags?.map((pt) => ({
+      id: pt.tag.id,
+      name: pt.tag.name,
+    })) || [],
   }
 }
 
@@ -132,6 +160,8 @@ export function serializePostForTable(post: ListedPost): PostRow {
     createdAt: serializeDate(post.createdAt)!,
     deletedAt: serializeDate(post.deletedAt),
     author: post.author,
+    categories: post.categories,
+    tags: post.tags,
   }
 }
 
@@ -165,6 +195,8 @@ export function serializePostDetail(post: PostDetail) {
     updatedAt: serializeDate(post.updatedAt)!,
     deletedAt: serializeDate(post.deletedAt),
     author: post.author,
+    categories: post.categories,
+    tags: post.tags,
   }
 }
 

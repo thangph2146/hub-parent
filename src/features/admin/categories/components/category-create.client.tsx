@@ -11,7 +11,6 @@ import { ResourceForm } from "@/features/admin/resources/components"
 import { useResourceFormSubmit } from "@/features/admin/resources/hooks"
 import { apiRoutes } from "@/lib/api/routes"
 import { getBaseCategoryFields, type CategoryFormData } from "../form-fields"
-import { generateSlug } from "../utils"
 
 export interface CategoryCreateClientProps {
   backUrl?: string
@@ -31,11 +30,6 @@ export function CategoryCreateClient({ backUrl = "/admin/categories" }: Category
         response.data?.data?.id ? `/admin/categories/${response.data.data.id}` : backUrl,
       fallback: backUrl,
     },
-    transformData: (data) => ({
-      ...data,
-      // Auto-generate slug if not provided
-      slug: (typeof data.slug === "string" ? data.slug.trim() : "") || (data.name ? generateSlug(String(data.name)) : ""),
-    }),
   })
 
   const createFields = getBaseCategoryFields()

@@ -11,7 +11,6 @@ import { ResourceForm } from "@/features/admin/resources/components"
 import { useResourceFormSubmit } from "@/features/admin/resources/hooks"
 import { apiRoutes } from "@/lib/api/routes"
 import { getBaseTagFields, type TagFormData } from "../form-fields"
-import { generateSlug } from "../utils"
 
 export interface TagCreateClientProps {
   backUrl?: string
@@ -31,11 +30,6 @@ export function TagCreateClient({ backUrl = "/admin/tags" }: TagCreateClientProp
         response.data?.data?.id ? `/admin/tags/${response.data.data.id}` : backUrl,
       fallback: backUrl,
     },
-    transformData: (data) => ({
-      ...data,
-      // Auto-generate slug if not provided
-      slug: (typeof data.slug === "string" ? data.slug.trim() : "") || (data.name ? generateSlug(String(data.name)) : ""),
-    }),
   })
 
   const createFields = getBaseTagFields()

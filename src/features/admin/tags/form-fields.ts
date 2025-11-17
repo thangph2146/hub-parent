@@ -45,10 +45,11 @@ export function getBaseTagFields(): ResourceFormField<TagFormData>[] {
     {
       name: "slug",
       label: "Slug",
-      type: "text",
+      type: "slug",
+      sourceField: "name",
       placeholder: "vd: react, nextjs, typescript",
       required: true,
-      description: "URL-friendly identifier (tự động tạo từ tên nếu để trống)",
+      description: "URL-friendly identifier (tự động tạo từ tên)",
       validate: validateSlug,
       icon: React.createElement(Hash, { className: "h-4 w-4" }),
       section: "basic",

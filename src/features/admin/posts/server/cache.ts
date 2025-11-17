@@ -46,6 +46,26 @@ export const getPostDetailById = cache(async (id: string): Promise<PostDetail | 
           email: true,
         },
       },
+      categories: {
+        include: {
+          category: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+      },
+      tags: {
+        include: {
+          tag: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+      },
     },
   })
 

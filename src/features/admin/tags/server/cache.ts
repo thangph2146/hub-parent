@@ -48,3 +48,36 @@ export const getTagColumnOptionsCached = cache(
   }
 )
 
+/**
+ * Cache function: Get active tags for select options
+ * 
+ * Sử dụng cache() để tự động deduplicate requests và cache kết quả
+ * Dùng cho form select fields (tagIds, etc.)
+ * 
+ * @param limit - Maximum number of tags to return (default: 100)
+ * @returns Array of { label, value } options
+ */
+export const getActiveTagsForSelectCached = cache(
+  async (limit: number = 100): Promise<Array<{ label: string; value: string }>> => {
+    const { prisma } = await import("@/lib/database/prisma")
+    const tags = await prisma.tag.findMany({
+      where: {
+        deletedAt: null,
+      },
+      select: {
+        id: true,
+        name: true,
+      },
+      orderBy: {
+        name: "asc",
+      },
+      take: limit,
+    })
+
+    return tags.map((tag) => ({
+      label: tag.name,
+      value: tag.id,
+    }))
+  }
+)
+

@@ -46,10 +46,11 @@ export function getBaseCategoryFields(): ResourceFormField<CategoryFormData>[] {
     {
       name: "slug",
       label: "Slug",
-      type: "text",
+      type: "slug",
+      sourceField: "name",
       placeholder: "vd: cong-nghe, huong-dan",
       required: true,
-      description: "URL-friendly identifier (tự động tạo từ tên nếu để trống)",
+      description: "URL-friendly identifier (tự động tạo từ tên)",
       validate: validateCategorySlug,
       icon: React.createElement(Hash, { className: "h-4 w-4" }),
       section: "basic",

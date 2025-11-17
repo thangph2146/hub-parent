@@ -34,10 +34,26 @@ export interface ListedPost {
     name: string | null
     email: string
   }
+  categories?: Array<{
+    id: string
+    name: string
+  }>
+  tags?: Array<{
+    id: string
+    name: string
+  }>
 }
 
 export interface PostDetail extends ListedPost {
   content: Prisma.JsonValue
+  categories?: Array<{
+    id: string
+    name: string
+  }>
+  tags?: Array<{
+    id: string
+    name: string
+  }>
 }
 
 export interface ListPostsResult {
@@ -61,6 +77,26 @@ export async function listPosts(params: ListPostsInput = {}): Promise<ListPostsR
             id: true,
             name: true,
             email: true,
+          },
+        },
+        categories: {
+          include: {
+            category: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
+        tags: {
+          include: {
+            tag: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
           },
         },
       },
@@ -145,6 +181,26 @@ export async function getPostById(id: string): Promise<PostDetail | null> {
           id: true,
           name: true,
           email: true,
+        },
+      },
+      categories: {
+        include: {
+          category: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+      },
+      tags: {
+        include: {
+          tag: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
         },
       },
     },

@@ -7,6 +7,8 @@
 
 import { PostCreateClient } from "./post-create.client"
 import { getActiveUsersForSelectCached } from "@/features/admin/users/server/cache"
+import { getActiveCategoriesForSelectCached } from "@/features/admin/categories/server/cache"
+import { getActiveTagsForSelectCached } from "@/features/admin/tags/server/cache"
 import { getAuthInfo } from "@/features/admin/resources/server"
 
 export interface PostCreateProps {
@@ -16,9 +18,22 @@ export interface PostCreateProps {
 export async function PostCreate({ backUrl = "/admin/posts" }: PostCreateProps) {
   const { isSuperAdminUser } = await getAuthInfo()
 
-  // Chỉ fetch users options nếu là super admin
-  const usersOptions = isSuperAdminUser ? await getActiveUsersForSelectCached(100) : []
+  // Fetch options in parallel
+  const [usersOptions, categoriesOptions, tagsOptions] = await Promise.all([
+    // Chỉ fetch users options nếu là super admin
+    isSuperAdminUser ? getActiveUsersForSelectCached(100) : Promise.resolve([]),
+    getActiveCategoriesForSelectCached(100),
+    getActiveTagsForSelectCached(100),
+  ])
 
-  return <PostCreateClient backUrl={backUrl} users={usersOptions} isSuperAdmin={isSuperAdminUser} />
+  return (
+    <PostCreateClient
+      backUrl={backUrl}
+      users={usersOptions}
+      categories={categoriesOptions}
+      tags={tagsOptions}
+      isSuperAdmin={isSuperAdminUser}
+    />
+  )
 }
 

@@ -18,6 +18,8 @@ export interface PostEditData {
     published: boolean
     publishedAt: string | null
     authorId: string
+    categoryIds?: string[] | string
+    tagIds?: string[] | string
     [key: string]: unknown
 }
 
@@ -31,6 +33,8 @@ export interface PostEditClientProps {
     backLabel?: string
     postId?: string
     users?: Array<{ label: string; value: string }>
+    categories?: Array<{ label: string; value: string }>
+    tags?: Array<{ label: string; value: string }>
     isSuperAdmin?: boolean
 }
 
@@ -44,6 +48,8 @@ export function PostEditClient({
     backLabel = "Quay lại",
     postId,
     users = [],
+    categories = [],
+    tags = [],
     isSuperAdmin: isSuperAdminProp = false,
 }: PostEditClientProps) {
     const router = useResourceRouter()
@@ -141,6 +147,36 @@ export function PostEditClient({
             description: "Trạng thái xuất bản của bài viết",
             section: "basic",
         },
+        ...(categories.length > 0
+            ? [
+                  {
+                      name: "categoryIds",
+                      label: "Danh mục",
+                      type: "select",
+                      options: categories,
+                      description: "Chọn danh mục cho bài viết (có thể chọn nhiều)",
+                      section: "basic",
+                  } as ResourceFormField<PostEditData>,
+              ]
+            : []),
+        ...(tags.length > 0
+            ? [
+                  {
+                      name: "tagIds",
+                      label: "Thẻ tag",
+                      type: "select",
+                      options: tags,
+                      description: "Chọn thẻ tag cho bài viết (có thể chọn nhiều)",
+                      section: "basic",
+                  } as ResourceFormField<PostEditData>,
+              ]
+            : []),
+        {
+            name: "content",
+            label: "",
+            type: "editor",
+            section: "content",
+        },
         {
             name: "image",
             label: "Hình ảnh",
@@ -148,14 +184,7 @@ export function PostEditClient({
             placeholder: "https://example.com/image.jpg",
             description: "URL hình ảnh đại diện cho bài viết",
             section: "basic",
-        },
-        {
-            name: "content",
-            label: "",
-            type: "editor",
-            section: "content",
-        },
-
+        }
     ]
 
     const editSections: ResourceFormSection[] = [

@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Hash, User, Calendar, Clock, Edit, Eye, EyeOff, CheckCircle2 } from "lucide-react"
+import { Hash, User, Calendar, Clock, Edit, Eye, EyeOff, CheckCircle2, Tag, Tags } from "lucide-react"
 import { ResourceDetailPage, type ResourceDetailField, type ResourceDetailSection } from "@/features/admin/resources/components"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -30,6 +30,14 @@ export interface PostDetailData {
     name: string | null
     email: string
   }
+  categories?: Array<{
+    id: string
+    name: string
+  }>
+  tags?: Array<{
+    id: string
+    name: string
+  }>
   [key: string]: unknown
 }
 
@@ -140,6 +148,50 @@ export function PostDetailClient({ postId, post, backUrl = "/admin/posts" }: Pos
                   </div>
                 </div>
               </div>
+              
+              {/* Categories */}
+              {postData.categories && postData.categories.length > 0 && (
+                <div className="flex items-start gap-3">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted">
+                    <Tag className="h-4 w-4 text-muted-foreground" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-xs font-medium text-muted-foreground mb-1.5">Danh mục</div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {postData.categories.map((category) => (
+                        <span
+                          key={category.id}
+                          className="inline-flex items-center rounded-md bg-primary/10 px-2 py-1 text-xs font-medium text-primary"
+                        >
+                          {category.name}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Tags */}
+              {postData.tags && postData.tags.length > 0 && (
+                <div className="flex items-start gap-3">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted">
+                    <Tags className="h-4 w-4 text-muted-foreground" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-xs font-medium text-muted-foreground mb-1.5">Thẻ tag</div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {postData.tags.map((tag) => (
+                        <span
+                          key={tag.id}
+                          className="inline-flex items-center rounded-md bg-secondary/50 px-2 py-1 text-xs font-medium text-secondary-foreground"
+                        >
+                          {tag.name}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
               {/* Published Status */}
               <div className="grid gap-4">
                 <FieldItem icon={postData.published ? Eye : EyeOff} label="Trạng thái">
@@ -266,4 +318,7 @@ export function PostDetailClient({ postId, post, backUrl = "/admin/posts" }: Pos
     />
   )
 }
+
+// Set displayName để tránh lỗi Performance API
+PostDetailClient.displayName = "PostDetailClient"
 

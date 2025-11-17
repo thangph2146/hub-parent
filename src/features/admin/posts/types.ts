@@ -15,6 +15,14 @@ export interface PostRow {
     name: string | null
     email: string
   }
+  categories?: Array<{
+    id: string
+    name: string
+  }>
+  tags?: Array<{
+    id: string
+    name: string
+  }>
 }
 
 export type PostsTableClientProps = BaseResourceTableClientProps<PostRow>

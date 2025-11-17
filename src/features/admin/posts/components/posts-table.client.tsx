@@ -145,11 +145,49 @@ export function PostsTableClient({
         className: "min-w-[200px]",
         headerClassName: "min-w-[200px]",
         cell: (row) => (
-          <div className="flex flex-col gap-1">
+          <div className="flex flex-col gap-1.5">
             <span className="font-medium">{row.title}</span>
             {row.excerpt && (
               <span className="text-xs text-muted-foreground line-clamp-1">{row.excerpt}</span>
             )}
+            {(row.categories && row.categories.length > 0) || (row.tags && row.tags.length > 0) ? (
+              <div className="flex flex-wrap gap-1 mt-0.5">
+                {row.categories && row.categories.length > 0 && (
+                  <>
+                    {row.categories.slice(0, 2).map((category) => (
+                      <span
+                        key={category.id}
+                        className="inline-flex items-center rounded-md bg-primary/10 px-1.5 py-0.5 text-xs font-medium text-primary"
+                      >
+                        {category.name}
+                      </span>
+                    ))}
+                    {row.categories.length > 2 && (
+                      <span className="text-xs text-muted-foreground">
+                        +{row.categories.length - 2}
+                      </span>
+                    )}
+                  </>
+                )}
+                {row.tags && row.tags.length > 0 && (
+                  <>
+                    {row.tags.slice(0, 2).map((tag) => (
+                      <span
+                        key={tag.id}
+                        className="inline-flex items-center rounded-md bg-secondary/50 px-1.5 py-0.5 text-xs font-medium text-secondary-foreground"
+                      >
+                        {tag.name}
+                      </span>
+                    ))}
+                    {row.tags.length > 2 && (
+                      <span className="text-xs text-muted-foreground">
+                        +{row.tags.length - 2}
+                      </span>
+                    )}
+                  </>
+                )}
+              </div>
+            ) : null}
           </div>
         ),
       },

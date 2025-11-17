@@ -11,6 +11,8 @@ import { PostEditClient } from "./post-edit.client"
 import type { PostEditData } from "./post-edit.client"
 import { NotFoundMessage } from "@/features/admin/resources/components"
 import { getActiveUsersForSelectCached } from "@/features/admin/users/server/cache"
+import { getActiveCategoriesForSelectCached } from "@/features/admin/categories/server/cache"
+import { getActiveTagsForSelectCached } from "@/features/admin/tags/server/cache"
 import { getAuthInfo } from "@/features/admin/resources/server"
 
 export interface PostEditProps {
@@ -40,12 +42,19 @@ export async function PostEdit({
 
   const { isSuperAdminUser } = await getAuthInfo()
   
-  // Chỉ fetch users options nếu là super admin
-  const usersOptions = isSuperAdminUser ? await getActiveUsersForSelectCached(100) : []
+  // Fetch options in parallel
+  const [usersOptions, categoriesOptions, tagsOptions] = await Promise.all([
+    // Chỉ fetch users options nếu là super admin
+    isSuperAdminUser ? getActiveUsersForSelectCached(100) : Promise.resolve([]),
+    getActiveCategoriesForSelectCached(100),
+    getActiveTagsForSelectCached(100),
+  ])
 
   const postForEdit: PostEditData = {
     ...serializePostDetail(post),
     authorId: post.author.id,
+    categoryIds: post.categories?.map((c) => c.id) || [],
+    tagIds: post.tags?.map((t) => t.id) || [],
   }
 
   return (
@@ -59,6 +68,8 @@ export async function PostEdit({
       backLabel={backLabel}
       postId={postId}
       users={usersOptions}
+      categories={categoriesOptions}
+      tags={tagsOptions}
       isSuperAdmin={isSuperAdminUser}
     />
   )

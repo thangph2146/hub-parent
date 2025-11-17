@@ -32,3 +32,6 @@ export async function PostDetail({ postId, backUrl = "/admin/posts" }: PostDetai
   )
 }
 
+// Set displayName để tránh lỗi Performance API
+PostDetail.displayName = "PostDetail"
+
