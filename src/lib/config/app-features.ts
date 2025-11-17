@@ -15,6 +15,11 @@ import {
   Shield,
   Tag,
   Users,
+  Home,
+  Info,
+  Mail,
+  HelpCircle,
+  BookOpen,
 } from "lucide-react"
 
 import {
@@ -30,7 +35,7 @@ import {
 } from "@/lib/permissions/route-helpers"
 import type { MenuItem, MenuSubItem } from "./navigation-types"
 
-type FeatureGroup = "main" | "secondary"
+type FeatureGroup = "main" | "secondary" | "public"
 export type ComponentRenderMode = "static" | "dynamic"
 
 export interface FeatureComponentStrategy {
@@ -451,6 +456,67 @@ export const appFeatures: FeatureDefinition[] = [
       group: "secondary",
       order: 20,
       href: "/admin/feedback",
+    },
+  },
+  // Public Features - Không cần authentication
+  {
+    key: "home",
+    title: "Trang chủ",
+    description: "Trang chủ của hệ thống",
+    permissions: [], // Empty array = public access
+    icon: createIcon(Home),
+    navigation: {
+      group: "public",
+      order: 10,
+      href: "/",
+    },
+  },
+  {
+    key: "blog",
+    title: "Bài viết",
+    description: "Xem các bài viết và tin tức",
+    permissions: [], // Public access
+    icon: createIcon(FileText),
+    navigation: {
+      group: "public",
+      order: 20,
+      href: "/bai-viet",
+    },
+  },
+  {
+    key: "about",
+    title: "Về chúng tôi",
+    description: "Thông tin về tổ chức",
+    permissions: [], // Public access
+    icon: createIcon(Info),
+    navigation: {
+      group: "public",
+      order: 30,
+      href: "/about",
+    },
+  },
+  {
+    key: "contact",
+    title: "Liên hệ",
+    description: "Liên hệ với chúng tôi",
+    permissions: [], // Public access
+    icon: createIcon(Mail),
+    navigation: {
+      group: "public",
+      order: 40,
+      href: "/contact",
+    },
+  },
+  {
+    key: "help",
+    title: "Trợ giúp",
+    description: "Hướng dẫn và hỗ trợ",
+    permissions: [], // Public access
+    icon: createIcon(HelpCircle),
+    navigation: {
+      group: "public",
+      order: 50,
+      href: "/help",
     },
   },
 ] satisfies ReadonlyArray<FeatureDefinition>

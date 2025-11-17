@@ -26,12 +26,55 @@ import {
   HelpCircle,
   BookOpen,
   MessageCircle,
+  MessageSquare,
   LucideIcon,
   LogIn,
   UserPlus,
+  FolderTree,
+  Tag,
+  GraduationCap,
+  Send,
+  Bell,
+  BadgeHelp,
+  LifeBuoy,
+  Command,
+  Home,
 } from "lucide-react"
 import { Logo } from "../../../../public/svg/Logo"
-import { ROUTES } from "@/lib/config/routes"
+import { appFeatures } from "@/lib/config/app-features"
+import { getResourceMainRoute } from "@/lib/permissions/route-helpers"
+
+/**
+ * Helper functions để lấy routes từ appFeatures
+ */
+function getRouteFromFeature(key: string): string | null {
+  const feature = appFeatures.find((f) => f.key === key)
+  if (!feature?.navigation) return null
+
+  const nav = feature.navigation
+  if (nav.href) return nav.href
+
+  if (nav.resourceName) {
+    const route = getResourceMainRoute(nav.resourceName)
+    return route?.path || null
+  }
+
+  return null
+}
+
+// Public routes constants - Lấy từ appFeatures
+const PUBLIC_ROUTES = {
+  home: getRouteFromFeature("home") || "/",
+  blog: getRouteFromFeature("blog") || "/bai-viet",
+  about: getRouteFromFeature("about") || "/about",
+  contact: getRouteFromFeature("contact") || "/contact",
+  help: getRouteFromFeature("help") || "/help",
+  admin: getRouteFromFeature("dashboard") || "/admin/dashboard",
+  auth: {
+    signIn: "/auth/sign-in",
+    signUp: "/auth/sign-up",
+  },
+} as const
 
 type LinkItem = {
   title: string
@@ -75,15 +118,33 @@ export function PublicHeader() {
     >
       <nav className="mx-auto flex h-14 w-full max-w-7xl items-center justify-between px-4">
         <div className="flex items-center gap-5">
-          <Link href={ROUTES.home} className="hover:bg-accent rounded-md p-2">
+          <Link href={PUBLIC_ROUTES.home} className="rounded-md p-2">
             <Logo className="h-10 w-10 text-blue-100" />
-          </Link>
-          <Link href="/bai-viet" className="hover:bg-accent rounded-md px-3 py-2 text-sm font-medium">
-            Bài viết
           </Link>
           {mounted ? (
             <NavigationMenu className="hidden md:flex">
               <NavigationMenuList>
+                <NavigationMenuItem>
+                  <NavigationMenuLink asChild>
+                    <Link
+                      href={PUBLIC_ROUTES.home}
+                      className="group inline-flex h-10 w-max items-center justify-center rounded-md bg-transparent px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50"
+                    >
+                      <Home className="mr-2 h-4 w-4" />
+                      Trang chủ
+                    </Link>
+                  </NavigationMenuLink>
+                </NavigationMenuItem>
+                <NavigationMenuItem>
+                  <NavigationMenuLink asChild>
+                    <Link
+                      href={PUBLIC_ROUTES.blog}
+                      className="group inline-flex h-10 w-max items-center justify-center rounded-md bg-transparent px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50"
+                    >
+                      Bài viết
+                    </Link>
+                  </NavigationMenuLink>
+                </NavigationMenuItem>
                 <NavigationMenuItem>
                   <NavigationMenuTrigger className="bg-transparent">
                     Tính năng
@@ -117,10 +178,13 @@ export function PublicHeader() {
           ) : (
             <div className="hidden md:flex items-center gap-4">
               <Button variant="ghost" className="bg-transparent" asChild>
-                <Link href="/admin/dashboard">Tính năng</Link>
+                <Link href={PUBLIC_ROUTES.home}>Trang chủ</Link>
               </Button>
               <Button variant="ghost" className="bg-transparent" asChild>
-                <Link href="/admin/support">Hỗ trợ</Link>
+                <Link href={PUBLIC_ROUTES.admin}>Tính năng</Link>
+              </Button>
+              <Button variant="ghost" className="bg-transparent" asChild>
+                <Link href={PUBLIC_ROUTES.help}>Hỗ trợ</Link>
               </Button>
             </div>
           )}
@@ -135,10 +199,10 @@ export function PublicHeader() {
             ) : (
               <>
                 <Button variant="outline" asChild className="hidden md:flex">
-                  <Link href="/auth/sign-in">Đăng nhập</Link>
+                  <Link href={PUBLIC_ROUTES.auth.signIn}>Đăng nhập</Link>
                 </Button>
                 <Button asChild className="hidden md:flex">
-                  <Link href="/auth/sign-up">Đăng ký</Link>
+                  <Link href={PUBLIC_ROUTES.auth.signUp}>Đăng ký</Link>
                 </Button>
               </>
             )}
@@ -212,6 +276,19 @@ export function PublicHeader() {
             {/* Navigation Links - Scrollable */}
             <div className="flex-1 overflow-y-auto">
               <div className="flex w-full flex-col gap-y-1">
+                <Link
+                  href={PUBLIC_ROUTES.home}
+                  className="w-full flex flex-row gap-x-3 hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground rounded-lg p-3 transition-colors"
+                  onClick={() => setOpen(false)}
+                >
+                  <div className="bg-background/40 flex aspect-square size-11 items-center justify-center rounded-lg border shadow-sm shrink-0">
+                    <Home className="text-foreground size-5" />
+                  </div>
+                  <div className="flex flex-col items-start justify-center min-w-0 flex-1">
+                    <span className="font-medium text-sm">Trang chủ</span>
+                    <span className="text-muted-foreground text-xs leading-relaxed">Trang chủ của hệ thống</span>
+                  </div>
+                </Link>
                 <span className="px-2 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   Tính năng
                 </span>
@@ -333,59 +410,89 @@ function ListItem({
   )
 }
 
-const featureLinks: LinkItem[] = [
-  {
-    title: "Dashboard",
-    href: "/admin/dashboard",
-    description: "Quản lý và theo dõi hệ thống",
-    icon: LayoutDashboard,
-  },
-  {
-    title: "Quản lý nội dung",
-    href: "#",
-    description: "Tạo và quản lý bài viết, trang",
-    icon: FileText,
-  },
-  {
-    title: "Quản lý người dùng",
-    href: "#",
-    description: "Quản lý tài khoản và quyền truy cập",
-    icon: Users,
-  },
-  {
-    title: "Cài đặt",
-    href: "#",
-    description: "Cấu hình hệ thống và tùy chọn",
-    icon: Settings,
-  },
-]
+/**
+ * Convert appFeatures thành LinkItem[] cho public header
+ * Chỉ lấy các features có navigation config và thuộc group "main"
+ */
+function getFeatureLinks(): LinkItem[] {
+  // Map icon components từ appFeatures
+  const iconMap: Record<string, LucideIcon> = {
+    dashboard: LayoutDashboard,
+    posts: FileText,
+    users: Users,
+    categories: FolderTree,
+    tags: Tag,
+    roles: Shield,
+    students: GraduationCap,
+    messages: Send,
+    comments: MessageSquare,
+    notifications: Bell,
+    contactRequests: BadgeHelp,
+    sessions: LogIn,
+  }
 
-const supportLinks: LinkItem[] = [
-  {
-    title: "Trung tâm trợ giúp",
-    href: "#",
-    description: "Hướng dẫn sử dụng và FAQ",
-    icon: HelpCircle,
-  },
-  {
-    title: "Tài liệu",
-    href: "#",
-    description: "Tài liệu và hướng dẫn chi tiết",
-    icon: BookOpen,
-  },
-  {
-    title: "Liên hệ",
-    href: "#",
-    description: "Liên hệ hỗ trợ và phản hồi",
-    icon: MessageCircle,
-  },
-  {
-    title: "Chính sách bảo mật",
-    href: "#",
-    description: "Bảo vệ thông tin người dùng",
-    icon: Shield,
-  },
-]
+  const mainFeatures = appFeatures.filter(
+    (feature) => feature.navigation?.group === "main"
+  )
+
+  return mainFeatures
+    .slice(0, 4) // Chỉ lấy 4 features đầu tiên
+    .map((feature) => {
+      const nav = feature.navigation!
+      let href = nav.href || "#"
+      
+      // Nếu có resourceName, lấy route từ getResourceMainRoute
+      if (nav.resourceName && !nav.href) {
+        const route = getResourceMainRoute(nav.resourceName)
+        href = route?.path || "#"
+      }
+
+      // Lấy icon từ map dựa trên feature key
+      const icon = iconMap[feature.key] || LayoutDashboard
+
+      return {
+        title: feature.title,
+        href,
+        description: feature.description,
+        icon,
+      }
+    })
+}
+
+/**
+ * Convert appFeatures thành LinkItem[] cho support section
+ * Lấy các features thuộc group "secondary"
+ */
+function getSupportLinks(): LinkItem[] {
+  // Map icon components từ appFeatures
+  const iconMap: Record<string, LucideIcon> = {
+    support: LifeBuoy,
+    feedback: Command,
+  }
+
+  const supportFeatures = appFeatures.filter(
+    (feature) => feature.navigation?.group === "secondary"
+  )
+
+  return supportFeatures.map((feature) => {
+    const nav = feature.navigation!
+    const href = nav.href || "#"
+
+    // Lấy icon từ map dựa trên feature key
+    const icon = iconMap[feature.key] || HelpCircle
+
+    return {
+      title: feature.title,
+      href,
+      description: feature.description,
+      icon,
+    }
+  })
+}
+
+// Generate links từ appFeatures
+const featureLinks: LinkItem[] = getFeatureLinks()
+const supportLinks: LinkItem[] = getSupportLinks()
 
 function useScroll(threshold: number) {
   const [scrolled, setScrolled] = React.useState(false)

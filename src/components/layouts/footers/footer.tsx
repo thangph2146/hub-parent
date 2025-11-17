@@ -16,8 +16,38 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { appConfig } from "@/lib/config";
-import { ROUTES } from "@/lib/config/routes";
+import { appFeatures } from "@/lib/config/app-features";
+import { getResourceMainRoute } from "@/lib/permissions/route-helpers";
 import { Logo } from "../../../../public/svg/Logo";
+
+/**
+ * Helper function để lấy route từ appFeatures
+ */
+function getRouteFromFeature(key: string): string | null {
+  const feature = appFeatures.find((f) => f.key === key);
+  if (!feature?.navigation) return null;
+
+  const nav = feature.navigation;
+  if (nav.href) return nav.href;
+
+  if (nav.resourceName) {
+    const route = getResourceMainRoute(nav.resourceName);
+    return route?.path || null;
+  }
+
+  return null;
+}
+
+// Public routes constants - Lấy từ appFeatures
+const FOOTER_ROUTES = {
+  home: getRouteFromFeature("home") || "/",
+  blog: getRouteFromFeature("blog") || "/bai-viet",
+  categories: getRouteFromFeature("blog") || "/bai-viet", // Sử dụng blog route cho categories
+  admin: getRouteFromFeature("dashboard") || "/admin/dashboard",
+  about: getRouteFromFeature("about") || "/about",
+  contact: getRouteFromFeature("contact") || "/contact",
+  help: getRouteFromFeature("help") || "/help",
+} as const;
 
 
 export function PublicFooter() {
@@ -147,21 +177,21 @@ export function PublicFooter() {
               </h4>
               <nav className="space-y-3">
                 <Link
-                  href={ROUTES.home}
+                  href={FOOTER_ROUTES.home}
                   className="flex items-center gap-2 text-white/80 hover:text-white transition-all duration-200 group"
                 >
                   <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
                   <span>Trang chủ</span>
                 </Link>
                 <Link
-                  href={ROUTES.blog}
+                  href={FOOTER_ROUTES.blog}
                   className="flex items-center gap-2 text-white/80 hover:text-white transition-all duration-200 group"
                 >
                   <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
                   <span>Blog</span>
                 </Link>
                 <Link
-                  href={ROUTES.categories}
+                  href={FOOTER_ROUTES.categories}
                   className="flex items-center gap-2 text-white/80 hover:text-white transition-all duration-200 group"
                 >
                   <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
@@ -178,7 +208,7 @@ export function PublicFooter() {
               </h4>
               <nav className="space-y-3">
                 <Link
-                  href={ROUTES.admin}
+                  href={FOOTER_ROUTES.admin}
                   className="flex items-center gap-2 text-white/80 hover:text-white transition-all duration-200 group"
                 >
                   <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
@@ -282,16 +312,16 @@ export function PublicFooter() {
 
 
           <div className="flex items-center gap-6 text-sm">
-            <Link href={ROUTES.about} className="hover:text-white transition-colors">
+            <Link href={FOOTER_ROUTES.about} className="hover:text-white transition-colors">
               Về chúng tôi
             </Link>
             <span className="text-white/20">•</span>
-            <Link href={ROUTES.contact} className="hover:text-white transition-colors">
+            <Link href={FOOTER_ROUTES.contact} className="hover:text-white transition-colors">
               Liên hệ
             </Link>
             <span className="text-white/20">•</span>
             <Link 
-              href={ROUTES.help}
+              href={FOOTER_ROUTES.help}
               className="hover:text-white transition-colors flex items-center gap-1"
             >
               Trợ giúp

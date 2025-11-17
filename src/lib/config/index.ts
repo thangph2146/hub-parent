@@ -38,5 +38,3 @@ export {
   type FeatureComponentStrategy,
   type FeatureKey,
 } from "./app-features"
-
-export { ROUTES } from "./routes"
