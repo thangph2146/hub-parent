@@ -212,18 +212,6 @@ export function DashboardWelcome() {
                 </span>
               </motion.div>
             </div>
-            <motion.div
-              className="flex items-center gap-3 px-5 py-3 rounded-xl backdrop-blur-md bg-card/80 border border-border/50 shadow-lg hover:shadow-xl transition-all"
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.5, duration: 0.6 }}
-            >
-              <div className="relative">
-                <Activity className="h-5 w-5 text-[#00cc44] dark:text-[#00ff88]" />
-                <div className="absolute inset-0 h-5 w-5 text-[#00cc44] dark:text-[#00ff88] animate-ping opacity-20" />
-              </div>
-              <span className="font-semibold text-sm">Hệ thống hoạt động tốt</span>
-            </motion.div>
           </div>
         </motion.div>
 

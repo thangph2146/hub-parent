@@ -1,11 +1,11 @@
 "use client"
 
 import * as React from "react"
-import { Command } from "lucide-react"
 import { useSession } from "next-auth/react"
 import { appConfig, getAppBranding, getMenuData } from "@/lib/config"
 import { NavProjects, NavSecondary, NavUser } from "."
 import { AppSidebarSkeleton } from "@/components/layouts/skeletons"
+import { Logo } from "../../../../public/svg/Logo"
 import {
   Sidebar,
   SidebarContent,
@@ -65,8 +65,8 @@ export function AppSidebar({ navMainSlot, ...props }: AppSidebarProps) {
               <TooltipTrigger asChild>
                 <SidebarMenuButton size="lg" asChild>
                   <a href={dashboardHref}>
-                    <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
-                      <Command className="size-4" />
+                    <div className="bg-white flex aspect-square size-8 items-center justify-center rounded-lg p-1">
+                      <Logo className="size-8 text-sidebar-primary-foreground" />
                     </div>
                     <div className="grid flex-1 text-left text-sm leading-tight">
                       <span className="truncate font-medium">{brandingName}</span>
