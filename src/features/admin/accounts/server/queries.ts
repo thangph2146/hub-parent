@@ -8,7 +8,7 @@ import { prisma } from "@/lib/database"
 import type { AccountProfile } from "../types"
 import type { Prisma } from "@prisma/client"
 
-type UserWithRoles = Prisma.UserGetPayload<{
+type _UserWithRoles = Prisma.UserGetPayload<{
   include: {
     userRoles: {
       include: {

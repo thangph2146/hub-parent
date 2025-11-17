@@ -15,7 +15,7 @@ import {
 } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useMemo } from "react"
 import type React from "react"
 import { appFeatures } from "@/lib/config/app-features"
 import { getResourceMainRoute } from "@/lib/permissions/route-helpers"
@@ -25,7 +25,7 @@ import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
 /**
  * Helper function để lấy route từ appFeatures
  */
-function getRouteFromFeature(key: string): string | null {
+function _getRouteFromFeature(key: string): string | null {
   const feature = appFeatures.find((f) => f.key === key)
   if (!feature?.navigation) return null
 
@@ -61,7 +61,7 @@ export function AboutClient() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [isMobile, setIsMobile] = useState(false)
   const [currentLeaderIndex, setCurrentLeaderIndex] = useState(0)
-  const [leaderCarouselIndices, setLeaderCarouselIndices] = useState<Record<number, number>>({})
+  const [_leaderCarouselIndices, setLeaderCarouselIndices] = useState<Record<number, number>>({})
   const leaderCarouselRefs = useRef<Record<number, HTMLDivElement | null>>({})
 
   // Detect screen size: xl = 1280px
@@ -194,7 +194,7 @@ export function AboutClient() {
     },
   ]
 
-  const leaderGenerations = [
+  const leaderGenerations = useMemo(() => [
     {
       period: "BAN LÃNH ĐẠO ĐƯƠNG NHIỆM",
       year: "2020 đến nay",
@@ -293,7 +293,7 @@ export function AboutClient() {
         { name: "NGND.TS. NGUYỄN VĂN HÀ", image: "https://hub.edu.vn/DATA/IMAGES/2025/02/17/20250217213427NGUYENVANHA.jpg", position: "PHÓ HIỆU TRƯỞNG\n1987 - 1993" },
       ]
     },
-  ]
+  ], [])
 
   // Navigation function for leader generations
   const goToLeader = (index: number) => {
@@ -331,16 +331,16 @@ export function AboutClient() {
     updateLeadersPerSlide()
     window.addEventListener("resize", updateLeadersPerSlide)
     return () => window.removeEventListener("resize", updateLeadersPerSlide)
-  }, [])
+  }, [leaderGenerations])
 
   // Tính số slide cho thế hệ lãnh đạo hiện tại
-  const getTotalLeaderSlides = (generationIndex: number) => {
+  const _getTotalLeaderSlides = (generationIndex: number) => {
     const leaders = leaderGenerations[generationIndex]?.leaders || []
     return Math.ceil(leaders.length / leadersPerSlide)
   }
 
   // Navigation cho leader carousel - sử dụng scroll
-  const nextLeaderCarousel = (generationIndex: number) => {
+  const _nextLeaderCarousel = (generationIndex: number) => {
     const carouselEl = leaderCarouselRefs.current[generationIndex]
     if (carouselEl) {
       const slideWidth = carouselEl.clientWidth
@@ -353,7 +353,7 @@ export function AboutClient() {
     }
   }
 
-  const prevLeaderCarousel = (generationIndex: number) => {
+  const _prevLeaderCarousel = (generationIndex: number) => {
     const carouselEl = leaderCarouselRefs.current[generationIndex]
     if (carouselEl) {
       const slideWidth = carouselEl.clientWidth
@@ -366,7 +366,7 @@ export function AboutClient() {
     }
   }
 
-  const goToLeaderSlide = (generationIndex: number, slideIndex: number) => {
+  const _goToLeaderSlide = (generationIndex: number, slideIndex: number) => {
     const carouselEl = leaderCarouselRefs.current[generationIndex]
     if (carouselEl) {
       const slideWidth = carouselEl.clientWidth
@@ -378,7 +378,7 @@ export function AboutClient() {
   }
 
   // Lấy các lãnh đạo hiển thị trong một slide cụ thể
-  const getLeadersForSlide = (generationIndex: number, slideIndex: number): (typeof leaderGenerations[0]['leaders'][0] | null)[] => {
+  const _getLeadersForSlide = (generationIndex: number, slideIndex: number): (typeof leaderGenerations[0]['leaders'][0] | null)[] => {
     const leaders = leaderGenerations[generationIndex]?.leaders || []
     const startIndex = slideIndex * leadersPerSlide
     const endIndex = startIndex + leadersPerSlide
@@ -631,10 +631,10 @@ export function AboutClient() {
                   Đội ngũ nhân sự của <span className="font-bold text-secondary">HUB</span> với trên 500 cán bộ, giảng viên, nhân viên. Trong đó, 235 giảng viên có chức danh Giáo sư/Phó Giáo sư/Tiến sĩ, thuộc Top 3 trường khối kinh tế về số lượng Giáo sư/Phó Giáo sư/Tiến sĩ. Đội ngũ Giảng viên <span className="font-bold text-secondary">HUB</span> vừa là các chuyên gia, nhà nghiên cứu, nhà quản lý giàu kinh nghiệm, vừa là những thầy cô tận tâm với sinh viên. Quan trọng hơn là đội ngũ chất lượng cao này được phát triển đồng đều ở tất cả các lĩnh vực đào tạo của Trường. Theo đó, Trường không chỉ có số lượng lớn GS-TS kinh tế mà còn có số lượng GS-TS cao bậc nhất Việt Nam chuyên sâu về AI, Khoa học dữ liệu, Công nghệ tài chính (38 GS-TS). Điều này giúp phục vụ hiệu quả quá trình đào tạo chuyển đổi số cho đất nước và ngành Ngân hàng.
                 </p>
                 <p className="text-sm sm:text-base md:text-lg text-muted-foreground mb-4">
-                  <span className="font-bold text-secondary">HUB</span> có 03 cơ sở đào tạo với 02 cơ sở tại trung tâm Q1 TP. HCM và 01 cơ sở tại Thủ Đức có tổng diện tích lên đến hơn 11 hecta được đầu tư xây dựng khang trang – hiện đại theo chiến lược Xanh – Hiện đại – Bề thế: từ hệ thống giảng đường, phòng Lab thực hành, chuyển đổi số, thư viện thực – thư viện số, phòng học thông minh, đến nhà thi đấu cũng như sân vận động đạt chuẩn quốc tế. Trường đã và đang thực hiện đúng định hướng mô hình "công viên trong đại học" – sẵn sàng hướng tới là một trong những Đại học đầu tiên thực hiện báo cáo quản trị theo chuẩn ESG.
+                  <span className="font-bold text-secondary">HUB</span> có 03 cơ sở đào tạo với 02 cơ sở tại trung tâm Q1 TP. HCM và 01 cơ sở tại Thủ Đức có tổng diện tích lên đến hơn 11 hecta được đầu tư xây dựng khang trang – hiện đại theo chiến lược Xanh – Hiện đại – Bề thế: từ hệ thống giảng đường, phòng Lab thực hành, chuyển đổi số, thư viện thực – thư viện số, phòng học thông minh, đến nhà thi đấu cũng như sân vận động đạt chuẩn quốc tế. Trường đã và đang thực hiện đúng định hướng mô hình &quot;công viên trong đại học&quot; – sẵn sàng hướng tới là một trong những Đại học đầu tiên thực hiện báo cáo quản trị theo chuẩn ESG.
                 </p>
                 <p className="text-sm sm:text-base md:text-lg text-muted-foreground mb-4">
-                  Trường Đại học Ngân hàng TP. Hồ Chí Minh đã kiểm định 100% chương trình đào tạo theo tiêu chuẩn quốc tế AUN – QA và MOET. Không dừng lại ở kiểm định cấp CTĐT, Trường đã hoàn thành những bước cuối cùng để kiểm định cấp CSGD theo chuẩn quốc tế AUN-QA vào tháng 6/2025, trở thành top 11 trường đạt chuẩn kiểm định quốc tế cấp CSGD trong 224 Đại học tại Việt Nam. Đi theo đúng định hướng "đào tạo công dân chuẩn toàn cầu, am hiểu Việt Nam". Chứng nhận Hệ thống quản lý chất lượng theo tiêu chuẩn ISO 9001:2015 của Tổ chức Afnor Cộng hòa Pháp.
+                  Trường Đại học Ngân hàng TP. Hồ Chí Minh đã kiểm định 100% chương trình đào tạo theo tiêu chuẩn quốc tế AUN – QA và MOET. Không dừng lại ở kiểm định cấp CTĐT, Trường đã hoàn thành những bước cuối cùng để kiểm định cấp CSGD theo chuẩn quốc tế AUN-QA vào tháng 6/2025, trở thành top 11 trường đạt chuẩn kiểm định quốc tế cấp CSGD trong 224 Đại học tại Việt Nam. Đi theo đúng định hướng &quot;đào tạo công dân chuẩn toàn cầu, am hiểu Việt Nam&quot;. Chứng nhận Hệ thống quản lý chất lượng theo tiêu chuẩn ISO 9001:2015 của Tổ chức Afnor Cộng hòa Pháp.
                 </p>
                 <p className="text-sm sm:text-base md:text-lg text-muted-foreground">
                   Trường Đại học Ngân hàng TP. Hồ Chí Minh tiếp tục khẳng định vị thế là Trường Đại học lớn ở Việt Nam, đào tạo đa ngành, xây dựng hệ sinh thái hạnh phúc trong cộng đồng người học và cung ứng nguồn nhân lực chất lượng cao cho ngành Ngân hàng, doanh nghiệp và xã hội.

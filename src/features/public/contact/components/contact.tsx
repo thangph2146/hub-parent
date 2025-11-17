@@ -7,9 +7,7 @@
 
 import { ContactClient } from "./contact-client"
 
-export interface ContactProps {
-  // Có thể thêm props từ page nếu cần
-}
+export type ContactProps = Record<string, never>
 
 export async function Contact({}: ContactProps) {
   // Nếu cần fetch data, thêm vào đây

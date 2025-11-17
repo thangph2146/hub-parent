@@ -9,7 +9,6 @@ import { useQueryClient } from "@tanstack/react-query"
 import {
   BadgeCheck,
   ChevronsUpDown,
-  CreditCard,
   LogOut,
   LayoutDashboard,
 } from "lucide-react"

@@ -1,12 +1,12 @@
 "use client"
 
 import * as React from "react"
-import { FileText, Hash, User, Calendar, Clock, Edit, Image as ImageIcon, Eye, EyeOff, CheckCircle2 } from "lucide-react"
+import { Hash, User, Calendar, Clock, Edit, Eye, EyeOff, CheckCircle2 } from "lucide-react"
 import { ResourceDetailPage, type ResourceDetailField, type ResourceDetailSection } from "@/features/admin/resources/components"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
+import { Card } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
-import { Badge } from "@/components/ui/badge"
+import Image from "next/image"
 import { useResourcePath, useResourceRouter } from "@/hooks/use-resource-segment"
 import { formatDateVi } from "../utils"
 import { Editor } from "@/components/editor/editor-x/editor"
@@ -79,10 +79,12 @@ export function PostDetailClient({ postId, post, backUrl = "/admin/posts" }: Pos
             <div className="space-y-4">
               {/* Image */}
               {postData.image && (
-                <div className="w-full">
-                  <img
+                <div className="w-full relative" style={{ maxHeight: "400px" }}>
+                  <Image
                     src={postData.image}
                     alt={postData.title}
+                    width={800}
+                    height={400}
                     className="w-full h-auto rounded-lg border border-border object-cover"
                     style={{ maxHeight: "400px" }}
                   />

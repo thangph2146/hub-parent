@@ -7,8 +7,8 @@
     "prebuild": "prisma generate",
     "dev": "prisma generate && next dev",
     "dev:db": "prisma db push && prisma generate && next dev",
-    "build": "next build",
-    "start": "next start",
+    "build": "prisma generate && next build",
+    "start": "prisma generate && next start",
     "lint": "eslint",
     "db:push": "prisma db push",
     "db:generate": "prisma generate"

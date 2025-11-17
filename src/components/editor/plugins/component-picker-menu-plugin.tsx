@@ -66,7 +66,7 @@ export function ComponentPickerMenuPlugin({
           option.keywords.some((keyword) => regex.test(keyword))
       ),
     ]
-  }, [editor, queryString, showModal])
+  }, [baseOptions, dynamicOptionsFn, queryString])
 
   const onSelectOption = useCallback(
     (
@@ -81,7 +81,7 @@ export function ComponentPickerMenuPlugin({
         closeMenu()
       })
     },
-    [editor]
+    [editor, showModal]
   )
 
   return (

@@ -623,7 +623,6 @@ export function NotificationsTableClient({
       session?.user?.id,
       togglingNotifications,
       handleToggleRead,
-      handleDeleteSingle,
     ]
   )
 

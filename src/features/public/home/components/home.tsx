@@ -7,9 +7,7 @@
 
 import { HomeClient } from "./home-client"
 
-export interface HomeProps {
-  // Có thể thêm props từ page nếu cần
-}
+export type HomeProps = Record<string, never>
 
 export async function Home({}: HomeProps) {
   // Nếu cần fetch data, thêm vào đây

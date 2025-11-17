@@ -33,9 +33,7 @@ const HOME_ROUTES = {
   help: getRouteFromFeature("help") || "/help",
 } as const
 
-export interface HomeClientProps {
-  // Có thể thêm props từ server component nếu cần
-}
+export type HomeClientProps = Record<string, never>
 
 export function HomeClient({}: HomeClientProps) {
   return (

@@ -14,7 +14,6 @@ import {
   Users,
   GraduationCap,
   Shield,
-  Bell
 } from "lucide-react"
 import Link from "next/link"
 import { appFeatures } from "@/lib/config/app-features"
@@ -45,9 +44,7 @@ const HELP_ROUTES = {
   blog: getRouteFromFeature("blog") || "/bai-viet",
 } as const
 
-export interface HelpClientProps {
-  // Có thể thêm props từ server component nếu cần
-}
+export type HelpClientProps = Record<string, never>
 
 export function HelpClient({}: HelpClientProps) {
   const faqItems = [

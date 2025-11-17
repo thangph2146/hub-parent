@@ -3,8 +3,7 @@
  * Get total unread messages and notifications count for current user
  */
 
-import { NextRequest, NextResponse } from "next/server"
-import { auth } from "@/lib/auth/auth"
+import { NextRequest } from "next/server"
 import { prisma } from "@/lib/database"
 import { NotificationKind, type Prisma } from "@prisma/client"
 import { createGetRoute } from "@/lib/api/api-route-wrapper"

@@ -7,9 +7,7 @@
 
 import { HelpClient } from "./help-client"
 
-export interface HelpProps {
-  // Có thể thêm props từ page nếu cần
-}
+export type HelpProps = Record<string, never>
 
 export async function Help({}: HelpProps) {
   // Nếu cần fetch data, thêm vào đây

@@ -8,7 +8,6 @@ import {
   GraduationCap, 
   MapPin,
   Clock,
-  MessageSquare
 } from "lucide-react"
 import { appFeatures } from "@/lib/config/app-features"
 import { getResourceMainRoute } from "@/lib/permissions/route-helpers"
@@ -32,14 +31,12 @@ function getRouteFromFeature(key: string): string | null {
 }
 
 // Routes constants - Lấy từ appFeatures
-const CONTACT_ROUTES = {
+const _CONTACT_ROUTES = {
   home: getRouteFromFeature("home") || "/",
   help: getRouteFromFeature("help") || "/huong-dan-su-dung",
 } as const
 
-export interface ContactClientProps {
-  // Có thể thêm props từ server component nếu cần
-}
+export type ContactClientProps = Record<string, never>
 
 export function ContactClient({}: ContactClientProps) {
   return (

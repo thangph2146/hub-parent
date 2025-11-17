@@ -3,7 +3,7 @@
  * 
  * Submit contact form - no authentication required
  */
-import { NextRequest, NextResponse } from "next/server"
+import { NextRequest } from "next/server"
 import { prisma } from "@/lib/database"
 import { CreateContactRequestSchema } from "@/features/admin/contact-requests/server/schemas"
 import { createErrorResponse, createSuccessResponse } from "@/lib/config"

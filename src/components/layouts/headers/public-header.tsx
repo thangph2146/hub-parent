@@ -169,7 +169,7 @@ export function PublicHeader() {
           {mounted ? (
             <NavigationMenu className="hidden md:flex">
               <NavigationMenuList>
-                {publicLinks.map((link, index) => {
+                {publicLinks.map((link) => {
                   // Hiển thị "Trang chủ" và "Bài viết" trực tiếp
                   if (link.href === PUBLIC_ROUTES.home || link.href === PUBLIC_ROUTES.blog) {
                     return (
@@ -480,7 +480,7 @@ function getSupportLinks(): LinkItem[] {
 }
 
 // Generate links từ appFeatures
-const supportLinks: LinkItem[] = getSupportLinks()
+const _supportLinks: LinkItem[] = getSupportLinks()
 
 function useScroll(threshold: number) {
   const [scrolled, setScrolled] = React.useState(false)

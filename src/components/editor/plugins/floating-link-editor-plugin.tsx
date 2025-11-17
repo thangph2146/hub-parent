@@ -126,7 +126,7 @@ function FloatingLinkEditor({
     // Show floating editor if:
     // 1. We have a link node (existing link) - show to view/edit
     // 2. We're in edit mode (creating new link) - show input to create link
-    const hasImageNode = $isNodeSelection(selection) && selectedNode && $isImageNode(selectedNode)
+    const _hasImageNode = $isNodeSelection(selection) && selectedNode && $isImageNode(selectedNode)
     const shouldShowEditor = 
       (linkNode !== null || isLinkEditMode) &&
       hasValidSelection &&

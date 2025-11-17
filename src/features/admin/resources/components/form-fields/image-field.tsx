@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input"
 import { FieldContent } from "@/components/ui/field"
 import { ImageIcon, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import Image from "next/image"
 
 export interface ImageFieldProps {
   value: unknown
@@ -67,11 +68,13 @@ export function ImageField({
 
         {/* Image preview */}
         {hasImage && !imageError && (
-          <div className="aspect-video w-full flex items-center justify-center">
-            <img
+          <div className="aspect-video w-full flex items-center justify-center relative">
+            <Image
               src={imageUrl}
               alt="Preview"
-              className="w-full h-full object-contain"
+              fill
+              className="object-contain"
+              unoptimized
               onError={() => setImageError(true)}
               onLoad={() => setImageError(false)}
             />

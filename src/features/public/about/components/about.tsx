@@ -7,9 +7,7 @@
 
 import { AboutClient } from "./about-client"
 
-export interface AboutProps {
-  // Có thể thêm props từ page nếu cần
-}
+export type AboutProps = Record<string, never>
 
 export async function About({}: AboutProps) {
   // Nếu cần fetch data, thêm vào đây

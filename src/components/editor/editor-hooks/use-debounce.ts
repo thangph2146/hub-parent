@@ -19,10 +19,9 @@ export function useDebounce<T extends (...args: never[]) => void>(
       const callFn = (...args: Parameters<T>) => {
         // Accessing ref in debounced callback is safe - it's called asynchronously, not during render
         // The ref is updated in useEffect, and this callback only runs asynchronously via debounce
-        // eslint-disable-next-line react-hooks/rules-of-hooks
         funcRef.current(...args)
       }
-      // eslint-disable-next-line react-hooks/rules-of-hooks
+      // eslint-disable-next-line react-hooks/refs
       return debounce(callFn, ms, { maxWait })
     },
     [ms, maxWait]

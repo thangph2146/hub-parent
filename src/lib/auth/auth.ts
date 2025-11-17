@@ -33,7 +33,7 @@ async function getUserWithRoles(email: string) {
   })
 }
 
-async function getOrCreateDefaultRole() {
+async function _getOrCreateDefaultRole() {
   let defaultRole = await prisma.role.findUnique({
     where: { name: DEFAULT_ROLES.USER.name },
   })
