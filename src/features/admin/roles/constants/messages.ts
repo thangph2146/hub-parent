@@ -67,6 +67,21 @@ export const ROLE_LABELS = {
   // Selection messages
   SELECTED_ROLES: (count: number) => `Đã chọn ${count} vai trò`,
   SELECTED_DELETED_ROLES: (count: number) => `Đã chọn ${count} vai trò (đã xóa)`,
+  DELETE_SELECTED: (count: number) => `Xóa đã chọn (${count})`,
+  HARD_DELETE_SELECTED: (count: number) => `Xóa vĩnh viễn (${count})`,
+  
+  // Hints
+  CANNOT_DELETE_SUPER_ADMIN_HINT: "(Không thể xóa vai trò super_admin)",
+  CANNOT_HARD_DELETE_SUPER_ADMIN_HINT: "(Không thể xóa vĩnh viễn super_admin)",
+  
+  // Titles
+  MANAGE_ROLES: "Quản lý vai trò",
+  ADD_NEW: "Thêm mới",
+  
+  // Cannot delete messages
+  CANNOT_DELETE: "Không thể xóa",
+  CANNOT_DELETE_SUPER_ADMIN: "Không thể xóa vai trò super_admin",
+  CANNOT_HARD_DELETE_SUPER_ADMIN: "Không thể xóa vĩnh viễn vai trò super_admin",
 } as const
 
 export const ROLE_CONFIRM_MESSAGES = {

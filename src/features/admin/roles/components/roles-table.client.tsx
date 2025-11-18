@@ -76,7 +76,7 @@ export function RolesTableClient({
     (row: RoleRow) => {
       if (!canDelete) return
       if (row.name === "super_admin") {
-        showFeedback("error", "Không thể xóa", "Không thể xóa vai trò super_admin")
+        showFeedback("error", ROLE_LABELS.CANNOT_DELETE, ROLE_LABELS.CANNOT_DELETE_SUPER_ADMIN)
         return
       }
       setDeleteConfirm({
@@ -95,7 +95,7 @@ export function RolesTableClient({
     (row: RoleRow) => {
       if (!canManage) return
       if (row.name === "super_admin") {
-        showFeedback("error", "Không thể xóa", "Không thể xóa vĩnh viễn vai trò super_admin")
+        showFeedback("error", ROLE_LABELS.CANNOT_DELETE, ROLE_LABELS.CANNOT_HARD_DELETE_SUPER_ADMIN)
         return
       }
       setDeleteConfirm({
@@ -289,7 +289,7 @@ export function RolesTableClient({
                     {ROLE_LABELS.SELECTED_ROLES(selectedIds.length)}
                     {hasSuperAdmin && (
                       <span className="ml-2 text-xs text-muted-foreground">
-                        (Không thể xóa vai trò super_admin)
+                        {ROLE_LABELS.CANNOT_DELETE_SUPER_ADMIN_HINT}
                       </span>
                     )}
                   </span>
@@ -309,7 +309,7 @@ export function RolesTableClient({
                       }
                     >
                       <Trash2 className="mr-2 h-5 w-5" />
-                      Xóa đã chọn ({deletableRows.length})
+                      {ROLE_LABELS.DELETE_SELECTED(deletableRows.length)}
                     </Button>
                     {canManage && (
                       <Button
@@ -327,7 +327,7 @@ export function RolesTableClient({
                         }
                       >
                         <AlertTriangle className="mr-2 h-5 w-5" />
-                        Xóa vĩnh viễn ({deletableRows.length})
+                        {ROLE_LABELS.HARD_DELETE_SELECTED(deletableRows.length)}
                       </Button>
                     )}
                     <Button type="button" size="sm" variant="ghost" onClick={clearSelection}>
@@ -358,7 +358,7 @@ export function RolesTableClient({
                     {ROLE_LABELS.SELECTED_DELETED_ROLES(selectedIds.length)}
                     {hasSuperAdmin && (
                       <span className="ml-2 text-xs text-muted-foreground">
-                        (Không thể xóa vĩnh viễn super_admin)
+                        {ROLE_LABELS.CANNOT_HARD_DELETE_SUPER_ADMIN_HINT}
                       </span>
                     )}
                   </span>
@@ -391,7 +391,7 @@ export function RolesTableClient({
                         }
                       >
                         <AlertTriangle className="mr-2 h-5 w-5" />
-                        Xóa vĩnh viễn ({deletableRows.length})
+                        {ROLE_LABELS.HARD_DELETE_SELECTED(deletableRows.length)}
                       </Button>
                     )}
                     <Button type="button" size="sm" variant="ghost" onClick={clearSelection}>
@@ -424,30 +424,6 @@ export function RolesTableClient({
     [initialData],
   )
 
-  const getDeleteConfirmTitle = () => {
-    if (!deleteConfirm) return ""
-    if (deleteConfirm.type === "hard") {
-      return ROLE_CONFIRM_MESSAGES.HARD_DELETE_TITLE(
-        deleteConfirm.bulkIds?.length,
-      )
-    }
-    return ROLE_CONFIRM_MESSAGES.DELETE_TITLE(deleteConfirm.bulkIds?.length)
-  }
-
-  const getDeleteConfirmDescription = () => {
-    if (!deleteConfirm) return ""
-    if (deleteConfirm.type === "hard") {
-      return ROLE_CONFIRM_MESSAGES.HARD_DELETE_DESCRIPTION(
-        deleteConfirm.bulkIds?.length,
-        deleteConfirm.row?.displayName,
-      )
-    }
-    return ROLE_CONFIRM_MESSAGES.DELETE_DESCRIPTION(
-      deleteConfirm.bulkIds?.length,
-      deleteConfirm.row?.displayName,
-    )
-  }
-
   const router = useResourceRouter()
 
   const headerActions = canCreate ? (
@@ -458,14 +434,14 @@ export function RolesTableClient({
       className="h-8 px-3 text-xs sm:text-sm"
     >
       <Plus className="mr-2 h-5 w-5" />
-      Thêm mới
+      {ROLE_LABELS.ADD_NEW}
     </Button>
   ) : undefined
 
   return (
     <>
       <ResourceTableClient<RoleRow>
-        title="Quản lý vai trò"
+        title={ROLE_LABELS.MANAGE_ROLES}
         baseColumns={baseColumns}
         loader={loader}
         viewModes={viewModes}
@@ -489,33 +465,45 @@ export function RolesTableClient({
       />
 
       {/* Delete Confirmation Dialog */}
-      {deleteConfirm && (
-        <ConfirmDialog
-          open={deleteConfirm.open}
-          onOpenChange={(open) => {
-            if (!open) setDeleteConfirm(null)
-          }}
-          title={getDeleteConfirmTitle()}
-          description={getDeleteConfirmDescription()}
-          variant={deleteConfirm.type === "hard" ? "destructive" : "destructive"}
-          confirmLabel={deleteConfirm.type === "hard" ? ROLE_CONFIRM_MESSAGES.HARD_DELETE_LABEL : ROLE_CONFIRM_MESSAGES.CONFIRM_LABEL}
-          cancelLabel={ROLE_CONFIRM_MESSAGES.CANCEL_LABEL}
-          onConfirm={handleDeleteConfirm}
-          isLoading={bulkState.isProcessing}
-        />
-      )}
+      <ConfirmDialog
+        open={deleteConfirm?.open ?? false}
+        onOpenChange={(open) => {
+          if (!open) {
+            setDeleteConfirm(null)
+          }
+        }}
+        title={
+          deleteConfirm?.type === "hard"
+            ? ROLE_CONFIRM_MESSAGES.HARD_DELETE_TITLE(deleteConfirm?.bulkIds?.length)
+            : ROLE_CONFIRM_MESSAGES.DELETE_TITLE(deleteConfirm?.bulkIds?.length)
+        }
+        description={
+          deleteConfirm?.type === "hard"
+            ? ROLE_CONFIRM_MESSAGES.HARD_DELETE_DESCRIPTION(
+                deleteConfirm?.bulkIds?.length,
+                deleteConfirm?.row?.displayName,
+              )
+            : ROLE_CONFIRM_MESSAGES.DELETE_DESCRIPTION(
+                deleteConfirm?.bulkIds?.length,
+                deleteConfirm?.row?.displayName,
+              )
+        }
+        confirmLabel={deleteConfirm?.type === "hard" ? ROLE_CONFIRM_MESSAGES.HARD_DELETE_LABEL : ROLE_CONFIRM_MESSAGES.CONFIRM_LABEL}
+        cancelLabel={ROLE_CONFIRM_MESSAGES.CANCEL_LABEL}
+        variant="destructive"
+        onConfirm={handleDeleteConfirm}
+        isLoading={bulkState.isProcessing}
+      />
 
       {/* Feedback Dialog */}
-      {feedback && (
-        <FeedbackDialog
-          open={feedback.open}
-          onOpenChange={handleFeedbackOpenChange}
-          variant={feedback.variant}
-          title={feedback.title}
-          description={feedback.description}
-          details={feedback.details}
-        />
-      )}
+      <FeedbackDialog
+        open={feedback?.open ?? false}
+        onOpenChange={handleFeedbackOpenChange}
+        variant={feedback?.variant ?? "success"}
+        title={feedback?.title ?? ""}
+        description={feedback?.description}
+        details={feedback?.details}
+      />
     </>
   )
 }
