@@ -2,5 +2,5 @@
  * Constants exports cho notifications feature
  */
 
-export { NOTIFICATION_MESSAGES, NOTIFICATION_LABELS, NOTIFICATION_KINDS } from "./messages"
+export { NOTIFICATION_MESSAGES, NOTIFICATION_LABELS, NOTIFICATION_KINDS, NOTIFICATION_CONFIRM_MESSAGES } from "./messages"
 

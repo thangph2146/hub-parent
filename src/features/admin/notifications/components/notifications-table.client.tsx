@@ -16,10 +16,12 @@ import { logger } from "@/lib/config"
 import type { NotificationRow } from "../types"
 import { useNotificationActions } from "../hooks/use-notification-actions"
 import { useNotificationFeedback } from "../hooks/use-notification-feedback"
+import { useNotificationDeleteConfirm } from "../hooks/use-notification-delete-confirm"
 import { useNotificationsSocketBridge } from "../hooks/use-notifications-socket-bridge"
 import { useNotificationColumns } from "../utils/columns"
 import { useNotificationRowActions } from "../utils/row-actions"
-import { NOTIFICATION_LABELS } from "../constants"
+import { NOTIFICATION_LABELS, NOTIFICATION_CONFIRM_MESSAGES } from "../constants"
+import { ConfirmDialog } from "@/components/dialogs"
 
 interface NotificationsTableClientProps {
   canManage?: boolean
@@ -39,6 +41,7 @@ export function NotificationsTableClient({
   const pendingRealtimeRefreshRef = useRef(false)
 
   const { feedback, showFeedback, handleFeedbackOpenChange } = useNotificationFeedback()
+  const { deleteConfirm, setDeleteConfirm, handleDeleteConfirm } = useNotificationDeleteConfirm()
   const { cacheVersion } = useNotificationsSocketBridge()
 
   const triggerTableRefresh = useCallback(() => {
@@ -64,6 +67,9 @@ export function NotificationsTableClient({
     handleDeleteSingle,
     handleBulkDelete,
     togglingNotifications,
+    markingReadNotifications,
+    markingUnreadNotifications,
+    deletingNotifications,
     bulkState,
   } = useNotificationActions({
     showFeedback,
@@ -72,20 +78,34 @@ export function NotificationsTableClient({
 
   const handleToggleReadWithRefresh = useCallback(
     (row: NotificationRow, checked: boolean) => {
-      if (tableRefreshRef.current) {
-        handleToggleRead(row, checked, tableRefreshRef.current)
-      }
+      setDeleteConfirm({
+        open: true,
+        type: checked ? "mark-read" : "mark-unread",
+        row,
+        onConfirm: async () => {
+          if (tableRefreshRef.current) {
+            await handleToggleRead(row, checked, tableRefreshRef.current)
+          }
+        },
+      })
     },
-    [handleToggleRead],
+    [handleToggleRead, setDeleteConfirm],
   )
 
   const handleDeleteSingleWithRefresh = useCallback(
     (row: NotificationRow) => {
-      if (tableRefreshRef.current) {
-        handleDeleteSingle(row, tableRefreshRef.current)
-      }
+      setDeleteConfirm({
+        open: true,
+        type: "delete",
+        row,
+        onConfirm: async () => {
+          if (tableRefreshRef.current) {
+            await handleDeleteSingle(row, tableRefreshRef.current)
+          }
+        },
+      })
     },
-    [handleDeleteSingle],
+    [handleDeleteSingle, setDeleteConfirm],
   )
 
   const { baseColumns } = useNotificationColumns({
@@ -98,6 +118,9 @@ export function NotificationsTableClient({
     sessionUserId: session?.user?.id,
     onToggleRead: handleToggleReadWithRefresh,
     onDelete: handleDeleteSingleWithRefresh,
+    markingReadNotifications,
+    markingUnreadNotifications,
+    deletingNotifications,
   })
 
   // Handle realtime updates từ socket bridge
@@ -228,25 +251,46 @@ export function NotificationsTableClient({
               const deletableNotificationIds = deletableNotifications.map((row) => row.id)
               const systemCount = ownNotifications.length - deletableNotifications.length
 
-              const handleBulkMarkAsReadWithRefresh = async () => {
-                await handleBulkMarkAsRead(unreadNotificationIds, ownNotifications)
-                refresh?.()
+              const handleBulkMarkAsReadWithRefresh = () => {
+                setDeleteConfirm({
+                  open: true,
+                  type: "mark-read",
+                  bulkIds: unreadNotificationIds,
+                  onConfirm: async () => {
+                    await handleBulkMarkAsRead(unreadNotificationIds, ownNotifications)
+                    refresh?.()
+                  },
+                })
               }
 
-              const handleBulkMarkAsUnreadWithRefresh = async () => {
-                await handleBulkMarkAsUnread(readNotificationIds, ownNotifications)
-                refresh?.()
+              const handleBulkMarkAsUnreadWithRefresh = () => {
+                setDeleteConfirm({
+                  open: true,
+                  type: "mark-unread",
+                  bulkIds: readNotificationIds,
+                  onConfirm: async () => {
+                    await handleBulkMarkAsUnread(readNotificationIds, ownNotifications)
+                    refresh?.()
+                  },
+                })
               }
 
-              const handleBulkDeleteWithRefresh = async () => {
-                await handleBulkDelete(selectedIds, selectedRows)
-                refresh?.()
+              const handleBulkDeleteWithRefresh = () => {
+                setDeleteConfirm({
+                  open: true,
+                  type: "delete",
+                  bulkIds: deletableNotificationIds,
+                  onConfirm: async () => {
+                    await handleBulkDelete(selectedIds, selectedRows)
+                    refresh?.()
+                  },
+                })
               }
 
               return (
                 <div className="flex flex-wrap items-center justify-between gap-3 text-sm">
                   <span>
-                    Đã chọn <strong>{selectedIds.length}</strong> thông báo
+                    {NOTIFICATION_LABELS.SELECTED_NOTIFICATIONS(selectedIds.length)}
                     {(otherCount > 0 || systemCount > 0) && (
                       <span className="ml-2 text-xs text-muted-foreground">
                         ({systemCount > 0 && `${systemCount} hệ thống, `}
@@ -264,7 +308,7 @@ export function NotificationsTableClient({
                       disabled={bulkState.isProcessing || unreadNotificationIds.length === 0}
                     >
                       <CheckCircle2 className="mr-2 h-5 w-5" />
-                      Đánh dấu đã đọc ({unreadNotificationIds.length})
+                      {NOTIFICATION_LABELS.MARK_READ_SELECTED(unreadNotificationIds.length)}
                     </Button>
                     <Button
                       type="button"
@@ -274,7 +318,7 @@ export function NotificationsTableClient({
                       disabled={bulkState.isProcessing || readNotificationIds.length === 0}
                     >
                       <BellOff className="mr-2 h-5 w-5" />
-                      Đánh dấu chưa đọc ({readNotificationIds.length})
+                      {NOTIFICATION_LABELS.MARK_UNREAD_SELECTED(readNotificationIds.length)}
                     </Button>
                     {deletableNotificationIds.length > 0 && (
                       <Button
@@ -285,7 +329,7 @@ export function NotificationsTableClient({
                         disabled={bulkState.isProcessing || deletableNotificationIds.length === 0}
                       >
                         <Trash2 className="mr-2 h-5 w-5" />
-                        Xóa ({deletableNotificationIds.length})
+                        {NOTIFICATION_LABELS.DELETE_SELECTED(deletableNotificationIds.length)}
                       </Button>
                     )}
                     <Button type="button" size="sm" variant="ghost" onClick={clearSelection}>
@@ -308,6 +352,7 @@ export function NotificationsTableClient({
       handleBulkDelete,
       bulkState.isProcessing,
       renderRowActionsForNotifications,
+      setDeleteConfirm,
     ],
   )
 
@@ -318,10 +363,42 @@ export function NotificationsTableClient({
     [initialData],
   )
 
+  const getDeleteConfirmTitle = () => {
+    if (!deleteConfirm) return ""
+    if (deleteConfirm.type === "mark-read") {
+      return NOTIFICATION_CONFIRM_MESSAGES.MARK_READ_TITLE(
+        deleteConfirm.bulkIds?.length,
+      )
+    }
+    if (deleteConfirm.type === "mark-unread") {
+      return NOTIFICATION_CONFIRM_MESSAGES.MARK_UNREAD_TITLE(
+        deleteConfirm.bulkIds?.length,
+      )
+    }
+    return NOTIFICATION_CONFIRM_MESSAGES.DELETE_TITLE(deleteConfirm.bulkIds?.length)
+  }
+
+  const getDeleteConfirmDescription = () => {
+    if (!deleteConfirm) return ""
+    if (deleteConfirm.type === "mark-read") {
+      return NOTIFICATION_CONFIRM_MESSAGES.MARK_READ_DESCRIPTION(
+        deleteConfirm.bulkIds?.length,
+      )
+    }
+    if (deleteConfirm.type === "mark-unread") {
+      return NOTIFICATION_CONFIRM_MESSAGES.MARK_UNREAD_DESCRIPTION(
+        deleteConfirm.bulkIds?.length,
+      )
+    }
+    return NOTIFICATION_CONFIRM_MESSAGES.DELETE_DESCRIPTION(
+      deleteConfirm.bulkIds?.length,
+    )
+  }
+
   return (
     <>
       <ResourceTableClient
-        title="Quản lý thông báo"
+        title={NOTIFICATION_LABELS.MANAGE_NOTIFICATIONS}
         baseColumns={baseColumns}
         loader={loader}
         viewModes={viewModes}
@@ -331,6 +408,43 @@ export function NotificationsTableClient({
         onRefreshReady={handleRefreshReady}
       />
 
+      {/* Delete Confirmation Dialog */}
+      {deleteConfirm && (
+        <ConfirmDialog
+          open={deleteConfirm.open}
+          onOpenChange={(open) => {
+            if (!open) setDeleteConfirm(null)
+          }}
+          title={getDeleteConfirmTitle()}
+          description={getDeleteConfirmDescription()}
+          variant={
+            deleteConfirm.type === "delete"
+              ? "destructive"
+              : "default"
+          }
+          confirmLabel={
+            deleteConfirm.type === "mark-read"
+              ? NOTIFICATION_CONFIRM_MESSAGES.MARK_READ_LABEL
+              : deleteConfirm.type === "mark-unread"
+              ? NOTIFICATION_CONFIRM_MESSAGES.MARK_UNREAD_LABEL
+              : NOTIFICATION_CONFIRM_MESSAGES.CONFIRM_LABEL
+          }
+          cancelLabel={NOTIFICATION_CONFIRM_MESSAGES.CANCEL_LABEL}
+          onConfirm={handleDeleteConfirm}
+          isLoading={
+            bulkState.isProcessing ||
+            (deleteConfirm.row
+              ? deleteConfirm.type === "mark-read"
+                ? markingReadNotifications.has(deleteConfirm.row.id)
+                : deleteConfirm.type === "mark-unread"
+                ? markingUnreadNotifications.has(deleteConfirm.row.id)
+                : deletingNotifications.has(deleteConfirm.row.id)
+              : false)
+          }
+        />
+      )}
+
+      {/* Feedback Dialog */}
       {feedback && (
         <FeedbackDialog
           open={feedback.open}

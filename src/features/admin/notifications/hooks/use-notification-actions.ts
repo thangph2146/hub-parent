@@ -31,6 +31,9 @@ export function useNotificationActions({
   const [isProcessing, setIsProcessing] = useState(false)
   const isProcessingRef = useRef(false)
   const [togglingNotifications, setTogglingNotifications] = useState<Set<string>>(new Set())
+  const [markingReadNotifications, setMarkingReadNotifications] = useState<Set<string>>(new Set())
+  const [markingUnreadNotifications, setMarkingUnreadNotifications] = useState<Set<string>>(new Set())
+  const [deletingNotifications, setDeletingNotifications] = useState<Set<string>>(new Set())
 
   const bulkState: BulkProcessingState = {
     isProcessing,
@@ -58,7 +61,10 @@ export function useNotificationActions({
         return
       }
 
+      // Track loading state
+      const setLoadingState = newStatus ? setMarkingReadNotifications : setMarkingUnreadNotifications
       setTogglingNotifications((prev) => new Set(prev).add(row.id))
+      setLoadingState((prev) => new Set(prev).add(row.id))
 
       try {
         await apiClient.patch(apiRoutes.notifications.markRead(row.id), { isRead: newStatus })
@@ -77,6 +83,11 @@ export function useNotificationActions({
         showFeedback("error", newStatus ? NOTIFICATION_MESSAGES.MARK_READ_ERROR : NOTIFICATION_MESSAGES.MARK_UNREAD_ERROR, errorMessage)
       } finally {
         setTogglingNotifications((prev) => {
+          const next = new Set(prev)
+          next.delete(row.id)
+          return next
+        })
+        setLoadingState((prev) => {
           const next = new Set(prev)
           next.delete(row.id)
           return next
@@ -240,6 +251,8 @@ export function useNotificationActions({
         return
       }
 
+      setDeletingNotifications((prev) => new Set(prev).add(row.id))
+
       try {
         await deleteNotificationMutation.mutateAsync(row.id)
         showFeedback("success", NOTIFICATION_MESSAGES.DELETE_SUCCESS, "Thông báo đã được xóa thành công.")
@@ -249,6 +262,12 @@ export function useNotificationActions({
           (error as { response?: { data?: { message?: string } } })?.response?.data?.message ||
           "Không thể xóa thông báo."
         showFeedback("error", NOTIFICATION_MESSAGES.DELETE_ERROR, errorMessage)
+      } finally {
+        setDeletingNotifications((prev) => {
+          const next = new Set(prev)
+          next.delete(row.id)
+          return next
+        })
       }
     },
     [showFeedback, session?.user?.id, deleteNotificationMutation],
@@ -331,6 +350,9 @@ export function useNotificationActions({
     handleDeleteSingle,
     handleBulkDelete,
     togglingNotifications,
+    markingReadNotifications,
+    markingUnreadNotifications,
+    deletingNotifications,
     bulkState,
   }
 }

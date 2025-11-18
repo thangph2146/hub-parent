@@ -54,6 +54,11 @@ export const NOTIFICATION_LABELS = {
   DELETE: "Xóa",
   CLEAR_SELECTION: "Bỏ chọn",
   
+  // Loading labels
+  MARKING_READ: "Đang đánh dấu đã đọc...",
+  MARKING_UNREAD: "Đang đánh dấu chưa đọc...",
+  DELETING: "Đang xóa...",
+  
   // View mode labels
   ALL: "Tất cả",
   
@@ -63,6 +68,12 @@ export const NOTIFICATION_LABELS = {
   // Selection messages
   SELECTED_NOTIFICATIONS: (count: number) => `Đã chọn ${count} thông báo`,
   OWN_NOTIFICATION: "- Của bạn -",
+  MARK_READ_SELECTED: (count: number) => `Đánh dấu đã đọc (${count})`,
+  MARK_UNREAD_SELECTED: (count: number) => `Đánh dấu chưa đọc (${count})`,
+  DELETE_SELECTED: (count: number) => `Xóa (${count})`,
+  
+  // Titles
+  MANAGE_NOTIFICATIONS: "Quản lý thông báo",
 } as const
 
 export const NOTIFICATION_KINDS: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
@@ -73,5 +84,30 @@ export const NOTIFICATION_KINDS: Record<string, { label: string; variant: "defau
   WARNING: { label: "Cảnh báo", variant: "destructive" },
   SUCCESS: { label: "Thành công", variant: "default" },
   INFO: { label: "Thông tin", variant: "secondary" },
+} as const
+
+export const NOTIFICATION_CONFIRM_MESSAGES = {
+  MARK_READ_TITLE: (count?: number) => count ? `Đánh dấu đã đọc ${count} thông báo?` : "Đánh dấu đã đọc thông báo?",
+  MARK_READ_DESCRIPTION: (count?: number) =>
+    count
+      ? `Bạn có chắc chắn muốn đánh dấu ${count} thông báo là đã đọc?`
+      : "Bạn có chắc chắn muốn đánh dấu thông báo này là đã đọc?",
+  
+  MARK_UNREAD_TITLE: (count?: number) => count ? `Đánh dấu chưa đọc ${count} thông báo?` : "Đánh dấu chưa đọc thông báo?",
+  MARK_UNREAD_DESCRIPTION: (count?: number) =>
+    count
+      ? `Bạn có chắc chắn muốn đánh dấu ${count} thông báo là chưa đọc?`
+      : "Bạn có chắc chắn muốn đánh dấu thông báo này là chưa đọc?",
+  
+  DELETE_TITLE: (count?: number) => count ? `Xóa ${count} thông báo?` : "Xóa thông báo?",
+  DELETE_DESCRIPTION: (count?: number) =>
+    count
+      ? `Bạn có chắc chắn muốn xóa ${count} thông báo? Hành động này không thể hoàn tác.`
+      : "Bạn có chắc chắn muốn xóa thông báo này? Hành động này không thể hoàn tác.",
+  
+  MARK_READ_LABEL: "Đánh dấu đã đọc",
+  MARK_UNREAD_LABEL: "Đánh dấu chưa đọc",
+  CONFIRM_LABEL: "Xóa",
+  CANCEL_LABEL: "Hủy",
 } as const
 
