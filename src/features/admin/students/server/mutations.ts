@@ -408,16 +408,21 @@ export async function hardDeleteStudent(ctx: AuthContext, id: string): Promise<v
 
   const student = await prisma.student.findUnique({
     where: { id },
-    select: { id: true, studentCode: true, name: true },
+    select: { id: true, studentCode: true, name: true, deletedAt: true },
   })
 
   if (!student) {
     throw new NotFoundError("Học sinh không tồn tại")
   }
 
+  const previousStatus: "active" | "deleted" = student.deletedAt ? "deleted" : "active"
+
   await prisma.student.delete({
     where: { id },
   })
+
+  // Emit socket event for real-time updates
+  emitStudentRemove(id, previousStatus)
 
   // Emit notification realtime
   await notifySuperAdminsOfStudentAction(
@@ -443,12 +448,12 @@ export async function bulkHardDeleteStudents(ctx: AuthContext, ids: string[]): P
     throw new ApplicationError("Danh sách học sinh trống", 400)
   }
 
-  // Lấy thông tin students trước khi delete để tạo notifications
+  // Lấy thông tin students trước khi delete để tạo notifications và emit socket events
   const students = await prisma.student.findMany({
     where: {
       id: { in: ids },
     },
-    select: { id: true, studentCode: true, name: true },
+    select: { id: true, studentCode: true, name: true, deletedAt: true },
   })
 
   const result = await prisma.student.deleteMany({
@@ -456,6 +461,12 @@ export async function bulkHardDeleteStudents(ctx: AuthContext, ids: string[]): P
       id: { in: ids },
     },
   })
+
+  // Emit socket events for real-time updates
+  for (const student of students) {
+    const previousStatus: "active" | "deleted" = student.deletedAt ? "deleted" : "active"
+    emitStudentRemove(student.id, previousStatus)
+  }
 
   // Emit notifications realtime cho từng student
   for (const student of students) {
