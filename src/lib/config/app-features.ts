@@ -413,8 +413,7 @@ export const appFeatures: FeatureDefinition[] = [
     navigation: {
       group: "main",
       order: 120,
-      resourceName: "sessions",
-      autoGenerateSubRoutes: true,
+      href: "/admin/sessions",
     },
     api: {
       type: "resource",

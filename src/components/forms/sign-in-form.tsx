@@ -74,6 +74,9 @@ export function SignIn({
         setError("Email hoặc mật khẩu không đúng")
         setIsLoading(false)
       } else {
+        // Session sẽ được tạo tự động bởi useCreateLoginSession hook trong SessionProvider
+        // Không cần tạo ở đây nữa để tránh duplicate
+
         // Sử dụng callbackUrl từ query params hoặc fallback về dashboard
         const callbackUrl = searchParams?.get("callbackUrl")
         let redirectUrl = "/admin/dashboard"

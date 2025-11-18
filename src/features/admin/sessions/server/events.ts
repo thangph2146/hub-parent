@@ -1,0 +1,90 @@
+/**
+ * Socket events emission cho sessions
+ * Tách logic emit socket events ra khỏi mutations để code sạch hơn
+ */
+
+import { prisma } from "@/lib/database"
+import { getSocketServer } from "@/lib/socket/state"
+import { mapSessionRecord, serializeSessionForTable } from "./helpers"
+import type { SessionRow } from "../types"
+import { logger } from "@/lib/config"
+
+const SUPER_ADMIN_ROOM = "role:super_admin"
+
+export type SessionStatus = "active" | "deleted"
+
+function resolveStatusFromRow(row: SessionRow): SessionStatus {
+  // Note: Session model không có deletedAt, sử dụng isActive=false để đánh dấu "deleted"
+  return row.isActive ? "active" : "deleted"
+}
+
+async function fetchSessionRow(sessionId: string): Promise<SessionRow | null> {
+  const session = await prisma.session.findUnique({
+    where: { id: sessionId },
+    include: {
+      user: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
+    },
+  })
+
+  if (!session) {
+    return null
+  }
+
+  const listed = mapSessionRecord(session)
+  return serializeSessionForTable({
+    ...listed,
+    userName: session.user.name,
+    userEmail: session.user.email,
+  })
+}
+
+/**
+ * Emit session:upsert event
+ * Được gọi khi session được tạo, cập nhật, restore, toggle status
+ */
+export async function emitSessionUpsert(
+  sessionId: string,
+  previousStatus: SessionStatus | null,
+): Promise<void> {
+  const io = getSocketServer()
+  if (!io) return
+
+  const row = await fetchSessionRow(sessionId)
+  if (!row) {
+    if (previousStatus) {
+      emitSessionRemove(sessionId, previousStatus)
+    }
+    return
+  }
+
+  const newStatus = resolveStatusFromRow(row)
+
+  io.to(SUPER_ADMIN_ROOM).emit("session:upsert", {
+    session: row,
+    previousStatus,
+    newStatus,
+  })
+  logger.debug("Socket session:upsert emitted", { sessionId, previousStatus, newStatus })
+}
+
+/**
+ * Emit session:remove event
+ * Được gọi khi session bị hard delete
+ */
+export function emitSessionRemove(sessionId: string, previousStatus: SessionStatus): void {
+  const io = getSocketServer()
+  if (!io) return
+
+  io.to(SUPER_ADMIN_ROOM).emit("session:remove", {
+    id: sessionId,
+    previousStatus,
+  })
+  logger.debug("Socket session:remove emitted", { sessionId, previousStatus })
+}
+

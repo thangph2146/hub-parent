@@ -1,0 +1,6 @@
+/**
+ * Constants exports cho sessions feature
+ */
+
+export { SESSION_MESSAGES, SESSION_LABELS, SESSION_CONFIRM_MESSAGES } from "./messages"
+

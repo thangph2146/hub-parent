@@ -89,12 +89,13 @@ export function useNotificationColumns({
       {
         accessorKey: "title",
         header: "Tiêu đề",
-        className: "min-w-[250px]",
-        headerClassName: "min-w-[250px]",
+        className: "min-w-[250px] max-w-[400px]",
+        headerClassName: "min-w-[250px] max-w-[400px]",
         cell: (row) => (
           <a
             href={`/admin/notifications/${row.id}`}
-            className="font-medium text-primary hover:underline"
+            className="font-medium text-primary hover:underline break-words"
+            title={row.title}
           >
             {row.title}
           </a>
@@ -103,9 +104,13 @@ export function useNotificationColumns({
       {
         accessorKey: "description",
         header: "Mô tả",
-        className: "min-w-[300px]",
-        headerClassName: "min-w-[300px]",
-        cell: (row) => row.description || "-",
+        className: "min-w-[300px] max-w-[500px]",
+        headerClassName: "min-w-[300px] max-w-[500px]",
+        cell: (row) => (
+          <div className="break-words max-w-[500px]" title={row.description || undefined}>
+            {row.description || "-"}
+          </div>
+        ),
       },
       {
         accessorKey: "isRead",

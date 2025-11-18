@@ -1,3 +1,5 @@
+"use client"
+
 /**
  * Session Provider (NextAuth.js)
  * 
@@ -26,6 +28,14 @@
 
 import { SessionProvider as NextAuthSessionProvider } from "next-auth/react"
 import type { SessionProviderProps } from "next-auth/react"
+import { useCreateLoginSession } from "@/hooks/use-create-login-session"
+
+function SessionProviderContent({ children }: { children: React.ReactNode }) {
+  // Tự động tạo Session record sau khi đăng nhập thành công
+  useCreateLoginSession()
+  
+  return <>{children}</>
+}
 
 export function SessionProvider({
   children,
@@ -38,7 +48,7 @@ export function SessionProvider({
       refetchInterval={5 * 60} // Refetch mỗi 5 phút (thay vì mặc định 0 = không refetch)
       refetchOnWindowFocus={false} // Không refetch khi focus window
     >
-      {children}
+      <SessionProviderContent>{children}</SessionProviderContent>
     </NextAuthSessionProvider>
   )
 }
