@@ -1,55 +1,30 @@
 "use client"
 
-import { useCallback, useEffect, useMemo, useState, useRef } from "react"
-import { Eye, CheckCircle2, MoreHorizontal, Trash2, Check, X, BellOff } from "lucide-react"
-import type { LucideIcon } from "lucide-react"
+import { useCallback, useEffect, useMemo, useRef } from "react"
+import { CheckCircle2, Trash2, BellOff } from "lucide-react"
 import { useSession } from "next-auth/react"
-import { useResourceRouter } from "@/hooks/use-resource-segment"
-import { useQueryClient, useQuery } from "@tanstack/react-query"
+import { useQueryClient } from "@tanstack/react-query"
 import { queryKeys, invalidateQueries } from "@/lib/query-keys"
 import { apiRoutes } from "@/lib/api/routes"
-import type { DataTableColumn, DataTableQueryState, DataTableResult } from "@/components/tables"
-import { FeedbackDialog, type FeedbackVariant } from "@/components/dialogs"
+import type { DataTableQueryState, DataTableResult } from "@/components/tables"
+import { FeedbackDialog } from "@/components/dialogs"
 import { Button } from "@/components/ui/button"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Badge } from "@/components/ui/badge"
-import { Switch } from "@/components/ui/switch"
 import { ResourceTableClient } from "@/features/admin/resources/components/resource-table.client"
 import type { ResourceViewMode, ResourceTableLoader } from "@/features/admin/resources/types"
-import { useDynamicFilterOptions } from "@/features/admin/resources/hooks/use-dynamic-filter-options"
 import { apiClient } from "@/lib/api/axios"
-import { useAdminNotificationsSocketBridge, useDeleteNotification } from "@/hooks/use-notifications"
 import { logger } from "@/lib/config"
 import type { NotificationRow } from "../types"
+import { useNotificationActions } from "../hooks/use-notification-actions"
+import { useNotificationFeedback } from "../hooks/use-notification-feedback"
+import { useNotificationsSocketBridge } from "../hooks/use-notifications-socket-bridge"
+import { useNotificationColumns } from "../utils/columns"
+import { useNotificationRowActions } from "../utils/row-actions"
+import { NOTIFICATION_LABELS } from "../constants"
 
 interface NotificationsTableClientProps {
   canManage?: boolean
   initialData: DataTableResult<NotificationRow>
-  isSuperAdmin?: boolean // Flag để biết user có phải super admin không
-}
-
-interface FeedbackState {
-  open: boolean
-  variant: FeedbackVariant
-  title: string
-  description?: string
-  details?: string
-}
-
-
-const NOTIFICATION_KINDS: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
-  MESSAGE: { label: "Tin nhắn", variant: "default" },
-  SYSTEM: { label: "Hệ thống", variant: "secondary" },
-  ANNOUNCEMENT: { label: "Thông báo", variant: "outline" },
-  ALERT: { label: "Cảnh báo", variant: "destructive" },
-  WARNING: { label: "Cảnh báo", variant: "destructive" },
-  SUCCESS: { label: "Thành công", variant: "default" },
-  INFO: { label: "Thông tin", variant: "secondary" },
+  isSuperAdmin?: boolean
 }
 
 export function NotificationsTableClient({
@@ -57,36 +32,23 @@ export function NotificationsTableClient({
   initialData,
   isSuperAdmin: _isSuperAdminProp = false,
 }: NotificationsTableClientProps) {
-  const router = useResourceRouter()
   const { data: session } = useSession()
   const queryClient = useQueryClient()
-  
-  const [isProcessing, setIsProcessing] = useState(false)
-  const [feedback, setFeedback] = useState<FeedbackState | null>(null)
-  const [togglingNotifications, setTogglingNotifications] = useState<Set<string>>(new Set())
   const tableRefreshRef = useRef<(() => void) | null>(null)
+  const tableSoftRefreshRef = useRef<(() => void) | null>(null)
+  const pendingRealtimeRefreshRef = useRef(false)
 
-  type RowActionConfig = {
-    label: string
-    icon: LucideIcon
-    onSelect: () => void
-    destructive?: boolean
-    disabled?: boolean
-  }
+  const { feedback, showFeedback, handleFeedbackOpenChange } = useNotificationFeedback()
+  const { isSocketConnected, cacheVersion } = useNotificationsSocketBridge()
 
-  // Function để trigger refresh của table
-  // Sử dụng refresh function từ ResourceTableClient và invalidateQueries
-  // Theo chuẩn Next.js 16: chỉ invalidate những queries thực sự cần thiết
   const triggerTableRefresh = useCallback(() => {
     logger.info("triggerTableRefresh called", {
       hasRefreshFn: !!tableRefreshRef.current,
     })
     
-    // Invalidate admin notifications table
     invalidateQueries.adminNotifications(queryClient)
     logger.debug("Admin notifications queries invalidated")
     
-    // Trigger DataTable refresh qua refreshKey
     if (tableRefreshRef.current) {
       logger.info("Calling table refresh function")
       tableRefreshRef.current()
@@ -95,141 +57,98 @@ export function NotificationsTableClient({
     }
   }, [queryClient])
 
-  // Sử dụng socket bridge để invalidate queries khi có socket events
-  const { socket } = useAdminNotificationsSocketBridge()
-
-  // Lắng nghe socket events trực tiếp và trigger table refresh
-  useEffect(() => {
-    if (!socket || !session?.user?.id) {
-      return
-    }
-
-    const handleEvent = () => {
-      logger.info("Direct socket event received - triggering table refresh", {
-        userId: session.user.id,
-      })
-      triggerTableRefresh()
-    }
-
-    if (socket.connected) {
-      logger.info("Setting up direct socket listeners for table refresh", {
-        socketId: socket.id,
-        connected: socket.connected,
-      })
-
-      socket.on("notification:new", handleEvent)
-      socket.on("notification:admin", handleEvent)
-      socket.on("notification:updated", handleEvent)
-      socket.on("notifications:sync", handleEvent)
-      socket.on("notification:deleted", handleEvent)
-      socket.on("notifications:deleted", handleEvent)
-    } else {
-      logger.debug("Socket not connected yet, waiting for connection")
-      const onConnect = () => {
-        logger.info("Socket connected, attaching direct listeners for table refresh", {
-          socketId: socket.id,
-        })
-        socket.on("notification:new", handleEvent)
-        socket.on("notification:admin", handleEvent)
-        socket.on("notification:updated", handleEvent)
-        socket.on("notifications:sync", handleEvent)
-        socket.on("notification:deleted", handleEvent)
-        socket.on("notifications:deleted", handleEvent)
-      }
-      socket.once("connect", onConnect)
-    }
-
-    return () => {
-      if (socket) {
-        socket.off("notification:new", handleEvent)
-        socket.off("notification:admin", handleEvent)
-        socket.off("notification:updated", handleEvent)
-        socket.off("notifications:sync", handleEvent)
-        socket.off("notification:deleted", handleEvent)
-        socket.off("notifications:deleted", handleEvent)
-      }
-    }
-  }, [socket, session?.user?.id, triggerTableRefresh])
-
-  // Tạo một query trong cache để có thể subscribe vào invalidate events
-  // Query này không fetch data (enabled: false), chỉ để có query trong cache
-  // Khi admin notifications query bị invalidate, sẽ trigger refresh table
-  useQuery({
-    queryKey: queryKeys.notifications.admin(),
-    queryFn: async () => {
-      // Không fetch data, chỉ để có query trong cache
-      return null
-    },
-    enabled: false, // Không tự động fetch
-    staleTime: Infinity, // Không bao giờ stale
+  const {
+    handleToggleRead,
+    handleBulkMarkAsRead,
+    handleBulkMarkAsUnread,
+    handleDeleteSingle,
+    handleBulkDelete,
+    togglingNotifications,
+    bulkState,
+  } = useNotificationActions({
+    showFeedback,
+    triggerTableRefresh,
   })
 
-  // Lắng nghe sự thay đổi của admin notifications query để tự động refresh table
-  // Khi có socket events hoặc thao tác từ notification bell, query keys sẽ bị invalidate
-  // và trigger refresh này để admin table cập nhật ngay lập tức
-  useEffect(() => {
-    // Subscribe vào query cache để detect khi admin notifications bị invalidate
-    const unsubscribe = queryClient.getQueryCache().subscribe((event) => {
-      // Check if this is an event for admin notifications query
-      if (
-        event &&
-        event.query &&
-        Array.isArray(event.query.queryKey) &&
-        event.query.queryKey[0] === "notifications" &&
-        event.query.queryKey[1] === "admin"
-      ) {
-        logger.info("Admin notifications query event detected - triggering table refresh", {
-          eventType: event.type,
-          queryKey: event.query.queryKey,
-          hasRefreshFn: !!tableRefreshRef.current,
-        })
-        // Trigger table refresh ngay khi detect event (có thể là invalidate, updated, etc.)
-        triggerTableRefresh()
+  const handleToggleReadWithRefresh = useCallback(
+    (row: NotificationRow, checked: boolean) => {
+      if (tableRefreshRef.current) {
+        handleToggleRead(row, checked, tableRefreshRef.current)
       }
-    })
-
-    return () => {
-      unsubscribe()
-    }
-  }, [queryClient, triggerTableRefresh])
-
-  // Callback để nhận refresh function từ ResourceTableClient
-  const handleRefreshReady = useCallback((refresh: () => void) => {
-    tableRefreshRef.current = refresh
-  }, [])
-
-  const showFeedback = useCallback(
-    (variant: FeedbackVariant, title: string, description?: string, details?: string) => {
-      setFeedback({ open: true, variant, title, description, details })
     },
-    []
+    [handleToggleRead],
   )
 
-  const handleFeedbackOpenChange = useCallback((open: boolean) => {
-    if (!open) {
-      setFeedback(null)
+  const handleDeleteSingleWithRefresh = useCallback(
+    (row: NotificationRow) => {
+      if (tableRefreshRef.current) {
+        handleDeleteSingle(row, tableRefreshRef.current)
+      }
+    },
+    [handleDeleteSingle],
+  )
+
+  const { baseColumns } = useNotificationColumns({
+    togglingNotifications,
+    sessionUserId: session?.user?.id,
+    onToggleRead: handleToggleReadWithRefresh,
+  })
+
+  const { renderRowActionsForNotifications } = useNotificationRowActions({
+    sessionUserId: session?.user?.id,
+    onToggleRead: handleToggleReadWithRefresh,
+    onDelete: handleDeleteSingleWithRefresh,
+  })
+
+  // Handle realtime updates từ socket bridge
+  useEffect(() => {
+    if (cacheVersion === 0) return
+    if (tableSoftRefreshRef.current) {
+      tableSoftRefreshRef.current()
+      pendingRealtimeRefreshRef.current = false
+    } else {
+      pendingRealtimeRefreshRef.current = true
     }
-  }, [])
+  }, [cacheVersion])
 
-  const dateFormatter = useMemo(
-    () =>
-      new Intl.DateTimeFormat("vi-VN", {
-        dateStyle: "medium",
-        timeStyle: "short",
-      }),
-    []
-  )
+  // Set initialData vào React Query cache để socket bridge có thể cập nhật
+  useEffect(() => {
+    if (!initialData) return
+    
+    // Admin notifications query không có params structure như comments
+    // Chúng ta chỉ cần set vào cache với key ["notifications", "admin"]
+    const queryKey = queryKeys.notifications.admin()
+    queryClient.setQueryData(queryKey, initialData)
+    
+    logger.debug("Set initial data to cache", {
+      queryKey: queryKey.slice(0, 2),
+      rowsCount: initialData.rows.length,
+      total: initialData.total,
+    })
+  }, [initialData, queryClient])
+
+  const handleRefreshReady = useCallback((refresh: () => void) => {
+    const wrapped = () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.notifications.admin(), refetchType: "none" })
+      refresh()
+    }
+    tableSoftRefreshRef.current = refresh
+    tableRefreshRef.current = wrapped
+
+    if (pendingRealtimeRefreshRef.current) {
+      pendingRealtimeRefreshRef.current = false
+      refresh()
+    }
+  }, [queryClient])
 
   const loader: ResourceTableLoader<NotificationRow> = useCallback(
     async (query: DataTableQueryState, _view: ResourceViewMode<NotificationRow>) => {
-      // Sử dụng apiRoutes để tạo URL đúng
       const baseUrl = apiRoutes.adminNotifications.list({
         page: query.page,
         limit: query.limit,
         search: query.search.trim() || undefined,
       })
 
-      // Xử lý filters giống như các table khác
       const filterParams = new URLSearchParams()
       Object.entries(query.filters).forEach(([key, value]) => {
         if (value) {
@@ -247,8 +166,6 @@ export function NotificationsTableClient({
         search: query.search.trim() || undefined,
         filters: query.filters,
       })
-
-      // Không cần invalidate trong loader - loader sẽ được gọi khi refreshKey thay đổi
 
       const response = await apiClient.get<{
         success: boolean
@@ -274,22 +191,9 @@ export function NotificationsTableClient({
         throw new Error(response.data.error || response.data.message || "Không nhận được dữ liệu thông báo")
       }
 
-      // Log kết quả nhận được từ API
       logger.info("Notifications loaded successfully (client)", {
         totalNotifications: payload.data.length,
         pagination: payload.pagination,
-        notifications: payload.data.map((n) => ({
-          id: n.id,
-          userId: n.userId,
-          userEmail: n.userEmail,
-          kind: n.kind,
-          title: n.title,
-          isRead: n.isRead,
-        })),
-        kindDistribution: payload.data.reduce((acc, n) => {
-          acc[n.kind] = (acc[n.kind] || 0) + 1
-          return acc
-        }, {} as Record<string, number>),
       })
 
       return {
@@ -300,642 +204,119 @@ export function NotificationsTableClient({
         totalPages: payload.pagination.totalPages,
       }
     },
-    []
-  )
-
-  // Handler để toggle read status
-  const handleToggleRead = useCallback(
-    async (row: NotificationRow, newStatus: boolean, refresh: () => void) => {
-      // Kiểm tra quyền: chỉ cho phép đánh dấu notification của chính mình
-      const isOwner = session?.user?.id === row.userId
-      
-      if (!isOwner) {
-        showFeedback("error", "Không có quyền", "Bạn chỉ có thể đánh dấu đã đọc/chưa đọc thông báo của chính mình.")
-        return
-      }
-
-      setTogglingNotifications((prev) => new Set(prev).add(row.id))
-
-      try {
-        await apiClient.patch(apiRoutes.notifications.markRead(row.id), { isRead: newStatus })
-        showFeedback(
-          "success",
-          newStatus ? "Đã đánh dấu đã đọc" : "Đã đánh dấu chưa đọc",
-          newStatus 
-            ? "Thông báo đã được đánh dấu là đã đọc."
-            : "Thông báo đã được đánh dấu là chưa đọc."
-        )
-        refresh()
-      } catch (error: unknown) {
-        const errorMessage = 
-          (error as { response?: { data?: { message?: string } } })?.response?.data?.message ||
-          (newStatus ? "Không thể đánh dấu đã đọc thông báo." : "Không thể đánh dấu chưa đọc thông báo.")
-        showFeedback("error", newStatus ? "Đánh dấu đã đọc thất bại" : "Đánh dấu chưa đọc thất bại", errorMessage)
-      } finally {
-        setTogglingNotifications((prev) => {
-          const next = new Set(prev)
-          next.delete(row.id)
-          return next
-        })
-      }
-    },
-    [showFeedback, session?.user?.id],
-  )
-
-  const handleBulkMarkAsRead = useCallback(
-    async (ids: string[], rows?: NotificationRow[]) => {
-      if (!session?.user?.id) {
-        showFeedback("error", "Lỗi", "Bạn cần đăng nhập để thực hiện thao tác này.")
-        return
-      }
-
-      let targetNotificationIds = ids
-      let alreadyReadCount = 0
-
-      if (rows) {
-        const ownNotifications = rows.filter((row) => row.userId === session.user.id)
-        const unreadNotifications = ownNotifications.filter((row) => !row.isRead)
-        alreadyReadCount = ownNotifications.length - unreadNotifications.length
-        targetNotificationIds = unreadNotifications.map((row) => row.id)
-
-        if (targetNotificationIds.length === 0) {
-          showFeedback(
-            "error",
-            "Không có thông báo cần đánh dấu",
-            alreadyReadCount > 0
-              ? "Tất cả thông báo bạn chọn đã được đánh dấu là đã đọc."
-              : "Bạn chỉ có thể đánh dấu thông báo của chính mình.",
-          )
-          return
-        }
-      }
-
-      try {
-        setIsProcessing(true)
-        const response = await apiClient.post<{
-          success: boolean
-          data?: { count: number }
-          error?: string
-          message?: string
-        }>(apiRoutes.notifications.bulk, {
-          action: "mark-read",
-          ids: targetNotificationIds,
-        })
-
-        const count = response.data.data?.count ?? 0
-
-        if (count > 0) {
-          showFeedback(
-            "success",
-            "Đã đánh dấu đã đọc",
-            `Đã đánh dấu ${count} thông báo là đã đọc.`,
-          )
-          triggerTableRefresh()
-      } else {
-          showFeedback(
-            "error",
-            "Không có thay đổi",
-            alreadyReadCount > 0
-              ? "Các thông báo bạn chọn đã được đánh dấu là đã đọc trước đó."
-              : response.data.message || "Không có thông báo nào được cập nhật.",
-          )
-        }
-      } catch (error: unknown) {
-        const errorMessage =
-          (error as { response?: { data?: { message?: string } } })?.response?.data?.message ||
-          "Không thể đánh dấu đã đọc các thông báo."
-        showFeedback("error", "Lỗi", errorMessage)
-      } finally {
-        setIsProcessing(false)
-      }
-    },
-    [showFeedback, triggerTableRefresh, session?.user?.id]
-  )
-
-  const handleBulkMarkAsUnread = useCallback(
-    async (ids: string[], rows?: NotificationRow[]) => {
-      if (!session?.user?.id) {
-        showFeedback("error", "Lỗi", "Bạn cần đăng nhập để thực hiện thao tác này.")
-        return
-      }
-
-      let targetNotificationIds = ids
-      let alreadyUnreadCount = 0
-
-      if (rows) {
-        const ownNotifications = rows.filter((row) => row.userId === session.user.id)
-        const readNotifications = ownNotifications.filter((row) => row.isRead)
-        alreadyUnreadCount = ownNotifications.length - readNotifications.length
-        targetNotificationIds = readNotifications.map((row) => row.id)
-
-        if (targetNotificationIds.length === 0) {
-          showFeedback(
-            "error",
-            "Không có thông báo cần đánh dấu",
-            alreadyUnreadCount > 0
-              ? "Tất cả thông báo bạn chọn đã ở trạng thái chưa đọc."
-              : "Bạn chỉ có thể đánh dấu thông báo của chính mình.",
-          )
-          return
-        }
-      }
-
-      try {
-        setIsProcessing(true)
-        const response = await apiClient.post<{
-          success: boolean
-          data?: { count: number }
-          error?: string
-          message?: string
-        }>(apiRoutes.notifications.bulk, {
-          action: "mark-unread",
-          ids: targetNotificationIds,
-        })
-
-        const count = response.data.data?.count ?? 0
-
-        if (count > 0) {
-          showFeedback(
-            "success",
-            "Đã đánh dấu chưa đọc",
-            `Đã đánh dấu ${count} thông báo là chưa đọc.`,
-          )
-          triggerTableRefresh()
-        } else {
-          showFeedback(
-            "error",
-            "Không có thay đổi",
-            alreadyUnreadCount > 0
-              ? "Các thông báo bạn chọn đã ở trạng thái chưa đọc."
-              : response.data.message || "Không có thông báo nào được cập nhật.",
-          )
-        }
-      } catch (error: unknown) {
-        const errorMessage =
-          (error as { response?: { data?: { message?: string } } })?.response?.data?.message ||
-          "Không thể đánh dấu chưa đọc các thông báo."
-        showFeedback("error", "Lỗi", errorMessage)
-      } finally {
-        setIsProcessing(false)
-      }
-    },
-    [showFeedback, triggerTableRefresh, session?.user?.id]
-  )
-
-  const deleteNotificationMutation = useDeleteNotification()
-
-  // Handler để xóa một notification
-  const handleDeleteSingle = useCallback(
-    async (row: NotificationRow, refresh: () => void) => {
-      // Kiểm tra quyền: chỉ cho phép xóa notification của chính mình
-      const isOwner = session?.user?.id === row.userId
-      
-      if (!isOwner) {
-        showFeedback("error", "Không có quyền", "Bạn chỉ có thể xóa thông báo của chính mình.")
-        return
-      }
-
-      // Kiểm tra không phải thông báo hệ thống
-      if (row.kind === "SYSTEM") {
-        showFeedback("error", "Không thể xóa", "Thông báo hệ thống không thể xóa.")
-        return
-      }
-
-      try {
-        await deleteNotificationMutation.mutateAsync(row.id)
-        showFeedback("success", "Đã xóa thông báo", "Thông báo đã được xóa thành công.")
-        refresh()
-      } catch (error: unknown) {
-        const errorMessage = 
-          (error as { response?: { data?: { message?: string } } })?.response?.data?.message ||
-          "Không thể xóa thông báo."
-        showFeedback("error", "Xóa thất bại", errorMessage)
-      }
-    },
-    [showFeedback, session?.user?.id, deleteNotificationMutation]
-  )
-
-  // Handler để xóa nhiều notifications
-  const handleBulkDelete = useCallback(
-    async (ids: string[], rows?: NotificationRow[]) => {
-      if (!session?.user?.id) {
-        showFeedback("error", "Lỗi", "Bạn cần đăng nhập để thực hiện thao tác này.")
-        return
-      }
-
-      // Filter chỉ notifications của chính user và không phải SYSTEM
-      let deletableNotificationIds: string[]
-      let systemCount = 0
-      let otherCount = 0
-
-      if (rows) {
-        // Nếu có rows data, filter theo userId và kind
-        const ownNotifications = rows.filter((row) => row.userId === session.user.id)
-        otherCount = rows.length - ownNotifications.length
-        
-        const nonSystemNotifications = ownNotifications.filter((row) => row.kind !== "SYSTEM")
-        systemCount = ownNotifications.length - nonSystemNotifications.length
-        
-        deletableNotificationIds = nonSystemNotifications.map((row) => row.id)
-      } else {
-        // Nếu không có rows data, gọi API và để server filter
-        deletableNotificationIds = ids
-      }
-
-      if (deletableNotificationIds.length === 0) {
-        if (systemCount > 0) {
-          showFeedback("error", "Không thể xóa", "Thông báo hệ thống không thể xóa.")
-        } else {
-          showFeedback("error", "Không có quyền", "Bạn chỉ có thể xóa thông báo của chính mình.")
-        }
-        return
-      }
-
-      try {
-        setIsProcessing(true)
-        const response = await apiClient.delete<{
-          success: boolean
-          data?: { count: number }
-          error?: string
-          message?: string
-        }>(apiRoutes.notifications.deleteAll, {
-          data: { ids: deletableNotificationIds },
-        })
-
-        const deletedCount = response.data.data?.count || 0
-
-        if (deletedCount > 0) {
-          let message = `Đã xóa ${deletedCount} thông báo.`
-          if (systemCount > 0) {
-            message += ` ${systemCount} thông báo hệ thống đã được bỏ qua.`
-          }
-          if (otherCount > 0) {
-            message += ` ${otherCount} thông báo không thuộc về bạn đã được bỏ qua.`
-          }
-          showFeedback("success", "Đã xóa thông báo", message)
-          triggerTableRefresh()
-        } else {
-          showFeedback("error", "Lỗi", "Không thể xóa các thông báo. Bạn chỉ có thể xóa thông báo cá nhân của chính mình.")
-        }
-      } catch (error: unknown) {
-        const errorMessage = 
-          (error as { response?: { data?: { message?: string } } })?.response?.data?.message ||
-          "Không thể xóa các thông báo."
-        showFeedback("error", "Xóa thất bại", errorMessage)
-      } finally {
-        setIsProcessing(false)
-      }
-    },
-    [showFeedback, triggerTableRefresh, session?.user?.id]
-  )
-
-  const renderRowActions = useCallback(
-    (actions: RowActionConfig[]) => {
-      if (actions.length === 0) {
-        return null
-      }
-
-      if (actions.length === 1) {
-        const singleAction = actions[0]
-        const Icon = singleAction.icon
-        return (
-          <Button
-            variant="ghost"
-            size="sm"
-            disabled={singleAction.disabled}
-            onClick={() => {
-              if (singleAction.disabled) return
-              singleAction.onSelect()
-            }}
-          >
-            <Icon className="mr-2 h-5 w-5" />
-            {singleAction.label}
-          </Button>
-        )
-      }
-
-      return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-8 w-8">
-              <MoreHorizontal className="h-5 w-5" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            {actions.map((action) => {
-              const Icon = action.icon
-              return (
-                <DropdownMenuItem
-                  key={action.label}
-                  disabled={action.disabled}
-                  onClick={() => {
-                    if (action.disabled) return
-                    action.onSelect()
-                  }}
-                  className={
-                    action.destructive
-                      ? "text-destructive focus:text-destructive disabled:opacity-50"
-                      : "disabled:opacity-50"
-                  }
-                >
-                  <Icon
-                    className={
-                      action.destructive ? "mr-2 h-5 w-5 text-destructive" : "mr-2 h-5 w-5"
-                    }
-                  />
-                  {action.label}
-                </DropdownMenuItem>
-              )
-            })}
-          </DropdownMenuContent>
-        </DropdownMenu>
-      )
-    },
     [],
   )
 
-  const renderRowActionsForNotifications = useCallback(
-    (row: NotificationRow, { refresh }: { refresh: () => void }) => {
-      const isOwner = session?.user?.id === row.userId
-      const canDelete = isOwner && row.kind !== "SYSTEM"
-
-      const actions: RowActionConfig[] = [
-        {
-          label: "Xem chi tiết",
-          icon: Eye,
-          onSelect: () => router.push(`/admin/notifications/${row.id}`),
-        },
-      ]
-
-      if (isOwner) {
-        if (row.isRead) {
-          actions.push({
-            label: "Đánh dấu chưa đọc",
-            icon: X,
-            onSelect: () => {
-              if (tableRefreshRef.current) {
-                handleToggleRead(row, false, tableRefreshRef.current)
-              }
-            },
-          })
-        } else {
-          actions.push({
-            label: "Đánh dấu đã đọc",
-            icon: Check,
-            onSelect: () => {
-              if (tableRefreshRef.current) {
-                handleToggleRead(row, true, tableRefreshRef.current)
-              }
-            },
-          })
-        }
-      }
-
-      if (canDelete) {
-        actions.push({
-          label: "Xóa",
-          icon: Trash2,
-          onSelect: () => handleDeleteSingle(row, refresh),
-          destructive: true,
-        })
-      }
-
-      return renderRowActions(actions)
-    },
-    [handleDeleteSingle, handleToggleRead, renderRowActions, router, session?.user?.id],
-  )
-
-  const userEmailFilter = useDynamicFilterOptions({
-    optionsEndpoint: apiRoutes.adminNotifications.options({ column: "userEmail" }),
-  })
-
-  const baseColumns = useMemo<DataTableColumn<NotificationRow>[]>(
+  const viewModes: ResourceViewMode<NotificationRow>[] = useMemo(
     () => [
       {
-        accessorKey: "userEmail",
-        header: "Người dùng",
-        filter: {
-          type: "select",
-          placeholder: "Chọn email...",
-          searchPlaceholder: "Tìm kiếm...",
-          emptyMessage: "Không tìm thấy.",
-          options: userEmailFilter.options,
-          onSearchChange: userEmailFilter.onSearchChange,
-          isLoading: userEmailFilter.isLoading,
-        },
-        className: "min-w-[200px]",
-        headerClassName: "min-w-[200px]",
-        cell: (row) => {
-          const isOwner = session?.user?.id === row.userId
-          return (
-            <div className="flex items-center gap-2">
-              <div>
-                <div className="font-medium">{row.userEmail || "-"}</div>
-                {row.userName && <div className="text-sm text-muted-foreground">{row.userName}</div>}
-                {isOwner && (
-                <Badge variant="outline" className="text-xs">
-                  - Của bạn -
-                </Badge>
-              )}
-              </div>
-              
-            </div>
-          )
-        },
-      },
-      {
-        accessorKey: "kind",
-        header: "Loại",
-        filter: {
-          type: "select",
-          placeholder: "Chọn loại...",
-          options: Object.entries(NOTIFICATION_KINDS).map(([value, { label }]) => ({
-            label,
-            value,
-          })),
-        },
-        className: "min-w-[120px]",
-        headerClassName: "min-w-[120px]",
-        cell: (row) => {
-          const kind = NOTIFICATION_KINDS[row.kind] || { label: row.kind, variant: "secondary" as const }
-          return <Badge variant={kind.variant}>{kind.label}</Badge>
-        },
-      },
-      {
-        accessorKey: "title",
-        header: "Tiêu đề",
-        className: "min-w-[250px]",
-        headerClassName: "min-w-[250px]",
-        cell: (row) => (
-          <a
-            href={`/admin/notifications/${row.id}`}
-            className="font-medium text-primary hover:underline"
-          >
-            {row.title}
-          </a>
-        ),
-      },
-      {
-        accessorKey: "description",
-        header: "Mô tả",
-        className: "min-w-[300px]",
-        headerClassName: "min-w-[300px]",
-        cell: (row) => row.description || "-",
-      },
-      {
-        accessorKey: "isRead",
-        header: "Trạng thái",
-        filter: {
-          type: "select",
-          placeholder: "Chọn trạng thái...",
-          options: [
-            { label: "Đã đọc", value: "true" },
-            { label: "Chưa đọc", value: "false" },
-          ],
-        },
-        className: "min-w-[140px] max-w-[180px]",
-        headerClassName: "min-w-[140px] max-w-[180px]",
-        cell: (row) => {
-          const isOwner = session?.user?.id === row.userId
-          
-          return (
-            <div className="flex items-center gap-2">
-              <Switch
-                checked={row.isRead}
-                disabled={togglingNotifications.has(row.id) || !isOwner}
-                onCheckedChange={(checked) => {
-                  if (tableRefreshRef.current && isOwner) {
-                    handleToggleRead(row, checked, tableRefreshRef.current)
-                  }
-                }}
-                aria-label={row.isRead ? "Đánh dấu chưa đọc" : "Đánh dấu đã đọc"}
-              />
-              <span className="text-xs text-muted-foreground">
-                {row.isRead ? "Đã đọc" : "Chưa đọc"}
-              </span>
-            </div>
-          )
-        },
-      },
-      {
-        accessorKey: "createdAt",
-        header: "Ngày tạo",
-        className: "min-w-[150px]",
-        headerClassName: "min-w-[150px]",
-        cell: (row) => dateFormatter.format(new Date(row.createdAt)),
-      },
-    ],
-    [
-      dateFormatter,
-      userEmailFilter.options,
-      userEmailFilter.onSearchChange,
-      userEmailFilter.isLoading,
-      session?.user?.id,
-      togglingNotifications,
-      handleToggleRead,
-    ]
-  )
+        id: "all",
+        label: NOTIFICATION_LABELS.ALL,
+        columns: baseColumns,
+        selectionEnabled: canManage,
+        selectionActions: canManage
+          ? ({ selectedIds, selectedRows, clearSelection, refresh }) => {
+              const ownNotifications = selectedRows.filter((row) => row.userId === session?.user?.id)
+              const otherCount = selectedIds.length - ownNotifications.length
 
-  const viewModes: ResourceViewMode<NotificationRow>[] = [
-    {
-      id: "all",
-      label: "Tất cả",
-      columns: baseColumns,
-      selectionEnabled: canManage,
-      selectionActions: canManage
-        ? ({ selectedIds, selectedRows, clearSelection, refresh }) => {
-            // Filter chỉ notifications của chính user
-            const ownNotifications = selectedRows.filter((row) => row.userId === session?.user?.id)
-            const otherCount = selectedIds.length - ownNotifications.length
+              const unreadNotifications = ownNotifications.filter((row) => !row.isRead)
+              const unreadNotificationIds = unreadNotifications.map((row) => row.id)
+              const readNotifications = ownNotifications.filter((row) => row.isRead)
+              const readNotificationIds = readNotifications.map((row) => row.id)
 
-            const unreadNotifications = ownNotifications.filter((row) => !row.isRead)
-            const unreadNotificationIds = unreadNotifications.map((row) => row.id)
-            const readNotifications = ownNotifications.filter((row) => row.isRead)
-            const readNotificationIds = readNotifications.map((row) => row.id)
+              const deletableNotifications = ownNotifications.filter((row) => row.kind !== "SYSTEM")
+              const deletableNotificationIds = deletableNotifications.map((row) => row.id)
+              const systemCount = ownNotifications.length - deletableNotifications.length
 
-            // Filter notifications có thể xóa (không phải SYSTEM)
-            const deletableNotifications = ownNotifications.filter((row) => row.kind !== "SYSTEM")
-            const deletableNotificationIds = deletableNotifications.map((row) => row.id)
-            const systemCount = ownNotifications.length - deletableNotifications.length
+              const handleBulkMarkAsReadWithRefresh = async () => {
+                await handleBulkMarkAsRead(unreadNotificationIds, ownNotifications)
+                refresh?.()
+              }
 
-            // Wrap handlers với refresh function
-            const handleBulkMarkAsReadWithRefresh = async () => {
-              await handleBulkMarkAsRead(unreadNotificationIds, ownNotifications)
-              refresh?.() // Trigger table refresh
-            }
+              const handleBulkMarkAsUnreadWithRefresh = async () => {
+                await handleBulkMarkAsUnread(readNotificationIds, ownNotifications)
+                refresh?.()
+              }
 
-            const handleBulkMarkAsUnreadWithRefresh = async () => {
-              await handleBulkMarkAsUnread(readNotificationIds, ownNotifications)
-              refresh?.() // Trigger table refresh
-            }
+              const handleBulkDeleteWithRefresh = async () => {
+                await handleBulkDelete(selectedIds, selectedRows)
+                refresh?.()
+              }
 
-            const handleBulkDeleteWithRefresh = async () => {
-              await handleBulkDelete(selectedIds, selectedRows)
-              refresh?.() // Trigger table refresh
-            }
-
-            return (
-              <div className="flex flex-wrap items-center justify-between gap-3 text-sm">
-                <span>
-                  Đã chọn <strong>{selectedIds.length}</strong> thông báo
-                  {(otherCount > 0 || systemCount > 0) && (
-                    <span className="ml-2 text-xs text-muted-foreground">
-                      ({systemCount > 0 && `${systemCount} hệ thống, `}
-                      {otherCount > 0 && `${otherCount} không thuộc về bạn`}
-                      {systemCount > 0 && otherCount === 0 && "không thể xóa"})
-                    </span>
-                  )}
-                </span>
-                <div className="flex items-center gap-2">
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    onClick={handleBulkMarkAsReadWithRefresh}
-                    disabled={isProcessing || unreadNotificationIds.length === 0}
-                  >
-                    <CheckCircle2 className="mr-2 h-5 w-5" />
-                    Đánh dấu đã đọc ({unreadNotificationIds.length})
-                  </Button>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    onClick={handleBulkMarkAsUnreadWithRefresh}
-                    disabled={isProcessing || readNotificationIds.length === 0}
-                  >
-                    <BellOff className="mr-2 h-5 w-5" />
-                    Đánh dấu chưa đọc ({readNotificationIds.length})
-                  </Button>
-                  {deletableNotificationIds.length > 0 && (
+              return (
+                <div className="flex flex-wrap items-center justify-between gap-3 text-sm">
+                  <span>
+                    Đã chọn <strong>{selectedIds.length}</strong> thông báo
+                    {(otherCount > 0 || systemCount > 0) && (
+                      <span className="ml-2 text-xs text-muted-foreground">
+                        ({systemCount > 0 && `${systemCount} hệ thống, `}
+                        {otherCount > 0 && `${otherCount} không thuộc về bạn`}
+                        {systemCount > 0 && otherCount === 0 && "không thể xóa"})
+                      </span>
+                    )}
+                  </span>
+                  <div className="flex items-center gap-2">
                     <Button
                       type="button"
                       size="sm"
-                      variant="destructive"
-                      onClick={handleBulkDeleteWithRefresh}
-                      disabled={isProcessing || deletableNotificationIds.length === 0}
+                      variant="outline"
+                      onClick={handleBulkMarkAsReadWithRefresh}
+                      disabled={bulkState.isProcessing || unreadNotificationIds.length === 0}
                     >
-                      <Trash2 className="mr-2 h-5 w-5" />
-                      Xóa ({deletableNotificationIds.length})
+                      <CheckCircle2 className="mr-2 h-5 w-5" />
+                      Đánh dấu đã đọc ({unreadNotificationIds.length})
                     </Button>
-                  )}
-                  <Button type="button" size="sm" variant="ghost" onClick={clearSelection}>
-                    Bỏ chọn
-                  </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={handleBulkMarkAsUnreadWithRefresh}
+                      disabled={bulkState.isProcessing || readNotificationIds.length === 0}
+                    >
+                      <BellOff className="mr-2 h-5 w-5" />
+                      Đánh dấu chưa đọc ({readNotificationIds.length})
+                    </Button>
+                    {deletableNotificationIds.length > 0 && (
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="destructive"
+                        onClick={handleBulkDeleteWithRefresh}
+                        disabled={bulkState.isProcessing || deletableNotificationIds.length === 0}
+                      >
+                        <Trash2 className="mr-2 h-5 w-5" />
+                        Xóa ({deletableNotificationIds.length})
+                      </Button>
+                    )}
+                    <Button type="button" size="sm" variant="ghost" onClick={clearSelection}>
+                      {NOTIFICATION_LABELS.CLEAR_SELECTION}
+                    </Button>
+                  </div>
                 </div>
-              </div>
-            )
-          }
-        : undefined,
-      rowActions: canManage
-        ? (row, { refresh }) => renderRowActionsForNotifications(row, { refresh })
-        : (row, { refresh }) => renderRowActionsForNotifications(row, { refresh }),
-    },
-  ]
+              )
+            }
+          : undefined,
+        rowActions: (row) => renderRowActionsForNotifications(row),
+      },
+    ],
+    [
+      canManage,
+      baseColumns,
+      session?.user?.id,
+      handleBulkMarkAsRead,
+      handleBulkMarkAsUnread,
+      handleBulkDelete,
+      bulkState.isProcessing,
+      renderRowActionsForNotifications,
+    ],
+  )
 
-  const initialDataByView = {
-    all: initialData,
-  }
+  const initialDataByView = useMemo(
+    () => ({
+      all: initialData,
+    }),
+    [initialData],
+  )
 
   return (
     <>
