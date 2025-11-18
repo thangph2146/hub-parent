@@ -10,8 +10,15 @@
 import { prisma } from "@/lib/database"
 import { NotificationKind, Prisma } from "@prisma/client"
 import { DEFAULT_ROLES } from "@/lib/permissions"
-import { getSocketServer, storeNotificationInCache, mapNotificationToPayload } from "@/lib/socket/state"
 import { logger } from "@/lib/config"
+import {
+  emitNotificationNew,
+  emitNotificationNewForSuperAdmins,
+  emitNotificationUpdated,
+  emitNotificationDeleted,
+  emitNotificationsSync,
+  emitNotificationsDeleted,
+} from "./events"
 
 /**
  * Create notification for a specific user
@@ -63,21 +70,8 @@ export async function createNotificationForUser(
     kind: notification.kind,
   })
 
-  // Emit socket event nếu có socket server
-  const io = getSocketServer()
-  if (io) {
-    try {
-      const socketNotification = mapNotificationToPayload(notification)
-      storeNotificationInCache(userId, socketNotification)
-      io.to(`user:${userId}`).emit("notification:new", socketNotification)
-      logger.debug("Socket notification emitted for user", {
-        notificationId: notification.id,
-        userId,
-      })
-    } catch (error) {
-      logger.error("Failed to emit socket notification", error instanceof Error ? error : new Error(String(error)))
-    }
-  }
+  // Emit socket event
+  await emitNotificationNew(notification)
 
   return notification
 }
@@ -154,6 +148,7 @@ export async function createNotificationForSuperAdmins(
 /**
  * Emit socket notification to super admins after creating notifications in database
  * Helper function để emit realtime notification sau khi đã tạo notification trong DB
+ * @deprecated Sử dụng emitNotificationNewForSuperAdmins từ events.ts thay thế
  */
 export async function emitNotificationToSuperAdminsAfterCreate(
   title: string,
@@ -163,12 +158,6 @@ export async function emitNotificationToSuperAdminsAfterCreate(
   metadata?: Record<string, unknown> | null
 ) {
   try {
-    const io = getSocketServer()
-    if (!io) {
-      logger.warn("Socket server not available, skipping emit")
-      return
-    }
-
     // Find all super admin users
     const superAdmins = await prisma.user.findMany({
       where: {
@@ -218,51 +207,8 @@ export async function emitNotificationToSuperAdminsAfterCreate(
       title: title.trim(),
     })
 
-    // Emit to each super admin user room với notification từ database
-    for (const admin of superAdmins) {
-      const dbNotification = createdNotifications.find((n) => n.userId === admin.id)
-
-      if (dbNotification) {
-        // Map notification từ database sang socket payload format
-        const socketNotification = mapNotificationToPayload(dbNotification)
-        storeNotificationInCache(admin.id, socketNotification)
-        io.to(`user:${admin.id}`).emit("notification:new", socketNotification)
-        logger.debug("Emitted notification to user room", {
-          adminId: admin.id,
-          room: `user:${admin.id}`,
-          notificationId: dbNotification.id,
-        })
-      } else {
-        // Fallback nếu không tìm thấy notification trong database
-        const fallbackNotification = {
-          id: `notification-${Date.now()}-${admin.id}`,
-          kind: kind.toLowerCase() as "system" | "message" | "announcement" | "alert" | "warning" | "success" | "info",
-          title,
-          description: description ?? null,
-          actionUrl: actionUrl ?? null,
-          timestamp: Date.now(),
-          read: false,
-          toUserId: admin.id,
-          metadata: metadata ?? null,
-        }
-        storeNotificationInCache(admin.id, fallbackNotification)
-        io.to(`user:${admin.id}`).emit("notification:new", fallbackNotification)
-        logger.debug("Emitted fallback notification to user room", {
-          adminId: admin.id,
-          room: `user:${admin.id}`,
-        })
-      }
-    }
-
-    // Also emit to role room for broadcast (use first notification if available)
-    if (createdNotifications.length > 0) {
-      const roleNotification = mapNotificationToPayload(createdNotifications[0])
-      io.to("role:super_admin").emit("notification:new", roleNotification)
-      logger.debug("Emitted notification to role room", {
-        room: "role:super_admin",
-        notificationId: createdNotifications[0].id,
-      })
-    }
+    // Sử dụng events.ts để emit
+    await emitNotificationNewForSuperAdmins(createdNotifications)
   } catch (error) {
     // Log error nhưng không throw để không ảnh hưởng đến main operation
     logger.error("Failed to emit notification to super admins", error instanceof Error ? error : new Error(String(error)))
@@ -321,16 +267,7 @@ export async function markNotificationAsRead(notificationId: string, userId: str
   })
 
   // Emit socket event
-  const io = getSocketServer()
-  if (io) {
-    try {
-      const payload = mapNotificationToPayload(updated)
-      io.to(`user:${userId}`).emit("notification:updated", payload)
-      logger.debug("Socket notification update emitted", { notificationId, userId })
-    } catch (error) {
-      logger.error("Failed to emit socket notification update", error instanceof Error ? error : new Error(String(error)))
-    }
-  }
+  emitNotificationUpdated(updated)
 
   return updated
 }
@@ -387,16 +324,7 @@ export async function markNotificationAsUnread(notificationId: string, userId: s
   })
 
   // Emit socket event
-  const io = getSocketServer()
-  if (io) {
-    try {
-      const payload = mapNotificationToPayload(updated)
-      io.to(`user:${userId}`).emit("notification:updated", payload)
-      logger.debug("Socket notification update emitted", { notificationId, userId })
-    } catch (error) {
-      logger.error("Failed to emit socket notification update", error instanceof Error ? error : new Error(String(error)))
-    }
-  }
+  emitNotificationUpdated(updated)
 
   return updated
 }
@@ -453,15 +381,7 @@ export async function deleteNotification(notificationId: string, userId: string)
   })
 
   // Emit socket event để remove từ cache
-  const io = getSocketServer()
-  if (io) {
-    try {
-      io.to(`user:${userId}`).emit("notification:deleted", { id: notificationId })
-      logger.debug("Socket notification deletion emitted", { notificationId, userId })
-    } catch (error) {
-      logger.error("Failed to emit socket notification deletion", error instanceof Error ? error : new Error(String(error)))
-    }
-  }
+  emitNotificationDeleted(notificationId, userId)
 
   return deleted
 }
@@ -524,27 +444,8 @@ export async function bulkMarkAsRead(notificationIds: string[], userId: string) 
   })
 
   // Emit socket event để sync
-  const io = getSocketServer()
-  if (io && result.count > 0) {
-    try {
-      // Reload updated notifications và emit
-      const updatedNotifications = await prisma.notification.findMany({
-        where: { id: { in: ownNotificationIds }, userId },
-        take: 50,
-      })
-
-      const payloads = updatedNotifications.map(mapNotificationToPayload)
-      
-      // Update cache
-      payloads.forEach((payload) => {
-        storeNotificationInCache(userId, payload)
-      })
-
-      io.to(`user:${userId}`).emit("notifications:sync", payloads)
-      logger.debug("Socket notifications sync emitted", { userId, count: payloads.length })
-    } catch (error) {
-      logger.error("Failed to emit socket notifications sync", error instanceof Error ? error : new Error(String(error)))
-    }
+  if (result.count > 0) {
+    await emitNotificationsSync(ownNotificationIds, userId)
   }
 
   return { count: result.count }
@@ -604,28 +505,9 @@ export async function bulkMarkAsUnread(notificationIds: string[], userId: string
     totalRequested: notificationIds.length,
   })
 
-  const io = getSocketServer()
-  if (io && result.count > 0) {
-    try {
-      const updatedNotifications = await prisma.notification.findMany({
-        where: { id: { in: ownNotificationIds }, userId },
-        take: 50,
-      })
-
-      const payloads = updatedNotifications.map(mapNotificationToPayload)
-
-      payloads.forEach((payload) => {
-        storeNotificationInCache(userId, payload)
-      })
-
-      io.to(`user:${userId}`).emit("notifications:sync", payloads)
-      logger.debug("Socket notifications sync emitted (unread)", { userId, count: payloads.length })
-    } catch (error) {
-      logger.error(
-        "Failed to emit socket notifications sync after marking unread",
-        error instanceof Error ? error : new Error(String(error)),
-      )
-    }
+  // Emit socket event để sync
+  if (result.count > 0) {
+    await emitNotificationsSync(ownNotificationIds, userId)
   }
 
   return { count: result.count }
@@ -695,14 +577,8 @@ export async function bulkDelete(notificationIds: string[], userId: string) {
     })
 
     // Emit socket event để remove từ cache
-    const io = getSocketServer()
-    if (io && result.count > 0) {
-      try {
-        io.to(`user:${userId}`).emit("notifications:deleted", { ids: deletableIds })
-        logger.debug("Socket notifications deletion emitted", { userId, count: result.count })
-      } catch (error) {
-        logger.error("Failed to emit socket notifications deletion", error instanceof Error ? error : new Error(String(error)))
-      }
+    if (result.count > 0) {
+      emitNotificationsDeleted(deletableIds, userId)
     }
 
     return { count: result.count }
@@ -726,14 +602,8 @@ export async function bulkDelete(notificationIds: string[], userId: string) {
   })
 
   // Emit socket event để remove từ cache
-  const io = getSocketServer()
-  if (io && result.count > 0) {
-    try {
-      io.to(`user:${userId}`).emit("notifications:deleted", { ids: ownNotificationIds })
-      logger.debug("Socket notifications deletion emitted", { userId, count: result.count })
-    } catch (error) {
-      logger.error("Failed to emit socket notifications deletion", error instanceof Error ? error : new Error(String(error)))
-    }
+  if (result.count > 0) {
+    emitNotificationsDeleted(ownNotificationIds, userId)
   }
 
   return { count: result.count }
