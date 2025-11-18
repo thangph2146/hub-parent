@@ -20,8 +20,7 @@ import {
   ensurePermission,
   type AuthContext,
 } from "@/features/admin/resources/server"
-import { getSocketServer } from "@/lib/socket/state"
-import { logger } from "@/lib/config"
+import { emitContactRequestUpsert, emitContactRequestRemove, emitContactRequestAssigned } from "./events"
 
 // Re-export for backward compatibility with API routes
 export { ApplicationError, ForbiddenError, NotFoundError, type AuthContext }
@@ -193,59 +192,11 @@ export async function updateContactRequest(ctx: AuthContext, id: string, input: 
 
   const sanitized = sanitizeContactRequest(contactRequest)
 
-  // Determine previous and new status for socket event
+  // Determine previous status for socket event
   const previousStatus: "active" | "deleted" | null = existing.deletedAt ? "deleted" : "active"
-  const newStatus: "active" | "deleted" = sanitized.deletedAt ? "deleted" : "active"
 
   // Emit socket event for real-time updates (especially for isRead changes)
-  const io = getSocketServer()
-  if (io) {
-    try {
-      // Convert ListedContactRequest to ContactRequestRow format for socket payload
-      const socketPayload = serializeContactRequestForTable(sanitized)
-
-      // Emit to all super admins (contact requests are visible to all super admins)
-      const superAdmins = await prisma.user.findMany({
-        where: {
-          isActive: true,
-          deletedAt: null,
-          userRoles: {
-            some: {
-              role: {
-                name: "super_admin",
-                isActive: true,
-                deletedAt: null,
-              },
-            },
-          },
-        },
-        select: { id: true },
-      })
-
-      const upsertPayload = {
-        contactRequest: socketPayload,
-        previousStatus,
-        newStatus,
-      }
-
-      // Emit to each super admin user room
-      for (const admin of superAdmins) {
-        io.to(`user:${admin.id}`).emit("contact-request:upsert", upsertPayload)
-      }
-
-      // Also emit to role room for broadcast
-      io.to("role:super_admin").emit("contact-request:upsert", upsertPayload)
-
-      logger.debug("Socket contact-request:upsert emitted", {
-        contactRequestId: sanitized.id,
-        previousStatus,
-        newStatus,
-        isRead: sanitized.isRead,
-      })
-    } catch (error) {
-      logger.error("Failed to emit socket contact-request:upsert", error instanceof Error ? error : new Error(String(error)))
-    }
-  }
+  await emitContactRequestUpsert(sanitized.id, previousStatus)
 
   // Emit notification realtime
   await notifySuperAdminsOfContactRequestAction(
@@ -325,6 +276,13 @@ export async function assignContactRequest(ctx: AuthContext, id: string, input: 
 
   const sanitized = sanitizeContactRequest(contactRequest)
 
+  // Emit socket event for assignment
+  await emitContactRequestAssigned(
+    sanitized.id,
+    sanitized.assignedToId,
+    sanitized.assignedTo?.name ?? null
+  )
+
   // Get actor info for notification
   const actor = await prisma.user.findUnique({
     where: { id: ctx.actorId },
@@ -378,12 +336,17 @@ export async function softDeleteContactRequest(ctx: AuthContext, id: string): Pr
     throw new NotFoundError("Yêu cầu liên hệ không tồn tại")
   }
 
+  const previousStatus: "active" | "deleted" = contactRequest.deletedAt ? "deleted" : "active"
+
   await prisma.contactRequest.update({
     where: { id },
     data: {
       deletedAt: new Date(),
     },
   })
+
+  // Emit socket event for real-time updates
+  await emitContactRequestUpsert(id, previousStatus)
 
   // Emit notification realtime
   await notifySuperAdminsOfContactRequestAction(
@@ -424,6 +387,11 @@ export async function bulkSoftDeleteContactRequests(ctx: AuthContext, ids: strin
     },
   })
 
+  // Emit socket events for real-time updates
+  for (const contactRequest of contactRequests) {
+    await emitContactRequestUpsert(contactRequest.id, "active")
+  }
+
   // Emit notifications realtime cho từng contact request
   for (const contactRequest of contactRequests) {
     await notifySuperAdminsOfContactRequestAction(
@@ -444,12 +412,17 @@ export async function restoreContactRequest(ctx: AuthContext, id: string): Promi
     throw new NotFoundError("Yêu cầu liên hệ không tồn tại hoặc chưa bị xóa")
   }
 
+  const previousStatus: "active" | "deleted" = contactRequest.deletedAt ? "deleted" : "active"
+
   await prisma.contactRequest.update({
     where: { id },
     data: {
       deletedAt: null,
     },
   })
+
+  // Emit socket event for real-time updates
+  await emitContactRequestUpsert(id, previousStatus)
 
   // Emit notification realtime
   await notifySuperAdminsOfContactRequestAction(
@@ -490,6 +463,11 @@ export async function bulkRestoreContactRequests(ctx: AuthContext, ids: string[]
     },
   })
 
+  // Emit socket events for real-time updates
+  for (const contactRequest of contactRequests) {
+    await emitContactRequestUpsert(contactRequest.id, "deleted")
+  }
+
   // Emit notifications realtime cho từng contact request
   for (const contactRequest of contactRequests) {
     await notifySuperAdminsOfContactRequestAction(
@@ -509,16 +487,21 @@ export async function hardDeleteContactRequest(ctx: AuthContext, id: string): Pr
 
   const contactRequest = await prisma.contactRequest.findUnique({
     where: { id },
-    select: { id: true, subject: true, name: true, email: true },
+    select: { id: true, subject: true, name: true, email: true, deletedAt: true },
   })
 
   if (!contactRequest) {
     throw new NotFoundError("Yêu cầu liên hệ không tồn tại")
   }
 
+  const previousStatus: "active" | "deleted" = contactRequest.deletedAt ? "deleted" : "active"
+
   await prisma.contactRequest.delete({
     where: { id },
   })
+
+  // Emit socket event for real-time updates
+  emitContactRequestRemove(id, previousStatus)
 
   // Emit notification realtime
   await notifySuperAdminsOfContactRequestAction(
@@ -537,12 +520,12 @@ export async function bulkHardDeleteContactRequests(ctx: AuthContext, ids: strin
     throw new ApplicationError("Danh sách yêu cầu liên hệ trống", 400)
   }
 
-  // Lấy thông tin contact requests trước khi delete để tạo notifications
+  // Lấy thông tin contact requests trước khi delete để tạo notifications và emit socket events
   const contactRequests = await prisma.contactRequest.findMany({
     where: {
       id: { in: ids },
     },
-    select: { id: true, subject: true, name: true, email: true },
+    select: { id: true, subject: true, name: true, email: true, deletedAt: true },
   })
 
   const result = await prisma.contactRequest.deleteMany({
@@ -550,6 +533,12 @@ export async function bulkHardDeleteContactRequests(ctx: AuthContext, ids: strin
       id: { in: ids },
     },
   })
+
+  // Emit socket events for real-time updates
+  for (const contactRequest of contactRequests) {
+    const previousStatus: "active" | "deleted" = contactRequest.deletedAt ? "deleted" : "active"
+    emitContactRequestRemove(contactRequest.id, previousStatus)
+  }
 
   // Emit notifications realtime cho từng contact request
   for (const contactRequest of contactRequests) {
