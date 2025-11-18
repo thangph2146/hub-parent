@@ -116,9 +116,16 @@ export function RolesTableClient({
   const handleRestoreSingle = useCallback(
     (row: RoleRow) => {
       if (!canRestore) return
-      executeSingleAction("restore", row, tableRefreshRef.current || (() => {}))
+      setDeleteConfirm({
+        open: true,
+        type: "restore",
+        row,
+        onConfirm: async () => {
+          await executeSingleAction("restore", row, tableRefreshRef.current || (() => {}))
+        },
+      })
     },
-    [canRestore, executeSingleAction],
+    [canRestore, executeSingleAction, setDeleteConfirm],
   )
 
   const { renderActiveRowActions, renderDeletedRowActions } = useRoleRowActions({
@@ -228,17 +235,16 @@ export function RolesTableClient({
       if (ids.length === 0) return
 
       // Actions cần confirmation
-      if (action === "delete" || action === "hard-delete") {
+      if (action === "delete" || action === "restore" || action === "hard-delete") {
         setDeleteConfirm({
           open: true,
-          type: action === "hard-delete" ? "hard" : "soft",
+          type: action === "hard-delete" ? "hard" : action === "restore" ? "restore" : "soft",
           bulkIds: ids,
           onConfirm: async () => {
             await executeBulkAction(action, ids, refresh, clearSelection)
           },
         })
       } else {
-        // Actions không cần confirmation (restore)
         executeBulkAction(action, ids, refresh, clearSelection)
       }
     },
@@ -378,7 +384,7 @@ export function RolesTableClient({
                         onClick={() => executeBulk("restore", selectedIds, refresh, clearSelection)}
                       >
                         <RotateCcw className="mr-2 h-5 w-5" />
-                        {ROLE_LABELS.RESTORE}
+                        {ROLE_LABELS.RESTORE_SELECTED(selectedIds.length)}
                       </Button>
                     )}
                     {canManage && (
@@ -481,6 +487,8 @@ export function RolesTableClient({
         title={
           deleteConfirm?.type === "hard"
             ? ROLE_CONFIRM_MESSAGES.HARD_DELETE_TITLE(deleteConfirm?.bulkIds?.length)
+            : deleteConfirm?.type === "restore"
+            ? ROLE_CONFIRM_MESSAGES.RESTORE_TITLE(deleteConfirm?.bulkIds?.length)
             : ROLE_CONFIRM_MESSAGES.DELETE_TITLE(deleteConfirm?.bulkIds?.length)
         }
         description={
@@ -489,22 +497,42 @@ export function RolesTableClient({
                 deleteConfirm?.bulkIds?.length,
                 deleteConfirm?.row?.displayName,
               )
+            : deleteConfirm?.type === "restore"
+            ? ROLE_CONFIRM_MESSAGES.RESTORE_DESCRIPTION(
+                deleteConfirm?.bulkIds?.length,
+                deleteConfirm?.row?.displayName,
+              )
             : ROLE_CONFIRM_MESSAGES.DELETE_DESCRIPTION(
                 deleteConfirm?.bulkIds?.length,
                 deleteConfirm?.row?.displayName,
               )
         }
-        confirmLabel={deleteConfirm?.type === "hard" ? ROLE_CONFIRM_MESSAGES.HARD_DELETE_LABEL : ROLE_CONFIRM_MESSAGES.CONFIRM_LABEL}
+        confirmLabel={
+          deleteConfirm?.type === "hard"
+            ? ROLE_CONFIRM_MESSAGES.HARD_DELETE_LABEL
+            : deleteConfirm?.type === "restore"
+            ? ROLE_CONFIRM_MESSAGES.RESTORE_LABEL
+            : ROLE_CONFIRM_MESSAGES.CONFIRM_LABEL
+        }
         cancelLabel={ROLE_CONFIRM_MESSAGES.CANCEL_LABEL}
-        variant="destructive"
+        variant={deleteConfirm?.type === "hard" ? "destructive" : deleteConfirm?.type === "restore" ? "default" : "destructive"}
         onConfirm={handleDeleteConfirm}
-        isLoading={bulkState.isProcessing}
+        isLoading={
+          bulkState.isProcessing ||
+          (deleteConfirm?.row
+            ? deleteConfirm.type === "restore"
+              ? restoringRoles.has(deleteConfirm.row.id)
+              : deleteConfirm.type === "hard"
+              ? hardDeletingRoles.has(deleteConfirm.row.id)
+              : deletingRoles.has(deleteConfirm.row.id)
+            : false)
+        }
       />
 
       {/* Feedback Dialog */}
-      <FeedbackDialog
+        <FeedbackDialog
         open={feedback?.open ?? false}
-        onOpenChange={handleFeedbackOpenChange}
+          onOpenChange={handleFeedbackOpenChange}
         variant={feedback?.variant ?? "success"}
         title={feedback?.title ?? ""}
         description={feedback?.description}

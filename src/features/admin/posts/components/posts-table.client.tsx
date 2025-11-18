@@ -767,7 +767,7 @@ export function PostsTableClient({
     ]
 
     return modes
-  }, [canDelete, canRestore, canManage, deletedColumns, executeBulk, handleDeleteSingle, handleRestoreSingle, handleHardDeleteSingle, isBulkProcessing, router])
+  }, [canDelete, canRestore, canManage, deletedColumns, executeBulk, isBulkProcessing, renderActiveRowActions, renderDeletedRowActions])
 
   const initialDataByView = useMemo(
     () => (initialData ? { active: initialData } : undefined),

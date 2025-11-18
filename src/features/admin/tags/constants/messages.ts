@@ -45,6 +45,11 @@ export const TAG_LABELS = {
   HARD_DELETE: "Xóa vĩnh viễn",
   CLEAR_SELECTION: "Bỏ chọn",
   
+  // Loading labels
+  DELETING: "Đang xóa...",
+  RESTORING: "Đang khôi phục...",
+  HARD_DELETING: "Đang xóa vĩnh viễn...",
+  
   // View mode labels
   ACTIVE_VIEW: "Đang hoạt động",
   DELETED_VIEW: "Đã xóa",

@@ -56,6 +56,11 @@ export const ROLE_LABELS = {
   HARD_DELETE: "Xóa vĩnh viễn",
   CLEAR_SELECTION: "Bỏ chọn",
   
+  // Loading labels
+  DELETING: "Đang xóa...",
+  RESTORING: "Đang khôi phục...",
+  HARD_DELETING: "Đang xóa vĩnh viễn...",
+  
   // View mode labels
   ACTIVE_VIEW: "Đang hoạt động",
   DELETED_VIEW: "Đã xóa",
@@ -68,6 +73,7 @@ export const ROLE_LABELS = {
   SELECTED_ROLES: (count: number) => `Đã chọn ${count} vai trò`,
   SELECTED_DELETED_ROLES: (count: number) => `Đã chọn ${count} vai trò (đã xóa)`,
   DELETE_SELECTED: (count: number) => `Xóa đã chọn (${count})`,
+  RESTORE_SELECTED: (count: number) => `Khôi phục (${count})`,
   HARD_DELETE_SELECTED: (count: number) => `Xóa vĩnh viễn (${count})`,
   
   // Hints
@@ -91,6 +97,12 @@ export const ROLE_CONFIRM_MESSAGES = {
       ? `Bạn có chắc chắn muốn xóa ${count} vai trò? Chúng sẽ được chuyển vào thùng rác và có thể khôi phục sau.`
       : `Bạn có chắc chắn muốn xóa vai trò "${displayName || ""}"? Vai trò sẽ được chuyển vào thùng rác và có thể khôi phục sau.`,
   
+  RESTORE_TITLE: (count?: number) => count ? `Khôi phục ${count} vai trò?` : "Khôi phục vai trò?",
+  RESTORE_DESCRIPTION: (count?: number, displayName?: string) =>
+    count
+      ? `Bạn có chắc chắn muốn khôi phục ${count} vai trò? Chúng sẽ được chuyển về trạng thái hoạt động.`
+      : `Bạn có chắc chắn muốn khôi phục vai trò "${displayName || ""}"? Vai trò sẽ được chuyển về trạng thái hoạt động.`,
+  
   HARD_DELETE_TITLE: (count?: number) =>
     count ? `Xóa vĩnh viễn ${count} vai trò?` : "Xóa vĩnh viễn vai trò?",
   HARD_DELETE_DESCRIPTION: (count?: number, displayName?: string) =>
@@ -99,6 +111,7 @@ export const ROLE_CONFIRM_MESSAGES = {
       : `Hành động này sẽ xóa vĩnh viễn vai trò "${displayName || ""}" khỏi hệ thống. Dữ liệu sẽ không thể khôi phục. Bạn có chắc chắn muốn tiếp tục?`,
   
   CONFIRM_LABEL: "Xóa",
+  RESTORE_LABEL: "Khôi phục",
   HARD_DELETE_LABEL: "Xóa vĩnh viễn",
   CANCEL_LABEL: "Hủy",
 } as const

@@ -4,7 +4,7 @@
 
 import { useCallback } from "react"
 import { useResourceRouter } from "@/hooks/use-resource-segment"
-import { RotateCcw, Trash2, MoreHorizontal, AlertTriangle, Eye, Pencil } from "lucide-react"
+import { RotateCcw, Trash2, MoreHorizontal, AlertTriangle, Eye, Pencil, Loader2 } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
@@ -22,6 +22,8 @@ export interface RowActionConfig {
   onSelect: () => void
   destructive?: boolean
   disabled?: boolean
+  isLoading?: boolean
+  loadingLabel?: string
 }
 
 interface UseRowActionsOptions {
@@ -43,19 +45,19 @@ export function renderRowActions(actions: RowActionConfig[]) {
 
   if (actions.length === 1) {
     const singleAction = actions[0]
-    const Icon = singleAction.icon
+    const Icon = singleAction.isLoading ? Loader2 : singleAction.icon
     return (
       <Button
         variant="ghost"
         size="sm"
-        disabled={singleAction.disabled}
+        disabled={singleAction.disabled || singleAction.isLoading}
         onClick={() => {
-          if (singleAction.disabled) return
+          if (singleAction.disabled || singleAction.isLoading) return
           singleAction.onSelect()
         }}
       >
-        <Icon className="mr-2 h-5 w-5" />
-        {singleAction.label}
+        <Icon className={`mr-2 h-5 w-5 ${singleAction.isLoading ? "animate-spin" : ""}`} />
+        {singleAction.isLoading ? singleAction.loadingLabel || singleAction.label : singleAction.label}
       </Button>
     )
   }
@@ -69,13 +71,13 @@ export function renderRowActions(actions: RowActionConfig[]) {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         {actions.map((action) => {
-          const Icon = action.icon
+          const Icon = action.isLoading ? Loader2 : action.icon
           return (
             <DropdownMenuItem
               key={action.label}
-              disabled={action.disabled}
+              disabled={action.disabled || action.isLoading}
               onClick={() => {
-                if (action.disabled) return
+                if (action.disabled || action.isLoading) return
                 action.onSelect()
               }}
               className={
@@ -86,10 +88,12 @@ export function renderRowActions(actions: RowActionConfig[]) {
             >
               <Icon
                 className={
-                  action.destructive ? "mr-2 h-5 w-5 text-destructive" : "mr-2 h-5 w-5"
+                  action.destructive
+                    ? `mr-2 h-5 w-5 text-destructive ${action.isLoading ? "animate-spin" : ""}`
+                    : `mr-2 h-5 w-5 ${action.isLoading ? "animate-spin" : ""}`
                 }
               />
-              {action.label}
+              {action.isLoading ? action.loadingLabel || action.label : action.label}
             </DropdownMenuItem>
           )
         })}
@@ -130,22 +134,28 @@ export function useRoleRowActions({
       }
 
       if (canDelete) {
+        const isDeleting = deletingRoles.has(row.id)
         actions.push({
           label: ROLE_LABELS.DELETE,
           icon: Trash2,
           onSelect: () => onDelete(row),
           destructive: true,
-          disabled: row.name === "super_admin" || deletingRoles.has(row.id) || restoringRoles.has(row.id) || hardDeletingRoles.has(row.id),
+          disabled: row.name === "super_admin" || isDeleting || restoringRoles.has(row.id) || hardDeletingRoles.has(row.id),
+          isLoading: isDeleting,
+          loadingLabel: ROLE_LABELS.DELETING,
         })
       }
 
       if (canManage) {
+        const isHardDeleting = hardDeletingRoles.has(row.id)
         actions.push({
           label: ROLE_LABELS.HARD_DELETE,
           icon: AlertTriangle,
           onSelect: () => onHardDelete(row),
           destructive: true,
-          disabled: row.name === "super_admin" || deletingRoles.has(row.id) || restoringRoles.has(row.id) || hardDeletingRoles.has(row.id),
+          disabled: row.name === "super_admin" || deletingRoles.has(row.id) || restoringRoles.has(row.id) || isHardDeleting,
+          isLoading: isHardDeleting,
+          loadingLabel: ROLE_LABELS.HARD_DELETING,
         })
       }
 
@@ -165,21 +175,27 @@ export function useRoleRowActions({
       ]
 
       if (canRestore) {
+        const isRestoring = restoringRoles.has(row.id)
         actions.push({
           label: ROLE_LABELS.RESTORE,
           icon: RotateCcw,
           onSelect: () => onRestore(row),
-          disabled: deletingRoles.has(row.id) || restoringRoles.has(row.id) || hardDeletingRoles.has(row.id),
+          disabled: deletingRoles.has(row.id) || isRestoring || hardDeletingRoles.has(row.id),
+          isLoading: isRestoring,
+          loadingLabel: ROLE_LABELS.RESTORING,
         })
       }
 
       if (canManage) {
+        const isHardDeleting = hardDeletingRoles.has(row.id)
         actions.push({
           label: ROLE_LABELS.HARD_DELETE,
           icon: AlertTriangle,
           onSelect: () => onHardDelete(row),
           destructive: true,
-          disabled: row.name === "super_admin" || deletingRoles.has(row.id) || restoringRoles.has(row.id) || hardDeletingRoles.has(row.id),
+          disabled: row.name === "super_admin" || deletingRoles.has(row.id) || restoringRoles.has(row.id) || isHardDeleting,
+          isLoading: isHardDeleting,
+          loadingLabel: ROLE_LABELS.HARD_DELETING,
         })
       }
 

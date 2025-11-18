@@ -465,7 +465,16 @@ export function TagsTableClient({
           }
           cancelLabel={TAG_CONFIRM_MESSAGES.CANCEL_LABEL}
           onConfirm={handleDeleteConfirm}
-          isLoading={bulkState.isProcessing}
+          isLoading={
+            bulkState.isProcessing ||
+            (deleteConfirm.row
+              ? deleteConfirm.type === "restore"
+                ? restoringTags.has(deleteConfirm.row.id)
+                : deleteConfirm.type === "hard"
+                ? hardDeletingTags.has(deleteConfirm.row.id)
+                : deletingTags.has(deleteConfirm.row.id)
+              : false)
+          }
         />
       )}
 

@@ -1,7 +1,7 @@
 import type { Prisma } from "@prisma/client"
 import { PERMISSIONS, canPerformAnyAction } from "@/lib/permissions"
 import { prisma } from "@/lib/database"
-import { mapContactRequestRecord, serializeContactRequestForTable, type ContactRequestWithRelations } from "./helpers"
+import { mapContactRequestRecord, type ContactRequestWithRelations } from "./helpers"
 import type { ListedContactRequest } from "../types"
 import type { BulkActionResult } from "../types"
 import {

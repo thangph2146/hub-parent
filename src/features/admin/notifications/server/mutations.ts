@@ -155,7 +155,7 @@ export async function emitNotificationToSuperAdminsAfterCreate(
   description?: string | null,
   actionUrl?: string | null,
   kind: NotificationKind = NotificationKind.SYSTEM,
-  metadata?: Record<string, unknown> | null
+  _metadata?: Record<string, unknown> | null
 ) {
   try {
     // Find all super admin users
