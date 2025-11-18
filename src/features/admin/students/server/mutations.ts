@@ -17,6 +17,7 @@ import {
   ensurePermission,
   type AuthContext,
 } from "@/features/admin/resources/server"
+import { emitStudentUpsert, emitStudentRemove } from "./events"
 
 // Re-export for backward compatibility with API routes
 export { ApplicationError, ForbiddenError, NotFoundError, type AuthContext }
@@ -85,6 +86,9 @@ export async function createStudent(ctx: AuthContext, input: unknown): Promise<L
   })
 
   const sanitized = sanitizeStudent(student)
+
+  // Emit socket event for real-time updates
+  await emitStudentUpsert(sanitized.id, null)
 
   // Emit notification realtime
   await notifySuperAdminsOfStudentAction(
@@ -220,6 +224,12 @@ export async function updateStudent(ctx: AuthContext, id: string, input: unknown
 
   const sanitized = sanitizeStudent(student)
 
+  // Determine previous status for socket event
+  const previousStatus: "active" | "deleted" | null = existing.deletedAt ? "deleted" : "active"
+
+  // Emit socket event for real-time updates
+  await emitStudentUpsert(sanitized.id, previousStatus)
+
   // Emit notification realtime
   await notifySuperAdminsOfStudentAction(
     "update",
@@ -249,12 +259,17 @@ export async function softDeleteStudent(ctx: AuthContext, id: string): Promise<v
     throw new ForbiddenError("Bạn chỉ có thể xóa học sinh của chính mình")
   }
 
+  const previousStatus: "active" | "deleted" = student.deletedAt ? "deleted" : "active"
+
   await prisma.student.update({
     where: { id },
     data: {
       deletedAt: new Date(),
     },
   })
+
+  // Emit socket event for real-time updates
+  await emitStudentUpsert(id, previousStatus)
 
   // Emit notification realtime
   await notifySuperAdminsOfStudentAction(
@@ -294,6 +309,11 @@ export async function bulkSoftDeleteStudents(ctx: AuthContext, ids: string[]): P
     },
   })
 
+  // Emit socket events for real-time updates
+  for (const student of students) {
+    await emitStudentUpsert(student.id, "active")
+  }
+
   // Emit notifications realtime cho từng student
   for (const student of students) {
     await notifySuperAdminsOfStudentAction(
@@ -314,12 +334,17 @@ export async function restoreStudent(ctx: AuthContext, id: string): Promise<void
     throw new NotFoundError("Học sinh không tồn tại hoặc chưa bị xóa")
   }
 
+  const previousStatus: "active" | "deleted" = student.deletedAt ? "deleted" : "active"
+
   await prisma.student.update({
     where: { id },
     data: {
       deletedAt: null,
     },
   })
+
+  // Emit socket event for real-time updates
+  await emitStudentUpsert(id, previousStatus)
 
   // Emit notification realtime
   await notifySuperAdminsOfStudentAction(
@@ -358,6 +383,11 @@ export async function bulkRestoreStudents(ctx: AuthContext, ids: string[]): Prom
       deletedAt: null,
     },
   })
+
+  // Emit socket events for real-time updates
+  for (const student of students) {
+    await emitStudentUpsert(student.id, "deleted")
+  }
 
   // Emit notifications realtime cho từng student
   for (const student of students) {
