@@ -56,6 +56,10 @@ export interface AdminStudentsListParams extends BaseListParams {
   status?: "active" | "deleted" | "all"
 }
 
+export interface AdminRolesListParams extends BaseListParams {
+  status?: "active" | "deleted" | "all"
+}
+
 /**
  * Helper để tạo query key với optional params
  */
@@ -155,6 +159,22 @@ export const queryKeys = {
   roles: {
     list: (): readonly unknown[] => ["roles", "list"],
     all: (): readonly unknown[] => ["roles"],
+  },
+
+  /**
+   * Admin Roles query keys
+   */
+  adminRoles: {
+    /**
+     * Tất cả admin roles queries
+     */
+    all: (): readonly unknown[] => ["adminRoles"],
+    /**
+     * Admin roles list với normalized params
+     */
+    list: (params: AdminRolesListParams): readonly unknown[] => {
+      return ["adminRoles", normalizeListParams(params)]
+    },
   },
 
   /**

@@ -14,6 +14,7 @@ import {
   ensurePermission,
   type AuthContext,
 } from "@/features/admin/resources/server"
+import { emitRoleUpsert, emitRoleRemove } from "./events"
 
 // Re-export for backward compatibility with API routes
 export { ApplicationError, ForbiddenError, NotFoundError, type AuthContext }
@@ -56,6 +57,9 @@ export async function createRole(ctx: AuthContext, input: unknown): Promise<List
   })
 
   const sanitized = sanitizeRole(role)
+
+  // Emit socket event for real-time updates
+  await emitRoleUpsert(sanitized.id, null)
 
   // Emit notification realtime
   await notifySuperAdminsOfRoleAction(
@@ -148,6 +152,12 @@ export async function updateRole(ctx: AuthContext, id: string, input: unknown): 
 
   const sanitized = sanitizeRole(role)
 
+  // Determine previous status for socket event
+  const previousStatus: "active" | "deleted" | null = existing.deletedAt ? "deleted" : "active"
+
+  // Emit socket event for real-time updates
+  await emitRoleUpsert(sanitized.id, previousStatus)
+
   // Emit notification realtime
   await notifySuperAdminsOfRoleAction(
     "update",
@@ -176,6 +186,8 @@ export async function softDeleteRole(ctx: AuthContext, id: string): Promise<void
     throw new ApplicationError("Không thể xóa vai trò super_admin", 400)
   }
 
+  const previousStatus: "active" | "deleted" = role.deletedAt ? "deleted" : "active"
+
   await prisma.role.update({
     where: { id },
     data: {
@@ -183,6 +195,9 @@ export async function softDeleteRole(ctx: AuthContext, id: string): Promise<void
       isActive: false,
     },
   })
+
+  // Emit socket event for real-time updates
+  await emitRoleUpsert(id, previousStatus)
 
   // Emit notification realtime
   await notifySuperAdminsOfRoleAction(
@@ -228,6 +243,11 @@ export async function bulkSoftDeleteRoles(ctx: AuthContext, ids: string[]): Prom
     },
   })
 
+  // Emit socket events for real-time updates
+  for (const role of roles) {
+    await emitRoleUpsert(role.id, "active")
+  }
+
   // Emit notifications realtime cho từng role
   for (const role of roles) {
     await notifySuperAdminsOfRoleAction(
@@ -248,6 +268,8 @@ export async function restoreRole(ctx: AuthContext, id: string): Promise<void> {
     throw new NotFoundError("Vai trò không tồn tại hoặc chưa bị xóa")
   }
 
+  const previousStatus: "active" | "deleted" = role.deletedAt ? "deleted" : "active"
+
   await prisma.role.update({
     where: { id },
     data: {
@@ -255,6 +277,9 @@ export async function restoreRole(ctx: AuthContext, id: string): Promise<void> {
       isActive: true,
     },
   })
+
+  // Emit socket event for real-time updates
+  await emitRoleUpsert(id, previousStatus)
 
   // Emit notification realtime
   await notifySuperAdminsOfRoleAction(
@@ -295,6 +320,11 @@ export async function bulkRestoreRoles(ctx: AuthContext, ids: string[]): Promise
     },
   })
 
+  // Emit socket events for real-time updates
+  for (const role of roles) {
+    await emitRoleUpsert(role.id, "deleted")
+  }
+
   // Emit notifications realtime cho từng role
   for (const role of roles) {
     await notifySuperAdminsOfRoleAction(
@@ -314,7 +344,7 @@ export async function hardDeleteRole(ctx: AuthContext, id: string): Promise<void
 
   const role = await prisma.role.findUnique({
     where: { id },
-    select: { id: true, name: true, displayName: true },
+    select: { id: true, name: true, displayName: true, deletedAt: true },
   })
 
   if (!role) {
@@ -326,9 +356,14 @@ export async function hardDeleteRole(ctx: AuthContext, id: string): Promise<void
     throw new ApplicationError("Không thể xóa vĩnh viễn vai trò super_admin", 400)
   }
 
+  const previousStatus: "active" | "deleted" = role.deletedAt ? "deleted" : "active"
+
   await prisma.role.delete({
     where: { id },
   })
+
+  // Emit socket event for real-time updates
+  emitRoleRemove(id, previousStatus)
 
   // Emit notification realtime
   await notifySuperAdminsOfRoleAction(
@@ -352,7 +387,7 @@ export async function bulkHardDeleteRoles(ctx: AuthContext, ids: string[]): Prom
     where: {
       id: { in: ids },
     },
-    select: { id: true, name: true, displayName: true },
+    select: { id: true, name: true, displayName: true, deletedAt: true },
   })
 
   const superAdminRole = roles.find((r) => r.name === "super_admin")
@@ -365,6 +400,12 @@ export async function bulkHardDeleteRoles(ctx: AuthContext, ids: string[]): Prom
       id: { in: ids },
     },
   })
+
+  // Emit socket events for real-time updates
+  for (const role of roles) {
+    const previousStatus: "active" | "deleted" = role.deletedAt ? "deleted" : "active"
+    emitRoleRemove(role.id, previousStatus)
+  }
 
   // Emit notifications realtime cho từng role
   for (const role of roles) {
