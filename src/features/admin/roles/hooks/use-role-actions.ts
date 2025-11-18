@@ -14,9 +14,9 @@ import type { FeedbackVariant } from "@/components/dialogs"
 import { ROLE_MESSAGES } from "../constants/messages"
 
 interface UseRoleActionsOptions {
-  canManage: boolean
   canDelete: boolean
   canRestore: boolean
+  canManage: boolean
   isSocketConnected: boolean
   showFeedback: (variant: FeedbackVariant, title: string, description?: string, details?: string) => void
 }
@@ -27,9 +27,9 @@ interface BulkProcessingState {
 }
 
 export function useRoleActions({
-  canManage,
   canDelete,
   canRestore,
+  canManage,
   isSocketConnected,
   showFeedback,
 }: UseRoleActionsOptions) {
@@ -37,6 +37,9 @@ export function useRoleActions({
   const [isBulkProcessing, setIsBulkProcessing] = useState(false)
   const isBulkProcessingRef = useRef(false)
   const [togglingRoles, setTogglingRoles] = useState<Set<string>>(new Set())
+  const [deletingRoles, setDeletingRoles] = useState<Set<string>>(new Set())
+  const [restoringRoles, setRestoringRoles] = useState<Set<string>>(new Set())
+  const [hardDeletingRoles, setHardDeletingRoles] = useState<Set<string>>(new Set())
 
   const bulkState: BulkProcessingState = {
     isProcessing: isBulkProcessing,
@@ -107,7 +110,7 @@ export function useRoleActions({
         )
         
         // Rollback optimistic update nếu có lỗi
-        if (isSocketConnected) {
+        if (!isSocketConnected) {
           queryClient.invalidateQueries({ queryKey: queryKeys.adminRoles.all() })
         }
       } finally {
@@ -168,6 +171,15 @@ export function useRoleActions({
         return
       }
 
+      // Track loading state
+      const setLoadingState = action === "delete" 
+        ? setDeletingRoles 
+        : action === "restore" 
+        ? setRestoringRoles 
+        : setHardDeletingRoles
+
+      setLoadingState((prev) => new Set(prev).add(row.id))
+
       try {
         if (actionConfig.method === "delete") {
           await apiClient.delete(actionConfig.endpoint)
@@ -186,6 +198,12 @@ export function useRoleActions({
         } else {
           throw error
         }
+      } finally {
+        setLoadingState((prev) => {
+          const next = new Set(prev)
+          next.delete(row.id)
+          return next
+        })
       }
     },
     [canDelete, canRestore, canManage, isSocketConnected, showFeedback],
@@ -241,6 +259,9 @@ export function useRoleActions({
     executeSingleAction,
     executeBulkAction,
     togglingRoles,
+    deletingRoles,
+    restoringRoles,
+    hardDeletingRoles,
     bulkState,
   }
 }

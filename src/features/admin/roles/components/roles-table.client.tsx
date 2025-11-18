@@ -48,11 +48,14 @@ export function RolesTableClient({
     executeSingleAction,
     executeBulkAction,
     togglingRoles,
+    deletingRoles,
+    restoringRoles,
+    hardDeletingRoles,
     bulkState,
   } = useRoleActions({
-    canManage,
     canDelete,
     canRestore,
+    canManage,
     isSocketConnected,
     showFeedback,
   })
@@ -125,6 +128,9 @@ export function RolesTableClient({
     onDelete: handleDeleteSingle,
     onHardDelete: handleHardDeleteSingle,
     onRestore: handleRestoreSingle,
+    deletingRoles,
+    restoringRoles,
+    hardDeletingRoles,
   })
 
   const buildFiltersRecord = useCallback((filters: Record<string, string>): Record<string, string> => {

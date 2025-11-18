@@ -14,6 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import type { RoleRow } from "../types"
+import { ROLE_LABELS } from "../constants/messages"
 
 export interface RowActionConfig {
   label: string
@@ -30,6 +31,9 @@ interface UseRowActionsOptions {
   onDelete: (row: RoleRow) => void
   onHardDelete: (row: RoleRow) => void
   onRestore: (row: RoleRow) => void
+  deletingRoles?: Set<string>
+  restoringRoles?: Set<string>
+  hardDeletingRoles?: Set<string>
 }
 
 export function renderRowActions(actions: RowActionConfig[]) {
@@ -101,6 +105,9 @@ export function useRoleRowActions({
   onDelete,
   onHardDelete,
   onRestore,
+  deletingRoles = new Set(),
+  restoringRoles = new Set(),
+  hardDeletingRoles = new Set(),
 }: UseRowActionsOptions) {
   const router = useResourceRouter()
 
@@ -108,7 +115,7 @@ export function useRoleRowActions({
     (row: RoleRow) => {
       const actions: RowActionConfig[] = [
         {
-          label: "Xem chi tiết",
+          label: ROLE_LABELS.VIEW_DETAIL,
           icon: Eye,
           onSelect: () => router.push(`/admin/roles/${row.id}`),
         },
@@ -116,7 +123,7 @@ export function useRoleRowActions({
 
       if (canManage) {
         actions.push({
-          label: "Chỉnh sửa",
+          label: ROLE_LABELS.EDIT,
           icon: Pencil,
           onSelect: () => router.push(`/admin/roles/${row.id}/edit`),
         })
@@ -124,34 +131,34 @@ export function useRoleRowActions({
 
       if (canDelete) {
         actions.push({
-          label: "Xóa",
+          label: ROLE_LABELS.DELETE,
           icon: Trash2,
           onSelect: () => onDelete(row),
           destructive: true,
-          disabled: row.name === "super_admin",
+          disabled: row.name === "super_admin" || deletingRoles.has(row.id) || restoringRoles.has(row.id) || hardDeletingRoles.has(row.id),
         })
       }
 
       if (canManage) {
         actions.push({
-          label: "Xóa vĩnh viễn",
+          label: ROLE_LABELS.HARD_DELETE,
           icon: AlertTriangle,
           onSelect: () => onHardDelete(row),
           destructive: true,
-          disabled: row.name === "super_admin",
+          disabled: row.name === "super_admin" || deletingRoles.has(row.id) || restoringRoles.has(row.id) || hardDeletingRoles.has(row.id),
         })
       }
 
       return renderRowActions(actions)
     },
-    [canDelete, canManage, onDelete, onHardDelete, router],
+    [canDelete, canManage, onDelete, onHardDelete, router, deletingRoles, restoringRoles, hardDeletingRoles],
   )
 
   const renderDeletedRowActions = useCallback(
     (row: RoleRow) => {
       const actions: RowActionConfig[] = [
         {
-          label: "Xem chi tiết",
+          label: ROLE_LABELS.VIEW_DETAIL,
           icon: Eye,
           onSelect: () => router.push(`/admin/roles/${row.id}`),
         },
@@ -159,25 +166,26 @@ export function useRoleRowActions({
 
       if (canRestore) {
         actions.push({
-          label: "Khôi phục",
+          label: ROLE_LABELS.RESTORE,
           icon: RotateCcw,
           onSelect: () => onRestore(row),
+          disabled: deletingRoles.has(row.id) || restoringRoles.has(row.id) || hardDeletingRoles.has(row.id),
         })
       }
 
       if (canManage) {
         actions.push({
-          label: "Xóa vĩnh viễn",
+          label: ROLE_LABELS.HARD_DELETE,
           icon: AlertTriangle,
           onSelect: () => onHardDelete(row),
           destructive: true,
-          disabled: row.name === "super_admin",
+          disabled: row.name === "super_admin" || deletingRoles.has(row.id) || restoringRoles.has(row.id) || hardDeletingRoles.has(row.id),
         })
       }
 
       return renderRowActions(actions)
     },
-    [canManage, canRestore, onHardDelete, onRestore, router],
+    [canManage, canRestore, onHardDelete, onRestore, router, deletingRoles, restoringRoles, hardDeletingRoles],
   )
 
   return {

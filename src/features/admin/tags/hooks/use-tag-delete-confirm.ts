@@ -7,7 +7,7 @@ import type { TagRow } from "../types"
 
 interface DeleteConfirmState {
   open: boolean
-  type: "soft" | "hard"
+  type: "soft" | "hard" | "restore"
   row?: TagRow
   bulkIds?: string[]
   onConfirm: () => Promise<void>

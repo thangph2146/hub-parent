@@ -45,6 +45,9 @@ export function TagsTableClient({
   const {
     executeSingleAction,
     executeBulkAction,
+    deletingTags,
+    restoringTags,
+    hardDeletingTags,
     bulkState,
   } = useTagActions({
     canDelete,
@@ -89,9 +92,16 @@ export function TagsTableClient({
   const handleRestoreSingle = useCallback(
     (row: TagRow) => {
       if (!canRestore) return
-      executeSingleAction("restore", row, tableRefreshRef.current || (() => {}))
+      setDeleteConfirm({
+        open: true,
+        type: "restore",
+        row,
+        onConfirm: async () => {
+          await executeSingleAction("restore", row, tableRefreshRef.current || (() => {}))
+        },
+      })
     },
-    [canRestore, executeSingleAction],
+    [canRestore, executeSingleAction, setDeleteConfirm],
   )
 
   const { renderActiveRowActions, renderDeletedRowActions } = useTagRowActions({
@@ -101,6 +111,9 @@ export function TagsTableClient({
     onDelete: handleDeleteSingle,
     onHardDelete: handleHardDeleteSingle,
     onRestore: handleRestoreSingle,
+    deletingTags,
+    restoringTags,
+    hardDeletingTags,
   })
 
   const buildFiltersRecord = useCallback((filters: Record<string, string>): Record<string, string> => {
@@ -198,17 +211,16 @@ export function TagsTableClient({
       if (ids.length === 0) return
 
       // Actions cần confirmation
-      if (action === "delete" || action === "hard-delete") {
+      if (action === "delete" || action === "restore" || action === "hard-delete") {
         setDeleteConfirm({
           open: true,
-          type: action === "hard-delete" ? "hard" : "soft",
+          type: action === "hard-delete" ? "hard" : action === "restore" ? "restore" : "soft",
           bulkIds: ids,
           onConfirm: async () => {
             await executeBulkAction(action, ids, refresh, clearSelection)
           },
         })
       } else {
-        // Actions không cần confirmation (restore)
         executeBulkAction(action, ids, refresh, clearSelection)
       }
     },
@@ -269,7 +281,7 @@ export function TagsTableClient({
                     onClick={() => executeBulk("delete", selectedIds, refresh, clearSelection)}
                   >
                     <Trash2 className="mr-2 h-5 w-5" />
-                    Xóa đã chọn ({selectedIds.length})
+                    {TAG_LABELS.DELETE_SELECTED(selectedIds.length)}
                   </Button>
                   {canManage && (
                     <Button
@@ -280,7 +292,7 @@ export function TagsTableClient({
                       onClick={() => executeBulk("hard-delete", selectedIds, refresh, clearSelection)}
                     >
                       <AlertTriangle className="mr-2 h-5 w-5" />
-                      Xóa vĩnh viễn ({selectedIds.length})
+                      {TAG_LABELS.HARD_DELETE_SELECTED(selectedIds.length)}
                     </Button>
                   )}
                   <Button type="button" size="sm" variant="ghost" onClick={clearSelection}>
@@ -315,7 +327,7 @@ export function TagsTableClient({
                       onClick={() => executeBulk("restore", selectedIds, refresh, clearSelection)}
                     >
                       <RotateCcw className="mr-2 h-5 w-5" />
-                      {TAG_LABELS.RESTORE}
+                      {TAG_LABELS.RESTORE_SELECTED(selectedIds.length)}
                     </Button>
                   )}
                   {canManage && (
@@ -327,7 +339,7 @@ export function TagsTableClient({
                       onClick={() => executeBulk("hard-delete", selectedIds, refresh, clearSelection)}
                     >
                       <AlertTriangle className="mr-2 h-5 w-5" />
-                      Xóa vĩnh viễn ({selectedIds.length})
+                      {TAG_LABELS.HARD_DELETE_SELECTED(selectedIds.length)}
                     </Button>
                   )}
                   <Button type="button" size="sm" variant="ghost" onClick={clearSelection}>
@@ -366,6 +378,11 @@ export function TagsTableClient({
         deleteConfirm.bulkIds?.length,
       )
     }
+    if (deleteConfirm.type === "restore") {
+      return TAG_CONFIRM_MESSAGES.RESTORE_TITLE(
+        deleteConfirm.bulkIds?.length,
+      )
+    }
     return TAG_CONFIRM_MESSAGES.DELETE_TITLE(deleteConfirm.bulkIds?.length)
   }
 
@@ -373,6 +390,12 @@ export function TagsTableClient({
     if (!deleteConfirm) return ""
     if (deleteConfirm.type === "hard") {
       return TAG_CONFIRM_MESSAGES.HARD_DELETE_DESCRIPTION(
+        deleteConfirm.bulkIds?.length,
+        deleteConfirm.row?.name,
+      )
+    }
+    if (deleteConfirm.type === "restore") {
+      return TAG_CONFIRM_MESSAGES.RESTORE_DESCRIPTION(
         deleteConfirm.bulkIds?.length,
         deleteConfirm.row?.name,
       )
@@ -393,14 +416,14 @@ export function TagsTableClient({
       className="h-8 px-3 text-xs sm:text-sm"
     >
       <Plus className="mr-2 h-5 w-5" />
-      Thêm mới
+      {TAG_LABELS.ADD_NEW}
     </Button>
   ) : undefined
 
   return (
     <>
       <ResourceTableClient<TagRow>
-        title="Quản lý thẻ tag"
+        title={TAG_LABELS.MANAGE_TAGS}
         baseColumns={baseColumns}
         loader={loader}
         viewModes={viewModes}
@@ -432,8 +455,14 @@ export function TagsTableClient({
           }}
           title={getDeleteConfirmTitle()}
           description={getDeleteConfirmDescription()}
-          variant={deleteConfirm.type === "hard" ? "destructive" : "destructive"}
-          confirmLabel={deleteConfirm.type === "hard" ? TAG_CONFIRM_MESSAGES.HARD_DELETE_LABEL : TAG_CONFIRM_MESSAGES.CONFIRM_LABEL}
+          variant={deleteConfirm.type === "hard" ? "destructive" : deleteConfirm.type === "restore" ? "default" : "destructive"}
+          confirmLabel={
+            deleteConfirm.type === "hard" 
+              ? TAG_CONFIRM_MESSAGES.HARD_DELETE_LABEL 
+              : deleteConfirm.type === "restore"
+              ? TAG_CONFIRM_MESSAGES.RESTORE_LABEL
+              : TAG_CONFIRM_MESSAGES.CONFIRM_LABEL
+          }
           cancelLabel={TAG_CONFIRM_MESSAGES.CANCEL_LABEL}
           onConfirm={handleDeleteConfirm}
           isLoading={bulkState.isProcessing}

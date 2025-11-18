@@ -32,6 +32,9 @@ export function useTagActions({
 }: UseTagActionsOptions) {
   const [isBulkProcessing, setIsBulkProcessing] = useState(false)
   const isBulkProcessingRef = useRef(false)
+  const [deletingTags, setDeletingTags] = useState<Set<string>>(new Set())
+  const [restoringTags, setRestoringTags] = useState<Set<string>>(new Set())
+  const [hardDeletingTags, setHardDeletingTags] = useState<Set<string>>(new Set())
 
   const bulkState: BulkProcessingState = {
     isProcessing: isBulkProcessing,
@@ -88,6 +91,15 @@ export function useTagActions({
 
       if (!actionConfig.permission) return
 
+      // Track loading state
+      const setLoadingState = action === "delete" 
+        ? setDeletingTags 
+        : action === "restore" 
+        ? setRestoringTags 
+        : setHardDeletingTags
+
+      setLoadingState((prev) => new Set(prev).add(row.id))
+
       try {
         if (actionConfig.method === "delete") {
           await apiClient.delete(actionConfig.endpoint)
@@ -106,6 +118,12 @@ export function useTagActions({
         } else {
           throw error
         }
+      } finally {
+        setLoadingState((prev) => {
+          const next = new Set(prev)
+          next.delete(row.id)
+          return next
+        })
       }
     },
     [canDelete, canRestore, canManage, isSocketConnected, showFeedback],
@@ -159,6 +177,9 @@ export function useTagActions({
   return {
     executeSingleAction,
     executeBulkAction,
+    deletingTags,
+    restoringTags,
+    hardDeletingTags,
     bulkState,
   }
 }

@@ -56,6 +56,13 @@ export const TAG_LABELS = {
   // Selection messages
   SELECTED_TAGS: (count: number) => `Đã chọn ${count} thẻ tag`,
   SELECTED_DELETED_TAGS: (count: number) => `Đã chọn ${count} thẻ tag (đã xóa)`,
+  DELETE_SELECTED: (count: number) => `Xóa đã chọn (${count})`,
+  RESTORE_SELECTED: (count: number) => `Khôi phục (${count})`,
+  HARD_DELETE_SELECTED: (count: number) => `Xóa vĩnh viễn (${count})`,
+  
+  // Titles
+  MANAGE_TAGS: "Quản lý thẻ tag",
+  ADD_NEW: "Thêm mới",
 } as const
 
 export const TAG_CONFIRM_MESSAGES = {
@@ -65,6 +72,12 @@ export const TAG_CONFIRM_MESSAGES = {
       ? `Bạn có chắc chắn muốn xóa ${count} thẻ tag? Chúng sẽ được chuyển vào thùng rác và có thể khôi phục sau.`
       : `Bạn có chắc chắn muốn xóa thẻ tag "${name || ""}"? Thẻ tag sẽ được chuyển vào thùng rác và có thể khôi phục sau.`,
   
+  RESTORE_TITLE: (count?: number) => count ? `Khôi phục ${count} thẻ tag?` : "Khôi phục thẻ tag?",
+  RESTORE_DESCRIPTION: (count?: number, name?: string) =>
+    count
+      ? `Bạn có chắc chắn muốn khôi phục ${count} thẻ tag? Chúng sẽ được chuyển về trạng thái hoạt động.`
+      : `Bạn có chắc chắn muốn khôi phục thẻ tag "${name || ""}"? Thẻ tag sẽ được chuyển về trạng thái hoạt động.`,
+  
   HARD_DELETE_TITLE: (count?: number) =>
     count ? `Xóa vĩnh viễn ${count} thẻ tag?` : "Xóa vĩnh viễn thẻ tag?",
   HARD_DELETE_DESCRIPTION: (count?: number, name?: string) =>
@@ -73,6 +86,7 @@ export const TAG_CONFIRM_MESSAGES = {
       : `Hành động này sẽ xóa vĩnh viễn thẻ tag "${name || ""}" khỏi hệ thống. Dữ liệu sẽ không thể khôi phục. Bạn có chắc chắn muốn tiếp tục?`,
   
   CONFIRM_LABEL: "Xóa",
+  RESTORE_LABEL: "Khôi phục",
   HARD_DELETE_LABEL: "Xóa vĩnh viễn",
   CANCEL_LABEL: "Hủy",
 } as const

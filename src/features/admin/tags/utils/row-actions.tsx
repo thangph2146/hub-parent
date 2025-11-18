@@ -14,6 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import type { TagRow } from "../types"
+import { TAG_LABELS } from "../constants/messages"
 
 export interface RowActionConfig {
   label: string
@@ -30,6 +31,9 @@ interface UseRowActionsOptions {
   onDelete: (row: TagRow) => void
   onHardDelete: (row: TagRow) => void
   onRestore: (row: TagRow) => void
+  deletingTags?: Set<string>
+  restoringTags?: Set<string>
+  hardDeletingTags?: Set<string>
 }
 
 export function renderRowActions(actions: RowActionConfig[]) {
@@ -101,6 +105,9 @@ export function useTagRowActions({
   onDelete,
   onHardDelete,
   onRestore,
+  deletingTags = new Set(),
+  restoringTags = new Set(),
+  hardDeletingTags = new Set(),
 }: UseRowActionsOptions) {
   const router = useResourceRouter()
 
@@ -108,7 +115,7 @@ export function useTagRowActions({
     (row: TagRow) => {
       const actions: RowActionConfig[] = [
         {
-          label: "Xem chi tiết",
+          label: TAG_LABELS.VIEW_DETAIL,
           icon: Eye,
           onSelect: () => router.push(`/admin/tags/${row.id}`),
         },
@@ -116,7 +123,7 @@ export function useTagRowActions({
 
       if (canManage) {
         actions.push({
-          label: "Chỉnh sửa",
+          label: TAG_LABELS.EDIT,
           icon: Pencil,
           onSelect: () => router.push(`/admin/tags/${row.id}/edit`),
         })
@@ -124,32 +131,34 @@ export function useTagRowActions({
 
       if (canDelete) {
         actions.push({
-          label: "Xóa",
+          label: TAG_LABELS.DELETE,
           icon: Trash2,
           onSelect: () => onDelete(row),
           destructive: true,
+          disabled: deletingTags.has(row.id) || restoringTags.has(row.id) || hardDeletingTags.has(row.id),
         })
       }
 
       if (canManage) {
         actions.push({
-          label: "Xóa vĩnh viễn",
+          label: TAG_LABELS.HARD_DELETE,
           icon: AlertTriangle,
           onSelect: () => onHardDelete(row),
           destructive: true,
+          disabled: deletingTags.has(row.id) || restoringTags.has(row.id) || hardDeletingTags.has(row.id),
         })
       }
 
       return renderRowActions(actions)
     },
-    [canDelete, canManage, onDelete, onHardDelete, router],
+    [canDelete, canManage, onDelete, onHardDelete, router, deletingTags, restoringTags, hardDeletingTags],
   )
 
   const renderDeletedRowActions = useCallback(
     (row: TagRow) => {
       const actions: RowActionConfig[] = [
         {
-          label: "Xem chi tiết",
+          label: TAG_LABELS.VIEW_DETAIL,
           icon: Eye,
           onSelect: () => router.push(`/admin/tags/${row.id}`),
         },
@@ -157,24 +166,26 @@ export function useTagRowActions({
 
       if (canRestore) {
         actions.push({
-          label: "Khôi phục",
+          label: TAG_LABELS.RESTORE,
           icon: RotateCcw,
           onSelect: () => onRestore(row),
+          disabled: deletingTags.has(row.id) || restoringTags.has(row.id) || hardDeletingTags.has(row.id),
         })
       }
 
       if (canManage) {
         actions.push({
-          label: "Xóa vĩnh viễn",
+          label: TAG_LABELS.HARD_DELETE,
           icon: AlertTriangle,
           onSelect: () => onHardDelete(row),
           destructive: true,
+          disabled: deletingTags.has(row.id) || restoringTags.has(row.id) || hardDeletingTags.has(row.id),
         })
       }
 
       return renderRowActions(actions)
     },
-    [canManage, canRestore, onHardDelete, onRestore, router],
+    [canManage, canRestore, onHardDelete, onRestore, router, deletingTags, restoringTags, hardDeletingTags],
   )
 
   return {

@@ -7,6 +7,7 @@ import { prisma } from "@/lib/database"
 import { getSocketServer } from "@/lib/socket/state"
 import { mapRoleRecord, serializeRoleForTable } from "./helpers"
 import type { RoleRow } from "../types"
+import { logger } from "@/lib/config"
 
 const SUPER_ADMIN_ROOM = "role:super_admin"
 
@@ -55,6 +56,7 @@ export async function emitRoleUpsert(
     previousStatus,
     newStatus,
   })
+  logger.debug("Socket role:upsert emitted", { roleId, previousStatus, newStatus })
 }
 
 /**
@@ -69,5 +71,6 @@ export function emitRoleRemove(roleId: string, previousStatus: RoleStatus): void
     id: roleId,
     previousStatus,
   })
+  logger.debug("Socket role:remove emitted", { roleId, previousStatus })
 }
 
