@@ -251,13 +251,19 @@ export async function bulkSoftDeleteCategories(ctx: AuthContext, ids: string[]):
   })
 
   // Emit socket events và notifications realtime cho từng category
-  for (const category of categories) {
+  // Thêm delay nhỏ giữa các events để UI có thời gian cập nhật từng item
+  for (let i = 0; i < categories.length; i++) {
+    const category = categories[i]
     await emitCategoryUpsert(category.id, "active")
     await notifySuperAdminsOfCategoryAction(
       "delete",
       ctx.actorId,
       category
     )
+    // Delay 100ms giữa các events để UI có thời gian cập nhật từng item
+    if (i < categories.length - 1) {
+      await new Promise((resolve) => setTimeout(resolve, 100))
+    }
   }
 
   return { success: true, message: `Đã xóa ${result.count} danh mục`, affected: result.count }
@@ -320,13 +326,19 @@ export async function bulkRestoreCategories(ctx: AuthContext, ids: string[]): Pr
   })
 
   // Emit socket events và notifications realtime cho từng category
-  for (const category of categories) {
+  // Thêm delay nhỏ giữa các events để UI có thời gian cập nhật từng item
+  for (let i = 0; i < categories.length; i++) {
+    const category = categories[i]
     await emitCategoryUpsert(category.id, "deleted")
     await notifySuperAdminsOfCategoryAction(
       "restore",
       ctx.actorId,
       category
     )
+    // Delay 100ms giữa các events để UI có thời gian cập nhật từng item
+    if (i < categories.length - 1) {
+      await new Promise((resolve) => setTimeout(resolve, 100))
+    }
   }
 
   return { success: true, message: `Đã khôi phục ${result.count} danh mục`, affected: result.count }
@@ -372,12 +384,12 @@ export async function bulkHardDeleteCategories(ctx: AuthContext, ids: string[]):
     throw new ApplicationError("Danh sách danh mục trống", 400)
   }
 
-  // Lấy thông tin categories trước khi delete để tạo notifications
+  // Lấy thông tin categories trước khi delete để tạo notifications và socket events
   const categories = await prisma.category.findMany({
     where: {
       id: { in: ids },
     },
-    select: { id: true, name: true, slug: true },
+    select: { id: true, name: true, slug: true, deletedAt: true },
   })
 
   const result = await prisma.category.deleteMany({
@@ -386,13 +398,22 @@ export async function bulkHardDeleteCategories(ctx: AuthContext, ids: string[]):
     },
   })
 
-  // Emit notifications realtime cho từng category
-  for (const category of categories) {
+  // Emit socket events và notifications realtime cho từng category
+  // Thêm delay nhỏ giữa các events để UI có thời gian cập nhật từng item
+  for (let i = 0; i < categories.length; i++) {
+    const category = categories[i]
+    // Lấy previousStatus từ category (nếu có deletedAt thì là "deleted", ngược lại là "active")
+    const previousStatus: "active" | "deleted" = category.deletedAt ? "deleted" : "active"
+    emitCategoryRemove(category.id, previousStatus)
     await notifySuperAdminsOfCategoryAction(
       "hard-delete",
       ctx.actorId,
       category
     )
+    // Delay 100ms giữa các events để UI có thời gian cập nhật từng item
+    if (i < categories.length - 1) {
+      await new Promise((resolve) => setTimeout(resolve, 100))
+    }
   }
 
   return { success: true, message: `Đã xóa vĩnh viễn ${result.count} danh mục`, affected: result.count }

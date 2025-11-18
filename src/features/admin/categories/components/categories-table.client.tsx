@@ -34,13 +34,14 @@ export function CategoriesTableClient({
 }: CategoriesTableClientProps) {
   const router = useResourceRouter()
   const queryClient = useQueryClient()
-  const { isSocketConnected, cacheVersion } = useCategoriesSocketBridge()
   const { feedback, showFeedback, handleFeedbackOpenChange } = useCategoryFeedback()
   const { deleteConfirm, setDeleteConfirm, handleDeleteConfirm } = useCategoryDeleteConfirm()
 
   const tableRefreshRef = useRef<(() => void) | null>(null)
   const tableSoftRefreshRef = useRef<(() => void) | null>(null)
   const pendingRealtimeRefreshRef = useRef(false)
+
+  const { isSocketConnected, cacheVersion } = useCategoriesSocketBridge()
 
   const {
     executeSingleAction,
@@ -168,40 +169,47 @@ export function CategoriesTableClient({
         throw new Error(response.data.error || response.data.message || "Không thể tải danh sách danh mục")
       }
 
-      // Set vào cache với params tương ứng
-      const params: AdminCategoriesListParams = {
-        status: status ?? "active",
-        page,
-        limit,
-        search,
-        filters: buildFiltersRecord(filters ?? {}),
-      }
-      const queryKey = queryKeys.adminCategories.list(params)
-      const result: DataTableResult<CategoryRow> = {
-        rows: payload.data,
-        page: payload.pagination?.page ?? 1,
-        limit: payload.pagination?.limit ?? 10,
-        total: payload.pagination?.total ?? 0,
+      return {
+        rows: payload.data ?? [],
+        page: payload.pagination?.page ?? page,
+        limit: payload.pagination?.limit ?? limit,
+        total: payload.pagination?.total ?? payload.data?.length ?? 0,
         totalPages: payload.pagination?.totalPages ?? 0,
       }
-      queryClient.setQueryData(queryKey, result)
-
-      return result
     },
-    [buildFiltersRecord, queryClient],
+    [],
   )
 
   const loader = useCallback(
     async (query: DataTableQueryState, view: ResourceViewMode<CategoryRow>) => {
-      return fetchCategories({
+      const status = (view.status ?? "active") as AdminCategoriesListParams["status"]
+      const search = query.search.trim() || undefined
+      const filters = buildFiltersRecord(query.filters)
+
+      const params: AdminCategoriesListParams = {
+        status,
         page: query.page,
         limit: query.limit,
-        status: (view.status ?? "active") as "active" | "deleted" | "all",
-        search: query.search.trim() || undefined,
-        filters: query.filters,
+        search,
+        filters,
+      }
+
+      const queryKey = queryKeys.adminCategories.list(params)
+
+      return await queryClient.fetchQuery({
+        queryKey,
+        staleTime: Infinity,
+        queryFn: () =>
+          fetchCategories({
+            page: query.page,
+            limit: query.limit,
+            status: status ?? "active",
+            search,
+            filters,
+          }),
       })
     },
-    [fetchCategories],
+    [buildFiltersRecord, fetchCategories, queryClient],
   )
 
   const executeBulk = useCallback(
@@ -455,11 +463,7 @@ export function CategoriesTableClient({
           }}
           title={getDeleteConfirmTitle()}
           description={getDeleteConfirmDescription()}
-          variant={
-            deleteConfirm.type === "hard" || deleteConfirm.type === "soft"
-              ? "destructive"
-              : "default"
-          }
+          variant={deleteConfirm.type === "hard" ? "destructive" : deleteConfirm.type === "restore" ? "default" : "destructive"}
           confirmLabel={
             deleteConfirm.type === "hard"
               ? CATEGORY_CONFIRM_MESSAGES.HARD_DELETE_LABEL
