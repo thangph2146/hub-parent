@@ -168,17 +168,38 @@ export function StudentsTableClient({
     })
   }, [initialData, queryClient])
 
-  const loader = useCallback(
-    async (query: DataTableQueryState, view: ResourceViewMode<StudentRow>) => {
+  const buildFiltersRecord = useCallback((filters: Record<string, string>): Record<string, string> => {
+    return Object.entries(filters).reduce<Record<string, string>>((acc, [key, value]) => {
+      if (value) {
+        acc[key] = value
+      }
+      return acc
+    }, {})
+  }, [])
+
+  const fetchStudents = useCallback(
+    async ({
+      page,
+      limit,
+      status,
+      search,
+      filters,
+    }: {
+      page: number
+      limit: number
+      status: "active" | "deleted" | "all"
+      search?: string
+      filters?: Record<string, string>
+    }): Promise<DataTableResult<StudentRow>> => {
       const baseUrl = apiRoutes.students.list({
-        page: query.page,
-        limit: query.limit,
-        status: view.status ?? "active",
-        search: query.search.trim() || undefined,
+        page,
+        limit,
+        status,
+        search,
       })
 
       const filterParams = new URLSearchParams()
-      Object.entries(query.filters).forEach(([key, value]) => {
+      Object.entries(filters ?? {}).forEach(([key, value]) => {
         if (value) {
           filterParams.set(`filter[${key}]`, value)
         }
@@ -190,28 +211,51 @@ export function StudentsTableClient({
       const response = await apiClient.get<StudentsResponse>(url)
       const payload = response.data
 
-      // Set vào cache với params tương ứng
-      const viewStatus = (view.status ?? "active") as "active" | "deleted" | "all"
+      if (!payload || !payload.data) {
+        throw new Error("Không thể tải danh sách học sinh")
+      }
+
+      return {
+        rows: payload.data || [],
+        page: payload.pagination?.page ?? page,
+        limit: payload.pagination?.limit ?? limit,
+        total: payload.pagination?.total ?? 0,
+        totalPages: payload.pagination?.totalPages ?? 0,
+      }
+    },
+    [],
+  )
+
+  const loader = useCallback(
+    async (query: DataTableQueryState, view: ResourceViewMode<StudentRow>) => {
+      const status = (view.status ?? "active") as AdminStudentsListParams["status"]
+      const search = query.search.trim() || undefined
+      const filters = buildFiltersRecord(query.filters)
+
       const params: AdminStudentsListParams = {
-        status: viewStatus,
+        status,
         page: query.page,
         limit: query.limit,
-        search: query.search.trim() || undefined,
-        filters: Object.keys(query.filters).length > 0 ? query.filters : undefined,
+        search,
+        filters,
       }
-      const queryKey = queryKeys.adminStudents.list(params)
-      const result: DataTableResult<StudentRow> = {
-        rows: payload.data,
-        page: payload.pagination.page,
-        limit: payload.pagination.limit,
-        total: payload.pagination.total,
-        totalPages: payload.pagination.totalPages,
-      }
-      queryClient.setQueryData(queryKey, result)
 
-      return result
+      const queryKey = queryKeys.adminStudents.list(params)
+
+      return await queryClient.fetchQuery({
+        queryKey,
+        staleTime: Infinity,
+        queryFn: () =>
+          fetchStudents({
+            page: query.page,
+            limit: query.limit,
+            status: status ?? "active",
+            search,
+            filters,
+          }),
+      })
     },
-    [queryClient],
+    [buildFiltersRecord, fetchStudents, queryClient],
   )
 
   const executeBulk = useCallback(
