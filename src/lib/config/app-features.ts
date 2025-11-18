@@ -397,8 +397,7 @@ export const appFeatures: FeatureDefinition[] = [
     navigation: {
       group: "main",
       order: 110,
-      resourceName: "contact-requests",
-      autoGenerateSubRoutes: true,
+      href: "/admin/contact-requests",
     },
     api: {
       type: "resource",

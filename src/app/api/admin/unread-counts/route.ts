@@ -38,9 +38,11 @@ async function getUnreadCountsHandler(_req: NextRequest, context: ApiRouteContex
     isRead: false,
   }
 
-  // Get contact requests count (chỉ active, không deleted)
+  // Get contact requests count (chỉ active, không deleted, và chưa đọc)
+  // Lưu ý: contactRequests trong unreadCounts đại diện cho số liên hệ chưa đọc
   const contactRequestsWhere: Prisma.ContactRequestWhereInput = {
     deletedAt: null,
+    isRead: false,
   }
 
   const [unreadNotificationsCount, unreadMessagesCount, contactRequestsCount] = await Promise.all([

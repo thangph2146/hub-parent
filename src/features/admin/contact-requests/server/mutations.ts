@@ -1,7 +1,7 @@
 import type { Prisma } from "@prisma/client"
 import { PERMISSIONS, canPerformAnyAction } from "@/lib/permissions"
 import { prisma } from "@/lib/database"
-import { mapContactRequestRecord, type ContactRequestWithRelations } from "./helpers"
+import { mapContactRequestRecord, serializeContactRequestForTable, type ContactRequestWithRelations } from "./helpers"
 import type { ListedContactRequest } from "../types"
 import type { BulkActionResult } from "../types"
 import {
@@ -20,6 +20,8 @@ import {
   ensurePermission,
   type AuthContext,
 } from "@/features/admin/resources/server"
+import { getSocketServer } from "@/lib/socket/state"
+import { logger } from "@/lib/config"
 
 // Re-export for backward compatibility with API routes
 export { ApplicationError, ForbiddenError, NotFoundError, type AuthContext }
@@ -190,6 +192,60 @@ export async function updateContactRequest(ctx: AuthContext, id: string, input: 
   })
 
   const sanitized = sanitizeContactRequest(contactRequest)
+
+  // Determine previous and new status for socket event
+  const previousStatus: "active" | "deleted" | null = existing.deletedAt ? "deleted" : "active"
+  const newStatus: "active" | "deleted" = sanitized.deletedAt ? "deleted" : "active"
+
+  // Emit socket event for real-time updates (especially for isRead changes)
+  const io = getSocketServer()
+  if (io) {
+    try {
+      // Convert ListedContactRequest to ContactRequestRow format for socket payload
+      const socketPayload = serializeContactRequestForTable(sanitized)
+
+      // Emit to all super admins (contact requests are visible to all super admins)
+      const superAdmins = await prisma.user.findMany({
+        where: {
+          isActive: true,
+          deletedAt: null,
+          userRoles: {
+            some: {
+              role: {
+                name: "super_admin",
+                isActive: true,
+                deletedAt: null,
+              },
+            },
+          },
+        },
+        select: { id: true },
+      })
+
+      const upsertPayload = {
+        contactRequest: socketPayload,
+        previousStatus,
+        newStatus,
+      }
+
+      // Emit to each super admin user room
+      for (const admin of superAdmins) {
+        io.to(`user:${admin.id}`).emit("contact-request:upsert", upsertPayload)
+      }
+
+      // Also emit to role room for broadcast
+      io.to("role:super_admin").emit("contact-request:upsert", upsertPayload)
+
+      logger.debug("Socket contact-request:upsert emitted", {
+        contactRequestId: sanitized.id,
+        previousStatus,
+        newStatus,
+        isRead: sanitized.isRead,
+      })
+    } catch (error) {
+      logger.error("Failed to emit socket contact-request:upsert", error instanceof Error ? error : new Error(String(error)))
+    }
+  }
 
   // Emit notification realtime
   await notifySuperAdminsOfContactRequestAction(
