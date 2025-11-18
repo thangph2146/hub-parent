@@ -37,6 +37,9 @@ export function useStudentActions({
   const [isBulkProcessing, setIsBulkProcessing] = useState(false)
   const isBulkProcessingRef = useRef(false)
   const [togglingStudents, setTogglingStudents] = useState<Set<string>>(new Set())
+  const [deletingStudents, setDeletingStudents] = useState<Set<string>>(new Set())
+  const [restoringStudents, setRestoringStudents] = useState<Set<string>>(new Set())
+  const [hardDeletingStudents, setHardDeletingStudents] = useState<Set<string>>(new Set())
 
   const bulkState: BulkProcessingState = {
     isProcessing: isBulkProcessing,
@@ -152,6 +155,15 @@ export function useStudentActions({
 
       if (!actionConfig.permission) return
 
+      // Track loading state
+      const setLoadingState = action === "delete"
+        ? setDeletingStudents
+        : action === "restore"
+        ? setRestoringStudents
+        : setHardDeletingStudents
+
+      setLoadingState((prev) => new Set(prev).add(row.id))
+
       try {
         if (actionConfig.method === "delete") {
           await apiClient.delete(actionConfig.endpoint)
@@ -170,6 +182,12 @@ export function useStudentActions({
         } else {
           throw error
         }
+      } finally {
+        setLoadingState((prev) => {
+          const next = new Set(prev)
+          next.delete(row.id)
+          return next
+        })
       }
     },
     [canDelete, canRestore, canManage, isSocketConnected, showFeedback],
@@ -225,6 +243,9 @@ export function useStudentActions({
     executeSingleAction,
     executeBulkAction,
     togglingStudents,
+    deletingStudents,
+    restoringStudents,
+    hardDeletingStudents,
     bulkState,
   }
 }

@@ -7,7 +7,7 @@ import type { StudentRow } from "../types"
 
 interface DeleteConfirmState {
   open: boolean
-  type: "soft" | "hard"
+  type: "soft" | "hard" | "restore"
   row?: StudentRow
   bulkIds?: string[]
   onConfirm: () => Promise<void>

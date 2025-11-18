@@ -48,6 +48,11 @@ export const STUDENT_LABELS = {
   HARD_DELETE: "Xóa vĩnh viễn",
   CLEAR_SELECTION: "Bỏ chọn",
   
+  // Loading labels
+  DELETING: "Đang xóa...",
+  RESTORING: "Đang khôi phục...",
+  HARD_DELETING: "Đang xóa vĩnh viễn...",
+  
   // View mode labels
   ACTIVE_VIEW: "Đang hoạt động",
   DELETED_VIEW: "Đã xóa",
@@ -60,9 +65,15 @@ export const STUDENT_LABELS = {
   // Selection messages
   SELECTED_STUDENTS: (count: number) => `Đã chọn ${count} học sinh`,
   SELECTED_DELETED_STUDENTS: (count: number) => `Đã chọn ${count} học sinh (đã xóa)`,
+  DELETE_SELECTED: (count: number) => `Xóa đã chọn (${count})`,
+  RESTORE_SELECTED: (count: number) => `Khôi phục (${count})`,
+  HARD_DELETE_SELECTED: (count: number) => `Xóa vĩnh viễn (${count})`,
+  
+  // Titles
+  MANAGE_STUDENTS: "Quản lý học sinh",
+  ADD_NEW: "Thêm mới",
   
   // Table headers
-  MANAGE_STUDENTS: "Quản lý học sinh",
   STUDENT_CODE: "Mã học sinh",
   STUDENT_NAME: "Tên học sinh",
   EMAIL: "Email",
@@ -77,16 +88,24 @@ export const STUDENT_CONFIRM_MESSAGES = {
   DELETE_DESCRIPTION: (count?: number, studentCode?: string) =>
     count
       ? `Bạn có chắc chắn muốn xóa ${count} học sinh? Họ sẽ được chuyển vào thùng rác và có thể khôi phục sau.`
-      : `Bạn có chắc chắn muốn xóa học sinh "${studentCode}"? Học sinh sẽ được chuyển vào thùng rác và có thể khôi phục sau.`,
+      : `Bạn có chắc chắn muốn xóa học sinh "${studentCode || ""}"? Học sinh sẽ được chuyển vào thùng rác và có thể khôi phục sau.`,
+  
+  RESTORE_TITLE: (count?: number, studentCode?: string) => 
+    count ? `Khôi phục ${count} học sinh?` : `Khôi phục học sinh ${studentCode}?`,
+  RESTORE_DESCRIPTION: (count?: number, studentCode?: string) =>
+    count
+      ? `Bạn có chắc chắn muốn khôi phục ${count} học sinh? Họ sẽ được chuyển về trạng thái hoạt động.`
+      : `Bạn có chắc chắn muốn khôi phục học sinh "${studentCode || ""}"? Học sinh sẽ được chuyển về trạng thái hoạt động.`,
   
   HARD_DELETE_TITLE: (count?: number, studentCode?: string) =>
     count ? `Xóa vĩnh viễn ${count} học sinh?` : `Xóa vĩnh viễn học sinh ${studentCode}?`,
   HARD_DELETE_DESCRIPTION: (count?: number, studentCode?: string) =>
     count
       ? `Hành động này sẽ xóa vĩnh viễn ${count} học sinh khỏi hệ thống. Dữ liệu sẽ không thể khôi phục. Bạn có chắc chắn muốn tiếp tục?`
-      : `Hành động này sẽ xóa vĩnh viễn học sinh "${studentCode}" khỏi hệ thống. Dữ liệu sẽ không thể khôi phục. Bạn có chắc chắn muốn tiếp tục?`,
+      : `Hành động này sẽ xóa vĩnh viễn học sinh "${studentCode || ""}" khỏi hệ thống. Dữ liệu sẽ không thể khôi phục. Bạn có chắc chắn muốn tiếp tục?`,
   
   CONFIRM_LABEL: "Xóa",
+  RESTORE_LABEL: "Khôi phục",
   HARD_DELETE_LABEL: "Xóa vĩnh viễn",
   CANCEL_LABEL: "Hủy",
 } as const

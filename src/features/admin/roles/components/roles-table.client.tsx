@@ -436,6 +436,41 @@ export function RolesTableClient({
     [initialData],
   )
 
+  const getDeleteConfirmTitle = () => {
+    if (!deleteConfirm) return ""
+    if (deleteConfirm.type === "hard") {
+      return ROLE_CONFIRM_MESSAGES.HARD_DELETE_TITLE(
+        deleteConfirm.bulkIds?.length,
+      )
+    }
+    if (deleteConfirm.type === "restore") {
+      return ROLE_CONFIRM_MESSAGES.RESTORE_TITLE(
+        deleteConfirm.bulkIds?.length,
+      )
+    }
+    return ROLE_CONFIRM_MESSAGES.DELETE_TITLE(deleteConfirm.bulkIds?.length)
+  }
+
+  const getDeleteConfirmDescription = () => {
+    if (!deleteConfirm) return ""
+    if (deleteConfirm.type === "hard") {
+      return ROLE_CONFIRM_MESSAGES.HARD_DELETE_DESCRIPTION(
+        deleteConfirm.bulkIds?.length,
+        deleteConfirm.row?.displayName,
+      )
+    }
+    if (deleteConfirm.type === "restore") {
+      return ROLE_CONFIRM_MESSAGES.RESTORE_DESCRIPTION(
+        deleteConfirm.bulkIds?.length,
+        deleteConfirm.row?.displayName,
+      )
+    }
+    return ROLE_CONFIRM_MESSAGES.DELETE_DESCRIPTION(
+      deleteConfirm.bulkIds?.length,
+      deleteConfirm.row?.displayName,
+    )
+  }
+
   const router = useResourceRouter()
 
   const headerActions = canCreate ? (
@@ -477,67 +512,48 @@ export function RolesTableClient({
       />
 
       {/* Delete Confirmation Dialog */}
-      <ConfirmDialog
-        open={deleteConfirm?.open ?? false}
-        onOpenChange={(open) => {
-          if (!open) {
-            setDeleteConfirm(null)
+      {deleteConfirm && (
+        <ConfirmDialog
+          open={deleteConfirm.open}
+          onOpenChange={(open) => {
+            if (!open) setDeleteConfirm(null)
+          }}
+          title={getDeleteConfirmTitle()}
+          description={getDeleteConfirmDescription()}
+          variant={deleteConfirm.type === "hard" ? "destructive" : deleteConfirm.type === "restore" ? "default" : "destructive"}
+          confirmLabel={
+            deleteConfirm.type === "hard"
+              ? ROLE_CONFIRM_MESSAGES.HARD_DELETE_LABEL
+              : deleteConfirm.type === "restore"
+              ? ROLE_CONFIRM_MESSAGES.RESTORE_LABEL
+              : ROLE_CONFIRM_MESSAGES.CONFIRM_LABEL
           }
-        }}
-        title={
-          deleteConfirm?.type === "hard"
-            ? ROLE_CONFIRM_MESSAGES.HARD_DELETE_TITLE(deleteConfirm?.bulkIds?.length)
-            : deleteConfirm?.type === "restore"
-            ? ROLE_CONFIRM_MESSAGES.RESTORE_TITLE(deleteConfirm?.bulkIds?.length)
-            : ROLE_CONFIRM_MESSAGES.DELETE_TITLE(deleteConfirm?.bulkIds?.length)
-        }
-        description={
-          deleteConfirm?.type === "hard"
-            ? ROLE_CONFIRM_MESSAGES.HARD_DELETE_DESCRIPTION(
-                deleteConfirm?.bulkIds?.length,
-                deleteConfirm?.row?.displayName,
-              )
-            : deleteConfirm?.type === "restore"
-            ? ROLE_CONFIRM_MESSAGES.RESTORE_DESCRIPTION(
-                deleteConfirm?.bulkIds?.length,
-                deleteConfirm?.row?.displayName,
-              )
-            : ROLE_CONFIRM_MESSAGES.DELETE_DESCRIPTION(
-                deleteConfirm?.bulkIds?.length,
-                deleteConfirm?.row?.displayName,
-              )
-        }
-        confirmLabel={
-          deleteConfirm?.type === "hard"
-            ? ROLE_CONFIRM_MESSAGES.HARD_DELETE_LABEL
-            : deleteConfirm?.type === "restore"
-            ? ROLE_CONFIRM_MESSAGES.RESTORE_LABEL
-            : ROLE_CONFIRM_MESSAGES.CONFIRM_LABEL
-        }
-        cancelLabel={ROLE_CONFIRM_MESSAGES.CANCEL_LABEL}
-        variant={deleteConfirm?.type === "hard" ? "destructive" : deleteConfirm?.type === "restore" ? "default" : "destructive"}
-        onConfirm={handleDeleteConfirm}
-        isLoading={
-          bulkState.isProcessing ||
-          (deleteConfirm?.row
-            ? deleteConfirm.type === "restore"
-              ? restoringRoles.has(deleteConfirm.row.id)
-              : deleteConfirm.type === "hard"
-              ? hardDeletingRoles.has(deleteConfirm.row.id)
-              : deletingRoles.has(deleteConfirm.row.id)
-            : false)
-        }
-      />
+          cancelLabel={ROLE_CONFIRM_MESSAGES.CANCEL_LABEL}
+          onConfirm={handleDeleteConfirm}
+          isLoading={
+            bulkState.isProcessing ||
+            (deleteConfirm.row
+              ? deleteConfirm.type === "restore"
+                ? restoringRoles.has(deleteConfirm.row.id)
+                : deleteConfirm.type === "hard"
+                ? hardDeletingRoles.has(deleteConfirm.row.id)
+                : deletingRoles.has(deleteConfirm.row.id)
+              : false)
+          }
+        />
+      )}
 
       {/* Feedback Dialog */}
+      {feedback && (
         <FeedbackDialog
-        open={feedback?.open ?? false}
+          open={feedback.open}
           onOpenChange={handleFeedbackOpenChange}
-        variant={feedback?.variant ?? "success"}
-        title={feedback?.title ?? ""}
-        description={feedback?.description}
-        details={feedback?.details}
-      />
+          variant={feedback.variant}
+          title={feedback.title}
+          description={feedback.description}
+          details={feedback.details}
+        />
+      )}
     </>
   )
 }

@@ -50,6 +50,9 @@ export function StudentsTableClient({
     executeSingleAction,
     executeBulkAction,
     togglingStudents,
+    deletingStudents,
+    restoringStudents,
+    hardDeletingStudents,
     bulkState,
   } = useStudentActions({
     canDelete,
@@ -107,9 +110,16 @@ export function StudentsTableClient({
   const handleRestoreSingle = useCallback(
     (row: StudentRow) => {
       if (!canRestore) return
-      executeSingleAction("restore", row, tableRefreshRef.current || (() => {}))
+      setDeleteConfirm({
+        open: true,
+        type: "restore",
+        row,
+        onConfirm: async () => {
+          await executeSingleAction("restore", row, tableRefreshRef.current || (() => {}))
+        },
+      })
     },
-    [canRestore, executeSingleAction],
+    [canRestore, executeSingleAction, setDeleteConfirm],
   )
 
   const { renderActiveRowActions, renderDeletedRowActions } = useStudentRowActions({
@@ -120,6 +130,9 @@ export function StudentsTableClient({
     onDelete: handleDeleteSingle,
     onHardDelete: handleHardDeleteSingle,
     onRestore: handleRestoreSingle,
+    deletingStudents,
+    restoringStudents,
+    hardDeletingStudents,
   })
 
   // Handle realtime updates từ socket bridge
@@ -201,6 +214,27 @@ export function StudentsTableClient({
     [queryClient],
   )
 
+  const executeBulk = useCallback(
+    (action: "delete" | "restore" | "hard-delete", ids: string[], refresh: () => void, clearSelection: () => void) => {
+      if (ids.length === 0) return
+
+      // Actions cần confirmation
+      if (action === "delete" || action === "restore" || action === "hard-delete") {
+        setDeleteConfirm({
+          open: true,
+          type: action === "hard-delete" ? "hard" : action === "restore" ? "restore" : "soft",
+          bulkIds: ids,
+          onConfirm: async () => {
+            await executeBulkAction(action, ids, refresh, clearSelection)
+          },
+        })
+      } else {
+        executeBulkAction(action, ids, refresh, clearSelection)
+      }
+    },
+    [executeBulkAction, setDeleteConfirm],
+  )
+
   const viewModes = useMemo<ResourceViewMode<StudentRow>[]>(() => {
     const modes: ResourceViewMode<StudentRow>[] = [
       {
@@ -221,19 +255,10 @@ export function StudentsTableClient({
                     size="sm"
                     variant="destructive"
                     disabled={bulkState.isProcessing || selectedIds.length === 0}
-                    onClick={() => {
-                      setDeleteConfirm({
-                        open: true,
-                        type: "soft",
-                        bulkIds: selectedIds,
-                        onConfirm: async () => {
-                          await executeBulkAction("delete", selectedIds, refresh, clearSelection)
-                        },
-                      })
-                    }}
+                    onClick={() => executeBulk("delete", selectedIds, refresh, clearSelection)}
                   >
                     <Trash2 className="mr-2 h-5 w-5" />
-                    {STUDENT_LABELS.DELETE} ({selectedIds.length})
+                    {STUDENT_LABELS.DELETE_SELECTED(selectedIds.length)}
                   </Button>
                   {canManage && (
                     <Button
@@ -241,19 +266,10 @@ export function StudentsTableClient({
                       size="sm"
                       variant="destructive"
                       disabled={bulkState.isProcessing || selectedIds.length === 0}
-                      onClick={() => {
-                        setDeleteConfirm({
-                          open: true,
-                          type: "hard",
-                          bulkIds: selectedIds,
-                          onConfirm: async () => {
-                            await executeBulkAction("hard-delete", selectedIds, refresh, clearSelection)
-                          },
-                        })
-                      }}
+                      onClick={() => executeBulk("hard-delete", selectedIds, refresh, clearSelection)}
                     >
                       <AlertTriangle className="mr-2 h-5 w-5" />
-                      {STUDENT_LABELS.HARD_DELETE} ({selectedIds.length})
+                      {STUDENT_LABELS.HARD_DELETE_SELECTED(selectedIds.length)}
                     </Button>
                   )}
                   <Button type="button" size="sm" variant="ghost" onClick={clearSelection}>
@@ -285,10 +301,10 @@ export function StudentsTableClient({
                       size="sm"
                       variant="outline"
                       disabled={bulkState.isProcessing || selectedIds.length === 0}
-                      onClick={() => executeBulkAction("restore", selectedIds, refresh, clearSelection)}
+                      onClick={() => executeBulk("restore", selectedIds, refresh, clearSelection)}
                     >
                       <RotateCcw className="mr-2 h-5 w-5" />
-                      {STUDENT_LABELS.RESTORE} ({selectedIds.length})
+                      {STUDENT_LABELS.RESTORE_SELECTED(selectedIds.length)}
                     </Button>
                   )}
                   {canManage && (
@@ -297,19 +313,10 @@ export function StudentsTableClient({
                       size="sm"
                       variant="destructive"
                       disabled={bulkState.isProcessing || selectedIds.length === 0}
-                      onClick={() => {
-                        setDeleteConfirm({
-                          open: true,
-                          type: "hard",
-                          bulkIds: selectedIds,
-                          onConfirm: async () => {
-                            await executeBulkAction("hard-delete", selectedIds, refresh, clearSelection)
-                          },
-                        })
-                      }}
+                      onClick={() => executeBulk("hard-delete", selectedIds, refresh, clearSelection)}
                     >
                       <AlertTriangle className="mr-2 h-5 w-5" />
-                      {STUDENT_LABELS.HARD_DELETE} ({selectedIds.length})
+                      {STUDENT_LABELS.HARD_DELETE_SELECTED(selectedIds.length)}
                     </Button>
                   )}
                   <Button type="button" size="sm" variant="ghost" onClick={clearSelection}>
@@ -332,16 +339,55 @@ export function StudentsTableClient({
     canRestore,
     canManage,
     bulkState.isProcessing,
-    executeBulkAction,
+    executeBulk,
     renderActiveRowActions,
     renderDeletedRowActions,
-    setDeleteConfirm,
   ])
 
   const initialDataByView = useMemo(
     () => (initialData ? { active: initialData } : undefined),
     [initialData],
   )
+
+  const getDeleteConfirmTitle = () => {
+    if (!deleteConfirm) return ""
+    if (deleteConfirm.type === "hard") {
+      return STUDENT_CONFIRM_MESSAGES.HARD_DELETE_TITLE(
+        deleteConfirm.bulkIds?.length,
+        deleteConfirm.row?.studentCode,
+      )
+    }
+    if (deleteConfirm.type === "restore") {
+      return STUDENT_CONFIRM_MESSAGES.RESTORE_TITLE(
+        deleteConfirm.bulkIds?.length,
+        deleteConfirm.row?.studentCode,
+      )
+    }
+    return STUDENT_CONFIRM_MESSAGES.DELETE_TITLE(
+      deleteConfirm.bulkIds?.length,
+      deleteConfirm.row?.studentCode,
+    )
+  }
+
+  const getDeleteConfirmDescription = () => {
+    if (!deleteConfirm) return ""
+    if (deleteConfirm.type === "hard") {
+      return STUDENT_CONFIRM_MESSAGES.HARD_DELETE_DESCRIPTION(
+        deleteConfirm.bulkIds?.length,
+        deleteConfirm.row?.studentCode,
+      )
+    }
+    if (deleteConfirm.type === "restore") {
+      return STUDENT_CONFIRM_MESSAGES.RESTORE_DESCRIPTION(
+        deleteConfirm.bulkIds?.length,
+        deleteConfirm.row?.studentCode,
+      )
+    }
+    return STUDENT_CONFIRM_MESSAGES.DELETE_DESCRIPTION(
+      deleteConfirm.bulkIds?.length,
+      deleteConfirm.row?.studentCode,
+    )
+  }
 
   const headerActions = canCreate ? (
     <Button
@@ -351,7 +397,7 @@ export function StudentsTableClient({
       className="h-8 px-3 text-xs sm:text-sm"
     >
       <Plus className="mr-2 h-5 w-5" />
-      Thêm mới
+      {STUDENT_LABELS.ADD_NEW}
     </Button>
   ) : undefined
 
@@ -381,54 +427,49 @@ export function StudentsTableClient({
         }}
       />
 
-      <ConfirmDialog
-        open={deleteConfirm?.open ?? false}
-        onOpenChange={(open) => {
-          if (!open) {
-            setDeleteConfirm(null)
+      {/* Delete Confirmation Dialog */}
+      {deleteConfirm && (
+        <ConfirmDialog
+          open={deleteConfirm.open}
+          onOpenChange={(open) => {
+            if (!open) setDeleteConfirm(null)
+          }}
+          title={getDeleteConfirmTitle()}
+          description={getDeleteConfirmDescription()}
+          variant={deleteConfirm.type === "hard" ? "destructive" : deleteConfirm.type === "restore" ? "default" : "destructive"}
+          confirmLabel={
+            deleteConfirm.type === "hard"
+              ? STUDENT_CONFIRM_MESSAGES.HARD_DELETE_LABEL
+              : deleteConfirm.type === "restore"
+              ? STUDENT_CONFIRM_MESSAGES.RESTORE_LABEL
+              : STUDENT_CONFIRM_MESSAGES.CONFIRM_LABEL
           }
-        }}
-        title={
-          deleteConfirm
-            ? deleteConfirm.type === "hard"
-              ? STUDENT_CONFIRM_MESSAGES.HARD_DELETE_TITLE(
-                  deleteConfirm.bulkIds?.length,
-                  deleteConfirm.row?.studentCode
-                )
-              : STUDENT_CONFIRM_MESSAGES.DELETE_TITLE(
-                  deleteConfirm.bulkIds?.length,
-                  deleteConfirm.row?.studentCode
-                )
-            : ""
-        }
-        description={
-          deleteConfirm
-            ? deleteConfirm.type === "hard"
-              ? STUDENT_CONFIRM_MESSAGES.HARD_DELETE_DESCRIPTION(
-                  deleteConfirm.bulkIds?.length,
-                  deleteConfirm.row?.studentCode
-                )
-              : STUDENT_CONFIRM_MESSAGES.DELETE_DESCRIPTION(
-                  deleteConfirm.bulkIds?.length,
-                  deleteConfirm.row?.studentCode
-                )
-            : ""
-        }
-        confirmLabel={deleteConfirm?.type === "hard" ? STUDENT_CONFIRM_MESSAGES.HARD_DELETE_LABEL : STUDENT_CONFIRM_MESSAGES.CONFIRM_LABEL}
-        cancelLabel={STUDENT_CONFIRM_MESSAGES.CANCEL_LABEL}
-        variant="destructive"
-        onConfirm={handleDeleteConfirm}
-        isLoading={bulkState.isProcessing}
-      />
+          cancelLabel={STUDENT_CONFIRM_MESSAGES.CANCEL_LABEL}
+          onConfirm={handleDeleteConfirm}
+          isLoading={
+            bulkState.isProcessing ||
+            (deleteConfirm.row
+              ? deleteConfirm.type === "restore"
+                ? restoringStudents.has(deleteConfirm.row.id)
+                : deleteConfirm.type === "hard"
+                ? hardDeletingStudents.has(deleteConfirm.row.id)
+                : deletingStudents.has(deleteConfirm.row.id)
+              : false)
+          }
+        />
+      )}
 
-      <FeedbackDialog
-        open={feedback?.open ?? false}
-        onOpenChange={handleFeedbackOpenChange}
-        variant={feedback?.variant ?? "success"}
-        title={feedback?.title ?? ""}
-        description={feedback?.description}
-        details={feedback?.details}
-      />
+      {/* Feedback Dialog */}
+      {feedback && (
+        <FeedbackDialog
+          open={feedback.open}
+          onOpenChange={handleFeedbackOpenChange}
+          variant={feedback.variant}
+          title={feedback.title}
+          description={feedback.description}
+          details={feedback.details}
+        />
+      )}
     </>
   )
 }

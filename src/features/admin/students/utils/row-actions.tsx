@@ -4,7 +4,7 @@
 
 import { useCallback } from "react"
 import { useResourceRouter } from "@/hooks/use-resource-segment"
-import { RotateCcw, Trash2, MoreHorizontal, AlertTriangle, Eye, Pencil } from "lucide-react"
+import { RotateCcw, Trash2, MoreHorizontal, AlertTriangle, Eye, Pencil, Loader2 } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
@@ -22,6 +22,8 @@ export interface RowActionConfig {
   onSelect: () => void
   destructive?: boolean
   disabled?: boolean
+  isLoading?: boolean
+  loadingLabel?: string
 }
 
 interface UseStudentRowActionsOptions {
@@ -32,6 +34,9 @@ interface UseStudentRowActionsOptions {
   onDelete: (row: StudentRow) => void
   onHardDelete: (row: StudentRow) => void
   onRestore: (row: StudentRow) => void
+  deletingStudents?: Set<string>
+  restoringStudents?: Set<string>
+  hardDeletingStudents?: Set<string>
 }
 
 export function renderRowActions(actions: RowActionConfig[]) {
@@ -41,19 +46,19 @@ export function renderRowActions(actions: RowActionConfig[]) {
 
   if (actions.length === 1) {
     const singleAction = actions[0]
-    const Icon = singleAction.icon
+    const Icon = singleAction.isLoading ? Loader2 : singleAction.icon
     return (
       <Button
         variant="ghost"
         size="sm"
-        disabled={singleAction.disabled}
+        disabled={singleAction.disabled || singleAction.isLoading}
         onClick={() => {
-          if (singleAction.disabled) return
+          if (singleAction.disabled || singleAction.isLoading) return
           singleAction.onSelect()
         }}
       >
-        <Icon className="mr-2 h-5 w-5" />
-        {singleAction.label}
+        <Icon className={`mr-2 h-5 w-5 ${singleAction.isLoading ? "animate-spin" : ""}`} />
+        {singleAction.isLoading ? singleAction.loadingLabel || singleAction.label : singleAction.label}
       </Button>
     )
   }
@@ -67,13 +72,13 @@ export function renderRowActions(actions: RowActionConfig[]) {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         {actions.map((action) => {
-          const Icon = action.icon
+          const Icon = action.isLoading ? Loader2 : action.icon
           return (
             <DropdownMenuItem
               key={action.label}
-              disabled={action.disabled}
+              disabled={action.disabled || action.isLoading}
               onClick={() => {
-                if (action.disabled) return
+                if (action.disabled || action.isLoading) return
                 action.onSelect()
               }}
               className={
@@ -84,10 +89,12 @@ export function renderRowActions(actions: RowActionConfig[]) {
             >
               <Icon
                 className={
-                  action.destructive ? "mr-2 h-5 w-5 text-destructive" : "mr-2 h-5 w-5"
+                  action.destructive
+                    ? `mr-2 h-5 w-5 text-destructive ${action.isLoading ? "animate-spin" : ""}`
+                    : `mr-2 h-5 w-5 ${action.isLoading ? "animate-spin" : ""}`
                 }
               />
-              {action.label}
+              {action.isLoading ? action.loadingLabel || action.label : action.label}
             </DropdownMenuItem>
           )
         })}
@@ -104,6 +111,9 @@ export function useStudentRowActions({
   onDelete,
   onHardDelete,
   onRestore,
+  deletingStudents = new Set(),
+  restoringStudents = new Set(),
+  hardDeletingStudents = new Set(),
 }: UseStudentRowActionsOptions) {
   const router = useResourceRouter()
 
@@ -126,26 +136,34 @@ export function useStudentRowActions({
       }
 
       if (canDelete) {
+        const isDeleting = deletingStudents.has(row.id)
         actions.push({
           label: STUDENT_LABELS.DELETE,
           icon: Trash2,
           onSelect: () => onDelete(row),
           destructive: true,
+          disabled: isDeleting || restoringStudents.has(row.id) || hardDeletingStudents.has(row.id),
+          isLoading: isDeleting,
+          loadingLabel: STUDENT_LABELS.DELETING,
         })
       }
 
       if (canManage) {
+        const isHardDeleting = hardDeletingStudents.has(row.id)
         actions.push({
           label: STUDENT_LABELS.HARD_DELETE,
           icon: AlertTriangle,
           onSelect: () => onHardDelete(row),
           destructive: true,
+          disabled: deletingStudents.has(row.id) || restoringStudents.has(row.id) || isHardDeleting,
+          isLoading: isHardDeleting,
+          loadingLabel: STUDENT_LABELS.HARD_DELETING,
         })
       }
 
       return renderRowActions(actions)
     },
-    [canDelete, canManage, canUpdate, onDelete, onHardDelete, router],
+    [canDelete, canManage, canUpdate, onDelete, onHardDelete, router, deletingStudents, restoringStudents, hardDeletingStudents],
   )
 
   const renderDeletedRowActions = useCallback(
@@ -159,25 +177,33 @@ export function useStudentRowActions({
       ]
 
       if (canRestore) {
+        const isRestoring = restoringStudents.has(row.id)
         actions.push({
           label: STUDENT_LABELS.RESTORE,
           icon: RotateCcw,
           onSelect: () => onRestore(row),
+          disabled: deletingStudents.has(row.id) || isRestoring || hardDeletingStudents.has(row.id),
+          isLoading: isRestoring,
+          loadingLabel: STUDENT_LABELS.RESTORING,
         })
       }
 
       if (canManage) {
+        const isHardDeleting = hardDeletingStudents.has(row.id)
         actions.push({
           label: STUDENT_LABELS.HARD_DELETE,
           icon: AlertTriangle,
           onSelect: () => onHardDelete(row),
           destructive: true,
+          disabled: deletingStudents.has(row.id) || restoringStudents.has(row.id) || isHardDeleting,
+          isLoading: isHardDeleting,
+          loadingLabel: STUDENT_LABELS.HARD_DELETING,
         })
       }
 
       return renderRowActions(actions)
     },
-    [canManage, canRestore, onHardDelete, onRestore, router],
+    [canManage, canRestore, onHardDelete, onRestore, router, deletingStudents, restoringStudents, hardDeletingStudents],
   )
 
   return {
