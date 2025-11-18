@@ -1,43 +1,30 @@
 "use client"
 
-import { useCallback, useMemo, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef } from "react"
 import { useResourceRouter } from "@/hooks/use-resource-segment"
-import { RotateCcw, Trash2, MoreHorizontal, AlertTriangle, Eye, Plus } from "lucide-react"
+import { Plus, RotateCcw, Trash2, AlertTriangle } from "lucide-react"
 
 import { ConfirmDialog } from "@/components/dialogs"
-import type { DataTableColumn, DataTableQueryState, DataTableResult } from "@/components/tables"
-import { FeedbackDialog, type FeedbackVariant } from "@/components/dialogs"
+import type { DataTableQueryState, DataTableResult } from "@/components/tables"
+import { FeedbackDialog } from "@/components/dialogs"
 import { Button } from "@/components/ui/button"
-import { Switch } from "@/components/ui/switch"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
 import { ResourceTableClient } from "@/features/admin/resources/components/resource-table.client"
 import type { ResourceViewMode } from "@/features/admin/resources/types"
-import { useDynamicFilterOptions } from "@/features/admin/resources/hooks/use-dynamic-filter-options"
 import { apiClient } from "@/lib/api/axios"
 import { apiRoutes } from "@/lib/api/routes"
+import { useQueryClient } from "@tanstack/react-query"
+import { queryKeys } from "@/lib/query-keys"
+import { useUsersSocketBridge } from "@/features/admin/users/hooks/use-users-socket-bridge"
+import { useUserActions } from "@/features/admin/users/hooks/use-user-actions"
+import { useUserFeedback } from "@/features/admin/users/hooks/use-user-feedback"
+import { useUserDeleteConfirm } from "@/features/admin/users/hooks/use-user-delete-confirm"
+import { useUserColumns } from "@/features/admin/users/utils/columns"
+import { useUserRowActions } from "@/features/admin/users/utils/row-actions"
 
+import type { AdminUsersListParams } from "@/lib/query-keys"
 import type { UserRow, UsersResponse, UsersTableClientProps } from "../types"
-
-interface FeedbackState {
-  open: boolean
-  variant: FeedbackVariant
-  title: string
-  description?: string
-  details?: string
-}
-
-interface DeleteConfirmState {
-  open: boolean
-  type: "soft" | "hard"
-  row?: UserRow
-  bulkIds?: string[]
-  onConfirm: () => Promise<void>
-}
+import { USER_CONFIRM_MESSAGES, USER_LABELS } from "../constants/messages"
+import { logger } from "@/lib/config"
 
 
 export function UsersTableClient({
@@ -48,450 +35,267 @@ export function UsersTableClient({
   initialData,
   initialRolesOptions = [],
 }: UsersTableClientProps) {
+  const queryClient = useQueryClient()
   const router = useResourceRouter()
-  const [isBulkProcessing, setIsBulkProcessing] = useState(false)
-  const [feedback, setFeedback] = useState<FeedbackState | null>(null)
-  const [deleteConfirm, setDeleteConfirm] = useState<DeleteConfirmState | null>(null)
-  const [rolesOptions, _setRolesOptions] = useState<Array<{ label: string; value: string }>>(initialRolesOptions)
-  const [togglingUsers, setTogglingUsers] = useState<Set<string>>(new Set())
-  const tableRefreshRef = useRef<(() => void) | null>(null)
+  const { isSocketConnected, cacheVersion } = useUsersSocketBridge()
+  const { feedback, showFeedback, handleFeedbackOpenChange } = useUserFeedback()
+  const { deleteConfirm, setDeleteConfirm, handleDeleteConfirm } = useUserDeleteConfirm()
 
-  const showFeedback = useCallback(
-    (variant: FeedbackVariant, title: string, description?: string, details?: string) => {
-      setFeedback({ open: true, variant, title, description, details })
+  const tableRefreshRef = useRef<(() => void) | null>(null)
+  const tableSoftRefreshRef = useRef<(() => void) | null>(null)
+  const pendingRealtimeRefreshRef = useRef(false)
+
+  const {
+    executeSingleAction,
+    executeToggleActive,
+    executeBulkAction,
+    deletingUsers,
+    restoringUsers,
+    hardDeletingUsers,
+    togglingUsers,
+    bulkState,
+  } = useUserActions({
+    canDelete,
+    canRestore,
+    canManage,
+    isSocketConnected,
+    showFeedback,
+  })
+
+  const handleToggleStatus = useCallback(
+    (row: UserRow, newStatus: boolean) => {
+      if (tableRefreshRef.current) {
+        executeToggleActive(row, newStatus, tableRefreshRef.current)
+      }
     },
-    [],
+    [executeToggleActive],
   )
 
-  const handleFeedbackOpenChange = useCallback((open: boolean) => {
-    if (!open) {
-      setFeedback(null)
-    }
+  const { baseColumns, deletedColumns } = useUserColumns({
+    rolesOptions: initialRolesOptions,
+    canManage,
+    togglingUsers,
+    onToggleStatus: handleToggleStatus,
+    showFeedback,
+  })
+
+  const buildFiltersRecord = useCallback((filters: Record<string, string>): Record<string, string> => {
+    return Object.entries(filters).reduce<Record<string, string>>((acc, [key, value]) => {
+      if (value) {
+        acc[key] = value
+      }
+      return acc
+    }, {})
   }, [])
 
-  // Handler để toggle user status
-  const handleToggleStatus = useCallback(
-    async (row: UserRow, newStatus: boolean, refresh: () => void) => {
-      if (!canManage) {
-        showFeedback("error", "Không có quyền", "Bạn không có quyền thay đổi trạng thái người dùng")
-        return
-      }
-
-      // Không cho phép vô hiệu hóa super admin
-      if (row.email === PROTECTED_SUPER_ADMIN_EMAIL && newStatus === false) {
-        showFeedback("error", "Không thể vô hiệu hóa", "Không thể vô hiệu hóa tài khoản super admin")
-        return
-      }
-
-      // Thêm user vào set toggling
-      setTogglingUsers((prev) => new Set(prev).add(row.id))
-
-      try {
-        await apiClient.put(apiRoutes.users.update(row.id), {
-          isActive: newStatus,
-        })
-
-        showFeedback(
-          "success",
-          "Cập nhật thành công",
-          `Đã ${newStatus ? "kích hoạt" : "vô hiệu hóa"} người dùng ${row.email}`
-        )
-        refresh()
-      } catch (error) {
-        console.error("Error toggling user status:", error)
-        const errorMessage = error instanceof Error ? error.message : "Đã xảy ra lỗi không xác định"
-        showFeedback(
-          "error",
-          "Lỗi cập nhật",
-          `Không thể ${newStatus ? "kích hoạt" : "vô hiệu hóa"} người dùng. Vui lòng thử lại.`,
-          errorMessage
-        )
-      } finally {
-        // Xóa user khỏi set toggling
-        setTogglingUsers((prev) => {
-          const next = new Set(prev)
-          next.delete(row.id)
-          return next
-        })
-      }
-    },
-    [canManage, showFeedback]
-  )
-
-  // Initialize roles options from server (passed as props)
-  // No need to fetch in useEffect anymore - roles are fetched server-side
-
-  const dateFormatter = useMemo(
-    () =>
-      new Intl.DateTimeFormat("vi-VN", {
-        dateStyle: "medium",
-        timeStyle: "short",
-      }),
-    [],
-  )
-
-  const emailFilter = useDynamicFilterOptions({
-    optionsEndpoint: apiRoutes.users.options({ column: "email" }),
-  })
-
-  const nameFilter = useDynamicFilterOptions({
-    optionsEndpoint: apiRoutes.users.options({ column: "name" }),
-  })
-
-  const baseColumns = useMemo<DataTableColumn<UserRow>[]>(
-    () => [
-      {
-        accessorKey: "email",
-        header: "Email",
-        filter: {
-          type: "select",
-          placeholder: "Chọn email...",
-          searchPlaceholder: "Tìm kiếm...",
-          emptyMessage: "Không tìm thấy.",
-          options: emailFilter.options,
-          onSearchChange: emailFilter.onSearchChange,
-          isLoading: emailFilter.isLoading,
-        },
-        className: "min-w-[200px] max-w-[300px]",
-        headerClassName: "min-w-[200px] max-w-[300px]",
-      },
-      {
-        accessorKey: "name",
-        header: "Tên",
-        filter: {
-          type: "select",
-          placeholder: "Chọn tên...",
-          searchPlaceholder: "Tìm kiếm...",
-          emptyMessage: "Không tìm thấy.",
-          options: nameFilter.options,
-          onSearchChange: nameFilter.onSearchChange,
-          isLoading: nameFilter.isLoading,
-        },
-        className: "min-w-[150px] max-w-[250px]",
-        headerClassName: "min-w-[150px] max-w-[250px]",
-        cell: (row) => row.name ?? "-",
-      },
-      {
-        accessorKey: "roles",
-        header: "Vai trò",
-        filter: {
-          type: "select",
-          placeholder: "Chọn vai trò...",
-          searchPlaceholder: "Tìm kiếm vai trò...",
-          emptyMessage: "Không tìm thấy vai trò.",
-          options: rolesOptions,
-        },
-        className: "min-w-[120px] max-w-[200px]",
-        headerClassName: "min-w-[120px] max-w-[200px]",
-        cell: (row) =>
-          row.roles.length > 0 ? (
-            <div className="flex flex-wrap gap-2">
-              {row.roles.map((role) => (
-                <span
-                  key={role.id}
-                  className="rounded-full bg-muted px-2 py-1 text-xs text-muted-foreground"
-                >
-                  {role.displayName}
-                </span>
-              ))}
-            </div>
-          ) : (
-            <span className="text-muted-foreground">-</span>
-          ),
-      },
-      {
-        accessorKey: "isActive",
-        header: "Trạng thái",
-        filter: {
-          type: "select",
-          placeholder: "Chọn trạng thái...",
-          searchPlaceholder: "Tìm kiếm...",
-          emptyMessage: "Không tìm thấy.",
-          options: [
-            { label: "Hoạt động", value: "true" },
-            { label: "Ngưng hoạt động", value: "false" },
-          ],
-        },
-        className: "w-[120px]",
-        headerClassName: "w-[120px]",
-        cell: (row) => {
-          const isSuperAdmin = row.email === PROTECTED_SUPER_ADMIN_EMAIL
-          // Disable switch nếu là super admin và đang ở trạng thái active (không cho toggle OFF)
-          const isDisabled = togglingUsers.has(row.id) || !canManage || (isSuperAdmin && row.isActive)
-          
-          return row.deletedAt ? (
-            <span className="inline-flex min-w-[88px] items-center justify-center rounded-full bg-rose-100 px-2 py-1 text-xs font-medium text-rose-700">
-              Đã xóa
-            </span>
-          ) : (
-            <div className="flex items-center gap-2">
-              <Switch
-                checked={row.isActive}
-                disabled={isDisabled}
-                onCheckedChange={(checked) => {
-                  if (tableRefreshRef.current) {
-                    // Chặn toggle OFF cho super admin
-                    if (isSuperAdmin && checked === false) {
-                      showFeedback("error", "Không thể vô hiệu hóa", "Không thể vô hiệu hóa tài khoản super admin")
-                      return
-                    }
-                    handleToggleStatus(row, checked, tableRefreshRef.current)
-                  }
-                }}
-                aria-label={row.isActive ? "Vô hiệu hóa người dùng" : "Kích hoạt người dùng"}
-                title={isSuperAdmin && row.isActive ? "Không thể vô hiệu hóa tài khoản super admin" : undefined}
-              />
-              <span className="text-xs text-muted-foreground">
-                {row.isActive ? "Hoạt động" : "Tạm khóa"}
-                {isSuperAdmin && (
-                  <span className="ml-1 text-xs text-muted-foreground">(Super Admin)</span>
-                )}
-              </span>
-            </div>
-          )
-        },
-      },
-      {
-        accessorKey: "createdAt",
-        header: "Ngày tạo",
-        filter: {
-          type: "date",
-          placeholder: "Chọn ngày tạo",
-          dateFormat: "dd/MM/yyyy",
-        },
-        className: "min-w-[140px] max-w-[180px]",
-        headerClassName: "min-w-[140px] max-w-[180px]",
-        cell: (row) => {
-          try {
-            return dateFormatter.format(new Date(row.createdAt))
-          } catch {
-            return row.createdAt
-          }
-        },
-      },
-    ],
-    [dateFormatter, rolesOptions, emailFilter.options, emailFilter.onSearchChange, emailFilter.isLoading, nameFilter.options, nameFilter.onSearchChange, nameFilter.isLoading, togglingUsers, canManage, handleToggleStatus, showFeedback],
-  )
-
-  const deletedColumns = useMemo<DataTableColumn<UserRow>[]>(
-    () => [
-      ...baseColumns,
-      {
-        accessorKey: "deletedAt",
-        header: "Ngày xóa",
-        filter: {
-          type: "date",
-          placeholder: "Chọn ngày xóa",
-          dateFormat: "dd/MM/yyyy",
-        },
-        className: "min-w-[140px] max-w-[180px]",
-        headerClassName: "min-w-[140px] max-w-[180px]",
-        cell: (row) => {
-          if (!row.deletedAt) return "-"
-          try {
-            return dateFormatter.format(new Date(row.deletedAt))
-          } catch {
-            return row.deletedAt
-          }
-        },
-      },
-    ],
-    [baseColumns, dateFormatter],
-  )
-
-  const loader = useCallback(
-    async (query: DataTableQueryState, view: ResourceViewMode<UserRow>) => {
-      // Build base URL with apiRoutes
+  const fetchUsers = useCallback(
+    async ({
+      page,
+      limit,
+      status,
+      search,
+      filters,
+    }: {
+      page: number
+      limit: number
+      status: "active" | "deleted" | "all"
+      search?: string
+      filters?: Record<string, string>
+    }): Promise<DataTableResult<UserRow>> => {
       const baseUrl = apiRoutes.users.list({
-        page: query.page,
-        limit: query.limit,
-        status: view.status ?? "active",
-        search: query.search.trim() || undefined,
+        page,
+        limit,
+        status,
+        search,
       })
-      
-      // Add filter params to URL if needed
+
       const filterParams = new URLSearchParams()
-      Object.entries(query.filters).forEach(([key, value]) => {
+      Object.entries(filters ?? {}).forEach(([key, value]) => {
         if (value) {
           filterParams.set(`filter[${key}]`, value)
         }
       })
-      
-      // Combine base URL with filter params
+
       const filterString = filterParams.toString()
       const url = filterString ? `${baseUrl}&${filterString}` : baseUrl
-      
+
       const response = await apiClient.get<UsersResponse>(url)
       const payload = response.data
 
+      if (!payload || !payload.data) {
+        throw new Error("Không thể tải danh sách người dùng")
+      }
+
       return {
-        rows: payload.data,
-        page: payload.pagination.page,
-        limit: payload.pagination.limit,
-        total: payload.pagination.total,
-        totalPages: payload.pagination.totalPages,
-      } satisfies DataTableResult<UserRow>
+        rows: payload.data || [],
+        page: payload.pagination?.page ?? page,
+        limit: payload.pagination?.limit ?? limit,
+        total: payload.pagination?.total ?? 0,
+        totalPages: payload.pagination?.totalPages ?? 0,
+      }
     },
     [],
   )
 
-  // Email của super admin không được phép xóa
-  const PROTECTED_SUPER_ADMIN_EMAIL = "superadmin@hub.edu.vn"
+  const loader = useCallback(
+    async (query: DataTableQueryState, view: ResourceViewMode<UserRow>) => {
+      const status = (view.status ?? "active") as AdminUsersListParams["status"]
+      const search = query.search.trim() || undefined
+      const filters = buildFiltersRecord(query.filters)
+
+      const params: AdminUsersListParams = {
+        status,
+        page: query.page,
+        limit: query.limit,
+        search,
+        filters,
+      }
+
+      const queryKey = queryKeys.adminUsers.list(params)
+
+      return await queryClient.fetchQuery({
+        queryKey,
+        staleTime: Infinity,
+        queryFn: () =>
+          fetchUsers({
+            page: query.page,
+            limit: query.limit,
+            status: status ?? "active",
+            search,
+            filters,
+          }),
+      })
+    },
+    [buildFiltersRecord, fetchUsers, queryClient],
+  )
 
   const handleDeleteSingle = useCallback(
-    (row: UserRow, refresh: () => void) => {
+    (row: UserRow) => {
       if (!canDelete) return
-      // Không cho phép xóa super admin
-      if (row.email === PROTECTED_SUPER_ADMIN_EMAIL) {
-        showFeedback("error", "Không thể xóa", "Không thể xóa tài khoản super admin")
-        return
-      }
       setDeleteConfirm({
         open: true,
         type: "soft",
         row,
         onConfirm: async () => {
-          try {
-            await apiClient.delete(apiRoutes.users.delete(row.id))
-            showFeedback("success", "Xóa thành công", `Đã xóa người dùng ${row.email}`)
-            refresh()
-          } catch (error: unknown) {
-            const errorMessage = error instanceof Error ? error.message : "Đã xảy ra lỗi không xác định"
-            showFeedback("error", "Xóa thất bại", `Không thể xóa người dùng ${row.email}`, errorMessage)
-            throw error
-          }
+          await executeSingleAction("delete", row, tableRefreshRef.current || (() => {}))
         },
       })
     },
-        [canDelete, showFeedback],
+    [canDelete, executeSingleAction, setDeleteConfirm],
   )
 
   const handleHardDeleteSingle = useCallback(
-    (row: UserRow, refresh: () => void) => {
+    (row: UserRow) => {
       if (!canManage) return
-      // Không cho phép xóa super admin
-      if (row.email === PROTECTED_SUPER_ADMIN_EMAIL) {
-        showFeedback("error", "Không thể xóa", "Không thể xóa vĩnh viễn tài khoản super admin")
-        return
-      }
       setDeleteConfirm({
         open: true,
         type: "hard",
         row,
         onConfirm: async () => {
-          try {
-            await apiClient.delete(apiRoutes.users.hardDelete(row.id))
-            showFeedback("success", "Xóa vĩnh viễn thành công", `Đã xóa vĩnh viễn người dùng ${row.email}`)
-            refresh()
-          } catch (error: unknown) {
-            const errorMessage = error instanceof Error ? error.message : "Đã xảy ra lỗi không xác định"
-            showFeedback("error", "Xóa vĩnh viễn thất bại", `Không thể xóa vĩnh viễn người dùng ${row.email}`, errorMessage)
-            throw error
-          }
+          await executeSingleAction("hard-delete", row, tableRefreshRef.current || (() => {}))
         },
       })
     },
-    [canManage, showFeedback],
+    [canManage, executeSingleAction, setDeleteConfirm],
   )
 
   const handleRestoreSingle = useCallback(
-    async (row: UserRow, refresh: () => void) => {
+    (row: UserRow) => {
       if (!canRestore) return
-
-      try {
-        await apiClient.post(apiRoutes.users.restore(row.id))
-        refresh()
-      } catch (error) {
-        console.error("Failed to restore user", error)
-      }
+      setDeleteConfirm({
+        open: true,
+        type: "restore",
+        row,
+        onConfirm: async () => {
+          await executeSingleAction("restore", row, tableRefreshRef.current || (() => {}))
+        },
+      })
     },
-    [canRestore],
+    [canRestore, executeSingleAction, setDeleteConfirm],
   )
 
+  const { renderActiveRowActions, renderDeletedRowActions } = useUserRowActions({
+    canDelete,
+    canRestore,
+    canManage,
+    onDelete: handleDeleteSingle,
+    onHardDelete: handleHardDeleteSingle,
+    onRestore: handleRestoreSingle,
+    deletingUsers,
+    restoringUsers,
+    hardDeletingUsers,
+  })
+
   const executeBulk = useCallback(
-    (action: "delete" | "restore" | "hard-delete", ids: string[], refresh: () => void, clearSelection: () => void) => {
+    (action: "delete" | "restore" | "hard-delete", ids: string[], selectedRows: UserRow[], refresh: () => void, clearSelection: () => void) => {
       if (ids.length === 0) return
 
-      if (action === "delete") {
+      // Actions cần confirmation
+      if (action === "delete" || action === "restore" || action === "hard-delete") {
         setDeleteConfirm({
           open: true,
-          type: "soft",
+          type: action === "hard-delete" ? "hard" : action === "restore" ? "restore" : "soft",
           bulkIds: ids,
           onConfirm: async () => {
-            setIsBulkProcessing(true)
-            try {
-              await apiClient.post(apiRoutes.users.bulk, { action, ids })
-              showFeedback("success", "Xóa thành công", `Đã xóa ${ids.length} người dùng`)
-              clearSelection()
-              refresh()
-            } catch (error: unknown) {
-              const errorMessage = error instanceof Error ? error.message : "Đã xảy ra lỗi không xác định"
-              showFeedback("error", "Xóa hàng loạt thất bại", `Không thể xóa ${ids.length} người dùng`, errorMessage)
-              throw error
-            } finally {
-              setIsBulkProcessing(false)
-            }
-          },
-        })
-      } else if (action === "hard-delete") {
-        setDeleteConfirm({
-          open: true,
-          type: "hard",
-          bulkIds: ids,
-          onConfirm: async () => {
-            setIsBulkProcessing(true)
-            try {
-              await apiClient.post(apiRoutes.users.bulk, { action, ids })
-              showFeedback("success", "Xóa vĩnh viễn thành công", `Đã xóa vĩnh viễn ${ids.length} người dùng`)
-              clearSelection()
-              refresh()
-            } catch (error: unknown) {
-              const errorMessage = error instanceof Error ? error.message : "Đã xảy ra lỗi không xác định"
-              showFeedback("error", "Xóa vĩnh viễn thất bại", `Không thể xóa vĩnh viễn ${ids.length} người dùng`, errorMessage)
-              throw error
-            } finally {
-              setIsBulkProcessing(false)
-            }
+            await executeBulkAction(action, ids, selectedRows, refresh, clearSelection)
           },
         })
       } else {
-        // restore action - no confirmation needed
-        setIsBulkProcessing(true)
-        ;(async () => {
-          try {
-            await apiClient.post(apiRoutes.users.bulk, { action, ids })
-            showFeedback("success", "Khôi phục thành công", `Đã khôi phục ${ids.length} người dùng`)
-            clearSelection()
-            refresh()
-          } catch (error: unknown) {
-            const errorMessage = error instanceof Error ? error.message : "Đã xảy ra lỗi không xác định"
-            showFeedback("error", "Khôi phục thất bại", `Không thể khôi phục ${ids.length} người dùng`, errorMessage)
-          } finally {
-            setIsBulkProcessing(false)
-          }
-        })()
+        executeBulkAction(action, ids, selectedRows, refresh, clearSelection)
       }
     },
-    [showFeedback],
+    [executeBulkAction, setDeleteConfirm],
   )
+
+  // Handle realtime updates từ socket bridge
+  useEffect(() => {
+    if (cacheVersion === 0) return
+    if (tableSoftRefreshRef.current) {
+      tableSoftRefreshRef.current()
+      pendingRealtimeRefreshRef.current = false
+    } else {
+      pendingRealtimeRefreshRef.current = true
+    }
+  }, [cacheVersion])
+
+  // Set initialData vào React Query cache để socket bridge có thể cập nhật
+  useEffect(() => {
+    if (!initialData) return
+
+    const params: AdminUsersListParams = {
+      status: "active",
+      page: initialData.page,
+      limit: initialData.limit,
+      search: undefined,
+      filters: undefined,
+    }
+    const queryKey = queryKeys.adminUsers.list(params)
+    queryClient.setQueryData(queryKey, initialData)
+
+    logger.debug("Set initial data to cache", {
+      queryKey: queryKey.slice(0, 2),
+      rowsCount: initialData.rows.length,
+      total: initialData.total,
+    })
+  }, [initialData, queryClient])
 
   const viewModes = useMemo<ResourceViewMode<UserRow>[]>(() => {
     const modes: ResourceViewMode<UserRow>[] = [
       {
         id: "active",
-        label: "Đang hoạt động",
+        label: USER_LABELS.ACTIVE_VIEW,
         status: "active",
         selectionEnabled: canDelete,
         selectionActions: canDelete
           ? ({ selectedIds, selectedRows, clearSelection, refresh }) => {
               // Filter ra super admin từ danh sách đã chọn
-              const deletableRows = selectedRows.filter((row) => row.email !== PROTECTED_SUPER_ADMIN_EMAIL)
-              const hasSuperAdmin = selectedRows.some((row) => row.email === PROTECTED_SUPER_ADMIN_EMAIL)
+              const deletableRows = selectedRows.filter((row) => row.email !== "superadmin@hub.edu.vn")
+              const hasSuperAdmin = selectedRows.some((row) => row.email === "superadmin@hub.edu.vn")
               
               return (
                 <div className="flex flex-wrap items-center justify-between gap-3 text-sm">
                   <span>
-                    Đã chọn <strong>{selectedIds.length}</strong> người dùng
+                    {USER_LABELS.SELECTED_USERS(selectedIds.length)}
                     {hasSuperAdmin && (
                       <span className="ml-2 text-xs text-muted-foreground">
                         (Tài khoản super admin không thể xóa)
@@ -503,83 +307,46 @@ export function UsersTableClient({
                       type="button"
                       size="sm"
                       variant="destructive"
-                      disabled={isBulkProcessing || deletableRows.length === 0}
-                      onClick={() => executeBulk("delete", deletableRows.map((r) => r.id), refresh, clearSelection)}
+                      disabled={bulkState.isProcessing || deletableRows.length === 0}
+                      onClick={() => executeBulk("delete", deletableRows.map((r) => r.id), deletableRows, refresh, clearSelection)}
                     >
                       <Trash2 className="mr-2 h-5 w-5" />
-                      Xóa đã chọn ({deletableRows.length})
+                      {USER_LABELS.DELETE_SELECTED(deletableRows.length)}
                     </Button>
                     {canManage && (
                       <Button
                         type="button"
                         size="sm"
                         variant="destructive"
-                        disabled={isBulkProcessing || deletableRows.length === 0}
-                        onClick={() => executeBulk("hard-delete", deletableRows.map((r) => r.id), refresh, clearSelection)}
+                        disabled={bulkState.isProcessing || deletableRows.length === 0}
+                        onClick={() => executeBulk("hard-delete", deletableRows.map((r) => r.id), deletableRows, refresh, clearSelection)}
                       >
                         <AlertTriangle className="mr-2 h-5 w-5" />
-                        Xóa vĩnh viễn ({deletableRows.length})
+                        {USER_LABELS.HARD_DELETE_SELECTED(deletableRows.length)}
                       </Button>
                     )}
                     <Button type="button" size="sm" variant="ghost" onClick={clearSelection}>
-                      Bỏ chọn
+                      {USER_LABELS.CLEAR_SELECTION}
                     </Button>
                   </div>
                 </div>
               )
             }
           : undefined,
-        rowActions:
-          canDelete || canRestore
-            ? (row, { refresh }) => (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-8 w-8">
-                      <MoreHorizontal className="h-5 w-5" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => router.push(`/admin/users/${row.id}`)}>
-                      <Eye className="mr-2 h-5 w-5" />
-                      Xem chi tiết
-                    </DropdownMenuItem>
-                    {canDelete && (
-                      <DropdownMenuItem 
-                        onClick={() => handleDeleteSingle(row, refresh)}
-                        disabled={row.email === PROTECTED_SUPER_ADMIN_EMAIL}
-                        className="text-destructive focus:text-destructive disabled:opacity-50"
-                      >
-                        <Trash2 className="mr-2 h-5 w-5 text-destructive" />
-                        Xóa
-                        {row.email === PROTECTED_SUPER_ADMIN_EMAIL && " (Không được phép)"}
-                      </DropdownMenuItem>
-                    )}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              )
-            : (row) => (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => router.push(`/admin/users/${row.id}`)}
-                >
-                  <Eye className="mr-2 h-5 w-5" />
-                  Xem
-                </Button>
-              ),
-        emptyMessage: "Không tìm thấy người dùng nào phù hợp",
+        rowActions: (row) => renderActiveRowActions(row),
+        emptyMessage: USER_LABELS.NO_USERS,
       },
       {
         id: "deleted",
-        label: "Đã xóa",
+        label: USER_LABELS.DELETED_VIEW,
         status: "deleted",
         columns: deletedColumns,
         selectionEnabled: canRestore || canManage,
         selectionActions: canRestore || canManage
-          ? ({ selectedIds, clearSelection, refresh }) => (
+          ? ({ selectedIds, selectedRows, clearSelection, refresh }) => (
               <div className="flex flex-wrap items-center justify-between gap-3 text-sm">
                 <span>
-                  Đã chọn <strong>{selectedIds.length}</strong> người dùng (đã xóa)
+                  {USER_LABELS.SELECTED_DELETED_USERS(selectedIds.length)}
                 </span>
                 <div className="flex items-center gap-2">
                   {canRestore && (
@@ -587,11 +354,11 @@ export function UsersTableClient({
                       type="button"
                       size="sm"
                       variant="outline"
-                      disabled={isBulkProcessing}
-                      onClick={() => executeBulk("restore", selectedIds, refresh, clearSelection)}
+                      disabled={bulkState.isProcessing || selectedIds.length === 0}
+                      onClick={() => executeBulk("restore", selectedIds, selectedRows, refresh, clearSelection)}
                     >
                       <RotateCcw className="mr-2 h-5 w-5" />
-                      Khôi phục
+                      {USER_LABELS.RESTORE_SELECTED(selectedIds.length)}
                     </Button>
                   )}
                   {canManage && (
@@ -599,106 +366,75 @@ export function UsersTableClient({
                       type="button"
                       size="sm"
                       variant="destructive"
-                      disabled={isBulkProcessing}
-                      onClick={() => executeBulk("hard-delete", selectedIds, refresh, clearSelection)}
+                      disabled={bulkState.isProcessing || selectedIds.length === 0}
+                      onClick={() => executeBulk("hard-delete", selectedIds, selectedRows, refresh, clearSelection)}
                     >
                       <AlertTriangle className="mr-2 h-5 w-5" />
-                      Xóa vĩnh viễn
+                      {USER_LABELS.HARD_DELETE_SELECTED(selectedIds.length)}
                     </Button>
                   )}
                   <Button type="button" size="sm" variant="ghost" onClick={clearSelection}>
-                    Bỏ chọn
+                    {USER_LABELS.CLEAR_SELECTION}
                   </Button>
                 </div>
               </div>
             )
           : undefined,
-        rowActions: canRestore || canManage
-          ? (row, { refresh }) => (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-8 w-8">
-                    <MoreHorizontal className="h-5 w-5" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => router.push(`/admin/users/${row.id}`)}>
-                    <Eye className="mr-2 h-5 w-5" />
-                    Xem chi tiết
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleRestoreSingle(row, refresh)}>
-                    <RotateCcw className="mr-2 h-5 w-5" />
-                    Khôi phục
-                  </DropdownMenuItem>
-                  {canManage && (
-                    <DropdownMenuItem
-                      onClick={() => handleHardDeleteSingle(row, refresh)}
-                      disabled={row.email === PROTECTED_SUPER_ADMIN_EMAIL}
-                      className="text-destructive focus:text-destructive disabled:opacity-50"
-                    >
-                      <AlertTriangle className="mr-2 h-5 w-5" />
-                      Xóa vĩnh viễn
-                      {row.email === PROTECTED_SUPER_ADMIN_EMAIL && " (Không được phép)"}
-                    </DropdownMenuItem>
-                  )}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )
-          : (row) => (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => router.push(`/admin/users/${row.id}`)}
-              >
-                <Eye className="mr-2 h-5 w-5" />
-                Xem
-              </Button>
-            ),
-        emptyMessage: "Không có người dùng đã xóa",
+        rowActions: (row) => renderDeletedRowActions(row),
+        emptyMessage: USER_LABELS.NO_DELETED_USERS,
       },
     ]
 
     return modes
-  }, [canDelete, canRestore, canManage, deletedColumns, executeBulk, handleDeleteSingle, handleRestoreSingle, handleHardDeleteSingle, isBulkProcessing, router])
+  }, [
+    canDelete,
+    canRestore,
+    canManage,
+    deletedColumns,
+    executeBulk,
+    bulkState.isProcessing,
+    renderActiveRowActions,
+    renderDeletedRowActions,
+  ])
 
   const initialDataByView = useMemo(
     () => (initialData ? { active: initialData } : undefined),
     [initialData],
   )
 
-  const handleDeleteConfirm = useCallback(async () => {
-    if (!deleteConfirm) return
-    try {
-      await deleteConfirm.onConfirm()
-    } catch {
-      // Error already handled in onConfirm
-    } finally {
-      setDeleteConfirm(null)
-    }
-  }, [deleteConfirm])
-
   const getDeleteConfirmTitle = () => {
     if (!deleteConfirm) return ""
     if (deleteConfirm.type === "hard") {
-      return deleteConfirm.bulkIds
-        ? `Xóa vĩnh viễn ${deleteConfirm.bulkIds.length} người dùng?`
-        : `Xóa vĩnh viễn người dùng ${deleteConfirm.row?.email}?`
+      return USER_CONFIRM_MESSAGES.HARD_DELETE_TITLE(
+        deleteConfirm.bulkIds?.length,
+      )
     }
-    return deleteConfirm.bulkIds
-      ? `Xóa ${deleteConfirm.bulkIds.length} người dùng?`
-      : `Xóa người dùng ${deleteConfirm.row?.email}?`
+    if (deleteConfirm.type === "restore") {
+      return USER_CONFIRM_MESSAGES.RESTORE_TITLE(
+        deleteConfirm.bulkIds?.length,
+      )
+    }
+    return USER_CONFIRM_MESSAGES.DELETE_TITLE(deleteConfirm.bulkIds?.length)
   }
 
   const getDeleteConfirmDescription = () => {
     if (!deleteConfirm) return ""
     if (deleteConfirm.type === "hard") {
-      return deleteConfirm.bulkIds
-        ? `Hành động này sẽ xóa vĩnh viễn ${deleteConfirm.bulkIds.length} người dùng khỏi hệ thống. Dữ liệu sẽ không thể khôi phục. Bạn có chắc chắn muốn tiếp tục?`
-        : `Hành động này sẽ xóa vĩnh viễn người dùng "${deleteConfirm.row?.email}" khỏi hệ thống. Dữ liệu sẽ không thể khôi phục. Bạn có chắc chắn muốn tiếp tục?`
+      return USER_CONFIRM_MESSAGES.HARD_DELETE_DESCRIPTION(
+        deleteConfirm.bulkIds?.length,
+        deleteConfirm.row?.email,
+      )
     }
-    return deleteConfirm.bulkIds
-      ? `Bạn có chắc chắn muốn xóa ${deleteConfirm.bulkIds.length} người dùng? Họ sẽ được chuyển vào thùng rác và có thể khôi phục sau.`
-      : `Bạn có chắc chắn muốn xóa người dùng "${deleteConfirm.row?.email}"? Người dùng sẽ được chuyển vào thùng rác và có thể khôi phục sau.`
+    if (deleteConfirm.type === "restore") {
+      return USER_CONFIRM_MESSAGES.RESTORE_DESCRIPTION(
+        deleteConfirm.bulkIds?.length,
+        deleteConfirm.row?.email,
+      )
+    }
+    return USER_CONFIRM_MESSAGES.DELETE_DESCRIPTION(
+      deleteConfirm.bulkIds?.length,
+      deleteConfirm.row?.email,
+    )
   }
 
   const headerActions = canCreate ? (
@@ -709,14 +445,14 @@ export function UsersTableClient({
       className="h-8 px-3 text-xs sm:text-sm"
     >
       <Plus className="mr-2 h-5 w-5" />
-      Thêm mới
+      {USER_LABELS.ADD_NEW}
     </Button>
   ) : undefined
 
   return (
     <>
       <ResourceTableClient<UserRow>
-        title="Quản lý người dùng"
+        title={USER_LABELS.MANAGE_USERS}
         baseColumns={baseColumns}
         loader={loader}
         viewModes={viewModes}
@@ -725,7 +461,17 @@ export function UsersTableClient({
         fallbackRowCount={6}
         headerActions={headerActions}
         onRefreshReady={(refresh) => {
-          tableRefreshRef.current = refresh
+          const wrapped = () => {
+            queryClient.invalidateQueries({ queryKey: queryKeys.adminUsers.all(), refetchType: "none" })
+            refresh()
+          }
+          tableSoftRefreshRef.current = refresh
+          tableRefreshRef.current = wrapped
+
+          if (pendingRealtimeRefreshRef.current) {
+            pendingRealtimeRefreshRef.current = false
+            refresh()
+          }
         }}
       />
 
@@ -738,11 +484,26 @@ export function UsersTableClient({
           }}
           title={getDeleteConfirmTitle()}
           description={getDeleteConfirmDescription()}
-          variant={deleteConfirm.type === "hard" ? "destructive" : "destructive"}
-          confirmLabel={deleteConfirm.type === "hard" ? "Xóa vĩnh viễn" : "Xóa"}
-          cancelLabel="Hủy"
+          variant={deleteConfirm.type === "hard" ? "destructive" : deleteConfirm.type === "restore" ? "default" : "destructive"}
+          confirmLabel={
+            deleteConfirm.type === "hard" 
+              ? USER_CONFIRM_MESSAGES.HARD_DELETE_LABEL 
+              : deleteConfirm.type === "restore"
+              ? USER_CONFIRM_MESSAGES.RESTORE_LABEL
+              : USER_CONFIRM_MESSAGES.CONFIRM_LABEL
+          }
+          cancelLabel={USER_CONFIRM_MESSAGES.CANCEL_LABEL}
           onConfirm={handleDeleteConfirm}
-          isLoading={isBulkProcessing}
+          isLoading={
+            bulkState.isProcessing ||
+            (deleteConfirm.row
+              ? deleteConfirm.type === "restore"
+                ? restoringUsers.has(deleteConfirm.row.id)
+                : deleteConfirm.type === "hard"
+                ? hardDeletingUsers.has(deleteConfirm.row.id)
+                : deletingUsers.has(deleteConfirm.row.id)
+              : false)
+          }
         />
       )}
 

@@ -11,6 +11,7 @@ import {
   ensurePermission,
   type AuthContext,
 } from "@/features/admin/resources/server"
+import { emitUserUpsert, emitUserRemove } from "./events"
 
 // Re-export for backward compatibility with API routes
 export { ApplicationError, ForbiddenError, NotFoundError, type AuthContext }
@@ -104,6 +105,9 @@ export async function createUser(ctx: AuthContext, input: CreateUserInput): Prom
       name: user.name,
     }
   )
+
+  // Emit socket event
+  await emitUserUpsert(user.id, null)
 
   return sanitizeUser(user)
 }
@@ -331,6 +335,10 @@ export async function updateUser(ctx: AuthContext, id: string, input: UpdateUser
     })
   }
 
+  // Emit socket event
+  const previousStatus: "active" | "deleted" = existing.deletedAt ? "deleted" : "active"
+  await emitUserUpsert(user.id, previousStatus)
+
   return sanitizeUser(user)
 }
 
@@ -365,6 +373,9 @@ export async function softDeleteUser(ctx: AuthContext, id: string): Promise<void
       name: user.name,
     }
   )
+
+  // Emit socket event
+  await emitUserUpsert(id, "active")
 }
 
 export async function bulkSoftDeleteUsers(ctx: AuthContext, ids: string[]): Promise<BulkActionResult> {
@@ -409,7 +420,7 @@ export async function bulkSoftDeleteUsers(ctx: AuthContext, ids: string[]): Prom
     },
   })
 
-  // Tạo system notifications cho từng user
+  // Tạo system notifications cho từng user và emit socket events
   for (const user of users.filter((u) => u.email !== PROTECTED_SUPER_ADMIN_EMAIL)) {
     await notifySuperAdminsOfUserAction(
       "delete",
@@ -420,6 +431,8 @@ export async function bulkSoftDeleteUsers(ctx: AuthContext, ids: string[]): Prom
         name: user.name,
       }
     )
+    // Emit socket event cho từng user
+    await emitUserUpsert(user.id, "active")
   }
 
   return { count: result.count }
@@ -451,6 +464,9 @@ export async function restoreUser(ctx: AuthContext, id: string): Promise<void> {
       name: user.name,
     }
   )
+
+  // Emit socket event
+  await emitUserUpsert(id, "deleted")
 }
 
 export async function bulkRestoreUsers(ctx: AuthContext, ids: string[]): Promise<BulkActionResult> {
@@ -480,7 +496,7 @@ export async function bulkRestoreUsers(ctx: AuthContext, ids: string[]): Promise
     },
   })
 
-  // Tạo system notifications cho từng user
+  // Tạo system notifications cho từng user và emit socket events
   for (const user of users) {
     await notifySuperAdminsOfUserAction(
       "restore",
@@ -491,6 +507,8 @@ export async function bulkRestoreUsers(ctx: AuthContext, ids: string[]): Promise
         name: user.name,
       }
     )
+    // Emit socket event cho từng user
+    await emitUserUpsert(user.id, "deleted")
   }
 
   return { count: result.count }
@@ -504,7 +522,7 @@ export async function hardDeleteUser(ctx: AuthContext, id: string): Promise<void
   // Lấy thông tin user trước khi delete để kiểm tra và tạo notification
   const user = await prisma.user.findUnique({
     where: { id },
-    select: { id: true, email: true, name: true },
+    select: { id: true, email: true, name: true, deletedAt: true },
   })
 
   if (!user) {
@@ -530,6 +548,10 @@ export async function hardDeleteUser(ctx: AuthContext, id: string): Promise<void
       name: user.name,
     }
   )
+
+  // Emit socket event - cần lấy previousStatus trước khi delete
+  const previousStatus: "active" | "deleted" = user.deletedAt ? "deleted" : "active"
+  emitUserRemove(id, previousStatus)
 }
 
 export async function bulkHardDeleteUsers(ctx: AuthContext, ids: string[]): Promise<BulkActionResult> {
@@ -546,7 +568,7 @@ export async function bulkHardDeleteUsers(ctx: AuthContext, ids: string[]): Prom
     where: {
       id: { in: ids },
     },
-    select: { id: true, email: true, name: true },
+    select: { id: true, email: true, name: true, deletedAt: true },
   })
 
   // Kiểm tra xem có super admin trong danh sách không
@@ -570,7 +592,7 @@ export async function bulkHardDeleteUsers(ctx: AuthContext, ids: string[]): Prom
     },
   })
 
-  // Tạo system notifications cho từng user
+  // Tạo system notifications cho từng user và emit socket events
   for (const user of users.filter((u) => u.email !== PROTECTED_SUPER_ADMIN_EMAIL)) {
     await notifySuperAdminsOfUserAction(
       "hard-delete",
@@ -581,6 +603,9 @@ export async function bulkHardDeleteUsers(ctx: AuthContext, ids: string[]): Prom
         name: user.name,
       }
     )
+    // Emit socket event cho từng user - cần previousStatus trước khi delete
+    const previousStatus: "active" | "deleted" = user.deletedAt ? "deleted" : "active"
+    emitUserRemove(user.id, previousStatus)
   }
 
   return { count: result.count }
