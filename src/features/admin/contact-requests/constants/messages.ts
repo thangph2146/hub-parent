@@ -63,6 +63,13 @@ export const CONTACT_REQUEST_LABELS = {
   HARD_DELETE: "Xóa vĩnh viễn",
   CLEAR_SELECTION: "Bỏ chọn",
   
+  // Loading labels
+  MARKING_READ: "Đang đánh dấu đã đọc...",
+  MARKING_UNREAD: "Đang đánh dấu chưa đọc...",
+  DELETING: "Đang xóa...",
+  RESTORING: "Đang khôi phục...",
+  HARD_DELETING: "Đang xóa vĩnh viễn...",
+  
   // View mode labels
   ACTIVE_VIEW: "Đang hoạt động",
   DELETED_VIEW: "Đã xóa",
@@ -75,6 +82,9 @@ export const CONTACT_REQUEST_LABELS = {
   // Selection messages
   SELECTED_CONTACT_REQUESTS: (count: number) => `Đã chọn ${count} yêu cầu liên hệ`,
   SELECTED_DELETED_CONTACT_REQUESTS: (count: number) => `Đã chọn ${count} yêu cầu liên hệ (đã xóa)`,
+  DELETE_SELECTED: (count: number) => `Xóa đã chọn (${count})`,
+  RESTORE_SELECTED: (count: number) => `Khôi phục (${count})`,
+  HARD_DELETE_SELECTED: (count: number) => `Xóa vĩnh viễn (${count})`,
   
   // Table headers
   MANAGE_CONTACT_REQUESTS: "Quản lý yêu cầu liên hệ",
@@ -90,12 +100,33 @@ export const CONTACT_REQUEST_LABELS = {
 } as const
 
 export const CONTACT_REQUEST_CONFIRM_MESSAGES = {
+  MARK_READ_TITLE: (count?: number, subject?: string) => 
+    count ? `Đánh dấu đã đọc ${count} yêu cầu liên hệ?` : `Đánh dấu đã đọc yêu cầu liên hệ "${subject}"?`,
+  MARK_READ_DESCRIPTION: (count?: number, subject?: string) =>
+    count
+      ? `Bạn có chắc chắn muốn đánh dấu ${count} yêu cầu liên hệ là đã đọc?`
+      : `Bạn có chắc chắn muốn đánh dấu yêu cầu liên hệ "${subject}" là đã đọc?`,
+  
+  MARK_UNREAD_TITLE: (count?: number, subject?: string) => 
+    count ? `Đánh dấu chưa đọc ${count} yêu cầu liên hệ?` : `Đánh dấu chưa đọc yêu cầu liên hệ "${subject}"?`,
+  MARK_UNREAD_DESCRIPTION: (count?: number, subject?: string) =>
+    count
+      ? `Bạn có chắc chắn muốn đánh dấu ${count} yêu cầu liên hệ là chưa đọc?`
+      : `Bạn có chắc chắn muốn đánh dấu yêu cầu liên hệ "${subject}" là chưa đọc?`,
+  
   DELETE_TITLE: (count?: number, subject?: string) => 
     count ? `Xóa ${count} yêu cầu liên hệ?` : `Xóa yêu cầu liên hệ "${subject}"?`,
   DELETE_DESCRIPTION: (count?: number, subject?: string) =>
     count
       ? `Bạn có chắc chắn muốn xóa ${count} yêu cầu liên hệ? Chúng sẽ được chuyển vào thùng rác và có thể khôi phục sau.`
       : `Bạn có chắc chắn muốn xóa yêu cầu liên hệ "${subject}"? Yêu cầu sẽ được chuyển vào thùng rác và có thể khôi phục sau.`,
+  
+  RESTORE_TITLE: (count?: number, subject?: string) =>
+    count ? `Khôi phục ${count} yêu cầu liên hệ?` : `Khôi phục yêu cầu liên hệ "${subject}"?`,
+  RESTORE_DESCRIPTION: (count?: number, subject?: string) =>
+    count
+      ? `Bạn có chắc chắn muốn khôi phục ${count} yêu cầu liên hệ? Chúng sẽ được chuyển về trạng thái hoạt động.`
+      : `Bạn có chắc chắn muốn khôi phục yêu cầu liên hệ "${subject}"? Yêu cầu sẽ được chuyển về trạng thái hoạt động.`,
   
   HARD_DELETE_TITLE: (count?: number, subject?: string) =>
     count ? `Xóa vĩnh viễn ${count} yêu cầu liên hệ?` : `Xóa vĩnh viễn yêu cầu liên hệ "${subject}"?`,
@@ -104,7 +135,10 @@ export const CONTACT_REQUEST_CONFIRM_MESSAGES = {
       ? `Hành động này sẽ xóa vĩnh viễn ${count} yêu cầu liên hệ khỏi hệ thống. Dữ liệu sẽ không thể khôi phục. Bạn có chắc chắn muốn tiếp tục?`
       : `Hành động này sẽ xóa vĩnh viễn yêu cầu liên hệ "${subject}" khỏi hệ thống. Dữ liệu sẽ không thể khôi phục. Bạn có chắc chắn muốn tiếp tục?`,
   
+  MARK_READ_LABEL: "Đánh dấu đã đọc",
+  MARK_UNREAD_LABEL: "Đánh dấu chưa đọc",
   CONFIRM_LABEL: "Xóa",
+  RESTORE_LABEL: "Khôi phục",
   HARD_DELETE_LABEL: "Xóa vĩnh viễn",
   CANCEL_LABEL: "Hủy",
 } as const

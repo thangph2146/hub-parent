@@ -38,7 +38,12 @@ export function useContactRequestActions({
   const queryClient = useQueryClient()
   const [isBulkProcessing, setIsBulkProcessing] = useState(false)
   const isBulkProcessingRef = useRef(false)
+  const [markingReadRequests, setMarkingReadRequests] = useState<Set<string>>(new Set())
+  const [markingUnreadRequests, setMarkingUnreadRequests] = useState<Set<string>>(new Set())
   const [togglingRequests, setTogglingRequests] = useState<Set<string>>(new Set())
+  const [deletingRequests, setDeletingRequests] = useState<Set<string>>(new Set())
+  const [restoringRequests, setRestoringRequests] = useState<Set<string>>(new Set())
+  const [hardDeletingRequests, setHardDeletingRequests] = useState<Set<string>>(new Set())
 
   const bulkState: BulkProcessingState = {
     isProcessing: isBulkProcessing,
@@ -64,7 +69,10 @@ export function useContactRequestActions({
         return
       }
 
+      // Track loading state
+      const setLoadingState = newStatus ? setMarkingReadRequests : setMarkingUnreadRequests
       setTogglingRequests((prev) => new Set(prev).add(row.id))
+      setLoadingState((prev) => new Set(prev).add(row.id))
 
       // Optimistic update chỉ khi không có socket (fallback)
       if (!isSocketConnected) {
@@ -107,6 +115,11 @@ export function useContactRequestActions({
         }
       } finally {
         setTogglingRequests((prev) => {
+          const next = new Set(prev)
+          next.delete(row.id)
+          return next
+        })
+        setLoadingState((prev) => {
           const next = new Set(prev)
           next.delete(row.id)
           return next
@@ -154,6 +167,15 @@ export function useContactRequestActions({
 
       if (!actionConfig.permission) return
 
+      // Track loading state
+      const setLoadingState = action === "delete"
+        ? setDeletingRequests
+        : action === "restore"
+        ? setRestoringRequests
+        : setHardDeletingRequests
+
+      setLoadingState((prev) => new Set(prev).add(row.id))
+
       try {
         if (actionConfig.method === "delete") {
           await apiClient.delete(actionConfig.endpoint)
@@ -172,6 +194,12 @@ export function useContactRequestActions({
         } else {
           throw error
         }
+      } finally {
+        setLoadingState((prev) => {
+          const next = new Set(prev)
+          next.delete(row.id)
+          return next
+        })
       }
     },
     [canDelete, canRestore, canManage, isSocketConnected, showFeedback],
@@ -226,7 +254,12 @@ export function useContactRequestActions({
     handleToggleRead,
     executeSingleAction,
     executeBulkAction,
+    markingReadRequests,
+    markingUnreadRequests,
     togglingRequests,
+    deletingRequests,
+    restoringRequests,
+    hardDeletingRequests,
     bulkState,
   }
 }

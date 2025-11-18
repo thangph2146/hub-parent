@@ -47,7 +47,12 @@ export function ContactRequestsTableClient({
     handleToggleRead,
     executeSingleAction,
     executeBulkAction,
+    markingReadRequests,
+    markingUnreadRequests,
     togglingRequests,
+    deletingRequests,
+    restoringRequests,
+    hardDeletingRequests,
     bulkState,
   } = useContactRequestActions({
     canDelete,
@@ -60,11 +65,19 @@ export function ContactRequestsTableClient({
 
   const handleToggleReadWithRefresh = useCallback(
     (row: ContactRequestRow, checked: boolean) => {
-      if (tableRefreshRef.current) {
-        handleToggleRead(row, checked, tableRefreshRef.current)
-      }
+      if (!canUpdate) return
+      setDeleteConfirm({
+        open: true,
+        type: checked ? "mark-read" : "mark-unread",
+        row,
+        onConfirm: async () => {
+          if (tableRefreshRef.current) {
+            await handleToggleRead(row, checked, tableRefreshRef.current)
+          }
+        },
+      })
     },
-    [handleToggleRead],
+    [canUpdate, handleToggleRead, setDeleteConfirm],
   )
 
   const { baseColumns, deletedColumns } = useContactRequestColumns({
@@ -107,9 +120,16 @@ export function ContactRequestsTableClient({
   const handleRestoreSingle = useCallback(
     (row: ContactRequestRow) => {
       if (!canRestore) return
-      executeSingleAction("restore", row, tableRefreshRef.current || (() => {}))
+      setDeleteConfirm({
+        open: true,
+        type: "restore",
+        row,
+        onConfirm: async () => {
+          await executeSingleAction("restore", row, tableRefreshRef.current || (() => {}))
+        },
+      })
     },
-    [canRestore, executeSingleAction],
+    [canRestore, executeSingleAction, setDeleteConfirm],
   )
 
   const { renderActiveRowActions, renderDeletedRowActions } = useContactRequestRowActions({
@@ -121,40 +141,13 @@ export function ContactRequestsTableClient({
     onDelete: handleDeleteSingle,
     onHardDelete: handleHardDeleteSingle,
     onRestore: handleRestoreSingle,
+    markingReadRequests,
+    markingUnreadRequests,
+    deletingRequests,
+    restoringRequests,
+    hardDeletingRequests,
   })
 
-  // Handle realtime updates từ socket bridge
-  useEffect(() => {
-    if (cacheVersion === 0) return
-    if (tableSoftRefreshRef.current) {
-      tableSoftRefreshRef.current()
-      pendingRealtimeRefreshRef.current = false
-    } else {
-      pendingRealtimeRefreshRef.current = true
-    }
-  }, [cacheVersion])
-
-  // Set initialData vào React Query cache để socket bridge có thể cập nhật
-  useEffect(() => {
-    if (!initialData) return
-    
-    // Set initial data với params từ initialData
-    const params: AdminContactRequestsListParams = {
-      status: "active",
-      page: initialData.page,
-      limit: initialData.limit,
-      search: undefined,
-      filters: undefined,
-    }
-    const queryKey = queryKeys.adminContactRequests.list(params)
-    queryClient.setQueryData(queryKey, initialData)
-    
-    logger.debug("Set initial data to cache", {
-      queryKey: queryKey.slice(0, 2),
-      rowsCount: initialData.rows.length,
-      total: initialData.total,
-    })
-  }, [initialData, queryClient])
 
   const loader = useCallback(
     async (query: DataTableQueryState, view: ResourceViewMode<ContactRequestRow>) => {
@@ -236,7 +229,7 @@ export function ContactRequestsTableClient({
                       }}
                     >
                       <Trash2 className="mr-2 h-5 w-5" />
-                      {CONTACT_REQUEST_LABELS.DELETE} ({selectedIds.length})
+                      {CONTACT_REQUEST_LABELS.DELETE_SELECTED(selectedIds.length)}
                     </Button>
                   )}
                   {canManage && (
@@ -257,7 +250,7 @@ export function ContactRequestsTableClient({
                       }}
                     >
                       <AlertTriangle className="mr-2 h-5 w-5" />
-                      {CONTACT_REQUEST_LABELS.HARD_DELETE} ({selectedIds.length})
+                      {CONTACT_REQUEST_LABELS.HARD_DELETE_SELECTED(selectedIds.length)}
                     </Button>
                   )}
                   <Button type="button" size="sm" variant="ghost" onClick={clearSelection}>
@@ -268,7 +261,7 @@ export function ContactRequestsTableClient({
             )
           : undefined,
         rowActions: (row) => renderActiveRowActions(row),
-        emptyMessage: "Không tìm thấy yêu cầu liên hệ mới nào",
+        emptyMessage: CONTACT_REQUEST_LABELS.NO_CONTACT_REQUESTS,
       },
       {
         id: "active",
@@ -301,7 +294,7 @@ export function ContactRequestsTableClient({
                       }}
                     >
                       <Trash2 className="mr-2 h-5 w-5" />
-                      {CONTACT_REQUEST_LABELS.DELETE} ({selectedIds.length})
+                      {CONTACT_REQUEST_LABELS.DELETE_SELECTED(selectedIds.length)}
                     </Button>
                   )}
                   {canManage && (
@@ -322,7 +315,7 @@ export function ContactRequestsTableClient({
                       }}
                     >
                       <AlertTriangle className="mr-2 h-5 w-5" />
-                      {CONTACT_REQUEST_LABELS.HARD_DELETE} ({selectedIds.length})
+                      {CONTACT_REQUEST_LABELS.HARD_DELETE_SELECTED(selectedIds.length)}
                     </Button>
                   )}
                   <Button type="button" size="sm" variant="ghost" onClick={clearSelection}>
@@ -354,10 +347,19 @@ export function ContactRequestsTableClient({
                       size="sm"
                       variant="outline"
                       disabled={bulkState.isProcessing || selectedIds.length === 0}
-                      onClick={() => executeBulkAction("restore", selectedIds, refresh, clearSelection)}
+                      onClick={() => {
+                        setDeleteConfirm({
+                          open: true,
+                          type: "restore",
+                          bulkIds: selectedIds,
+                          onConfirm: async () => {
+                            await executeBulkAction("restore", selectedIds, refresh, clearSelection)
+                          },
+                        })
+                      }}
                     >
                       <RotateCcw className="mr-2 h-5 w-5" />
-                      {CONTACT_REQUEST_LABELS.RESTORE} ({selectedIds.length})
+                      {CONTACT_REQUEST_LABELS.RESTORE_SELECTED(selectedIds.length)}
                     </Button>
                   )}
                   {canManage && (
@@ -378,7 +380,7 @@ export function ContactRequestsTableClient({
                       }}
                     >
                       <AlertTriangle className="mr-2 h-5 w-5" />
-                      {CONTACT_REQUEST_LABELS.HARD_DELETE} ({selectedIds.length})
+                      {CONTACT_REQUEST_LABELS.HARD_DELETE_SELECTED(selectedIds.length)}
                     </Button>
                   )}
                   <Button type="button" size="sm" variant="ghost" onClick={clearSelection}>
@@ -413,6 +415,103 @@ export function ContactRequestsTableClient({
     [initialData],
   )
 
+  const getDeleteConfirmTitle = () => {
+    if (!deleteConfirm) return ""
+    if (deleteConfirm.type === "hard") {
+      return CONTACT_REQUEST_CONFIRM_MESSAGES.HARD_DELETE_TITLE(
+        deleteConfirm.bulkIds?.length,
+        deleteConfirm.row?.subject,
+      )
+    }
+    if (deleteConfirm.type === "restore") {
+      return CONTACT_REQUEST_CONFIRM_MESSAGES.RESTORE_TITLE(
+        deleteConfirm.bulkIds?.length,
+        deleteConfirm.row?.subject,
+      )
+    }
+    if (deleteConfirm.type === "mark-read") {
+      return CONTACT_REQUEST_CONFIRM_MESSAGES.MARK_READ_TITLE(
+        deleteConfirm.bulkIds?.length,
+        deleteConfirm.row?.subject,
+      )
+    }
+    if (deleteConfirm.type === "mark-unread") {
+      return CONTACT_REQUEST_CONFIRM_MESSAGES.MARK_UNREAD_TITLE(
+        deleteConfirm.bulkIds?.length,
+        deleteConfirm.row?.subject,
+      )
+    }
+    return CONTACT_REQUEST_CONFIRM_MESSAGES.DELETE_TITLE(
+      deleteConfirm.bulkIds?.length,
+      deleteConfirm.row?.subject,
+    )
+  }
+
+  const getDeleteConfirmDescription = () => {
+    if (!deleteConfirm) return ""
+    if (deleteConfirm.type === "hard") {
+      return CONTACT_REQUEST_CONFIRM_MESSAGES.HARD_DELETE_DESCRIPTION(
+        deleteConfirm.bulkIds?.length,
+        deleteConfirm.row?.subject,
+      )
+    }
+    if (deleteConfirm.type === "restore") {
+      return CONTACT_REQUEST_CONFIRM_MESSAGES.RESTORE_DESCRIPTION(
+        deleteConfirm.bulkIds?.length,
+        deleteConfirm.row?.subject,
+      )
+    }
+    if (deleteConfirm.type === "mark-read") {
+      return CONTACT_REQUEST_CONFIRM_MESSAGES.MARK_READ_DESCRIPTION(
+        deleteConfirm.bulkIds?.length,
+        deleteConfirm.row?.subject,
+      )
+    }
+    if (deleteConfirm.type === "mark-unread") {
+      return CONTACT_REQUEST_CONFIRM_MESSAGES.MARK_UNREAD_DESCRIPTION(
+        deleteConfirm.bulkIds?.length,
+        deleteConfirm.row?.subject,
+      )
+    }
+    return CONTACT_REQUEST_CONFIRM_MESSAGES.DELETE_DESCRIPTION(
+      deleteConfirm.bulkIds?.length,
+      deleteConfirm.row?.subject,
+    )
+  }
+
+  // Handle realtime updates từ socket bridge
+  useEffect(() => {
+    if (cacheVersion === 0) return
+    if (tableSoftRefreshRef.current) {
+      tableSoftRefreshRef.current()
+      pendingRealtimeRefreshRef.current = false
+    } else {
+      pendingRealtimeRefreshRef.current = true
+    }
+  }, [cacheVersion])
+
+  // Set initialData vào React Query cache để socket bridge có thể cập nhật
+  useEffect(() => {
+    if (!initialData) return
+    
+    const params: AdminContactRequestsListParams = {
+      status: "active",
+      page: initialData.page,
+      limit: initialData.limit,
+      search: undefined,
+      filters: undefined,
+    }
+    
+    const queryKey = queryKeys.adminContactRequests.list(params)
+    queryClient.setQueryData(queryKey, initialData)
+    
+    logger.debug("Set initial data to cache", {
+      queryKey: queryKey.slice(0, 2),
+      rowsCount: initialData.rows.length,
+      total: initialData.total,
+    })
+  }, [initialData, queryClient])
+
   return (
     <>
       <ResourceTableClient<ContactRequestRow>
@@ -438,54 +537,63 @@ export function ContactRequestsTableClient({
         }}
       />
 
-      <ConfirmDialog
-        open={deleteConfirm?.open ?? false}
-        onOpenChange={(open) => {
-          if (!open) {
-            setDeleteConfirm(null)
+      {/* Delete Confirmation Dialog */}
+      {deleteConfirm && (
+        <ConfirmDialog
+          open={deleteConfirm.open}
+          onOpenChange={(open) => {
+            if (!open) setDeleteConfirm(null)
+          }}
+          title={getDeleteConfirmTitle()}
+          description={getDeleteConfirmDescription()}
+          variant={
+            deleteConfirm.type === "hard" || deleteConfirm.type === "soft"
+              ? "destructive"
+              : deleteConfirm.type === "restore" || deleteConfirm.type === "mark-read" || deleteConfirm.type === "mark-unread"
+              ? "default"
+              : "destructive"
           }
-        }}
-        title={
-          deleteConfirm
-            ? deleteConfirm.type === "hard"
-              ? CONTACT_REQUEST_CONFIRM_MESSAGES.HARD_DELETE_TITLE(
-                  deleteConfirm.bulkIds?.length,
-                  deleteConfirm.row?.subject
-                )
-              : CONTACT_REQUEST_CONFIRM_MESSAGES.DELETE_TITLE(
-                  deleteConfirm.bulkIds?.length,
-                  deleteConfirm.row?.subject
-                )
-            : ""
-        }
-        description={
-          deleteConfirm
-            ? deleteConfirm.type === "hard"
-              ? CONTACT_REQUEST_CONFIRM_MESSAGES.HARD_DELETE_DESCRIPTION(
-                  deleteConfirm.bulkIds?.length,
-                  deleteConfirm.row?.subject
-                )
-              : CONTACT_REQUEST_CONFIRM_MESSAGES.DELETE_DESCRIPTION(
-                  deleteConfirm.bulkIds?.length,
-                  deleteConfirm.row?.subject
-                )
-            : ""
-        }
-        confirmLabel={deleteConfirm ? (deleteConfirm.type === "hard" ? CONTACT_REQUEST_CONFIRM_MESSAGES.HARD_DELETE_LABEL : CONTACT_REQUEST_CONFIRM_MESSAGES.CONFIRM_LABEL) : CONTACT_REQUEST_CONFIRM_MESSAGES.CONFIRM_LABEL}
-        cancelLabel={CONTACT_REQUEST_CONFIRM_MESSAGES.CANCEL_LABEL}
-        variant="destructive"
-        onConfirm={handleDeleteConfirm}
-        isLoading={bulkState.isProcessing}
-      />
+          confirmLabel={
+            deleteConfirm.type === "hard"
+              ? CONTACT_REQUEST_CONFIRM_MESSAGES.HARD_DELETE_LABEL
+              : deleteConfirm.type === "restore"
+              ? CONTACT_REQUEST_CONFIRM_MESSAGES.RESTORE_LABEL
+              : deleteConfirm.type === "mark-read"
+              ? CONTACT_REQUEST_CONFIRM_MESSAGES.MARK_READ_LABEL
+              : deleteConfirm.type === "mark-unread"
+              ? CONTACT_REQUEST_CONFIRM_MESSAGES.MARK_UNREAD_LABEL
+              : CONTACT_REQUEST_CONFIRM_MESSAGES.CONFIRM_LABEL
+          }
+          cancelLabel={CONTACT_REQUEST_CONFIRM_MESSAGES.CANCEL_LABEL}
+          onConfirm={handleDeleteConfirm}
+          isLoading={
+            bulkState.isProcessing ||
+            (deleteConfirm.row
+              ? deleteConfirm.type === "restore"
+                ? restoringRequests.has(deleteConfirm.row.id)
+                : deleteConfirm.type === "hard"
+                ? hardDeletingRequests.has(deleteConfirm.row.id)
+                : deleteConfirm.type === "mark-read"
+                ? markingReadRequests.has(deleteConfirm.row.id)
+                : deleteConfirm.type === "mark-unread"
+                ? markingUnreadRequests.has(deleteConfirm.row.id)
+                : deletingRequests.has(deleteConfirm.row.id)
+              : false)
+          }
+        />
+      )}
 
-      <FeedbackDialog
-        open={feedback?.open ?? false}
-        onOpenChange={handleFeedbackOpenChange}
-        variant={feedback?.variant ?? "success"}
-        title={feedback?.title ?? ""}
-        description={feedback?.description}
-        details={feedback?.details}
-      />
+      {/* Feedback Dialog */}
+      {feedback && (
+        <FeedbackDialog
+          open={feedback.open}
+          onOpenChange={handleFeedbackOpenChange}
+          variant={feedback.variant}
+          title={feedback.title}
+          description={feedback.description}
+          details={feedback.details}
+        />
+      )}
     </>
   )
 }

@@ -7,7 +7,7 @@ import type { ContactRequestRow } from "../types"
 
 interface DeleteConfirmState {
   open: boolean
-  type: "soft" | "hard"
+  type: "soft" | "hard" | "restore" | "mark-read" | "mark-unread"
   row?: ContactRequestRow
   bulkIds?: string[]
   onConfirm: () => Promise<void>
