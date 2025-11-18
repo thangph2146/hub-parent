@@ -60,6 +60,10 @@ export interface AdminRolesListParams extends BaseListParams {
   status?: "active" | "deleted" | "all"
 }
 
+export interface AdminTagsListParams extends BaseListParams {
+  status?: "active" | "deleted" | "all"
+}
+
 /**
  * Helper để tạo query key với optional params
  */
@@ -239,6 +243,22 @@ export const queryKeys = {
      */
     list: (params: AdminStudentsListParams): readonly unknown[] => {
       return ["adminStudents", normalizeListParams(params)]
+    },
+  },
+
+  /**
+   * Admin Tags query keys
+   */
+  adminTags: {
+    /**
+     * Tất cả admin tags queries
+     */
+    all: (): readonly unknown[] => ["adminTags"],
+    /**
+     * Admin tags list với normalized params
+     */
+    list: (params: AdminTagsListParams): readonly unknown[] => {
+      return ["adminTags", normalizeListParams(params)]
     },
   },
 } as const

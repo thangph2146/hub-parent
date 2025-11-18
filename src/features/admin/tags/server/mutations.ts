@@ -17,6 +17,7 @@ import {
   ensurePermission,
   type AuthContext,
 } from "@/features/admin/resources/server"
+import { emitTagUpsert, emitTagRemove } from "./events"
 
 // Re-export for backward compatibility with API routes
 export { ApplicationError, ForbiddenError, NotFoundError, type AuthContext }
@@ -69,6 +70,9 @@ export async function createTag(ctx: AuthContext, input: unknown): Promise<Liste
   })
 
   const sanitized = sanitizeTag(tag)
+
+  // Emit socket event for real-time updates
+  await emitTagUpsert(sanitized.id, null)
 
   // Emit notification realtime
   await notifySuperAdminsOfTagAction(
@@ -161,6 +165,12 @@ export async function updateTag(ctx: AuthContext, id: string, input: unknown): P
 
   const sanitized = sanitizeTag(tag)
 
+  // Determine previous status for socket event
+  const previousStatus: "active" | "deleted" | null = existing.deletedAt ? "deleted" : "active"
+
+  // Emit socket event for real-time updates
+  await emitTagUpsert(sanitized.id, previousStatus)
+
   // Emit notification realtime
   await notifySuperAdminsOfTagAction(
     "update",
@@ -190,6 +200,9 @@ export async function softDeleteTag(ctx: AuthContext, id: string): Promise<void>
       deletedAt: new Date(),
     },
   })
+
+  // Emit socket event for real-time updates
+  await emitTagUpsert(id, "active")
 
   // Emit notification realtime
   await notifySuperAdminsOfTagAction(
@@ -229,8 +242,9 @@ export async function bulkSoftDeleteTags(ctx: AuthContext, ids: string[]): Promi
     },
   })
 
-  // Emit notifications realtime cho từng tag
+  // Emit socket events và notifications realtime cho từng tag
   for (const tag of tags) {
+    await emitTagUpsert(tag.id, "active")
     await notifySuperAdminsOfTagAction(
       "delete",
       ctx.actorId,
@@ -255,6 +269,9 @@ export async function restoreTag(ctx: AuthContext, id: string): Promise<void> {
       deletedAt: null,
     },
   })
+
+  // Emit socket event for real-time updates
+  await emitTagUpsert(id, "deleted")
 
   // Emit notification realtime
   await notifySuperAdminsOfTagAction(
@@ -294,8 +311,9 @@ export async function bulkRestoreTags(ctx: AuthContext, ids: string[]): Promise<
     },
   })
 
-  // Emit notifications realtime cho từng tag
+  // Emit socket events và notifications realtime cho từng tag
   for (const tag of tags) {
+    await emitTagUpsert(tag.id, "deleted")
     await notifySuperAdminsOfTagAction(
       "restore",
       ctx.actorId,
@@ -313,16 +331,22 @@ export async function hardDeleteTag(ctx: AuthContext, id: string): Promise<void>
 
   const tag = await prisma.tag.findUnique({
     where: { id },
-    select: { id: true, name: true, slug: true },
+    select: { id: true, name: true, slug: true, deletedAt: true },
   })
 
   if (!tag) {
     throw new NotFoundError("Thẻ tag không tồn tại")
   }
 
+  // Determine previous status before deletion
+  const previousStatus: "active" | "deleted" = tag.deletedAt ? "deleted" : "active"
+
   await prisma.tag.delete({
     where: { id },
   })
+
+  // Emit socket event for real-time updates
+  emitTagRemove(id, previousStatus)
 
   // Emit notification realtime
   await notifySuperAdminsOfTagAction(
@@ -341,12 +365,12 @@ export async function bulkHardDeleteTags(ctx: AuthContext, ids: string[]): Promi
     throw new ApplicationError("Danh sách thẻ tag trống", 400)
   }
 
-  // Lấy thông tin tags trước khi delete để tạo notifications
+  // Lấy thông tin tags trước khi delete để tạo notifications và socket events
   const tags = await prisma.tag.findMany({
     where: {
       id: { in: ids },
     },
-    select: { id: true, name: true, slug: true },
+    select: { id: true, name: true, slug: true, deletedAt: true },
   })
 
   const result = await prisma.tag.deleteMany({
@@ -355,12 +379,14 @@ export async function bulkHardDeleteTags(ctx: AuthContext, ids: string[]): Promi
     },
   })
 
-  // Emit notifications realtime cho từng tag
+  // Emit socket events và notifications realtime cho từng tag
   for (const tag of tags) {
+    const previousStatus: "active" | "deleted" = tag.deletedAt ? "deleted" : "active"
+    emitTagRemove(tag.id, previousStatus)
     await notifySuperAdminsOfTagAction(
       "hard-delete",
       ctx.actorId,
-      tag
+      { id: tag.id, name: tag.name, slug: tag.slug }
     )
   }
 

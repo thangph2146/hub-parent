@@ -1,0 +1,76 @@
+/**
+ * Socket events emission cho tags
+ * Tách logic emit socket events ra khỏi mutations để code sạch hơn
+ */
+
+import { prisma } from "@/lib/database"
+import { getSocketServer } from "@/lib/socket/state"
+import { mapTagRecord, serializeTagForTable } from "./helpers"
+import type { TagRow } from "../types"
+import { logger } from "@/lib/config"
+
+const SUPER_ADMIN_ROOM = "role:super_admin"
+
+export type TagStatus = "active" | "deleted"
+
+function resolveStatusFromRow(row: TagRow): TagStatus {
+  return row.deletedAt ? "deleted" : "active"
+}
+
+async function fetchTagRow(tagId: string): Promise<TagRow | null> {
+  const tag = await prisma.tag.findUnique({
+    where: { id: tagId },
+  })
+
+  if (!tag) {
+    return null
+  }
+
+  const listed = mapTagRecord(tag)
+  return serializeTagForTable(listed)
+}
+
+/**
+ * Emit tag:upsert event
+ * Được gọi khi tag được tạo, cập nhật, restore
+ */
+export async function emitTagUpsert(
+  tagId: string,
+  previousStatus: TagStatus | null,
+): Promise<void> {
+  const io = getSocketServer()
+  if (!io) return
+
+  const row = await fetchTagRow(tagId)
+  if (!row) {
+    if (previousStatus) {
+      emitTagRemove(tagId, previousStatus)
+    }
+    return
+  }
+
+  const newStatus = resolveStatusFromRow(row)
+
+  io.to(SUPER_ADMIN_ROOM).emit("tag:upsert", {
+    tag: row,
+    previousStatus,
+    newStatus,
+  })
+  logger.debug("Socket tag:upsert emitted", { tagId, previousStatus, newStatus })
+}
+
+/**
+ * Emit tag:remove event
+ * Được gọi khi tag bị hard delete
+ */
+export function emitTagRemove(tagId: string, previousStatus: TagStatus): void {
+  const io = getSocketServer()
+  if (!io) return
+
+  io.to(SUPER_ADMIN_ROOM).emit("tag:remove", {
+    id: tagId,
+    previousStatus,
+  })
+  logger.debug("Socket tag:remove emitted", { tagId, previousStatus })
+}
+

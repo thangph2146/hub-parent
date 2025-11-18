@@ -1,43 +1,30 @@
 "use client"
 
-import { useCallback, useMemo, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef } from "react"
 import { useResourceRouter } from "@/hooks/use-resource-segment"
-import { RotateCcw, Trash2, MoreHorizontal, AlertTriangle, Eye, Plus, Pencil } from "lucide-react"
-import type { LucideIcon } from "lucide-react"
+import { Plus, RotateCcw, Trash2, AlertTriangle } from "lucide-react"
 
 import { ConfirmDialog } from "@/components/dialogs"
-import type { DataTableColumn, DataTableQueryState, DataTableResult } from "@/components/tables"
-import { FeedbackDialog, type FeedbackVariant } from "@/components/dialogs"
+import type { DataTableQueryState, DataTableResult } from "@/components/tables"
+import { FeedbackDialog } from "@/components/dialogs"
 import { Button } from "@/components/ui/button"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
 import { ResourceTableClient } from "@/features/admin/resources/components/resource-table.client"
 import type { ResourceViewMode } from "@/features/admin/resources/types"
-import { useDynamicFilterOptions } from "@/features/admin/resources/hooks/use-dynamic-filter-options"
 import { apiClient } from "@/lib/api/axios"
 import { apiRoutes } from "@/lib/api/routes"
+import { useQueryClient } from "@tanstack/react-query"
+import { queryKeys } from "@/lib/query-keys"
+import { useTagsSocketBridge } from "@/features/admin/tags/hooks/use-tags-socket-bridge"
+import { useTagActions } from "@/features/admin/tags/hooks/use-tag-actions"
+import { useTagFeedback } from "@/features/admin/tags/hooks/use-tag-feedback"
+import { useTagDeleteConfirm } from "@/features/admin/tags/hooks/use-tag-delete-confirm"
+import { useTagColumns } from "@/features/admin/tags/utils/columns"
+import { useTagRowActions } from "@/features/admin/tags/utils/row-actions"
 
+import type { AdminTagsListParams } from "@/lib/query-keys"
 import type { TagRow, TagsResponse, TagsTableClientProps } from "../types"
-
-interface FeedbackState {
-  open: boolean
-  variant: FeedbackVariant
-  title: string
-  description?: string
-  details?: string
-}
-
-interface DeleteConfirmState {
-  open: boolean
-  type: "soft" | "hard"
-  row?: TagRow
-  bulkIds?: string[]
-  onConfirm: () => Promise<void>
-}
+import { TAG_CONFIRM_MESSAGES, TAG_LABELS } from "../constants/messages"
+import { logger } from "@/lib/config"
 
 export function TagsTableClient({
   canDelete = false,
@@ -46,141 +33,108 @@ export function TagsTableClient({
   canCreate = false,
   initialData,
 }: TagsTableClientProps) {
-  const router = useResourceRouter()
-  const [isBulkProcessing, setIsBulkProcessing] = useState(false)
-  const [feedback, setFeedback] = useState<FeedbackState | null>(null)
-  const [deleteConfirm, setDeleteConfirm] = useState<DeleteConfirmState | null>(null)
+  const queryClient = useQueryClient()
+  const { isSocketConnected, cacheVersion } = useTagsSocketBridge()
+  const { feedback, showFeedback, handleFeedbackOpenChange } = useTagFeedback()
+  const { deleteConfirm, setDeleteConfirm, handleDeleteConfirm } = useTagDeleteConfirm()
+
   const tableRefreshRef = useRef<(() => void) | null>(null)
+  const tableSoftRefreshRef = useRef<(() => void) | null>(null)
+  const pendingRealtimeRefreshRef = useRef(false)
 
-  type RowActionConfig = {
-    label: string
-    icon: LucideIcon
-    onSelect: () => void
-    destructive?: boolean
-    disabled?: boolean
-  }
+  const {
+    executeSingleAction,
+    executeBulkAction,
+    bulkState,
+  } = useTagActions({
+    canDelete,
+    canRestore,
+    canManage,
+    isSocketConnected,
+    showFeedback,
+  })
 
-  const showFeedback = useCallback(
-    (variant: FeedbackVariant, title: string, description?: string, details?: string) => {
-      setFeedback({ open: true, variant, title, description, details })
+  const { baseColumns, deletedColumns } = useTagColumns()
+
+  const handleDeleteSingle = useCallback(
+    (row: TagRow) => {
+      if (!canDelete) return
+      setDeleteConfirm({
+        open: true,
+        type: "soft",
+        row,
+        onConfirm: async () => {
+          await executeSingleAction("delete", row, tableRefreshRef.current || (() => {}))
+        },
+      })
     },
-    [],
+    [canDelete, executeSingleAction, setDeleteConfirm],
   )
 
-  const handleFeedbackOpenChange = useCallback((open: boolean) => {
-    if (!open) {
-      setFeedback(null)
-    }
+  const handleHardDeleteSingle = useCallback(
+    (row: TagRow) => {
+      if (!canManage) return
+      setDeleteConfirm({
+        open: true,
+        type: "hard",
+        row,
+        onConfirm: async () => {
+          await executeSingleAction("hard-delete", row, tableRefreshRef.current || (() => {}))
+        },
+      })
+    },
+    [canManage, executeSingleAction, setDeleteConfirm],
+  )
+
+  const handleRestoreSingle = useCallback(
+    (row: TagRow) => {
+      if (!canRestore) return
+      executeSingleAction("restore", row, tableRefreshRef.current || (() => {}))
+    },
+    [canRestore, executeSingleAction],
+  )
+
+  const { renderActiveRowActions, renderDeletedRowActions } = useTagRowActions({
+    canDelete,
+    canRestore,
+    canManage,
+    onDelete: handleDeleteSingle,
+    onHardDelete: handleHardDeleteSingle,
+    onRestore: handleRestoreSingle,
+  })
+
+  const buildFiltersRecord = useCallback((filters: Record<string, string>): Record<string, string> => {
+    return Object.entries(filters).reduce<Record<string, string>>((acc, [key, value]) => {
+      if (value) {
+        acc[key] = value
+      }
+      return acc
+    }, {})
   }, [])
 
-  const dateFormatter = useMemo(
-    () =>
-      new Intl.DateTimeFormat("vi-VN", {
-        dateStyle: "medium",
-        timeStyle: "short",
-      }),
-    [],
-  )
-
-  const nameFilter = useDynamicFilterOptions({
-    optionsEndpoint: apiRoutes.tags.options({ column: "name" }),
-  })
-
-  const slugFilter = useDynamicFilterOptions({
-    optionsEndpoint: apiRoutes.tags.options({ column: "slug" }),
-  })
-
-  const baseColumns = useMemo<DataTableColumn<TagRow>[]>(
-    () => [
-      {
-        accessorKey: "name",
-        header: "Tên thẻ tag",
-        filter: {
-          type: "select",
-          placeholder: "Chọn tên thẻ tag...",
-          searchPlaceholder: "Tìm kiếm...",
-          emptyMessage: "Không tìm thấy.",
-          options: nameFilter.options,
-          onSearchChange: nameFilter.onSearchChange,
-          isLoading: nameFilter.isLoading,
-        },
-        className: "min-w-[150px] max-w-[250px]",
-        headerClassName: "min-w-[150px] max-w-[250px]",
-      },
-      {
-        accessorKey: "slug",
-        header: "Slug",
-        filter: {
-          type: "select",
-          placeholder: "Chọn slug...",
-          searchPlaceholder: "Tìm kiếm...",
-          emptyMessage: "Không tìm thấy.",
-          options: slugFilter.options,
-          onSearchChange: slugFilter.onSearchChange,
-          isLoading: slugFilter.isLoading,
-        },
-        className: "min-w-[150px] max-w-[250px]",
-        headerClassName: "min-w-[150px] max-w-[250px]",
-      },
-      {
-        accessorKey: "createdAt",
-        header: "Ngày tạo",
-        filter: {
-          type: "date",
-          placeholder: "Chọn ngày tạo",
-          dateFormat: "dd/MM/yyyy",
-        },
-        className: "min-w-[140px] max-w-[180px]",
-        headerClassName: "min-w-[140px] max-w-[180px]",
-        cell: (row) => {
-          try {
-            return dateFormatter.format(new Date(row.createdAt))
-          } catch {
-            return row.createdAt
-          }
-        },
-      },
-    ],
-    [dateFormatter, nameFilter.options, nameFilter.onSearchChange, nameFilter.isLoading, slugFilter.options, slugFilter.onSearchChange, slugFilter.isLoading],
-  )
-
-  const deletedColumns = useMemo<DataTableColumn<TagRow>[]>(
-    () => [
-      ...baseColumns,
-      {
-        accessorKey: "deletedAt",
-        header: "Ngày xóa",
-        filter: {
-          type: "date",
-          placeholder: "Chọn ngày xóa",
-          dateFormat: "dd/MM/yyyy",
-        },
-        className: "min-w-[140px] max-w-[180px]",
-        headerClassName: "min-w-[140px] max-w-[180px]",
-        cell: (row) => {
-          if (!row.deletedAt) return "-"
-          try {
-            return dateFormatter.format(new Date(row.deletedAt))
-          } catch {
-            return row.deletedAt
-          }
-        },
-      },
-    ],
-    [baseColumns, dateFormatter],
-  )
-
-  const loader = useCallback(
-    async (query: DataTableQueryState, view: ResourceViewMode<TagRow>) => {
+  const fetchTags = useCallback(
+    async ({
+      page,
+      limit,
+      status,
+      search,
+      filters,
+    }: {
+      page: number
+      limit: number
+      status: "active" | "deleted" | "all"
+      search?: string
+      filters?: Record<string, string>
+    }): Promise<DataTableResult<TagRow>> => {
       const baseUrl = apiRoutes.tags.list({
-        page: query.page,
-        limit: query.limit,
-        status: view.status ?? "active",
-        search: query.search.trim() || undefined,
+        page,
+        limit,
+        status,
+        search,
       })
 
       const filterParams = new URLSearchParams()
-      Object.entries(query.filters).forEach(([key, value]) => {
+      Object.entries(filters ?? {}).forEach(([key, value]) => {
         if (value) {
           filterParams.set(`filter[${key}]`, value)
         }
@@ -192,303 +146,126 @@ export function TagsTableClient({
       const response = await apiClient.get<TagsResponse>(url)
       const payload = response.data
 
+      if (!payload || !payload.data) {
+        throw new Error("Không thể tải danh sách thẻ tag")
+      }
+
       return {
-        rows: payload.data,
-        page: payload.pagination.page,
-        limit: payload.pagination.limit,
-        total: payload.pagination.total,
-        totalPages: payload.pagination.totalPages,
-      } satisfies DataTableResult<TagRow>
+        rows: payload.data || [],
+        page: payload.pagination?.page ?? page,
+        limit: payload.pagination?.limit ?? limit,
+        total: payload.pagination?.total ?? 0,
+        totalPages: payload.pagination?.totalPages ?? 0,
+      }
     },
     [],
   )
 
-  const handleDeleteSingle = useCallback(
-    (row: TagRow, refresh: () => void) => {
-      if (!canDelete) return
-      setDeleteConfirm({
-        open: true,
-        type: "soft",
-        row,
-        onConfirm: async () => {
-          try {
-            await apiClient.delete(apiRoutes.tags.delete(row.id))
-            showFeedback("success", "Xóa thành công", `Đã xóa thẻ tag ${row.name}`)
-            refresh()
-          } catch (error: unknown) {
-            const errorMessage = error instanceof Error ? error.message : "Đã xảy ra lỗi không xác định"
-            showFeedback("error", "Xóa thất bại", `Không thể xóa thẻ tag ${row.name}`, errorMessage)
-            throw error
-          }
-        },
-      })
-    },
-    [canDelete, showFeedback],
-  )
+  const loader = useCallback(
+    async (query: DataTableQueryState, view: ResourceViewMode<TagRow>) => {
+      const status = (view.status ?? "active") as AdminTagsListParams["status"]
+      const search = query.search.trim() || undefined
+      const filters = buildFiltersRecord(query.filters)
 
-  const handleHardDeleteSingle = useCallback(
-    (row: TagRow, refresh: () => void) => {
-      if (!canManage) return
-      setDeleteConfirm({
-        open: true,
-        type: "hard",
-        row,
-        onConfirm: async () => {
-          try {
-            await apiClient.delete(apiRoutes.tags.hardDelete(row.id))
-            showFeedback("success", "Xóa vĩnh viễn thành công", `Đã xóa vĩnh viễn thẻ tag ${row.name}`)
-            refresh()
-          } catch (error: unknown) {
-            const errorMessage = error instanceof Error ? error.message : "Đã xảy ra lỗi không xác định"
-            showFeedback("error", "Xóa vĩnh viễn thất bại", `Không thể xóa vĩnh viễn thẻ tag ${row.name}`, errorMessage)
-            throw error
-          }
-        },
-      })
-    },
-    [canManage, showFeedback],
-  )
-
-  const handleRestoreSingle = useCallback(
-    async (row: TagRow, refresh: () => void) => {
-      if (!canRestore) return
-
-      try {
-        await apiClient.post(apiRoutes.tags.restore(row.id))
-        showFeedback("success", "Khôi phục thành công", `Đã khôi phục thẻ tag "${row.name}"`)
-        refresh()
-      } catch (error: unknown) {
-        const errorMessage = error instanceof Error ? error.message : "Đã xảy ra lỗi không xác định"
-        showFeedback("error", "Khôi phục thất bại", `Không thể khôi phục thẻ tag "${row.name}"`, errorMessage)
-        console.error("Failed to restore tag", error)
+      const params: AdminTagsListParams = {
+        status,
+        page: query.page,
+        limit: query.limit,
+        search,
+        filters,
       }
+
+      const queryKey = queryKeys.adminTags.list(params)
+
+      return await queryClient.fetchQuery({
+        queryKey,
+        staleTime: Infinity,
+        queryFn: () =>
+          fetchTags({
+            page: query.page,
+            limit: query.limit,
+            status: status ?? "active",
+            search,
+            filters,
+          }),
+      })
     },
-    [canRestore, showFeedback],
+    [buildFiltersRecord, fetchTags, queryClient],
   )
 
   const executeBulk = useCallback(
     (action: "delete" | "restore" | "hard-delete", ids: string[], refresh: () => void, clearSelection: () => void) => {
       if (ids.length === 0) return
 
-      if (action === "delete") {
+      // Actions cần confirmation
+      if (action === "delete" || action === "hard-delete") {
         setDeleteConfirm({
           open: true,
-          type: "soft",
+          type: action === "hard-delete" ? "hard" : "soft",
           bulkIds: ids,
           onConfirm: async () => {
-            setIsBulkProcessing(true)
-            try {
-              await apiClient.post(apiRoutes.tags.bulk, { action, ids })
-              showFeedback("success", "Xóa thành công", `Đã xóa ${ids.length} thẻ tag`)
-              clearSelection()
-              refresh()
-            } catch (error: unknown) {
-              const errorMessage = error instanceof Error ? error.message : "Đã xảy ra lỗi không xác định"
-              showFeedback("error", "Xóa hàng loạt thất bại", `Không thể xóa ${ids.length} thẻ tag`, errorMessage)
-              throw error
-            } finally {
-              setIsBulkProcessing(false)
-            }
-          },
-        })
-      } else if (action === "hard-delete") {
-        setDeleteConfirm({
-          open: true,
-          type: "hard",
-          bulkIds: ids,
-          onConfirm: async () => {
-            setIsBulkProcessing(true)
-            try {
-              await apiClient.post(apiRoutes.tags.bulk, { action, ids })
-              showFeedback("success", "Xóa vĩnh viễn thành công", `Đã xóa vĩnh viễn ${ids.length} thẻ tag`)
-              clearSelection()
-              refresh()
-            } catch (error: unknown) {
-              const errorMessage = error instanceof Error ? error.message : "Đã xảy ra lỗi không xác định"
-              showFeedback("error", "Xóa vĩnh viễn thất bại", `Không thể xóa vĩnh viễn ${ids.length} thẻ tag`, errorMessage)
-              throw error
-            } finally {
-              setIsBulkProcessing(false)
-            }
+            await executeBulkAction(action, ids, refresh, clearSelection)
           },
         })
       } else {
-        setIsBulkProcessing(true)
-        ;(async () => {
-          try {
-            await apiClient.post(apiRoutes.tags.bulk, { action, ids })
-            showFeedback("success", "Khôi phục thành công", `Đã khôi phục ${ids.length} thẻ tag`)
-            clearSelection()
-            refresh()
-          } catch (error: unknown) {
-            const errorMessage = error instanceof Error ? error.message : "Đã xảy ra lỗi không xác định"
-            showFeedback("error", "Khôi phục thất bại", `Không thể khôi phục ${ids.length} thẻ tag`, errorMessage)
-          } finally {
-            setIsBulkProcessing(false)
-          }
-        })()
+        // Actions không cần confirmation (restore)
+        executeBulkAction(action, ids, refresh, clearSelection)
       }
     },
-    [showFeedback],
+    [executeBulkAction, setDeleteConfirm],
   )
 
-  const renderRowActions = useCallback(
-    (actions: RowActionConfig[]) => {
-      if (actions.length === 0) {
-        return null
-      }
+  // Handle realtime updates từ socket bridge
+  useEffect(() => {
+    if (cacheVersion === 0) return
+    if (tableSoftRefreshRef.current) {
+      tableSoftRefreshRef.current()
+      pendingRealtimeRefreshRef.current = false
+    } else {
+      pendingRealtimeRefreshRef.current = true
+    }
+  }, [cacheVersion])
 
-      if (actions.length === 1) {
-        const singleAction = actions[0]
-        const Icon = singleAction.icon
-        return (
-          <Button
-            variant="ghost"
-            size="sm"
-            disabled={singleAction.disabled}
-            onClick={() => {
-              if (singleAction.disabled) return
-              singleAction.onSelect()
-            }}
-          >
-            <Icon className="mr-2 h-5 w-5" />
-            {singleAction.label}
-          </Button>
-        )
-      }
+  // Set initialData vào React Query cache để socket bridge có thể cập nhật
+  useEffect(() => {
+    if (!initialData) return
 
-      return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-8 w-8">
-              <MoreHorizontal className="h-5 w-5" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            {actions.map((action) => {
-              const Icon = action.icon
-              return (
-                <DropdownMenuItem
-                  key={action.label}
-                  disabled={action.disabled}
-                  onClick={() => {
-                    if (action.disabled) return
-                    action.onSelect()
-                  }}
-                  className={
-                    action.destructive
-                      ? "text-destructive focus:text-destructive disabled:opacity-50"
-                      : "disabled:opacity-50"
-                  }
-                >
-                  <Icon
-                    className={
-                      action.destructive ? "mr-2 h-5 w-5 text-destructive" : "mr-2 h-5 w-5"
-                    }
-                  />
-                  {action.label}
-                </DropdownMenuItem>
-              )
-            })}
-          </DropdownMenuContent>
-        </DropdownMenu>
-      )
-    },
-    [],
-  )
+    const params: AdminTagsListParams = {
+      status: "active",
+      page: initialData.page,
+      limit: initialData.limit,
+      search: undefined,
+      filters: undefined,
+    }
+    const queryKey = queryKeys.adminTags.list(params)
+    queryClient.setQueryData(queryKey, initialData)
 
-  const renderActiveRowActions = useCallback(
-    (row: TagRow, { refresh }: { refresh: () => void }) => {
-      const actions: RowActionConfig[] = [
-        {
-          label: "Xem chi tiết",
-          icon: Eye,
-          onSelect: () => router.push(`/admin/tags/${row.id}`),
-        },
-      ]
-
-      if (canManage) {
-        actions.push({
-          label: "Chỉnh sửa",
-          icon: Pencil,
-          onSelect: () => router.push(`/admin/tags/${row.id}/edit`),
-        })
-      }
-
-      if (canDelete) {
-        actions.push({
-          label: "Xóa",
-          icon: Trash2,
-          onSelect: () => handleDeleteSingle(row, refresh),
-          destructive: true,
-        })
-      }
-
-      if (canManage) {
-        actions.push({
-          label: "Xóa vĩnh viễn",
-          icon: AlertTriangle,
-          onSelect: () => handleHardDeleteSingle(row, refresh),
-          destructive: true,
-        })
-      }
-
-      return renderRowActions(actions)
-    },
-    [canDelete, canManage, handleDeleteSingle, handleHardDeleteSingle, renderRowActions, router],
-  )
-
-  const renderDeletedRowActions = useCallback(
-    (row: TagRow, { refresh }: { refresh: () => void }) => {
-      const actions: RowActionConfig[] = [
-        {
-          label: "Xem chi tiết",
-          icon: Eye,
-          onSelect: () => router.push(`/admin/tags/${row.id}`),
-        },
-      ]
-
-      if (canRestore) {
-        actions.push({
-          label: "Khôi phục",
-          icon: RotateCcw,
-          onSelect: () => handleRestoreSingle(row, refresh),
-        })
-      }
-
-      if (canManage) {
-        actions.push({
-          label: "Xóa vĩnh viễn",
-          icon: AlertTriangle,
-          onSelect: () => handleHardDeleteSingle(row, refresh),
-          destructive: true,
-        })
-      }
-
-      return renderRowActions(actions)
-    },
-    [canManage, canRestore, handleHardDeleteSingle, handleRestoreSingle, renderRowActions, router],
-  )
+    logger.debug("Set initial data to cache", {
+      queryKey: queryKey.slice(0, 2),
+      rowsCount: initialData.rows.length,
+      total: initialData.total,
+    })
+  }, [initialData, queryClient])
 
   const viewModes = useMemo<ResourceViewMode<TagRow>[]>(() => {
     const modes: ResourceViewMode<TagRow>[] = [
       {
         id: "active",
-        label: "Đang hoạt động",
+        label: TAG_LABELS.ACTIVE_VIEW,
         status: "active",
         selectionEnabled: canDelete,
         selectionActions: canDelete
           ? ({ selectedIds, clearSelection, refresh }) => (
               <div className="flex flex-wrap items-center justify-between gap-3 text-sm">
                 <span>
-                  Đã chọn <strong>{selectedIds.length}</strong> thẻ tag
+                  {TAG_LABELS.SELECTED_TAGS(selectedIds.length)}
                 </span>
                 <div className="flex items-center gap-2">
                   <Button
                     type="button"
                     size="sm"
                     variant="destructive"
-                    disabled={isBulkProcessing || selectedIds.length === 0}
+                    disabled={bulkState.isProcessing || selectedIds.length === 0}
                     onClick={() => executeBulk("delete", selectedIds, refresh, clearSelection)}
                   >
                     <Trash2 className="mr-2 h-5 w-5" />
@@ -499,7 +276,7 @@ export function TagsTableClient({
                       type="button"
                       size="sm"
                       variant="destructive"
-                      disabled={isBulkProcessing || selectedIds.length === 0}
+                      disabled={bulkState.isProcessing || selectedIds.length === 0}
                       onClick={() => executeBulk("hard-delete", selectedIds, refresh, clearSelection)}
                     >
                       <AlertTriangle className="mr-2 h-5 w-5" />
@@ -507,18 +284,18 @@ export function TagsTableClient({
                     </Button>
                   )}
                   <Button type="button" size="sm" variant="ghost" onClick={clearSelection}>
-                    Bỏ chọn
+                    {TAG_LABELS.CLEAR_SELECTION}
                   </Button>
                 </div>
               </div>
             )
           : undefined,
-        rowActions: (row, { refresh }) => renderActiveRowActions(row, { refresh }),
-        emptyMessage: "Không tìm thấy thẻ tag nào phù hợp",
+        rowActions: (row) => renderActiveRowActions(row),
+        emptyMessage: TAG_LABELS.NO_TAGS,
       },
       {
         id: "deleted",
-        label: "Đã xóa",
+        label: TAG_LABELS.DELETED_VIEW,
         status: "deleted",
         columns: deletedColumns,
         selectionEnabled: canRestore || canManage,
@@ -526,7 +303,7 @@ export function TagsTableClient({
           ? ({ selectedIds, clearSelection, refresh }) => (
               <div className="flex flex-wrap items-center justify-between gap-3 text-sm">
                 <span>
-                  Đã chọn <strong>{selectedIds.length}</strong> thẻ tag (đã xóa)
+                  {TAG_LABELS.SELECTED_DELETED_TAGS(selectedIds.length)}
                 </span>
                 <div className="flex items-center gap-2">
                   {canRestore && (
@@ -534,11 +311,11 @@ export function TagsTableClient({
                       type="button"
                       size="sm"
                       variant="outline"
-                      disabled={isBulkProcessing || selectedIds.length === 0}
+                      disabled={bulkState.isProcessing || selectedIds.length === 0}
                       onClick={() => executeBulk("restore", selectedIds, refresh, clearSelection)}
                     >
                       <RotateCcw className="mr-2 h-5 w-5" />
-                      Khôi phục
+                      {TAG_LABELS.RESTORE}
                     </Button>
                   )}
                   {canManage && (
@@ -546,7 +323,7 @@ export function TagsTableClient({
                       type="button"
                       size="sm"
                       variant="destructive"
-                      disabled={isBulkProcessing || selectedIds.length === 0}
+                      disabled={bulkState.isProcessing || selectedIds.length === 0}
                       onClick={() => executeBulk("hard-delete", selectedIds, refresh, clearSelection)}
                     >
                       <AlertTriangle className="mr-2 h-5 w-5" />
@@ -554,14 +331,14 @@ export function TagsTableClient({
                     </Button>
                   )}
                   <Button type="button" size="sm" variant="ghost" onClick={clearSelection}>
-                    Bỏ chọn
+                    {TAG_LABELS.CLEAR_SELECTION}
                   </Button>
                 </div>
               </div>
             )
           : undefined,
-        rowActions: (row, { refresh }) => renderDeletedRowActions(row, { refresh }),
-        emptyMessage: "Không tìm thấy thẻ tag đã xóa nào",
+        rowActions: (row) => renderDeletedRowActions(row),
+        emptyMessage: TAG_LABELS.NO_DELETED_TAGS,
       },
     ]
 
@@ -572,7 +349,7 @@ export function TagsTableClient({
     canManage,
     deletedColumns,
     executeBulk,
-    isBulkProcessing,
+    bulkState.isProcessing,
     renderActiveRowActions,
     renderDeletedRowActions,
   ])
@@ -581,6 +358,32 @@ export function TagsTableClient({
     () => (initialData ? { active: initialData } : undefined),
     [initialData],
   )
+
+  const getDeleteConfirmTitle = () => {
+    if (!deleteConfirm) return ""
+    if (deleteConfirm.type === "hard") {
+      return TAG_CONFIRM_MESSAGES.HARD_DELETE_TITLE(
+        deleteConfirm.bulkIds?.length,
+      )
+    }
+    return TAG_CONFIRM_MESSAGES.DELETE_TITLE(deleteConfirm.bulkIds?.length)
+  }
+
+  const getDeleteConfirmDescription = () => {
+    if (!deleteConfirm) return ""
+    if (deleteConfirm.type === "hard") {
+      return TAG_CONFIRM_MESSAGES.HARD_DELETE_DESCRIPTION(
+        deleteConfirm.bulkIds?.length,
+        deleteConfirm.row?.name,
+      )
+    }
+    return TAG_CONFIRM_MESSAGES.DELETE_DESCRIPTION(
+      deleteConfirm.bulkIds?.length,
+      deleteConfirm.row?.name,
+    )
+  }
+
+  const router = useResourceRouter()
 
   const headerActions = canCreate ? (
     <Button
@@ -594,17 +397,6 @@ export function TagsTableClient({
     </Button>
   ) : undefined
 
-  const handleDeleteConfirm = useCallback(async () => {
-    if (!deleteConfirm) return
-    try {
-      await deleteConfirm.onConfirm()
-    } catch {
-      // Error already handled in onConfirm
-    } finally {
-      setDeleteConfirm(null)
-    }
-  }, [deleteConfirm])
-
   return (
     <>
       <ResourceTableClient<TagRow>
@@ -617,51 +409,48 @@ export function TagsTableClient({
         fallbackRowCount={6}
         headerActions={headerActions}
         onRefreshReady={(refresh) => {
-          tableRefreshRef.current = refresh
-        }}
-      />
+          const wrapped = () => {
+            queryClient.invalidateQueries({ queryKey: queryKeys.adminTags.all(), refetchType: "none" })
+            refresh()
+          }
+          tableSoftRefreshRef.current = refresh
+          tableRefreshRef.current = wrapped
 
-      <ConfirmDialog
-        open={deleteConfirm?.open ?? false}
-        onOpenChange={(open) => {
-          if (!open) {
-            setDeleteConfirm(null)
+          if (pendingRealtimeRefreshRef.current) {
+            pendingRealtimeRefreshRef.current = false
+            refresh()
           }
         }}
-        title={
-          deleteConfirm?.type === "hard"
-            ? deleteConfirm.bulkIds
-              ? `Xóa vĩnh viễn ${deleteConfirm.bulkIds.length} thẻ tag?`
-              : `Xóa vĩnh viễn thẻ tag "${deleteConfirm?.row?.name}"?`
-            : deleteConfirm?.bulkIds
-              ? `Xóa ${deleteConfirm.bulkIds.length} thẻ tag?`
-              : `Xóa thẻ tag "${deleteConfirm?.row?.name}"?`
-        }
-        description={
-          deleteConfirm?.type === "hard"
-            ? deleteConfirm.bulkIds
-              ? `Hành động này sẽ xóa vĩnh viễn ${deleteConfirm.bulkIds.length} thẻ tag khỏi hệ thống. Dữ liệu sẽ không thể khôi phục. Bạn có chắc chắn muốn tiếp tục?`
-              : `Hành động này sẽ xóa vĩnh viễn thẻ tag "${deleteConfirm?.row?.name}" khỏi hệ thống. Dữ liệu sẽ không thể khôi phục. Bạn có chắc chắn muốn tiếp tục?`
-            : deleteConfirm?.bulkIds
-              ? `Bạn có chắc chắn muốn xóa ${deleteConfirm.bulkIds.length} thẻ tag? Chúng sẽ được chuyển vào thùng rác và có thể khôi phục sau.`
-              : `Bạn có chắc chắn muốn xóa thẻ tag "${deleteConfirm?.row?.name}"? Thẻ tag sẽ được chuyển vào thùng rác và có thể khôi phục sau.`
-        }
-        confirmLabel={deleteConfirm?.type === "hard" ? "Xóa vĩnh viễn" : "Xóa"}
-        cancelLabel="Hủy"
-        variant="destructive"
-        onConfirm={handleDeleteConfirm}
-        isLoading={isBulkProcessing}
       />
 
-      <FeedbackDialog
-        open={feedback?.open ?? false}
-        onOpenChange={handleFeedbackOpenChange}
-        variant={feedback?.variant ?? "success"}
-        title={feedback?.title ?? ""}
-        description={feedback?.description}
-        details={feedback?.details}
-      />
+      {/* Delete Confirmation Dialog */}
+      {deleteConfirm && (
+        <ConfirmDialog
+          open={deleteConfirm.open}
+          onOpenChange={(open) => {
+            if (!open) setDeleteConfirm(null)
+          }}
+          title={getDeleteConfirmTitle()}
+          description={getDeleteConfirmDescription()}
+          variant={deleteConfirm.type === "hard" ? "destructive" : "destructive"}
+          confirmLabel={deleteConfirm.type === "hard" ? TAG_CONFIRM_MESSAGES.HARD_DELETE_LABEL : TAG_CONFIRM_MESSAGES.CONFIRM_LABEL}
+          cancelLabel={TAG_CONFIRM_MESSAGES.CANCEL_LABEL}
+          onConfirm={handleDeleteConfirm}
+          isLoading={bulkState.isProcessing}
+        />
+      )}
+
+      {/* Feedback Dialog */}
+      {feedback && (
+        <FeedbackDialog
+          open={feedback.open}
+          onOpenChange={handleFeedbackOpenChange}
+          variant={feedback.variant}
+          title={feedback.title}
+          description={feedback.description}
+          details={feedback.details}
+        />
+      )}
     </>
   )
 }
-
