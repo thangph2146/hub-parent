@@ -1,68 +1,100 @@
-/**
- * Suspense Wrapper Components
- * 
- * Shared components để wrap async components với Suspense boundaries
- * Giúp clean code và dễ scale cho tất cả admin pages
- * 
- * Theo Next.js 16 best practices:
- * - Multiple Suspense boundaries để stream các phần độc lập
- * - Progressive rendering với meaningful fallback UI
- * - Selective hydration
- */
-
 import { Suspense, type ReactNode } from "react"
-import { MessagesPageSkeleton, ResourceDetailSkeleton, ResourceTableSkeleton } from "@/components/layouts/skeletons"
 
-/**
- * SuspenseWrapper - Generic wrapper cho async components
- * 
- * Usage:
- * ```tsx
- * <SuspenseWrapper fallback={<Skeleton />}>
- *   <AsyncComponent />
- * </SuspenseWrapper>
- * ```
- */
+import {
+  MessagesPageSkeleton,
+  ResourceDetailSkeleton,
+  ResourceTableSkeleton,
+} from "@/components/layouts/skeletons"
+
+type DetailSkeletonConfig = {
+  showHeader?: boolean
+  fieldCount?: number
+  sectionCount?: number
+}
+
+type TableSkeletonConfig = {
+  columnCount?: number
+  rowCount?: number
+  withTitle?: boolean
+}
+
+type SuspensePreset = "detail" | "table" | "messages" | "inline"
+
+const defaultDetailSkeleton: Required<DetailSkeletonConfig> = {
+  showHeader: true,
+  fieldCount: 6,
+  sectionCount: 1,
+}
+
+const defaultTableSkeleton: Required<TableSkeletonConfig> = {
+  columnCount: 4,
+  rowCount: 10,
+  withTitle: false,
+}
+
+const LoadingPlaceholder = () => (
+  <div className="flex min-h-[200px] items-center justify-center">
+    <span className="text-muted-foreground">Loading...</span>
+  </div>
+)
+
 export interface SuspenseWrapperProps {
   children: ReactNode
   fallback?: ReactNode
-  skeletonConfig?: {
-    showHeader?: boolean
-    fieldCount?: number
-    sectionCount?: number
-  }
+  preset?: SuspensePreset
+  detailConfig?: DetailSkeletonConfig
+  tableConfig?: TableSkeletonConfig
 }
 
 export function SuspenseWrapper({
   children,
   fallback,
-  skeletonConfig,
+  preset = "detail",
+  detailConfig,
+  tableConfig,
 }: SuspenseWrapperProps) {
-  const defaultFallback = skeletonConfig ? (
-    <ResourceDetailSkeleton
-      showHeader={skeletonConfig.showHeader ?? true}
-      fieldCount={skeletonConfig.fieldCount ?? 6}
-      sectionCount={skeletonConfig.sectionCount ?? 1}
-    />
-  ) : (
-    <div className="flex min-h-[400px] items-center justify-center">
-      <div className="text-muted-foreground">Đang tải...</div>
-    </div>
-  )
+  const fallbackNode = fallback ?? buildFallback(preset, { detail: detailConfig, table: tableConfig })
 
-  return <Suspense fallback={fallback ?? defaultFallback}>{children}</Suspense>
+  return <Suspense fallback={fallbackNode}>{children}</Suspense>
 }
 
-/**
- * FormPageSuspense - Wrapper cho form pages (create/edit)
- * 
- * Usage:
- * ```tsx
- * <FormPageSuspense fieldCount={8} sectionCount={2}>
- *   <FormComponent />
- * </FormPageSuspense>
- * ```
- */
+type FallbackConfig = {
+  detail?: DetailSkeletonConfig
+  table?: TableSkeletonConfig
+}
+
+function buildFallback(preset: SuspensePreset, config?: FallbackConfig): ReactNode {
+  switch (preset) {
+    case "table": {
+      const tableProps = { ...defaultTableSkeleton, ...(config?.table ?? {}) }
+
+      return (
+        <ResourceTableSkeleton
+          title={tableProps.withTitle}
+          rowCount={tableProps.rowCount}
+          columnCount={tableProps.columnCount}
+        />
+      )
+    }
+    case "messages":
+      return <MessagesPageSkeleton />
+    case "inline":
+      return <LoadingPlaceholder />
+    case "detail":
+    default: {
+      const detailProps = { ...defaultDetailSkeleton, ...(config?.detail ?? {}) }
+
+      return (
+        <ResourceDetailSkeleton
+          showHeader={detailProps.showHeader}
+          fieldCount={detailProps.fieldCount}
+          sectionCount={detailProps.sectionCount}
+        />
+      )
+    }
+  }
+}
+
 export interface FormPageSuspenseProps {
   children: ReactNode
   fieldCount?: number
@@ -71,12 +103,13 @@ export interface FormPageSuspenseProps {
 
 export function FormPageSuspense({
   children,
-  fieldCount = 6,
-  sectionCount = 1,
+  fieldCount = defaultDetailSkeleton.fieldCount,
+  sectionCount = defaultDetailSkeleton.sectionCount,
 }: FormPageSuspenseProps) {
   return (
     <SuspenseWrapper
-      skeletonConfig={{
+      preset="detail"
+      detailConfig={{
         showHeader: true,
         fieldCount,
         sectionCount,
@@ -87,43 +120,54 @@ export function FormPageSuspense({
   )
 }
 
-/**
- * TablePageSuspense - Wrapper cho table pages (list)
- * 
- * Usage:
- * ```tsx
- * <TablePageSuspense columnCount={6} rowCount={10}>
- *   <TableComponent />
- * </TablePageSuspense>
- * ```
- */
 export interface TablePageSuspenseProps {
   children: ReactNode
   columnCount?: number
   rowCount?: number
+  showTitle?: boolean
 }
 
 export function TablePageSuspense({
   children,
-  columnCount = 4,
-  rowCount = 10,
+  columnCount = defaultTableSkeleton.columnCount,
+  rowCount = defaultTableSkeleton.rowCount,
+  showTitle = defaultTableSkeleton.withTitle,
 }: TablePageSuspenseProps) {
   return (
     <SuspenseWrapper
-      fallback={<ResourceTableSkeleton title={false} rowCount={rowCount} columnCount={columnCount} />}
+      preset="table"
+      tableConfig={{
+        columnCount,
+        rowCount,
+        withTitle: showTitle,
+      }}
     >
       {children}
     </SuspenseWrapper>
   )
 }
 
-/**
- * MessagesPageSuspense - Skeleton cho trang admin/messages
- */
 export interface MessagesPageSuspenseProps {
   children: ReactNode
 }
 
 export function MessagesPageSuspense({ children }: MessagesPageSuspenseProps) {
-  return <SuspenseWrapper fallback={<MessagesPageSkeleton />}>{children}</SuspenseWrapper>
+  return (
+    <SuspenseWrapper preset="messages">
+      {children}
+    </SuspenseWrapper>
+  )
+}
+
+export interface InlineSuspenseProps {
+  children: ReactNode
+  fallback?: ReactNode
+}
+
+export function InlineSuspense({ children, fallback }: InlineSuspenseProps) {
+  return (
+    <SuspenseWrapper preset="inline" fallback={fallback}>
+      {children}
+    </SuspenseWrapper>
+  )
 }

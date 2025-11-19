@@ -1,5 +1,5 @@
 import { AdminHeader } from "@/components/layouts/headers"
-import { ResourceDetailSkeleton } from "@/components/layouts/skeletons"
+import { DashboardWelcomeSkeleton } from "@/components/layouts/skeletons"
 
 /**
  * Dashboard Page Loading
@@ -17,13 +17,7 @@ export default function DashboardPageLoading() {
           { label: "Dashboard", isActive: true },
         ]}
       />
-      <div className="flex flex-1 flex-col gap-4 p-4">
-        <ResourceDetailSkeleton 
-          showHeader={false} 
-          fieldCount={8} 
-          sectionCount={2} 
-        />
-      </div>
+      <DashboardWelcomeSkeleton />
     </>
   )
 }

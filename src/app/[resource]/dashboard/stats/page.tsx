@@ -1,6 +1,8 @@
 import type { Metadata } from "next"
+import { Suspense } from "react"
 import { AdminHeader } from "@/components/layouts/headers"
 import { DashboardStats } from "@/features/admin/dashboard/dashboard-stats"
+import { DashboardStatsSkeleton } from "@/components/layouts/skeletons"
 
 /**
  * Dashboard Stats Page Metadata
@@ -14,6 +16,14 @@ export const metadata: Metadata = {
   description: "Thống kê và phân tích dữ liệu hệ thống",
 }
 
+/**
+ * Dashboard Stats Page với Suspense boundary
+ * 
+ * Theo Next.js 16 best practices:
+ * - Async server components cần được wrap trong Suspense
+ * - Sử dụng Suspense để stream data fetching
+ * - Fallback hiển thị skeleton trong khi đang fetch data
+ */
 export default function Page() {
   return (
     <>
@@ -29,7 +39,9 @@ export default function Page() {
           },
         ]}
       />
-      <DashboardStats />
+      <Suspense fallback={<DashboardStatsSkeleton />}>
+        <DashboardStats />
+      </Suspense>
     </>
   )
 }
