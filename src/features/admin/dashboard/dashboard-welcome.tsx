@@ -5,12 +5,12 @@ import { useSession } from "next-auth/react"
 import {
   FileText,
   Calendar,
-  Clock,
   Shield,
   Crown,
   Edit,
   User,
   AlertCircle,
+  CheckCircle2,
 } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -129,6 +129,37 @@ export function DashboardWelcome() {
   const currentDate = getCurrentDate()
   const roleInfo = getRoleInfo(userRoles)
 
+  // Permission checks for all resources
+  const canViewUsers = isSuperAdminUser || hasPermission(PERMISSIONS.USERS_VIEW)
+  const canViewPosts = isSuperAdminUser || hasPermission(PERMISSIONS.POSTS_VIEW)
+  const canViewComments = isSuperAdminUser || hasPermission(PERMISSIONS.COMMENTS_VIEW)
+  const canViewCategories = isSuperAdminUser || hasPermission(PERMISSIONS.CATEGORIES_VIEW)
+  const canViewTags = isSuperAdminUser || hasPermission(PERMISSIONS.TAGS_VIEW)
+  const canViewMessages = isSuperAdminUser || hasPermission(PERMISSIONS.MESSAGES_VIEW)
+  const canViewNotifications = isSuperAdminUser || hasPermission(PERMISSIONS.NOTIFICATIONS_VIEW)
+  const canViewContactRequests = isSuperAdminUser || hasPermission(PERMISSIONS.CONTACT_REQUESTS_VIEW)
+  const canViewStudents = isSuperAdminUser || hasPermission(PERMISSIONS.STUDENTS_VIEW)
+  const canViewSessions = isSuperAdminUser || hasPermission(PERMISSIONS.SESSIONS_VIEW)
+  const canViewRoles = isSuperAdminUser || hasPermission(PERMISSIONS.ROLES_VIEW)
+  const canViewAccounts = isSuperAdminUser || hasPermission(PERMISSIONS.ACCOUNTS_VIEW)
+
+  // Available permissions list
+  const availablePermissions = [
+    { label: "Xem và quản lý người dùng", permission: canViewUsers },
+    { label: "Xem và quản lý bài viết", permission: canViewPosts },
+    { label: "Xem và duyệt bình luận", permission: canViewComments },
+    { label: "Xem và quản lý danh mục", permission: canViewCategories },
+    { label: "Xem và quản lý thẻ", permission: canViewTags },
+    { label: "Xem và gửi tin nhắn", permission: canViewMessages },
+    { label: "Xem thông báo", permission: canViewNotifications },
+    { label: "Xem và xử lý yêu cầu liên hệ", permission: canViewContactRequests },
+    { label: "Xem và quản lý học sinh", permission: canViewStudents },
+    { label: "Xem phiên đăng nhập", permission: canViewSessions },
+    { label: "Xem và quản lý vai trò", permission: canViewRoles },
+    { label: "Xem dashboard tổng quan", permission: hasPermission(PERMISSIONS.DASHBOARD_VIEW) },
+    { label: "Xem và cập nhật tài khoản", permission: canViewAccounts },
+  ].filter(item => item.permission)
+
 
 
 
@@ -214,85 +245,50 @@ export function DashboardWelcome() {
           </div>
         </motion.div>
 
-        {/* Welcome Message for Limited Permissions */}
-        {!isSuperAdminUser && (
-          <motion.div
-            variants={itemVariants}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-          >
-            <Card className="relative overflow-hidden backdrop-blur-md bg-card/80 border border-primary/20 shadow-xl">
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-primary/5 to-background" />
-              <CardHeader className="relative z-10">
-                <CardTitle className="flex items-center gap-2 text-xl">
-                  <AlertCircle className="h-6 w-6 text-primary" />
-                  Chào mừng đến với hệ thống!
-                </CardTitle>
-                <CardDescription className="text-base">
-                  Bạn đang sử dụng tài khoản với quyền hạn hạn chế. Vui lòng liên hệ quản trị viên để được cấp thêm quyền truy cập.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="relative z-10">
-                <div className="space-y-2 text-sm">
-                  <p className="text-muted-foreground font-medium">
-                    Với quyền hiện tại, bạn có thể:
-                  </p>
-                  <ul className="list-disc list-inside space-y-1 text-muted-foreground ml-4">
-                    {hasPermission(PERMISSIONS.MESSAGES_VIEW) && (
-                      <li>Xem và quản lý tin nhắn</li>
-                    )}
-                    {hasPermission(PERMISSIONS.NOTIFICATIONS_VIEW) && (
-                      <li>Xem thông báo</li>
-                    )}
-                    {hasPermission(PERMISSIONS.DASHBOARD_VIEW) && (
-                      <li>Xem dashboard tổng quan</li>
-                    )}
-                  </ul>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        )}
-
-        {/* Recent Activity / Info Card */}
+        {/* Welcome Message with Permissions */}
         <motion.div
           variants={itemVariants}
-          className="grid gap-4 md:grid-cols-2 lg:grid-cols-3"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
         >
-          {isSuperAdminUser && (
-            <Card className="md:col-span-2 relative overflow-hidden backdrop-blur-md bg-card/80 border border-primary/20 shadow-lg">
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-primary/5 to-background" />
-              <CardHeader className="relative z-10">
-                <CardTitle className="flex items-center gap-2 text-xl">
-                  <Clock className="h-6 w-6 text-primary" />
-                  Hoạt động gần đây
-                </CardTitle>
-                <CardDescription className="text-base">
-                  Các hoạt động và sự kiện mới nhất trong hệ thống
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="relative z-10">
-                <div className="space-y-4">
-                  {[1, 2, 3].map((i) => (
+          <Card className="relative overflow-hidden backdrop-blur-md bg-card/80 border border-primary/20 shadow-xl">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-primary/5 to-background" />
+            <CardHeader className="relative z-10">
+              <CardTitle className="flex items-center gap-2 text-xl">
+                <CheckCircle2 className="h-6 w-6 text-primary" />
+                {isSuperAdminUser ? "Quyền truy cập đầy đủ" : "Quyền truy cập của bạn"}
+              </CardTitle>
+              <CardDescription className="text-base">
+                {isSuperAdminUser 
+                  ? "Bạn có quyền truy cập đầy đủ vào tất cả các tính năng của hệ thống."
+                  : "Danh sách các tính năng bạn có thể sử dụng với quyền hiện tại."}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="relative z-10">
+              {availablePermissions.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                  {availablePermissions.map((item, index) => (
                     <motion.div
-                      key={i}
-                      className="flex items-center gap-3 p-4 rounded-xl bg-background/50 border border-border/50 backdrop-blur-sm hover:bg-background/70 transition-all duration-300 hover:shadow-md"
+                      key={index}
+                      className="flex items-center gap-2 p-2 rounded-md bg-background/50 border border-border/50"
                       initial={{ opacity: 0, x: -10 }}
                       animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.5 + i * 0.1 }}
+                      transition={{ delay: 0.1 * index }}
                     >
-                      <div className="h-2.5 w-2.5 rounded-full bg-[#00cc44] dark:bg-[#00ff88] animate-pulse shadow-lg shadow-[#00cc44]/50 dark:shadow-[#00ff88]/50" />
-                      <div className="flex-1">
-                        <p className="text-sm font-semibold">Hoạt động mẫu {i}</p>
-                        <p className="text-xs text-muted-foreground">Vừa xong</p>
-                      </div>
+                      <CheckCircle2 className="h-4 w-4 text-[#00cc44] dark:text-[#00ff88] flex-shrink-0" />
+                      <span className="text-sm text-muted-foreground">{item.label}</span>
                     </motion.div>
                   ))}
                 </div>
-              </CardContent>
-            </Card>
-          )}
-
+              ) : (
+                <div className="text-center py-4 text-muted-foreground">
+                  <AlertCircle className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                  <p>Bạn chưa có quyền truy cập vào bất kỳ tính năng nào.</p>
+                  <p className="text-xs mt-1">Vui lòng liên hệ quản trị viên để được cấp quyền.</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </motion.div>
       </motion.div>
     </div>

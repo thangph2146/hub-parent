@@ -84,8 +84,8 @@ export function renderRowActions(actions: RowActionConfig[]) {
               }}
               className={
                 action.destructive
-                  ? "text-destructive focus:text-destructive hover:text-destructive hover:bg-destructive/10 disabled:opacity-50"
-                  : "hover:bg-accent/10 disabled:opacity-50"
+                  ? "text-destructive focus:text-destructive data-[highlighted]:text-destructive data-[highlighted]:bg-destructive/10 disabled:opacity-50"
+                  : "data-[highlighted]:bg-accent/10 disabled:opacity-50"
               }
             >
               <Icon

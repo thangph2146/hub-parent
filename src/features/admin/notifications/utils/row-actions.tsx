@@ -4,7 +4,7 @@
 
 import { useCallback } from "react"
 import { useResourceRouter } from "@/hooks/use-resource-segment"
-import { Trash2, MoreHorizontal, Eye, Check, X, Loader2 } from "lucide-react"
+import { Trash2, MoreHorizontal, Eye, Loader2 } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
@@ -27,11 +27,8 @@ export interface RowActionConfig {
 }
 
 interface UseRowActionsOptions {
-  sessionUserId?: string
-  onToggleRead: (row: NotificationRow, checked: boolean) => void
+  sessionUserId?: string  
   onDelete: (row: NotificationRow) => void
-  markingReadNotifications?: Set<string>
-  markingUnreadNotifications?: Set<string>
   deletingNotifications?: Set<string>
 }
 
@@ -79,8 +76,8 @@ export function renderRowActions(actions: RowActionConfig[]) {
               }}
               className={
                 action.destructive
-                  ? "text-destructive focus:text-destructive hover:text-destructive hover:bg-destructive/10 disabled:opacity-50"
-                  : "hover:bg-accent/10 disabled:opacity-50"
+                  ? "text-destructive focus:text-destructive data-[highlighted]:text-destructive data-[highlighted]:bg-destructive/10 disabled:opacity-50"
+                  : "data-[highlighted]:bg-accent/10 disabled:opacity-50"
               }
             >
               <Icon
@@ -101,10 +98,7 @@ export function renderRowActions(actions: RowActionConfig[]) {
 
 export function useNotificationRowActions({
   sessionUserId,
-  onToggleRead,
   onDelete,
-  markingReadNotifications = new Set(),
-  markingUnreadNotifications = new Set(),
   deletingNotifications = new Set(),
 }: UseRowActionsOptions) {
   const router = useResourceRouter()
@@ -122,30 +116,6 @@ export function useNotificationRowActions({
         },
       ]
 
-      if (isOwner) {
-        if (row.isRead) {
-          const isMarkingUnread = markingUnreadNotifications.has(row.id)
-          actions.push({
-            label: NOTIFICATION_LABELS.MARK_UNREAD,
-            icon: X,
-            onSelect: () => onToggleRead(row, false),
-            disabled: isMarkingUnread || markingReadNotifications.has(row.id) || deletingNotifications.has(row.id),
-            isLoading: isMarkingUnread,
-            loadingLabel: NOTIFICATION_LABELS.MARKING_UNREAD,
-          })
-        } else {
-          const isMarkingRead = markingReadNotifications.has(row.id)
-          actions.push({
-            label: NOTIFICATION_LABELS.MARK_READ,
-            icon: Check,
-            onSelect: () => onToggleRead(row, true),
-            disabled: isMarkingRead || markingUnreadNotifications.has(row.id) || deletingNotifications.has(row.id),
-            isLoading: isMarkingRead,
-            loadingLabel: NOTIFICATION_LABELS.MARKING_READ,
-          })
-        }
-      }
-
       if (canDelete) {
         const isDeleting = deletingNotifications.has(row.id)
         actions.push({
@@ -153,7 +123,7 @@ export function useNotificationRowActions({
           icon: Trash2,
           onSelect: () => onDelete(row),
           destructive: true,
-          disabled: isDeleting || markingReadNotifications.has(row.id) || markingUnreadNotifications.has(row.id),
+          disabled: isDeleting,
           isLoading: isDeleting,
           loadingLabel: NOTIFICATION_LABELS.DELETING,
         })
@@ -161,7 +131,7 @@ export function useNotificationRowActions({
 
       return renderRowActions(actions)
     },
-    [sessionUserId, onToggleRead, onDelete, router, markingReadNotifications, markingUnreadNotifications, deletingNotifications],
+    [sessionUserId, onDelete, deletingNotifications],
   )
 
   return {

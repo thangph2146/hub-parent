@@ -1,5 +1,6 @@
 "use client"
 
+import { useState, useMemo } from "react"
 import { motion } from "framer-motion"
 import { useSession } from "next-auth/react"
 import {
@@ -14,8 +15,12 @@ import {
     LineChart,
     Activity,
     ArrowUpRight,
-    Eye,
-    MousePointerClick
+    Tag,
+    FolderTree,
+    Bell,
+    Mail,
+    UserCheck,
+    Shield
 } from "lucide-react"
 import {
     Line,
@@ -28,11 +33,12 @@ import {
     Tooltip,
     Legend,
     ResponsiveContainer,
-    ComposedChart,
-    Area,
-    AreaChart
+    ComposedChart
 } from "recharts"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Button } from "@/components/ui/button"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { useClientOnly } from "@/hooks/use-client-only"
 import { usePermissions } from "@/hooks/use-permissions"
 import { PERMISSIONS, isSuperAdmin } from "@/lib/permissions"
@@ -116,15 +122,80 @@ export function DashboardStatsClient({ stats }: DashboardStatsClientProps) {
         color: CHART_COLORS[index % CHART_COLORS.length]
     }))
 
-    // Permission checks
+    // Permission checks for all resources
     const canViewUsers = isSuperAdminUser || hasPermission(PERMISSIONS.USERS_VIEW)
     const canViewPosts = isSuperAdminUser || hasPermission(PERMISSIONS.POSTS_VIEW)
     const canViewComments = isSuperAdminUser || hasPermission(PERMISSIONS.COMMENTS_VIEW)
     const canViewCategories = isSuperAdminUser || hasPermission(PERMISSIONS.CATEGORIES_VIEW)
+    const canViewTags = isSuperAdminUser || hasPermission(PERMISSIONS.TAGS_VIEW)
+    const canViewMessages = isSuperAdminUser || hasPermission(PERMISSIONS.MESSAGES_VIEW)
+    const canViewNotifications = isSuperAdminUser || hasPermission(PERMISSIONS.NOTIFICATIONS_VIEW)
+    const canViewContactRequests = isSuperAdminUser || hasPermission(PERMISSIONS.CONTACT_REQUESTS_VIEW)
+    const canViewStudents = isSuperAdminUser || hasPermission(PERMISSIONS.STUDENTS_VIEW)
+    const canViewSessions = isSuperAdminUser || hasPermission(PERMISSIONS.SESSIONS_VIEW)
+    const canViewRoles = isSuperAdminUser || hasPermission(PERMISSIONS.ROLES_VIEW)
     const canViewDashboard = isSuperAdminUser || hasPermission(PERMISSIONS.DASHBOARD_VIEW)
 
     // Check if user has any permission to view stats
-    const hasAnyStatsPermission = canViewUsers || canViewPosts || canViewComments || canViewCategories || canViewDashboard
+    const hasAnyStatsPermission = canViewUsers || canViewPosts || canViewComments || canViewCategories || 
+        canViewTags || canViewMessages || canViewNotifications || canViewContactRequests || 
+        canViewStudents || canViewSessions || canViewRoles || canViewDashboard
+
+    // Define available chart resources with permissions
+    const availableResources = useMemo(() => [
+        { key: "users", label: "Người dùng", permission: canViewUsers, color: CHART_COLORS[0] },
+        { key: "posts", label: "Bài viết", permission: canViewPosts, color: CHART_COLORS[1] },
+        { key: "comments", label: "Bình luận", permission: canViewComments, color: CHART_COLORS[2] },
+        { key: "categories", label: "Danh mục", permission: canViewCategories, color: CHART_COLORS[3] },
+        { key: "tags", label: "Thẻ", permission: canViewTags, color: CHART_COLORS[4] },
+        { key: "messages", label: "Tin nhắn", permission: canViewMessages, color: "#3b82f6" },
+        { key: "notifications", label: "Thông báo", permission: canViewNotifications, color: "#eab308" },
+        { key: "contactRequests", label: "Yêu cầu liên hệ", permission: canViewContactRequests, color: "#a855f7" },
+        { key: "students", label: "Học sinh", permission: canViewStudents, color: "#22c55e" },
+        { key: "sessions", label: "Phiên đăng nhập", permission: canViewSessions, color: "#f97316" },
+        { key: "roles", label: "Vai trò", permission: canViewRoles, color: "#ef4444" },
+    ].filter(r => r.permission), [canViewUsers, canViewPosts, canViewComments, canViewCategories, 
+        canViewTags, canViewMessages, canViewNotifications, canViewContactRequests, 
+        canViewStudents, canViewSessions, canViewRoles])
+
+    // State for selected resources in chart
+    const [selectedResourcesState, setSelectedResources] = useState<Set<string>>(() => {
+        // Default: select all available resources
+        return new Set(availableResources.map(r => r.key))
+    })
+
+    // Sync selected resources with available resources (filter out unavailable ones)
+    const selectedResources = useMemo(() => {
+        const availableKeys = new Set(availableResources.map(r => r.key))
+        const filtered = new Set([...selectedResourcesState].filter(key => availableKeys.has(key)))
+        // If nothing selected but resources are available, return all available
+        if (filtered.size === 0 && availableKeys.size > 0) {
+            return availableKeys
+        }
+        return filtered
+    }, [selectedResourcesState, availableResources])
+
+    // Toggle resource selection
+    const toggleResource = (key: string) => {
+        setSelectedResources(prev => {
+            const next = new Set(prev)
+            if (next.has(key)) {
+                next.delete(key)
+            } else {
+                next.add(key)
+            }
+            return next
+        })
+    }
+
+    // Select all / Deselect all
+    const selectAll = () => {
+        setSelectedResources(new Set(availableResources.map(r => r.key)))
+    }
+
+    const deselectAll = () => {
+        setSelectedResources(new Set())
+    }
 
     if (!isMounted) {
         return (
@@ -206,7 +277,7 @@ export function DashboardStatsClient({ stats }: DashboardStatsClientProps) {
                             title: "Tổng người dùng", 
                             value: formatNumber(stats.overview.totalUsers), 
                             change: formatChange(stats.overview.usersChange), 
-                            trend: "up" as const, 
+                            trend: stats.overview.usersChange >= 0 ? "up" as const : "down" as const, 
                             icon: Users, 
                             bgColor: "bg-chart-1/10", 
                             borderColor: "border-chart-1/20", 
@@ -218,7 +289,7 @@ export function DashboardStatsClient({ stats }: DashboardStatsClientProps) {
                             title: "Tổng bài viết", 
                             value: formatNumber(stats.overview.totalPosts), 
                             change: formatChange(stats.overview.postsChange), 
-                            trend: "up" as const, 
+                            trend: stats.overview.postsChange >= 0 ? "up" as const : "down" as const, 
                             icon: FileText, 
                             bgColor: "bg-chart-2/10", 
                             borderColor: "border-chart-2/20", 
@@ -230,7 +301,7 @@ export function DashboardStatsClient({ stats }: DashboardStatsClientProps) {
                             title: "Tổng bình luận", 
                             value: formatNumber(stats.overview.totalComments), 
                             change: formatChange(stats.overview.commentsChange), 
-                            trend: "up" as const, 
+                            trend: stats.overview.commentsChange >= 0 ? "up" as const : "down" as const, 
                             icon: MessageSquare, 
                             bgColor: "bg-chart-3/10", 
                             borderColor: "border-chart-3/20", 
@@ -239,16 +310,100 @@ export function DashboardStatsClient({ stats }: DashboardStatsClientProps) {
                             permission: canViewComments
                         },
                         { 
-                            title: "Lượt xem", 
-                            value: formatNumber(stats.overview.totalViews), 
-                            change: formatChange(stats.overview.viewsChange), 
-                            trend: "up" as const, 
-                            icon: Eye, 
+                            title: "Danh mục", 
+                            value: formatNumber(stats.overview.totalCategories), 
+                            change: formatChange(stats.overview.categoriesChange), 
+                            trend: stats.overview.categoriesChange >= 0 ? "up" as const : "down" as const, 
+                            icon: FolderTree, 
                             bgColor: "bg-chart-4/10", 
                             borderColor: "border-chart-4/20", 
                             iconColor: "text-chart-4", 
                             barColor: "bg-chart-4",
-                            permission: canViewPosts // Views are related to posts
+                            permission: canViewCategories
+                        },
+                        { 
+                            title: "Thẻ", 
+                            value: formatNumber(stats.overview.totalTags), 
+                            change: formatChange(stats.overview.tagsChange), 
+                            trend: stats.overview.tagsChange >= 0 ? "up" as const : "down" as const, 
+                            icon: Tag, 
+                            bgColor: "bg-chart-5/10", 
+                            borderColor: "border-chart-5/20", 
+                            iconColor: "text-chart-5", 
+                            barColor: "bg-chart-5",
+                            permission: canViewTags
+                        },
+                        { 
+                            title: "Tin nhắn", 
+                            value: formatNumber(stats.overview.totalMessages), 
+                            change: formatChange(stats.overview.messagesChange), 
+                            trend: stats.overview.messagesChange >= 0 ? "up" as const : "down" as const, 
+                            icon: Mail, 
+                            bgColor: "bg-blue-500/10", 
+                            borderColor: "border-blue-500/20", 
+                            iconColor: "text-blue-500", 
+                            barColor: "bg-blue-500",
+                            permission: canViewMessages
+                        },
+                        { 
+                            title: "Thông báo", 
+                            value: formatNumber(stats.overview.totalNotifications), 
+                            change: formatChange(stats.overview.notificationsChange), 
+                            trend: stats.overview.notificationsChange >= 0 ? "up" as const : "down" as const, 
+                            icon: Bell, 
+                            bgColor: "bg-yellow-500/10", 
+                            borderColor: "border-yellow-500/20", 
+                            iconColor: "text-yellow-500", 
+                            barColor: "bg-yellow-500",
+                            permission: canViewNotifications
+                        },
+                        { 
+                            title: "Yêu cầu liên hệ", 
+                            value: formatNumber(stats.overview.totalContactRequests), 
+                            change: formatChange(stats.overview.contactRequestsChange), 
+                            trend: stats.overview.contactRequestsChange >= 0 ? "up" as const : "down" as const, 
+                            icon: MessageSquare, 
+                            bgColor: "bg-purple-500/10", 
+                            borderColor: "border-purple-500/20", 
+                            iconColor: "text-purple-500", 
+                            barColor: "bg-purple-500",
+                            permission: canViewContactRequests
+                        },
+                        { 
+                            title: "Học sinh", 
+                            value: formatNumber(stats.overview.totalStudents), 
+                            change: formatChange(stats.overview.studentsChange), 
+                            trend: stats.overview.studentsChange >= 0 ? "up" as const : "down" as const, 
+                            icon: UserCheck, 
+                            bgColor: "bg-green-500/10", 
+                            borderColor: "border-green-500/20", 
+                            iconColor: "text-green-500", 
+                            barColor: "bg-green-500",
+                            permission: canViewStudents
+                        },
+                        { 
+                            title: "Phiên đăng nhập", 
+                            value: formatNumber(stats.overview.totalSessions), 
+                            change: formatChange(stats.overview.sessionsChange), 
+                            trend: stats.overview.sessionsChange >= 0 ? "up" as const : "down" as const, 
+                            icon: Activity, 
+                            bgColor: "bg-orange-500/10", 
+                            borderColor: "border-orange-500/20", 
+                            iconColor: "text-orange-500", 
+                            barColor: "bg-orange-500",
+                            permission: canViewSessions
+                        },
+                        { 
+                            title: "Vai trò", 
+                            value: formatNumber(stats.overview.totalRoles), 
+                            change: formatChange(stats.overview.rolesChange), 
+                            trend: stats.overview.rolesChange >= 0 ? "up" as const : "down" as const, 
+                            icon: Shield, 
+                            bgColor: "bg-red-500/10", 
+                            borderColor: "border-red-500/20", 
+                            iconColor: "text-red-500", 
+                            barColor: "bg-red-500",
+                            permission: canViewRoles
                         },
                     ]
                     .filter((stat) => stat.permission) // Only show cards user has permission for
@@ -311,90 +466,135 @@ export function DashboardStatsClient({ stats }: DashboardStatsClientProps) {
                 </motion.div>
 
                 {/* Main Charts Row */}
-                {(canViewUsers || canViewPosts || canViewComments) && (
+                {(canViewUsers || canViewPosts || canViewComments || canViewCategories || canViewTags || 
+                  canViewMessages || canViewNotifications || canViewContactRequests || canViewStudents || 
+                  canViewSessions || canViewRoles) && (
                 <div className="grid gap-6 lg:grid-cols-2">
                     {/* Line Chart - Monthly Trends */}
-                    {(canViewUsers || canViewPosts || canViewComments) && (
+                    {(canViewUsers || canViewPosts || canViewComments || canViewCategories || canViewTags || 
+                      canViewMessages || canViewNotifications || canViewContactRequests || canViewStudents || 
+                      canViewSessions || canViewRoles) && (
                     <motion.div variants={itemVariants}>
                         <Card className="relative overflow-hidden backdrop-blur-md bg-card/80 border border-border shadow-lg">
                             <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-background" />
                             <CardHeader className="relative z-10">
-                                <CardTitle className="flex items-center gap-2 text-xl">
-                                    <LineChart className="h-6 w-6 text-primary" />
-                                    Xu hướng theo tháng
-                                </CardTitle>
-                                <CardDescription className="text-base">
-                                    Thống kê người dùng, bài viết, bình luận và lượt xem
-                                </CardDescription>
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <CardTitle className="flex items-center gap-2 text-xl">
+                                            <LineChart className="h-6 w-6 text-primary" />
+                                            Xu hướng theo tháng
+                                        </CardTitle>
+                                        <CardDescription className="text-base">
+                                            Thống kê các resources theo tháng
+                                        </CardDescription>
+                                    </div>
+                                    <Popover>
+                                        <PopoverTrigger asChild>
+                                            <Button variant="outline" size="sm" className="gap-2">
+                                                <BarChart3 className="h-4 w-4" />
+                                                Chọn mục hiển thị
+                                            </Button>
+                                        </PopoverTrigger>
+                                        <PopoverContent className="w-64" align="end">
+                                            <div className="space-y-3">
+                                                <div className="flex items-center justify-between">
+                                                    <h4 className="font-semibold text-sm">Chọn resources</h4>
+                                                    <div className="flex gap-1">
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            className="h-7 px-2 text-xs"
+                                                            onClick={selectAll}
+                                                        >
+                                                            Tất cả
+                                                        </Button>
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            className="h-7 px-2 text-xs"
+                                                            onClick={deselectAll}
+                                                        >
+                                                            Bỏ chọn
+                                                        </Button>
+                                                    </div>
+                                                </div>
+                                                <div className="space-y-2 max-h-64 overflow-y-auto">
+                                                    {availableResources.map((resource) => (
+                                                        <div
+                                                            key={resource.key}
+                                                            className="flex items-center space-x-2 cursor-pointer hover:bg-muted/50 rounded-md p-2 -mx-2"
+                                                            onClick={() => toggleResource(resource.key)}
+                                                        >
+                                                            <Checkbox
+                                                                id={resource.key}
+                                                                checked={selectedResources.has(resource.key)}
+                                                                onCheckedChange={() => toggleResource(resource.key)}
+                                                            />
+                                                            <label
+                                                                htmlFor={resource.key}
+                                                                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center gap-2 flex-1 cursor-pointer"
+                                                            >
+                                                                <div
+                                                                    className="w-3 h-3 rounded-full"
+                                                                    style={{ backgroundColor: resource.color }}
+                                                                />
+                                                                {resource.label}
+                                                            </label>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        </PopoverContent>
+                                    </Popover>
+                                </div>
                             </CardHeader>
                             <CardContent className="relative z-10">
-                                <div className="h-80">
-                                    <ResponsiveContainer width="100%" height="100%">
-                                        <ComposedChart data={stats.monthlyData}>
-                                            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
-                                            <XAxis 
-                                                dataKey="month" 
-                                                stroke="hsl(var(--muted-foreground))"
-                                                fontSize={12}
-                                                tickLine={{ stroke: "hsl(var(--border))" }}
-                                            />
-                                            <YAxis 
-                                                stroke="hsl(var(--muted-foreground))"
-                                                fontSize={12}
-                                                tickLine={{ stroke: "hsl(var(--border))" }}
-                                            />
-                                            <Tooltip content={<CustomTooltip />} />
-                                            <Legend 
-                                                wrapperStyle={{ fontSize: "12px", paddingTop: "20px" }}
-                                                iconType="circle"
-                                            />
-                                            {canViewPosts && (
-                                                <Area 
-                                                    type="monotone" 
-                                                    dataKey="views" 
-                                                    fill={CHART_COLORS[3]}
-                                                    fillOpacity={0.2}
-                                                    stroke={CHART_COLORS[3]}
-                                                    strokeWidth={2}
-                                                    name="Lượt xem"
+                                {selectedResources.size === 0 ? (
+                                    <div className="h-80 flex items-center justify-center text-muted-foreground">
+                                        <div className="text-center">
+                                            <BarChart3 className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                                            <p>Vui lòng chọn ít nhất một resource để hiển thị</p>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="h-80">
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <ComposedChart data={stats.monthlyData}>
+                                                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
+                                                <XAxis 
+                                                    dataKey="month" 
+                                                    stroke="hsl(var(--muted-foreground))"
+                                                    fontSize={12}
+                                                    tickLine={{ stroke: "hsl(var(--border))" }}
                                                 />
-                                            )}
-                                            {canViewUsers && (
-                                                <Line 
-                                                    type="monotone" 
-                                                    dataKey="users" 
-                                                    stroke={CHART_COLORS[0]}
-                                                    strokeWidth={2}
-                                                    dot={{ fill: CHART_COLORS[0], r: 4 }}
-                                                    activeDot={{ r: 6 }}
-                                                    name="Người dùng"
+                                                <YAxis 
+                                                    stroke="hsl(var(--muted-foreground))"
+                                                    fontSize={12}
+                                                    tickLine={{ stroke: "hsl(var(--border))" }}
                                                 />
-                                            )}
-                                            {canViewPosts && (
-                                                <Line 
-                                                    type="monotone" 
-                                                    dataKey="posts" 
-                                                    stroke={CHART_COLORS[1]}
-                                                    strokeWidth={2}
-                                                    dot={{ fill: CHART_COLORS[1], r: 4 }}
-                                                    activeDot={{ r: 6 }}
-                                                    name="Bài viết"
+                                                <Tooltip content={<CustomTooltip />} />
+                                                <Legend 
+                                                    wrapperStyle={{ fontSize: "12px", paddingTop: "20px" }}
+                                                    iconType="circle"
                                                 />
-                                            )}
-                                            {canViewComments && (
-                                                <Line 
-                                                    type="monotone" 
-                                                    dataKey="comments" 
-                                                    stroke={CHART_COLORS[2]}
-                                                    strokeWidth={2}
-                                                    dot={{ fill: CHART_COLORS[2], r: 4 }}
-                                                    activeDot={{ r: 6 }}
-                                                    name="Bình luận"
-                                                />
-                                            )}
-                                        </ComposedChart>
-                                    </ResponsiveContainer>
-                                </div>
+                                                {availableResources
+                                                    .filter(r => selectedResources.has(r.key))
+                                                    .map((resource) => (
+                                                        <Line
+                                                            key={resource.key}
+                                                            type="monotone"
+                                                            dataKey={resource.key}
+                                                            stroke={resource.color}
+                                                            strokeWidth={2}
+                                                            dot={{ fill: resource.color, r: 4 }}
+                                                            activeDot={{ r: 6 }}
+                                                            name={resource.label}
+                                                        />
+                                                    ))}
+                                            </ComposedChart>
+                                        </ResponsiveContainer>
+                                    </div>
+                                )}
                             </CardContent>
                         </Card>
                     </motion.div>
@@ -493,73 +693,6 @@ export function DashboardStatsClient({ stats }: DashboardStatsClientProps) {
                 </div>
                 )}
 
-                {/* Traffic Chart */}
-                {canViewDashboard && (
-                <motion.div variants={itemVariants}>
-                    <Card className="relative overflow-hidden backdrop-blur-md bg-card/80 border border-border shadow-lg">
-                        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-background" />
-                        <CardHeader className="relative z-10">
-                            <CardTitle className="flex items-center gap-2 text-xl">
-                                <Activity className="h-6 w-6 text-primary" />
-                                Lưu lượng truy cập theo giờ
-                            </CardTitle>
-                            <CardDescription className="text-base">
-                                Số lượt truy cập trong 24 giờ qua
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent className="relative z-10">
-                            <div className="h-64">
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <AreaChart data={stats.trafficData}>
-                                        <defs>
-                                            <linearGradient id="trafficGradient" x1="0" y1="0" x2="0" y2="1">
-                                                <stop offset="5%" stopColor="#00cc44" stopOpacity={0.8} />
-                                                <stop offset="95%" stopColor="#00ff88" stopOpacity={0.2} />
-                                            </linearGradient>
-                                        </defs>
-                                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
-                                        <XAxis 
-                                            dataKey="time" 
-                                            stroke="hsl(var(--muted-foreground))"
-                                            fontSize={12}
-                                            tickLine={{ stroke: "hsl(var(--border))" }}
-                                        />
-                                        <YAxis 
-                                            stroke="hsl(var(--muted-foreground))"
-                                            fontSize={12}
-                                            tickLine={{ stroke: "hsl(var(--border))" }}
-                                        />
-                                        <Tooltip 
-                                            content={({ active, payload }) => {
-                                                if (active && payload && payload.length) {
-                                                    const value = typeof payload[0].value === "number" ? payload[0].value : 0
-                                                    return (
-                                                        <div className="bg-background border border-border rounded-lg shadow-lg p-3 backdrop-blur-sm">
-                                                            <p className="text-sm font-semibold mb-1">{payload[0].payload.time}</p>
-                                                            <p className="text-xs" style={{ color: "#00cc44" }}>
-                                                                {`${value} lượt truy cập`}
-                                                            </p>
-                                                        </div>
-                                                    )
-                                                }
-                                                return null
-                                            }}
-                                        />
-                                        <Area 
-                                            type="monotone" 
-                                            dataKey="visitors" 
-                                            stroke="#00cc44"
-                                            strokeWidth={2}
-                                            fill="url(#trafficGradient)"
-                                        />
-                                    </AreaChart>
-                                </ResponsiveContainer>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </motion.div>
-                )}
-
                 {/* Top Posts Table */}
                 {canViewPosts && (
                 <motion.div variants={itemVariants}>
@@ -571,42 +704,40 @@ export function DashboardStatsClient({ stats }: DashboardStatsClientProps) {
                                 Bài viết phổ biến nhất
                             </CardTitle>
                             <CardDescription className="text-base">
-                                Top 5 bài viết có lượt xem cao nhất
+                                Top 5 bài viết có nhiều bình luận nhất
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="relative z-10">
                             <div className="space-y-4">
-                                {stats.topPosts.map((post, index) => (
-                                    <motion.div
-                                        key={post.title}
-                                        className="flex items-center gap-4 p-4 rounded-xl bg-background/50 border border-border/50 backdrop-blur-sm hover:bg-background/70 transition-all duration-300 hover:shadow-md"
-                                        initial={{ opacity: 0, x: -10 }}
-                                        animate={{ opacity: 1, x: 0 }}
-                                        transition={{ delay: 0.5 + index * 0.1 }}
-                                    >
-                                        <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 text-primary font-bold">
-                                            {index + 1}
-                                        </div>
-                                        <div className="flex-1">
-                                            <div className="font-semibold text-sm mb-1">{post.title}</div>
-                                            <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                                                <div className="flex items-center gap-1">
-                                                    <Eye className="h-3 w-3" />
-                                                    {post.views.toLocaleString()}
-                                                </div>
-                                                <div className="flex items-center gap-1">
-                                                    <MousePointerClick className="h-3 w-3" />
-                                                    {post.likes}
-                                                </div>
-                                                <div className="flex items-center gap-1">
-                                                    <MessageSquare className="h-3 w-3" />
-                                                    {post.comments}
+                                {stats.topPosts.length > 0 ? (
+                                    stats.topPosts.map((post, index) => (
+                                        <motion.div
+                                            key={post.id}
+                                            className="flex items-center gap-4 p-4 rounded-xl bg-background/50 border border-border/50 backdrop-blur-sm hover:bg-background/70 transition-all duration-300 hover:shadow-md"
+                                            initial={{ opacity: 0, x: -10 }}
+                                            animate={{ opacity: 1, x: 0 }}
+                                            transition={{ delay: 0.5 + index * 0.1 }}
+                                        >
+                                            <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 text-primary font-bold">
+                                                {index + 1}
+                                            </div>
+                                            <div className="flex-1">
+                                                <div className="font-semibold text-sm mb-1">{post.title}</div>
+                                                <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                                                    <div className="flex items-center gap-1">
+                                                        <MessageSquare className="h-3 w-3" />
+                                                        {post.comments} bình luận
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                        <ArrowUpRight className="h-5 w-5 text-muted-foreground opacity-50" />
-                                    </motion.div>
-                                ))}
+                                            <ArrowUpRight className="h-5 w-5 text-muted-foreground opacity-50" />
+                                        </motion.div>
+                                    ))
+                                ) : (
+                                    <div className="text-center text-muted-foreground py-8">
+                                        Chưa có bài viết nào
+                                    </div>
+                                )}
                             </div>
                         </CardContent>
                     </Card>
