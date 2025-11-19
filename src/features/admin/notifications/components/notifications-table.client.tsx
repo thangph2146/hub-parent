@@ -116,10 +116,7 @@ export function NotificationsTableClient({
 
   const { renderRowActionsForNotifications } = useNotificationRowActions({
     sessionUserId: session?.user?.id,
-    onToggleRead: handleToggleReadWithRefresh,
     onDelete: handleDeleteSingleWithRefresh,
-    markingReadNotifications,
-    markingUnreadNotifications,
     deletingNotifications,
   })
 

@@ -18,7 +18,7 @@ type TableSkeletonConfig = {
   withTitle?: boolean
 }
 
-type SuspensePreset = "detail" | "table" | "messages" | "inline"
+export type SuspensePreset = "detail" | "table" | "messages" | "inline"
 
 const defaultDetailSkeleton: Required<DetailSkeletonConfig> = {
   showHeader: true,
@@ -38,6 +38,38 @@ const LoadingPlaceholder = () => (
   </div>
 )
 
+type FallbackConfig = {
+  detail?: DetailSkeletonConfig
+  table?: TableSkeletonConfig
+}
+
+const fallbackBuilders: Record<SuspensePreset, (config?: FallbackConfig) => ReactNode> = {
+  detail: config => {
+    const detailProps = { ...defaultDetailSkeleton, ...(config?.detail ?? {}) }
+
+    return (
+      <ResourceDetailSkeleton
+        showHeader={detailProps.showHeader}
+        fieldCount={detailProps.fieldCount}
+        sectionCount={detailProps.sectionCount}
+      />
+    )
+  },
+  table: config => {
+    const tableProps = { ...defaultTableSkeleton, ...(config?.table ?? {}) }
+
+    return (
+      <ResourceTableSkeleton
+        title={tableProps.withTitle}
+        rowCount={tableProps.rowCount}
+        columnCount={tableProps.columnCount}
+      />
+    )
+  },
+  messages: () => <MessagesPageSkeleton />,
+  inline: () => <LoadingPlaceholder />,
+}
+
 export interface SuspenseWrapperProps {
   children: ReactNode
   fallback?: ReactNode
@@ -53,46 +85,15 @@ export function SuspenseWrapper({
   detailConfig,
   tableConfig,
 }: SuspenseWrapperProps) {
-  const fallbackNode = fallback ?? buildFallback(preset, { detail: detailConfig, table: tableConfig })
+  const fallbackNode =
+    fallback ?? resolveFallback(preset, { detail: detailConfig, table: tableConfig })
 
   return <Suspense fallback={fallbackNode}>{children}</Suspense>
 }
 
-type FallbackConfig = {
-  detail?: DetailSkeletonConfig
-  table?: TableSkeletonConfig
-}
-
-function buildFallback(preset: SuspensePreset, config?: FallbackConfig): ReactNode {
-  switch (preset) {
-    case "table": {
-      const tableProps = { ...defaultTableSkeleton, ...(config?.table ?? {}) }
-
-      return (
-        <ResourceTableSkeleton
-          title={tableProps.withTitle}
-          rowCount={tableProps.rowCount}
-          columnCount={tableProps.columnCount}
-        />
-      )
-    }
-    case "messages":
-      return <MessagesPageSkeleton />
-    case "inline":
-      return <LoadingPlaceholder />
-    case "detail":
-    default: {
-      const detailProps = { ...defaultDetailSkeleton, ...(config?.detail ?? {}) }
-
-      return (
-        <ResourceDetailSkeleton
-          showHeader={detailProps.showHeader}
-          fieldCount={detailProps.fieldCount}
-          sectionCount={detailProps.sectionCount}
-        />
-      )
-    }
-  }
+function resolveFallback(preset: SuspensePreset, config?: FallbackConfig) {
+  const builder = fallbackBuilders[preset] ?? fallbackBuilders.detail
+  return builder(config)
 }
 
 export interface FormPageSuspenseProps {
@@ -153,9 +154,7 @@ export interface MessagesPageSuspenseProps {
 
 export function MessagesPageSuspense({ children }: MessagesPageSuspenseProps) {
   return (
-    <SuspenseWrapper preset="messages">
-      {children}
-    </SuspenseWrapper>
+    <SuspenseWrapper preset="messages">{children}</SuspenseWrapper>
   )
 }
 
@@ -171,3 +170,5 @@ export function InlineSuspense({ children, fallback }: InlineSuspenseProps) {
     </SuspenseWrapper>
   )
 }
+
+export const SuspenseBoundary = SuspenseWrapper
