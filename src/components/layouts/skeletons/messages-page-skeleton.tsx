@@ -7,8 +7,18 @@ import { Skeleton } from "@/components/ui/skeleton"
  * Hiển thị 2 panel (contact list + chat window) để tránh layout shift
  */
 export function MessagesPageSkeleton() {
+  const isBrowser = typeof window !== "undefined"
+  const viewportHeight = isBrowser ? window.innerHeight : undefined
+  const skeletonHeight = viewportHeight ? `calc(${viewportHeight}px - 0px)` : "100dvh"
+
   return (
-    <div className="flex h-[min(720px,calc(100vh-8rem))] min-h-[460px] w-full overflow-hidden rounded-xl border bg-card">
+    <div
+      className="flex w-full overflow-hidden rounded-xl border bg-card"
+      style={{
+        height: skeletonHeight,
+        minHeight: "480px",
+      }}
+    >
       {/* Contact list */}
       <div className="hidden w-full max-w-xs flex-col border-r p-4 sm:flex">
         <div className="mb-4 flex items-center justify-between gap-2">

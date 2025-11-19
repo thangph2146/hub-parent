@@ -76,6 +76,7 @@ export function useChatSocketBridge({
       type: "PERSONAL",
       parentId: payload.parentMessageId || null,
       readers: payload.readers || undefined, // Include readers array for group messages
+      status: "sent",
     })
 
     // Helper: Get contact ID from payload
@@ -97,26 +98,9 @@ export function useChatSocketBridge({
 
       // Update state (functional update để tránh stale closure)
       setContactsState((prev) => {
-        // Check duplicate
-        const messageExists = prev.some((contact) =>
-          contact.messages.some((msg) => {
-            if (payload.id && msg.id === payload.id) return true
-            return (
-              msg.content === payload.content &&
-              msg.senderId === payload.fromUserId &&
-              Math.abs(msg.timestamp.getTime() - (payload.timestamp || Date.now())) < 2000
-            )
-          })
-        )
-
-        if (messageExists) {
-          logger.debug("Message already exists, skipping", { contactId, messageId: payload.id })
-          return prev
-        }
-
         const isCurrentChat = currentChatId === contactId
         const newMessage = convertToMessage(payload)
-        
+
         // Use helper function for consistent logic
         const isUnread = isMessageUnreadByUser(newMessage, currentUserId)
 
@@ -130,25 +114,94 @@ export function useChatSocketBridge({
           if (contact.id !== contactId) return contact
           contactFound = true
 
-          // Thêm tin nhắn mới
-          const newMessages = [...contact.messages, newMessage]
-          
-          // Tự động xóa tin nhắn cũ nếu vượt quá giới hạn
-          // Giữ lại MAX_MESSAGES_IN_STATE tin nhắn mới nhất (xóa tin nhắn cũ nhất)
-          const limitedMessages = newMessages.length > MAX_MESSAGES_IN_STATE
-            ? newMessages.slice(-MAX_MESSAGES_IN_STATE)
-            : newMessages
+          let updatedMessages = contact.messages
 
-          const contactWithMessage: Contact = {
+          // 1. Nếu message với id đã tồn tại -> cập nhật dữ liệu (bao gồm status)
+          if (payload.id) {
+            const existingById = updatedMessages.findIndex((msg) => msg.id === payload.id)
+            if (existingById !== -1) {
+              const prevMessage = updatedMessages[existingById]
+              const mergedMessage: Message = {
+                ...prevMessage,
+                ...newMessage,
+                status: "sent",
+              }
+              updatedMessages = [
+                ...updatedMessages.slice(0, existingById),
+                mergedMessage,
+                ...updatedMessages.slice(existingById + 1),
+              ]
+            }
+          }
+
+          // 2. Nếu có message đang gửi (status sending) trùng nội dung -> thay thế bằng message mới
+          if (updatedMessages === contact.messages) {
+            const sendingIndex = updatedMessages.findIndex(
+              (msg) =>
+                msg.status === "sending" &&
+                msg.senderId === currentUserId &&
+                msg.content === newMessage.content &&
+                Math.abs(msg.timestamp.getTime() - newMessage.timestamp.getTime()) < 5000
+            )
+
+            if (sendingIndex !== -1) {
+              const sendingMessage = updatedMessages[sendingIndex]
+              const mergedMessage: Message = {
+                ...sendingMessage,
+                ...newMessage,
+                status: "sent",
+              }
+              updatedMessages = [
+                ...updatedMessages.slice(0, sendingIndex),
+                mergedMessage,
+                ...updatedMessages.slice(sendingIndex + 1),
+              ]
+            }
+          }
+
+          // 3. Nếu sau hai bước trên vẫn chưa thêm -> kiểm tra duplicate và thêm mới
+          if (updatedMessages === contact.messages) {
+            const duplicateExists = updatedMessages.some((msg) => {
+              if (payload.id && msg.id === payload.id) return true
+              return (
+                msg.senderId === newMessage.senderId &&
+                msg.content === newMessage.content &&
+                Math.abs(msg.timestamp.getTime() - newMessage.timestamp.getTime()) < 2000
+              )
+            })
+
+            if (duplicateExists) {
+              return contact
+            }
+
+            const newMessages = [...updatedMessages, newMessage]
+            const limitedMessages = newMessages.length > MAX_MESSAGES_IN_STATE
+              ? newMessages.slice(-MAX_MESSAGES_IN_STATE)
+              : newMessages
+
+            const contactWithMessage: Contact = {
+              ...contact,
+              messages: limitedMessages,
+              lastMessage: newMessage.content,
+              lastMessageTime: newMessage.timestamp,
+            }
+
+            return {
+              ...contactWithMessage,
+              unreadCount: calculateUnreadCount(contactWithMessage, currentUserId),
+            }
+          }
+
+          const contactWithUpdatedMessages: Contact = {
             ...contact,
-            messages: limitedMessages,
+            messages: updatedMessages,
             lastMessage: newMessage.content,
             lastMessageTime: newMessage.timestamp,
           }
 
           return {
-            ...contactWithMessage,
-            unreadCount: calculateUnreadCount(contactWithMessage, currentUserId),
+            ...contactWithUpdatedMessages,
+            unreadCount: calculateUnreadCount(contactWithUpdatedMessages, currentUserId),
           }
         })
 

@@ -17,8 +17,9 @@ export function createOptimisticMessage(params: {
   groupId: string | null
   parentId?: string | null
 }): Message {
+  const tempId = `temp-${Date.now()}-${Math.random().toString(36).slice(2)}`
   return {
-    id: `temp-${Date.now()}`,
+    id: tempId,
     content: params.content,
     senderId: params.senderId,
     receiverId: params.receiverId,
@@ -27,6 +28,8 @@ export function createOptimisticMessage(params: {
     isRead: false,
     type: "PERSONAL",
     parentId: params.parentId || null,
+    status: "sending",
+    clientMessageId: tempId,
   }
 }
 

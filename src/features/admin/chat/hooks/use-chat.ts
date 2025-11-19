@@ -279,6 +279,8 @@ export function useChat({ contacts, currentUserId, role }: UseChatProps) {
           ...msg,
           id: savedMessage.id,
           timestamp: new Date(savedMessage.timestamp),
+          status: "sent",
+          clientMessageId: undefined,
         }))
       )
     } catch (error) {

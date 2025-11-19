@@ -31,6 +31,8 @@ export interface Message {
     email: string
     avatar: string | null
   }[] // List of users who have read this message (for group messages)
+  status?: "sending" | "sent" | "failed"
+  clientMessageId?: string
 }
 
 export interface Group {

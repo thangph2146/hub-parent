@@ -51,14 +51,13 @@ export function MessagesArea({
   const messageMap = createMessageMap(uniqueMessages)
   const filteredMessages = filterMessagesByQuery(uniqueMessages, searchQuery)
 
-  const style = {
-    maxHeight: messagesMaxHeight ? `${messagesMaxHeight}px` : "calc(100dvh - 13rem)",
-    minHeight: messagesMinHeight ? `${messagesMinHeight}px` : "calc(100dvh - 13rem)",
-  }
-
   return (
     <ScrollArea
-      style={style}
+      style={{
+        height: messagesMaxHeight ? `${messagesMaxHeight}px` : undefined,
+        maxHeight: messagesMaxHeight ? `${messagesMaxHeight}px` : "calc(100dvh - 13rem)",
+        minHeight: messagesMinHeight ? `${messagesMinHeight}px` : "calc(100dvh - 13rem)",
+      }}
     >
       <div className="flex flex-col p-4 gap-2" ref={scrollAreaRef}>
         {filteredMessages.length > 0 ? (

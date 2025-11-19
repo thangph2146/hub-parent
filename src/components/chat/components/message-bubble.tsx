@@ -55,9 +55,11 @@ export function MessageBubble({
           </Avatar>
         )}
         <div
-          className={`max-w-[70%] rounded-lg px-4 py-2 cursor-pointer hover:opacity-90 transition-opacity relative ${
-            isOwnMessage ? "bg-primary text-primary-foreground" : ""
-          }`}
+          className={[
+            "max-w-[70%] rounded-lg px-4 py-2 cursor-pointer hover:opacity-90 transition-opacity relative",
+            isOwnMessage ? "bg-primary text-primary-foreground" : "bg-muted text-foreground",
+            message.status === "sending" ? "opacity-80" : "",
+          ].join(" ")}
           data-role="bubble"
           onClick={() => {
             if (parentMessage?.id && onScrollToMessage) {
@@ -90,7 +92,7 @@ export function MessageBubble({
           {parentMessage && (
             <div
               className={`mb-2 pb-2 border-l-2 pl-2 ${
-                isOwnMessage ? "border-primary-foreground/30" : "border-muted-foreground/30"
+                isOwnMessage ? "border-primary-foreground/30" : "border-muted-foreground/40"
               }`}
               onClick={(e) => {
                 e.stopPropagation()
@@ -130,6 +132,11 @@ export function MessageBubble({
             }`}>
               {formatMessageTime(message.timestamp)}
             </p>
+            {isOwnMessage && message.status === "sending" && (
+              <span className="text-[10px] text-primary-foreground/70">
+                Đang gửi...
+              </span>
+            )}
             {canMarkRead && (
               <button
                 onClick={(e) => {
