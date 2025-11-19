@@ -79,6 +79,8 @@ import { useUnreadCounts } from "@/hooks/use-unread-counts"
 import { useNotificationsSocketBridge } from "@/hooks/use-notifications"
 import { useContactRequestsSocketBridge } from "@/features/admin/contact-requests/hooks/use-contact-requests-socket-bridge"
 import { useSocket } from "@/hooks/use-socket"
+import { useQueryClient } from "@tanstack/react-query"
+import { queryKeys } from "@/lib/query-keys"
 
 
 export function NavUser({ className }: { className?: string }) {
@@ -86,6 +88,8 @@ export function NavUser({ className }: { className?: string }) {
   const pathname = usePathname()
   const userId = session?.user?.id
   const primaryRoleName = session?.roles?.[0]?.name ?? null
+
+  const queryClient = useQueryClient()
   
   // Chỉ render DropdownMenu sau khi component đã mount trên client để tránh hydration mismatch
   // Radix UI generate ID random khác nhau giữa server và client
@@ -125,6 +129,9 @@ export function NavUser({ className }: { className?: string }) {
 
     const handleConnect = () => {
       setIsSocketConnected(true)
+      if (userId) {
+        queryClient.invalidateQueries({ queryKey: queryKeys.unreadCounts.user(userId) })
+      }
     }
 
     const handleDisconnect = () => {
@@ -138,7 +145,23 @@ export function NavUser({ className }: { className?: string }) {
       socket.off("connect", handleConnect)
       socket.off("disconnect", handleDisconnect)
     }
-  }, [socket])
+  }, [socket, queryClient, userId])
+
+  React.useEffect(() => {
+    if (!socket || !userId) return
+
+    const invalidateUnreadCounts = () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.unreadCounts.user(userId) })
+    }
+
+    socket.on("message:new", invalidateUnreadCounts)
+    socket.on("message:updated", invalidateUnreadCounts)
+
+    return () => {
+      socket.off("message:new", invalidateUnreadCounts)
+      socket.off("message:updated", invalidateUnreadCounts)
+    }
+  }, [socket, userId, queryClient])
 
   // Get unread counts với realtime updates
   // Tắt polling khi có socket connection (socket sẽ handle real-time updates)

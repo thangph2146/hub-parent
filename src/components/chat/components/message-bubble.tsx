@@ -139,14 +139,6 @@ export function MessageBubble({
             )}
             {canMarkRead && (
               <button
-                onClick={(e) => {
-                  e.stopPropagation()
-                  if (isReadByCurrentUser) {
-                    onMarkAsUnread?.(message.id)
-                  } else {
-                    onMarkAsRead?.(message.id)
-                  }
-                }}
                 className={`opacity-0 group-hover:opacity-100 transition-opacity text-xs px-2 py-1 rounded ${
                   isReadByCurrentUser
                     ? "text-muted-foreground hover:text-foreground"

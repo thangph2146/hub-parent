@@ -30,6 +30,8 @@ import { useContactRequestsSocketBridge } from "@/features/admin/contact-request
 import { useSocket } from "@/hooks/use-socket"
 import type { MenuItem } from "@/lib/config"
 import type { LucideIcon } from "lucide-react"
+import { useQueryClient } from "@tanstack/react-query"
+import { queryKeys } from "@/lib/query-keys"
 
 // Icon mapping để tạo lại icon trong client component
 const iconMap: Record<string, LucideIcon> = {
@@ -70,6 +72,8 @@ export function NavMainWithBadges({ items }: NavMainWithBadgesProps) {
   const pathname = usePathname()
   const userId = session?.user?.id
   const primaryRole = session?.roles?.[0]?.name ?? null
+
+  const queryClient = useQueryClient()
 
   // Helper function để check nếu pathname match với menu item URL
   const isItemActive = React.useCallback((item: MenuItem): boolean => {
@@ -128,11 +132,13 @@ export function NavMainWithBadges({ items }: NavMainWithBadgesProps) {
       return
     }
 
-    // Check initial connection status
     setIsSocketConnected(socket.connected)
 
     const handleConnect = () => {
       setIsSocketConnected(true)
+      if (userId) {
+        queryClient.invalidateQueries({ queryKey: queryKeys.unreadCounts.user(userId) })
+      }
     }
 
     const handleDisconnect = () => {
@@ -146,7 +152,23 @@ export function NavMainWithBadges({ items }: NavMainWithBadgesProps) {
       socket.off("connect", handleConnect)
       socket.off("disconnect", handleDisconnect)
     }
-  }, [socket])
+  }, [socket, queryClient, userId])
+
+  React.useEffect(() => {
+    if (!socket || !userId) return
+
+    const invalidateUnreadCounts = () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.unreadCounts.user(userId) })
+    }
+
+    socket.on("message:new", invalidateUnreadCounts)
+    socket.on("message:updated", invalidateUnreadCounts)
+
+    return () => {
+      socket.off("message:new", invalidateUnreadCounts)
+      socket.off("message:updated", invalidateUnreadCounts)
+    }
+  }, [socket, userId, queryClient])
 
   // Get unread counts với polling fallback
   // Tắt polling khi có socket connection (socket sẽ handle real-time updates)

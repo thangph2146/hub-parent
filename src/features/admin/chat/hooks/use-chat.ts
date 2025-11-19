@@ -10,7 +10,11 @@ import {
   debouncedMarkAsRead,
   getUnreadMessages,
   hasMessagesChanged,
+  calculateUnreadCount,
 } from "./use-chat-helpers"
+import { useQueryClient } from "@tanstack/react-query"
+import { queryKeys } from "@/lib/query-keys"
+import type { UnreadCountsResponse } from "@/hooks/use-unread-counts"
 import { markMessageAPI, sendMessageAPI, handleAPIError } from "./use-chat-api"
 import {
   createOptimisticMessage,
@@ -32,6 +36,33 @@ interface UseChatProps {
 export function useChat({ contacts, currentUserId, role }: UseChatProps) {
   const [contactsState, setContactsState] = useState<Contact[]>(contacts)
   const [currentChatState, setCurrentChatState] = useState<Contact | null>(contacts[0] || null)
+  const queryClient = useQueryClient()
+  const invalidateUnreadCounts = useCallback(() => {
+    if (!currentUserId) return
+    queryClient.invalidateQueries({ queryKey: queryKeys.unreadCounts.user(currentUserId) })
+  }, [queryClient, currentUserId])
+
+  useEffect(() => {
+    if (!currentUserId) return
+    const totalUnread = contactsState.reduce((sum, contact) => sum + calculateUnreadCount(contact, currentUserId), 0)
+    queryClient.setQueryData<UnreadCountsResponse | undefined>(
+      queryKeys.unreadCounts.user(currentUserId),
+      (prev) => {
+        if (!prev) {
+          return {
+            unreadMessages: totalUnread,
+            unreadNotifications: 0,
+            contactRequests: 0,
+          }
+        }
+        if (prev.unreadMessages === totalUnread) return prev
+        return {
+          ...prev,
+          unreadMessages: totalUnread,
+        }
+      }
+    )
+  }, [contactsState, currentUserId, queryClient])
   
   // Wrapper để auto mark as read khi select contact
   const setCurrentChat = useCallback(
@@ -44,9 +75,10 @@ export function useChat({ contacts, currentUserId, role }: UseChatProps) {
         if (unreadMessages.length > 0) {
           debouncedMarkAsRead(contact.id, contact.type)
         }
+        invalidateUnreadCounts()
       }
     },
-    [currentUserId]
+    [currentUserId, invalidateUnreadCounts]
   )
   
   // Keep currentChat reference for backward compatibility
@@ -163,6 +195,7 @@ export function useChat({ contacts, currentUserId, role }: UseChatProps) {
       if (unreadMessages.length > 0) {
         debouncedMarkAsRead(updatedChat.id, updatedChat.type)
       }
+      invalidateUnreadCounts()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [contactsState, currentChatState?.id, currentUserId])
@@ -331,6 +364,7 @@ export function useChat({ contacts, currentUserId, role }: UseChatProps) {
       
       try {
         await markMessageAPI(messageId, isRead)
+        invalidateUnreadCounts()
       } catch (error) {
         // Rollback
         setContactsState((prev) =>
@@ -339,7 +373,7 @@ export function useChat({ contacts, currentUserId, role }: UseChatProps) {
         handleAPIError(error, isRead ? "Không thể đánh dấu đã đọc" : "Không thể đánh dấu chưa đọc")
       }
     },
-    [currentChat, currentUserId]
+    [currentChat, currentUserId, invalidateUnreadCounts]
   )
 
   const markMessageAsRead = useCallback(
