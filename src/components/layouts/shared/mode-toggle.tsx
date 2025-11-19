@@ -29,15 +29,15 @@ export function ModeToggle() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => setTheme("light")}>
+        <DropdownMenuItem onClick={() => setTheme("light")} className="data-[highlighted]:bg-accent/10 disabled:opacity-50">
           <Sun className="mr-2 h-5 w-5" />
           <span>Sáng</span>
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("dark")}>
+        <DropdownMenuItem onClick={() => setTheme("dark")} className="data-[highlighted]:bg-accent/10 disabled:opacity-50">
           <Moon className="mr-2 h-5 w-5" />
           <span>Tối</span>
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("system")}>
+        <DropdownMenuItem onClick={() => setTheme("system")} className="data-[highlighted]:bg-accent/10 disabled:opacity-50">
           <Monitor className="mr-2 h-5 w-5" />
           <span>Theo hệ thống</span>
         </DropdownMenuItem>

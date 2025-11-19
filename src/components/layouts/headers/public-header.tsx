@@ -32,6 +32,7 @@ import {
 import { Logo } from "../../../../public/svg/Logo"
 import { appFeatures } from "@/lib/config/app-features"
 import { getResourceMainRoute } from "@/lib/permissions/route-helpers"
+import { Separator } from "@/components/ui/separator"
 
 /**
  * Helper functions để lấy routes từ appFeatures
@@ -163,9 +164,18 @@ export function PublicHeader() {
     >
       <nav className="mx-auto flex h-14 w-full max-w-7xl items-center justify-between px-4">
         <div className="flex items-center gap-5">
-          <Link href={PUBLIC_ROUTES.home} className="rounded-md p-2">
+          <Link href={PUBLIC_ROUTES.home} className="dark:bg-foreground rounded-md p-1 flex items-center gap-2">
             <Logo className="h-10 w-10 text-blue-100" />
           </Link>
+          <div className="space-y-1">
+              <h3 className="text-md text-center font-bold text-foreground">
+                Trường Đại học Ngân hàng
+              </h3>
+              <p className="text-sm font-medium">
+                Thành Phố Hồ Chí Minh
+              </p>
+            </div>
+            <Separator orientation="vertical" className="h-4 bg-border"/>
           {mounted ? (
             <NavigationMenu className="hidden md:flex">
               <NavigationMenuList>
