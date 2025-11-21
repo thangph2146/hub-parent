@@ -12,6 +12,7 @@ import { ResourceForm } from "@/features/admin/resources/components"
 import { useResourceFormSubmit, useResourceNavigation } from "@/features/admin/resources/hooks"
 import { apiRoutes } from "@/lib/api/routes"
 import { queryKeys } from "@/lib/query-keys"
+import { resourceLogger } from "@/lib/config"
 import { getBaseTagFields, type TagFormData } from "../form-fields"
 import type { TagRow } from "../types"
 
@@ -65,14 +66,27 @@ export function TagEditClient({
           : undefined,
       fallback: backUrl,
     },
-    onSuccess: async (_response) => {
+    onSuccess: async (response) => {
+      const targetTagId = tag?.id
+      
+      resourceLogger.actionFlow({
+        resource: "tags",
+        action: "update",
+        step: "success",
+        metadata: {
+          tagId: targetTagId,
+          responseStatus: response?.status,
+        },
+      })
+
       // Invalidate React Query cache để cập nhật danh sách tags
       await queryClient.invalidateQueries({ queryKey: queryKeys.adminTags.all(), refetchType: "all" })
+      
       // Invalidate detail query nếu có tagId
-      const targetTagId = tag?.id
       if (targetTagId) {
         await queryClient.invalidateQueries({ queryKey: queryKeys.adminTags.detail(targetTagId) })
       }
+      
       // Refetch để đảm bảo data mới nhất
       await queryClient.refetchQueries({ queryKey: queryKeys.adminTags.all(), type: "all" })
       

@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useMemo } from "react"
+import { useCallback, useMemo, useEffect, useRef } from "react"
 import { useResourceRouter } from "@/hooks/use-resource-segment"
 import { Plus, RotateCcw, Trash2, AlertTriangle } from "lucide-react"
 
@@ -23,6 +23,7 @@ import { apiClient } from "@/lib/api/axios"
 import { apiRoutes } from "@/lib/api/routes"
 import { useQueryClient } from "@tanstack/react-query"
 import { queryKeys } from "@/lib/query-keys"
+import { resourceLogger } from "@/lib/config"
 import { useTagsSocketBridge } from "@/features/admin/tags/hooks/use-tags-socket-bridge"
 import { useTagActions } from "@/features/admin/tags/hooks/use-tag-actions"
 import { useTagFeedback } from "@/features/admin/tags/hooks/use-tag-feedback"
@@ -41,9 +42,41 @@ export function TagsTableClient({
   initialData,
 }: TagsTableClientProps) {
   const queryClient = useQueryClient()
-  const { cacheVersion } = useTagsSocketBridge()
+  const hasLoggedRef = useRef(false)
+  const { cacheVersion, isSocketConnected } = useTagsSocketBridge()
   const { feedback, showFeedback, handleFeedbackOpenChange } = useTagFeedback()
   const { deleteConfirm, setDeleteConfirm, handleDeleteConfirm } = useTagDeleteConfirm()
+
+  // Log table load một lần
+  useEffect(() => {
+    if (hasLoggedRef.current) return
+    hasLoggedRef.current = true
+    
+    resourceLogger.tableAction({
+      resource: "tags",
+      action: "load-table",
+      view: "active",
+      total: initialData?.total,
+      page: initialData?.page,
+    })
+
+    if (initialData) {
+      resourceLogger.dataStructure({
+        resource: "tags",
+        dataType: "table",
+        rowCount: initialData.rows.length,
+        structure: {
+          columns: ["id", "name", "slug", "createdAt", "deletedAt"],
+          pagination: {
+            page: initialData.page,
+            limit: initialData.limit,
+            total: initialData.total,
+            totalPages: initialData.totalPages,
+          },
+        },
+      })
+    }
+  }, [initialData])
 
   const getInvalidateQueryKey = useCallback(() => queryKeys.adminTags.all(), [])
   const { onRefreshReady, refresh: refreshTable } = useResourceTableRefresh({
@@ -63,6 +96,7 @@ export function TagsTableClient({
     canDelete,
     canRestore,
     canManage,
+    isSocketConnected,
     showFeedback,
   })
 

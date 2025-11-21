@@ -14,7 +14,7 @@ import {
   type CreateTagInput,
   type UpdateTagInput,
 } from "./schemas"
-import { notifySuperAdminsOfTagAction } from "./notifications"
+import { notifySuperAdminsOfTagAction, notifySuperAdminsOfBulkTagAction } from "./notifications"
 import {
   ApplicationError,
   ForbiddenError,
@@ -275,26 +275,14 @@ export async function bulkSoftDeleteTags(ctx: AuthContext, ids: string[]): Promi
     }
   }
 
-  // Log để debug
-  logger.debug("bulkSoftDeleteTags: Found tags to delete", {
-    found: tags.length,
-    requested: ids.length,
-  })
-
   const result = await prisma.tag.updateMany({
     where: {
-      id: { in: tags.map((tag) => tag.id) }, // Chỉ xóa những tags thực sự tồn tại và đang hoạt động
+      id: { in: tags.map((tag) => tag.id) },
       deletedAt: null,
     },
     data: {
       deletedAt: new Date(),
     },
-  })
-
-  // Log để debug
-  logger.debug("bulkSoftDeleteTags: Deleted tags", {
-    deleted: result.count,
-    found: tags.length,
   })
 
   // Invalidate cache cho bulk operation
@@ -303,27 +291,24 @@ export async function bulkSoftDeleteTags(ctx: AuthContext, ids: string[]): Promi
     additionalTags: ["tag-options", "active-tags"],
   })
 
-  // Emit socket events để update UI - await song song để đảm bảo tất cả events được emit
-  // Sử dụng Promise.allSettled để không bị fail nếu một event lỗi
+  // Emit socket events để update UI
   if (result.count > 0) {
-    // Emit events song song và await tất cả để đảm bảo hoàn thành
+    // Emit events song song
     const emitPromises = tags.map((tag) => 
       emitTagUpsert(tag.id, "active").catch((error) => {
         logger.error(`Failed to emit tag:upsert for ${tag.id}`, error as Error)
-        return null // Return null để Promise.allSettled không throw
+        return null
       })
     )
-    // Await tất cả events nhưng không fail nếu một số lỗi
     await Promise.allSettled(emitPromises)
 
-    // Tạo system notifications cho từng tag
-    for (const tag of tags) {
-      await notifySuperAdminsOfTagAction(
+    // Emit một notification tổng hợp thay vì từng cái một
+    await notifySuperAdminsOfBulkTagAction(
         "delete",
         ctx.actorId,
-        tag
+      result.count,
+      tags
       )
-    }
   }
 
   return { success: true, message: `Đã xóa ${result.count} thẻ tag`, affected: result.count }
@@ -374,51 +359,17 @@ export async function bulkRestoreTags(ctx: AuthContext, ids: string[]): Promise<
   }
 
   // Tìm tất cả tags được request để phân loại trạng thái
-  // Prisma findMany mặc định KHÔNG filter theo deletedAt, nên sẽ tìm thấy cả soft-deleted và active tags
-  // Nhưng KHÔNG tìm thấy hard-deleted tags (đã bị xóa vĩnh viễn khỏi database)
-  // Sử dụng findMany mà KHÔNG filter theo deletedAt để tìm được tất cả tags (kể cả đã bị soft delete)
   const allRequestedTags = await prisma.tag.findMany({
     where: {
       id: { in: ids },
-      // KHÔNG filter theo deletedAt ở đây để tìm được cả soft-deleted và active tags
-      // Nếu chỉ muốn tìm soft-deleted, dùng: deletedAt: { not: null }
-      // Nếu chỉ muốn tìm active, dùng: deletedAt: null
-      // Ở đây KHÔNG filter để tìm được tất cả
     },
-    select: { id: true, name: true, slug: true, deletedAt: true, createdAt: true },
+    select: { id: true, name: true, slug: true, deletedAt: true },
   })
-  
-  // Log để debug nếu không tìm thấy tags
-  if (allRequestedTags.length === 0) {
-    logger.warn("bulkRestoreTags: No tags found in database", {
-      requestedIds: ids,
-      totalRequested: ids.length,
-    })
-  }
 
   // Phân loại tags
   const softDeletedTags = allRequestedTags.filter((tag) => tag.deletedAt !== null)
   const activeTags = allRequestedTags.filter((tag) => tag.deletedAt === null)
   const notFoundCount = ids.length - allRequestedTags.length
-
-  // Log chi tiết để debug
-  logger.debug("bulkRestoreTags: Tag status analysis", {
-    requested: ids.length,
-    found: allRequestedTags.length,
-    softDeleted: softDeletedTags.length,
-    active: activeTags.length,
-    notFound: notFoundCount,
-    requestedIds: ids,
-    foundIds: allRequestedTags.map((t) => t.id),
-    softDeletedIds: softDeletedTags.map((t) => t.id),
-    activeIds: activeTags.map((t) => t.id),
-    softDeletedDetails: softDeletedTags.map((t) => ({
-      id: t.id,
-      name: t.name,
-      deletedAt: t.deletedAt,
-      createdAt: t.createdAt,
-    })),
-  })
 
   // Nếu không có tag nào đã bị soft delete, trả về message chi tiết
   if (softDeletedTags.length === 0) {
@@ -444,29 +395,14 @@ export async function bulkRestoreTags(ctx: AuthContext, ids: string[]): Promise<
   // Chỉ restore những tags đã bị soft delete
   const tagsToRestore = softDeletedTags
 
-  // Log để debug
-  logger.debug("bulkRestoreTags: Restoring tags", {
-    toRestore: tagsToRestore.length,
-    requested: ids.length,
-    tagsToRestoreIds: tagsToRestore.map((t) => t.id),
-  })
-
-  // Chỉ update những tags có ID trong danh sách tags đã bị soft delete
   const result = await prisma.tag.updateMany({
     where: {
-      id: { in: tagsToRestore.map((tag) => tag.id) }, // Chỉ restore những tags đã bị soft delete
-      deletedAt: { not: null }, // Đảm bảo chỉ restore những tags đã bị soft delete
+      id: { in: tagsToRestore.map((tag) => tag.id) },
+      deletedAt: { not: null },
     },
     data: {
       deletedAt: null,
     },
-  })
-
-  // Log để debug
-  logger.debug("bulkRestoreTags: Restore completed", {
-    restored: result.count,
-    expected: tagsToRestore.length,
-    tagsToRestoreIds: tagsToRestore.map((t) => t.id),
   })
 
   // Invalidate cache cho bulk operation
@@ -475,27 +411,24 @@ export async function bulkRestoreTags(ctx: AuthContext, ids: string[]): Promise<
     additionalTags: ["tag-options", "active-tags"],
   })
 
-  // Emit socket events để update UI - await song song để đảm bảo tất cả events được emit
-  // Sử dụng Promise.allSettled để không bị fail nếu một event lỗi
+  // Emit socket events để update UI
   if (result.count > 0) {
-    // Emit events song song và await tất cả để đảm bảo hoàn thành
+    // Emit events song song
     const emitPromises = tagsToRestore.map((tag) => 
       emitTagUpsert(tag.id, "deleted").catch((error) => {
         logger.error(`Failed to emit tag:upsert for ${tag.id}`, error as Error)
-        return null // Return null để Promise.allSettled không throw
+        return null
       })
     )
-    // Await tất cả events nhưng không fail nếu một số lỗi
     await Promise.allSettled(emitPromises)
 
-    // Tạo system notifications cho từng tag đã được restore
-    for (const tag of tagsToRestore) {
-      await notifySuperAdminsOfTagAction(
+    // Emit một notification tổng hợp thay vì từng cái một
+    await notifySuperAdminsOfBulkTagAction(
         "restore",
         ctx.actorId,
-        tag
+      result.count,
+      tagsToRestore
       )
-    }
   }
 
   // Tạo message chi tiết nếu có tags không thể restore
@@ -581,23 +514,10 @@ export async function bulkHardDeleteTags(ctx: AuthContext, ids: string[]): Promi
     }
   }
 
-  // Log để debug
-  logger.debug("bulkHardDeleteTags: Found tags to delete", {
-    found: tags.length,
-    requested: ids.length,
-  })
-
-  // Xóa tất cả tags (hard delete - xóa cả những tags đã bị soft delete)
   const result = await prisma.tag.deleteMany({
     where: {
-      id: { in: tags.map((tag) => tag.id) }, // Chỉ xóa những tags thực sự tồn tại
+      id: { in: tags.map((tag) => tag.id) },
     },
-  })
-
-  // Log để debug
-  logger.debug("bulkHardDeleteTags: Deleted tags", {
-    deleted: result.count,
-    found: tags.length,
   })
 
   // Invalidate cache cho bulk operation
@@ -606,9 +526,7 @@ export async function bulkHardDeleteTags(ctx: AuthContext, ids: string[]): Promi
     additionalTags: ["tag-options", "active-tags"],
   })
 
-  // Emit socket events và notifications realtime cho từng tag đã được xóa
-  // Emit socket events để update UI - fire and forget để tránh timeout
-  // Emit song song cho tất cả tags đã bị hard delete
+  // Emit socket events để update UI
   if (result.count > 0) {
     // Emit events (emitTagRemove trả về void, không phải Promise)
     tags.forEach((tag) => {
@@ -620,14 +538,13 @@ export async function bulkHardDeleteTags(ctx: AuthContext, ids: string[]): Promi
       }
     })
 
-    // Tạo system notifications cho từng tag
-    for (const tag of tags) {
-      await notifySuperAdminsOfTagAction(
+    // Emit một notification tổng hợp thay vì từng cái một
+    await notifySuperAdminsOfBulkTagAction(
         "hard-delete",
         ctx.actorId,
-        { id: tag.id, name: tag.name, slug: tag.slug }
+      result.count,
+      tags
       )
-    }
   }
 
   // Trả về số lượng tags thực sự đã được xóa

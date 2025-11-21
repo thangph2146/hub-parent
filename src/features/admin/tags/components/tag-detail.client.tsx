@@ -1,6 +1,6 @@
 "use client"
 
-import * as React from "react"
+import { useEffect, useRef } from "react"
 import { useQueryClient } from "@tanstack/react-query"
 import { Tag, Hash, Calendar, Clock, Edit } from "lucide-react"
 import { 
@@ -12,6 +12,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { queryKeys } from "@/lib/query-keys"
+import { resourceLogger } from "@/lib/config"
 import { formatDateVi } from "../utils"
 import { useResourceNavigation } from "@/features/admin/resources/hooks"
 
@@ -33,10 +34,36 @@ export interface TagDetailClientProps {
 
 export function TagDetailClient({ tagId, tag, backUrl = "/admin/tags" }: TagDetailClientProps) {
   const queryClient = useQueryClient()
+  const hasLoggedRef = useRef(false)
   const { navigateBack, router } = useResourceNavigation({
     queryClient,
     invalidateQueryKey: queryKeys.adminTags.all(),
   })
+
+  // Log detail load một lần (chỉ log khi tagId thay đổi)
+  useEffect(() => {
+    if (hasLoggedRef.current) return
+    hasLoggedRef.current = true
+    
+    resourceLogger.detailAction({
+      resource: "tags",
+      action: "load-detail",
+      resourceId: tagId,
+    })
+
+    resourceLogger.dataStructure({
+      resource: "tags",
+      dataType: "detail",
+      structure: {
+        id: tag.id,
+        name: tag.name,
+        slug: tag.slug,
+        createdAt: tag.createdAt,
+        updatedAt: tag.updatedAt,
+        deletedAt: tag.deletedAt,
+      },
+    })
+  }, [tagId]) // Chỉ depend vào tagId để tránh log duplicate khi tag object thay đổi
 
   const detailFields: ResourceDetailField<TagDetailData>[] = []
 

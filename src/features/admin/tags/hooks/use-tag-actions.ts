@@ -8,8 +8,9 @@ import { useQueryClient } from "@tanstack/react-query"
 import { apiClient } from "@/lib/api/axios"
 import { apiRoutes } from "@/lib/api/routes"
 import { queryKeys } from "@/lib/query-keys"
-import { logger } from "@/lib/config"
+import { logger, resourceLogger } from "@/lib/config"
 import type { TagRow } from "../types"
+import type { DataTableResult } from "@/components/tables"
 import type { FeedbackVariant } from "@/components/dialogs"
 import { TAG_MESSAGES } from "../constants/messages"
 import { runResourceRefresh, useResourceBulkProcessing } from "@/features/admin/resources/hooks"
@@ -19,6 +20,7 @@ interface UseTagActionsOptions {
   canDelete: boolean
   canRestore: boolean
   canManage: boolean
+  isSocketConnected: boolean
   showFeedback: (variant: FeedbackVariant, title: string, description?: string, details?: string) => void
 }
 
@@ -26,6 +28,7 @@ export function useTagActions({
   canDelete,
   canRestore,
   canManage,
+  isSocketConnected,
   showFeedback,
 }: UseTagActionsOptions) {
   const queryClient = useQueryClient()
@@ -82,17 +85,69 @@ export function useTagActions({
 
       setLoadingState((prev) => new Set(prev).add(row.id))
 
+      resourceLogger.actionFlow({
+        resource: "tags",
+        action: action,
+        step: "start",
+        metadata: { tagId: row.id, tagName: row.name, socketConnected: isSocketConnected },
+      })
+
       try {
         if (actionConfig.method === "delete") {
           await apiClient.delete(actionConfig.endpoint)
         } else {
           await apiClient.post(actionConfig.endpoint)
         }
+
+        // Optimistic update chỉ khi không có socket (fallback)
+        if (!isSocketConnected) {
+          queryClient.setQueriesData<DataTableResult<TagRow>>(
+            { queryKey: queryKeys.adminTags.all() as unknown[] },
+            (oldData) => {
+              if (!oldData) return oldData
+              if (action === "delete") {
+                return {
+                  ...oldData,
+                  rows: oldData.rows.filter((r) => r.id !== row.id),
+                  total: Math.max(0, oldData.total - 1),
+                }
+              }
+              if (action === "restore") {
+                return {
+                  ...oldData,
+                  rows: [...oldData.rows, { ...row, deletedAt: null }],
+                  total: oldData.total + 1,
+                }
+              }
+              return oldData
+            }
+          )
+        }
+
         showFeedback("success", actionConfig.successTitle, actionConfig.successDescription)
+
+        // Socket events đã update cache, chỉ refresh nếu socket không connected
+        if (!isSocketConnected) {
         await runResourceRefresh({ refresh, resource: "tags" })
+        }
+
+        resourceLogger.actionFlow({
+          resource: "tags",
+          action: action,
+          step: "success",
+          metadata: { tagId: row.id, tagName: row.name },
+        })
       } catch (error: unknown) {
         const errorMessage = error instanceof Error ? error.message : TAG_MESSAGES.UNKNOWN_ERROR
         showFeedback("error", actionConfig.errorTitle, actionConfig.errorDescription, errorMessage)
+        
+        resourceLogger.actionFlow({
+          resource: "tags",
+          action: action,
+          step: "error",
+          metadata: { tagId: row.id, tagName: row.name, error: errorMessage },
+        })
+
         if (action === "restore") {
           logger.error(`Failed to ${action} tag`, error as Error)
         } else {
@@ -106,7 +161,7 @@ export function useTagActions({
         })
       }
     },
-    [canDelete, canRestore, canManage, showFeedback],
+    [canDelete, canRestore, canManage, isSocketConnected, showFeedback, queryClient],
   )
 
   const executeBulkAction = useCallback(
@@ -117,11 +172,24 @@ export function useTagActions({
       clearSelection: () => void
     ) => {
       if (ids.length === 0) return
-
       if (!startBulkProcessing()) return
+
+      resourceLogger.actionFlow({
+        resource: "tags",
+        action: action === "delete" ? "bulk-delete" : action === "restore" ? "bulk-restore" : "bulk-hard-delete",
+        step: "start",
+        metadata: { count: ids.length, tagIds: ids, socketConnected: isSocketConnected },
+      })
 
       try {
         await apiClient.post(apiRoutes.tags.bulk, { action, ids })
+
+        resourceLogger.actionFlow({
+          resource: "tags",
+          action: action === "delete" ? "bulk-delete" : action === "restore" ? "bulk-restore" : "bulk-hard-delete",
+          step: "success",
+          metadata: { count: ids.length, tagIds: ids },
+        })
 
         const messages = {
           restore: { title: TAG_MESSAGES.BULK_RESTORE_SUCCESS, description: `Đã khôi phục ${ids.length} thẻ tag` },
@@ -133,13 +201,10 @@ export function useTagActions({
         showFeedback("success", message.title, message.description)
         clearSelection()
 
-        // Invalidate queries trước để đảm bảo cache được clear
-        await queryClient.invalidateQueries({ queryKey: queryKeys.adminTags.all(), refetchType: "all" })
-        // Refetch ngay để đảm bảo data mới nhất
-        await queryClient.refetchQueries({ queryKey: queryKeys.adminTags.all(), type: "all" })
-        
-        // Gọi refresh để trigger table reload
+        // Socket events đã update cache, chỉ refresh nếu socket không connected
+        if (!isSocketConnected) {
         await runResourceRefresh({ refresh, resource: "tags" })
+        }
       } catch (error: unknown) {
         const errorMessage = error instanceof Error ? error.message : TAG_MESSAGES.UNKNOWN_ERROR
         const errorTitles = {
@@ -148,6 +213,14 @@ export function useTagActions({
           "hard-delete": TAG_MESSAGES.BULK_HARD_DELETE_ERROR,
         }
         showFeedback("error", errorTitles[action], `Không thể thực hiện thao tác cho ${ids.length} thẻ tag`, errorMessage)
+        
+        resourceLogger.actionFlow({
+          resource: "tags",
+          action: action === "delete" ? "bulk-delete" : action === "restore" ? "bulk-restore" : "bulk-hard-delete",
+          step: "error",
+          metadata: { count: ids.length, tagIds: ids, error: errorMessage },
+        })
+
         if (action !== "restore") {
           throw error
         }
@@ -155,7 +228,7 @@ export function useTagActions({
         stopBulkProcessing()
       }
     },
-    [showFeedback, startBulkProcessing, stopBulkProcessing, queryClient],
+    [showFeedback, startBulkProcessing, stopBulkProcessing, isSocketConnected, queryClient],
   )
 
   return {

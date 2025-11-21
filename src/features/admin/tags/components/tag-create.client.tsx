@@ -12,6 +12,7 @@ import { ResourceForm } from "@/features/admin/resources/components"
 import { useResourceFormSubmit } from "@/features/admin/resources/hooks"
 import { apiRoutes } from "@/lib/api/routes"
 import { queryKeys } from "@/lib/query-keys"
+import { resourceLogger } from "@/lib/config"
 import { getBaseTagFields, type TagFormData } from "../form-fields"
 
 export interface TagCreateClientProps {
@@ -41,9 +42,20 @@ export function TagCreateClient({ backUrl = "/admin/tags" }: TagCreateClientProp
         response.data?.data?.id ? `/admin/tags/${response.data.data.id}` : backUrl,
       fallback: backUrl,
     },
-    onSuccess: async () => {
+    onSuccess: async (response) => {
+      resourceLogger.actionFlow({
+        resource: "tags",
+        action: "create",
+        step: "success",
+        metadata: {
+          tagId: response?.data?.data?.id,
+          responseStatus: response?.status,
+        },
+      })
+
       // Invalidate React Query cache để cập nhật danh sách tags
-      await queryClient.invalidateQueries({ queryKey: queryKeys.adminTags.all() })
+      await queryClient.invalidateQueries({ queryKey: queryKeys.adminTags.all(), refetchType: "all" })
+      await queryClient.refetchQueries({ queryKey: queryKeys.adminTags.all(), type: "all" })
     },
   })
 

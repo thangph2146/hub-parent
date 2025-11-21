@@ -50,33 +50,33 @@ export async function notifySuperAdminsOfTagAction(
 
     switch (action) {
       case "create":
-        title = "🏷️ Thẻ tag mới được tạo"
-        description = `${actorName} đã tạo thẻ tag "${tag.name}" (${tag.slug})`
+        title = "🏷️ Thẻ tag mới"
+        description = `${actorName} đã tạo "${tag.name}"`
         break
       case "update":
         const changeDescriptions: string[] = []
         if (changes?.name) {
-          changeDescriptions.push(`Tên: ${changes.name.old} → ${changes.name.new}`)
+          changeDescriptions.push(`${changes.name.old} → ${changes.name.new}`)
         }
         if (changes?.slug) {
           changeDescriptions.push(`Slug: ${changes.slug.old} → ${changes.slug.new}`)
         }
-        title = "✏️ Thẻ tag được cập nhật"
-        description = `${actorName} đã cập nhật thẻ tag "${tag.name}"${
-          changeDescriptions.length > 0 ? `\nThay đổi: ${changeDescriptions.join(", ")}` : ""
+        title = "✏️ Thẻ tag đã cập nhật"
+        description = `${actorName} đã cập nhật "${tag.name}"${
+          changeDescriptions.length > 0 ? `: ${changeDescriptions.join(", ")}` : ""
         }`
         break
       case "delete":
-        title = "🗑️ Thẻ tag bị xóa"
-        description = `${actorName} đã xóa thẻ tag "${tag.name}"`
+        title = "🗑️ Thẻ tag đã xóa"
+        description = `${actorName} đã xóa "${tag.name}"`
         break
       case "restore":
-        title = "♻️ Thẻ tag được khôi phục"
-        description = `${actorName} đã khôi phục thẻ tag "${tag.name}"`
+        title = "♻️ Thẻ tag đã khôi phục"
+        description = `${actorName} đã khôi phục "${tag.name}"`
         break
       case "hard-delete":
-        title = "⚠️ Thẻ tag bị xóa vĩnh viễn"
-        description = `${actorName} đã xóa vĩnh viễn thẻ tag "${tag.name}"`
+        title = "⚠️ Thẻ tag đã xóa vĩnh viễn"
+        description = `${actorName} đã xóa vĩnh viễn "${tag.name}"`
         break
     }
 
@@ -212,6 +212,128 @@ export async function notifySuperAdminsOfTagAction(
   } catch (error) {
     // Log error nhưng không throw để không ảnh hưởng đến main operation
     logger.error("[notifications] Failed to notify super admins of tag action", error as Error)
+  }
+}
+
+/**
+ * Bulk notification cho bulk operations - emit một notification tổng hợp thay vì từng cái một
+ * Để tránh timeout khi xử lý nhiều tags và rút gọn thông báo
+ */
+export async function notifySuperAdminsOfBulkTagAction(
+  action: "delete" | "restore" | "hard-delete",
+  actorId: string,
+  count: number,
+  tags?: Array<{ name: string }>
+) {
+  try {
+    const actor = await getActorInfo(actorId)
+    const actorName = actor?.name || actor?.email || "Hệ thống"
+
+    let title = ""
+    let description = ""
+
+    // Tạo danh sách tên tags (tối ưu để hiển thị đẹp trong line-clamp-2)
+    // Hiển thị tối đa 10 tên, nếu nhiều hơn sẽ hiển thị "... và X thẻ tag khác"
+    const maxNames = 10
+    const tagNames = tags?.slice(0, maxNames).map(t => t.name) || []
+    const remainingCount = tags && tags.length > maxNames ? tags.length - maxNames : 0
+    const namesText = tagNames.length > 0 
+      ? tagNames.join(", ") + (remainingCount > 0 ? ` và ${remainingCount} thẻ tag khác` : "")
+      : ""
+
+    switch (action) {
+      case "delete":
+        title = "🗑️ Nhiều thẻ tag đã xóa"
+        description = namesText 
+          ? `${actorName} đã xóa ${count} thẻ tag: ${namesText}`
+          : `${actorName} đã xóa ${count} thẻ tag`
+        break
+      case "restore":
+        title = "♻️ Nhiều thẻ tag đã khôi phục"
+        description = namesText
+          ? `${actorName} đã khôi phục ${count} thẻ tag: ${namesText}`
+          : `${actorName} đã khôi phục ${count} thẻ tag`
+        break
+      case "hard-delete":
+        title = "⚠️ Nhiều thẻ tag đã xóa vĩnh viễn"
+        description = namesText
+          ? `${actorName} đã xóa vĩnh viễn ${count} thẻ tag: ${namesText}`
+          : `${actorName} đã xóa vĩnh viễn ${count} thẻ tag`
+        break
+    }
+
+    const actionUrl = `/admin/tags`
+
+    const result = await createNotificationForSuperAdmins(
+      title,
+      description,
+      actionUrl,
+      NotificationKind.SYSTEM,
+      {
+        type: `tag_bulk_${action}`,
+        actorId,
+        actorName: actor?.name || actor?.email,
+        actorEmail: actor?.email,
+        count,
+        tagNames: tags?.map(t => t.name) || [],
+        timestamp: new Date().toISOString(),
+      }
+    )
+
+    const io = getSocketServer()
+    if (io && result.count > 0) {
+      const superAdmins = await prisma.user.findMany({
+        where: {
+          isActive: true,
+          deletedAt: null,
+          userRoles: {
+            some: {
+              role: {
+                name: "super_admin",
+                isActive: true,
+                deletedAt: null,
+              },
+            },
+          },
+        },
+        select: { id: true },
+      })
+
+      const createdNotifications = await prisma.notification.findMany({
+        where: {
+          title,
+          description,
+          actionUrl,
+          kind: NotificationKind.SYSTEM,
+          userId: {
+            in: superAdmins.map((a) => a.id),
+          },
+          createdAt: {
+            gte: new Date(Date.now() - 5000),
+          },
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+        take: superAdmins.length,
+      })
+
+      for (const admin of superAdmins) {
+        const dbNotification = createdNotifications.find((n) => n.userId === admin.id)
+        if (dbNotification) {
+          const socketNotification = mapNotificationToPayload(dbNotification)
+          storeNotificationInCache(admin.id, socketNotification)
+          io.to(`user:${admin.id}`).emit("notification:new", socketNotification)
+        }
+      }
+
+      if (createdNotifications.length > 0) {
+        const roleNotification = mapNotificationToPayload(createdNotifications[0])
+        io.to("role:super_admin").emit("notification:new", roleNotification)
+      }
+    }
+  } catch (error) {
+    logger.error("[notifications] Failed to notify super admins of bulk tag action", error as Error)
   }
 }
 
