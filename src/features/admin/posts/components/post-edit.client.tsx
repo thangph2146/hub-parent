@@ -8,6 +8,7 @@ import { apiRoutes } from "@/lib/api/routes"
 import { queryKeys } from "@/lib/query-keys"
 import type { Prisma } from "@prisma/client"
 import { isSuperAdmin } from "@/lib/permissions"
+import { useRouter } from "next/navigation"
 
 export interface PostEditData {
     id: string
@@ -55,8 +56,16 @@ export function PostEditClient({
 }: PostEditClientProps) {
     const { data: session } = useSession()
     const queryClient = useQueryClient()
+    const router = useRouter()
     const userRoles = session?.roles || []
     const isSuperAdminUser = isSuperAdminProp || isSuperAdmin(userRoles)
+
+    const handleBack = async () => {
+        // Invalidate React Query cache để đảm bảo list page có data mới nhất
+        await queryClient.invalidateQueries({ queryKey: queryKeys.adminPosts.all(), refetchType: "all" })
+        // Refetch ngay lập tức để đảm bảo data được cập nhật
+        await queryClient.refetchQueries({ queryKey: queryKeys.adminPosts.all(), type: "all" })
+    }
 
     const { handleSubmit } = useResourceFormSubmit({
         apiRoute: (id) => apiRoutes.posts.update(id),
@@ -88,15 +97,30 @@ export function PostEditClient({
             }
             return submitData
         },
-        onSuccess: async () => {
+        onSuccess: async (_response) => {
             // Invalidate React Query cache để cập nhật danh sách bài viết
-            await queryClient.invalidateQueries({ queryKey: queryKeys.adminPosts.all() })
+            await queryClient.invalidateQueries({ queryKey: queryKeys.adminPosts.all(), refetchType: "all" })
             // Invalidate detail query nếu có postId
             const targetPostId = postId || post?.id
             if (targetPostId) {
                 await queryClient.invalidateQueries({ queryKey: queryKeys.adminPosts.detail(targetPostId) })
             }
-            onSuccess?.()
+            
+            // Refetch để đảm bảo data mới nhất
+            await queryClient.refetchQueries({ queryKey: queryKeys.adminPosts.all(), type: "all" })
+
+            // Nếu có navigation (variant === "page" và có toDetail), router.push() sẽ tự động trigger refresh
+            // Chỉ gọi router.refresh() nếu không có navigation (ví dụ: dialog/sheet variant)
+            // Hoặc nếu đang ở dialog/sheet, cần refresh để cập nhật list table
+            if (variant !== "page" || !backUrl) {
+                // Refresh router để trigger server component re-render và revalidate cache
+                // Điều này đảm bảo detail page và list page (Server Components) cũng được cập nhật
+                router.refresh()
+            }
+
+            if (onSuccess) {
+                onSuccess()
+            }
             // Navigation sẽ được xử lý bởi useResourceFormSubmit thông qua navigation.toDetail
         },
     })
@@ -227,6 +251,7 @@ export function PostEditClient({
             cancelLabel="Hủy"
             backUrl={backUrl}
             backLabel={backLabel}
+            onBack={handleBack}
             onSuccess={onSuccess}
             showCard={false}
             className="max-w-[100%]"

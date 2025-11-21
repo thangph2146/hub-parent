@@ -105,19 +105,9 @@ export async function createPost(ctx: AuthContext, input: CreatePostSchema) {
   // Revalidate admin cache
   revalidatePath("/admin/posts", "page")
   revalidatePath("/admin/posts", "layout")
-
-  // Revalidate public cache nếu bài viết đã được publish
-  if (post.published && post.publishedAt) {
-    // Revalidate cache tags (unstable_cache)
-    await revalidateTag("posts", {})
-    await revalidateTag(`post-${post.slug}`, {})
-    await revalidateTag("categories", {}) // Categories cũng có thể thay đổi
-    
-    // Revalidate public paths
-    revalidatePath("/bai-viet", "page")
-    revalidatePath("/bai-viet", "layout")
-    revalidatePath(`/bai-viet/${post.slug}`, "page")
-  }
+  // Invalidate unstable_cache
+  await revalidateTag("posts", {})
+  await revalidateTag("active-posts", {})
 
   // Emit socket event for real-time updates
   await emitPostUpsert(sanitized.id, null)
@@ -244,11 +234,14 @@ export async function updatePost(
   revalidatePath("/admin/posts", "page")
   revalidatePath("/admin/posts", "layout")
   revalidatePath(`/admin/posts/${postId}`, "page")
+  // Invalidate unstable_cache
+  await revalidateTag("posts", {})
+  await revalidateTag(`post-${postId}`, {})
+  await revalidateTag("active-posts", {})
 
   // Revalidate public cache nếu bài viết đã được publish
   if (post.published && post.publishedAt) {
     // Revalidate cache tags (unstable_cache)
-    await revalidateTag("posts", {})
     await revalidateTag(`post-${post.slug}`, {})
     await revalidateTag("categories", {}) // Categories cũng có thể thay đổi
     
@@ -264,7 +257,6 @@ export async function updatePost(
     revalidatePath(`/bai-viet/${post.slug}`, "page")
   } else if (existing.published && existing.publishedAt) {
     // Nếu bài viết đã được unpublish, vẫn cần revalidate để xóa khỏi public
-    await revalidateTag("posts", {})
     await revalidateTag(`post-${existing.slug}`, {})
     revalidatePath("/bai-viet", "page")
     revalidatePath(`/bai-viet/${existing.slug}`, "page")
@@ -295,10 +287,12 @@ export async function deletePost(ctx: AuthContext, postId: string) {
   // Revalidate admin cache
   revalidatePath("/admin/posts", "page")
   revalidatePath("/admin/posts", "layout")
+  // Invalidate unstable_cache
+  await revalidateTag("posts", {})
+  await revalidateTag("active-posts", {})
 
   // Revalidate public cache nếu bài viết đã được publish
   if (existing.published && existing.publishedAt) {
-    await revalidateTag("posts", {})
     await revalidateTag(`post-${existing.slug}`, {})
     revalidatePath("/bai-viet", "page")
     revalidatePath(`/bai-viet/${existing.slug}`, "page")
@@ -326,10 +320,12 @@ export async function restorePost(ctx: AuthContext, postId: string) {
   // Revalidate admin cache
   revalidatePath("/admin/posts", "page")
   revalidatePath("/admin/posts", "layout")
+  // Invalidate unstable_cache
+  await revalidateTag("posts", {})
+  await revalidateTag("active-posts", {})
 
   // Revalidate public cache nếu bài viết đã được publish
   if (existing.published && existing.publishedAt) {
-    await revalidateTag("posts", {})
     await revalidateTag(`post-${existing.slug}`, {})
     revalidatePath("/bai-viet", "page")
     revalidatePath(`/bai-viet/${existing.slug}`, "page")
@@ -357,10 +353,13 @@ export async function hardDeletePost(ctx: AuthContext, postId: string) {
   // Revalidate admin cache
   revalidatePath("/admin/posts", "page")
   revalidatePath("/admin/posts", "layout")
+  // Invalidate unstable_cache
+  await revalidateTag("posts", {})
+  await revalidateTag(`post-${postId}`, {})
+  await revalidateTag("active-posts", {})
 
   // Revalidate public cache nếu bài viết đã được publish
   if (existing.published && existing.publishedAt) {
-    await revalidateTag("posts", {})
     await revalidateTag(`post-${existing.slug}`, {})
     revalidatePath("/bai-viet", "page")
     revalidatePath(`/bai-viet/${existing.slug}`, "page")
@@ -538,11 +537,13 @@ export async function bulkPostsAction(
   // Revalidate admin cache
   revalidatePath("/admin/posts", "page")
   revalidatePath("/admin/posts", "layout")
+  // Invalidate unstable_cache
+  await revalidateTag("posts", {})
+  await revalidateTag("active-posts", {})
 
   // Revalidate public cache cho các posts đã được publish
   const publishedPosts = posts.filter((post) => post.published && post.publishedAt)
   if (publishedPosts.length > 0) {
-    await revalidateTag("posts", {})
     // Revalidate từng post slug
     await Promise.all(
       publishedPosts.map((post) => revalidateTag(`post-${post.slug}`, {}))

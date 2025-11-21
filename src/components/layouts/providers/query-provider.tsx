@@ -5,7 +5,7 @@
 "use client"
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools"
+import dynamic from "next/dynamic"
 import { useState, type ReactNode } from "react"
 
 /**
@@ -29,6 +29,20 @@ function createQueryClient() {
   })
 }
 
+/**
+ * Dynamic import ReactQueryDevtools với ssr: false
+ * Chỉ render trên client để tránh hydration mismatch
+ */
+const ReactQueryDevtools = dynamic(
+  () =>
+    import("@tanstack/react-query-devtools").then((mod) => ({
+      default: mod.ReactQueryDevtools,
+    })),
+  {
+    ssr: false,
+  }
+)
+
 export function QueryProvider({ children }: { children: ReactNode }) {
   // Singleton pattern: Chỉ tạo QueryClient một lần
   const [queryClient] = useState(() => createQueryClient())
@@ -36,7 +50,7 @@ export function QueryProvider({ children }: { children: ReactNode }) {
   return (
     <QueryClientProvider client={queryClient}>
       {children}
-      {/* Devtools chỉ hiển thị trong development */}
+      {/* Devtools chỉ hiển thị trong development và chỉ trên client */}
       {process.env.NODE_ENV === "development" && (
         <ReactQueryDevtools initialIsOpen={false} />
       )}

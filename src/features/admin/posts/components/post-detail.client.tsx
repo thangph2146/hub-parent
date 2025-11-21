@@ -18,6 +18,8 @@ import { formatDateVi } from "../utils"
 import { Editor } from "@/components/editor/editor-x/editor"
 import type { SerializedEditorState } from "lexical"
 import type { Prisma } from "@prisma/client"
+import { useQueryClient } from "@tanstack/react-query"
+import { queryKeys } from "@/lib/query-keys"
 
 export interface PostDetailData {
   id: string
@@ -55,6 +57,14 @@ export interface PostDetailClientProps {
 
 export function PostDetailClient({ postId, post, backUrl = "/admin/posts" }: PostDetailClientProps) {
   const router = useResourceRouter()
+  const queryClient = useQueryClient()
+
+  const handleBack = async () => {
+    // Invalidate React Query cache để đảm bảo list page có data mới nhất
+    await queryClient.invalidateQueries({ queryKey: queryKeys.adminPosts.all(), refetchType: "all" })
+    // Refetch ngay lập tức để đảm bảo data được cập nhật
+    await queryClient.refetchQueries({ queryKey: queryKeys.adminPosts.all(), type: "all" })
+  }
 
   const detailFields: ResourceDetailField<PostDetailData>[] = []
 
@@ -279,6 +289,7 @@ export function PostDetailClient({ postId, post, backUrl = "/admin/posts" }: Pos
       detailSections={detailSections}
       backUrl={backUrl}
       backLabel="Quay lại danh sách"
+      onBack={handleBack}
       actions={
         <Button
           variant="outline"

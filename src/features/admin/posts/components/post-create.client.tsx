@@ -15,6 +15,7 @@ import { apiRoutes } from "@/lib/api/routes"
 import { isSuperAdmin } from "@/lib/permissions"
 import { queryKeys } from "@/lib/query-keys"
 import type { Prisma } from "@prisma/client"
+import { useRouter } from "next/navigation"
 
 export interface PostCreateData {
   title: string
@@ -47,9 +48,17 @@ export function PostCreateClient({
 }: PostCreateClientProps) {
   const { data: session } = useSession()
   const queryClient = useQueryClient()
+  const router = useRouter()
   const userRoles = session?.roles || []
   const isSuperAdminUser = isSuperAdminProp || isSuperAdmin(userRoles)
   const currentUserId = session?.user?.id
+
+  const handleBack = async () => {
+    // Invalidate React Query cache để đảm bảo list page có data mới nhất
+    await queryClient.invalidateQueries({ queryKey: queryKeys.adminPosts.all(), refetchType: "all" })
+    // Refetch ngay lập tức để đảm bảo data được cập nhật
+    await queryClient.refetchQueries({ queryKey: queryKeys.adminPosts.all(), type: "all" })
+  }
 
   const { handleSubmit } = useResourceFormSubmit({
     apiRoute: apiRoutes.posts.create,
@@ -207,6 +216,7 @@ export function PostCreateClient({
       cancelLabel="Hủy"
       backUrl={backUrl}
       backLabel="Quay lại danh sách"
+      onBack={handleBack}
       variant="page"
       showCard={false}
       className="max-w-[100%]"
