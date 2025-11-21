@@ -1,6 +1,6 @@
 "use client"
 
-import * as React from "react"
+import { useEffect, useRef } from "react"
 import { Tag, Hash, AlignLeft, Calendar, Clock, Edit } from "lucide-react"
 import { 
   ResourceDetailPage, 
@@ -15,6 +15,7 @@ import { useResourceNavigation } from "@/features/admin/resources/hooks"
 import { formatDateVi } from "../utils"
 import { useQueryClient } from "@tanstack/react-query"
 import { queryKeys } from "@/lib/query-keys"
+import { resourceLogger } from "@/lib/config"
 
 export interface CategoryDetailData {
   id: string
@@ -35,10 +36,37 @@ export interface CategoryDetailClientProps {
 
 export function CategoryDetailClient({ categoryId, category, backUrl = "/admin/categories" }: CategoryDetailClientProps) {
   const queryClient = useQueryClient()
+  const hasLoggedRef = useRef(false)
   const { navigateBack, router } = useResourceNavigation({
     queryClient,
     invalidateQueryKey: queryKeys.adminCategories.all(),
   })
+
+  // Log detail load một lần
+  useEffect(() => {
+    if (hasLoggedRef.current) return
+    hasLoggedRef.current = true
+    
+    resourceLogger.detailAction({
+      resource: "categories",
+      action: "load-detail",
+      resourceId: categoryId,
+    })
+
+    resourceLogger.dataStructure({
+      resource: "categories",
+      dataType: "detail",
+      structure: {
+        id: category.id,
+        name: category.name,
+        slug: category.slug,
+        description: category.description,
+        createdAt: category.createdAt,
+        updatedAt: category.updatedAt,
+        deletedAt: category.deletedAt,
+      },
+    })
+  }, [categoryId, category])
 
   const detailFields: ResourceDetailField<CategoryDetailData>[] = []
 

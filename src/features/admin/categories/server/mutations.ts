@@ -12,7 +12,7 @@ import {
   CreateCategorySchema,
   UpdateCategorySchema,
 } from "./schemas"
-import { notifySuperAdminsOfCategoryAction } from "./notifications"
+import { notifySuperAdminsOfCategoryAction, notifySuperAdminsOfBulkCategoryAction } from "./notifications"
 import { emitCategoryUpsert, emitCategoryRemove } from "./events"
 import {
   ApplicationError,
@@ -298,27 +298,24 @@ export async function bulkSoftDeleteCategories(ctx: AuthContext, ids: string[]):
     additionalTags: ["category-options", "active-categories"],
   })
 
-  // Emit socket events để update UI - await song song để đảm bảo tất cả events được emit
-  // Sử dụng Promise.allSettled để không bị fail nếu một event lỗi
+  // Emit socket events để update UI
   if (result.count > 0) {
-    // Emit events song song và await tất cả để đảm bảo hoàn thành
+    // Emit events song song
     const emitPromises = categories.map((category) => 
       emitCategoryUpsert(category.id, "active").catch((error) => {
         logger.error(`Failed to emit category:upsert for ${category.id}`, error as Error)
-        return null // Return null để Promise.allSettled không throw
+        return null
       })
     )
-    // Await tất cả events nhưng không fail nếu một số lỗi
     await Promise.allSettled(emitPromises)
 
-    // Tạo system notifications cho từng category
-    for (const category of categories) {
-      await notifySuperAdminsOfCategoryAction(
-        "delete",
-        ctx.actorId,
-        category
-      )
-    }
+    // Emit một notification tổng hợp thay vì từng cái một
+    await notifySuperAdminsOfBulkCategoryAction(
+      "delete",
+      ctx.actorId,
+      result.count,
+      categories
+    )
   }
 
   return { success: true, message: `Đã xóa ${result.count} danh mục`, affected: result.count }
@@ -425,27 +422,24 @@ export async function bulkRestoreCategories(ctx: AuthContext, ids: string[]): Pr
     additionalTags: ["category-options", "active-categories"],
   })
 
-  // Emit socket events để update UI - await song song để đảm bảo tất cả events được emit
-  // Sử dụng Promise.allSettled để không bị fail nếu một event lỗi
+  // Emit socket events để update UI
   if (result.count > 0) {
-    // Emit events song song và await tất cả để đảm bảo hoàn thành
+    // Emit events song song
     const emitPromises = categoriesToRestore.map((category) => 
       emitCategoryUpsert(category.id, "deleted").catch((error) => {
         logger.error(`Failed to emit category:upsert for ${category.id}`, error as Error)
-        return null // Return null để Promise.allSettled không throw
+        return null
       })
     )
-    // Await tất cả events nhưng không fail nếu một số lỗi
     await Promise.allSettled(emitPromises)
 
-    // Tạo system notifications cho từng category
-    for (const category of categoriesToRestore) {
-      await notifySuperAdminsOfCategoryAction(
-        "restore",
-        ctx.actorId,
-        category
-      )
-    }
+    // Emit một notification tổng hợp thay vì từng cái một
+    await notifySuperAdminsOfBulkCategoryAction(
+      "restore",
+      ctx.actorId,
+      result.count,
+      categoriesToRestore
+    )
   }
 
   // Tạo message chi tiết nếu có categories không thể restore
@@ -528,8 +522,7 @@ export async function bulkHardDeleteCategories(ctx: AuthContext, ids: string[]):
     },
   })
 
-  // Emit socket events để update UI - fire and forget để tránh timeout
-  // Emit song song cho tất cả categories đã bị hard delete
+  // Emit socket events để update UI
   if (result.count > 0) {
     // Emit events (emitCategoryRemove trả về void, không phải Promise)
     categories.forEach((category) => {
@@ -541,14 +534,13 @@ export async function bulkHardDeleteCategories(ctx: AuthContext, ids: string[]):
       }
     })
 
-    // Tạo system notifications cho từng category
-    for (const category of categories) {
-      await notifySuperAdminsOfCategoryAction(
-        "hard-delete",
-        ctx.actorId,
-        category
-      )
-    }
+    // Emit một notification tổng hợp thay vì từng cái một
+    await notifySuperAdminsOfBulkCategoryAction(
+      "hard-delete",
+      ctx.actorId,
+      result.count,
+      categories
+    )
   }
 
   // Invalidate cache cho bulk operation

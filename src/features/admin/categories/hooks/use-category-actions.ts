@@ -11,14 +11,16 @@ import { queryKeys } from "@/lib/query-keys"
 import type { ResourceRefreshHandler } from "@/features/admin/resources/types"
 import { runResourceRefresh, useResourceBulkProcessing } from "@/features/admin/resources/hooks"
 import type { CategoryRow } from "../types"
+import type { DataTableResult } from "@/components/tables"
 import type { FeedbackVariant } from "@/components/dialogs"
 import { CATEGORY_MESSAGES } from "../constants/messages"
-import { logger } from "@/lib/config"
+import { logger, resourceLogger } from "@/lib/config"
 
 interface UseCategoryActionsOptions {
   canDelete: boolean
   canRestore: boolean
   canManage: boolean
+  isSocketConnected: boolean
   showFeedback: (variant: FeedbackVariant, title: string, description?: string, details?: string) => void
 }
 
@@ -26,6 +28,7 @@ export function useCategoryActions({
   canDelete,
   canRestore,
   canManage,
+  isSocketConnected,
   showFeedback,
 }: UseCategoryActionsOptions) {
   const queryClient = useQueryClient()
@@ -71,7 +74,26 @@ export function useCategoryActions({
         },
       }[action]
 
-      if (!actionConfig.permission) return
+      if (!actionConfig.permission) {
+        resourceLogger.tableAction({
+          resource: "categories",
+          action,
+          resourceId: row.id,
+          permissionDenied: true,
+        })
+        return
+      }
+
+      resourceLogger.actionFlow({
+        resource: "categories",
+        action,
+        step: "start",
+        metadata: {
+          categoryId: row.id,
+          categoryName: row.name,
+          socketConnected: isSocketConnected,
+        },
+      })
 
       // Track loading state
       const setLoadingState = action === "delete" 
@@ -88,13 +110,47 @@ export function useCategoryActions({
         } else {
           await apiClient.post(actionConfig.endpoint)
         }
+        
+        resourceLogger.actionFlow({
+          resource: "categories",
+          action,
+          step: "success",
+          metadata: {
+            categoryId: row.id,
+            categoryName: row.name,
+          },
+        })
+
         showFeedback("success", actionConfig.successTitle, actionConfig.successDescription)
-        await runResourceRefresh({ refresh, resource: "categories" })
+        
+        // Socket events đã update cache, chỉ refresh nếu socket không connected
+        if (!isSocketConnected) {
+          await runResourceRefresh({ refresh, resource: "categories" })
+        }
       } catch (error: unknown) {
         const errorMessage = error instanceof Error ? error.message : CATEGORY_MESSAGES.UNKNOWN_ERROR
+        
+        resourceLogger.actionFlow({
+          resource: "categories",
+          action,
+          step: "error",
+          metadata: {
+            categoryId: row.id,
+            categoryName: row.name,
+            error: errorMessage,
+          },
+        })
+
+        logger.error("[useCategoryActions] Single action ERROR", {
+          action,
+          categoryId: row.id,
+          categoryName: row.name,
+          error: errorMessage,
+        })
+
         showFeedback("error", actionConfig.errorTitle, actionConfig.errorDescription, errorMessage)
         if (action === "restore") {
-          logger.error(`Failed to ${action} category`, error as Error)
+          // Don't throw for restore to allow UI to continue
         } else {
           throw error
         }
@@ -106,7 +162,7 @@ export function useCategoryActions({
         })
       }
     },
-    [canDelete, canRestore, canManage, showFeedback],
+    [canDelete, canRestore, canManage, isSocketConnected, showFeedback],
   )
 
   const executeBulkAction = useCallback(
@@ -117,11 +173,31 @@ export function useCategoryActions({
       clearSelection: () => void
     ) => {
       if (ids.length === 0) return
-
       if (!startBulkProcessing()) return
+
+      resourceLogger.actionFlow({
+        resource: "categories",
+        action: action === "delete" ? "bulk-delete" : action === "restore" ? "bulk-restore" : "bulk-hard-delete",
+        step: "start",
+        metadata: {
+          count: ids.length,
+          categoryIds: ids,
+          socketConnected: isSocketConnected,
+        },
+      })
 
       try {
         await apiClient.post(apiRoutes.categories.bulk, { action, ids })
+
+        resourceLogger.actionFlow({
+          resource: "categories",
+          action: action === "delete" ? "bulk-delete" : action === "restore" ? "bulk-restore" : "bulk-hard-delete",
+          step: "success",
+          metadata: {
+            count: ids.length,
+            categoryIds: ids,
+          },
+        })
 
         const messages = {
           restore: { title: CATEGORY_MESSAGES.BULK_RESTORE_SUCCESS, description: `Đã khôi phục ${ids.length} danh mục` },
@@ -133,15 +209,31 @@ export function useCategoryActions({
         showFeedback("success", message.title, message.description)
         clearSelection()
 
-        // Invalidate queries trước để đảm bảo cache được clear
-        await queryClient.invalidateQueries({ queryKey: queryKeys.adminCategories.all(), refetchType: "all" })
-        // Refetch ngay để đảm bảo data mới nhất
-        await queryClient.refetchQueries({ queryKey: queryKeys.adminCategories.all(), type: "all" })
-        
-        // Gọi refresh để trigger table reload
-        await runResourceRefresh({ refresh, resource: "categories" })
+        // Socket events đã update cache, chỉ refresh nếu socket không connected
+        if (!isSocketConnected) {
+          await runResourceRefresh({ refresh, resource: "categories" })
+        }
       } catch (error: unknown) {
         const errorMessage = error instanceof Error ? error.message : CATEGORY_MESSAGES.UNKNOWN_ERROR
+        
+        resourceLogger.actionFlow({
+          resource: "categories",
+          action: action === "delete" ? "bulk-delete" : action === "restore" ? "bulk-restore" : "bulk-hard-delete",
+          step: "error",
+          metadata: {
+            count: ids.length,
+            categoryIds: ids,
+            error: errorMessage,
+          },
+        })
+
+        logger.error("[useCategoryActions] Bulk action ERROR", {
+          action,
+          count: ids.length,
+          categoryIds: ids,
+          error: errorMessage,
+        })
+
         const errorTitles = {
           restore: CATEGORY_MESSAGES.BULK_RESTORE_ERROR,
           delete: CATEGORY_MESSAGES.BULK_DELETE_ERROR,
@@ -155,7 +247,7 @@ export function useCategoryActions({
         stopBulkProcessing()
       }
     },
-    [showFeedback, startBulkProcessing, stopBulkProcessing, queryClient],
+    [showFeedback, startBulkProcessing, stopBulkProcessing, isSocketConnected],
   )
 
   return {

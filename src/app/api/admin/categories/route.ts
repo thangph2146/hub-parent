@@ -3,7 +3,7 @@
  * POST /api/admin/categories - Create category
  */
 import { NextRequest } from "next/server"
-import { listCategoriesCached } from "@/features/admin/categories/server/cache"
+import { listCategories } from "@/features/admin/categories/server/queries"
 import { serializeCategoriesList } from "@/features/admin/categories/server/helpers"
 import {
   createCategory,
@@ -15,7 +15,8 @@ import { CreateCategorySchema } from "@/features/admin/categories/server/schemas
 import { createGetRoute, createPostRoute } from "@/lib/api/api-route-wrapper"
 import type { ApiRouteContext } from "@/lib/api/types"
 import { validatePagination, sanitizeSearchQuery } from "@/lib/api/validation"
-import { createErrorResponse, createSuccessResponse } from "@/lib/config"
+import { createSuccessResponse, createErrorResponse } from "@/lib/config"
+import { CategoriesResponse } from "@/features/admin/categories/types"
 
 async function getCategoriesHandler(req: NextRequest, _context: ApiRouteContext) {
   const searchParams = req.nextUrl.searchParams
@@ -44,7 +45,9 @@ async function getCategoriesHandler(req: NextRequest, _context: ApiRouteContext)
     }
   })
 
-  const result = await listCategoriesCached({
+  // Sử dụng listCategories (non-cached) thay vì listCategoriesCached để đảm bảo data luôn fresh
+  // API routes cần fresh data, không nên sử dụng cache để tránh trả về dữ liệu cũ
+  const result = await listCategories({
     page: paginationValidation.page,
     limit: paginationValidation.limit,
     search: searchValidation.value || undefined,
@@ -62,7 +65,7 @@ async function getCategoriesHandler(req: NextRequest, _context: ApiRouteContext)
       total: serialized.total,
       totalPages: serialized.totalPages,
     },
-  })
+  } as CategoriesResponse)
 }
 
 async function postCategoriesHandler(req: NextRequest, context: ApiRouteContext) {

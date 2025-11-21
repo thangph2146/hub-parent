@@ -51,37 +51,35 @@ export async function notifySuperAdminsOfCategoryAction(
 
     switch (action) {
       case "create":
-        title = "📁 Danh mục mới được tạo"
-        description = `${actorName} đã tạo danh mục "${category.name}" (${category.slug})`
+        title = "📁 Danh mục mới"
+        description = `${actorName} đã tạo danh mục "${category.name}"`
         break
       case "update":
         const changeDescriptions: string[] = []
         if (changes?.name) {
-          changeDescriptions.push(`Tên: ${changes.name.old} → ${changes.name.new}`)
+          changeDescriptions.push(`${changes.name.old} → ${changes.name.new}`)
         }
         if (changes?.slug) {
           changeDescriptions.push(`Slug: ${changes.slug.old} → ${changes.slug.new}`)
         }
         if (changes?.description) {
-          const oldDesc = changes.description.old || "(trống)"
-          const newDesc = changes.description.new || "(trống)"
-          changeDescriptions.push(`Mô tả: ${oldDesc} → ${newDesc}`)
+          changeDescriptions.push("Mô tả đã thay đổi")
         }
-        title = "✏️ Danh mục được cập nhật"
+        title = "✏️ Danh mục đã cập nhật"
         description = `${actorName} đã cập nhật danh mục "${category.name}"${
-          changeDescriptions.length > 0 ? `\nThay đổi: ${changeDescriptions.join(", ")}` : ""
+          changeDescriptions.length > 0 ? `: ${changeDescriptions.join(", ")}` : ""
         }`
         break
       case "delete":
-        title = "🗑️ Danh mục bị xóa"
+        title = "🗑️ Danh mục đã xóa"
         description = `${actorName} đã xóa danh mục "${category.name}"`
         break
       case "restore":
-        title = "♻️ Danh mục được khôi phục"
+        title = "♻️ Danh mục đã khôi phục"
         description = `${actorName} đã khôi phục danh mục "${category.name}"`
         break
       case "hard-delete":
-        title = "⚠️ Danh mục bị xóa vĩnh viễn"
+        title = "⚠️ Danh mục đã xóa vĩnh viễn"
         description = `${actorName} đã xóa vĩnh viễn danh mục "${category.name}"`
         break
     }
@@ -218,6 +216,128 @@ export async function notifySuperAdminsOfCategoryAction(
   } catch (error) {
     // Log error nhưng không throw để không ảnh hưởng đến main operation
     logger.error("[notifications] Failed to notify super admins of category action", error as Error)
+  }
+}
+
+/**
+ * Bulk notification cho bulk operations - emit một notification tổng hợp thay vì từng cái một
+ * Để tránh timeout khi xử lý nhiều categories và rút gọn thông báo
+ */
+export async function notifySuperAdminsOfBulkCategoryAction(
+  action: "delete" | "restore" | "hard-delete",
+  actorId: string,
+  count: number,
+  categories?: Array<{ name: string }>
+) {
+  try {
+    const actor = await getActorInfo(actorId)
+    const actorName = actor?.name || actor?.email || "Hệ thống"
+
+    let title = ""
+    let description = ""
+
+    // Tạo danh sách tên categories (tối ưu để hiển thị đẹp trong line-clamp-2)
+    // Hiển thị tối đa 8-10 tên tùy độ dài, ưu tiên hiển thị nhiều tên ngắn
+    const maxNames = categories && categories.length <= 10 ? categories.length : 10
+    const categoryNames = categories?.slice(0, maxNames).map(c => c.name) || []
+    const remainingCount = categories && categories.length > maxNames ? categories.length - maxNames : 0
+    const namesText = categoryNames.length > 0 
+      ? categoryNames.join(", ") + (remainingCount > 0 ? ` và ${remainingCount} danh mục khác` : "")
+      : ""
+
+    switch (action) {
+      case "delete":
+        title = "🗑️ Nhiều danh mục đã xóa"
+        description = namesText 
+          ? `${actorName} đã xóa ${count} danh mục: ${namesText}`
+          : `${actorName} đã xóa ${count} danh mục`
+        break
+      case "restore":
+        title = "♻️ Nhiều danh mục đã khôi phục"
+        description = namesText
+          ? `${actorName} đã khôi phục ${count} danh mục: ${namesText}`
+          : `${actorName} đã khôi phục ${count} danh mục`
+        break
+      case "hard-delete":
+        title = "⚠️ Nhiều danh mục đã xóa vĩnh viễn"
+        description = namesText
+          ? `${actorName} đã xóa vĩnh viễn ${count} danh mục: ${namesText}`
+          : `${actorName} đã xóa vĩnh viễn ${count} danh mục`
+        break
+    }
+
+    const actionUrl = `/admin/categories`
+
+    const result = await createNotificationForSuperAdmins(
+      title,
+      description,
+      actionUrl,
+      NotificationKind.SYSTEM,
+      {
+        type: `category_bulk_${action}`,
+        actorId,
+        actorName: actor?.name || actor?.email,
+        actorEmail: actor?.email,
+        count,
+        categoryNames: categories?.map(c => c.name) || [],
+        timestamp: new Date().toISOString(),
+      }
+    )
+
+    const io = getSocketServer()
+    if (io && result.count > 0) {
+      const superAdmins = await prisma.user.findMany({
+        where: {
+          isActive: true,
+          deletedAt: null,
+          userRoles: {
+            some: {
+              role: {
+                name: "super_admin",
+                isActive: true,
+                deletedAt: null,
+              },
+            },
+          },
+        },
+        select: { id: true },
+      })
+
+      const createdNotifications = await prisma.notification.findMany({
+        where: {
+          title,
+          description,
+          actionUrl,
+          kind: NotificationKind.SYSTEM,
+          userId: {
+            in: superAdmins.map((a) => a.id),
+          },
+          createdAt: {
+            gte: new Date(Date.now() - 5000),
+          },
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+        take: superAdmins.length,
+      })
+
+      for (const admin of superAdmins) {
+        const dbNotification = createdNotifications.find((n) => n.userId === admin.id)
+        if (dbNotification) {
+          const socketNotification = mapNotificationToPayload(dbNotification)
+          storeNotificationInCache(admin.id, socketNotification)
+          io.to(`user:${admin.id}`).emit("notification:new", socketNotification)
+        }
+      }
+
+      if (createdNotifications.length > 0) {
+        const roleNotification = mapNotificationToPayload(createdNotifications[0])
+        io.to("role:super_admin").emit("notification:new", roleNotification)
+      }
+    }
+  } catch (error) {
+    logger.error("[notifications] Failed to notify super admins of bulk category action", error as Error)
   }
 }
 

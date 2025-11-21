@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useMemo } from "react"
+import { useCallback, useMemo, useEffect, useRef } from "react"
 import { useResourceRouter } from "@/hooks/use-resource-segment"
 import { Plus, RotateCcw, Trash2, AlertTriangle } from "lucide-react"
 
@@ -23,6 +23,7 @@ import { apiClient } from "@/lib/api/axios"
 import { apiRoutes } from "@/lib/api/routes"
 import { useQueryClient } from "@tanstack/react-query"
 import { queryKeys, type AdminCategoriesListParams } from "@/lib/query-keys"
+import { resourceLogger } from "@/lib/config"
 import { useCategoriesSocketBridge } from "../hooks/use-categories-socket-bridge"
 import { useCategoryActions } from "../hooks/use-category-actions"
 import { useCategoryFeedback } from "../hooks/use-category-feedback"
@@ -41,10 +42,42 @@ export function CategoriesTableClient({
 }: CategoriesTableClientProps) {
   const router = useResourceRouter()
   const queryClient = useQueryClient()
+  const hasLoggedRef = useRef(false)
   const { feedback, showFeedback, handleFeedbackOpenChange } = useCategoryFeedback()
   const { deleteConfirm, setDeleteConfirm, handleDeleteConfirm } = useCategoryDeleteConfirm()
 
-  const { cacheVersion } = useCategoriesSocketBridge()
+  // Log table load một lần
+  useEffect(() => {
+    if (hasLoggedRef.current) return
+    hasLoggedRef.current = true
+    
+    resourceLogger.tableAction({
+      resource: "categories",
+      action: "load-table",
+      view: "active",
+      total: initialData?.total,
+      page: initialData?.page,
+    })
+
+    if (initialData) {
+      resourceLogger.dataStructure({
+        resource: "categories",
+        dataType: "table",
+        rowCount: initialData.rows.length,
+        structure: {
+          columns: ["id", "name", "slug", "description", "createdAt", "deletedAt"],
+          pagination: {
+            page: initialData.page,
+            limit: initialData.limit,
+            total: initialData.total,
+            totalPages: initialData.totalPages,
+          },
+        },
+      })
+    }
+  }, [initialData])
+
+  const { cacheVersion, isSocketConnected } = useCategoriesSocketBridge()
   const getInvalidateQueryKey = useCallback(() => queryKeys.adminCategories.all(), [])
   const { onRefreshReady, refresh: refreshTable } = useResourceTableRefresh({
     queryClient,
@@ -63,6 +96,7 @@ export function CategoriesTableClient({
     canDelete,
     canRestore,
     canManage,
+    isSocketConnected,
     showFeedback,
   })
 
