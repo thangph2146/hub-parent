@@ -666,9 +666,9 @@ function ImagePlaceholder({
   // Sử dụng minDimension để đảm bảo Logo không vượt quá container
   const minDimension = Math.min(containerWidth, containerHeight)
   
-  // Logo sẽ chiếm 25-30% của kích thước nhỏ nhất
-  // Tối thiểu 100px, tối đa 300px để phù hợp với cả container nhỏ và lớn
-  const logoSize = Math.max(100, Math.min(300, minDimension * 0.28))
+  // Logo sẽ chiếm 40-50% của kích thước nhỏ nhất để nổi bật hơn trong container lớn
+  // Tối thiểu 150px, tối đa 500px để phù hợp với cả container nhỏ và lớn
+  const logoSize = Math.max(150, Math.min(500, minDimension * 0.45))
   
   return (
     <div
@@ -680,13 +680,22 @@ function ImagePlaceholder({
         minHeight: 200,
       }}
     >
-      <Logo
-        className="opacity-40"
-        style={{
-          width: logoSize,
-          height: logoSize,
-        }}
-      />
+      <div className="relative">
+        <Logo
+          className="opacity-50 animate-pulse"
+          style={{
+            width: logoSize,
+            height: logoSize,
+          }}
+        />
+        {/* Optional: Add a small ping animation for more visual feedback */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div 
+            className="w-2 h-2 bg-gray-400 rounded-full animate-ping" 
+            style={{ animationDelay: "0.5s" }} 
+          />
+        </div>
+      </div>
     </div>
   )
 }
