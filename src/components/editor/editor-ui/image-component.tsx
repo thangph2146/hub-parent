@@ -659,24 +659,32 @@ function ImagePlaceholder({
   width: DimensionValue
   height: DimensionValue
 }): JSX.Element {
-  const size = typeof width === "number" ? width : typeof height === "number" ? height : 200
-  const displaySize = Math.min(size, 200)
+  const containerWidth = typeof width === "number" ? width : 200
+  const containerHeight = typeof height === "number" ? height : 200
+  
+  // Tính kích thước Logo dựa trên container
+  // Sử dụng minDimension để đảm bảo Logo không vượt quá container
+  const minDimension = Math.min(containerWidth, containerHeight)
+  
+  // Logo sẽ chiếm 25-30% của kích thước nhỏ nhất
+  // Tối thiểu 100px, tối đa 300px để phù hợp với cả container nhỏ và lớn
+  const logoSize = Math.max(100, Math.min(300, minDimension * 0.28))
   
   return (
     <div
-      className="flex items-center justify-center bg-gray-100 rounded"
+      className="flex items-center justify-center bg-gray-50 rounded border border-gray-200"
       style={{
-        width: typeof width === "number" ? width : displaySize,
-        height: typeof height === "number" ? height : displaySize,
-        minWidth: displaySize,
-        minHeight: displaySize,
+        width: containerWidth,
+        height: containerHeight,
+        minWidth: 200,
+        minHeight: 200,
       }}
     >
       <Logo
-        className="opacity-30"
+        className="opacity-40"
         style={{
-          width: displaySize * 0.6,
-          height: displaySize * 0.6,
+          width: logoSize,
+          height: logoSize,
         }}
       />
     </div>
