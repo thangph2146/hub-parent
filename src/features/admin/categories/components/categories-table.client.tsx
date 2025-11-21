@@ -271,6 +271,7 @@ export function CategoriesTableClient({
     logDebug: logInitialDataCache,
   })
 
+  // Helper function for active view selection actions
   const createActiveSelectionActions = useCallback(
     ({
       selectedIds,
@@ -333,6 +334,7 @@ export function CategoriesTableClient({
     [canDelete, canManage, bulkState.isProcessing, executeBulk],
   )
 
+  // Helper function for deleted view selection actions
   const createDeletedSelectionActions = useCallback(
     ({
       selectedIds,

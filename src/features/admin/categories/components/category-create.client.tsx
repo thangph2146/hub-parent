@@ -11,12 +11,25 @@ import { ResourceForm } from "@/features/admin/resources/components"
 import { useResourceFormSubmit } from "@/features/admin/resources/hooks"
 import { apiRoutes } from "@/lib/api/routes"
 import { getBaseCategoryFields, type CategoryFormData } from "../form-fields"
+import { useQueryClient } from "@tanstack/react-query"
+import { queryKeys } from "@/lib/query-keys"
+import { useRouter } from "next/navigation"
 
 export interface CategoryCreateClientProps {
   backUrl?: string
 }
 
 export function CategoryCreateClient({ backUrl = "/admin/categories" }: CategoryCreateClientProps) {
+  const queryClient = useQueryClient()
+  const router = useRouter()
+
+  const handleBack = async () => {
+    // Invalidate React Query cache để đảm bảo list page có data mới nhất
+    await queryClient.invalidateQueries({ queryKey: queryKeys.adminCategories.all(), refetchType: "all" })
+    // Refetch ngay lập tức để đảm bảo data được cập nhật
+    await queryClient.refetchQueries({ queryKey: queryKeys.adminCategories.all(), type: "all" })
+  }
+
   const { handleSubmit } = useResourceFormSubmit({
     apiRoute: apiRoutes.categories.create,
     method: "POST",
@@ -29,6 +42,10 @@ export function CategoryCreateClient({ backUrl = "/admin/categories" }: Category
       toDetail: (response) =>
         response.data?.data?.id ? `/admin/categories/${response.data.data.id}` : backUrl,
       fallback: backUrl,
+    },
+    onSuccess: async () => {
+      // Invalidate React Query cache để cập nhật danh sách categories
+      await queryClient.invalidateQueries({ queryKey: queryKeys.adminCategories.all() })
     },
   })
 
@@ -45,6 +62,7 @@ export function CategoryCreateClient({ backUrl = "/admin/categories" }: Category
       cancelLabel="Hủy"
       backUrl={backUrl}
       backLabel="Quay lại danh sách"
+      onBack={handleBack}
       variant="page"
       showCard={false}
       className="max-w-[100%]"

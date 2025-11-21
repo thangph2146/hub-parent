@@ -12,6 +12,9 @@ import { useResourceFormSubmit } from "@/features/admin/resources/hooks"
 import { apiRoutes } from "@/lib/api/routes"
 import { getBaseCategoryFields, type CategoryFormData } from "../form-fields"
 import type { CategoryRow } from "../types"
+import { useQueryClient } from "@tanstack/react-query"
+import { queryKeys } from "@/lib/query-keys"
+import { useRouter } from "next/navigation"
 
 interface CategoryEditData extends CategoryRow {
   slug: string
@@ -41,6 +44,16 @@ export function CategoryEditClient({
   backLabel = "Quay lại",
   categoryId: _categoryId,
 }: CategoryEditClientProps) {
+  const queryClient = useQueryClient()
+  const router = useRouter()
+
+  const handleBack = async () => {
+    // Invalidate React Query cache để đảm bảo list page có data mới nhất
+    await queryClient.invalidateQueries({ queryKey: queryKeys.adminCategories.all(), refetchType: "all" })
+    // Refetch ngay lập tức để đảm bảo data được cập nhật
+    await queryClient.refetchQueries({ queryKey: queryKeys.adminCategories.all(), type: "all" })
+  }
+
   const { handleSubmit } = useResourceFormSubmit({
     apiRoute: (id) => apiRoutes.categories.update(id),
     method: "PUT",
@@ -58,7 +71,23 @@ export function CategoryEditClient({
           : undefined,
       fallback: backUrl,
     },
-    onSuccess: async () => {
+    onSuccess: async (_response) => {
+      // Invalidate React Query cache để cập nhật danh sách categories
+      // Sử dụng queryKeys.adminCategories.all() để invalidate tất cả queries liên quan
+      await queryClient.invalidateQueries({ queryKey: queryKeys.adminCategories.all(), refetchType: "all" })
+      
+      // Refetch để đảm bảo data mới nhất
+      await queryClient.refetchQueries({ queryKey: queryKeys.adminCategories.all(), type: "all" })
+      
+      // Nếu có navigation (variant === "page" và có toDetail), router.push() sẽ tự động trigger refresh
+      // Chỉ gọi router.refresh() nếu không có navigation (ví dụ: dialog/sheet variant)
+      // Hoặc nếu đang ở dialog/sheet, cần refresh để cập nhật list table
+      if (variant !== "page" || !backUrl) {
+        // Refresh router để trigger server component re-render và revalidate cache
+        // Điều này đảm bảo detail page và list page (Server Components) cũng được cập nhật
+        router.refresh()
+      }
+      
       if (onSuccess) {
         onSuccess()
       }
@@ -82,6 +111,7 @@ export function CategoryEditClient({
       cancelLabel="Hủy"
       backUrl={backUrl}
       backLabel={backLabel}
+      onBack={handleBack}
       variant={variant}
       open={open}
       onOpenChange={onOpenChange}

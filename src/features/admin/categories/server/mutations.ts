@@ -1,6 +1,7 @@
 "use server"
 
 import type { Prisma } from "@prisma/client"
+import { revalidatePath, revalidateTag } from "next/cache"
 import { PERMISSIONS, canPerformAnyAction } from "@/lib/permissions"
 import { prisma } from "@/lib/database"
 import { logger } from "@/lib/config"
@@ -83,6 +84,14 @@ export async function createCategory(ctx: AuthContext, input: z.infer<typeof Cre
       slug: sanitized.slug,
     }
   )
+
+  // Revalidate cache để cập nhật danh sách categories
+  revalidatePath("/admin/categories", "page")
+  revalidatePath("/admin/categories", "layout")
+  // Invalidate unstable_cache với tất cả categories liên quan
+  await revalidateTag("categories", {})
+  await revalidateTag("category-options", {})
+  await revalidateTag("active-categories", {})
 
   return sanitized
 }
@@ -184,6 +193,16 @@ export async function updateCategory(ctx: AuthContext, id: string, input: z.infe
     Object.keys(changes).length > 0 ? changes : undefined
   )
 
+  // Revalidate cache để cập nhật danh sách categories
+  revalidatePath("/admin/categories", "page")
+  revalidatePath("/admin/categories", "layout")
+  revalidatePath(`/admin/categories/${id}`, "page")
+  // Invalidate unstable_cache với tất cả categories liên quan
+  await revalidateTag("categories", {})
+  await revalidateTag(`category-${id}`, {})
+  await revalidateTag("category-options", {})
+  await revalidateTag("active-categories", {})
+
   return sanitized
 }
 
@@ -215,6 +234,14 @@ export async function softDeleteCategory(ctx: AuthContext, id: string): Promise<
       slug: category.slug,
     }
   )
+
+  // Revalidate cache để cập nhật danh sách categories
+  revalidatePath("/admin/categories", "page")
+  revalidatePath("/admin/categories", "layout")
+  // Invalidate unstable_cache với tất cả categories liên quan
+  await revalidateTag("categories", {})
+  await revalidateTag("category-options", {})
+  await revalidateTag("active-categories", {})
 }
 
 export async function bulkSoftDeleteCategories(ctx: AuthContext, ids: string[]): Promise<BulkActionResult> {
@@ -225,6 +252,7 @@ export async function bulkSoftDeleteCategories(ctx: AuthContext, ids: string[]):
   }
 
   // Lấy thông tin categories trước khi delete để tạo notifications
+  // Chỉ tìm các categories đang hoạt động (chưa bị xóa)
   const categories = await prisma.category.findMany({
     where: {
       id: { in: ids },
@@ -233,15 +261,49 @@ export async function bulkSoftDeleteCategories(ctx: AuthContext, ids: string[]):
     select: { id: true, name: true, slug: true },
   })
 
+  // Nếu không tìm thấy category nào, có thể chúng đã bị xóa rồi hoặc không tồn tại
+  if (categories.length === 0) {
+    // Kiểm tra xem có categories nào đã bị soft delete không
+    const deletedCategories = await prisma.category.findMany({
+      where: {
+        id: { in: ids },
+        deletedAt: { not: null },
+      },
+      select: { id: true },
+    })
+
+    if (deletedCategories.length > 0) {
+      return { 
+        success: true, 
+        message: `Không có danh mục nào để xóa (${deletedCategories.length} danh mục đã bị xóa, ${ids.length - deletedCategories.length} danh mục không tồn tại)`, 
+        affected: 0 
+      }
+    }
+
+    return { 
+      success: true, 
+      message: `Không tìm thấy danh mục nào để xóa (có thể đã bị xóa vĩnh viễn)`, 
+      affected: 0 
+    }
+  }
+
   const result = await prisma.category.updateMany({
     where: {
-      id: { in: ids },
+      id: { in: categories.map(c => c.id) },
       deletedAt: null,
     },
     data: {
       deletedAt: new Date(),
     },
   })
+
+  // Revalidate cache để cập nhật danh sách categories
+  revalidatePath("/admin/categories", "page")
+  revalidatePath("/admin/categories", "layout")
+  // Invalidate unstable_cache với tất cả categories liên quan
+  await revalidateTag("categories", {})
+  await revalidateTag("category-options", {})
+  await revalidateTag("active-categories", {})
 
   // Emit socket events để update UI - await song song để đảm bảo tất cả events được emit
   // Sử dụng Promise.allSettled để không bị fail nếu một event lỗi
@@ -297,6 +359,14 @@ export async function restoreCategory(ctx: AuthContext, id: string): Promise<voi
       slug: category.slug,
     }
   )
+
+  // Revalidate cache để cập nhật danh sách categories
+  revalidatePath("/admin/categories", "page")
+  revalidatePath("/admin/categories", "layout")
+  // Invalidate unstable_cache với tất cả categories liên quan
+  await revalidateTag("categories", {})
+  await revalidateTag("category-options", {})
+  await revalidateTag("active-categories", {})
 }
 
 export async function bulkRestoreCategories(ctx: AuthContext, ids: string[]): Promise<BulkActionResult> {
@@ -306,18 +376,46 @@ export async function bulkRestoreCategories(ctx: AuthContext, ids: string[]): Pr
     throw new ApplicationError("Danh sách danh mục trống", 400)
   }
 
-  // Lấy thông tin categories trước khi restore để tạo notifications
-  const categories = await prisma.category.findMany({
+  // Tìm tất cả categories được request để phân loại trạng thái
+  const allRequestedCategories = await prisma.category.findMany({
     where: {
       id: { in: ids },
-      deletedAt: { not: null },
     },
-    select: { id: true, name: true, slug: true },
+    select: { id: true, name: true, slug: true, deletedAt: true },
   })
+
+  // Phân loại categories
+  const softDeletedCategories = allRequestedCategories.filter((c) => c.deletedAt !== null)
+  const activeCategories = allRequestedCategories.filter((c) => c.deletedAt === null)
+  const notFoundCount = ids.length - allRequestedCategories.length
+
+  // Nếu không có category nào đã bị soft delete, trả về message chi tiết
+  if (softDeletedCategories.length === 0) {
+    const parts: string[] = []
+    if (activeCategories.length > 0) {
+      parts.push(`${activeCategories.length} danh mục đang hoạt động`)
+    }
+    if (notFoundCount > 0) {
+      parts.push(`${notFoundCount} danh mục không tồn tại (đã bị xóa vĩnh viễn)`)
+    }
+
+    const message = parts.length > 0
+      ? `Không có danh mục nào để khôi phục (${parts.join(", ")})`
+      : `Không tìm thấy danh mục nào để khôi phục`
+
+    return { 
+      success: true, 
+      message, 
+      affected: 0 
+    }
+  }
+
+  // Chỉ restore những categories đã bị soft delete
+  const categoriesToRestore = softDeletedCategories
 
   const result = await prisma.category.updateMany({
     where: {
-      id: { in: ids },
+      id: { in: categoriesToRestore.map(c => c.id) },
       deletedAt: { not: null },
     },
     data: {
@@ -325,11 +423,19 @@ export async function bulkRestoreCategories(ctx: AuthContext, ids: string[]): Pr
     },
   })
 
+  // Revalidate cache để cập nhật danh sách categories
+  revalidatePath("/admin/categories", "page")
+  revalidatePath("/admin/categories", "layout")
+  // Invalidate unstable_cache với tất cả categories liên quan
+  await revalidateTag("categories", {})
+  await revalidateTag("category-options", {})
+  await revalidateTag("active-categories", {})
+
   // Emit socket events để update UI - await song song để đảm bảo tất cả events được emit
   // Sử dụng Promise.allSettled để không bị fail nếu một event lỗi
   if (result.count > 0) {
     // Emit events song song và await tất cả để đảm bảo hoàn thành
-    const emitPromises = categories.map((category) => 
+    const emitPromises = categoriesToRestore.map((category) => 
       emitCategoryUpsert(category.id, "deleted").catch((error) => {
         logger.error(`Failed to emit category:upsert for ${category.id}`, error as Error)
         return null // Return null để Promise.allSettled không throw
@@ -339,7 +445,7 @@ export async function bulkRestoreCategories(ctx: AuthContext, ids: string[]): Pr
     await Promise.allSettled(emitPromises)
 
     // Tạo system notifications cho từng category
-    for (const category of categories) {
+    for (const category of categoriesToRestore) {
       await notifySuperAdminsOfCategoryAction(
         "restore",
         ctx.actorId,
@@ -348,7 +454,23 @@ export async function bulkRestoreCategories(ctx: AuthContext, ids: string[]): Pr
     }
   }
 
-  return { success: true, message: `Đã khôi phục ${result.count} danh mục`, affected: result.count }
+  // Tạo message chi tiết nếu có categories không thể restore
+  let message = `Đã khôi phục ${result.count} danh mục`
+  if (result.count < ids.length) {
+    const skippedCount = ids.length - result.count
+    const skippedParts: string[] = []
+    if (activeCategories.length > 0) {
+      skippedParts.push(`${activeCategories.length} danh mục đang hoạt động`)
+    }
+    if (notFoundCount > 0) {
+      skippedParts.push(`${notFoundCount} danh mục đã bị xóa vĩnh viễn`)
+    }
+    if (skippedParts.length > 0) {
+      message += ` (${skippedCount} danh mục không thể khôi phục: ${skippedParts.join(", ")})`
+    }
+  }
+
+  return { success: true, message, affected: result.count }
 }
 
 export async function hardDeleteCategory(ctx: AuthContext, id: string): Promise<void> {
@@ -380,6 +502,15 @@ export async function hardDeleteCategory(ctx: AuthContext, id: string): Promise<
     ctx.actorId,
     category
   )
+
+  // Revalidate cache để cập nhật danh sách categories
+  revalidatePath("/admin/categories", "page")
+  revalidatePath("/admin/categories", "layout")
+  // Invalidate unstable_cache
+  await revalidateTag("categories", {})
+  await revalidateTag(`category-${id}`, {})
+  await revalidateTag("category-options", {})
+  await revalidateTag("active-categories", {})
 }
 
 export async function bulkHardDeleteCategories(ctx: AuthContext, ids: string[]): Promise<BulkActionResult> {
@@ -428,5 +559,13 @@ export async function bulkHardDeleteCategories(ctx: AuthContext, ids: string[]):
     }
   }
 
-  return { success: true, message: `Đã xóa vĩnh viễn ${result.count} danh mục`, affected: result.count }
+  // Revalidate cache để cập nhật danh sách categories
+  revalidatePath("/admin/categories", "page")
+  revalidatePath("/admin/categories", "layout")
+  // Invalidate unstable_cache
+  await revalidateTag("categories", {})
+  await revalidateTag("category-options", {})
+  await revalidateTag("active-categories", {})
+
+  return { success: true, message: `Đã xóa vĩnh viễn ${result.count} danh mục${result.count < categories.length ? ` (${categories.length - result.count} danh mục không tồn tại)` : ""}`, affected: result.count }
 }
