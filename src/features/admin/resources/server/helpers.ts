@@ -30,7 +30,17 @@ export interface ResourceResponse<T> {
  */
 export function serializeDate(date: Date | null | undefined): string | null {
   if (!date) return null
-  return date.toISOString()
+  try {
+    // Check if date is valid
+    if (isNaN(date.getTime())) {
+      console.warn("Invalid date encountered in serializeDate:", date)
+      return null
+    }
+    return date.toISOString()
+  } catch (error) {
+    console.error("Error serializing date:", error, { date })
+    return null
+  }
 }
 
 /**

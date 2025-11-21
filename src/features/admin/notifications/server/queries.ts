@@ -260,7 +260,7 @@ export async function listNotifications(params: ListNotificationsInput = {}): Pr
     notifications: notifications.map((n) => ({
       id: n.id,
       userId: n.userId,
-      userEmail: n.user.email,
+      userEmail: n.user?.email ?? null,
       kind: n.kind,
       title: n.title,
       isRead: n.isRead,
@@ -275,7 +275,11 @@ export async function listNotifications(params: ListNotificationsInput = {}): Pr
     data: notifications.map((n) => ({
       id: n.id,
       userId: n.userId,
-      user: n.user,
+      user: n.user ?? {
+        id: n.userId,
+        email: "",
+        name: null,
+      },
       kind: n.kind,
       title: n.title,
       description: n.description,

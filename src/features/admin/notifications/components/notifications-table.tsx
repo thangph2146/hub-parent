@@ -4,8 +4,10 @@
  * Fetches initial data và pass xuống client component
  * Pattern: Server Component (data fetching) → Client Component (UI/interactions)
  */
+import type { DataTableResult } from "@/components/tables"
 import { listNotificationsCached } from "../server/cache"
 import { serializeNotificationsList } from "../server/helpers"
+import type { NotificationRow } from "../types"
 import { NotificationsTableClient } from "./notifications-table.client"
 
 export interface NotificationsTableProps {
@@ -15,15 +17,30 @@ export interface NotificationsTableProps {
 }
 
 export async function NotificationsTable({ canManage, userId, isSuperAdmin }: NotificationsTableProps) {
-  // Nếu userId được truyền vào, chỉ fetch notifications của user đó
-  // Nếu không (super admin), fetch tất cả notifications
-  const initial = await listNotificationsCached({
+  // Fetch data với error handling
+  let initialData: DataTableResult<NotificationRow> = {
+    rows: [],
     page: 1,
     limit: 10,
-    userId,
-  })
-  const initialData = serializeNotificationsList(initial)
+    total: 0,
+    totalPages: 0,
+  }
 
+  try {
+    // Nếu userId được truyền vào, chỉ fetch notifications của user đó
+    // Nếu không (super admin), fetch tất cả notifications
+    const initial = await listNotificationsCached({
+      page: 1,
+      limit: 10,
+      userId,
+    })
+    initialData = serializeNotificationsList(initial)
+  } catch (error) {
+    console.error("Error in NotificationsTable Server Component:", error)
+    // initialData đã được set với empty data mặc định
+  }
+
+  // Return JSX sau khi đã có data an toàn (không wrap trong try/catch)
   return <NotificationsTableClient canManage={canManage} initialData={initialData} isSuperAdmin={isSuperAdmin} />
 }
 
