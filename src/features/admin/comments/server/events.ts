@@ -72,3 +72,52 @@ export function emitCommentRemove(commentId: string, previousStatus: CommentStat
     previousStatus,
   })
 }
+
+/**
+ * Emit batch comment:upsert events
+ * Được gọi khi bulk operations để tối ưu performance
+ * Thay vì emit từng event riêng lẻ, emit một batch event
+ */
+export async function emitCommentBatchUpsert(
+  commentIds: string[],
+  previousStatus: CommentStatus | null,
+): Promise<void> {
+  const io = getSocketServer()
+  if (!io || commentIds.length === 0) return
+
+  // Fetch tất cả comments trong một query
+  const comments = await prisma.comment.findMany({
+    where: {
+      id: { in: commentIds },
+    },
+    include: {
+      author: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
+      post: {
+        select: {
+          id: true,
+          title: true,
+        },
+      },
+    },
+  })
+
+  // Map comments to rows
+  const rows: CommentRow[] = []
+  for (const comment of comments) {
+    const listed = mapCommentRecord(comment)
+    const row = serializeCommentForTable(listed)
+    rows.push(row)
+  }
+
+  // Emit batch event với tất cả rows
+  io.to(SUPER_ADMIN_ROOM).emit("comment:batch-upsert", {
+    comments: rows,
+    previousStatus,
+  })
+}

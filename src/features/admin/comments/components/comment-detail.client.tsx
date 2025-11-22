@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useQueryClient } from "@tanstack/react-query"
 import { MessageSquare, User, Mail, FileText, Calendar, Clock, ExternalLink } from "lucide-react"
 import { 
   ResourceDetailPage, 
@@ -14,7 +15,11 @@ import { Switch } from "@/components/ui/switch"
 import { formatDateVi } from "../utils"
 import { apiClient } from "@/lib/api/axios"
 import { apiRoutes } from "@/lib/api/routes"
-import { logger } from "@/lib/config"
+import { resourceLogger } from "@/lib/config"
+import { useResourceNavigation, useResourceDetailData } from "@/features/admin/resources/hooks"
+import { queryKeys } from "@/lib/query-keys"
+import type { CommentRow } from "../types"
+import type { DataTableResult } from "@/components/tables"
 
 export interface CommentDetailData {
   id: string
@@ -32,10 +37,14 @@ export interface CommentDetailData {
 }
 
 export interface CommentDetailClientProps {
+  commentId: string
   comment: CommentDetailData
   backUrl?: string
   canApprove?: boolean
 }
+
+// Module-level Set để track các commentId đã log (tránh duplicate trong React Strict Mode)
+const loggedCommentIds = new Set<string>()
 
 // Status field with Switch
 interface StatusFieldProps {
@@ -69,36 +78,137 @@ const StatusField = ({ approved, canApprove, onToggle, isToggling }: StatusField
   )
 }
 
-export function CommentDetailClient({ comment, backUrl = "/admin/comments", canApprove = false }: CommentDetailClientProps) {
-  const [isToggling, setIsToggling] = React.useState(false)
-  const [approved, setApproved] = React.useState(comment.approved)
+export function CommentDetailClient({ commentId, comment, backUrl = "/admin/comments", canApprove = false }: CommentDetailClientProps) {
+  const queryClient = useQueryClient()
+  const { navigateBack, router } = useResourceNavigation({
+    queryClient,
+    invalidateQueryKey: queryKeys.adminComments.all(),
+  })
 
-  // Sync approved state when comment prop changes
+  // Ưu tiên sử dụng React Query cache nếu có (dữ liệu mới nhất sau khi edit), fallback về props
+  const detailData = useResourceDetailData({
+    initialData: comment,
+    resourceId: commentId,
+    detailQueryKey: queryKeys.adminComments.detail,
+    resourceName: "comments",
+  })
+
+  const [isToggling, setIsToggling] = React.useState(false)
+  const [approved, setApproved] = React.useState(detailData.approved)
+
+  // Sync approved state when detailData changes
   React.useEffect(() => {
-    setApproved(comment.approved)
-  }, [comment.approved])
+    setApproved(detailData.approved)
+  }, [detailData.approved])
+
+  // Log detail action và data structure khi component mount
+  React.useEffect(() => {
+    const logKey = `comments-detail-${commentId}`
+    if (loggedCommentIds.has(logKey)) return
+    loggedCommentIds.add(logKey)
+
+    resourceLogger.detailAction({
+      resource: "comments",
+      action: "load-detail",
+      resourceId: commentId,
+      authorName: detailData.authorName,
+      postTitle: detailData.postTitle,
+    })
+
+    resourceLogger.dataStructure({
+      resource: "comments",
+      dataType: "detail",
+      structure: {
+        id: detailData.id,
+        content: detailData.content,
+        approved: detailData.approved,
+        authorId: detailData.authorId,
+        authorName: detailData.authorName,
+        authorEmail: detailData.authorEmail,
+        postId: detailData.postId,
+        postTitle: detailData.postTitle,
+        createdAt: detailData.createdAt,
+        updatedAt: detailData.updatedAt,
+        deletedAt: detailData.deletedAt,
+      },
+    })
+
+    // Cleanup khi component unmount hoặc commentId thay đổi
+    return () => {
+      setTimeout(() => {
+        loggedCommentIds.delete(logKey)
+      }, 1000)
+    }
+  }, [commentId, detailData.id, detailData.authorName, detailData.postTitle, detailData.createdAt, detailData.updatedAt, detailData.deletedAt])
 
   const handleToggleApprove = React.useCallback(
     async (newStatus: boolean) => {
       if (!canApprove || isToggling) return
 
+      resourceLogger.detailAction({
+        resource: "comments",
+        action: newStatus ? "approve" : "unapprove",
+        resourceId: commentId,
+        authorName: detailData.authorName,
+      })
+
       setIsToggling(true)
+      
+      // Optimistic update: cập nhật cache ngay lập tức
+      const detailQueryKey = queryKeys.adminComments.detail(commentId)
+      const currentDetailData = queryClient.getQueryData<{ data: CommentDetailData }>(detailQueryKey)
+      if (currentDetailData) {
+        queryClient.setQueryData(detailQueryKey, {
+          data: {
+            ...currentDetailData.data,
+            approved: newStatus,
+            updatedAt: new Date().toISOString(),
+          },
+        })
+      }
+      
+      // Cập nhật list cache nếu có
+      queryClient.setQueriesData<DataTableResult<CommentRow>>(
+        { queryKey: queryKeys.adminComments.all() as unknown[] },
+        (oldData) => {
+          if (!oldData) return oldData
+          const updatedRows = oldData.rows.map((r) =>
+            r.id === commentId ? { ...r, approved: newStatus } : r
+          )
+          return { ...oldData, rows: updatedRows }
+        },
+      )
+      
+      setApproved(newStatus)
+
       try {
         if (newStatus) {
-          await apiClient.post(apiRoutes.comments.approve(comment.id))
+          await apiClient.post(apiRoutes.comments.approve(commentId))
         } else {
-          await apiClient.post(apiRoutes.comments.unapprove(comment.id))
+          await apiClient.post(apiRoutes.comments.unapprove(commentId))
         }
-        setApproved(newStatus)
       } catch (error) {
-        logger.error("Error toggling approve status", error as Error)
+        resourceLogger.detailAction({
+          resource: "comments",
+          action: newStatus ? "approve" : "unapprove",
+          error: error instanceof Error ? error.message : "Unknown error",
+          resourceId: commentId,
+        })
+        
+        // Rollback optimistic update
+        if (currentDetailData) {
+          queryClient.setQueryData(detailQueryKey, currentDetailData)
+        }
+        queryClient.invalidateQueries({ queryKey: queryKeys.adminComments.all() })
+        queryClient.invalidateQueries({ queryKey: detailQueryKey })
+        
         // Revert state on error
         setApproved(!newStatus)
       } finally {
         setIsToggling(false)
       }
     },
-    [canApprove, comment.id, isToggling],
+    [canApprove, commentId, isToggling, detailData.authorName, queryClient],
   )
 
   const detailFields: ResourceDetailField<CommentDetailData>[] = []
@@ -109,7 +219,7 @@ export function CommentDetailClient({ comment, backUrl = "/admin/comments", canA
       title: "Thông tin cơ bản",
       description: "Thông tin về bình luận, người bình luận, bài viết và thời gian",
       fieldsContent: (_fields, data) => {
-        const commentData = data as CommentDetailData
+        const commentData = (data || detailData) as CommentDetailData
         
         return (
           <div className="space-y-6">
@@ -199,11 +309,11 @@ export function CommentDetailClient({ comment, backUrl = "/admin/comments", canA
 
   return (
     <ResourceDetailPage<CommentDetailData>
-      data={comment}
+      data={detailData}
       fields={detailFields}
       detailSections={detailSections}
-      title={`Bình luận từ ${comment.authorName || comment.authorEmail}`}
-      description={`Chi tiết bình luận trong bài viết "${comment.postTitle}"`}
+      title={`Bình luận từ ${detailData.authorName || detailData.authorEmail}`}
+      description={`Chi tiết bình luận trong bài viết "${detailData.postTitle}"`}
       backUrl={backUrl}
       backLabel="Quay lại danh sách"
     />

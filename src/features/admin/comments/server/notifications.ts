@@ -3,10 +3,11 @@
  */
 
 import { prisma } from "@/lib/database"
-import { logger } from "@/lib/config"
+import { resourceLogger } from "@/lib/config"
 import { getSocketServer, storeNotificationInCache, mapNotificationToPayload } from "@/lib/socket/state"
 import { createNotificationForSuperAdmins } from "@/features/admin/notifications/server/mutations"
 import { NotificationKind } from "@prisma/client"
+import type { CommentWithRelations } from "./helpers"
 
 /**
  * Helper function để lấy thông tin actor (người thực hiện action)
@@ -17,6 +18,28 @@ async function getActorInfo(actorId: string) {
     select: { id: true, email: true, name: true },
   })
   return actor
+}
+
+/**
+ * Format comment names cho bulk notifications
+ * Rút gọn: chỉ hiển thị author name/email, không cần content preview
+ */
+export function formatCommentNames(
+  comments: Array<{ authorName: string | null; authorEmail: string; content?: string }>,
+  maxDisplay: number = 3
+): string {
+  if (comments.length === 0) return ""
+  
+  const names = comments.slice(0, maxDisplay).map((c) => {
+    return c.authorName || c.authorEmail || "Không xác định"
+  })
+  
+  if (comments.length <= maxDisplay) {
+    return names.join(", ")
+  }
+  
+  const remaining = comments.length - maxDisplay
+  return `${names.join(", ")} và ${remaining} bình luận khác`
 }
 
 /**
@@ -32,14 +55,6 @@ export async function notifySuperAdminsOfCommentAction(
   }
 ) {
   try {
-    logger.debug("[notifySuperAdmins] Starting notification", {
-      action,
-      actorId,
-      commentId: comment.id,
-      hasChanges: !!changes,
-      changesKeys: changes ? Object.keys(changes) : [],
-    })
-
     const actor = await getActorInfo(actorId)
     const actorName = actor?.name || actor?.email || "Hệ thống"
     const authorName = comment.authorName || comment.authorEmail
@@ -50,12 +65,12 @@ export async function notifySuperAdminsOfCommentAction(
 
     switch (action) {
       case "approve":
-        title = "✅ Bình luận được duyệt"
-        description = `${actorName} đã duyệt bình luận từ ${authorName} trong bài viết "${comment.postTitle}"`
+        title = "Bình luận được duyệt"
+        description = `${authorName} - "${comment.postTitle}"`
         break
       case "unapprove":
-        title = "❌ Bình luận bị hủy duyệt"
-        description = `${actorName} đã hủy duyệt bình luận từ ${authorName} trong bài viết "${comment.postTitle}"`
+        title = "Bình luận bị hủy duyệt"
+        description = `${authorName} - "${comment.postTitle}"`
         break
       case "update":
         const changeDescriptions: string[] = []
@@ -69,32 +84,24 @@ export async function notifySuperAdminsOfCommentAction(
             `Trạng thái: ${changes.approved.old ? "Đã duyệt" : "Chưa duyệt"} → ${changes.approved.new ? "Đã duyệt" : "Chưa duyệt"}`
           )
         }
-        title = "✏️ Bình luận được cập nhật"
-        description = `${actorName} đã cập nhật bình luận từ ${authorName} trong bài viết "${comment.postTitle}"${
-          changeDescriptions.length > 0 ? `\nThay đổi: ${changeDescriptions.join(", ")}` : ""
-        }`
+        title = "Bình luận được cập nhật"
+        description = `${authorName} - "${comment.postTitle}"${changeDescriptions.length > 0 ? `\n${changeDescriptions.join(", ")}` : ""}`
         break
       case "delete":
-        title = "🗑️ Bình luận bị xóa"
-        description = `${actorName} đã xóa bình luận từ ${authorName} trong bài viết "${comment.postTitle}"`
+        title = "Bình luận bị xóa"
+        description = `${authorName} - "${comment.postTitle}"`
         break
       case "restore":
-        title = "♻️ Bình luận được khôi phục"
-        description = `${actorName} đã khôi phục bình luận từ ${authorName} trong bài viết "${comment.postTitle}"`
+        title = "Bình luận được khôi phục"
+        description = `${authorName} - "${comment.postTitle}"`
         break
       case "hard-delete":
-        title = "⚠️ Bình luận bị xóa vĩnh viễn"
-        description = `${actorName} đã xóa vĩnh viễn bình luận từ ${authorName} trong bài viết "${comment.postTitle}"`
+        title = "Bình luận bị xóa vĩnh viễn"
+        description = `${authorName} - "${comment.postTitle}"`
         break
     }
 
     // Tạo notifications trong DB cho tất cả super admins
-    logger.debug("[notifySuperAdmins] Creating notifications in DB", {
-      title,
-      description,
-      actionUrl,
-      action,
-    })
     const result = await createNotificationForSuperAdmins(
       title,
       description,
@@ -114,17 +121,9 @@ export async function notifySuperAdminsOfCommentAction(
         timestamp: new Date().toISOString(),
       }
     )
-    logger.debug("[notifySuperAdmins] Notifications created", {
-      count: result.count,
-      action,
-    })
 
     // Emit socket event nếu có socket server
     const io = getSocketServer()
-    logger.debug("[notifySuperAdmins] Socket server status", {
-      hasSocketServer: !!io,
-      notificationCount: result.count,
-    })
     if (io && result.count > 0) {
       // Lấy danh sách super admins để emit đến từng user room
       const superAdmins = await prisma.user.findMany({
@@ -142,11 +141,6 @@ export async function notifySuperAdminsOfCommentAction(
           },
         },
         select: { id: true },
-      })
-
-      logger.debug("[notifySuperAdmins] Found super admins", {
-        count: superAdmins.length,
-        adminIds: superAdmins.map((a) => a.id),
       })
 
       // Fetch notifications vừa tạo từ database để lấy IDs thực tế
@@ -179,11 +173,6 @@ export async function notifySuperAdminsOfCommentAction(
           const socketNotification = mapNotificationToPayload(dbNotification)
           storeNotificationInCache(admin.id, socketNotification)
           io.to(`user:${admin.id}`).emit("notification:new", socketNotification)
-          logger.debug("[notifySuperAdmins] Emitted to user room", {
-            adminId: admin.id,
-            room: `user:${admin.id}`,
-            notificationId: dbNotification.id,
-          })
         } else {
           // Fallback nếu không tìm thấy notification trong database
           const fallbackNotification = {
@@ -207,10 +196,6 @@ export async function notifySuperAdminsOfCommentAction(
           }
           storeNotificationInCache(admin.id, fallbackNotification)
           io.to(`user:${admin.id}`).emit("notification:new", fallbackNotification)
-          logger.debug("[notifySuperAdmins] Emitted fallback notification to user room", {
-            adminId: admin.id,
-            room: `user:${admin.id}`,
-          })
         }
       }
 
@@ -218,12 +203,146 @@ export async function notifySuperAdminsOfCommentAction(
       if (createdNotifications.length > 0) {
         const roleNotification = mapNotificationToPayload(createdNotifications[0])
         io.to("role:super_admin").emit("notification:new", roleNotification)
-        logger.debug("[notifySuperAdmins] Emitted to role room: role:super_admin")
       }
     }
   } catch (error) {
     // Log error nhưng không throw để không ảnh hưởng đến main operation
-    logger.error("[notifications] Failed to notify super admins of comment action", error as Error)
+    resourceLogger.actionFlow({
+      resource: "comments",
+      action: "error",
+      step: "error",
+      metadata: { 
+        action: "notify-super-admins", 
+        commentId: comment.id,
+        error: error instanceof Error ? error.message : "Unknown error",
+      },
+    })
+  }
+}
+
+/**
+ * Helper function để tạo system notification cho super admin về bulk comment actions
+ */
+export async function notifySuperAdminsOfBulkCommentAction(
+  action: "approve" | "unapprove" | "delete" | "restore" | "hard-delete",
+  actorId: string,
+  comments: Array<{ id: string; content: string; authorName: string | null; authorEmail: string; postTitle: string }>
+) {
+  if (comments.length === 0) return
+
+  try {
+    const actor = await getActorInfo(actorId)
+    const actorName = actor?.name || actor?.email || "Hệ thống"
+
+    const namesText = formatCommentNames(comments, 3)
+    const count = comments.length
+
+    let title = ""
+    let description = ""
+
+    switch (action) {
+      case "approve":
+        title = `${count} Bình luận được duyệt`
+        description = namesText ? `${namesText}` : `${count} bình luận`
+        break
+      case "unapprove":
+        title = `${count} Bình luận bị hủy duyệt`
+        description = namesText ? `${namesText}` : `${count} bình luận`
+        break
+      case "delete":
+        title = `${count} Bình luận bị xóa`
+        description = namesText ? `${namesText}` : `${count} bình luận`
+        break
+      case "restore":
+        title = `${count} Bình luận được khôi phục`
+        description = namesText ? `${namesText}` : `${count} bình luận`
+        break
+      case "hard-delete":
+        title = `${count} Bình luận bị xóa vĩnh viễn`
+        description = namesText ? `${namesText}` : `${count} bình luận`
+        break
+    }
+
+    const result = await createNotificationForSuperAdmins(
+      title,
+      description,
+      "/admin/comments",
+      NotificationKind.SYSTEM,
+      {
+        type: `comment_bulk_${action}`,
+        actorId,
+        actorName: actor?.name || actor?.email,
+        actorEmail: actor?.email,
+        count,
+        commentIds: comments.map((c) => c.id),
+        timestamp: new Date().toISOString(),
+      }
+    )
+
+    const io = getSocketServer()
+    if (io && result.count > 0) {
+      const superAdmins = await prisma.user.findMany({
+        where: {
+          isActive: true,
+          deletedAt: null,
+          userRoles: {
+            some: {
+              role: {
+                name: "super_admin",
+                isActive: true,
+                deletedAt: null,
+              },
+            },
+          },
+        },
+        select: { id: true },
+      })
+
+      const createdNotifications = await prisma.notification.findMany({
+        where: {
+          title,
+          description,
+          kind: NotificationKind.SYSTEM,
+          userId: {
+            in: superAdmins.map((a) => a.id),
+          },
+          createdAt: {
+            gte: new Date(Date.now() - 5000),
+          },
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+        take: superAdmins.length,
+      })
+
+      for (let i = 0; i < superAdmins.length; i++) {
+        const admin = superAdmins[i]
+        const dbNotification = createdNotifications.find((n) => n.userId === admin.id)
+        
+        if (dbNotification) {
+          const socketNotification = mapNotificationToPayload(dbNotification)
+          storeNotificationInCache(admin.id, socketNotification)
+          io.to(`user:${admin.id}`).emit("notification:new", socketNotification)
+        }
+      }
+
+      if (createdNotifications.length > 0) {
+        const roleNotification = mapNotificationToPayload(createdNotifications[0])
+        io.to("role:super_admin").emit("notification:new", roleNotification)
+      }
+    }
+  } catch (error) {
+    resourceLogger.actionFlow({
+      resource: "comments",
+      action: "error",
+      step: "error",
+      metadata: { 
+        action: "notify-super-admins-bulk",
+        count: comments.length,
+        error: error instanceof Error ? error.message : "Unknown error",
+      },
+    })
   }
 }
 

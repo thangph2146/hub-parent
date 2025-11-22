@@ -7,6 +7,7 @@
 
 import type { Prisma } from "@prisma/client"
 import { prisma } from "@/lib/database"
+import { resourceLogger } from "@/lib/config"
 import { validatePagination, buildPagination } from "@/features/admin/resources/server"
 import { mapCommentRecord, buildWhereClause } from "./helpers"
 import type { ListCommentsInput, CommentDetail, ListCommentsResult } from "../types"
@@ -14,6 +15,13 @@ import type { ListCommentsInput, CommentDetail, ListCommentsResult } from "../ty
 export async function listComments(params: ListCommentsInput = {}): Promise<ListCommentsResult> {
   const { page, limit } = validatePagination(params.page, params.limit, 100)
   const where = buildWhereClause(params)
+
+  resourceLogger.actionFlow({
+    resource: "comments",
+    action: "query",
+    step: "start",
+    metadata: { params, where },
+  })
 
   const [data, total] = await Promise.all([
     prisma.comment.findMany({
@@ -40,10 +48,25 @@ export async function listComments(params: ListCommentsInput = {}): Promise<List
     prisma.comment.count({ where }),
   ])
 
-  return {
+  const result = {
     data: data.map(mapCommentRecord),
     pagination: buildPagination(page, limit, total),
   }
+
+  resourceLogger.actionFlow({
+    resource: "comments",
+    action: "query",
+    step: "success",
+    metadata: { 
+      page, 
+      limit, 
+      total, 
+      dataCount: data.length,
+      where,
+    },
+  })
+
+  return result
 }
 
 /**

@@ -10,6 +10,7 @@ import {
 } from "@/features/admin/comments/server/mutations"
 import { createPostRoute } from "@/lib/api/api-route-wrapper"
 import type { ApiRouteContext } from "@/lib/api/types"
+import { resourceLogger } from "@/lib/config"
 
 async function approveCommentHandler(_req: NextRequest, context: ApiRouteContext, ...args: unknown[]) {
   const { params } = args[0] as { params: Promise<{ id: string }> }
@@ -35,7 +36,12 @@ async function approveCommentHandler(_req: NextRequest, context: ApiRouteContext
     if (error instanceof NotFoundError) {
       return NextResponse.json({ error: error.message || "Không tìm thấy" }, { status: 404 })
     }
-    console.error("Error approving comment:", error)
+    resourceLogger.error({
+      resource: "comments",
+      action: "approve",
+      error: error instanceof Error ? error.message : "Unknown error",
+      metadata: { commentId },
+    })
     return NextResponse.json({ error: "Đã xảy ra lỗi khi duyệt bình luận" }, { status: 500 })
   }
 }

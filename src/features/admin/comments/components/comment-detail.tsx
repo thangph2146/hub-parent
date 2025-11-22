@@ -33,6 +33,7 @@ export async function CommentDetail({ commentId, backUrl = "/admin/comments" }: 
 
   return (
     <CommentDetailClient
+      commentId={commentId}
       comment={serializeCommentDetail(comment) as CommentDetailData}
       backUrl={backUrl}
       canApprove={canApprove}

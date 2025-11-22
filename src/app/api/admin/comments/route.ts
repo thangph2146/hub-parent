@@ -62,15 +62,18 @@ async function getCommentsHandler(req: NextRequest, _context: ApiRouteContext) {
     filters.postId = columnFilters.postId
   }
 
-  const result = await listCommentsCached({
+  const params = {
     page: paginationValidation.page,
     limit: paginationValidation.limit,
     search: searchValidation.value || undefined,
     filters: Object.keys(filters).length > 0 ? filters : undefined,
-  })
+  }
+
+  const result = await listCommentsCached(params)
 
   // Serialize result to match CommentsResponse format
   const serialized = serializeCommentsList(result)
+  
   return createSuccessResponse({
     data: serialized.rows,
     pagination: {

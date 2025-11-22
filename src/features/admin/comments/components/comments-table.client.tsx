@@ -32,6 +32,7 @@ import { useCommentRowActions } from "@/features/admin/comments/utils/row-action
 import type { AdminCommentsListParams } from "@/lib/query-keys"
 import type { CommentRow, CommentsResponse, CommentsTableClientProps } from "../types"
 import { COMMENT_CONFIRM_MESSAGES, COMMENT_LABELS } from "../constants"
+import { resourceLogger } from "@/lib/config"
 
 export function CommentsTableClient({
   canDelete = false,
@@ -80,11 +81,11 @@ export function CommentsTableClient({
         type: checked ? "approve" : "unapprove",
         row,
         onConfirm: async () => {
-          await handleToggleApprove(row, checked, refreshTable)
+          await handleToggleApprove(row, checked)
         },
       })
     },
-    [canApprove, handleToggleApprove, refreshTable, setDeleteConfirm],
+    [canApprove, handleToggleApprove, setDeleteConfirm],
   )
 
   const { baseColumns, deletedColumns } = useCommentColumns({
@@ -101,11 +102,11 @@ export function CommentsTableClient({
         type: "soft",
         row,
         onConfirm: async () => {
-          await executeSingleAction("delete", row, refreshTable)
+          await executeSingleAction("delete", row)
         },
       })
     },
-    [canDelete, executeSingleAction, refreshTable, setDeleteConfirm],
+    [canDelete, executeSingleAction, setDeleteConfirm],
   )
 
   const handleHardDeleteSingle = useCallback(
@@ -116,11 +117,11 @@ export function CommentsTableClient({
         type: "hard",
         row,
         onConfirm: async () => {
-          await executeSingleAction("hard-delete", row, refreshTable)
+          await executeSingleAction("hard-delete", row)
         },
       })
     },
-    [canManage, executeSingleAction, refreshTable, setDeleteConfirm],
+    [canManage, executeSingleAction, setDeleteConfirm],
   )
 
   const handleRestoreSingle = useCallback(
@@ -131,11 +132,11 @@ export function CommentsTableClient({
         type: "restore",
         row,
         onConfirm: async () => {
-          await executeSingleAction("restore", row, refreshTable)
+          await executeSingleAction("restore", row)
         },
       })
     },
-    [canRestore, executeSingleAction, refreshTable, setDeleteConfirm],
+    [canRestore, executeSingleAction, setDeleteConfirm],
   )
 
   const { renderActiveRowActions, renderDeletedRowActions } = useCommentRowActions({
@@ -185,13 +186,39 @@ export function CommentsTableClient({
         throw new Error(response.data.error || response.data.message || "Không thể tải danh sách bình luận")
       }
 
-      return {
+      const result: DataTableResult<CommentRow> = {
         rows: payload.data,
         page: payload.pagination?.page ?? params.page,
         limit: payload.pagination?.limit ?? params.limit,
         total: payload.pagination?.total ?? 0,
         totalPages: payload.pagination?.totalPages ?? 0,
       }
+
+      resourceLogger.tableAction({
+        resource: "comments",
+        action: "load-table",
+        view: params.status ?? "active",
+        page: result.page,
+        total: result.total,
+      })
+
+      resourceLogger.dataStructure({
+        resource: "comments",
+        dataType: "table",
+        structure: {
+          columns: result.rows.length > 0 ? Object.keys(result.rows[0]) : [],
+          pagination: {
+            page: result.page,
+            limit: result.limit,
+            total: result.total,
+            totalPages: result.totalPages,
+          },
+          rows: result.rows,
+        },
+        rowCount: result.rows.length,
+      })
+
+      return result
     },
     [],
   )
@@ -234,7 +261,7 @@ export function CommentsTableClient({
   })
 
   const executeBulk = useCallback(
-    (action: "delete" | "restore" | "hard-delete" | "approve" | "unapprove", ids: string[], refresh: () => void, clearSelection: () => void) => {
+    (action: "delete" | "restore" | "hard-delete" | "approve" | "unapprove", ids: string[], clearSelection: () => void) => {
       if (ids.length === 0) return
 
       // Tất cả actions đều cần confirmation
@@ -243,7 +270,7 @@ export function CommentsTableClient({
         type: action === "hard-delete" ? "hard" : action === "restore" ? "restore" : action === "approve" ? "approve" : action === "unapprove" ? "unapprove" : "soft",
         bulkIds: ids,
         onConfirm: async () => {
-          await executeBulkAction(action, ids, refresh, clearSelection)
+          await executeBulkAction(action, ids, clearSelection)
         },
       })
     },
@@ -276,7 +303,7 @@ export function CommentsTableClient({
                   size="sm"
                   variant="outline"
                   disabled={bulkState.isProcessing || selectedIds.length === 0}
-                  onClick={() => executeBulk("approve", selectedIds, refresh, clearSelection)}
+                  onClick={() => executeBulk("approve", selectedIds, clearSelection)}
                   className="whitespace-nowrap"
                 >
                   <Check className="mr-2 h-5 w-5 shrink-0" />
@@ -292,7 +319,7 @@ export function CommentsTableClient({
                   size="sm"
                   variant="outline"
                   disabled={bulkState.isProcessing || selectedIds.length === 0}
-                  onClick={() => executeBulk("unapprove", selectedIds, refresh, clearSelection)}
+                  onClick={() => executeBulk("unapprove", selectedIds, clearSelection)}
                   className="whitespace-nowrap"
                 >
                   <X className="mr-2 h-5 w-5 shrink-0" />
@@ -308,7 +335,7 @@ export function CommentsTableClient({
                   size="sm"
                   variant="destructive"
                   disabled={bulkState.isProcessing || selectedIds.length === 0}
-                  onClick={() => executeBulk("delete", selectedIds, refresh, clearSelection)}
+                  onClick={() => executeBulk("delete", selectedIds, clearSelection)}
                   className="whitespace-nowrap"
                 >
                   <Trash2 className="mr-2 h-5 w-5 shrink-0" />
@@ -324,7 +351,7 @@ export function CommentsTableClient({
                   size="sm"
                   variant="destructive"
                   disabled={bulkState.isProcessing || selectedIds.length === 0}
-                  onClick={() => executeBulk("hard-delete", selectedIds, refresh, clearSelection)}
+                  onClick={() => executeBulk("hard-delete", selectedIds, clearSelection)}
                   className="whitespace-nowrap"
                 >
                   <AlertTriangle className="mr-2 h-5 w-5 shrink-0" />
@@ -371,7 +398,7 @@ export function CommentsTableClient({
                 size="sm"
                 variant="outline"
                 disabled={bulkState.isProcessing || selectedIds.length === 0}
-                onClick={() => executeBulk("restore", selectedIds, refresh, clearSelection)}
+                onClick={() => executeBulk("restore", selectedIds, clearSelection)}
                 className="whitespace-nowrap"
               >
                 <RotateCcw className="mr-2 h-5 w-5 shrink-0" />
@@ -387,7 +414,7 @@ export function CommentsTableClient({
                 size="sm"
                 variant="destructive"
                 disabled={bulkState.isProcessing || selectedIds.length === 0}
-                onClick={() => executeBulk("hard-delete", selectedIds, refresh, clearSelection)}
+                onClick={() => executeBulk("hard-delete", selectedIds, clearSelection)}
                 className="whitespace-nowrap"
               >
                 <AlertTriangle className="mr-2 h-5 w-5 shrink-0" />

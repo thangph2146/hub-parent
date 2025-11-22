@@ -90,7 +90,7 @@ export const appConfig = {
   icons: {
     icon: "/favicon.ico",
     shortcut: "/favicon.ico",
-    apple: "/apple-icon.png",
+    // apple: "/apple-icon.png", // Commented out - file không tồn tại
   },
   
   // Manifest

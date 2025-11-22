@@ -4,10 +4,11 @@ import { useEffect, useMemo, useState } from "react"
 import { useSession } from "next-auth/react"
 import { useQueryClient } from "@tanstack/react-query"
 import { useSocket } from "@/hooks/use-socket"
-import { logger } from "@/lib/config"
+import { resourceLogger } from "@/lib/config"
 import type { CommentRow } from "../types"
 import type { DataTableResult } from "@/components/tables"
 import { queryKeys, type AdminCommentsListParams } from "@/lib/query-keys"
+import type { CommentDetailData } from "../components/comment-detail.client"
 import {
   matchesSearch,
   matchesFilters,
@@ -36,28 +37,14 @@ function updateCommentQueries(
     queryKey: queryKeys.adminComments.all() as unknown[],
   })
   
-  logger.debug("Found queries to update", { count: queries.length })
-  
   for (const [key, data] of queries) {
     if (!Array.isArray(key) || key.length < 2) continue
     const params = key[1] as AdminCommentsListParams | undefined
-    if (!params || !data) {
-      logger.debug("Skipping query", { hasParams: !!params, hasData: !!data })
-      continue
-    }
+    if (!params || !data) continue
     const next = updater({ key, params, data })
     if (next) {
-      logger.debug("Setting query data", {
-        key: key.slice(0, 2),
-        oldRowsCount: data.rows.length,
-        newRowsCount: next.rows.length,
-        oldTotal: data.total,
-        newTotal: next.total,
-      })
       queryClient.setQueryData(key, next)
       updated = true
-    } else {
-      logger.debug("Updater returned null, skipping update")
     }
   }
   
@@ -85,28 +72,44 @@ export function useCommentsSocketBridge() {
       const { comment, previousStatus, newStatus } = payload as CommentUpsertPayload
       const rowStatus: "active" | "deleted" = comment.deletedAt ? "deleted" : "active"
 
-      logger.debug("Received comment:upsert", {
-        commentId: comment.id,
-        previousStatus,
-        newStatus,
-        rowStatus,
-        deletedAt: comment.deletedAt,
+      resourceLogger.socket({
+        resource: "comments",
+        action: "socket-update",
+        event: "comment:upsert",
+        resourceId: comment.id,
+        payload: { commentId: comment.id, previousStatus, newStatus, rowStatus },
       })
+
+      // Update detail query cache nếu có
+      const detailQueryKey = queryKeys.adminComments.detail(comment.id)
+      const detailData = queryClient.getQueryData<{ data: CommentDetailData }>(detailQueryKey)
+      if (detailData) {
+        queryClient.setQueryData(detailQueryKey, {
+          data: {
+            ...detailData.data,
+            ...comment,
+            approved: comment.approved,
+            authorName: comment.authorName,
+            authorEmail: comment.authorEmail,
+            postTitle: comment.postTitle,
+            updatedAt: comment.updatedAt,
+            deletedAt: comment.deletedAt,
+          },
+        })
+        resourceLogger.socket({
+          resource: "comments",
+          action: "cache-refresh",
+          event: "comment:upsert",
+          resourceId: comment.id,
+          payload: { cacheType: "detail-cache-updated" },
+        })
+      }
 
       const updated = updateCommentQueries(queryClient, ({ params, data }) => {
         const matches = matchesFilters(params.filters, comment) && matchesSearch(params.search, comment)
         const includesByStatus = shouldIncludeInStatus(params.status, rowStatus)
         const existingIndex = data.rows.findIndex((row) => row.id === comment.id)
         const shouldInclude = matches && includesByStatus
-
-        logger.debug("Processing comment update", {
-          commentId: comment.id,
-          viewStatus: params.status,
-          rowStatus,
-          includesByStatus,
-          existingIndex,
-          shouldInclude,
-        })
 
         if (existingIndex === -1 && !shouldInclude) {
           // Nothing to update for this page
@@ -137,11 +140,6 @@ export function useCommentsSocketBridge() {
         } else if (existingIndex >= 0) {
           // Comment đang ở trong list nhưng không match với view hiện tại (ví dụ: chuyển từ active sang deleted)
           // Remove khỏi page này
-          logger.debug("Removing comment from view", {
-            commentId: comment.id,
-            viewStatus: params.status,
-            rowStatus,
-          })
           const result = removeRowFromPage(rows, comment.id)
           rows = result.rows
           if (result.removed) {
@@ -154,21 +152,12 @@ export function useCommentsSocketBridge() {
         const totalPages = total === 0 ? 0 : Math.ceil(total / next.limit)
 
         // Luôn return object mới để React Query detect được thay đổi
-        const result = {
+        return {
           ...next,
           rows,
           total,
           totalPages,
         }
-
-        logger.debug("Cache updated for comment", {
-          commentId: comment.id,
-          rowsCount: result.rows.length,
-          total: result.total,
-          wasRemoved: existingIndex >= 0 && !shouldInclude,
-        })
-
-        return result
       })
       
       if (updated) {
@@ -176,27 +165,113 @@ export function useCommentsSocketBridge() {
       }
     })
 
+    // Batch upsert handler (tối ưu cho bulk operations)
+    const detachBatchUpsert = on<[{ comments: CommentRow[]; previousStatus: "active" | "deleted" | null }]>("comment:batch-upsert", (payload) => {
+      const { comments, previousStatus } = payload as { comments: CommentRow[]; previousStatus: "active" | "deleted" | null }
+      
+      resourceLogger.socket({
+        resource: "comments",
+        action: "socket-update",
+        event: "comment:batch-upsert",
+        payload: { count: comments.length, previousStatus },
+      })
+
+      let anyUpdated = false
+      for (const comment of comments) {
+        const rowStatus: "active" | "deleted" = comment.deletedAt ? "deleted" : "active"
+
+        // Update detail query cache nếu có
+        const detailQueryKey = queryKeys.adminComments.detail(comment.id)
+        const detailData = queryClient.getQueryData<{ data: CommentDetailData }>(detailQueryKey)
+        if (detailData) {
+          queryClient.setQueryData(detailQueryKey, {
+            data: {
+              ...detailData.data,
+              ...comment,
+              approved: comment.approved,
+              authorName: comment.authorName,
+              authorEmail: comment.authorEmail,
+              postTitle: comment.postTitle,
+              updatedAt: comment.updatedAt,
+              deletedAt: comment.deletedAt,
+            },
+          })
+        }
+
+        const updated = updateCommentQueries(queryClient, ({ params, data }) => {
+          const matches = matchesFilters(params.filters, comment) && matchesSearch(params.search, comment)
+          const includesByStatus = shouldIncludeInStatus(params.status, rowStatus)
+          const existingIndex = data.rows.findIndex((row) => row.id === comment.id)
+          const shouldInclude = matches && includesByStatus
+
+          if (existingIndex === -1 && !shouldInclude) {
+            return null
+          }
+
+          const next: DataTableResult<CommentRow> = { ...data }
+          let total = next.total
+          let rows = next.rows
+
+          if (shouldInclude) {
+            if (existingIndex >= 0) {
+              const updated = [...rows]
+              updated[existingIndex] = comment
+              rows = updated
+            } else if (params.page === 1) {
+              rows = insertRowIntoPage(rows, comment, next.limit)
+              total = total + 1
+            }
+          } else if (existingIndex >= 0) {
+            const result = removeRowFromPage(rows, comment.id)
+            rows = result.rows
+            if (result.removed) {
+              total = Math.max(0, total - 1)
+            }
+          } else {
+            return null
+          }
+
+          const totalPages = total === 0 ? 0 : Math.ceil(total / next.limit)
+          return { ...next, rows, total, totalPages }
+        })
+        
+        if (updated) anyUpdated = true
+      }
+
+      if (anyUpdated) {
+        setCacheVersion((prev) => prev + 1)
+      }
+    })
+
     const detachRemove = on<[CommentRemovePayload]>("comment:remove", (payload) => {
       const { id } = payload as CommentRemovePayload
-      logger.debug("Received comment:remove", { commentId: id })
+      
+      resourceLogger.socket({
+        resource: "comments",
+        action: "socket-update",
+        event: "comment:remove",
+        resourceId: id,
+        payload: { commentId: id },
+      })
+
+      // Invalidate detail query cache
+      queryClient.invalidateQueries({ queryKey: queryKeys.adminComments.detail(id) })
+      resourceLogger.socket({
+        resource: "comments",
+        action: "cache-refresh",
+        event: "comment:remove",
+        resourceId: id,
+        payload: { cacheType: "detail-cache-invalidated" },
+      })
       
       const updated = updateCommentQueries(queryClient, ({ params, data }) => {
         const result = removeRowFromPage(data.rows, id)
         if (!result.removed) {
-          logger.debug("Comment not found in current view", { commentId: id, viewStatus: params.status })
           return null
         }
         
         const total = Math.max(0, data.total - 1)
         const totalPages = total === 0 ? 0 : Math.ceil(total / data.limit)
-        
-        logger.debug("Removed comment from cache", {
-          commentId: id,
-          oldRowsCount: data.rows.length,
-          newRowsCount: result.rows.length,
-          oldTotal: data.total,
-          newTotal: total,
-        })
         
         return {
           ...data,
@@ -213,6 +288,7 @@ export function useCommentsSocketBridge() {
 
     return () => {
       detachUpsert?.()
+      detachBatchUpsert?.()
       detachRemove?.()
     }
   }, [session?.user?.id, on, queryClient])

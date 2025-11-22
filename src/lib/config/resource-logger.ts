@@ -25,12 +25,17 @@ export type ResourceAction =
   | "bulk-delete"
   | "bulk-restore"
   | "bulk-hard-delete"
+  | "bulk-approve"
+  | "bulk-unapprove"
   | "cache-invalidate"
   | "cache-refresh"
   | "socket-update"
   | "error"
   | "publish"
   | "unpublish"
+  | "approve"
+  | "unapprove"
+  | "query"
 
 /**
  * Resource context cho logging
@@ -134,7 +139,7 @@ export const resourceLogger = {
   /**
    * Log cache operations
    */
-  cache: (context: ResourceLogContext & { operation: "invalidate" | "refresh" | "update"; tags?: string[] }) => {
+  cache: (context: ResourceLogContext & { operation: "invalidate" | "refresh" | "update" | "invalidate-bulk" | "read"; tags?: string[] }) => {
     logger.debug(`[${context.resource.toUpperCase()}] Cache ${context.operation}`, {
       resource: context.resource,
       operation: context.operation,

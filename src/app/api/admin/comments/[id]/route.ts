@@ -57,21 +57,8 @@ async function putCommentHandler(req: NextRequest, context: ApiRouteContext, ...
 
   try {
     const comment = await updateComment(ctx, commentId, body)
-    // Serialize comment to client format
-    const serialized = {
-      id: comment.id,
-      content: comment.content,
-      approved: comment.approved,
-      authorId: comment.authorId,
-      authorName: comment.authorName,
-      authorEmail: comment.authorEmail,
-      postId: comment.postId,
-      postTitle: comment.postTitle,
-      createdAt: comment.createdAt,
-      updatedAt: comment.updatedAt,
-      deletedAt: comment.deletedAt,
-    }
-    return createSuccessResponse(serialized)
+    // Return full comment object (already includes updatedAt from mapCommentRecord)
+    return createSuccessResponse(comment)
   } catch (error) {
     if (error instanceof ApplicationError) {
       return createErrorResponse(error.message || "Không thể cập nhật bình luận", { status: error.status || 400 })
@@ -79,7 +66,6 @@ async function putCommentHandler(req: NextRequest, context: ApiRouteContext, ...
     if (error instanceof NotFoundError) {
       return createErrorResponse(error.message || "Không tìm thấy", { status: 404 })
     }
-    console.error("Error updating comment:", error)
     return createErrorResponse("Đã xảy ra lỗi khi cập nhật bình luận", { status: 500 })
   }
 }
@@ -108,7 +94,6 @@ async function deleteCommentHandler(_req: NextRequest, context: ApiRouteContext,
     if (error instanceof NotFoundError) {
       return createErrorResponse(error.message || "Không tìm thấy", { status: 404 })
     }
-    console.error("Error deleting comment:", error)
     return createErrorResponse("Đã xảy ra lỗi khi xóa bình luận", { status: 500 })
   }
 }

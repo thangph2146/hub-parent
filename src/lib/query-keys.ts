@@ -252,6 +252,10 @@ export const queryKeys = {
     list: (params: AdminCommentsListParams): readonly unknown[] => {
       return ["adminComments", normalizeListParams(params)]
     },
+    /**
+     * Comment detail by ID
+     */
+    detail: (id: string): readonly unknown[] => ["adminComments", "detail", id],
   },
 
   /**

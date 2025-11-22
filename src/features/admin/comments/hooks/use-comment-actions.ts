@@ -8,13 +8,13 @@ import { useQueryClient } from "@tanstack/react-query"
 import { apiClient } from "@/lib/api/axios"
 import { apiRoutes } from "@/lib/api/routes"
 import { queryKeys } from "@/lib/query-keys"
-import { runResourceRefresh, useResourceBulkProcessing } from "@/features/admin/resources/hooks"
-import type { ResourceRefreshHandler } from "@/features/admin/resources/types"
+import { useResourceBulkProcessing } from "@/features/admin/resources/hooks"
 import type { CommentRow } from "../types"
 import type { DataTableResult } from "@/components/tables"
 import type { FeedbackVariant } from "@/components/dialogs"
 import { COMMENT_MESSAGES } from "../constants/messages"
-import { logger } from "@/lib/config"
+import { resourceLogger } from "@/lib/config"
+import type { BulkActionResult } from "@/features/admin/resources/types"
 
 interface UseCommentActionsOptions {
   canApprove: boolean
@@ -44,7 +44,7 @@ export function useCommentActions({
   const { bulkState, startBulkProcessing, stopBulkProcessing } = useResourceBulkProcessing()
 
   const handleToggleApprove = useCallback(
-    async (row: CommentRow, newStatus: boolean, refresh: ResourceRefreshHandler) => {
+    async (row: CommentRow, newStatus: boolean) => {
       if (!canApprove) {
         showFeedback("error", COMMENT_MESSAGES.NO_PERMISSION, COMMENT_MESSAGES.NO_APPROVE_PERMISSION)
         return
@@ -71,19 +71,37 @@ export function useCommentActions({
 
       try {
         if (newStatus) {
+          resourceLogger.tableAction({
+            resource: "comments",
+            action: "approve",
+            resourceId: row.id,
+            authorName: row.authorName,
+          })
           await apiClient.post(apiRoutes.comments.approve(row.id))
           showFeedback("success", COMMENT_MESSAGES.APPROVE_SUCCESS, `Đã duyệt bình luận từ ${row.authorName || row.authorEmail}`)
         } else {
+          resourceLogger.tableAction({
+            resource: "comments",
+            action: "unapprove",
+            resourceId: row.id,
+            authorName: row.authorName,
+          })
           await apiClient.post(apiRoutes.comments.unapprove(row.id))
           showFeedback("success", COMMENT_MESSAGES.UNAPPROVE_SUCCESS, `Đã hủy duyệt bình luận từ ${row.authorName || row.authorEmail}`)
         }
-        await runResourceRefresh({ refresh, resource: "comments" })
       } catch (error: unknown) {
-        const errorMessage = error instanceof Error ? error.message : COMMENT_MESSAGES.UNKNOWN_ERROR
+        // Extract error message từ axios error response
+        let errorMessage: string = COMMENT_MESSAGES.UNKNOWN_ERROR
+        if (error && typeof error === "object" && "response" in error) {
+          const axiosError = error as { response?: { data?: { message?: string; error?: string } } }
+          errorMessage = axiosError.response?.data?.message || axiosError.response?.data?.error || COMMENT_MESSAGES.UNKNOWN_ERROR
+        } else if (error instanceof Error) {
+          errorMessage = error.message
+        }
         showFeedback("error", newStatus ? COMMENT_MESSAGES.APPROVE_ERROR : COMMENT_MESSAGES.UNAPPROVE_ERROR, `Không thể ${newStatus ? "duyệt" : "hủy duyệt"} bình luận`, errorMessage)
         
         // Rollback optimistic update nếu có lỗi
-        if (isSocketConnected) {
+        if (!isSocketConnected) {
           queryClient.invalidateQueries({ queryKey: queryKeys.adminComments.all() })
         }
       } finally {
@@ -105,8 +123,7 @@ export function useCommentActions({
   const executeSingleAction = useCallback(
     async (
       action: "delete" | "restore" | "hard-delete",
-      row: CommentRow,
-      refresh: ResourceRefreshHandler
+      row: CommentRow
     ): Promise<void> => {
       const actionConfig = {
         delete: {
@@ -150,14 +167,31 @@ export function useCommentActions({
       setLoadingState((prev) => new Set(prev).add(row.id))
 
       try {
+        resourceLogger.tableAction({
+          resource: "comments",
+          action,
+          resourceId: row.id,
+          authorName: row.authorName,
+        })
         await apiClient.post(actionConfig.endpoint, actionConfig.payload)
         showFeedback("success", actionConfig.successTitle, actionConfig.successDescription)
-        await runResourceRefresh({ refresh, resource: "comments" })
       } catch (error: unknown) {
-        const errorMessage = error instanceof Error ? error.message : COMMENT_MESSAGES.UNKNOWN_ERROR
+        // Extract error message từ axios error response
+        let errorMessage: string = COMMENT_MESSAGES.UNKNOWN_ERROR
+        if (error && typeof error === "object" && "response" in error) {
+          const axiosError = error as { response?: { data?: { message?: string; error?: string; data?: { message?: string } } } }
+          errorMessage = axiosError.response?.data?.message || axiosError.response?.data?.error || axiosError.response?.data?.data?.message || COMMENT_MESSAGES.UNKNOWN_ERROR
+        } else if (error instanceof Error) {
+          errorMessage = error.message
+        }
         showFeedback("error", actionConfig.errorTitle, actionConfig.errorDescription, errorMessage)
         if (action === "restore") {
-          logger.error(`Failed to ${action} comment`, error as Error)
+          resourceLogger.tableAction({
+            resource: "comments",
+            action: action,
+            resourceId: row.id,
+            error: errorMessage,
+          })
         } else {
           throw error
         }
@@ -176,7 +210,6 @@ export function useCommentActions({
     async (
       action: "delete" | "restore" | "hard-delete" | "approve" | "unapprove",
       ids: string[],
-      refresh: ResourceRefreshHandler,
       clearSelection: () => void
     ) => {
       if (ids.length === 0) return
@@ -184,23 +217,36 @@ export function useCommentActions({
       if (!startBulkProcessing()) return
 
       try {
-        await apiClient.post(apiRoutes.comments.bulk, { action, ids })
+        resourceLogger.tableAction({
+          resource: "comments",
+          action: action,
+          count: ids.length,
+          commentIds: ids,
+        })
+        const response = await apiClient.post<{ data: BulkActionResult }>(apiRoutes.comments.bulk, { action, ids })
 
-        const messages = {
-          approve: { title: COMMENT_MESSAGES.BULK_APPROVE_SUCCESS, description: `Đã duyệt ${ids.length} bình luận` },
-          unapprove: { title: COMMENT_MESSAGES.BULK_UNAPPROVE_SUCCESS, description: `Đã hủy duyệt ${ids.length} bình luận` },
-          restore: { title: COMMENT_MESSAGES.BULK_RESTORE_SUCCESS, description: `Đã khôi phục ${ids.length} bình luận` },
-          delete: { title: COMMENT_MESSAGES.BULK_DELETE_SUCCESS, description: `Đã xóa ${ids.length} bình luận` },
-          "hard-delete": { title: COMMENT_MESSAGES.BULK_HARD_DELETE_SUCCESS, description: `Đã xóa vĩnh viễn ${ids.length} bình luận` },
+        const successTitles = {
+          approve: COMMENT_MESSAGES.BULK_APPROVE_SUCCESS,
+          unapprove: COMMENT_MESSAGES.BULK_UNAPPROVE_SUCCESS,
+          restore: COMMENT_MESSAGES.BULK_RESTORE_SUCCESS,
+          delete: COMMENT_MESSAGES.BULK_DELETE_SUCCESS,
+          "hard-delete": COMMENT_MESSAGES.BULK_HARD_DELETE_SUCCESS,
         }
-
-        const message = messages[action]
-        showFeedback("success", message.title, message.description)
+        const title = successTitles[action]
+        const description = response.data.data?.message || `Đã thực hiện thao tác cho ${ids.length} bình luận`
+        
+        showFeedback("success", title, description)
         clearSelection()
-
-        await runResourceRefresh({ refresh, resource: "comments" })
       } catch (error: unknown) {
-        const errorMessage = error instanceof Error ? error.message : COMMENT_MESSAGES.UNKNOWN_ERROR
+        // Extract error message từ axios error response
+        let errorMessage: string = COMMENT_MESSAGES.UNKNOWN_ERROR
+        if (error && typeof error === "object" && "response" in error) {
+          const axiosError = error as { response?: { data?: { message?: string; error?: string; data?: { message?: string } } } }
+          errorMessage = axiosError.response?.data?.message || axiosError.response?.data?.error || axiosError.response?.data?.data?.message || COMMENT_MESSAGES.UNKNOWN_ERROR
+        } else if (error instanceof Error) {
+          errorMessage = error.message
+        }
+        
         const errorTitles = {
           approve: COMMENT_MESSAGES.BULK_APPROVE_ERROR,
           unapprove: COMMENT_MESSAGES.BULK_UNAPPROVE_ERROR,
@@ -208,6 +254,12 @@ export function useCommentActions({
           delete: COMMENT_MESSAGES.BULK_DELETE_ERROR,
           "hard-delete": COMMENT_MESSAGES.BULK_HARD_DELETE_ERROR,
         }
+        resourceLogger.tableAction({
+          resource: "comments",
+          action: action,
+          count: ids.length,
+          error: errorMessage,
+        })
         showFeedback("error", errorTitles[action], `Không thể thực hiện thao tác cho ${ids.length} bình luận`, errorMessage)
         if (action !== "restore") {
           throw error

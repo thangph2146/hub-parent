@@ -6,6 +6,7 @@
 
 import type { Prisma } from "@prisma/client"
 import type { DataTableResult } from "@/components/tables"
+import { applyStatusFilter } from "@/features/admin/resources/server"
 import type { ListCommentsInput, ListedComment, CommentDetail, ListCommentsResult } from "../types"
 import type { CommentRow } from "../types"
 
@@ -48,19 +49,27 @@ export function mapCommentRecord(comment: CommentWithRelations): ListedComment {
 
 /**
  * Build Prisma where clause from ListCommentsInput
+ * Sử dụng helpers từ @resources để đảm bảo nhất quán
  */
 export function buildWhereClause(params: ListCommentsInput): Prisma.CommentWhereInput {
   const where: Prisma.CommentWhereInput = {}
   const filters = params.filters || {}
 
-  // Handle deleted filter
+  // Xác định status từ filters.deleted để sử dụng applyStatusFilter
+  let status: "active" | "deleted" | "all" = "active"
   if (filters.deleted === true) {
-    where.deletedAt = { not: null }
+    status = "deleted"
   } else if (filters.deleted === false) {
-    where.deletedAt = null
+    status = "active"
+  } else {
+    // Mặc định active khi không có filter
+    status = "active"
   }
 
-  // Search filter with relations
+  // Apply status filter sử dụng helper từ @resources
+  applyStatusFilter(where, status)
+
+  // Search filter with relations (comments có relations nên cần custom logic)
   if (params.search) {
     const searchValue = params.search.trim()
     if (searchValue.length > 0) {

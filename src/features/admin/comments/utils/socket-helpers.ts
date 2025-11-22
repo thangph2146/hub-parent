@@ -3,6 +3,7 @@
  * Tách ra để dễ test và tái sử dụng
  */
 
+import { resourceLogger } from "@/lib/config"
 import type { CommentRow } from "../types"
 import type { AdminCommentsListParams } from "@/lib/query-keys"
 
@@ -79,13 +80,33 @@ export function insertRowIntoPage(
   if (existingIndex >= 0) {
     const next = [...rows]
     next[existingIndex] = row
+    resourceLogger.socket({
+      resource: "comments",
+      action: "socket-update",
+      event: "update-row-in-page",
+      payload: {
+        action: "update",
+        commentId: row.id,
+        authorName: row.authorName,
+        index: existingIndex,
+      },
+    })
     return next
   }
   const next = [row, ...rows]
-  if (next.length > limit) {
-    next.pop()
-  }
-  return next
+  const result = next.length > limit ? next.slice(0, limit) : next
+  resourceLogger.socket({
+    resource: "comments",
+    action: "socket-update",
+    event: "insert-row-in-page",
+    payload: {
+      action: "insert",
+      commentId: row.id,
+      authorName: row.authorName,
+      wasTruncated: next.length > limit,
+    },
+  })
+  return result
 }
 
 /**
@@ -96,9 +117,32 @@ export function removeRowFromPage(
   id: string
 ): { rows: CommentRow[]; removed: boolean } {
   const index = rows.findIndex((item) => item.id === id)
-  if (index === -1) return { rows, removed: false }
+  if (index === -1) {
+    resourceLogger.socket({
+      resource: "comments",
+      action: "socket-update",
+      event: "row-not-found-for-removal",
+      payload: {
+        action: "remove",
+        commentId: id,
+      },
+    })
+    return { rows, removed: false }
+  }
   const next = [...rows]
+  const removedRow = next[index]
   next.splice(index, 1)
+  resourceLogger.socket({
+    resource: "comments",
+    action: "socket-update",
+    event: "remove-row-from-page",
+    payload: {
+      action: "remove",
+      commentId: id,
+      authorName: removedRow?.authorName,
+      index,
+    },
+  })
   return { rows: next, removed: true }
 }
 

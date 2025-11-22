@@ -75,12 +75,8 @@ export interface ListCommentsResult {
   }
 }
 
-export interface BulkActionResult {
-  success: boolean
-  message: string
-  affected: number
-}
-
 // Types are now exported from schemas.ts
 export type { UpdateCommentInput, BulkCommentActionInput } from "./server/schemas"
+// BulkActionResult is exported from resources/types.ts
+export type { BulkActionResult } from "@/features/admin/resources/types"
 
