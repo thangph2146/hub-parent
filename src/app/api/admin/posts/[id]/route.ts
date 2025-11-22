@@ -44,8 +44,19 @@ async function putPostHandler(req: NextRequest, context: ApiRouteContext, ...arg
     if (error instanceof ApplicationError) {
       return NextResponse.json({ error: error.message || "Không thể cập nhật bài viết" }, { status: error.status || 400 })
     }
-    console.error("Error updating post:", error)
-    return NextResponse.json({ error: "Đã xảy ra lỗi khi cập nhật bài viết" }, { status: 500 })
+    // Log lỗi chi tiết để debug
+    const errorMessage = error instanceof Error ? error.message : String(error)
+    const errorStack = error instanceof Error ? error.stack : undefined
+    console.error("Error updating post:", {
+      postId: id,
+      error: errorMessage,
+      stack: errorStack,
+      payload: validationResult.data,
+    })
+    return NextResponse.json({ 
+      error: errorMessage || "Đã xảy ra lỗi khi cập nhật bài viết",
+      details: process.env.NODE_ENV === "development" ? errorMessage : undefined,
+    }, { status: 500 })
   }
 }
 

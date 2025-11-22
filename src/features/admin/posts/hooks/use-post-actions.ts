@@ -11,7 +11,7 @@ import type { ResourceRefreshHandler } from "@/features/admin/resources/types"
 import type { PostRow } from "../types"
 import type { FeedbackVariant } from "@/components/dialogs"
 import { POST_MESSAGES } from "../constants/messages"
-import { logger } from "@/lib/config"
+import { resourceLogger } from "@/lib/config"
 
 interface UsePostActionsOptions {
   canDelete: boolean
@@ -90,9 +90,13 @@ export function usePostActions({
       } catch (error: unknown) {
         const errorMessage = error instanceof Error ? error.message : POST_MESSAGES.UNKNOWN_ERROR
         showFeedback("error", actionConfig.errorTitle, actionConfig.errorDescription, errorMessage)
-        if (action === "restore") {
-          logger.error(`Failed to ${action} post`, error as Error)
-        } else {
+        resourceLogger.actionFlow({
+          resource: "posts",
+          action: action === "delete" ? "delete" : action === "restore" ? "restore" : "hard-delete",
+          step: "error",
+          metadata: { postId: row.id, postTitle: row.title, error: errorMessage },
+        })
+        if (action !== "restore") {
           throw error
         }
       } finally {
@@ -117,6 +121,14 @@ export function usePostActions({
 
       if (!startBulkProcessing()) return
 
+      // Log action start
+      resourceLogger.actionFlow({
+        resource: "posts",
+        action: action === "delete" ? "bulk-delete" : action === "restore" ? "bulk-restore" : "bulk-hard-delete",
+        step: "start",
+        metadata: { count: ids.length, postIds: ids },
+      })
+
       try {
         const response = await apiClient.post(apiRoutes.posts.bulk, { action, ids })
 
@@ -126,9 +138,16 @@ export function usePostActions({
         // Nếu không có post nào được xử lý (affected === 0), hiển thị thông báo
         if (affected === 0) {
           const actionText = action === "restore" ? "khôi phục" : action === "delete" ? "xóa" : "xóa vĩnh viễn"
-          showFeedback("error", "Không có thay đổi", result?.message || `Không có bài viết nào được ${actionText}`)
+          const errorMessage = result?.message || `Không có bài viết nào được ${actionText}`
+          showFeedback("error", "Không có thay đổi", errorMessage)
           clearSelection()
           await runResourceRefresh({ refresh, resource: "posts" })
+          resourceLogger.actionFlow({
+            resource: "posts",
+            action: action === "delete" ? "bulk-delete" : action === "restore" ? "bulk-restore" : "bulk-hard-delete",
+            step: "error",
+            metadata: { requestedCount: ids.length, affectedCount: 0, error: errorMessage, requestedIds: ids },
+          })
           return
         }
 
@@ -143,16 +162,44 @@ export function usePostActions({
         showFeedback("success", message.title, message.description)
         clearSelection()
 
+        // Log success
+        resourceLogger.actionFlow({
+          resource: "posts",
+          action: action === "delete" ? "bulk-delete" : action === "restore" ? "bulk-restore" : "bulk-hard-delete",
+          step: "success",
+          metadata: { requestedCount: ids.length, affectedCount: affected },
+        })
+
         // Luôn refresh để đảm bảo UI được cập nhật (socket có thể không kết nối hoặc chậm)
         await runResourceRefresh({ refresh, resource: "posts" })
       } catch (error: unknown) {
-        const errorMessage = error instanceof Error ? error.message : POST_MESSAGES.UNKNOWN_ERROR
+        // Extract error message từ response nếu có
+        let errorMessage: string = POST_MESSAGES.UNKNOWN_ERROR
+        if (error && typeof error === "object" && "response" in error) {
+          const axiosError = error as { response?: { data?: { message?: string; error?: string } } }
+          errorMessage = axiosError.response?.data?.message || axiosError.response?.data?.error || POST_MESSAGES.UNKNOWN_ERROR
+        } else if (error instanceof Error) {
+          errorMessage = error.message
+        }
+        
         const errorTitles = {
           restore: POST_MESSAGES.BULK_RESTORE_ERROR,
           delete: POST_MESSAGES.BULK_DELETE_ERROR,
           "hard-delete": POST_MESSAGES.BULK_HARD_DELETE_ERROR,
         }
-        showFeedback("error", errorTitles[action], `Không thể thực hiện thao tác cho ${ids.length} bài viết`, errorMessage)
+        showFeedback("error", errorTitles[action], errorMessage)
+        
+        resourceLogger.actionFlow({
+          resource: "posts",
+          action: action === "delete" ? "bulk-delete" : action === "restore" ? "bulk-restore" : "bulk-hard-delete",
+          step: "error",
+          metadata: {
+            requestedCount: ids.length,
+            error: errorMessage,
+            requestedIds: ids,
+          },
+        })
+        
         if (action !== "restore") {
           throw error
         }

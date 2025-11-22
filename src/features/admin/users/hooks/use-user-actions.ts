@@ -187,17 +187,43 @@ export function useUserActions({
       if (!startBulkProcessing()) return
 
       try {
-        await apiClient.post(apiRoutes.users.bulk, { action, ids: deletableIds })
+        const response = await apiClient.post(apiRoutes.users.bulk, { action, ids: deletableIds })
 
+        const result = response.data?.data
+        const affected = result?.affected ?? 0
+
+        // Nếu không có user nào được xử lý (affected === 0), hiển thị thông báo
+        if (affected === 0) {
+          const actionText = action === "restore" ? "khôi phục" : action === "delete" ? "xóa" : "xóa vĩnh viễn"
+          const errorMessage = result?.message || `Không có người dùng nào được ${actionText}`
+          showFeedback("error", "Không có thay đổi", errorMessage)
+          clearSelection()
+          resourceLogger.actionFlow({
+            resource: "users",
+            action: action === "delete" ? "bulk-delete" : action === "restore" ? "bulk-restore" : "bulk-hard-delete",
+            step: "error",
+            metadata: { requestedCount: ids.length, affectedCount: 0, error: errorMessage, requestedIds: ids },
+          })
+          return
+        }
+
+        // Hiển thị success message với số lượng thực tế đã xử lý
         const messages = {
-          restore: { title: USER_MESSAGES.BULK_RESTORE_SUCCESS, description: `Đã khôi phục ${deletableIds.length} người dùng` },
-          delete: { title: USER_MESSAGES.BULK_DELETE_SUCCESS, description: `Đã xóa ${deletableIds.length} người dùng` },
-          "hard-delete": { title: USER_MESSAGES.BULK_HARD_DELETE_SUCCESS, description: `Đã xóa vĩnh viễn ${deletableIds.length} người dùng` },
+          restore: { title: USER_MESSAGES.BULK_RESTORE_SUCCESS, description: result?.message || `Đã khôi phục ${affected} người dùng` },
+          delete: { title: USER_MESSAGES.BULK_DELETE_SUCCESS, description: result?.message || `Đã xóa ${affected} người dùng` },
+          "hard-delete": { title: USER_MESSAGES.BULK_HARD_DELETE_SUCCESS, description: result?.message || `Đã xóa vĩnh viễn ${affected} người dùng` },
         }
 
         const message = messages[action]
         showFeedback("success", message.title, message.description)
         clearSelection()
+
+        resourceLogger.actionFlow({
+          resource: "users",
+          action: action === "delete" ? "bulk-delete" : action === "restore" ? "bulk-restore" : "bulk-hard-delete",
+          step: "success",
+          metadata: { requestedCount: ids.length, affectedCount: affected },
+        })
 
         // Socket events đã update cache và trigger refresh qua cacheVersion
         // Không cần manual refresh nữa để tránh duplicate refresh

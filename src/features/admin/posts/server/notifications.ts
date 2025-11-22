@@ -196,8 +196,8 @@ export async function notifySuperAdminsOfBulkPostAction(
     let title = ""
     let description = ""
 
-    // Format post titles - hiển thị tối đa 5 tiêu đề đầu tiên
-    const titlesText = posts && posts.length > 0 ? formatPostTitles(posts, 5) : ""
+    // Format post titles - hiển thị tối đa 3 tiêu đề đầu tiên để rút gọn notification
+    const titlesText = posts && posts.length > 0 ? formatPostTitles(posts, 3) : ""
 
     switch (action) {
       case "delete":

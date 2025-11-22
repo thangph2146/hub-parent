@@ -16,17 +16,38 @@ import {
   invalidateResourceCacheBulk,
   type AuthContext,
 } from "@/features/admin/resources/server"
-import { emitPostUpsert, emitPostRemove, type PostStatus } from "./events"
+import type { BulkActionResult } from "@/features/admin/resources/types"
+import { emitPostUpsert, emitPostRemove, emitBatchPostUpsert, type PostStatus } from "./events"
 import { createPostSchema, updatePostSchema, type CreatePostSchema, type UpdatePostSchema } from "./validation"
 import { notifySuperAdminsOfPostAction, notifySuperAdminsOfBulkPostAction } from "./notifications"
 
 // Re-export for backward compatibility with API routes
-export { ApplicationError, ForbiddenError, NotFoundError, type AuthContext }
+export { ApplicationError, ForbiddenError, NotFoundError, type AuthContext, type BulkActionResult }
 
-export interface BulkActionResult {
-  success: boolean
-  message: string
-  affected: number
+/**
+ * Helper để xử lý bulk operations với error handling và logging
+ */
+async function handleBulkOperation<T>(
+  operation: () => Promise<T>,
+  action: "bulk-delete" | "bulk-restore" | "bulk-hard-delete",
+  metadata: Record<string, unknown>,
+  errorType?: string
+): Promise<T | null> {
+  try {
+    return await operation()
+  } catch (error) {
+    resourceLogger.actionFlow({
+      resource: "posts",
+      action,
+      step: "error",
+      metadata: {
+        ...metadata,
+        error: error instanceof Error ? error.message : String(error),
+        ...(errorType && { errorType }),
+      },
+    })
+    return null
+  }
 }
 
 function sanitizePost(post: PostWithAuthor) {
@@ -228,8 +249,14 @@ export async function updatePost(
   if (validated.excerpt !== undefined) updateData.excerpt = validated.excerpt
   if (validated.slug !== undefined) updateData.slug = validated.slug
   if (validated.image !== undefined) updateData.image = validated.image
-  if (validated.published !== undefined) updateData.published = validated.published
-  if (publishedAt !== undefined) updateData.publishedAt = publishedAt
+  if (validated.published !== undefined) {
+    updateData.published = validated.published
+    // Always update publishedAt when published changes
+    updateData.publishedAt = publishedAt
+  } else if (publishedAt !== undefined) {
+    // Only update publishedAt if published is not being changed
+    updateData.publishedAt = publishedAt
+  }
   if (validated.authorId !== undefined && isSuperAdminUser) {
     // Update author relation using connect
     updateData.author = {
@@ -239,20 +266,54 @@ export async function updatePost(
 
   // Handle categories and tags update using transaction
   const post = await prisma.$transaction(async (tx) => {
-    // Update post basic fields
-    const updatedPost = await tx.post.update({
-      where: { id: postId },
-      data: updateData,
-      include: {
-        author: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
+    // Update post basic fields - chỉ update nếu có thay đổi
+    let updatedPost
+    if (Object.keys(updateData).length > 0) {
+      try {
+        updatedPost = await tx.post.update({
+          where: { id: postId },
+          data: updateData,
+          include: {
+            author: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+              },
+            },
+          },
+        })
+      } catch (error) {
+        resourceLogger.actionFlow({
+          resource: "posts",
+          action: "update",
+          step: "error",
+          metadata: {
+            postId,
+            error: error instanceof Error ? error.message : String(error),
+            updateData,
+          },
+        })
+        throw error
+      }
+    } else {
+      // Nếu không có updateData, vẫn cần fetch với relations
+      updatedPost = await tx.post.findUnique({
+        where: { id: postId },
+        include: {
+          author: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
           },
         },
-      },
-    })
+      })
+      if (!updatedPost) {
+        throw new NotFoundError("Bài viết không tồn tại")
+      }
+    }
 
     // Handle categories update
     if (validated.categoryIds !== undefined) {
@@ -343,7 +404,11 @@ export async function updatePost(
     revalidatePath(`/bai-viet/${post.slug}`, "page")
   } else if (existing.published && existing.publishedAt) {
     // Nếu bài viết đã được unpublish, vẫn cần revalidate để xóa khỏi public
-    updateTag(`post-${existing.slug}`)
+    try {
+      updateTag(`post-${existing.slug}`)
+    } catch {
+      // updateTag chỉ hoạt động trong Server Actions, ignore nếu không phải
+    }
     revalidateTag(`post-${existing.slug}`, "default")
     revalidatePath("/bai-viet", "page")
     revalidatePath(`/bai-viet/${existing.slug}`, "page")
@@ -668,73 +733,140 @@ export async function bulkPostsAction(
       select: { id: true, deletedAt: true, slug: true, published: true, publishedAt: true, title: true },
     })
 
+    const foundIds = posts.map(p => p.id)
+    const notFoundIds = postIds.filter(id => !foundIds.includes(id))
+    
+    // Log để debug với đầy đủ thông tin
+    resourceLogger.actionFlow({
+      resource: "posts",
+      action: "bulk-delete",
+      step: "start",
+      metadata: {
+        requestedCount: postIds.length,
+        foundCount: posts.length,
+        notFoundCount: notFoundIds.length,
+        requestedIds: postIds,
+        foundIds,
+        notFoundIds,
+      },
+    })
+
+    if (posts.length === 0) {
+      let errorMessage = "Không có bài viết nào có thể xóa"
+      if (notFoundIds.length > 0) {
+        errorMessage += `. ${notFoundIds.length} bài viết đã bị xóa trước đó hoặc không tồn tại`
+      }
+      
+      resourceLogger.actionFlow({
+        resource: "posts",
+        action: "bulk-delete",
+        step: "error",
+        metadata: {
+          requestedCount: postIds.length,
+          foundCount: posts.length,
+          notFoundCount: notFoundIds.length,
+          requestedIds: postIds,
+          foundIds,
+          notFoundIds,
+          error: errorMessage,
+        },
+      })
+      
+      throw new ApplicationError(errorMessage, 400)
+    }
+
     count = (
       await prisma.post.updateMany({
-        where: { id: { in: postIds }, deletedAt: null },
+        where: { id: { in: foundIds }, deletedAt: null },
         data: { deletedAt: new Date() },
       })
     ).count
 
     // Batch emit thay vì từng record
     if (count > 0) {
-      const { emitBatchPostUpsert } = await import("./events")
-      await emitBatchPostUpsert(posts.map(p => p.id), "active")
+      await handleBulkOperation(
+        () => emitBatchPostUpsert(posts.map(p => p.id), "active"),
+        "bulk-delete",
+        { count }
+      )
+      
+      // Tạo bulk notification với tên records
+      await handleBulkOperation(
+        () => notifySuperAdminsOfBulkPostAction("delete", ctx.actorId, count, posts.map(p => ({ title: p.title || "Untitled" }))),
+        "bulk-delete",
+        { count },
+        "notification"
+      )
     }
   } else if (action === "restore") {
-    // Tìm tất cả posts được request để phân loại trạng thái
-    const allRequestedPosts = await prisma.post.findMany({
+    // Lấy thông tin posts trước khi restore để tạo notifications
+    posts = await prisma.post.findMany({
       where: {
         id: { in: postIds },
+        deletedAt: { not: null },
       },
-      select: { id: true, deletedAt: true, slug: true, published: true, publishedAt: true, createdAt: true, title: true },
+      select: { id: true, deletedAt: true, slug: true, published: true, publishedAt: true, title: true },
     })
 
-    // Phân loại posts
-    const softDeletedPosts = allRequestedPosts.filter((post) => post.deletedAt !== null)
-    const activePosts = allRequestedPosts.filter((post) => post.deletedAt === null)
-    const notFoundCount = postIds.length - allRequestedPosts.length
-
-    // Log chi tiết để debug
+    const foundIds = posts.map(p => p.id)
+    const notFoundIds = postIds.filter(id => !foundIds.includes(id))
+    
+    // Log để debug với đầy đủ thông tin
     resourceLogger.actionFlow({
       resource: "posts",
-      action: actionType,
+      action: "bulk-restore",
       step: "start",
       metadata: {
-        requested: postIds.length,
-        found: allRequestedPosts.length,
-        softDeleted: softDeletedPosts.length,
-        active: activePosts.length,
-        notFound: notFoundCount,
+        requestedCount: postIds.length,
+        foundCount: posts.length,
+        notFoundCount: notFoundIds.length,
+        requestedIds: postIds,
+        foundIds,
+        notFoundIds,
       },
     })
 
-    // Nếu không có post nào đã bị soft delete, trả về message chi tiết
-    if (softDeletedPosts.length === 0) {
-      const parts: string[] = []
-      if (activePosts.length > 0) {
-        parts.push(`${activePosts.length} bài viết đang hoạt động`)
+    // Kiểm tra nếu không có post nào để restore
+    if (posts.length === 0) {
+      const allPosts = await prisma.post.findMany({
+        where: { id: { in: postIds } },
+        select: { id: true, deletedAt: true, title: true },
+      })
+      const alreadyActiveCount = allPosts.filter(p => p.deletedAt === null).length
+      const notFoundCount = postIds.length - allPosts.length
+      const notFoundIds = postIds.filter(id => !allPosts.some(p => p.id === id))
+      
+      let errorMessage = "Không có bài viết nào có thể khôi phục"
+      if (alreadyActiveCount > 0) {
+        errorMessage += `. ${alreadyActiveCount} bài viết đang ở trạng thái hoạt động`
       }
       if (notFoundCount > 0) {
-        parts.push(`${notFoundCount} bài viết không tồn tại (đã bị xóa vĩnh viễn)`)
+        errorMessage += `. ${notFoundCount} bài viết không tồn tại`
       }
-
-      const message = parts.length > 0
-        ? `Không có bài viết nào để khôi phục (${parts.join(", ")})`
-        : `Không tìm thấy bài viết nào để khôi phục`
-
-      return { 
-        success: true, 
-        message, 
-        affected: 0,
-      }
+      
+      resourceLogger.actionFlow({
+        resource: "posts",
+        action: "bulk-restore",
+        step: "error",
+        metadata: {
+          requestedCount: postIds.length,
+          foundCount: posts.length,
+          notFoundCount,
+          alreadyActiveCount,
+          requestedIds: postIds,
+          foundIds,
+          notFoundIds,
+          error: errorMessage,
+        },
+      })
+      
+      throw new ApplicationError(errorMessage, 400)
     }
 
-    // Chỉ restore các posts đã bị soft delete
-    posts = softDeletedPosts
     count = (
       await prisma.post.updateMany({
         where: { 
-          id: { in: softDeletedPosts.map((p) => p.id) },
+          id: { in: foundIds },
           deletedAt: { not: null },
         },
         data: { deletedAt: null },
@@ -743,8 +875,19 @@ export async function bulkPostsAction(
 
     // Batch emit thay vì từng record
     if (count > 0) {
-      const { emitBatchPostUpsert } = await import("./events")
-      await emitBatchPostUpsert(posts.map(p => p.id), "deleted")
+      await handleBulkOperation(
+        () => emitBatchPostUpsert(posts.map(p => p.id), "deleted"),
+        "bulk-restore",
+        { count }
+      )
+      
+      // Tạo bulk notification với tên records
+      await handleBulkOperation(
+        () => notifySuperAdminsOfBulkPostAction("restore", ctx.actorId, count, posts.map(p => ({ title: p.title || "Untitled" }))),
+        "bulk-restore",
+        { count },
+        "notification"
+      )
     }
   } else if (action === "hard-delete") {
     // Lấy thông tin posts trước khi delete để emit socket events và revalidate cache
@@ -755,9 +898,51 @@ export async function bulkPostsAction(
       select: { id: true, deletedAt: true, slug: true, published: true, publishedAt: true, title: true },
     })
 
+    const foundIds = posts.map(p => p.id)
+    const notFoundIds = postIds.filter(id => !foundIds.includes(id))
+    
+    // Log để debug với đầy đủ thông tin
+    resourceLogger.actionFlow({
+      resource: "posts",
+      action: "bulk-hard-delete",
+      step: "start",
+      metadata: {
+        requestedCount: postIds.length,
+        foundCount: posts.length,
+        notFoundCount: notFoundIds.length,
+        requestedIds: postIds,
+        foundIds,
+        notFoundIds,
+      },
+    })
+
+    if (posts.length === 0) {
+      let errorMessage = "Không có bài viết nào có thể xóa vĩnh viễn"
+      if (notFoundIds.length > 0) {
+        errorMessage += `. ${notFoundIds.length} bài viết không tồn tại`
+      }
+      
+      resourceLogger.actionFlow({
+        resource: "posts",
+        action: "bulk-hard-delete",
+        step: "error",
+        metadata: {
+          requestedCount: postIds.length,
+          foundCount: posts.length,
+          notFoundCount: notFoundIds.length,
+          requestedIds: postIds,
+          foundIds,
+          notFoundIds,
+          error: errorMessage,
+        },
+      })
+      
+      throw new ApplicationError(errorMessage, 400)
+    }
+
     count = (
       await prisma.post.deleteMany({
-        where: { id: { in: postIds } },
+        where: { id: { in: foundIds } },
       })
     ).count
 
@@ -772,6 +957,14 @@ export async function bulkPostsAction(
         }))
         io.to("role:super_admin").emit("post:batch-remove", { posts: removeEvents })
       }
+      
+      // Tạo bulk notification với tên records
+      await handleBulkOperation(
+        () => notifySuperAdminsOfBulkPostAction("hard-delete", ctx.actorId, count, posts.map(p => ({ title: p.title || "Untitled" }))),
+        "bulk-hard-delete",
+        { count },
+        "notification"
+      )
     }
   }
 
@@ -821,16 +1014,6 @@ export async function bulkPostsAction(
     successMessage = `Đã xóa ${count} bài viết`
   } else if (action === "hard-delete") {
     successMessage = `Đã xóa vĩnh viễn ${count} bài viết`
-  }
-
-  // Notify super admins with post titles
-  if (count > 0) {
-    await notifySuperAdminsOfBulkPostAction(
-      action,
-      ctx.actorId,
-      count,
-      posts.map(p => ({ title: p.title || "Untitled" }))
-    )
   }
 
   resourceLogger.actionFlow({

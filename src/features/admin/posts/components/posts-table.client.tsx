@@ -79,6 +79,13 @@ export function PostsTableClient({
         return
       }
 
+      resourceLogger.actionFlow({
+        resource: "posts",
+        action: newStatus ? "publish" : "unpublish",
+        step: "start",
+        metadata: { postId: row.id, postTitle: row.title, newStatus },
+      })
+
       setTogglingPosts((prev) => {
         const next = new Set(prev)
         next.add(row.id)
@@ -95,13 +102,38 @@ export function PostsTableClient({
           "Cập nhật thành công",
           `Bài viết "${row.title}" đã được ${newStatus ? "xuất bản" : "chuyển sang bản nháp"}.`,
         )
-        await runResourceRefresh({ refresh, resource: "posts" })
-      } catch (error) {
+        
+        resourceLogger.actionFlow({
+          resource: "posts",
+          action: newStatus ? "publish" : "unpublish",
+          step: "success",
+          metadata: { postId: row.id, postTitle: row.title, newStatus },
+        })
+
+        // Socket events đã update cache và trigger refresh qua cacheVersion
+        // Không cần manual refresh nữa để tránh duplicate refresh
+      } catch (error: unknown) {
+        // Extract error message từ response nếu có
+        let errorMessage: string = "Đã xảy ra lỗi không xác định"
+        if (error && typeof error === "object" && "response" in error) {
+          const axiosError = error as { response?: { data?: { error?: string; message?: string } } }
+          errorMessage = axiosError.response?.data?.error || axiosError.response?.data?.message || errorMessage
+        } else if (error instanceof Error) {
+          errorMessage = error.message
+        }
+
+        showFeedback(
+          "error",
+          "Cập nhật thất bại",
+          `Không thể ${newStatus ? "xuất bản" : "chuyển sang bản nháp"} bài viết "${row.title}". Vui lòng thử lại.`,
+          errorMessage
+        )
+
         resourceLogger.actionFlow({
           resource: "posts",
           action: newStatus ? "publish" : "unpublish",
           step: "error",
-          metadata: { postId: row.id, error: error instanceof Error ? error.message : String(error) },
+          metadata: { postId: row.id, postTitle: row.title, newStatus, error: errorMessage },
         })
       } finally {
         setTogglingPosts((prev) => {

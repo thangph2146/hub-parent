@@ -16,6 +16,7 @@ import {
   invalidateResourceCacheBulk,
   type AuthContext,
 } from "@/features/admin/resources/server"
+import type { BulkActionResult } from "@/features/admin/resources/types"
 import { emitUserUpsert, emitUserRemove, emitBatchUserUpsert, type UserStatus } from "./events"
 import { createUserSchema, updateUserSchema, type CreateUserSchema, type UpdateUserSchema } from "./validation"
 import { PROTECTED_SUPER_ADMIN_EMAIL } from "../constants"
@@ -49,9 +50,8 @@ async function handleBulkOperation<T>(
   }
 }
 
-export interface BulkActionResult {
-  count: number
-}
+// Re-export BulkActionResult from resources for consistency
+export type { BulkActionResult } from "@/features/admin/resources/types"
 
 function sanitizeUser(user: UserWithRoles): ListedUser {
   return mapUserRecord(user)
@@ -433,13 +433,6 @@ export async function bulkSoftDeleteUsers(ctx: AuthContext, ids: string[]): Prom
   // Emit socket events và tạo bulk notification
   const deletableUsers = users.filter((u) => u.email !== PROTECTED_SUPER_ADMIN_EMAIL)
   if (result.count > 0 && deletableUsers.length > 0) {
-    resourceLogger.actionFlow({
-      resource: "users",
-      action: "bulk-delete",
-      step: "start",
-      metadata: { count: result.count, userIds: deletableUsers.map(u => u.id) },
-    })
-
     // Batch emit socket events
     await handleBulkOperation(
       () => emitBatchUserUpsert(deletableUsers.map(u => u.id), "active"),
@@ -459,14 +452,14 @@ export async function bulkSoftDeleteUsers(ctx: AuthContext, ids: string[]): Prom
       resource: "users",
       action: "bulk-delete",
       step: "success",
-      metadata: { count: result.count },
+      metadata: { requestedCount: ids.length, affectedCount: result.count },
     })
   }
 
   // Invalidate cache cho bulk operation
   await invalidateResourceCacheBulk({ resource: "users" })
 
-  return { count: result.count }
+  return { success: true, message: `Đã xóa ${result.count} người dùng`, affected: result.count }
 }
 
 export async function restoreUser(ctx: AuthContext, id: string): Promise<void> {
@@ -598,13 +591,6 @@ export async function bulkRestoreUsers(ctx: AuthContext, ids: string[]): Promise
 
   // Emit socket events và tạo bulk notification
   if (result.count > 0 && users.length > 0) {
-    resourceLogger.actionFlow({
-      resource: "users",
-      action: "bulk-restore",
-      step: "start",
-      metadata: { count: result.count, userIds: users.map(u => u.id) },
-    })
-
     // Batch emit socket events
     await handleBulkOperation(
       () => emitBatchUserUpsert(users.map(u => u.id), "deleted"),
@@ -624,14 +610,14 @@ export async function bulkRestoreUsers(ctx: AuthContext, ids: string[]): Promise
       resource: "users",
       action: "bulk-restore",
       step: "success",
-      metadata: { count: result.count },
+      metadata: { requestedCount: ids.length, affectedCount: result.count },
     })
   }
 
   // Invalidate cache cho bulk operation
   await invalidateResourceCacheBulk({ resource: "users" })
 
-  return { count: result.count }
+  return { success: true, message: `Đã khôi phục ${result.count} người dùng`, affected: result.count }
 }
 
 export async function hardDeleteUser(ctx: AuthContext, id: string): Promise<void> {
@@ -767,13 +753,6 @@ export async function bulkHardDeleteUsers(ctx: AuthContext, ids: string[]): Prom
   // Emit socket events và tạo bulk notification
   const deletableUsers = users.filter((u) => u.email !== PROTECTED_SUPER_ADMIN_EMAIL)
   if (result.count > 0) {
-    resourceLogger.actionFlow({
-      resource: "users",
-      action: "bulk-hard-delete",
-      step: "start",
-      metadata: { count: result.count, userIds: deletableUsers.map(u => u.id) },
-    })
-
     // Emit batch remove events
     const { getSocketServer } = await import("@/lib/socket/state")
     const io = getSocketServer()
@@ -797,12 +776,12 @@ export async function bulkHardDeleteUsers(ctx: AuthContext, ids: string[]): Prom
       resource: "users",
       action: "bulk-hard-delete",
       step: "success",
-      metadata: { count: result.count },
+      metadata: { requestedCount: ids.length, affectedCount: result.count },
     })
   }
 
   // Invalidate cache cho bulk operation
   await invalidateResourceCacheBulk({ resource: "users" })
 
-  return { count: result.count }
+  return { success: true, message: `Đã xóa vĩnh viễn ${result.count} người dùng`, affected: result.count }
 }

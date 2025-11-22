@@ -53,8 +53,14 @@ async function bulkUsersHandler(req: NextRequest, context: ApiRouteContext) {
   }
 
   try {
-  const { count } = await actions[actionValidation.value!](ctx, idsValidation.value!)
-  return NextResponse.json({ success: true, count })
+    const result = await actions[actionValidation.value!](ctx, idsValidation.value!)
+    return NextResponse.json({ 
+      success: result.success, 
+      data: {
+        affected: result.affected,
+        message: result.message,
+      }
+    })
   } catch (error) {
     // Xử lý error với message rõ ràng hơn
     if (error instanceof Error) {
