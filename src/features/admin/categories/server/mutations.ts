@@ -368,7 +368,6 @@ export async function bulkSoftDeleteCategories(ctx: AuthContext, ids: string[]):
   }
 
   // Lấy thông tin categories trước khi delete để tạo notifications
-  // Chỉ tìm các categories đang hoạt động (chưa bị xóa)
   const categories = await prisma.category.findMany({
     where: {
       id: { in: ids },
@@ -377,30 +376,55 @@ export async function bulkSoftDeleteCategories(ctx: AuthContext, ids: string[]):
     select: { id: true, name: true, slug: true },
   })
 
-  // Nếu không tìm thấy category nào, có thể chúng đã bị xóa rồi hoặc không tồn tại
+  const foundIds = categories.map(c => c.id)
+  const notFoundIds = ids.filter(id => !foundIds.includes(id))
+  
+  // Log để debug với đầy đủ thông tin
+  resourceLogger.actionFlow({
+    resource: "categories",
+    action: "bulk-delete",
+    step: "start",
+    metadata: {
+      requestedCount: ids.length,
+      foundCount: categories.length,
+      notFoundCount: notFoundIds.length,
+      requestedIds: ids,
+      foundIds,
+      notFoundIds,
+    },
+  })
+
+  // Nếu không tìm thấy category nào, trả về error message chi tiết
   if (categories.length === 0) {
-    // Kiểm tra xem có categories nào đã bị soft delete không
-    const deletedCategories = await prisma.category.findMany({
-      where: {
-        id: { in: ids },
-        deletedAt: { not: null },
-      },
-      select: { id: true },
+    const allCategories = await prisma.category.findMany({
+      where: { id: { in: ids } },
+      select: { id: true, deletedAt: true },
     })
-
-    if (deletedCategories.length > 0) {
-      return { 
-        success: true, 
-        message: `Không có danh mục nào để xóa (${deletedCategories.length} danh mục đã bị xóa, ${ids.length - deletedCategories.length} danh mục không tồn tại)`, 
-        affected: 0 
-      }
+    const alreadyDeletedCount = allCategories.filter(c => c.deletedAt !== null).length
+    const notFoundCount = ids.length - allCategories.length
+    
+    let errorMessage = "Không có danh mục nào có thể xóa"
+    if (alreadyDeletedCount > 0) {
+      errorMessage += `. ${alreadyDeletedCount} danh mục đã bị xóa trước đó`
     }
-
-    return { 
-      success: true, 
-      message: `Không tìm thấy danh mục nào để xóa (có thể đã bị xóa vĩnh viễn)`, 
-      affected: 0 
+    if (notFoundCount > 0) {
+      errorMessage += `. ${notFoundCount} danh mục không tồn tại`
     }
+    
+    resourceLogger.actionFlow({
+      resource: "categories",
+      action: "bulk-delete",
+      step: "error",
+      metadata: {
+        requestedCount: ids.length,
+        foundCount: categories.length,
+        alreadyDeletedCount,
+        notFoundCount,
+        error: errorMessage,
+      },
+    })
+    
+    throw new ApplicationError(errorMessage, 400)
   }
 
   const result = await prisma.category.updateMany({
@@ -425,8 +449,8 @@ export async function bulkSoftDeleteCategories(ctx: AuthContext, ids: string[]):
     additionalTags: ["category-options", "active-categories"],
   })
 
-  // Emit socket events để update UI
-  if (result.count > 0) {
+  // Emit socket events và tạo bulk notification
+  if (result.count > 0 && categories.length > 0) {
     // Emit events song song
     const emitPromises = categories.map((category) => 
       emitCategoryUpsert(category.id, "active").catch((error) => {
@@ -441,22 +465,22 @@ export async function bulkSoftDeleteCategories(ctx: AuthContext, ids: string[]):
     )
     await Promise.allSettled(emitPromises)
 
-    // Emit một notification tổng hợp thay vì từng cái một
+    // Tạo bulk notification với tên records
     await notifySuperAdminsOfBulkCategoryAction(
-        "delete",
-        ctx.actorId,
+      "delete",
+      ctx.actorId,
       result.count,
       categories
-      )
-  }
+    )
 
-  resourceLogger.actionFlow({
-    resource: "categories",
-    action: "bulk-delete",
-    step: "success",
-    duration: Date.now() - startTime,
-    metadata: { count: result.count, categoryIds: categories.map(c => c.id) },
-  })
+    resourceLogger.actionFlow({
+      resource: "categories",
+      action: "bulk-delete",
+      step: "success",
+      duration: Date.now() - startTime,
+      metadata: { requestedCount: ids.length, affectedCount: result.count },
+    })
+  }
 
   return { success: true, message: `Đã xóa ${result.count} danh mục`, affected: result.count }
 }
@@ -608,8 +632,8 @@ export async function bulkRestoreCategories(ctx: AuthContext, ids: string[]): Pr
     additionalTags: ["category-options", "active-categories"],
   })
 
-  // Emit socket events để update UI
-  if (result.count > 0) {
+  // Emit socket events và tạo bulk notification
+  if (result.count > 0 && categoriesToRestore.length > 0) {
     // Emit events song song
     const emitPromises = categoriesToRestore.map((category) => 
       emitCategoryUpsert(category.id, "deleted").catch((error) => {
@@ -624,22 +648,22 @@ export async function bulkRestoreCategories(ctx: AuthContext, ids: string[]): Pr
     )
     await Promise.allSettled(emitPromises)
 
-    // Emit một notification tổng hợp thay vì từng cái một
+    // Tạo bulk notification với tên records
     await notifySuperAdminsOfBulkCategoryAction(
-        "restore",
-        ctx.actorId,
+      "restore",
+      ctx.actorId,
       result.count,
       categoriesToRestore
-      )
-  }
+    )
 
-  resourceLogger.actionFlow({
-    resource: "categories",
-    action: "bulk-restore",
-    step: "success",
-    duration: Date.now() - startTime,
-    metadata: { count: result.count, categoryIds: categoriesToRestore.map(c => c.id) },
-  })
+    resourceLogger.actionFlow({
+      resource: "categories",
+      action: "bulk-restore",
+      step: "success",
+      duration: Date.now() - startTime,
+      metadata: { requestedCount: ids.length, affectedCount: result.count },
+    })
+  }
 
   // Tạo message chi tiết nếu có categories không thể restore
   let message = `Đã khôi phục ${result.count} danh mục`
@@ -730,7 +754,7 @@ export async function bulkHardDeleteCategories(ctx: AuthContext, ids: string[]):
     },
   })
 
-  // Emit socket events để update UI
+  // Emit socket events và tạo bulk notification
   if (result.count > 0) {
     // Emit events (emitCategoryRemove trả về void, không phải Promise)
     categories.forEach((category) => {
@@ -747,13 +771,21 @@ export async function bulkHardDeleteCategories(ctx: AuthContext, ids: string[]):
       }
     })
 
-    // Emit một notification tổng hợp thay vì từng cái một
+    // Tạo bulk notification với tên records
     await notifySuperAdminsOfBulkCategoryAction(
-        "hard-delete",
-        ctx.actorId,
+      "hard-delete",
+      ctx.actorId,
       result.count,
       categories
-      )
+    )
+
+    resourceLogger.actionFlow({
+      resource: "categories",
+      action: "bulk-hard-delete",
+      step: "success",
+      duration: Date.now() - startTime,
+      metadata: { requestedCount: ids.length, affectedCount: result.count },
+    })
   }
 
   // Invalidate cache cho bulk operation
@@ -766,14 +798,6 @@ export async function bulkHardDeleteCategories(ctx: AuthContext, ids: string[]):
   await invalidateResourceCacheBulk({
     resource: "categories",
     additionalTags: ["category-options", "active-categories"],
-  })
-
-  resourceLogger.actionFlow({
-    resource: "categories",
-    action: "bulk-hard-delete",
-    step: "success",
-    duration: Date.now() - startTime,
-    metadata: { count: result.count, categoryIds: categories.map(c => c.id) },
   })
 
   return { success: true, message: `Đã xóa vĩnh viễn ${result.count} danh mục${result.count < categories.length ? ` (${categories.length - result.count} danh mục không tồn tại)` : ""}`, affected: result.count }

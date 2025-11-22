@@ -113,8 +113,45 @@ export function useResourceInitialDataCache<T extends object, P>({
           return
         }
       } else if (existingUpdatedAt && !initialUpdatedAt) {
-        // Nếu existingCache có updatedAt nhưng initialData không có, ưu tiên cache
-        // (cache đã được update bởi edit operation)
+        // Nếu existingCache có updatedAt nhưng initialData không có, cần so sánh dữ liệu
+        // Nếu initialData có dữ liệu khác (mới hơn từ database), cần merge hoặc update
+        // So sánh các field quan trọng để quyết định
+        if (existingRow && initialRow) {
+          const importantFields = ['name', 'title', 'slug', 'email'] // Các field quan trọng để so sánh
+          const hasDataDifference = importantFields.some(field => {
+            const existingValue = existingRow[field]
+            const initialValue = initialRow[field]
+            return existingValue !== undefined && initialValue !== undefined && existingValue !== initialValue
+          })
+          
+          if (hasDataDifference) {
+            // InitialData có dữ liệu khác, có thể mới hơn từ database
+            // Merge: giữ updatedAt từ cache nhưng update data từ initialData
+            const mergedRow = { ...initialRow, updatedAt: existingUpdatedAt }
+            const mergedRows = existingCache.rows.map(r => {
+              const rowId = (r as Record<string, unknown>).id
+              return rowId === firstRowId ? mergedRow : r
+            })
+            const mergedCache = {
+              ...existingCache,
+              rows: mergedRows,
+            }
+            queryClient.setQueryData(queryKey, mergedCache)
+            logger.debug(`[useResourceInitialDataCache:${resourceName}] Merged cache with initialData (cache has updatedAt, initialData has newer data)`, {
+              queryKey,
+              existingRowsCount: existingCache.rows.length,
+              initialRowsCount: initialData.rows.length,
+              existingUpdatedAt,
+              existingData: existingRow,
+              initialData: initialRow,
+              mergedData: mergedRow,
+            })
+            loggedKeysRef.current.add(cacheKey)
+            return
+          }
+        }
+        
+        // Nếu không có sự khác biệt về dữ liệu, giữ cache (cache đã được update bởi edit operation)
         logger.debug(`[useResourceInitialDataCache:${resourceName}] Cache has updatedAt but initialData doesn't, keeping cache`, {
           queryKey,
           existingRowsCount: existingCache.rows.length,

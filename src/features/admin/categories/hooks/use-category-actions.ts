@@ -180,34 +180,55 @@ export function useCategoryActions({
       })
 
       try {
-        await apiClient.post(apiRoutes.categories.bulk, { action, ids })
+        const response = await apiClient.post(apiRoutes.categories.bulk, { action, ids })
 
-        resourceLogger.actionFlow({
-          resource: "categories",
-          action: action === "delete" ? "bulk-delete" : action === "restore" ? "bulk-restore" : "bulk-hard-delete",
-          step: "success",
-          metadata: {
-            count: ids.length,
-            categoryIds: ids,
-          },
-        })
+        const result = response.data?.data
+        const affected = result?.affected ?? 0
 
+        // Nếu không có category nào được xử lý (affected === 0), hiển thị thông báo
+        if (affected === 0) {
+          const actionText = action === "restore" ? "khôi phục" : action === "delete" ? "xóa" : "xóa vĩnh viễn"
+          const errorMessage = result?.message || `Không có danh mục nào được ${actionText}`
+          showFeedback("error", "Không có thay đổi", errorMessage)
+          clearSelection()
+          resourceLogger.actionFlow({
+            resource: "categories",
+            action: action === "delete" ? "bulk-delete" : action === "restore" ? "bulk-restore" : "bulk-hard-delete",
+            step: "error",
+            metadata: { requestedCount: ids.length, affectedCount: 0, error: errorMessage, requestedIds: ids },
+          })
+          return
+        }
+
+        // Hiển thị success message với số lượng thực tế đã xử lý
         const messages = {
-          restore: { title: CATEGORY_MESSAGES.BULK_RESTORE_SUCCESS, description: `Đã khôi phục ${ids.length} danh mục` },
-          delete: { title: CATEGORY_MESSAGES.BULK_DELETE_SUCCESS, description: `Đã xóa ${ids.length} danh mục` },
-          "hard-delete": { title: CATEGORY_MESSAGES.BULK_HARD_DELETE_SUCCESS, description: `Đã xóa vĩnh viễn ${ids.length} danh mục` },
+          restore: { title: CATEGORY_MESSAGES.BULK_RESTORE_SUCCESS, description: result?.message || `Đã khôi phục ${affected} danh mục` },
+          delete: { title: CATEGORY_MESSAGES.BULK_DELETE_SUCCESS, description: result?.message || `Đã xóa ${affected} danh mục` },
+          "hard-delete": { title: CATEGORY_MESSAGES.BULK_HARD_DELETE_SUCCESS, description: result?.message || `Đã xóa vĩnh viễn ${affected} danh mục` },
         }
 
         const message = messages[action]
         showFeedback("success", message.title, message.description)
         clearSelection()
 
-        // Socket events đã update cache, chỉ refresh nếu socket không connected
-        if (!isSocketConnected) {
-          await runResourceRefresh({ refresh, resource: "categories" })
-        }
+        resourceLogger.actionFlow({
+          resource: "categories",
+          action: action === "delete" ? "bulk-delete" : action === "restore" ? "bulk-restore" : "bulk-hard-delete",
+          step: "success",
+          metadata: { requestedCount: ids.length, affectedCount: affected },
+        })
+
+        // Socket events đã update cache và trigger refresh qua cacheVersion
+        // Không cần manual refresh nữa để tránh duplicate refresh
       } catch (error: unknown) {
-        const errorMessage = error instanceof Error ? error.message : CATEGORY_MESSAGES.UNKNOWN_ERROR
+        // Extract error message từ response nếu có
+        let errorMessage: string = CATEGORY_MESSAGES.UNKNOWN_ERROR
+        if (error && typeof error === "object" && "response" in error) {
+          const axiosError = error as { response?: { data?: { message?: string; error?: string } } }
+          errorMessage = axiosError.response?.data?.message || axiosError.response?.data?.error || CATEGORY_MESSAGES.UNKNOWN_ERROR
+        } else if (error instanceof Error) {
+          errorMessage = error.message
+        }
         
         resourceLogger.actionFlow({
           resource: "categories",

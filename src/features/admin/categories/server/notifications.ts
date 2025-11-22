@@ -21,9 +21,9 @@ async function getActorInfo(actorId: string) {
 
 /**
  * Format category names cho notification description
- * Hiển thị tối đa 5 tên đầu tiên, nếu nhiều hơn sẽ hiển thị "... và X danh mục khác"
+ * Hiển thị tối đa 3 tên đầu tiên, nếu nhiều hơn sẽ hiển thị "... và X danh mục khác"
  */
-function formatCategoryNames(categories: Array<{ name: string }>, maxNames = 5): string {
+function formatCategoryNames(categories: Array<{ name: string }>, maxNames = 3): string {
   if (!categories || categories.length === 0) return ""
   
   const displayNames = categories.slice(0, maxNames).map(c => `"${c.name}"`)
@@ -228,8 +228,8 @@ export async function notifySuperAdminsOfBulkCategoryAction(
     let title = ""
     let description = ""
 
-    // Format category names - hiển thị tối đa 5 tên đầu tiên
-    const namesText = categories && categories.length > 0 ? formatCategoryNames(categories, 5) : ""
+    // Format category names - hiển thị tối đa 3 tên đầu tiên để rút gọn notification
+    const namesText = categories && categories.length > 0 ? formatCategoryNames(categories, 3) : ""
 
     switch (action) {
       case "delete":
