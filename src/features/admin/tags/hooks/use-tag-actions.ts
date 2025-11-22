@@ -8,7 +8,7 @@ import { useQueryClient } from "@tanstack/react-query"
 import { apiClient } from "@/lib/api/axios"
 import { apiRoutes } from "@/lib/api/routes"
 import { queryKeys } from "@/lib/query-keys"
-import { logger, resourceLogger } from "@/lib/config"
+import { resourceLogger } from "@/lib/config"
 import type { TagRow } from "../types"
 import type { DataTableResult } from "@/components/tables"
 import type { FeedbackVariant } from "@/components/dialogs"
@@ -145,12 +145,16 @@ export function useTagActions({
           resource: "tags",
           action: action,
           step: "error",
-          metadata: { tagId: row.id, tagName: row.name, error: errorMessage },
+          metadata: { 
+            tagId: row.id, 
+            tagName: row.name, 
+            error: errorMessage,
+            errorStack: error instanceof Error ? error.stack : undefined,
+          },
         })
 
-        if (action === "restore") {
-          logger.error(`Failed to ${action} tag`, error as Error)
-        } else {
+        // Chỉ throw error cho non-restore actions để không crash UI
+        if (action !== "restore") {
           throw error
         }
       } finally {

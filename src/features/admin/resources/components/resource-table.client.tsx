@@ -74,10 +74,12 @@ export function ResourceTableClient<T extends object>({
   const emptyMessage = activeView.emptyMessage
 
   const handleRefresh = useCallback(() => {
-    logger.debug("[ResourceTableClient] handleRefresh called")
     setRefreshKey((prev) => {
       const next = prev + 1
-      logger.debug("[ResourceTableClient] refreshKey updated", { prev, next })
+      // Chỉ log khi thực sự thay đổi (tránh duplicate trong React Strict Mode)
+      if (prev !== next) {
+        logger.debug("[ResourceTableClient] refreshKey updated", { prev, next })
+      }
       return next
     })
   }, [])

@@ -215,8 +215,11 @@ export function useResourceFormSubmit({
 
         // Đợi một chút để đảm bảo server cache được invalidate hoàn toàn
         // Next.js cache invalidation có thể mất một chút thời gian
+        // Đặc biệt quan trọng với Server Component cache (unstable_cache)
+        // Delay đủ lâu để đảm bảo revalidateTag và revalidatePath hoàn tất
+        // Tăng delay lên 1000ms để đảm bảo cache invalidation hoàn tất trước khi navigate
         logger.debug("[useResourceFormSubmit] Waiting for cache invalidation")
-        await new Promise((resolve) => setTimeout(resolve, 200))
+        await new Promise((resolve) => setTimeout(resolve, 1000))
 
         // Handle navigation sau khi invalidate cache
         logger.debug("[useResourceFormSubmit] Handling navigation", { 
@@ -250,8 +253,21 @@ export function useResourceFormSubmit({
             url.searchParams.set("_t", Date.now().toString())
             router.replace(url.pathname + url.search)
             // Refresh router sau khi navigate để đảm bảo Server Components được re-render
-            // Đợi một chút để navigation hoàn tất trước khi refresh
-            await new Promise((resolve) => setTimeout(resolve, 150))
+            // Đợi một chút để navigation hoàn tất và cache được invalidate trước khi refresh
+            // Delay đủ lâu để đảm bảo Server Component cache (unstable_cache) được invalidate
+            // Next.js revalidateTag có thể mất thời gian để hoàn tất
+            // Tăng delay lên 700ms để đảm bảo cache invalidation hoàn tất
+            await new Promise((resolve) => setTimeout(resolve, 700))
+            router.refresh()
+            // Refresh thêm một lần nữa sau một khoảng thời gian để đảm bảo Server Component được refetch
+            // Điều này đảm bảo detail page được cập nhật với dữ liệu mới nhất
+            // Đặc biệt quan trọng với unstable_cache có thể cần thời gian để invalidate
+            // Tăng delay lên 400ms để đảm bảo Server Component cache được refresh hoàn toàn
+            await new Promise((resolve) => setTimeout(resolve, 400))
+            router.refresh()
+            // Refresh thêm một lần nữa để đảm bảo Server Component được refetch với dữ liệu mới nhất
+            // Điều này đảm bảo detail page luôn hiển thị dữ liệu mới sau khi edit
+            await new Promise((resolve) => setTimeout(resolve, 200))
             router.refresh()
             logger.debug("[useResourceFormSubmit] Navigation completed")
           } else if (navigation.fallback) {

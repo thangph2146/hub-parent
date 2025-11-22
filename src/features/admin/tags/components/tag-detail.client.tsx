@@ -52,6 +52,8 @@ export function TagDetailClient({ tagId, tag, backUrl = "/admin/tags" }: TagDeta
       resource: "tags",
       action: "load-detail",
       resourceId: tagId,
+      tagName: tag.name,
+      tagSlug: tag.slug,
     })
 
     resourceLogger.dataStructure({

@@ -7,7 +7,7 @@ import { prisma } from "@/lib/database"
 import { getSocketServer } from "@/lib/socket/state"
 import { mapTagRecord, serializeTagForTable } from "./helpers"
 import type { TagRow } from "../types"
-import { logger } from "@/lib/config"
+import { resourceLogger } from "@/lib/config"
 
 const SUPER_ADMIN_ROOM = "role:super_admin"
 
@@ -56,7 +56,13 @@ export async function emitTagUpsert(
     previousStatus,
     newStatus,
   })
-  logger.debug("Socket tag:upsert emitted", { tagId, previousStatus, newStatus })
+  resourceLogger.socket({
+    resource: "tags",
+    action: previousStatus === null ? "create" : previousStatus !== newStatus ? "update" : "update",
+    event: "tag:upsert",
+    resourceId: tagId,
+    payload: { tagId, tagName: row.name, previousStatus, newStatus },
+  })
 }
 
 /**
@@ -71,6 +77,12 @@ export function emitTagRemove(tagId: string, previousStatus: TagStatus): void {
     id: tagId,
     previousStatus,
   })
-  logger.debug("Socket tag:remove emitted", { tagId, previousStatus })
+  resourceLogger.socket({
+    resource: "tags",
+    action: "hard-delete",
+    event: "tag:remove",
+    resourceId: tagId,
+    payload: { tagId, previousStatus },
+  })
 }
 

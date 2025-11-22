@@ -42,25 +42,34 @@ export function useResourceInitialDataCache<T extends object, P>({
   resourceName = "resource",
 }: UseResourceInitialDataCacheOptions<T, P>) {
   const hasCachedRef = useRef(false)
+  const loggedKeysRef = useRef<Set<string>>(new Set())
 
   useEffect(() => {
     if (!initialData) return
 
-    // Chỉ cache một lần để tránh duplicate logs
-    if (hasCachedRef.current) {
+    const params = buildParams(initialData)
+    const queryKey = buildQueryKey(params)
+    const cacheKey = JSON.stringify(queryKey)
+
+    // Chỉ cache một lần cho mỗi query key để tránh duplicate logs (React Strict Mode)
+    if (loggedKeysRef.current.has(cacheKey)) {
       return
     }
 
-    const params = buildParams(initialData)
-    const queryKey = buildQueryKey(params)
-
     queryClient.setQueryData(queryKey, initialData)
-    hasCachedRef.current = true
+    loggedKeysRef.current.add(cacheKey)
 
     logger.debug(`[useResourceInitialDataCache:${resourceName}] Set initial data to cache`, {
       queryKey,
       rowsCount: initialData.rows.length,
       total: initialData.total,
     })
+
+    // Cleanup sau một khoảng thời gian để cho phép log lại khi navigate
+    return () => {
+      setTimeout(() => {
+        loggedKeysRef.current.delete(cacheKey)
+      }, 2000)
+    }
   }, [initialData, queryClient, buildParams, buildQueryKey, resourceName])
 }

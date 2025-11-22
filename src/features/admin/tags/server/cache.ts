@@ -1,9 +1,12 @@
 /**
  * Cached Database Queries for Tags
  * 
- * Sử dụng unstable_cache (Data Cache) kết hợp với React cache (Request Memoization)
- * - unstable_cache: Cache kết quả giữa các requests (Persisted Cache)
- * - React cache: Deduplicate requests trong cùng một render pass
+ * Sử dụng Next.js 16 caching pattern:
+ * - React cache(): Request Memoization - Deduplicate requests trong cùng một render pass
+ * - unstable_cache(): Data Cache - Cache kết quả giữa các requests (Persisted Cache)
+ * 
+ * Cache invalidation được xử lý bởi invalidateResourceCache() trong mutations
+ * sử dụng updateTag() và revalidateTag() theo chuẩn Next.js 16
  * 
  * Pattern: Server Component → Cache Function → Database Query
  */

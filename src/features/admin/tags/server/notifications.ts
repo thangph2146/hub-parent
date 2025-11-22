@@ -1,9 +1,10 @@
 /**
  * Helper functions để emit notifications realtime cho tags actions
+ * Tối ưu theo chuẩn Next.js 16 với logging và caching
  */
 
 import { prisma } from "@/lib/database"
-import { logger } from "@/lib/config"
+import { resourceLogger } from "@/lib/config"
 import { getSocketServer, storeNotificationInCache, mapNotificationToPayload } from "@/lib/socket/state"
 import { createNotificationForSuperAdmins } from "@/features/admin/notifications/server/mutations"
 import { NotificationKind } from "@prisma/client"
@@ -20,6 +21,22 @@ async function getActorInfo(actorId: string) {
 }
 
 /**
+ * Format tag names cho notification description
+ * Hiển thị tối đa 5 tên đầu tiên, nếu nhiều hơn sẽ hiển thị "... và X thẻ tag khác"
+ */
+function formatTagNames(tags: Array<{ name: string }>, maxNames = 5): string {
+  if (!tags || tags.length === 0) return ""
+  
+  const displayNames = tags.slice(0, maxNames).map(t => `"${t.name}"`)
+  const remainingCount = tags.length > maxNames ? tags.length - maxNames : 0
+  
+  if (remainingCount > 0) {
+    return `${displayNames.join(", ")} và ${remainingCount} thẻ tag khác`
+  }
+  return displayNames.join(", ")
+}
+
+/**
  * Helper function để tạo system notification cho super admin về tag actions
  */
 export async function notifySuperAdminsOfTagAction(
@@ -31,16 +48,16 @@ export async function notifySuperAdminsOfTagAction(
     slug?: { old: string; new: string }
   }
 ) {
-  try {
-    logger.debug("[notifySuperAdmins] Starting notification", {
-      action,
-      actorId,
-      tagId: tag.id,
-      tagName: tag.name,
-      hasChanges: !!changes,
-      changesKeys: changes ? Object.keys(changes) : [],
-    })
+  const startTime = Date.now()
+  
+  resourceLogger.actionFlow({
+    resource: "tags",
+    action: action,
+    step: "start",
+    metadata: { tagId: tag.id, tagName: tag.name, actorId },
+  })
 
+  try {
     const actor = await getActorInfo(actorId)
     const actorName = actor?.name || actor?.email || "Hệ thống"
 
@@ -80,13 +97,6 @@ export async function notifySuperAdminsOfTagAction(
         break
     }
 
-    // Tạo notifications trong DB cho tất cả super admins
-    logger.debug("[notifySuperAdmins] Creating notifications in DB", {
-      title,
-      description,
-      actionUrl,
-      action,
-    })
     const result = await createNotificationForSuperAdmins(
       title,
       description,
@@ -104,19 +114,9 @@ export async function notifySuperAdminsOfTagAction(
         timestamp: new Date().toISOString(),
       }
     )
-    logger.debug("[notifySuperAdmins] Notifications created", {
-      count: result.count,
-      action,
-    })
 
-    // Emit socket event nếu có socket server
     const io = getSocketServer()
-    logger.debug("[notifySuperAdmins] Socket server status", {
-      hasSocketServer: !!io,
-      notificationCount: result.count,
-    })
     if (io && result.count > 0) {
-      // Lấy danh sách super admins để emit đến từng user room
       const superAdmins = await prisma.user.findMany({
         where: {
           isActive: true,
@@ -134,12 +134,6 @@ export async function notifySuperAdminsOfTagAction(
         select: { id: true },
       })
 
-      logger.debug("[notifySuperAdmins] Found super admins", {
-        count: superAdmins.length,
-        adminIds: superAdmins.map((a) => a.id),
-      })
-
-      // Fetch notifications vừa tạo từ database để lấy IDs thực tế
       const createdNotifications = await prisma.notification.findMany({
         where: {
           title,
@@ -150,7 +144,7 @@ export async function notifySuperAdminsOfTagAction(
             in: superAdmins.map((a) => a.id),
           },
           createdAt: {
-            gte: new Date(Date.now() - 5000), // Created within last 5 seconds
+            gte: new Date(Date.now() - 5000),
           },
         },
         orderBy: {
@@ -159,23 +153,14 @@ export async function notifySuperAdminsOfTagAction(
         take: superAdmins.length,
       })
 
-      // Emit to each super admin user room với notification từ database
-      for (let i = 0; i < superAdmins.length; i++) {
-        const admin = superAdmins[i]
+      for (const admin of superAdmins) {
         const dbNotification = createdNotifications.find((n) => n.userId === admin.id)
         
         if (dbNotification) {
-          // Map notification từ database sang socket payload format
           const socketNotification = mapNotificationToPayload(dbNotification)
           storeNotificationInCache(admin.id, socketNotification)
           io.to(`user:${admin.id}`).emit("notification:new", socketNotification)
-          logger.debug("[notifySuperAdmins] Emitted to user room", {
-            adminId: admin.id,
-            room: `user:${admin.id}`,
-            notificationId: dbNotification.id,
-          })
         } else {
-          // Fallback nếu không tìm thấy notification trong database
           const fallbackNotification = {
             id: `tag-${action}-${tag.id}-${Date.now()}`,
             kind: "system" as const,
@@ -195,29 +180,43 @@ export async function notifySuperAdminsOfTagAction(
           }
           storeNotificationInCache(admin.id, fallbackNotification)
           io.to(`user:${admin.id}`).emit("notification:new", fallbackNotification)
-          logger.debug("[notifySuperAdmins] Emitted fallback notification to user room", {
-            adminId: admin.id,
-            room: `user:${admin.id}`,
-          })
         }
       }
 
-      // Also emit to role room for broadcast (use first notification if available)
       if (createdNotifications.length > 0) {
         const roleNotification = mapNotificationToPayload(createdNotifications[0])
         io.to("role:super_admin").emit("notification:new", roleNotification)
-        logger.debug("[notifySuperAdmins] Emitted to role room: role:super_admin")
       }
     }
+
+    resourceLogger.actionFlow({
+      resource: "tags",
+      action: action,
+      step: "success",
+      duration: Date.now() - startTime,
+      metadata: { tagId: tag.id, tagName: tag.name },
+    })
   } catch (error) {
-    // Log error nhưng không throw để không ảnh hưởng đến main operation
-    logger.error("[notifications] Failed to notify super admins of tag action", error as Error)
+    const errorMessage = error instanceof Error ? error.message : String(error)
+    resourceLogger.actionFlow({
+      resource: "tags",
+      action: action,
+      step: "error",
+      duration: Date.now() - startTime,
+      metadata: { 
+        tagId: tag.id, 
+        tagName: tag.name,
+        error: errorMessage,
+        errorStack: error instanceof Error ? error.stack : undefined,
+      },
+    })
   }
 }
 
 /**
  * Bulk notification cho bulk operations - emit một notification tổng hợp thay vì từng cái một
- * Để tránh timeout khi xử lý nhiều tags và rút gọn thông báo
+ * Tối ưu để tránh timeout khi xử lý nhiều tags và rút gọn thông báo
+ * Đảm bảo hiển thị được tên records bị xóa/khôi phục
  */
 export async function notifySuperAdminsOfBulkTagAction(
   action: "delete" | "restore" | "hard-delete",
@@ -225,6 +224,15 @@ export async function notifySuperAdminsOfBulkTagAction(
   count: number,
   tags?: Array<{ name: string }>
 ) {
+  const startTime = Date.now()
+  
+  resourceLogger.actionFlow({
+    resource: "tags",
+    action: action === "delete" ? "bulk-delete" : action === "restore" ? "bulk-restore" : "bulk-hard-delete",
+    step: "start",
+    metadata: { count, tagCount: tags?.length || 0, actorId },
+  })
+
   try {
     const actor = await getActorInfo(actorId)
     const actorName = actor?.name || actor?.email || "Hệ thống"
@@ -232,14 +240,8 @@ export async function notifySuperAdminsOfBulkTagAction(
     let title = ""
     let description = ""
 
-    // Tạo danh sách tên tags (tối ưu để hiển thị đẹp trong line-clamp-2)
-    // Hiển thị tối đa 10 tên, nếu nhiều hơn sẽ hiển thị "... và X thẻ tag khác"
-    const maxNames = 10
-    const tagNames = tags?.slice(0, maxNames).map(t => t.name) || []
-    const remainingCount = tags && tags.length > maxNames ? tags.length - maxNames : 0
-    const namesText = tagNames.length > 0 
-      ? tagNames.join(", ") + (remainingCount > 0 ? ` và ${remainingCount} thẻ tag khác` : "")
-      : ""
+    // Format tag names - hiển thị tối đa 5 tên đầu tiên
+    const namesText = tags && tags.length > 0 ? formatTagNames(tags, 5) : ""
 
     switch (action) {
       case "delete":
@@ -332,8 +334,28 @@ export async function notifySuperAdminsOfBulkTagAction(
         io.to("role:super_admin").emit("notification:new", roleNotification)
       }
     }
+
+    resourceLogger.actionFlow({
+      resource: "tags",
+      action: action === "delete" ? "bulk-delete" : action === "restore" ? "bulk-restore" : "bulk-hard-delete",
+      step: "success",
+      duration: Date.now() - startTime,
+      metadata: { count, tagCount: tags?.length || 0 },
+    })
   } catch (error) {
-    logger.error("[notifications] Failed to notify super admins of bulk tag action", error as Error)
+    const errorMessage = error instanceof Error ? error.message : String(error)
+    resourceLogger.actionFlow({
+      resource: "tags",
+      action: action === "delete" ? "bulk-delete" : action === "restore" ? "bulk-restore" : "bulk-hard-delete",
+      step: "error",
+      duration: Date.now() - startTime,
+      metadata: { 
+        count, 
+        tagCount: tags?.length || 0,
+        error: errorMessage,
+        errorStack: error instanceof Error ? error.stack : undefined,
+      },
+    })
   }
 }
 

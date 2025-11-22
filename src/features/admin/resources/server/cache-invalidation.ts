@@ -73,8 +73,11 @@ export async function invalidateResourceCache({
   revalidatePath(basePath, "layout")
   
   // Revalidate detail page nếu có ID
+  // Revalidate cả page và layout để đảm bảo Server Component cache được invalidate
   if (id) {
-    revalidatePath(`${basePath}/${id}`, "page")
+    const detailPath = `${basePath}/${id}`
+    revalidatePath(detailPath, "page")
+    revalidatePath(detailPath, "layout")
   }
   
   // Update tags immediately (read-your-own-writes semantics)

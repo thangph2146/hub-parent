@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useMemo, useEffect, useRef } from "react"
+import { useCallback, useMemo, useEffect } from "react"
 import { useResourceRouter } from "@/hooks/use-resource-segment"
 import { Plus, RotateCcw, Trash2, AlertTriangle } from "lucide-react"
 
@@ -46,7 +46,6 @@ export function TagsTableClient({
   initialData,
 }: TagsTableClientProps) {
   const queryClient = useQueryClient()
-  const hasLoggedRef = useRef(false)
   const { cacheVersion, isSocketConnected } = useTagsSocketBridge()
   const { feedback, showFeedback, handleFeedbackOpenChange } = useTagFeedback()
   const { deleteConfirm, setDeleteConfirm, handleDeleteConfirm } = useTagDeleteConfirm()
@@ -81,6 +80,11 @@ export function TagsTableClient({
             total: initialData.total,
             totalPages: initialData.totalPages,
           },
+          sampleRow: initialData.rows[0] ? {
+            id: initialData.rows[0].id,
+            name: initialData.rows[0].name,
+            slug: initialData.rows[0].slug,
+          } : undefined,
         },
       })
     }
@@ -120,6 +124,12 @@ export function TagsTableClient({
   const handleDeleteSingle = useCallback(
     (row: TagRow) => {
       if (!canDelete) return
+      resourceLogger.tableAction({
+        resource: "tags",
+        action: "delete",
+        resourceId: row.id,
+        tagName: row.name,
+      })
       setDeleteConfirm({
         open: true,
         type: "soft",
@@ -135,6 +145,12 @@ export function TagsTableClient({
   const handleHardDeleteSingle = useCallback(
     (row: TagRow) => {
       if (!canManage) return
+      resourceLogger.tableAction({
+        resource: "tags",
+        action: "hard-delete",
+        resourceId: row.id,
+        tagName: row.name,
+      })
       setDeleteConfirm({
         open: true,
         type: "hard",
@@ -150,6 +166,12 @@ export function TagsTableClient({
   const handleRestoreSingle = useCallback(
     (row: TagRow) => {
       if (!canRestore) return
+      resourceLogger.tableAction({
+        resource: "tags",
+        action: "restore",
+        resourceId: row.id,
+        tagName: row.name,
+      })
       setDeleteConfirm({
         open: true,
         type: "restore",
@@ -265,6 +287,13 @@ export function TagsTableClient({
   const executeBulk = useCallback(
     (action: "delete" | "restore" | "hard-delete", ids: string[], refresh: () => void, clearSelection: () => void) => {
       if (ids.length === 0) return
+
+      resourceLogger.tableAction({
+        resource: "tags",
+        action: action === "delete" ? "bulk-delete" : action === "restore" ? "bulk-restore" : "bulk-hard-delete",
+        count: ids.length,
+        tagIds: ids,
+      })
 
       // Actions cần confirmation
       if (action === "delete" || action === "restore" || action === "hard-delete") {
