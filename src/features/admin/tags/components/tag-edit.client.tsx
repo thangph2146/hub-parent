@@ -10,9 +10,9 @@
 import { useQueryClient } from "@tanstack/react-query"
 import { ResourceForm } from "@/features/admin/resources/components"
 import { useResourceFormSubmit, useResourceNavigation } from "@/features/admin/resources/hooks"
+import { createResourceEditOnSuccess } from "@/features/admin/resources/utils"
 import { apiRoutes } from "@/lib/api/routes"
 import { queryKeys } from "@/lib/query-keys"
-import { resourceLogger } from "@/lib/config"
 import { getBaseTagFields, type TagFormData } from "../form-fields"
 import type { TagRow } from "../types"
 
@@ -66,51 +66,15 @@ export function TagEditClient({
           : undefined,
       fallback: backUrl,
     },
-    onSuccess: async (response) => {
-      const targetTagId = tag?.id
-      const responseData = response?.data?.data
-      
-      // Cập nhật React Query cache trực tiếp với dữ liệu từ response
-      // Điều này đảm bảo UI được cập nhật ngay lập tức với dữ liệu mới nhất
-      if (targetTagId && responseData) {
-        // Cập nhật detail query cache với dữ liệu mới từ response
-        queryClient.setQueryData(queryKeys.adminTags.detail(targetTagId), {
-          data: responseData,
-        })
-      }
-
-      // Invalidate React Query cache để đảm bảo tất cả queries được refresh
-      await queryClient.invalidateQueries({ queryKey: queryKeys.adminTags.all(), refetchType: "all" })
-      
-      // Invalidate detail query để đảm bảo detail page được cập nhật
-      if (targetTagId) {
-        await queryClient.invalidateQueries({ queryKey: queryKeys.adminTags.detail(targetTagId), refetchType: "all" })
-      }
-      
-      // Refetch để đảm bảo data mới nhất từ server
-      await queryClient.refetchQueries({ queryKey: queryKeys.adminTags.all(), type: "all" })
-      
-      if (targetTagId) {
-        // Refetch detail query để đảm bảo detail page có data mới nhất
-        await queryClient.refetchQueries({ queryKey: queryKeys.adminTags.detail(targetTagId), type: "all" })
-      }
-      
-      // Log success sau khi đã cập nhật cache
-      resourceLogger.actionFlow({
-        resource: "tags",
-        action: "update",
-        step: "success",
-        metadata: {
-          tagId: targetTagId,
-          responseStatus: response?.status,
-          cacheUpdated: !!responseData,
-        },
-      })
-      
-      if (onSuccess) {
-        onSuccess()
-      }
-    },
+    onSuccess: createResourceEditOnSuccess({
+      queryClient,
+      resourceId: tag?.id,
+      allQueryKey: queryKeys.adminTags.all(),
+      detailQueryKey: queryKeys.adminTags.detail,
+      resourceName: "tags",
+      getRecordName: (data) => data.name as string | undefined,
+      onSuccess,
+    }),
   })
 
   if (!tag?.id) {

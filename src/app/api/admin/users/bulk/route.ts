@@ -52,8 +52,31 @@ async function bulkUsersHandler(req: NextRequest, context: ApiRouteContext) {
     "hard-delete": bulkHardDeleteUsers,
   }
 
+  try {
   const { count } = await actions[actionValidation.value!](ctx, idsValidation.value!)
   return NextResponse.json({ success: true, count })
+  } catch (error) {
+    // Xử lý error với message rõ ràng hơn
+    if (error instanceof Error) {
+      const status = "status" in error && typeof error.status === "number" ? error.status : 500
+      return NextResponse.json(
+        {
+          success: false,
+          message: error.message,
+          error: error.constructor.name,
+        },
+        { status }
+      )
+    }
+    return NextResponse.json(
+      {
+        success: false,
+        message: "Đã xảy ra lỗi không xác định",
+        error: "UnknownError",
+      },
+      { status: 500 }
+    )
+  }
 }
 
 export const POST = createPostRoute(bulkUsersHandler, {

@@ -174,8 +174,10 @@ export function DataTable<T extends object>({
     const initialQueryRef = useRef(defaultQuery)
     const hasConsumedInitialRef = useRef(!initialData)
 
+    // Luôn ưu tiên loader (loader đã check cache từ React Query)
+    // Không dùng initialData trong useState initializer để tránh dùng data cũ khi component remount
     const [dataPromise, setDataPromise] = useState<Promise<DataTableResult<T>>>(() =>
-        initialData ? Promise.resolve(initialData) : safeLoad(loader, defaultQuery),
+        safeLoad(loader, defaultQuery),
     )
     const [isPending, startTransition] = useTransition()
     const selectionEnabled = Boolean(selection?.enabled)
@@ -241,19 +243,18 @@ export function DataTable<T extends object>({
         prevQueryRef.current = query
 
         startTransition(() => {
-            const shouldUseInitial =
-                Boolean(initialData) &&
-                !hasConsumedInitialRef.current &&
-                areQueriesEqual(query, initialQueryRef.current) &&
-                !refreshKeyChanged
-
-            if (shouldUseInitial && initialData) {
-                setDataPromise(Promise.resolve(initialData))
-                hasConsumedInitialRef.current = true
-                return
-            }
-
+            // Luôn ưu tiên loader (loader đã check cache từ React Query và return cache nếu có)
+            // Loader từ useResourceTableLoader sẽ:
+            // 1. Check cache trước - return cache ngay nếu có (từ socket updates hoặc optimistic updates)
+            // 2. Nếu không có cache, fetch từ server
+            // initialData chỉ được dùng như fallback cho lần đầu tiên khi chưa có cache
+            // Nhưng vì loader đã check cache, nên ta luôn dùng loader để đảm bảo data mới nhất
             setDataPromise(safeLoad(loader, query))
+            
+            // Mark initialData as consumed để tránh dùng lại
+            if (initialData && !hasConsumedInitialRef.current) {
+                hasConsumedInitialRef.current = true
+            }
         })
     }, [loader, query, refreshKey, initialData])
 

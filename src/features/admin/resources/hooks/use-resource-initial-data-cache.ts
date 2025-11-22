@@ -56,6 +56,110 @@ export function useResourceInitialDataCache<T extends object, P>({
       return
     }
 
+    // Kiểm tra xem cache đã có dữ liệu chưa (từ socket event hoặc từ updateResourceCacheAfterEdit)
+    const existingCache = queryClient.getQueryData<DataTableResult<T>>(queryKey)
+    
+    if (existingCache && existingCache.rows.length > 0) {
+      // QUAN TRỌNG: Ưu tiên cache hiện tại nếu nó có nhiều rows hơn initialData
+      // Điều này đảm bảo rằng cache từ socket updates hoặc optimistic updates không bị ghi đè
+      // bởi initialData từ SSR (có thể stale hoặc không đầy đủ)
+      if (existingCache.rows.length > initialData.rows.length) {
+        logger.debug(`[useResourceInitialDataCache:${resourceName}] Cache has more rows, keeping cache`, {
+          queryKey,
+          existingRowsCount: existingCache.rows.length,
+          initialRowsCount: initialData.rows.length,
+          existingTotal: existingCache.total,
+          initialTotal: initialData.total,
+        })
+        loggedKeysRef.current.add(cacheKey)
+        return
+      }
+      
+      // So sánh timestamp để quyết định có ghi đè hay không
+      // Nếu existingCache mới hơn initialData, skip để giữ data mới nhất
+      // Tìm row có cùng ID trong cả hai để so sánh chính xác
+      const existingFirstRow = existingCache.rows[0] as Record<string, unknown>
+      const initialFirstRow = initialData.rows[0] as Record<string, unknown>
+      
+      // Tìm row có cùng ID để so sánh chính xác hơn
+      const firstRowId = existingFirstRow?.id || initialFirstRow?.id
+      const existingRow = firstRowId 
+        ? existingCache.rows.find((r) => (r as Record<string, unknown>).id === firstRowId) as Record<string, unknown> | undefined
+        : existingFirstRow
+      const initialRow = firstRowId
+        ? initialData.rows.find((r) => (r as Record<string, unknown>).id === firstRowId) as Record<string, unknown> | undefined
+        : initialFirstRow
+      
+      const existingUpdatedAt = existingRow?.updatedAt as string | undefined
+      const initialUpdatedAt = initialRow?.updatedAt as string | undefined
+      
+      // Nếu cả hai đều có updatedAt, so sánh timestamp
+      if (existingUpdatedAt && initialUpdatedAt) {
+        const existingTime = new Date(existingUpdatedAt).getTime()
+        const initialTime = new Date(initialUpdatedAt).getTime()
+        
+        if (existingTime >= initialTime) {
+          // Cache hiện tại mới hơn hoặc bằng initialData, không ghi đè
+          logger.debug(`[useResourceInitialDataCache:${resourceName}] Cache is newer or equal, skipping`, {
+            queryKey,
+            existingRowsCount: existingCache.rows.length,
+            initialRowsCount: initialData.rows.length,
+            existingUpdatedAt,
+            initialUpdatedAt,
+            existingData: existingRow,
+            initialData: initialRow,
+          })
+          loggedKeysRef.current.add(cacheKey)
+          return
+        }
+      } else if (existingUpdatedAt && !initialUpdatedAt) {
+        // Nếu existingCache có updatedAt nhưng initialData không có, ưu tiên cache
+        // (cache đã được update bởi edit operation)
+        logger.debug(`[useResourceInitialDataCache:${resourceName}] Cache has updatedAt but initialData doesn't, keeping cache`, {
+          queryKey,
+          existingRowsCount: existingCache.rows.length,
+          initialRowsCount: initialData.rows.length,
+          existingUpdatedAt,
+          existingData: existingRow,
+          initialData: initialRow,
+        })
+        loggedKeysRef.current.add(cacheKey)
+        return
+      } else if (!existingUpdatedAt && !initialUpdatedAt) {
+        // Nếu cả hai đều không có updatedAt, so sánh dữ liệu để quyết định
+        // Nếu existingCache có nhiều fields hơn hoặc có dữ liệu khác, ưu tiên cache
+        const existingKeys = Object.keys(existingRow || {})
+        const initialKeys = Object.keys(initialRow || {})
+        
+        if (existingKeys.length >= initialKeys.length) {
+          // Cache có đầy đủ hoặc nhiều fields hơn, giữ cache
+          logger.debug(`[useResourceInitialDataCache:${resourceName}] Cache has more or equal fields, keeping cache`, {
+            queryKey,
+            existingRowsCount: existingCache.rows.length,
+            initialRowsCount: initialData.rows.length,
+            existingTotal: existingCache.total,
+            initialTotal: initialData.total,
+            existingKeys: existingKeys.length,
+            initialKeys: initialKeys.length,
+            existingData: existingRow,
+            initialData: initialRow,
+          })
+          loggedKeysRef.current.add(cacheKey)
+          return
+        }
+      }
+      
+      // Nếu initialData mới hơn, log và ghi đè cache
+      logger.debug(`[useResourceInitialDataCache:${resourceName}] Initial data is newer, updating cache`, {
+        queryKey,
+        existingRowsCount: existingCache.rows.length,
+        initialRowsCount: initialData.rows.length,
+        existingUpdatedAt,
+        initialUpdatedAt,
+      })
+    }
+
+    // Chỉ set cache nếu chưa có dữ liệu
     queryClient.setQueryData(queryKey, initialData)
     loggedKeysRef.current.add(cacheKey)
 

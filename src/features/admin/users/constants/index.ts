@@ -1,6 +1,7 @@
 /**
- * Constants exports cho users feature
+ * Constants cho users feature
  */
 
-export { USER_MESSAGES, USER_LABELS, USER_CONFIRM_MESSAGES } from "./messages"
+export const PROTECTED_SUPER_ADMIN_EMAIL = "superadmin@hub.edu.vn"
 
+export * from "./messages"

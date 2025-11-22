@@ -141,13 +141,6 @@ export function useCategoryActions({
           },
         })
 
-        logger.error("[useCategoryActions] Single action ERROR", {
-          action,
-          categoryId: row.id,
-          categoryName: row.name,
-          error: errorMessage,
-        })
-
         showFeedback("error", actionConfig.errorTitle, actionConfig.errorDescription, errorMessage)
         if (action === "restore") {
           // Don't throw for restore to allow UI to continue
@@ -225,13 +218,6 @@ export function useCategoryActions({
             categoryIds: ids,
             error: errorMessage,
           },
-        })
-
-        logger.error("[useCategoryActions] Bulk action ERROR", {
-          action,
-          count: ids.length,
-          categoryIds: ids,
-          error: errorMessage,
         })
 
         const errorTitles = {

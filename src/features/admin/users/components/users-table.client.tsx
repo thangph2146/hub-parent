@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useMemo } from "react"
+import { useCallback, useMemo, useEffect, useRef } from "react"
 import { useResourceRouter } from "@/hooks/use-resource-segment"
 import { Plus, RotateCcw, Trash2, AlertTriangle } from "lucide-react"
 
@@ -29,10 +29,11 @@ import { useUserFeedback } from "@/features/admin/users/hooks/use-user-feedback"
 import { useUserDeleteConfirm } from "@/features/admin/users/hooks/use-user-delete-confirm"
 import { useUserColumns } from "@/features/admin/users/utils/columns"
 import { useUserRowActions } from "@/features/admin/users/utils/row-actions"
+import { resourceLogger } from "@/lib/config"
 
 import type { AdminUsersListParams } from "@/lib/query-keys"
 import type { UserRow, UsersResponse, UsersTableClientProps } from "../types"
-import { USER_CONFIRM_MESSAGES, USER_LABELS } from "../constants/messages"
+import { USER_CONFIRM_MESSAGES, USER_LABELS, PROTECTED_SUPER_ADMIN_EMAIL } from "../constants"
 export function UsersTableClient({
   canDelete = false,
   canRestore = false,
@@ -43,7 +44,7 @@ export function UsersTableClient({
 }: UsersTableClientProps) {
   const queryClient = useQueryClient()
   const router = useResourceRouter()
-  const { cacheVersion } = useUsersSocketBridge()
+  const { cacheVersion, isSocketConnected } = useUsersSocketBridge()
   const { feedback, showFeedback, handleFeedbackOpenChange } = useUserFeedback()
   const { deleteConfirm, setDeleteConfirm, handleDeleteConfirm } = useUserDeleteConfirm()
 
@@ -171,6 +172,13 @@ export function UsersTableClient({
   const handleDeleteSingle = useCallback(
     (row: UserRow) => {
       if (!canDelete) return
+      resourceLogger.tableAction({
+        resource: "users",
+        action: "delete",
+        resourceId: row.id,
+        userEmail: row.email,
+        userName: row.name,
+      })
       setDeleteConfirm({
         open: true,
         type: "soft",
@@ -186,6 +194,13 @@ export function UsersTableClient({
   const handleHardDeleteSingle = useCallback(
     (row: UserRow) => {
       if (!canManage) return
+      resourceLogger.tableAction({
+        resource: "users",
+        action: "hard-delete",
+        resourceId: row.id,
+        userEmail: row.email,
+        userName: row.name,
+      })
       setDeleteConfirm({
         open: true,
         type: "hard",
@@ -201,6 +216,13 @@ export function UsersTableClient({
   const handleRestoreSingle = useCallback(
     (row: UserRow) => {
       if (!canRestore) return
+      resourceLogger.tableAction({
+        resource: "users",
+        action: "restore",
+        resourceId: row.id,
+        userEmail: row.email,
+        userName: row.name,
+      })
       setDeleteConfirm({
         open: true,
         type: "restore",
@@ -228,6 +250,13 @@ export function UsersTableClient({
   const executeBulk = useCallback(
     (action: "delete" | "restore" | "hard-delete", ids: string[], selectedRows: UserRow[], refresh: () => void, clearSelection: () => void) => {
       if (ids.length === 0) return
+
+      resourceLogger.tableAction({
+        resource: "users",
+        action: action === "delete" ? "bulk-delete" : action === "restore" ? "bulk-restore" : "bulk-hard-delete",
+        count: ids.length,
+        userIds: ids,
+      })
 
       // Actions cần confirmation
       if (action === "delete" || action === "restore" || action === "hard-delete") {
@@ -265,6 +294,60 @@ export function UsersTableClient({
     resourceName: "users",
   })
 
+  // Log table load và data structure (chỉ log một lần)
+  const loggedTableKeys = useRef<Set<string>>(new Set())
+  const tableLogKey = useMemo(
+    () => `users-table-${initialData?.page ?? 1}-${initialData?.total ?? 0}`,
+    [initialData?.page, initialData?.total]
+  )
+  useEffect(() => {
+    if (loggedTableKeys.current.has(tableLogKey)) return
+    loggedTableKeys.current.add(tableLogKey)
+    
+    resourceLogger.tableAction({
+      resource: "users",
+      action: "load-table",
+      view: "active",
+      total: initialData?.total,
+      page: initialData?.page,
+    })
+
+    if (initialData) {
+      // Log tất cả rows để hiển thị đầy đủ thông tin
+      const allRows = initialData.rows.map((row) => ({
+        id: row.id,
+        email: row.email,
+        name: row.name,
+        isActive: row.isActive,
+        createdAt: row.createdAt,
+        deletedAt: row.deletedAt,
+      }))
+      
+      resourceLogger.dataStructure({
+        resource: "users",
+        dataType: "table",
+        rowCount: initialData.rows.length,
+        structure: {
+          columns: ["id", "email", "name", "isActive", "createdAt", "deletedAt"],
+          pagination: {
+            page: initialData.page,
+            limit: initialData.limit,
+            total: initialData.total,
+            totalPages: initialData.totalPages,
+          },
+          rows: allRows,
+        },
+      })
+    }
+
+    // Cleanup sau một khoảng thời gian
+    return () => {
+      setTimeout(() => {
+        loggedTableKeys.current.delete(tableLogKey)
+      }, 1000)
+    }
+  }, [tableLogKey, initialData])
+
   const viewModes = useMemo<ResourceViewMode<UserRow>[]>(() => {
     const modes: ResourceViewMode<UserRow>[] = [
       {
@@ -275,8 +358,8 @@ export function UsersTableClient({
         selectionActions: canDelete
           ? ({ selectedIds, selectedRows, clearSelection, refresh }) => {
               // Filter ra super admin từ danh sách đã chọn
-              const deletableRows = selectedRows.filter((row) => row.email !== "superadmin@hub.edu.vn")
-              const hasSuperAdmin = selectedRows.some((row) => row.email === "superadmin@hub.edu.vn")
+              const deletableRows = selectedRows.filter((row) => row.email !== PROTECTED_SUPER_ADMIN_EMAIL)
+              const hasSuperAdmin = selectedRows.some((row) => row.email === PROTECTED_SUPER_ADMIN_EMAIL)
               
               return (
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-sm">

@@ -1,5 +1,5 @@
 /**
- * Helper functions để emit notifications realtime cho users actions
+ * Helper functions để emit notifications realtime cho posts actions
  */
 
 import { prisma } from "@/lib/database"
@@ -20,105 +20,96 @@ async function getActorInfo(actorId: string) {
 }
 
 /**
- * Format user names cho notification description
- * Hiển thị tối đa 3 tên đầu tiên, nếu nhiều hơn sẽ hiển thị "... và X người dùng khác"
+ * Format post titles cho notification description
+ * Hiển thị tối đa 3 tiêu đề đầu tiên, nếu nhiều hơn sẽ hiển thị "... và X bài viết khác"
  */
-function formatUserNames(users: Array<{ name: string | null; email: string }>, maxNames = 3): string {
-  if (!users || users.length === 0) return ""
+function formatPostTitles(posts: Array<{ title: string }>, maxTitles = 3): string {
+  if (!posts || posts.length === 0) return ""
   
-  const displayNames = users.slice(0, maxNames).map(u => u.name || u.email)
-  const remainingCount = users.length > maxNames ? users.length - maxNames : 0
+  const displayTitles = posts.slice(0, maxTitles).map(p => p.title)
+  const remainingCount = posts.length > maxTitles ? posts.length - maxTitles : 0
   
   if (remainingCount > 0) {
-    return `${displayNames.join(", ")} và ${remainingCount} người dùng khác`
+    return `${displayTitles.join(", ")} và ${remainingCount} bài viết khác`
   }
-  return displayNames.join(", ")
+  return displayTitles.join(", ")
 }
 
 /**
- * Helper function để tạo system notification cho super admin về user actions
+ * Helper function để tạo system notification cho super admin về post actions
  */
-export async function notifySuperAdminsOfUserAction(
+export async function notifySuperAdminsOfPostAction(
   action: "create" | "update" | "delete" | "restore" | "hard-delete",
   actorId: string,
-  targetUser: { id: string; email: string; name: string | null },
+  targetPost: { id: string; title: string; slug: string },
   changes?: {
-    email?: { old: string; new: string }
-    isActive?: { old: boolean; new: boolean }
-    roles?: { old: string[]; new: string[] }
+    title?: { old: string; new: string }
+    published?: { old: boolean; new: boolean }
   }
 ) {
   try {
     const actor = await getActorInfo(actorId)
     const actorName = actor?.name || actor?.email || "Hệ thống"
-    const targetUserName = targetUser.name || targetUser.email
+    const targetPostTitle = targetPost.title
 
     let title = ""
     let description = ""
-    const actionUrl = `/admin/users/${targetUser.id}`
+    const actionUrl = `/admin/posts/${targetPost.id}`
 
     switch (action) {
       case "create":
-        title = "👤 Người dùng mới được tạo"
-        description = `${actorName} đã tạo người dùng mới: ${targetUserName} (${targetUser.email})`
+        title = "📝 Bài viết mới được tạo"
+        description = `${actorName} đã tạo bài viết mới: ${targetPostTitle}`
         break
       case "update":
         const changeDescriptions: string[] = []
-        if (changes?.email) {
-          changeDescriptions.push(`Email: ${changes.email.old} → ${changes.email.new}`)
+        if (changes?.title) {
+          changeDescriptions.push(`Tiêu đề: ${changes.title.old} → ${changes.title.new}`)
         }
-        if (changes?.isActive !== undefined) {
+        if (changes?.published !== undefined) {
           changeDescriptions.push(
-            `Trạng thái: ${changes.isActive.old ? "Hoạt động" : "Tạm khóa"} → ${changes.isActive.new ? "Hoạt động" : "Tạm khóa"}`
+            `Trạng thái: ${changes.published.old ? "Đã xuất bản" : "Bản nháp"} → ${changes.published.new ? "Đã xuất bản" : "Bản nháp"}`
           )
         }
-        if (changes?.roles) {
-          changeDescriptions.push(
-            `Vai trò: ${changes.roles.old.join(", ") || "Không có"} → ${changes.roles.new.join(", ") || "Không có"}`
-          )
-        }
-        title = "✏️ Người dùng được cập nhật"
-        description = `${actorName} đã cập nhật người dùng: ${targetUserName} (${targetUser.email})${
+        title = "✏️ Bài viết được cập nhật"
+        description = `${actorName} đã cập nhật bài viết: ${targetPostTitle}${
           changeDescriptions.length > 0 ? `\nThay đổi: ${changeDescriptions.join(", ")}` : ""
         }`
         break
       case "delete":
-        title = "🗑️ Người dùng bị xóa"
-        description = `${actorName} đã xóa người dùng: ${targetUserName} (${targetUser.email})`
+        title = "🗑️ Bài viết bị xóa"
+        description = `${actorName} đã xóa bài viết: ${targetPostTitle}`
         break
       case "restore":
-        title = "♻️ Người dùng được khôi phục"
-        description = `${actorName} đã khôi phục người dùng: ${targetUserName} (${targetUser.email})`
+        title = "♻️ Bài viết được khôi phục"
+        description = `${actorName} đã khôi phục bài viết: ${targetPostTitle}`
         break
       case "hard-delete":
-        title = "⚠️ Người dùng bị xóa vĩnh viễn"
-        description = `${actorName} đã xóa vĩnh viễn người dùng: ${targetUserName} (${targetUser.email})`
+        title = "⚠️ Bài viết bị xóa vĩnh viễn"
+        description = `${actorName} đã xóa vĩnh viễn bài viết: ${targetPostTitle}`
         break
     }
 
-    // Tạo notifications trong DB cho tất cả super admins
     const result = await createNotificationForSuperAdmins(
       title,
       description,
       actionUrl,
       NotificationKind.SYSTEM,
       {
-        type: `user_${action}`,
+        type: `post_${action}`,
         actorId,
         actorName: actor?.name || actor?.email,
         actorEmail: actor?.email,
-        targetUserId: targetUser.id,
-        targetUserName,
-        targetUserEmail: targetUser.email,
+        targetPostId: targetPost.id,
+        targetPostTitle,
+        targetPostSlug: targetPost.slug,
         changes,
         timestamp: new Date().toISOString(),
       }
     )
 
-    // Emit socket event nếu có socket server
     const io = getSocketServer()
     if (io && result.count > 0) {
-      // Lấy danh sách super admins để emit đến từng user room
       const superAdmins = await prisma.user.findMany({
         where: {
           isActive: true,
@@ -136,7 +127,6 @@ export async function notifySuperAdminsOfUserAction(
         select: { id: true },
       })
 
-      // Fetch notifications vừa tạo từ database để lấy IDs thực tế
       const createdNotifications = await prisma.notification.findMany({
         where: {
           title,
@@ -147,7 +137,7 @@ export async function notifySuperAdminsOfUserAction(
             in: superAdmins.map((a) => a.id),
           },
           createdAt: {
-            gte: new Date(Date.now() - 5000), // Created within last 5 seconds
+            gte: new Date(Date.now() - 5000),
           },
         },
         orderBy: {
@@ -156,71 +146,47 @@ export async function notifySuperAdminsOfUserAction(
         take: superAdmins.length,
       })
 
-      // Emit to each super admin user room với notification từ database
       for (const admin of superAdmins) {
         const dbNotification = createdNotifications.find((n) => n.userId === admin.id)
-        
         if (dbNotification) {
-          // Map notification từ database sang socket payload format
           const socketNotification = mapNotificationToPayload(dbNotification)
           storeNotificationInCache(admin.id, socketNotification)
           io.to(`user:${admin.id}`).emit("notification:new", socketNotification)
-        } else {
-          // Fallback nếu không tìm thấy notification trong database
-          const fallbackNotification = {
-            id: `user-${action}-${targetUser.id}-${Date.now()}`,
-            kind: "system" as const,
-            title,
-            description,
-            actionUrl,
-            timestamp: Date.now(),
-            read: false,
-            toUserId: admin.id,
-            metadata: {
-              type: `user_${action}`,
-              actorId,
-              targetUserId: targetUser.id,
-            },
-          }
-          storeNotificationInCache(admin.id, fallbackNotification)
-          io.to(`user:${admin.id}`).emit("notification:new", fallbackNotification)
         }
       }
 
-      // Also emit to role room for broadcast (use first notification if available)
       if (createdNotifications.length > 0) {
         const roleNotification = mapNotificationToPayload(createdNotifications[0])
         io.to("role:super_admin").emit("notification:new", roleNotification)
       }
     }
   } catch (error) {
-    // Log error nhưng không throw để không ảnh hưởng đến main operation
     resourceLogger.actionFlow({
-      resource: "users",
+      resource: "posts",
       action: action === "create" ? "create" : action === "update" ? "update" : action === "delete" ? "delete" : action === "restore" ? "restore" : "hard-delete",
       step: "error",
-      metadata: { userId: targetUser.id, error: error instanceof Error ? error.message : String(error) },
+      metadata: { postId: targetPost.id, error: error instanceof Error ? error.message : String(error) },
     })
   }
 }
 
 /**
  * Bulk notification cho bulk operations - emit một notification tổng hợp thay vì từng cái một
- * Để tránh timeout khi xử lý nhiều users và rút gọn thông báo
+ * Để tránh timeout khi xử lý nhiều posts và rút gọn thông báo
  */
-export async function notifySuperAdminsOfBulkUserAction(
+export async function notifySuperAdminsOfBulkPostAction(
   action: "delete" | "restore" | "hard-delete",
   actorId: string,
   count: number,
-  users?: Array<{ name: string | null; email: string }>
+  posts?: Array<{ title: string }>
 ) {
   const startTime = Date.now()
   
   resourceLogger.actionFlow({
-    resource: "users",
+    resource: "posts",
     action: action === "delete" ? "bulk-delete" : action === "restore" ? "bulk-restore" : "bulk-hard-delete",
     step: "start",
-    metadata: { count, userCount: users?.length || 0, actorId },
+    metadata: { count, postCount: posts?.length || 0, actorId },
   })
 
   try {
@@ -230,31 +196,31 @@ export async function notifySuperAdminsOfBulkUserAction(
     let title = ""
     let description = ""
 
-    // Format user names - hiển thị tối đa 3 tên đầu tiên để rút gọn notification
-    const namesText = users && users.length > 0 ? formatUserNames(users, 3) : ""
+    // Format post titles - hiển thị tối đa 5 tiêu đề đầu tiên
+    const titlesText = posts && posts.length > 0 ? formatPostTitles(posts, 5) : ""
 
     switch (action) {
       case "delete":
-        title = "🗑️ Đã xóa nhiều người dùng"
-        description = namesText 
-          ? `${actorName} đã xóa ${count} người dùng: ${namesText}`
-          : `${actorName} đã xóa ${count} người dùng`
+        title = "🗑️ Đã xóa nhiều bài viết"
+        description = titlesText 
+          ? `${actorName} đã xóa ${count} bài viết: ${titlesText}`
+          : `${actorName} đã xóa ${count} bài viết`
         break
       case "restore":
-        title = "♻️ Đã khôi phục nhiều người dùng"
-        description = namesText
-          ? `${actorName} đã khôi phục ${count} người dùng: ${namesText}`
-          : `${actorName} đã khôi phục ${count} người dùng`
+        title = "♻️ Đã khôi phục nhiều bài viết"
+        description = titlesText
+          ? `${actorName} đã khôi phục ${count} bài viết: ${titlesText}`
+          : `${actorName} đã khôi phục ${count} bài viết`
         break
       case "hard-delete":
-        title = "⚠️ Đã xóa vĩnh viễn nhiều người dùng"
-        description = namesText
-          ? `${actorName} đã xóa vĩnh viễn ${count} người dùng: ${namesText}`
-          : `${actorName} đã xóa vĩnh viễn ${count} người dùng`
+        title = "⚠️ Đã xóa vĩnh viễn nhiều bài viết"
+        description = titlesText
+          ? `${actorName} đã xóa vĩnh viễn ${count} bài viết: ${titlesText}`
+          : `${actorName} đã xóa vĩnh viễn ${count} bài viết`
         break
     }
 
-    const actionUrl = `/admin/users`
+    const actionUrl = `/admin/posts`
 
     const result = await createNotificationForSuperAdmins(
       title,
@@ -262,12 +228,12 @@ export async function notifySuperAdminsOfBulkUserAction(
       actionUrl,
       NotificationKind.SYSTEM,
       {
-        type: `user_bulk_${action}`,
+        type: `post_bulk_${action}`,
         actorId,
         actorName: actor?.name || actor?.email,
         actorEmail: actor?.email,
         count,
-        userEmails: users?.map(u => u.email) || [],
+        postTitles: posts?.map(p => p.title) || [],
         timestamp: new Date().toISOString(),
       }
     )
@@ -326,15 +292,15 @@ export async function notifySuperAdminsOfBulkUserAction(
     }
 
     resourceLogger.actionFlow({
-      resource: "users",
+      resource: "posts",
       action: action === "delete" ? "bulk-delete" : action === "restore" ? "bulk-restore" : "bulk-hard-delete",
       step: "success",
       duration: Date.now() - startTime,
-      metadata: { count, userCount: users?.length || 0 },
+      metadata: { count, postCount: posts?.length || 0 },
     })
   } catch (error) {
     resourceLogger.actionFlow({
-      resource: "users",
+      resource: "posts",
       action: action === "delete" ? "bulk-delete" : action === "restore" ? "bulk-restore" : "bulk-hard-delete",
       step: "error",
       metadata: { count, error: error instanceof Error ? error.message : String(error) },

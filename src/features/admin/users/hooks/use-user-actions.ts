@@ -6,15 +6,12 @@
 import { useCallback, useState } from "react"
 import { apiClient } from "@/lib/api/axios"
 import { apiRoutes } from "@/lib/api/routes"
-import { runResourceRefresh, useResourceBulkProcessing } from "@/features/admin/resources/hooks"
+import { useResourceBulkProcessing } from "@/features/admin/resources/hooks"
 import type { ResourceRefreshHandler } from "@/features/admin/resources/types"
 import type { UserRow } from "../types"
 import type { FeedbackVariant } from "@/components/dialogs"
-import { USER_MESSAGES } from "../constants/messages"
-import { logger } from "@/lib/config"
-
-// Email của super admin không được phép xóa
-const PROTECTED_SUPER_ADMIN_EMAIL = "superadmin@hub.edu.vn"
+import { USER_MESSAGES, PROTECTED_SUPER_ADMIN_EMAIL } from "../constants"
+import { resourceLogger } from "@/lib/config"
 
 interface UseUserActionsOptions {
   canDelete: boolean
@@ -96,13 +93,18 @@ export function useUserActions({
           await apiClient.post(actionConfig.endpoint)
         }
         showFeedback("success", actionConfig.successTitle, actionConfig.successDescription)
-        await runResourceRefresh({ refresh, resource: "users" })
+        // Socket events đã update cache và trigger refresh qua cacheVersion
+        // Không cần manual refresh nữa để tránh duplicate refresh
       } catch (error: unknown) {
         const errorMessage = error instanceof Error ? error.message : USER_MESSAGES.UNKNOWN_ERROR
         showFeedback("error", actionConfig.errorTitle, actionConfig.errorDescription, errorMessage)
-        if (action === "restore") {
-          logger.error(`Failed to ${action} user`, error as Error)
-        } else {
+        resourceLogger.actionFlow({
+          resource: "users",
+          action: action === "delete" ? "delete" : action === "restore" ? "restore" : "hard-delete",
+          step: "error",
+          metadata: { userId: row.id, userEmail: row.email, error: errorMessage },
+        })
+        if (action !== "restore") {
           throw error
         }
       } finally {
@@ -141,7 +143,8 @@ export function useUserActions({
           USER_MESSAGES.TOGGLE_ACTIVE_SUCCESS,
           `Đã ${newStatus ? "kích hoạt" : "vô hiệu hóa"} người dùng ${row.email}`
         )
-        await runResourceRefresh({ refresh, resource: "users" })
+        // Socket events đã update cache và trigger refresh qua cacheVersion
+        // Không cần manual refresh nữa để tránh duplicate refresh
       } catch (error: unknown) {
         const errorMessage = error instanceof Error ? error.message : USER_MESSAGES.UNKNOWN_ERROR
         showFeedback(
@@ -196,15 +199,37 @@ export function useUserActions({
         showFeedback("success", message.title, message.description)
         clearSelection()
 
-        await runResourceRefresh({ refresh, resource: "users" })
+        // Socket events đã update cache và trigger refresh qua cacheVersion
+        // Không cần manual refresh nữa để tránh duplicate refresh
       } catch (error: unknown) {
-        const errorMessage = error instanceof Error ? error.message : USER_MESSAGES.UNKNOWN_ERROR
+        // Extract error message từ response nếu có
+        let errorMessage: string = USER_MESSAGES.UNKNOWN_ERROR
+        if (error && typeof error === "object" && "response" in error) {
+          const axiosError = error as { response?: { data?: { message?: string; error?: string } } }
+          errorMessage = axiosError.response?.data?.message || axiosError.response?.data?.error || USER_MESSAGES.UNKNOWN_ERROR
+        } else if (error instanceof Error) {
+          errorMessage = error.message
+        }
+        
         const errorTitles = {
           restore: USER_MESSAGES.BULK_RESTORE_ERROR,
           delete: USER_MESSAGES.BULK_DELETE_ERROR,
           "hard-delete": USER_MESSAGES.BULK_HARD_DELETE_ERROR,
         }
-        showFeedback("error", errorTitles[action], `Không thể thực hiện thao tác cho ${deletableIds.length} người dùng`, errorMessage)
+        showFeedback("error", errorTitles[action], errorMessage)
+        resourceLogger.actionFlow({
+          resource: "users",
+          action: action === "delete" ? "bulk-delete" : action === "restore" ? "bulk-restore" : "bulk-hard-delete",
+          step: "error",
+          metadata: {
+            requestedCount: ids.length,
+            deletableCount: deletableIds.length,
+            error: errorMessage,
+            requestedIds: ids,
+            deletableIds,
+            filteredOutCount: ids.length - deletableIds.length,
+          },
+        })
         if (action !== "restore") {
           throw error
         }

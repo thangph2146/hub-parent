@@ -5,7 +5,7 @@ import { revalidatePath, revalidateTag, updateTag } from "next/cache"
 import { PERMISSIONS } from "@/lib/permissions"
 import { isSuperAdmin } from "@/lib/permissions"
 import { prisma } from "@/lib/database"
-import { logger } from "@/lib/config"
+import { resourceLogger } from "@/lib/config"
 import { mapPostRecord, type PostWithAuthor } from "./helpers"
 import {
   ApplicationError,
@@ -16,8 +16,9 @@ import {
   invalidateResourceCacheBulk,
   type AuthContext,
 } from "@/features/admin/resources/server"
-import { emitPostUpsert, emitPostRemove } from "./events"
+import { emitPostUpsert, emitPostRemove, type PostStatus } from "./events"
 import { createPostSchema, updatePostSchema, type CreatePostSchema, type UpdatePostSchema } from "./validation"
+import { notifySuperAdminsOfPostAction, notifySuperAdminsOfBulkPostAction } from "./notifications"
 
 // Re-export for backward compatibility with API routes
 export { ApplicationError, ForbiddenError, NotFoundError, type AuthContext }
@@ -33,6 +34,13 @@ function sanitizePost(post: PostWithAuthor) {
 }
 
 export async function createPost(ctx: AuthContext, input: CreatePostSchema) {
+  resourceLogger.actionFlow({
+    resource: "posts",
+    action: "create",
+    step: "start",
+    metadata: { actorId: ctx.actorId },
+  })
+
   ensurePermission(ctx, PERMISSIONS.POSTS_CREATE, PERMISSIONS.POSTS_MANAGE)
 
   const validated = createPostSchema.parse(input)
@@ -111,8 +119,38 @@ export async function createPost(ctx: AuthContext, input: CreatePostSchema) {
     additionalTags: ["active-posts"],
   })
 
+  resourceLogger.cache({
+    resource: "posts",
+    action: "cache-invalidate",
+    operation: "invalidate",
+    resourceId: sanitized.id,
+    additionalTags: ["active-posts"],
+  })
+
   // Emit socket event for real-time updates
   await emitPostUpsert(sanitized.id, null)
+
+  resourceLogger.socket({
+    resource: "posts",
+    event: "post:upsert",
+    action: "socket-update",
+    resourceId: sanitized.id,
+    payload: { postId: sanitized.id, previousStatus: null },
+  })
+
+  // Notify super admins
+  await notifySuperAdminsOfPostAction("create", ctx.actorId, {
+    id: sanitized.id,
+    title: sanitized.title,
+    slug: sanitized.slug,
+  })
+
+  resourceLogger.actionFlow({
+    resource: "posts",
+    action: "create",
+    step: "success",
+    metadata: { postId: sanitized.id, postTitle: sanitized.title },
+  })
 
   return sanitized
 }
@@ -122,13 +160,38 @@ export async function updatePost(
   postId: string,
   input: UpdatePostSchema
 ) {
+  resourceLogger.actionFlow({
+    resource: "posts",
+    action: "update",
+    step: "start",
+    metadata: { postId, actorId: ctx.actorId },
+  })
+
   ensurePermission(ctx, PERMISSIONS.POSTS_UPDATE, PERMISSIONS.POSTS_MANAGE)
 
   const validated = updatePostSchema.parse(input)
 
   const existing = await prisma.post.findUnique({ where: { id: postId } })
   if (!existing) {
+    resourceLogger.actionFlow({
+      resource: "posts",
+      action: "update",
+      step: "error",
+      metadata: { postId, error: "Post not found" },
+    })
     throw new NotFoundError("Bài viết không tồn tại")
+  }
+
+  // Track changes for notification
+  const changes: {
+    title?: { old: string; new: string }
+    published?: { old: boolean; new: boolean }
+  } = {}
+  if (validated.title !== undefined && validated.title !== existing.title) {
+    changes.title = { old: existing.title, new: validated.title }
+  }
+  if (validated.published !== undefined && validated.published !== existing.published) {
+    changes.published = { old: existing.published, new: validated.published }
   }
 
   // Chỉ super admin mới được thay đổi tác giả, user khác không được phép
@@ -239,6 +302,14 @@ export async function updatePost(
     additionalTags: ["active-posts"],
   })
 
+  resourceLogger.cache({
+    resource: "posts",
+    action: "cache-invalidate",
+    operation: "invalidate",
+    resourceId: postId,
+    additionalTags: ["active-posts"],
+  })
+
   // Revalidate public cache nếu bài viết đã được publish
   if (post.published && post.publishedAt) {
     // Update tags immediately (read-your-own-writes semantics)
@@ -284,14 +355,49 @@ export async function updatePost(
   // Emit socket event for real-time updates
   await emitPostUpsert(sanitized.id, previousStatus)
 
+  resourceLogger.socket({
+    resource: "posts",
+    event: "post:upsert",
+    action: "socket-update",
+    resourceId: sanitized.id,
+    payload: { postId: sanitized.id, previousStatus },
+  })
+
+  // Notify super admins
+  await notifySuperAdminsOfPostAction("update", ctx.actorId, {
+    id: sanitized.id,
+    title: sanitized.title,
+    slug: sanitized.slug,
+  }, Object.keys(changes).length > 0 ? changes : undefined)
+
+  resourceLogger.actionFlow({
+    resource: "posts",
+    action: "update",
+    step: "success",
+    metadata: { postId: sanitized.id, postTitle: sanitized.title, changes: Object.keys(changes) },
+  })
+
   return sanitized
 }
 
 export async function deletePost(ctx: AuthContext, postId: string) {
+  resourceLogger.actionFlow({
+    resource: "posts",
+    action: "delete",
+    step: "start",
+    metadata: { postId, actorId: ctx.actorId },
+  })
+
   ensurePermission(ctx, PERMISSIONS.POSTS_DELETE, PERMISSIONS.POSTS_MANAGE)
 
   const existing = await prisma.post.findUnique({ where: { id: postId } })
   if (!existing) {
+    resourceLogger.actionFlow({
+      resource: "posts",
+      action: "delete",
+      step: "error",
+      metadata: { postId, error: "Post not found" },
+    })
     throw new NotFoundError("Bài viết không tồn tại")
   }
 
@@ -304,6 +410,14 @@ export async function deletePost(ctx: AuthContext, postId: string) {
   await invalidateResourceCache({
     resource: "posts",
     id: postId,
+    additionalTags: ["active-posts"],
+  })
+
+  resourceLogger.cache({
+    resource: "posts",
+    action: "cache-invalidate",
+    operation: "invalidate",
+    resourceId: postId,
     additionalTags: ["active-posts"],
   })
 
@@ -322,14 +436,49 @@ export async function deletePost(ctx: AuthContext, postId: string) {
   // Emit socket event for real-time updates
   await emitPostUpsert(postId, "active")
 
+  resourceLogger.socket({
+    resource: "posts",
+    event: "post:upsert",
+    action: "socket-update",
+    resourceId: postId,
+    payload: { postId, previousStatus: "active" },
+  })
+
+  // Notify super admins
+  await notifySuperAdminsOfPostAction("delete", ctx.actorId, {
+    id: postId,
+    title: existing.title,
+    slug: existing.slug,
+  })
+
+  resourceLogger.actionFlow({
+    resource: "posts",
+    action: "delete",
+    step: "success",
+    metadata: { postId, postTitle: existing.title },
+  })
+
   return { success: true }
 }
 
 export async function restorePost(ctx: AuthContext, postId: string) {
+  resourceLogger.actionFlow({
+    resource: "posts",
+    action: "restore",
+    step: "start",
+    metadata: { postId, actorId: ctx.actorId },
+  })
+
   ensurePermission(ctx, PERMISSIONS.POSTS_UPDATE, PERMISSIONS.POSTS_MANAGE)
 
   const existing = await prisma.post.findUnique({ where: { id: postId } })
   if (!existing) {
+    resourceLogger.actionFlow({
+      resource: "posts",
+      action: "restore",
+      step: "error",
+      metadata: { postId, error: "Post not found" },
+    })
     throw new NotFoundError("Bài viết không tồn tại")
   }
 
@@ -342,6 +491,14 @@ export async function restorePost(ctx: AuthContext, postId: string) {
   await invalidateResourceCache({
     resource: "posts",
     id: postId,
+    additionalTags: ["active-posts"],
+  })
+
+  resourceLogger.cache({
+    resource: "posts",
+    action: "cache-invalidate",
+    operation: "invalidate",
+    resourceId: postId,
     additionalTags: ["active-posts"],
   })
 
@@ -360,14 +517,49 @@ export async function restorePost(ctx: AuthContext, postId: string) {
   // Emit socket event for real-time updates
   await emitPostUpsert(postId, "deleted")
 
+  resourceLogger.socket({
+    resource: "posts",
+    event: "post:upsert",
+    action: "socket-update",
+    resourceId: postId,
+    payload: { postId, previousStatus: "deleted" },
+  })
+
+  // Notify super admins
+  await notifySuperAdminsOfPostAction("restore", ctx.actorId, {
+    id: postId,
+    title: existing.title,
+    slug: existing.slug,
+  })
+
+  resourceLogger.actionFlow({
+    resource: "posts",
+    action: "restore",
+    step: "success",
+    metadata: { postId, postTitle: existing.title },
+  })
+
   return { success: true }
 }
 
 export async function hardDeletePost(ctx: AuthContext, postId: string) {
+  resourceLogger.actionFlow({
+    resource: "posts",
+    action: "hard-delete",
+    step: "start",
+    metadata: { postId, actorId: ctx.actorId },
+  })
+
   ensurePermission(ctx, PERMISSIONS.POSTS_MANAGE)
 
   const existing = await prisma.post.findUnique({ where: { id: postId } })
   if (!existing) {
+    resourceLogger.actionFlow({
+      resource: "posts",
+      action: "hard-delete",
+      step: "error",
+      metadata: { postId, error: "Post not found" },
+    })
     throw new NotFoundError("Bài viết không tồn tại")
   }
 
@@ -380,6 +572,14 @@ export async function hardDeletePost(ctx: AuthContext, postId: string) {
   await invalidateResourceCache({
     resource: "posts",
     id: postId,
+    additionalTags: ["active-posts"],
+  })
+
+  resourceLogger.cache({
+    resource: "posts",
+    action: "cache-invalidate",
+    operation: "invalidate",
+    resourceId: postId,
     additionalTags: ["active-posts"],
   })
 
@@ -398,6 +598,28 @@ export async function hardDeletePost(ctx: AuthContext, postId: string) {
   // Emit socket event for real-time updates
   emitPostRemove(postId, previousStatus)
 
+  resourceLogger.socket({
+    resource: "posts",
+    event: "post:remove",
+    action: "socket-update",
+    resourceId: postId,
+    payload: { postId, previousStatus },
+  })
+
+  // Notify super admins
+  await notifySuperAdminsOfPostAction("hard-delete", ctx.actorId, {
+    id: postId,
+    title: existing.title,
+    slug: existing.slug,
+  })
+
+  resourceLogger.actionFlow({
+    resource: "posts",
+    action: "hard-delete",
+    step: "success",
+    metadata: { postId, postTitle: existing.title },
+  })
+
   return { success: true }
 }
 
@@ -406,6 +628,15 @@ export async function bulkPostsAction(
   action: "delete" | "restore" | "hard-delete",
   postIds: string[]
 ): Promise<BulkActionResult> {
+  const actionType = action === "delete" ? "bulk-delete" : action === "restore" ? "bulk-restore" : "bulk-hard-delete"
+  
+  resourceLogger.actionFlow({
+    resource: "posts",
+    action: actionType,
+    step: "start",
+    metadata: { count: postIds.length, postIds, actorId: ctx.actorId },
+  })
+
   if (action === "hard-delete") {
     ensurePermission(ctx, PERMISSIONS.POSTS_MANAGE)
   } else if (action === "delete") {
@@ -415,11 +646,17 @@ export async function bulkPostsAction(
   }
 
   if (postIds.length === 0) {
+    resourceLogger.actionFlow({
+      resource: "posts",
+      action: actionType,
+      step: "error",
+      metadata: { error: "No posts selected" },
+    })
     throw new ApplicationError("Không có bài viết nào được chọn", 400)
   }
 
   let count = 0
-  let posts: Array<{ id: string; deletedAt: Date | null; slug: string; published: boolean; publishedAt: Date | null }> = []
+  let posts: Array<{ id: string; deletedAt: Date | null; slug: string; published: boolean; publishedAt: Date | null; title?: string }> = []
 
   if (action === "delete") {
     // Lấy thông tin posts trước khi delete để emit socket events và revalidate cache
@@ -428,7 +665,7 @@ export async function bulkPostsAction(
         id: { in: postIds },
         deletedAt: null,
       },
-      select: { id: true, deletedAt: true, slug: true, published: true, publishedAt: true },
+      select: { id: true, deletedAt: true, slug: true, published: true, publishedAt: true, title: true },
     })
 
     count = (
@@ -438,18 +675,10 @@ export async function bulkPostsAction(
       })
     ).count
 
-    // Emit socket events để update UI - await song song để đảm bảo tất cả events được emit
-    // Sử dụng Promise.allSettled để không bị fail nếu một event lỗi
+    // Batch emit thay vì từng record
     if (count > 0) {
-      // Emit events song song và await tất cả để đảm bảo hoàn thành
-      const emitPromises = posts.map((post) => 
-        emitPostUpsert(post.id, "active").catch((error) => {
-          logger.error(`Failed to emit post:upsert for ${post.id}`, error as Error)
-          return null // Return null để Promise.allSettled không throw
-        })
-      )
-      // Await tất cả events nhưng không fail nếu một số lỗi
-      await Promise.allSettled(emitPromises)
+      const { emitBatchPostUpsert } = await import("./events")
+      await emitBatchPostUpsert(posts.map(p => p.id), "active")
     }
   } else if (action === "restore") {
     // Tìm tất cả posts được request để phân loại trạng thái
@@ -457,7 +686,7 @@ export async function bulkPostsAction(
       where: {
         id: { in: postIds },
       },
-      select: { id: true, deletedAt: true, slug: true, published: true, publishedAt: true, createdAt: true },
+      select: { id: true, deletedAt: true, slug: true, published: true, publishedAt: true, createdAt: true, title: true },
     })
 
     // Phân loại posts
@@ -466,22 +695,17 @@ export async function bulkPostsAction(
     const notFoundCount = postIds.length - allRequestedPosts.length
 
     // Log chi tiết để debug
-    logger.debug("bulkPostsAction restore: Post status analysis", {
-      requested: postIds.length,
-      found: allRequestedPosts.length,
-      softDeleted: softDeletedPosts.length,
-      active: activePosts.length,
-      notFound: notFoundCount,
-      requestedIds: postIds,
-      foundIds: allRequestedPosts.map((p) => p.id),
-      softDeletedIds: softDeletedPosts.map((p) => p.id),
-      activeIds: activePosts.map((p) => p.id),
-      softDeletedDetails: softDeletedPosts.map((p) => ({
-        id: p.id,
-        slug: p.slug,
-        deletedAt: p.deletedAt,
-        createdAt: p.createdAt,
-      })),
+    resourceLogger.actionFlow({
+      resource: "posts",
+      action: actionType,
+      step: "start",
+      metadata: {
+        requested: postIds.length,
+        found: allRequestedPosts.length,
+        softDeleted: softDeletedPosts.length,
+        active: activePosts.length,
+        notFound: notFoundCount,
+      },
     })
 
     // Nếu không có post nào đã bị soft delete, trả về message chi tiết
@@ -517,23 +741,10 @@ export async function bulkPostsAction(
       })
     ).count
 
-    logger.debug("bulkPostsAction restore: Restored posts", {
-      restoredCount: count,
-      totalSoftDeletedFound: softDeletedPosts.length,
-    })
-
-    // Emit socket events để update UI - await song song để đảm bảo tất cả events được emit
-    // Sử dụng Promise.allSettled để không bị fail nếu một event lỗi
+    // Batch emit thay vì từng record
     if (count > 0) {
-      // Emit events song song và await tất cả để đảm bảo hoàn thành
-      const emitPromises = posts.map((post) => 
-        emitPostUpsert(post.id, "deleted").catch((error) => {
-          logger.error(`Failed to emit post:upsert for ${post.id}`, error as Error)
-          return null // Return null để Promise.allSettled không throw
-        })
-      )
-      // Await tất cả events nhưng không fail nếu một số lỗi
-      await Promise.allSettled(emitPromises)
+      const { emitBatchPostUpsert } = await import("./events")
+      await emitBatchPostUpsert(posts.map(p => p.id), "deleted")
     }
   } else if (action === "hard-delete") {
     // Lấy thông tin posts trước khi delete để emit socket events và revalidate cache
@@ -541,7 +752,7 @@ export async function bulkPostsAction(
       where: {
         id: { in: postIds },
       },
-      select: { id: true, deletedAt: true, slug: true, published: true, publishedAt: true },
+      select: { id: true, deletedAt: true, slug: true, published: true, publishedAt: true, title: true },
     })
 
     count = (
@@ -550,23 +761,30 @@ export async function bulkPostsAction(
       })
     ).count
 
-    // Emit socket events để update UI - fire and forget để tránh timeout
-    // Emit song song cho tất cả posts đã bị hard delete
+    // Emit batch remove events
     if (count > 0) {
-      posts.forEach((post) => {
-        const previousStatus: "active" | "deleted" = post.deletedAt ? "deleted" : "active"
-        try {
-          emitPostRemove(post.id, previousStatus)
-        } catch (error) {
-          logger.error(`Failed to emit post:remove for ${post.id}`, error as Error)
-        }
-      })
+      const { getSocketServer } = await import("@/lib/socket/state")
+      const io = getSocketServer()
+      if (io) {
+        const removeEvents = posts.map((post) => ({
+          id: post.id,
+          previousStatus: (post.deletedAt ? "deleted" : "active") as PostStatus,
+        }))
+        io.to("role:super_admin").emit("post:batch-remove", { posts: removeEvents })
+      }
     }
   }
 
   // Invalidate admin cache cho bulk operation
   await invalidateResourceCacheBulk({
     resource: "posts",
+    additionalTags: ["active-posts"],
+  })
+
+  resourceLogger.cache({
+    resource: "posts",
+    action: "cache-invalidate",
+    operation: "invalidate",
     additionalTags: ["active-posts"],
   })
 
@@ -604,6 +822,23 @@ export async function bulkPostsAction(
   } else if (action === "hard-delete") {
     successMessage = `Đã xóa vĩnh viễn ${count} bài viết`
   }
+
+  // Notify super admins with post titles
+  if (count > 0) {
+    await notifySuperAdminsOfBulkPostAction(
+      action,
+      ctx.actorId,
+      count,
+      posts.map(p => ({ title: p.title || "Untitled" }))
+    )
+  }
+
+  resourceLogger.actionFlow({
+    resource: "posts",
+    action: actionType,
+    step: "success",
+    metadata: { count, affected: count },
+  })
 
   return { success: true, message: successMessage, affected: count }
 }

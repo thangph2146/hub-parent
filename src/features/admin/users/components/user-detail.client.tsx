@@ -8,6 +8,7 @@ import {
   type ResourceDetailField, 
   type ResourceDetailSection 
 } from "@/features/admin/resources/components"
+import { useResourceDetailData } from "@/features/admin/resources/hooks"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -16,6 +17,8 @@ import { Separator } from "@/components/ui/separator"
 import { useResourceRouter } from "@/hooks/use-resource-segment"
 import { formatDateVi, getUserInitials } from "../utils"
 import { cn } from "@/lib/utils"
+import { resourceLogger } from "@/lib/config"
+import { queryKeys } from "@/lib/query-keys"
 
 export interface UserDetailData {
   id: string
@@ -45,6 +48,36 @@ export interface UserDetailClientProps {
 
 export function UserDetailClient({ userId, user, backUrl = "/admin/users" }: UserDetailClientProps) {
   const router = useResourceRouter()
+  
+  // Sử dụng React Query cache nếu có, fallback về initial data
+  const detailData = useResourceDetailData({
+    initialData: user,
+    resourceId: userId,
+    detailQueryKey: queryKeys.adminUsers.detail,
+    resourceName: "users",
+  })
+
+  // Log detail action và data structure (chỉ log một lần)
+  const loggedUserIds = React.useRef<Set<string>>(new Set())
+  React.useEffect(() => {
+    if (!loggedUserIds.current.has(userId)) {
+      loggedUserIds.current.add(userId)
+      
+      resourceLogger.detailAction({
+        resource: "users",
+        action: "load-detail",
+        resourceId: userId,
+        userName: detailData.name || detailData.email,
+        userEmail: detailData.email,
+      })
+
+      resourceLogger.dataStructure({
+        resource: "users",
+        dataType: "detail",
+        structure: detailData,
+      })
+    }
+  }, [userId, detailData])
 
   const detailFields: ResourceDetailField<UserDetailData>[] = []
 
@@ -58,30 +91,30 @@ export function UserDetailClient({ userId, user, backUrl = "/admin/users" }: Use
           <div className="relative">
             <Avatar className="h-24 w-24 border-2 border-border">
               <AvatarImage 
-                src={user.avatar || undefined} 
-                alt={user.name || user.email}
+                src={detailData.avatar || undefined} 
+                alt={detailData.name || detailData.email}
                 referrerPolicy="no-referrer"
                 crossOrigin="anonymous"
               />
               <AvatarFallback className="text-lg font-bold bg-gradient-to-br from-primary to-chart-1 text-primary-foreground">
-                {getUserInitials(user.name, user.email)}
+                {getUserInitials(detailData.name, detailData.email)}
               </AvatarFallback>
             </Avatar>
-            {user.isActive && (
+            {detailData.isActive && (
               <div className="absolute -bottom-1 -right-1 h-6 w-6 rounded-full bg-green-500 border-2 border-background flex items-center justify-center">
                 <CheckCircle2 className="h-3.5 w-3.5 text-white" />
               </div>
             )}
           </div>
           <div className="flex-1">
-            <h3 className="text-lg font-semibold">{user.name || "Chưa có tên"}</h3>
+            <h3 className="text-lg font-semibold">{detailData.name || "Chưa có tên"}</h3>
             <p className="text-sm text-muted-foreground flex items-center gap-2 mt-1">
               <Mail className="h-4 w-4" />
-              {user.email}
+              {detailData.email}
             </p>
-            {user.roles && user.roles.length > 0 && (
+            {detailData.roles && detailData.roles.length > 0 && (
               <div className="flex flex-wrap items-center gap-2 mt-2">
-                {user.roles.map((role) => (
+                {detailData.roles.map((role) => (
                   <Badge
                     key={role.name}
                     variant="outline"
@@ -281,11 +314,11 @@ export function UserDetailClient({ userId, user, backUrl = "/admin/users" }: Use
 
   return (
     <ResourceDetailPage<UserDetailData>
-      data={user}
+      data={detailData}
       fields={detailFields}
       detailSections={detailSections}
-      title={user.name || user.email}
-      description={`Chi tiết người dùng ${user.email}`}
+      title={detailData.name || detailData.email}
+      description={`Chi tiết người dùng ${detailData.email}`}
       backUrl={backUrl}
       backLabel="Quay lại danh sách"
       actions={

@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { Hash, User, Calendar, Clock, Edit, Eye, EyeOff, CheckCircle2, Tag, Tags } from "lucide-react"
-import { logger } from "@/lib/config"
+import { resourceLogger } from "@/lib/config"
 import { 
   ResourceDetailPage, 
   FieldItem,
@@ -19,7 +19,7 @@ import type { SerializedEditorState } from "lexical"
 import type { Prisma } from "@prisma/client"
 import { useQueryClient } from "@tanstack/react-query"
 import { queryKeys } from "@/lib/query-keys"
-import { useResourceNavigation } from "@/features/admin/resources/hooks"
+import { useResourceNavigation, useResourceDetailData } from "@/features/admin/resources/hooks"
 
 export interface PostDetailData {
   id: string
@@ -61,6 +61,39 @@ export function PostDetailClient({ postId, post, backUrl = "/admin/posts" }: Pos
     queryClient,
     invalidateQueryKey: queryKeys.adminPosts.all(),
   })
+
+  // Use React Query cache for latest data, fallback to Server Component props
+  const detailData = useResourceDetailData({
+    initialData: post,
+    resourceId: postId,
+    detailQueryKey: queryKeys.adminPosts.detail,
+    resourceName: "posts",
+  })
+
+  // Log detail load and data structure (only once per postId)
+  const loggedPostIdsRef = React.useRef<Set<string>>(new Set())
+  React.useEffect(() => {
+    if (!loggedPostIdsRef.current.has(postId) && detailData) {
+      loggedPostIdsRef.current.add(postId)
+      
+      resourceLogger.detailAction({
+        resource: "posts",
+        action: "load-detail",
+        resourceId: postId,
+        metadata: {
+          postId,
+          postTitle: detailData.title,
+          postSlug: detailData.slug,
+        },
+      })
+
+      resourceLogger.dataStructure({
+        resource: "posts",
+        dataType: "detail",
+        structure: detailData,
+      })
+    }
+  }, [postId, detailData])
 
   const detailFields: ResourceDetailField<PostDetailData>[] = []
 
@@ -253,7 +286,12 @@ export function PostDetailClient({ postId, post, backUrl = "/admin/posts" }: Pos
             editorState = postData.content as unknown as SerializedEditorState
           }
         } catch (error) {
-          logger.error("Failed to parse editor state", error as Error)
+          resourceLogger.actionFlow({
+            resource: "posts",
+            action: "load-detail",
+            step: "error",
+            metadata: { postId, error: error instanceof Error ? error.message : String(error) },
+          })
         }
 
         return (
@@ -278,9 +316,9 @@ export function PostDetailClient({ postId, post, backUrl = "/admin/posts" }: Pos
 
   return (
     <ResourceDetailPage<PostDetailData>
-      title={post.title}
-      description={`Chi tiết bài viết ${post.slug}`}
-      data={post}
+      title={detailData.title}
+      description={`Chi tiết bài viết ${detailData.slug}`}
+      data={detailData}
       fields={detailFields}
       detailSections={detailSections}
       backUrl={backUrl}
@@ -289,7 +327,7 @@ export function PostDetailClient({ postId, post, backUrl = "/admin/posts" }: Pos
       actions={
         <Button
           variant="outline"
-          onClick={() => router.push(`/admin/posts/${postId}/edit`)}
+          onClick={() => router.push(`/admin/posts/${detailData.id}/edit`)}
           className="gap-2"
         >
           <Edit className="h-4 w-4" />

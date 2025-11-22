@@ -7,14 +7,14 @@
 
 "use client"
 
+import { useQueryClient } from "@tanstack/react-query"
 import { ResourceForm } from "@/features/admin/resources/components"
 import { useResourceFormSubmit, useResourceNavigation } from "@/features/admin/resources/hooks"
+import { createResourceEditOnSuccess } from "@/features/admin/resources/utils"
 import { apiRoutes } from "@/lib/api/routes"
 import { queryKeys } from "@/lib/query-keys"
-import { resourceLogger } from "@/lib/config"
 import { getBaseCategoryFields, type CategoryFormData } from "../form-fields"
 import type { CategoryRow } from "../types"
-import { useQueryClient } from "@tanstack/react-query"
 
 interface CategoryEditData extends CategoryRow {
   slug: string
@@ -67,34 +67,15 @@ export function CategoryEditClient({
           : undefined,
       fallback: backUrl,
     },
-    onSuccess: async (response) => {
-      const targetCategoryId = category?.id
-      
-      resourceLogger.actionFlow({
-        resource: "categories",
-        action: "update",
-        step: "success",
-        metadata: {
-          categoryId: targetCategoryId,
-          responseStatus: response?.status,
-        },
-      })
-
-      // Invalidate React Query cache để cập nhật danh sách categories
-      await queryClient.invalidateQueries({ queryKey: queryKeys.adminCategories.all(), refetchType: "all" })
-      
-      // Invalidate detail query nếu có categoryId
-      if (targetCategoryId) {
-        await queryClient.invalidateQueries({ queryKey: queryKeys.adminCategories.detail(targetCategoryId) })
-      }
-      
-      // Refetch để đảm bảo data mới nhất
-      await queryClient.refetchQueries({ queryKey: queryKeys.adminCategories.all(), type: "all" })
-      
-      if (onSuccess) {
-        onSuccess()
-      }
-    },
+    onSuccess: createResourceEditOnSuccess({
+      queryClient,
+      resourceId: category?.id,
+      allQueryKey: queryKeys.adminCategories.all(),
+      detailQueryKey: queryKeys.adminCategories.detail,
+      resourceName: "categories",
+      getRecordName: (data) => data.name as string | undefined,
+      onSuccess,
+    }),
   })
 
   if (!category?.id) {

@@ -19,13 +19,22 @@ export function useResourceTableLoader<T extends object, P>({
   fetcher,
   buildParams,
   buildQueryKey,
-  staleTime = 0, // Set staleTime = 0 để data luôn được coi là stale và có thể refetch
+  staleTime = Infinity, // Set staleTime = Infinity để luôn ưu tiên cache từ socket updates
 }: UseResourceTableLoaderOptions<T, P>): ResourceTableLoader<T> {
   return useCallback<ResourceTableLoader<T>>(
     async (query, view) => {
       const params = buildParams({ query, view })
       const queryKey = buildQueryKey(params)
 
+      // Kiểm tra cache trước - ưu tiên cache từ socket updates
+      const cachedData = queryClient.getQueryData<DataTableResult<T>>(queryKey)
+      if (cachedData) {
+        // Return cache ngay để dùng data từ socket updates
+        // fetchQuery sẽ được gọi trong background nếu cần
+        return cachedData
+      }
+
+      // Nếu không có cache, fetch từ server
       return queryClient.fetchQuery({
         queryKey,
         staleTime,

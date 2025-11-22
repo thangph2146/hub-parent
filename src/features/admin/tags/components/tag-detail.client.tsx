@@ -1,7 +1,6 @@
 "use client"
 
-import { useEffect, useRef } from "react"
-import { useQueryClient } from "@tanstack/react-query"
+import { useEffect } from "react"
 import { Tag, Hash, Calendar, Clock, Edit } from "lucide-react"
 import { 
   ResourceDetailPage, 
@@ -14,7 +13,7 @@ import { Separator } from "@/components/ui/separator"
 import { queryKeys } from "@/lib/query-keys"
 import { resourceLogger } from "@/lib/config"
 import { formatDateVi } from "../utils"
-import { useResourceNavigation } from "@/features/admin/resources/hooks"
+import { useResourceNavigation, useResourceDetailData } from "@/features/admin/resources/hooks"
 
 export interface TagDetailData {
   id: string
@@ -36,10 +35,16 @@ export interface TagDetailClientProps {
 const loggedTagIds = new Set<string>()
 
 export function TagDetailClient({ tagId, tag, backUrl = "/admin/tags" }: TagDetailClientProps) {
-  const queryClient = useQueryClient()
   const { navigateBack, router } = useResourceNavigation({
-    queryClient,
     invalidateQueryKey: queryKeys.adminTags.all(),
+  })
+
+  // Ưu tiên sử dụng React Query cache nếu có (dữ liệu mới nhất sau khi edit), fallback về props
+  const detailData = useResourceDetailData({
+    initialData: tag,
+    resourceId: tagId,
+    detailQueryKey: queryKeys.adminTags.detail,
+    resourceName: "tags",
   })
 
   // Log detail load một lần cho mỗi tagId (tránh duplicate trong React Strict Mode)
@@ -52,31 +57,30 @@ export function TagDetailClient({ tagId, tag, backUrl = "/admin/tags" }: TagDeta
       resource: "tags",
       action: "load-detail",
       resourceId: tagId,
-      tagName: tag.name,
-      tagSlug: tag.slug,
+      tagName: detailData.name,
+      tagSlug: detailData.slug,
     })
 
     resourceLogger.dataStructure({
       resource: "tags",
       dataType: "detail",
       structure: {
-        id: tag.id,
-        name: tag.name,
-        slug: tag.slug,
-        createdAt: tag.createdAt,
-        updatedAt: tag.updatedAt,
-        deletedAt: tag.deletedAt,
+        id: detailData.id,
+        name: detailData.name,
+        slug: detailData.slug,
+        createdAt: detailData.createdAt,
+        updatedAt: detailData.updatedAt,
+        deletedAt: detailData.deletedAt,
       },
     })
 
     // Cleanup khi component unmount hoặc tagId thay đổi
     return () => {
-      // Chỉ cleanup sau một khoảng thời gian để tránh log lại khi navigate nhanh
       setTimeout(() => {
         loggedTagIds.delete(logKey)
       }, 1000)
     }
-  }, [tagId, tag.id, tag.name, tag.slug, tag.createdAt, tag.updatedAt, tag.deletedAt])
+  }, [tagId, detailData.id, detailData.name, detailData.slug, detailData.createdAt, detailData.updatedAt, detailData.deletedAt])
 
   const detailFields: ResourceDetailField<TagDetailData>[] = []
 
@@ -129,11 +133,11 @@ export function TagDetailClient({ tagId, tag, backUrl = "/admin/tags" }: TagDeta
 
   return (
     <ResourceDetailPage<TagDetailData>
-      data={tag}
+      data={detailData}
       fields={detailFields}
       detailSections={detailSections}
-      title={tag.name}
-      description={`Chi tiết thẻ tag ${tag.slug}`}
+      title={detailData.name}
+      description={`Chi tiết thẻ tag ${detailData.slug}`}
       backUrl={backUrl}
       backLabel="Quay lại danh sách"
       onBack={() => navigateBack(backUrl)}

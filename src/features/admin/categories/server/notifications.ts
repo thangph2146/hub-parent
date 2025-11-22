@@ -3,7 +3,7 @@
  */
 
 import { prisma } from "@/lib/database"
-import { logger } from "@/lib/config"
+import { resourceLogger } from "@/lib/config"
 import { getSocketServer, storeNotificationInCache, mapNotificationToPayload } from "@/lib/socket/state"
 import { createNotificationForSuperAdmins } from "@/features/admin/notifications/server/mutations"
 import { NotificationKind } from "@prisma/client"
@@ -20,6 +20,22 @@ async function getActorInfo(actorId: string) {
 }
 
 /**
+ * Format category names cho notification description
+ * Hiển thị tối đa 5 tên đầu tiên, nếu nhiều hơn sẽ hiển thị "... và X danh mục khác"
+ */
+function formatCategoryNames(categories: Array<{ name: string }>, maxNames = 5): string {
+  if (!categories || categories.length === 0) return ""
+  
+  const displayNames = categories.slice(0, maxNames).map(c => `"${c.name}"`)
+  const remainingCount = categories.length > maxNames ? categories.length - maxNames : 0
+  
+  if (remainingCount > 0) {
+    return `${displayNames.join(", ")} và ${remainingCount} danh mục khác`
+  }
+  return displayNames.join(", ")
+}
+
+/**
  * Helper function để tạo system notification cho super admin về category actions
  */
 export async function notifySuperAdminsOfCategoryAction(
@@ -33,15 +49,6 @@ export async function notifySuperAdminsOfCategoryAction(
   }
 ) {
   try {
-    logger.debug("[notifySuperAdmins] Starting notification", {
-      action,
-      actorId,
-      categoryId: category.id,
-      categoryName: category.name,
-      hasChanges: !!changes,
-      changesKeys: changes ? Object.keys(changes) : [],
-    })
-
     const actor = await getActorInfo(actorId)
     const actorName = actor?.name || actor?.email || "Hệ thống"
 
@@ -85,12 +92,6 @@ export async function notifySuperAdminsOfCategoryAction(
     }
 
     // Tạo notifications trong DB cho tất cả super admins
-    logger.debug("[notifySuperAdmins] Creating notifications in DB", {
-      title,
-      description,
-      actionUrl,
-      action,
-    })
     const result = await createNotificationForSuperAdmins(
       title,
       description,
@@ -108,17 +109,9 @@ export async function notifySuperAdminsOfCategoryAction(
         timestamp: new Date().toISOString(),
       }
     )
-    logger.debug("[notifySuperAdmins] Notifications created", {
-      count: result.count,
-      action,
-    })
 
     // Emit socket event nếu có socket server
     const io = getSocketServer()
-    logger.debug("[notifySuperAdmins] Socket server status", {
-      hasSocketServer: !!io,
-      notificationCount: result.count,
-    })
     if (io && result.count > 0) {
       // Lấy danh sách super admins để emit đến từng user room
       const superAdmins = await prisma.user.findMany({
@@ -136,11 +129,6 @@ export async function notifySuperAdminsOfCategoryAction(
           },
         },
         select: { id: true },
-      })
-
-      logger.debug("[notifySuperAdmins] Found super admins", {
-        count: superAdmins.length,
-        adminIds: superAdmins.map((a) => a.id),
       })
 
       // Fetch notifications vừa tạo từ database để lấy IDs thực tế
@@ -173,11 +161,6 @@ export async function notifySuperAdminsOfCategoryAction(
           const socketNotification = mapNotificationToPayload(dbNotification)
           storeNotificationInCache(admin.id, socketNotification)
           io.to(`user:${admin.id}`).emit("notification:new", socketNotification)
-          logger.debug("[notifySuperAdmins] Emitted to user room", {
-            adminId: admin.id,
-            room: `user:${admin.id}`,
-            notificationId: dbNotification.id,
-          })
         } else {
           // Fallback nếu không tìm thấy notification trong database
           const fallbackNotification = {
@@ -199,10 +182,6 @@ export async function notifySuperAdminsOfCategoryAction(
           }
           storeNotificationInCache(admin.id, fallbackNotification)
           io.to(`user:${admin.id}`).emit("notification:new", fallbackNotification)
-          logger.debug("[notifySuperAdmins] Emitted fallback notification to user room", {
-            adminId: admin.id,
-            room: `user:${admin.id}`,
-          })
         }
       }
 
@@ -210,12 +189,16 @@ export async function notifySuperAdminsOfCategoryAction(
       if (createdNotifications.length > 0) {
         const roleNotification = mapNotificationToPayload(createdNotifications[0])
         io.to("role:super_admin").emit("notification:new", roleNotification)
-        logger.debug("[notifySuperAdmins] Emitted to role room: role:super_admin")
       }
     }
   } catch (error) {
     // Log error nhưng không throw để không ảnh hưởng đến main operation
-    logger.error("[notifications] Failed to notify super admins of category action", error as Error)
+    resourceLogger.actionFlow({
+      resource: "categories",
+      action: action === "create" ? "create" : action === "update" ? "update" : action === "delete" ? "delete" : action === "restore" ? "restore" : "hard-delete",
+      step: "error",
+      metadata: { categoryId: category.id, error: error instanceof Error ? error.message : String(error) },
+    })
   }
 }
 
@@ -229,6 +212,15 @@ export async function notifySuperAdminsOfBulkCategoryAction(
   count: number,
   categories?: Array<{ name: string }>
 ) {
+  const startTime = Date.now()
+  
+  resourceLogger.actionFlow({
+    resource: "categories",
+    action: action === "delete" ? "bulk-delete" : action === "restore" ? "bulk-restore" : "bulk-hard-delete",
+    step: "start",
+    metadata: { count, categoryCount: categories?.length || 0, actorId },
+  })
+
   try {
     const actor = await getActorInfo(actorId)
     const actorName = actor?.name || actor?.email || "Hệ thống"
@@ -236,14 +228,8 @@ export async function notifySuperAdminsOfBulkCategoryAction(
     let title = ""
     let description = ""
 
-    // Tạo danh sách tên categories (tối ưu để hiển thị đẹp trong line-clamp-2)
-    // Hiển thị tối đa 10 tên, nếu nhiều hơn sẽ hiển thị "... và X danh mục khác"
-    const maxNames = 10
-    const categoryNames = categories?.slice(0, maxNames).map(c => c.name) || []
-    const remainingCount = categories && categories.length > maxNames ? categories.length - maxNames : 0
-    const namesText = categoryNames.length > 0 
-      ? categoryNames.join(", ") + (remainingCount > 0 ? ` và ${remainingCount} danh mục khác` : "")
-      : ""
+    // Format category names - hiển thị tối đa 5 tên đầu tiên
+    const namesText = categories && categories.length > 0 ? formatCategoryNames(categories, 5) : ""
 
     switch (action) {
       case "delete":
@@ -336,8 +322,21 @@ export async function notifySuperAdminsOfBulkCategoryAction(
         io.to("role:super_admin").emit("notification:new", roleNotification)
       }
     }
+
+    resourceLogger.actionFlow({
+      resource: "categories",
+      action: action === "delete" ? "bulk-delete" : action === "restore" ? "bulk-restore" : "bulk-hard-delete",
+      step: "success",
+      duration: Date.now() - startTime,
+      metadata: { count, categoryCount: categories?.length || 0 },
+    })
   } catch (error) {
-    logger.error("[notifications] Failed to notify super admins of bulk category action", error as Error)
+    resourceLogger.actionFlow({
+      resource: "categories",
+      action: action === "delete" ? "bulk-delete" : action === "restore" ? "bulk-restore" : "bulk-hard-delete",
+      step: "error",
+      metadata: { count, error: error instanceof Error ? error.message : String(error) },
+    })
   }
 }
 

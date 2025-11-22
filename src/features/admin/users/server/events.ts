@@ -1,13 +1,13 @@
 /**
  * Socket events emission cho users
- * Tách logic emit socket events ra khỏi mutations để code sạch hơn
+ * Tối ưu với batch updates cho bulk operations
  */
 
 import { prisma } from "@/lib/database"
 import { getSocketServer } from "@/lib/socket/state"
 import { mapUserRecord, serializeUserForTable } from "./helpers"
 import type { UserRow } from "../types"
-import { logger } from "@/lib/config"
+import { resourceLogger } from "@/lib/config"
 
 const SUPER_ADMIN_ROOM = "role:super_admin"
 
@@ -44,18 +44,32 @@ async function fetchUserRow(userId: string): Promise<UserRow | null> {
 }
 
 /**
- * Emit user:upsert event
- * Được gọi khi user được tạo, cập nhật, restore
+ * Emit user:upsert event (single)
  */
 export async function emitUserUpsert(
   userId: string,
   previousStatus: UserStatus | null,
 ): Promise<void> {
   const io = getSocketServer()
-  if (!io) return
+  
+  if (!io) {
+    resourceLogger.actionFlow({
+      resource: "users",
+      action: "socket-update",
+      step: "error",
+      metadata: { userId, error: "Socket server not available", type: "single" },
+    })
+    return
+  }
 
   const row = await fetchUserRow(userId)
   if (!row) {
+    resourceLogger.actionFlow({
+      resource: "users",
+      action: "socket-update",
+      step: "error",
+      metadata: { userId, error: "User not found", type: "single" },
+    })
     if (previousStatus) {
       emitUserRemove(userId, previousStatus)
     }
@@ -64,17 +78,106 @@ export async function emitUserUpsert(
 
   const newStatus = resolveStatusFromRow(row)
 
+  // Log trước khi emit với chi tiết đầy đủ
+  resourceLogger.actionFlow({
+    resource: "users",
+    action: "socket-update",
+    step: "start",
+    metadata: { 
+      userId, 
+      previousStatus, 
+      newStatus, 
+      userName: row.name,
+      userEmail: row.email,
+      type: "single" 
+    },
+  })
+
   io.to(SUPER_ADMIN_ROOM).emit("user:upsert", {
     user: row,
     previousStatus,
     newStatus,
   })
-  logger.debug("Socket user:upsert emitted", { userId, previousStatus, newStatus })
+
+  // Log sau khi emit thành công
+  resourceLogger.actionFlow({
+    resource: "users",
+    action: "socket-update",
+    step: "success",
+    metadata: { userId, userName: row.name, type: "single" },
+  })
+}
+
+/**
+ * Emit batch user:upsert events (tối ưu cho bulk operations)
+ */
+export async function emitBatchUserUpsert(
+  userIds: string[],
+  previousStatus: UserStatus | null,
+): Promise<void> {
+  const io = getSocketServer()
+  if (!io || userIds.length === 0) return
+
+  const startTime = Date.now()
+  resourceLogger.actionFlow({
+    resource: "users",
+    action: "socket-update",
+    step: "start",
+    metadata: { count: userIds.length, previousStatus, type: "batch" },
+  })
+
+  try {
+    // Fetch all users in parallel với error handling
+    const userPromises = userIds.map((id) => 
+      fetchUserRow(id).catch((error) => {
+        resourceLogger.actionFlow({
+          resource: "users",
+          action: "socket-update",
+          step: "error",
+          metadata: { userId: id, error: error instanceof Error ? error.message : String(error) },
+        })
+        return null
+      })
+    )
+    const rows = await Promise.all(userPromises)
+
+    // Filter out nulls and emit events
+    const validRows = rows.filter((row): row is UserRow => row !== null)
+    
+    if (validRows.length > 0) {
+      // Emit batch event với tất cả rows
+      io.to(SUPER_ADMIN_ROOM).emit("user:batch-upsert", {
+        users: validRows.map((row) => ({
+          user: row,
+          previousStatus,
+          newStatus: resolveStatusFromRow(row),
+        })),
+  })
+
+      resourceLogger.actionFlow({
+        resource: "users",
+        action: "socket-update",
+        step: "success",
+        duration: Date.now() - startTime,
+        metadata: { count: validRows.length, emitted: validRows.length, type: "batch" },
+      })
+    }
+  } catch (error) {
+    resourceLogger.actionFlow({
+      resource: "users",
+      action: "socket-update",
+      step: "error",
+      metadata: { 
+        count: userIds.length, 
+        error: error instanceof Error ? error.message : String(error) 
+      },
+    })
+    // Không throw để không làm fail bulk operation
+  }
 }
 
 /**
  * Emit user:remove event
- * Được gọi khi user bị hard delete
  */
 export function emitUserRemove(userId: string, previousStatus: UserStatus): void {
   const io = getSocketServer()
@@ -84,6 +187,5 @@ export function emitUserRemove(userId: string, previousStatus: UserStatus): void
     id: userId,
     previousStatus,
   })
-  logger.debug("Socket user:remove emitted", { userId, previousStatus })
 }
 

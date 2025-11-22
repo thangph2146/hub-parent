@@ -52,6 +52,7 @@ export function useResourceTableRefresh({
   const refreshRef = useRef<(() => void) | null>(null)
   const softRefreshRef = useRef<(() => void) | null>(null)
   const pendingRealtimeRefreshRef = useRef(false)
+  const lastCacheVersionRef = useRef<number | undefined>(undefined)
 
   const refresh = useCallback(async () => {
     if (!refreshRef.current) {
@@ -96,8 +97,10 @@ export function useResourceTableRefresh({
   )
 
   useEffect(() => {
-    if (!cacheVersion) return
+    // Chỉ trigger khi cacheVersion thực sự thay đổi (tránh duplicate trong React Strict Mode)
+    if (!cacheVersion || cacheVersion === lastCacheVersionRef.current) return
 
+    lastCacheVersionRef.current = cacheVersion
     logger.debug("Cache version changed, triggering soft refresh", { cacheVersion })
 
     if (softRefreshRef.current) {

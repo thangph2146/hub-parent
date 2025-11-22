@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react"
 import { useSession } from "next-auth/react"
 import { useQueryClient } from "@tanstack/react-query"
 import { useSocket } from "@/hooks/use-socket"
-import { logger } from "@/lib/config"
+import { resourceLogger } from "@/lib/config"
 import type { CategoryRow } from "../types"
 import type { DataTableResult } from "@/components/tables"
 import { queryKeys, type AdminCategoriesListParams } from "@/lib/query-keys"
@@ -36,28 +36,35 @@ function updateCategoryQueries(
     queryKey: queryKeys.adminCategories.all() as unknown[],
   })
 
-  logger.debug("Found category queries to update", { count: queries.length })
+  resourceLogger.socket({
+    resource: "categories",
+    action: "socket-update",
+    event: "category:queries-found",
+    payload: { count: queries.length },
+  })
 
   for (const [key, data] of queries) {
     if (!Array.isArray(key) || key.length < 2) continue
     const params = key[1] as AdminCategoriesListParams | undefined
     if (!params || !data) {
-      logger.debug("Skipping category query", { hasParams: !!params, hasData: !!data })
       continue
     }
     const next = updater({ key, params, data })
     if (next) {
-      logger.debug("Setting category query data", {
-        queryKey: key.slice(0, 2),
-        oldRowsCount: data.rows.length,
-        newRowsCount: next.rows.length,
-        oldTotal: data.total,
-        newTotal: next.total,
+      resourceLogger.socket({
+        resource: "categories",
+        action: "socket-update",
+        event: "category:query-updated",
+        payload: {
+          queryKey: key.slice(0, 2),
+          oldRowsCount: data.rows.length,
+          newRowsCount: next.rows.length,
+          oldTotal: data.total,
+          newTotal: next.total,
+        },
       })
       queryClient.setQueryData(key, next)
       updated = true
-    } else {
-      logger.debug("Category updater returned null, skipping update")
     }
   }
 
@@ -84,12 +91,18 @@ export function useCategoriesSocketBridge() {
       const { category, previousStatus, newStatus } = payload as CategoryUpsertPayload
       const rowStatus: "active" | "deleted" = category.deletedAt ? "deleted" : "active"
 
-      logger.debug("Received category:upsert", {
-        categoryId: category.id,
-        previousStatus,
-        newStatus,
-        rowStatus,
-        deletedAt: category.deletedAt,
+      resourceLogger.socket({
+        resource: "categories",
+        action: "socket-update",
+        event: "category:upsert",
+        resourceId: category.id,
+        payload: {
+          categoryId: category.id,
+          previousStatus,
+          newStatus,
+          rowStatus,
+          deletedAt: category.deletedAt,
+        },
       })
 
       const updated = updateCategoryQueries(queryClient, ({ params, data }) => {
@@ -97,15 +110,6 @@ export function useCategoriesSocketBridge() {
         const includesByStatus = shouldIncludeInStatus(params.status, rowStatus)
         const existingIndex = data.rows.findIndex((r) => r.id === category.id)
         const shouldInclude = matches && includesByStatus
-
-        logger.debug("Processing category update", {
-          categoryId: category.id,
-          viewStatus: params.status,
-          rowStatus,
-          includesByStatus,
-          existingIndex,
-          shouldInclude,
-        })
 
         if (existingIndex === -1 && !shouldInclude) {
           // Nothing to update for this page
@@ -136,10 +140,16 @@ export function useCategoriesSocketBridge() {
         } else if (existingIndex >= 0) {
           // Category đang ở trong list nhưng không match với view hiện tại (ví dụ: chuyển từ active sang deleted)
           // Remove khỏi page này
-          logger.debug("Removing category from view", {
-            categoryId: category.id,
-            viewStatus: params.status,
-            rowStatus,
+          resourceLogger.socket({
+            resource: "categories",
+            action: "socket-update",
+            event: "category:remove-from-view",
+            resourceId: category.id,
+            payload: {
+              categoryId: category.id,
+              viewStatus: params.status,
+              rowStatus,
+            },
           })
           const result = removeRowFromPage(rows, category.id)
           rows = result.rows
@@ -160,11 +170,17 @@ export function useCategoriesSocketBridge() {
           totalPages,
         }
 
-        logger.debug("Cache updated for category", {
-          categoryId: category.id,
-          rowsCount: result.rows.length,
-          total: result.total,
-          wasRemoved: existingIndex >= 0 && !shouldInclude,
+        resourceLogger.socket({
+          resource: "categories",
+          action: "socket-update",
+          event: "category:cache-updated",
+          resourceId: category.id,
+          payload: {
+            categoryId: category.id,
+            rowsCount: result.rows.length,
+            total: result.total,
+            wasRemoved: existingIndex >= 0 && !shouldInclude,
+          },
         })
 
         return result
@@ -177,24 +193,36 @@ export function useCategoriesSocketBridge() {
 
     const detachRemove = on<[CategoryRemovePayload]>("category:remove", (payload) => {
       const { id } = payload as CategoryRemovePayload
-      logger.debug("Received category:remove", { categoryId: id })
+      
+      resourceLogger.socket({
+        resource: "categories",
+        action: "socket-update",
+        event: "category:remove",
+        resourceId: id,
+        payload: { categoryId: id },
+      })
 
       const updated = updateCategoryQueries(queryClient, ({ data }) => {
         const result = removeRowFromPage(data.rows, id)
         if (!result.removed) {
-          logger.debug("Category not found in current view", { categoryId: id })
           return null
         }
 
         const total = Math.max(0, data.total - 1)
         const totalPages = total === 0 ? 0 : Math.ceil(total / data.limit)
 
-        logger.debug("Removed category from cache", {
-          categoryId: id,
-          oldRowsCount: data.rows.length,
-          newRowsCount: result.rows.length,
-          oldTotal: data.total,
-          newTotal: total,
+        resourceLogger.socket({
+          resource: "categories",
+          action: "socket-update",
+          event: "category:removed-from-cache",
+          resourceId: id,
+          payload: {
+            categoryId: id,
+            oldRowsCount: data.rows.length,
+            newRowsCount: result.rows.length,
+            oldTotal: data.total,
+            newTotal: total,
+          },
         })
 
         return {

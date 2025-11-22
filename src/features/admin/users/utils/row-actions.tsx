@@ -14,10 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import type { UserRow } from "../types"
-import { USER_LABELS } from "../constants/messages"
-
-// Email của super admin không được phép xóa
-const PROTECTED_SUPER_ADMIN_EMAIL = "superadmin@hub.edu.vn"
+import { USER_LABELS, PROTECTED_SUPER_ADMIN_EMAIL } from "../constants"
 
 export interface RowActionConfig {
   label: string

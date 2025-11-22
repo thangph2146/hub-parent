@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef } from "react"
+import { useEffect } from "react"
 import { Tag, Hash, AlignLeft, Calendar, Clock, Edit } from "lucide-react"
 import { 
   ResourceDetailPage, 
@@ -11,9 +11,8 @@ import {
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
-import { useResourceNavigation } from "@/features/admin/resources/hooks"
+import { useResourceNavigation, useResourceDetailData } from "@/features/admin/resources/hooks"
 import { formatDateVi } from "../utils"
-import { useQueryClient } from "@tanstack/react-query"
 import { queryKeys } from "@/lib/query-keys"
 import { resourceLogger } from "@/lib/config"
 
@@ -34,39 +33,57 @@ export interface CategoryDetailClientProps {
   backUrl?: string
 }
 
+// Module-level Set để track các categoryId đã log (tránh duplicate trong React Strict Mode)
+const loggedCategoryIds = new Set<string>()
+
 export function CategoryDetailClient({ categoryId, category, backUrl = "/admin/categories" }: CategoryDetailClientProps) {
-  const queryClient = useQueryClient()
-  const hasLoggedRef = useRef(false)
   const { navigateBack, router } = useResourceNavigation({
-    queryClient,
     invalidateQueryKey: queryKeys.adminCategories.all(),
   })
 
-  // Log detail load một lần (chỉ log khi categoryId thay đổi)
+  // Ưu tiên sử dụng React Query cache nếu có (dữ liệu mới nhất sau khi edit), fallback về props
+  const detailData = useResourceDetailData({
+    initialData: category,
+    resourceId: categoryId,
+    detailQueryKey: queryKeys.adminCategories.detail,
+    resourceName: "categories",
+  })
+
+  // Log detail load một lần cho mỗi categoryId (tránh duplicate trong React Strict Mode)
   useEffect(() => {
-    if (hasLoggedRef.current) return
-    hasLoggedRef.current = true
+    const logKey = `categories-detail-${categoryId}`
+    if (loggedCategoryIds.has(logKey)) return
+    loggedCategoryIds.add(logKey)
     
     resourceLogger.detailAction({
       resource: "categories",
       action: "load-detail",
       resourceId: categoryId,
+      categoryName: detailData.name,
+      categorySlug: detailData.slug,
     })
 
     resourceLogger.dataStructure({
       resource: "categories",
       dataType: "detail",
       structure: {
-        id: category.id,
-        name: category.name,
-        slug: category.slug,
-        description: category.description,
-        createdAt: category.createdAt,
-        updatedAt: category.updatedAt,
-        deletedAt: category.deletedAt,
+        id: detailData.id,
+        name: detailData.name,
+        slug: detailData.slug,
+        description: detailData.description,
+        createdAt: detailData.createdAt,
+        updatedAt: detailData.updatedAt,
+        deletedAt: detailData.deletedAt,
       },
     })
-  }, [categoryId]) // Chỉ depend vào categoryId để tránh log duplicate khi category object thay đổi
+
+    // Cleanup khi component unmount hoặc categoryId thay đổi
+    return () => {
+      setTimeout(() => {
+        loggedCategoryIds.delete(logKey)
+      }, 1000)
+    }
+  }, [categoryId, detailData.id, detailData.name, detailData.slug, detailData.createdAt, detailData.updatedAt, detailData.deletedAt])
 
   const detailFields: ResourceDetailField<CategoryDetailData>[] = []
 
@@ -139,11 +156,11 @@ export function CategoryDetailClient({ categoryId, category, backUrl = "/admin/c
 
   return (
     <ResourceDetailPage<CategoryDetailData>
-      data={category}
+      data={detailData}
       fields={detailFields}
       detailSections={detailSections}
-      title={category.name}
-      description={`Chi tiết danh mục ${category.slug}`}
+      title={detailData.name}
+      description={`Chi tiết danh mục ${detailData.slug}`}
       backUrl={backUrl}
       backLabel="Quay lại danh sách"
       onBack={() => navigateBack(backUrl)}

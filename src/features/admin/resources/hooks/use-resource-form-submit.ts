@@ -253,21 +253,9 @@ export function useResourceFormSubmit({
             url.searchParams.set("_t", Date.now().toString())
             router.replace(url.pathname + url.search)
             // Refresh router sau khi navigate để đảm bảo Server Components được re-render
-            // Đợi một chút để navigation hoàn tất và cache được invalidate trước khi refresh
-            // Delay đủ lâu để đảm bảo Server Component cache (unstable_cache) được invalidate
-            // Next.js revalidateTag có thể mất thời gian để hoàn tất
-            // Tăng delay lên 700ms để đảm bảo cache invalidation hoàn tất
-            await new Promise((resolve) => setTimeout(resolve, 700))
-            router.refresh()
-            // Refresh thêm một lần nữa sau một khoảng thời gian để đảm bảo Server Component được refetch
-            // Điều này đảm bảo detail page được cập nhật với dữ liệu mới nhất
-            // Đặc biệt quan trọng với unstable_cache có thể cần thời gian để invalidate
-            // Tăng delay lên 400ms để đảm bảo Server Component cache được refresh hoàn toàn
-            await new Promise((resolve) => setTimeout(resolve, 400))
-            router.refresh()
-            // Refresh thêm một lần nữa để đảm bảo Server Component được refetch với dữ liệu mới nhất
-            // Điều này đảm bảo detail page luôn hiển thị dữ liệu mới sau khi edit
-            await new Promise((resolve) => setTimeout(resolve, 200))
+            // Cache đã được cập nhật trước đó nên UI sẽ hiển thị dữ liệu mới ngay
+            // Chỉ cần refresh một lần sau delay ngắn để đảm bảo Server Component cache được invalidate
+            await new Promise((resolve) => setTimeout(resolve, 100))
             router.refresh()
             logger.debug("[useResourceFormSubmit] Navigation completed")
           } else if (navigation.fallback) {

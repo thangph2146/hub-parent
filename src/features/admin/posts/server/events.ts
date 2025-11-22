@@ -1,13 +1,13 @@
 /**
  * Socket events emission cho posts
- * Tách logic emit socket events ra khỏi mutations để code sạch hơn
+ * Tối ưu với batch updates cho bulk operations
  */
 
 import { prisma } from "@/lib/database"
 import { getSocketServer } from "@/lib/socket/state"
 import { mapPostRecord, serializePostForTable } from "./helpers"
 import type { PostRow } from "../types"
-import { logger } from "@/lib/config"
+import { resourceLogger } from "@/lib/config"
 
 const SUPER_ADMIN_ROOM = "role:super_admin"
 
@@ -60,8 +60,7 @@ async function fetchPostRow(postId: string): Promise<PostRow | null> {
 }
 
 /**
- * Emit post:upsert event
- * Được gọi khi post được tạo, cập nhật, restore
+ * Emit post:upsert event (single)
  */
 export async function emitPostUpsert(
   postId: string,
@@ -85,12 +84,55 @@ export async function emitPostUpsert(
     previousStatus,
     newStatus,
   })
-  logger.debug("Socket post:upsert emitted", { postId, previousStatus, newStatus })
+}
+
+/**
+ * Emit batch post:upsert events (tối ưu cho bulk operations)
+ */
+export async function emitBatchPostUpsert(
+  postIds: string[],
+  previousStatus: PostStatus | null,
+): Promise<void> {
+  const io = getSocketServer()
+  if (!io || postIds.length === 0) return
+
+  const startTime = Date.now()
+  resourceLogger.actionFlow({
+    resource: "posts",
+    action: "socket-update",
+    step: "start",
+    metadata: { count: postIds.length, previousStatus, type: "batch" },
+  })
+
+  // Fetch all posts in parallel
+  const postPromises = postIds.map((id) => fetchPostRow(id))
+  const rows = await Promise.all(postPromises)
+
+  // Filter out nulls and emit events
+  const validRows = rows.filter((row): row is PostRow => row !== null)
+  
+  if (validRows.length > 0) {
+    // Emit batch event với tất cả rows
+    io.to(SUPER_ADMIN_ROOM).emit("post:batch-upsert", {
+      posts: validRows.map((row) => ({
+        post: row,
+        previousStatus,
+        newStatus: resolveStatusFromRow(row),
+      })),
+  })
+
+    resourceLogger.actionFlow({
+      resource: "posts",
+      action: "socket-update",
+      step: "success",
+      duration: Date.now() - startTime,
+      metadata: { count: validRows.length, emitted: validRows.length, type: "batch" },
+    })
+  }
 }
 
 /**
  * Emit post:remove event
- * Được gọi khi post bị hard delete
  */
 export function emitPostRemove(postId: string, previousStatus: PostStatus): void {
   const io = getSocketServer()
@@ -100,6 +142,5 @@ export function emitPostRemove(postId: string, previousStatus: PostStatus): void
     id: postId,
     previousStatus,
   })
-  logger.debug("Socket post:remove emitted", { postId, previousStatus })
 }
 

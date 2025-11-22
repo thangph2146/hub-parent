@@ -68,6 +68,15 @@ export function TagsTableClient({
     })
 
     if (initialData) {
+      // Log tất cả rows để hiển thị đầy đủ thông tin
+      const allRows = initialData.rows.map((row) => ({
+        id: row.id,
+        name: row.name,
+        slug: row.slug,
+        createdAt: row.createdAt,
+        deletedAt: row.deletedAt,
+      }))
+      
       resourceLogger.dataStructure({
         resource: "tags",
         dataType: "table",
@@ -80,11 +89,7 @@ export function TagsTableClient({
             total: initialData.total,
             totalPages: initialData.totalPages,
           },
-          sampleRow: initialData.rows[0] ? {
-            id: initialData.rows[0].id,
-            name: initialData.rows[0].name,
-            slug: initialData.rows[0].slug,
-          } : undefined,
+          rows: allRows,
         },
       })
     }

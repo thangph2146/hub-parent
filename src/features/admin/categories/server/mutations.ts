@@ -3,7 +3,7 @@
 import type { Prisma } from "@prisma/client"
 import { PERMISSIONS, canPerformAnyAction } from "@/lib/permissions"
 import { prisma } from "@/lib/database"
-import { logger } from "@/lib/config"
+import { resourceLogger } from "@/lib/config"
 import { mapCategoryRecord, type CategoryWithRelations } from "./helpers"
 import type { ListedCategory } from "../types"
 import { generateSlug } from "../utils"
@@ -33,6 +33,15 @@ function sanitizeCategory(category: CategoryWithRelations): ListedCategory {
 }
 
 export async function createCategory(ctx: AuthContext, input: z.infer<typeof CreateCategorySchema>): Promise<ListedCategory> {
+  const startTime = Date.now()
+  
+  resourceLogger.actionFlow({
+    resource: "categories",
+    action: "create",
+    step: "start",
+    metadata: { actorId: ctx.actorId, input: { name: input.name, slug: input.slug } },
+  })
+
   ensurePermission(ctx, PERMISSIONS.CATEGORIES_CREATE, PERMISSIONS.CATEGORIES_MANAGE)
 
   // Validate input với zod
@@ -72,7 +81,28 @@ export async function createCategory(ctx: AuthContext, input: z.infer<typeof Cre
 
   const sanitized = sanitizeCategory(category)
 
+  // Invalidate cache - Next.js 16 caching pattern
+  resourceLogger.cache({
+    resource: "categories",
+    action: "cache-invalidate",
+    operation: "invalidate",
+    resourceId: sanitized.id,
+    tags: ["categories", `category-${sanitized.id}`, "category-options", "active-categories"],
+  })
+  await invalidateResourceCache({
+    resource: "categories",
+    id: sanitized.id,
+    additionalTags: ["category-options", "active-categories"],
+  })
+
   // Emit socket event for real-time updates
+  resourceLogger.socket({
+    resource: "categories",
+    action: "create",
+    event: "category:upsert",
+    resourceId: sanitized.id,
+    payload: { id: sanitized.id, previousStatus: null },
+  })
   await emitCategoryUpsert(sanitized.id, null)
 
   // Emit notification realtime
@@ -86,17 +116,35 @@ export async function createCategory(ctx: AuthContext, input: z.infer<typeof Cre
     }
   )
 
-  // Invalidate cache
-  await invalidateResourceCache({
+  resourceLogger.actionFlow({
     resource: "categories",
-    id: sanitized.id,
-    additionalTags: ["category-options", "active-categories"],
+    action: "create",
+    step: "success",
+    duration: Date.now() - startTime,
+    metadata: { categoryId: sanitized.id, categoryName: sanitized.name },
+  })
+
+  resourceLogger.detailAction({
+    resource: "categories",
+    action: "create",
+    resourceId: sanitized.id,
+    categoryName: sanitized.name,
+    categorySlug: sanitized.slug,
   })
 
   return sanitized
 }
 
 export async function updateCategory(ctx: AuthContext, id: string, input: z.infer<typeof UpdateCategorySchema>): Promise<ListedCategory> {
+  const startTime = Date.now()
+  
+  resourceLogger.actionFlow({
+    resource: "categories",
+    action: "update",
+    step: "start",
+    metadata: { categoryId: id, actorId: ctx.actorId },
+  })
+
   ensurePermission(ctx, PERMISSIONS.CATEGORIES_UPDATE, PERMISSIONS.CATEGORIES_MANAGE)
 
   if (!id || typeof id !== "string" || id.trim() === "") {
@@ -176,8 +224,31 @@ export async function updateCategory(ctx: AuthContext, id: string, input: z.infe
 
   const sanitized = sanitizeCategory(category)
 
+  // Invalidate cache - Next.js 16 caching pattern
+  resourceLogger.cache({
+    resource: "categories",
+    action: "cache-invalidate",
+    operation: "invalidate",
+    resourceId: id,
+    tags: ["categories", `category-${id}`, "category-options", "active-categories"],
+  })
+  await invalidateResourceCache({
+    resource: "categories",
+    id,
+    additionalTags: ["category-options", "active-categories"],
+  })
+
+  // Determine previous status for socket event
+  const previousStatus: "active" | "deleted" | null = existing.deletedAt ? "deleted" : "active"
+
   // Emit socket event for real-time updates
-  const previousStatus: "active" | "deleted" = existing.deletedAt ? "deleted" : "active"
+  resourceLogger.socket({
+    resource: "categories",
+    action: "update",
+    event: "category:upsert",
+    resourceId: sanitized.id,
+    payload: { id: sanitized.id, previousStatus },
+  })
   await emitCategoryUpsert(sanitized.id, previousStatus)
 
   // Emit notification realtime
@@ -192,17 +263,36 @@ export async function updateCategory(ctx: AuthContext, id: string, input: z.infe
     Object.keys(changes).length > 0 ? changes : undefined
   )
 
-  // Invalidate cache - QUAN TRỌNG: phải invalidate detail page để cập nhật ngay
-  await invalidateResourceCache({
+  resourceLogger.actionFlow({
     resource: "categories",
-    id,
-    additionalTags: ["category-options", "active-categories"],
+    action: "update",
+    step: "success",
+    duration: Date.now() - startTime,
+    metadata: { categoryId: sanitized.id, categoryName: sanitized.name, changes },
+  })
+
+  resourceLogger.detailAction({
+    resource: "categories",
+    action: "update",
+    resourceId: sanitized.id,
+    categoryName: sanitized.name,
+    categorySlug: sanitized.slug,
+    changes,
   })
 
   return sanitized
 }
 
 export async function softDeleteCategory(ctx: AuthContext, id: string): Promise<void> {
+  const startTime = Date.now()
+  
+  resourceLogger.actionFlow({
+    resource: "categories",
+    action: "delete",
+    step: "start",
+    metadata: { categoryId: id, actorId: ctx.actorId },
+  })
+
   ensurePermission(ctx, PERMISSIONS.CATEGORIES_DELETE, PERMISSIONS.CATEGORIES_MANAGE)
 
   const category = await prisma.category.findUnique({ where: { id } })
@@ -217,7 +307,28 @@ export async function softDeleteCategory(ctx: AuthContext, id: string): Promise<
     },
   })
 
+  // Invalidate cache
+  resourceLogger.cache({
+    resource: "categories",
+    action: "cache-invalidate",
+    operation: "invalidate",
+    resourceId: id,
+    tags: ["categories", `category-${id}`, "category-options", "active-categories"],
+  })
+  await invalidateResourceCache({
+    resource: "categories",
+    id,
+    additionalTags: ["category-options", "active-categories"],
+  })
+
   // Emit socket event for real-time updates
+  resourceLogger.socket({
+    resource: "categories",
+    action: "delete",
+    event: "category:upsert",
+    resourceId: id,
+    payload: { id, previousStatus: "active" },
+  })
   await emitCategoryUpsert(id, "active")
 
   // Emit notification realtime
@@ -231,15 +342,25 @@ export async function softDeleteCategory(ctx: AuthContext, id: string): Promise<
     }
   )
 
-  // Invalidate cache
-  await invalidateResourceCache({
+  resourceLogger.actionFlow({
     resource: "categories",
-    id,
-    additionalTags: ["category-options", "active-categories"],
+    action: "delete",
+    step: "success",
+    duration: Date.now() - startTime,
+    metadata: { categoryId: id, categoryName: category.name },
   })
 }
 
 export async function bulkSoftDeleteCategories(ctx: AuthContext, ids: string[]): Promise<BulkActionResult> {
+  const startTime = Date.now()
+  
+  resourceLogger.actionFlow({
+    resource: "categories",
+    action: "bulk-delete",
+    step: "start",
+    metadata: { count: ids.length, categoryIds: ids, actorId: ctx.actorId },
+  })
+
   ensurePermission(ctx, PERMISSIONS.CATEGORIES_DELETE, PERMISSIONS.CATEGORIES_MANAGE)
 
   if (!ids || ids.length === 0) {
@@ -293,6 +414,12 @@ export async function bulkSoftDeleteCategories(ctx: AuthContext, ids: string[]):
   })
 
   // Invalidate cache cho bulk operation
+  resourceLogger.cache({
+    resource: "categories",
+    action: "cache-invalidate",
+    operation: "invalidate",
+    tags: ["categories", "category-options", "active-categories"],
+  })
   await invalidateResourceCacheBulk({
     resource: "categories",
     additionalTags: ["category-options", "active-categories"],
@@ -303,7 +430,12 @@ export async function bulkSoftDeleteCategories(ctx: AuthContext, ids: string[]):
     // Emit events song song
     const emitPromises = categories.map((category) => 
       emitCategoryUpsert(category.id, "active").catch((error) => {
-        logger.error(`Failed to emit category:upsert for ${category.id}`, error as Error)
+        resourceLogger.actionFlow({
+          resource: "categories",
+          action: "bulk-delete",
+          step: "error",
+          metadata: { categoryId: category.id, error: error instanceof Error ? error.message : String(error) },
+        })
         return null
       })
     )
@@ -318,10 +450,27 @@ export async function bulkSoftDeleteCategories(ctx: AuthContext, ids: string[]):
       )
   }
 
+  resourceLogger.actionFlow({
+    resource: "categories",
+    action: "bulk-delete",
+    step: "success",
+    duration: Date.now() - startTime,
+    metadata: { count: result.count, categoryIds: categories.map(c => c.id) },
+  })
+
   return { success: true, message: `Đã xóa ${result.count} danh mục`, affected: result.count }
 }
 
 export async function restoreCategory(ctx: AuthContext, id: string): Promise<void> {
+  const startTime = Date.now()
+  
+  resourceLogger.actionFlow({
+    resource: "categories",
+    action: "restore",
+    step: "start",
+    metadata: { categoryId: id, actorId: ctx.actorId },
+  })
+
   ensurePermission(ctx, PERMISSIONS.CATEGORIES_UPDATE, PERMISSIONS.CATEGORIES_MANAGE)
 
   const category = await prisma.category.findUnique({ where: { id } })
@@ -336,7 +485,28 @@ export async function restoreCategory(ctx: AuthContext, id: string): Promise<voi
     },
   })
 
+  // Invalidate cache
+  resourceLogger.cache({
+    resource: "categories",
+    action: "cache-invalidate",
+    operation: "invalidate",
+    resourceId: id,
+    tags: ["categories", `category-${id}`, "category-options", "active-categories"],
+  })
+  await invalidateResourceCache({
+    resource: "categories",
+    id,
+    additionalTags: ["category-options", "active-categories"],
+  })
+
   // Emit socket event for real-time updates
+  resourceLogger.socket({
+    resource: "categories",
+    action: "restore",
+    event: "category:upsert",
+    resourceId: id,
+    payload: { id, previousStatus: "deleted" },
+  })
   await emitCategoryUpsert(id, "deleted")
 
   // Emit notification realtime
@@ -350,15 +520,25 @@ export async function restoreCategory(ctx: AuthContext, id: string): Promise<voi
     }
   )
 
-  // Invalidate cache
-  await invalidateResourceCache({
+  resourceLogger.actionFlow({
     resource: "categories",
-    id,
-    additionalTags: ["category-options", "active-categories"],
+    action: "restore",
+    step: "success",
+    duration: Date.now() - startTime,
+    metadata: { categoryId: id, categoryName: category.name },
   })
 }
 
 export async function bulkRestoreCategories(ctx: AuthContext, ids: string[]): Promise<BulkActionResult> {
+  const startTime = Date.now()
+  
+  resourceLogger.actionFlow({
+    resource: "categories",
+    action: "bulk-restore",
+    step: "start",
+    metadata: { count: ids.length, categoryIds: ids, actorId: ctx.actorId },
+  })
+
   ensurePermission(ctx, PERMISSIONS.CATEGORIES_UPDATE, PERMISSIONS.CATEGORIES_MANAGE)
 
   if (!ids || ids.length === 0) {
@@ -417,6 +597,12 @@ export async function bulkRestoreCategories(ctx: AuthContext, ids: string[]): Pr
   })
 
   // Invalidate cache cho bulk operation
+  resourceLogger.cache({
+    resource: "categories",
+    action: "cache-invalidate",
+    operation: "invalidate",
+    tags: ["categories", "category-options", "active-categories"],
+  })
   await invalidateResourceCacheBulk({
     resource: "categories",
     additionalTags: ["category-options", "active-categories"],
@@ -427,7 +613,12 @@ export async function bulkRestoreCategories(ctx: AuthContext, ids: string[]): Pr
     // Emit events song song
     const emitPromises = categoriesToRestore.map((category) => 
       emitCategoryUpsert(category.id, "deleted").catch((error) => {
-        logger.error(`Failed to emit category:upsert for ${category.id}`, error as Error)
+        resourceLogger.actionFlow({
+          resource: "categories",
+          action: "bulk-restore",
+          step: "error",
+          metadata: { categoryId: category.id, error: error instanceof Error ? error.message : String(error) },
+        })
         return null
       })
     )
@@ -441,6 +632,14 @@ export async function bulkRestoreCategories(ctx: AuthContext, ids: string[]): Pr
       categoriesToRestore
       )
   }
+
+  resourceLogger.actionFlow({
+    resource: "categories",
+    action: "bulk-restore",
+    step: "success",
+    duration: Date.now() - startTime,
+    metadata: { count: result.count, categoryIds: categoriesToRestore.map(c => c.id) },
+  })
 
   // Tạo message chi tiết nếu có categories không thể restore
   let message = `Đã khôi phục ${result.count} danh mục`
@@ -500,6 +699,15 @@ export async function hardDeleteCategory(ctx: AuthContext, id: string): Promise<
 }
 
 export async function bulkHardDeleteCategories(ctx: AuthContext, ids: string[]): Promise<BulkActionResult> {
+  const startTime = Date.now()
+  
+  resourceLogger.actionFlow({
+    resource: "categories",
+    action: "bulk-hard-delete",
+    step: "start",
+    metadata: { count: ids.length, categoryIds: ids, actorId: ctx.actorId },
+  })
+
   if (!canPerformAnyAction(ctx.permissions, ctx.roles, [PERMISSIONS.CATEGORIES_MANAGE])) {
     throw new ForbiddenError()
   }
@@ -530,7 +738,12 @@ export async function bulkHardDeleteCategories(ctx: AuthContext, ids: string[]):
       try {
         emitCategoryRemove(category.id, previousStatus)
       } catch (error) {
-        logger.error(`Failed to emit category:remove for ${category.id}`, error as Error)
+        resourceLogger.actionFlow({
+          resource: "categories",
+          action: "bulk-hard-delete",
+          step: "error",
+          metadata: { categoryId: category.id, error: error instanceof Error ? error.message : String(error) },
+        })
       }
     })
 
@@ -544,9 +757,23 @@ export async function bulkHardDeleteCategories(ctx: AuthContext, ids: string[]):
   }
 
   // Invalidate cache cho bulk operation
+  resourceLogger.cache({
+    resource: "categories",
+    action: "cache-invalidate",
+    operation: "invalidate",
+    tags: ["categories", "category-options", "active-categories"],
+  })
   await invalidateResourceCacheBulk({
     resource: "categories",
     additionalTags: ["category-options", "active-categories"],
+  })
+
+  resourceLogger.actionFlow({
+    resource: "categories",
+    action: "bulk-hard-delete",
+    step: "success",
+    duration: Date.now() - startTime,
+    metadata: { count: result.count, categoryIds: categories.map(c => c.id) },
   })
 
   return { success: true, message: `Đã xóa vĩnh viễn ${result.count} danh mục${result.count < categories.length ? ` (${categories.length - result.count} danh mục không tồn tại)` : ""}`, affected: result.count }

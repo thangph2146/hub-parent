@@ -28,6 +28,9 @@ export type ResourceAction =
   | "cache-invalidate"
   | "cache-refresh"
   | "socket-update"
+  | "error"
+  | "publish"
+  | "unpublish"
 
 /**
  * Resource context cho logging
@@ -55,7 +58,7 @@ export interface DataStructureLog {
 export interface ActionFlowLog {
   resource: string
   action: ResourceAction
-  step: "start" | "success" | "error" | "end"
+  step: "init" | "start" | "success" | "error" | "end"
   duration?: number
   metadata?: Record<string, unknown>
 }
@@ -115,6 +118,7 @@ export const resourceLogger = {
       start: "▶️",
       success: "✅",
       error: "❌",
+      init: "🔄",
       end: "🏁",
     }[log.step]
 

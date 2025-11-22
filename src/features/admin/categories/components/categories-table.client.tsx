@@ -60,6 +60,16 @@ export function CategoriesTableClient({
     })
 
     if (initialData) {
+      // Log tất cả rows để hiển thị đầy đủ thông tin
+      const allRows = initialData.rows.map((row) => ({
+        id: row.id,
+        name: row.name,
+        slug: row.slug,
+        description: row.description,
+        createdAt: row.createdAt,
+        deletedAt: row.deletedAt,
+      }))
+      
       resourceLogger.dataStructure({
         resource: "categories",
         dataType: "table",
@@ -72,6 +82,7 @@ export function CategoriesTableClient({
             total: initialData.total,
             totalPages: initialData.totalPages,
           },
+          rows: allRows,
         },
       })
     }
@@ -105,6 +116,12 @@ export function CategoriesTableClient({
   const handleDeleteSingle = useCallback(
     (row: CategoryRow) => {
       if (!canDelete) return
+      resourceLogger.tableAction({
+        resource: "categories",
+        action: "delete",
+        resourceId: row.id,
+        categoryName: row.name,
+      })
       setDeleteConfirm({
         open: true,
         type: "soft",
@@ -120,6 +137,12 @@ export function CategoriesTableClient({
   const handleHardDeleteSingle = useCallback(
     (row: CategoryRow) => {
       if (!canManage) return
+      resourceLogger.tableAction({
+        resource: "categories",
+        action: "hard-delete",
+        resourceId: row.id,
+        categoryName: row.name,
+      })
       setDeleteConfirm({
         open: true,
         type: "hard",
@@ -135,6 +158,12 @@ export function CategoriesTableClient({
   const handleRestoreSingle = useCallback(
     (row: CategoryRow) => {
       if (!canRestore) return
+      resourceLogger.tableAction({
+        resource: "categories",
+        action: "restore",
+        resourceId: row.id,
+        categoryName: row.name,
+      })
       setDeleteConfirm({
         open: true,
         type: "restore",
@@ -250,6 +279,13 @@ export function CategoriesTableClient({
   const executeBulk = useCallback(
     (action: "delete" | "restore" | "hard-delete", ids: string[], refresh: () => void, clearSelection: () => void) => {
       if (ids.length === 0) return
+
+      resourceLogger.tableAction({
+        resource: "categories",
+        action: action === "delete" ? "bulk-delete" : action === "restore" ? "bulk-restore" : "bulk-hard-delete",
+        count: ids.length,
+        categoryIds: ids,
+      })
 
       // Actions cần confirmation
       if (action === "delete" || action === "restore" || action === "hard-delete") {

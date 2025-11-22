@@ -26,6 +26,7 @@ import {
 import { ChevronDown } from "lucide-react"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { logger } from "@/lib/config"
+import { useDebouncedCallback } from "@/hooks/use-debounced-callback"
 import type {
   ResourceTableLoader,
   ResourceViewMode,
@@ -73,16 +74,35 @@ export function ResourceTableClient<T extends object>({
   const columns = activeView.columns ?? baseColumns
   const emptyMessage = activeView.emptyMessage
 
-  const handleRefresh = useCallback(() => {
+  const lastRefreshKeyRef = useRef(0)
+  const lastRefreshTimeRef = useRef(0)
+  
+  // Debounced refresh để tránh duplicate refreshes khi có nhiều events liên tiếp
+  const debouncedRefresh = useDebouncedCallback(
+    () => {
+      const now = Date.now()
+      // Chỉ refresh nếu đã qua ít nhất 200ms từ lần refresh cuối
+      if (now - lastRefreshTimeRef.current < 200) {
+        return
+      }
+      lastRefreshTimeRef.current = now
+      
     setRefreshKey((prev) => {
       const next = prev + 1
-      // Chỉ log khi thực sự thay đổi (tránh duplicate trong React Strict Mode)
-      if (prev !== next) {
+        // Chỉ log khi thực sự thay đổi và chưa log lần này (tránh duplicate trong React Strict Mode)
+        if (prev !== next && lastRefreshKeyRef.current !== next) {
+          lastRefreshKeyRef.current = next
         logger.debug("[ResourceTableClient] refreshKey updated", { prev, next })
       }
       return next
     })
-  }, [])
+    },
+    200 // Debounce 200ms
+  )
+  
+  const handleRefresh = useCallback(() => {
+    debouncedRefresh()
+  }, [debouncedRefresh])
 
   // Expose refresh function to parent component (chỉ gọi một lần, tránh duplicate trong React Strict Mode)
   const onRefreshReadyRef = useRef(onRefreshReady)

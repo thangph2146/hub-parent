@@ -4,6 +4,7 @@ import { useSession } from "next-auth/react"
 import { useQueryClient } from "@tanstack/react-query"
 import { ResourceForm, type ResourceFormField, type ResourceFormSection } from "@/features/admin/resources/components"
 import { useResourceFormSubmit } from "@/features/admin/resources/hooks"
+import { createResourceEditOnSuccess } from "@/features/admin/resources/utils"
 import { apiRoutes } from "@/lib/api/routes"
 import { queryKeys } from "@/lib/query-keys"
 import type { Prisma } from "@prisma/client"
@@ -95,27 +96,15 @@ export function PostEditClient({
             }
             return submitData
         },
-        onSuccess: async (_response) => {
-            // Invalidate React Query cache để cập nhật danh sách bài viết
-            await queryClient.invalidateQueries({ queryKey: queryKeys.adminPosts.all(), refetchType: "all" })
-            // Invalidate detail query nếu có postId
-            const targetPostId = postId || post?.id
-            if (targetPostId) {
-                await queryClient.invalidateQueries({ queryKey: queryKeys.adminPosts.detail(targetPostId) })
-            }
-            
-            // Refetch để đảm bảo data mới nhất
-            await queryClient.refetchQueries({ queryKey: queryKeys.adminPosts.all(), type: "all" })
-
-            // Navigation sẽ được xử lý bởi useResourceFormSubmit
-            // Không cần gọi router.refresh() ở đây vì Next.js sẽ tự động revalidate khi navigate
-            // Nếu variant là dialog/sheet, table sẽ tự động refresh thông qua React Query invalidation
-
-            if (onSuccess) {
-                onSuccess()
-            }
-            // Navigation sẽ được xử lý bởi useResourceFormSubmit thông qua navigation.toDetail
-        },
+        onSuccess: createResourceEditOnSuccess({
+            queryClient,
+            resourceId: postId || post?.id,
+            allQueryKey: queryKeys.adminPosts.all(),
+            detailQueryKey: queryKeys.adminPosts.detail,
+            resourceName: "posts",
+            getRecordName: (data) => data.title as string | undefined,
+            onSuccess,
+        }),
     })
 
     if (!post?.id) {

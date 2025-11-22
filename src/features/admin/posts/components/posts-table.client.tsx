@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useMemo, useState } from "react"
+import { useCallback, useMemo, useState, useEffect, useRef } from "react"
 import { useResourceRouter } from "@/hooks/use-resource-segment"
 import { Plus, RotateCcw, Trash2, AlertTriangle } from "lucide-react"
 
@@ -33,7 +33,7 @@ import { usePostRowActions } from "../utils/row-actions"
 
 import type { PostRow, PostsResponse, PostsTableClientProps } from "../types"
 import { POST_CONFIRM_MESSAGES, POST_LABELS } from "../constants/messages"
-import { logger } from "@/lib/config"
+import { resourceLogger } from "@/lib/config"
 import { sanitizeSearchQuery } from "@/lib/api/validation"
 
 export function PostsTableClient({
@@ -97,12 +97,12 @@ export function PostsTableClient({
         )
         await runResourceRefresh({ refresh, resource: "posts" })
       } catch (error) {
-        logger.error("Error toggling post publish status", error as Error)
-        showFeedback(
-          "error",
-          "Lỗi cập nhật",
-          `Không thể ${newStatus ? "xuất bản" : "chuyển sang bản nháp"} bài viết. Vui lòng thử lại.`,
-        )
+        resourceLogger.actionFlow({
+          resource: "posts",
+          action: newStatus ? "publish" : "unpublish",
+          step: "error",
+          metadata: { postId: row.id, error: error instanceof Error ? error.message : String(error) },
+        })
       } finally {
         setTogglingPosts((prev) => {
           const next = new Set(prev)
@@ -283,6 +283,13 @@ export function PostsTableClient({
     (action: "delete" | "restore" | "hard-delete", ids: string[], refresh: () => void, clearSelection: () => void) => {
       if (ids.length === 0) return
 
+      resourceLogger.tableAction({
+        resource: "posts",
+        action: action === "delete" ? "bulk-delete" : action === "restore" ? "bulk-restore" : "bulk-hard-delete",
+        count: ids.length,
+        postIds: ids,
+      })
+
       // Actions cần confirmation
       if (action === "delete" || action === "restore" || action === "hard-delete") {
         setDeleteConfirm({
@@ -318,6 +325,59 @@ export function PostsTableClient({
     buildQueryKey: queryKeys.adminPosts.list,
     resourceName: "posts",
   })
+
+  // Log table load và data structure (chỉ log một lần)
+  const loggedTableKeys = useRef<Set<string>>(new Set())
+  const tableLogKey = useMemo(
+    () => `posts-table-${initialData?.page ?? 1}-${initialData?.total ?? 0}`,
+    [initialData?.page, initialData?.total]
+  )
+  
+  useEffect(() => {
+    if (loggedTableKeys.current.has(tableLogKey)) return
+    loggedTableKeys.current.add(tableLogKey)
+    
+    resourceLogger.tableAction({
+      resource: "posts",
+      action: "load-table",
+      view: "active",
+      total: initialData?.total,
+      page: initialData?.page,
+    })
+
+    if (initialData) {
+      const allRows = initialData.rows.map((row) => ({
+        id: row.id,
+        title: row.title,
+        slug: row.slug,
+        published: row.published,
+        createdAt: row.createdAt,
+        deletedAt: row.deletedAt,
+      }))
+      
+      resourceLogger.dataStructure({
+        resource: "posts",
+        dataType: "table",
+        rowCount: initialData.rows.length,
+        structure: {
+          columns: ["id", "title", "slug", "published", "createdAt", "deletedAt"],
+          pagination: {
+            page: initialData.page,
+            limit: initialData.limit,
+            total: initialData.total,
+            totalPages: initialData.totalPages,
+          },
+          rows: allRows,
+        },
+      })
+    }
+
+    return () => {
+      setTimeout(() => {
+        loggedTableKeys.current.delete(tableLogKey)
+      }, 1000)
+    }
+  }, [tableLogKey, initialData])
 
   const createActiveSelectionActions = useCallback(
     ({

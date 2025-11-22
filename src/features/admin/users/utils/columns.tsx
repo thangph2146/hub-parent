@@ -8,10 +8,7 @@ import { useDynamicFilterOptions } from "@/features/admin/resources/hooks/use-dy
 import { apiRoutes } from "@/lib/api/routes"
 import type { UserRow } from "../types"
 import { Switch } from "@/components/ui/switch"
-import { USER_MESSAGES } from "../constants/messages"
-
-// Email của super admin không được phép xóa
-const PROTECTED_SUPER_ADMIN_EMAIL = "superadmin@hub.edu.vn"
+import { USER_MESSAGES, PROTECTED_SUPER_ADMIN_EMAIL } from "../constants"
 
 interface UseUserColumnsOptions {
   rolesOptions: Array<{ label: string; value: string }>

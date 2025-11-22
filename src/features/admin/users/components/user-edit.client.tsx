@@ -11,12 +11,14 @@ import { useSession } from "next-auth/react"
 import { useQueryClient } from "@tanstack/react-query"
 import { ResourceForm, type ResourceFormField } from "@/features/admin/resources/components"
 import { useResourceFormSubmit } from "@/features/admin/resources/hooks"
+import { createResourceEditOnSuccess } from "@/features/admin/resources/utils"
 import { apiRoutes } from "@/lib/api/routes"
 import { queryKeys } from "@/lib/query-keys"
 import { isSuperAdmin } from "@/lib/permissions"
 import { useRoles } from "../hooks/use-roles"
 import { normalizeRoleIds, type Role } from "../utils"
 import { getBaseUserFields, getPasswordEditField } from "../form-fields"
+import { PROTECTED_SUPER_ADMIN_EMAIL } from "../constants"
 import type { UserRow } from "../types"
 
 interface UserEditData extends UserRow {
@@ -81,26 +83,20 @@ export function UserEditClient({
         delete submitData.password
       }
       // Không cho phép vô hiệu hóa super admin
-      const PROTECTED_SUPER_ADMIN_EMAIL = "superadmin@hub.edu.vn"
       if (user?.email === PROTECTED_SUPER_ADMIN_EMAIL && submitData.isActive === false) {
-        // Giữ nguyên isActive = true cho super admin
         submitData.isActive = true
       }
       return submitData
     },
-    onSuccess: async () => {
-      // Invalidate React Query cache để cập nhật danh sách users
-      await queryClient.invalidateQueries({ queryKey: queryKeys.adminUsers.all(), refetchType: "all" })
-      // Invalidate detail query nếu có userId
-      const targetUserId = userId || user?.id
-      if (targetUserId) {
-        await queryClient.invalidateQueries({ queryKey: queryKeys.adminUsers.detail(targetUserId) })
-      }
-      // Refetch để đảm bảo data mới nhất
-      await queryClient.refetchQueries({ queryKey: queryKeys.adminUsers.all(), type: "all" })
-      
-      onSuccess?.()
-    },
+    onSuccess: createResourceEditOnSuccess({
+      queryClient,
+      resourceId: userId || user?.id,
+      allQueryKey: queryKeys.adminUsers.all(),
+      detailQueryKey: queryKeys.adminUsers.detail,
+      resourceName: "users",
+      getRecordName: (responseData) => (responseData?.name as string | undefined) || (responseData?.email as string | undefined),
+      onSuccess,
+    }),
   })
 
   if (!user?.id) {
@@ -118,7 +114,6 @@ export function UserEditClient({
   const baseFields = getBaseUserFields(roles, roleDefaultValue) as unknown as ResourceFormField<UserEditData>[]
   
   // Điều chỉnh isActive field: disable nếu là super admin và đang active
-  const PROTECTED_SUPER_ADMIN_EMAIL = "superadmin@hub.edu.vn"
   const isEditingSuperAdmin = user?.email === PROTECTED_SUPER_ADMIN_EMAIL
   const editFields = baseFields.map((field) => {
     if (field.name === "isActive" && isEditingSuperAdmin && user?.isActive) {

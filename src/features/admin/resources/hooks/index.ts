@@ -20,3 +20,6 @@ export { useResourceBulkProcessing } from "./use-resource-bulk-processing"
 export { useResourceNavigation } from "./use-resource-navigation"
 export type { UseResourceNavigationOptions, UseResourceNavigationResult } from "./use-resource-navigation"
 
+// Detail data helpers
+export { useResourceDetailData } from "./use-resource-detail-data"
+
