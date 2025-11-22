@@ -92,9 +92,7 @@ export async function getCategoryById(id: string): Promise<CategoryDetail | null
     return null
   }
 
-  return {
-    ...mapCategoryRecord(category),
-    updatedAt: category.updatedAt,
-  }
+  // mapCategoryRecord đã include updatedAt
+  return mapCategoryRecord(category)
 }
 

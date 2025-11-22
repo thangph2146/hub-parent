@@ -30,6 +30,7 @@ export function mapCategoryRecord(category: CategoryWithRelations): ListedCatego
     slug: category.slug,
     description: category.description,
     createdAt: category.createdAt,
+    updatedAt: category.updatedAt,
     deletedAt: category.deletedAt,
   }
 }
@@ -82,6 +83,7 @@ export function serializeCategoryForTable(category: ListedCategory): CategoryRow
     slug: category.slug,
     description: category.description,
     createdAt: serializeDate(category.createdAt)!,
+    updatedAt: serializeDate(category.updatedAt) ?? undefined, // Thêm updatedAt để so sánh cache chính xác (convert null to undefined)
     deletedAt: serializeDate(category.deletedAt),
   }
 }

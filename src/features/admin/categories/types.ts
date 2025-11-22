@@ -6,6 +6,7 @@ export interface CategoryRow {
   slug: string
   description: string | null
   createdAt: string
+  updatedAt?: string // Optional để hỗ trợ cache comparison
   deletedAt: string | null
 }
 
@@ -28,11 +29,12 @@ export interface ListedCategory {
   slug: string
   description: string | null
   createdAt: Date
+  updatedAt: Date
   deletedAt: Date | null
 }
 
 export interface CategoryDetail extends ListedCategory {
-  updatedAt: Date
+  // updatedAt đã có trong ListedCategory
 }
 
 export interface ListCategoriesResult {

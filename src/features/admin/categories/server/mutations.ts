@@ -217,6 +217,20 @@ export async function updateCategory(ctx: AuthContext, id: string, input: z.infe
     updateData.description = trimmedDescription
   }
 
+  // Chỉ update nếu có thay đổi
+  if (Object.keys(updateData).length === 0) {
+    // Không có thay đổi, trả về category hiện tại
+    const sanitized = sanitizeCategory(existing)
+    resourceLogger.actionFlow({
+      resource: "categories",
+      action: "update",
+      step: "success",
+      duration: Date.now() - startTime,
+      metadata: { categoryId: sanitized.id, categoryName: sanitized.name, changes: {}, noChanges: true },
+    })
+    return sanitized
+  }
+
   const category = await prisma.category.update({
     where: { id },
     data: updateData,
