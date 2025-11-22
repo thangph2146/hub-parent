@@ -5,6 +5,7 @@ export interface TagRow {
   name: string
   slug: string
   createdAt: string
+  updatedAt?: string // Optional để hỗ trợ cache comparison
   deletedAt: string | null
 }
 
@@ -26,11 +27,12 @@ export interface ListedTag {
   name: string
   slug: string
   createdAt: Date
+  updatedAt: Date
   deletedAt: Date | null
 }
 
 export interface TagDetail extends ListedTag {
-  updatedAt: Date
+  // updatedAt đã có trong ListedTag
 }
 
 export interface ListTagsResult {

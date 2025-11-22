@@ -97,9 +97,7 @@ export async function getTagById(id: string): Promise<TagDetail | null> {
     return null
   }
 
-  return {
-    ...mapTagRecord(tag),
-    updatedAt: tag.updatedAt,
-  }
+  // mapTagRecord đã include updatedAt
+  return mapTagRecord(tag)
 }
 

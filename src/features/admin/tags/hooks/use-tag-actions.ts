@@ -186,29 +186,48 @@ export function useTagActions({
       })
 
       try {
-        await apiClient.post(apiRoutes.tags.bulk, { action, ids })
+        const response = await apiClient.post(apiRoutes.tags.bulk, { action, ids })
 
-        resourceLogger.actionFlow({
-          resource: "tags",
-          action: action === "delete" ? "bulk-delete" : action === "restore" ? "bulk-restore" : "bulk-hard-delete",
-          step: "success",
-          metadata: { count: ids.length, tagIds: ids },
-        })
+        const result = response.data?.data
+        const affected = result?.affected ?? 0
 
+        // Nếu không có tag nào được xử lý (affected === 0), hiển thị thông báo
+        if (affected === 0) {
+          const actionText = action === "restore" ? "khôi phục" : action === "delete" ? "xóa" : "xóa vĩnh viễn"
+          const errorMessage = result?.message || `Không có thẻ tag nào được ${actionText}`
+          showFeedback("error", "Không có thay đổi", errorMessage)
+          clearSelection()
+          resourceLogger.actionFlow({
+            resource: "tags",
+            action: action === "delete" ? "bulk-delete" : action === "restore" ? "bulk-restore" : "bulk-hard-delete",
+            step: "error",
+            metadata: { requestedCount: ids.length, affectedCount: 0, error: errorMessage, requestedIds: ids },
+          })
+          return
+        }
+
+        // Hiển thị success message với số lượng thực tế đã xử lý và message từ server
+        const actionText = action === "restore" ? "khôi phục" : action === "delete" ? "xóa" : "xóa vĩnh viễn"
+        const successMessage = result?.message || `Đã ${actionText} ${affected} thẻ tag`
         const messages = {
-          restore: { title: TAG_MESSAGES.BULK_RESTORE_SUCCESS, description: `Đã khôi phục ${ids.length} thẻ tag` },
-          delete: { title: TAG_MESSAGES.BULK_DELETE_SUCCESS, description: `Đã xóa ${ids.length} thẻ tag` },
-          "hard-delete": { title: TAG_MESSAGES.BULK_HARD_DELETE_SUCCESS, description: `Đã xóa vĩnh viễn ${ids.length} thẻ tag` },
+          restore: { title: TAG_MESSAGES.BULK_RESTORE_SUCCESS, description: successMessage },
+          delete: { title: TAG_MESSAGES.BULK_DELETE_SUCCESS, description: successMessage },
+          "hard-delete": { title: TAG_MESSAGES.BULK_HARD_DELETE_SUCCESS, description: successMessage },
         }
 
         const message = messages[action]
         showFeedback("success", message.title, message.description)
         clearSelection()
 
-        // Socket events đã update cache, chỉ refresh nếu socket không connected
-        if (!isSocketConnected) {
-        await runResourceRefresh({ refresh, resource: "tags" })
-        }
+        resourceLogger.actionFlow({
+          resource: "tags",
+          action: action === "delete" ? "bulk-delete" : action === "restore" ? "bulk-restore" : "bulk-hard-delete",
+          step: "success",
+          metadata: { requestedCount: ids.length, affectedCount: affected },
+        })
+
+        // Socket events đã update cache và trigger refresh qua cacheVersion
+        // Không cần manual refresh nữa để tránh duplicate refresh
       } catch (error: unknown) {
         const errorMessage = error instanceof Error ? error.message : TAG_MESSAGES.UNKNOWN_ERROR
         const errorTitles = {

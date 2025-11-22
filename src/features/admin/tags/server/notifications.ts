@@ -22,9 +22,9 @@ async function getActorInfo(actorId: string) {
 
 /**
  * Format tag names cho notification description
- * Hiển thị tối đa 5 tên đầu tiên, nếu nhiều hơn sẽ hiển thị "... và X thẻ tag khác"
+ * Hiển thị tối đa 3 tên đầu tiên, nếu nhiều hơn sẽ hiển thị "... và X thẻ tag khác"
  */
-function formatTagNames(tags: Array<{ name: string }>, maxNames = 5): string {
+function formatTagNames(tags: Array<{ name: string }>, maxNames = 3): string {
   if (!tags || tags.length === 0) return ""
   
   const displayNames = tags.slice(0, maxNames).map(t => `"${t.name}"`)
@@ -240,8 +240,8 @@ export async function notifySuperAdminsOfBulkTagAction(
     let title = ""
     let description = ""
 
-    // Format tag names - hiển thị tối đa 5 tên đầu tiên
-    const namesText = tags && tags.length > 0 ? formatTagNames(tags, 5) : ""
+    // Format tag names - hiển thị tối đa 3 tên đầu tiên
+    const namesText = tags && tags.length > 0 ? formatTagNames(tags, 3) : ""
 
     switch (action) {
       case "delete":

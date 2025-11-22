@@ -29,6 +29,7 @@ export function mapTagRecord(tag: TagWithRelations): ListedTag {
     name: tag.name,
     slug: tag.slug,
     createdAt: tag.createdAt,
+    updatedAt: tag.updatedAt,
     deletedAt: tag.deletedAt,
   }
 }
@@ -75,12 +76,13 @@ export function buildWhereClause(params: ListTagsInput): Prisma.TagWhereInput {
  * Serialize tag data for DataTable format
  * Handles both Date objects and date strings (from cache serialization)
  */
-export function serializeTagForTable(tag: ListedTag | { id: string; name: string; slug: string; createdAt: Date | string; deletedAt: Date | string | null }): TagRow {
+export function serializeTagForTable(tag: ListedTag | { id: string; name: string; slug: string; createdAt: Date | string; updatedAt?: Date | string; deletedAt: Date | string | null }): TagRow {
   return {
     id: tag.id,
     name: tag.name,
     slug: tag.slug,
     createdAt: serializeDate(tag.createdAt)!,
+    updatedAt: tag.updatedAt ? (serializeDate(tag.updatedAt) ?? undefined) : undefined, // Thêm updatedAt để so sánh cache chính xác (convert null to undefined)
     deletedAt: serializeDate(tag.deletedAt),
   }
 }

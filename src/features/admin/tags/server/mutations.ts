@@ -207,6 +207,20 @@ export async function updateTag(ctx: AuthContext, id: string, input: UpdateTagIn
     updateData.slug = trimmedSlug
   }
 
+  // Chỉ update nếu có thay đổi
+  if (Object.keys(updateData).length === 0) {
+    // Không có thay đổi, trả về tag hiện tại
+    const sanitized = sanitizeTag(existing)
+    resourceLogger.actionFlow({
+      resource: "tags",
+      action: "update",
+      step: "success",
+      duration: Date.now() - startTime,
+      metadata: { tagId: sanitized.id, tagName: sanitized.name, changes: {}, noChanges: true },
+    })
+    return sanitized
+  }
+
   const tag = await prisma.tag.update({
     where: { id },
     data: updateData,
@@ -366,30 +380,55 @@ export async function bulkSoftDeleteTags(ctx: AuthContext, ids: string[]): Promi
     select: { id: true, name: true, slug: true },
   })
 
-  // Nếu không tìm thấy tag nào, có thể chúng đã bị xóa rồi hoặc không tồn tại
+  const foundIds = tags.map(t => t.id)
+  const notFoundIds = ids.filter(id => !foundIds.includes(id))
+  
+  // Log để debug với đầy đủ thông tin
+  resourceLogger.actionFlow({
+    resource: "tags",
+    action: "bulk-delete",
+    step: "start",
+    metadata: {
+      requestedCount: ids.length,
+      foundCount: tags.length,
+      notFoundCount: notFoundIds.length,
+      requestedIds: ids,
+      foundIds,
+      notFoundIds,
+    },
+  })
+
+  // Nếu không tìm thấy tag nào, trả về error message chi tiết
   if (tags.length === 0) {
-    // Kiểm tra xem có tags nào đã bị soft delete không
-    const deletedTags = await prisma.tag.findMany({
-      where: {
-        id: { in: ids },
-        deletedAt: { not: null },
-      },
-      select: { id: true },
+    const allTags = await prisma.tag.findMany({
+      where: { id: { in: ids } },
+      select: { id: true, deletedAt: true },
     })
-
-    if (deletedTags.length > 0) {
-      return { 
-        success: true, 
-        message: `Không có thẻ tag nào để xóa (${deletedTags.length} tag đã bị xóa, ${ids.length - deletedTags.length} tag không tồn tại)`, 
-        affected: 0 
-      }
+    const alreadyDeletedCount = allTags.filter(t => t.deletedAt !== null).length
+    const notFoundCount = ids.length - allTags.length
+    
+    let errorMessage = "Không có thẻ tag nào có thể xóa"
+    if (alreadyDeletedCount > 0) {
+      errorMessage += `. ${alreadyDeletedCount} tag đã bị xóa trước đó`
     }
-
-    return { 
-      success: true, 
-      message: `Không tìm thấy thẻ tag nào để xóa (có thể đã bị xóa vĩnh viễn)`, 
-      affected: 0 
+    if (notFoundCount > 0) {
+      errorMessage += `. ${notFoundCount} tag không tồn tại`
     }
+    
+    resourceLogger.actionFlow({
+      resource: "tags",
+      action: "bulk-delete",
+      step: "error",
+      metadata: {
+        requestedCount: ids.length,
+        foundCount: tags.length,
+        alreadyDeletedCount,
+        notFoundCount,
+        error: errorMessage,
+      },
+    })
+    
+    throw new ApplicationError(errorMessage, 400)
   }
 
   const result = await prisma.tag.updateMany({
@@ -448,15 +487,15 @@ export async function bulkSoftDeleteTags(ctx: AuthContext, ids: string[]): Promi
       result.count,
       tags
       )
-  }
 
-  resourceLogger.actionFlow({
-    resource: "tags",
-    action: "bulk-delete",
-    step: "success",
-    duration: Date.now() - startTime,
-    metadata: { count: result.count, affected: result.count },
-  })
+    resourceLogger.actionFlow({
+      resource: "tags",
+      action: "bulk-delete",
+      step: "success",
+      duration: Date.now() - startTime,
+      metadata: { requestedCount: ids.length, affectedCount: result.count },
+    })
+  }
 
   return { success: true, message: `Đã xóa ${result.count} thẻ tag`, affected: result.count }
 }
@@ -557,8 +596,31 @@ export async function bulkRestoreTags(ctx: AuthContext, ids: string[]): Promise<
   const softDeletedTags = allRequestedTags.filter((tag) => tag.deletedAt !== null)
   const activeTags = allRequestedTags.filter((tag) => tag.deletedAt === null)
   const notFoundCount = ids.length - allRequestedTags.length
+  const foundIds = allRequestedTags.map(t => t.id)
+  const notFoundIds = ids.filter(id => !foundIds.includes(id))
+  const softDeletedIds = softDeletedTags.map(t => t.id)
+  const activeIds = activeTags.map(t => t.id)
 
-  // Nếu không có tag nào đã bị soft delete, trả về message chi tiết
+  // Log để debug với đầy đủ thông tin
+  resourceLogger.actionFlow({
+    resource: "tags",
+    action: "bulk-restore",
+    step: "start",
+    metadata: {
+      requestedCount: ids.length,
+      foundCount: allRequestedTags.length,
+      softDeletedCount: softDeletedTags.length,
+      activeCount: activeTags.length,
+      notFoundCount,
+      requestedIds: ids,
+      foundIds,
+      softDeletedIds,
+      activeIds,
+      notFoundIds,
+    },
+  })
+
+  // Nếu không có tag nào đã bị soft delete, throw error với message chi tiết
   if (softDeletedTags.length === 0) {
     const parts: string[] = []
     if (activeTags.length > 0) {
@@ -568,15 +630,25 @@ export async function bulkRestoreTags(ctx: AuthContext, ids: string[]): Promise<
       parts.push(`${notFoundCount} tag không tồn tại (đã bị xóa vĩnh viễn)`)
     }
 
-    const message = parts.length > 0
+    const errorMessage = parts.length > 0
       ? `Không có thẻ tag nào để khôi phục (${parts.join(", ")})`
       : `Không tìm thấy thẻ tag nào để khôi phục`
 
-    return { 
-      success: true, 
-      message, 
-      affected: 0 
-    }
+    resourceLogger.actionFlow({
+      resource: "tags",
+      action: "bulk-restore",
+      step: "error",
+      metadata: {
+        requestedCount: ids.length,
+        foundCount: allRequestedTags.length,
+        softDeletedCount: softDeletedTags.length,
+        activeCount: activeTags.length,
+        notFoundCount,
+        error: errorMessage,
+      },
+    })
+
+    throw new ApplicationError(errorMessage, 400)
   }
 
   // Chỉ restore những tags đã bị soft delete
@@ -638,6 +710,14 @@ export async function bulkRestoreTags(ctx: AuthContext, ids: string[]): Promise<
       result.count,
       tagsToRestore
       )
+
+    resourceLogger.actionFlow({
+      resource: "tags",
+      action: "bulk-restore",
+      step: "success",
+      duration: Date.now() - startTime,
+      metadata: { requestedCount: ids.length, affectedCount: result.count },
+    })
   }
 
   // Tạo message chi tiết nếu có tags không thể restore
@@ -655,14 +735,6 @@ export async function bulkRestoreTags(ctx: AuthContext, ids: string[]): Promise<
       message += ` (${skippedCount} tag không thể khôi phục: ${skippedParts.join(", ")})`
     }
   }
-
-  resourceLogger.actionFlow({
-    resource: "tags",
-    action: "bulk-restore",
-    step: "success",
-    duration: Date.now() - startTime,
-    metadata: { count: result.count, affected: result.count },
-  })
 
   return { success: true, message, affected: result.count }
 }
