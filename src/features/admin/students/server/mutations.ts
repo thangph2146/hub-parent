@@ -30,6 +30,77 @@ import { emitStudentUpsert, emitStudentRemove, emitStudentBatchUpsert } from "./
 export { ApplicationError, ForbiddenError, NotFoundError, type AuthContext }
 export type { BulkActionResult }
 
+/**
+ * Helper function để log trạng thái hiện tại của table sau mutations
+ */
+async function logTableStatusAfterMutation(
+  action: "after-delete" | "after-restore" | "after-bulk-delete" | "after-bulk-restore",
+  affectedIds: string | string[],
+  affectedCount?: number
+): Promise<void> {
+  const actionType = action.startsWith("after-bulk-") 
+    ? (action === "after-bulk-delete" ? "bulk-delete" : "bulk-restore")
+    : (action === "after-delete" ? "delete" : "restore")
+
+  resourceLogger.actionFlow({
+    resource: "students",
+    action: actionType,
+    step: "start",
+    metadata: { 
+      loggingTableStatus: true, 
+      affectedCount,
+      affectedIds: Array.isArray(affectedIds) ? affectedIds.length : 1,
+    },
+  })
+
+  const [activeCount, deletedCount] = await Promise.all([
+    prisma.student.count({ where: { deletedAt: null } }),
+    prisma.student.count({ where: { deletedAt: { not: null } } }),
+  ])
+
+  const isBulk = action.startsWith("after-bulk-")
+  const structure = isBulk
+    ? {
+        action,
+        deletedCount: action === "after-bulk-delete" ? affectedCount : undefined,
+        restoredCount: action === "after-bulk-restore" ? affectedCount : undefined,
+        currentActiveCount: activeCount,
+        currentDeletedCount: deletedCount,
+        affectedStudentIds: Array.isArray(affectedIds) ? affectedIds : [affectedIds],
+        summary: action === "after-bulk-delete" 
+          ? `Đã xóa ${affectedCount} học sinh. Hiện tại: ${activeCount} active, ${deletedCount} đã xóa`
+          : `Đã khôi phục ${affectedCount} học sinh. Hiện tại: ${activeCount} active, ${deletedCount} đã xóa`,
+      }
+    : {
+        action,
+        currentActiveCount: activeCount,
+        currentDeletedCount: deletedCount,
+        affectedStudentId: typeof affectedIds === "string" ? affectedIds : affectedIds[0],
+        summary: action === "after-delete"
+          ? `Đã xóa 1 học sinh. Hiện tại: ${activeCount} active, ${deletedCount} đã xóa`
+          : `Đã khôi phục 1 học sinh. Hiện tại: ${activeCount} active, ${deletedCount} đã xóa`,
+      }
+
+  resourceLogger.dataStructure({
+    resource: "students",
+    dataType: "table",
+    structure,
+  })
+
+  resourceLogger.actionFlow({
+    resource: "students",
+    action: actionType,
+    step: "success",
+    metadata: {
+      tableStatusLogged: true,
+      activeCount,
+      deletedCount,
+      affectedCount,
+      summary: structure.summary,
+    },
+  })
+}
+
 export async function createStudent(ctx: AuthContext, input: CreateStudentInput): Promise<ListedStudent> {
   const startTime = Date.now()
 
@@ -404,6 +475,9 @@ export async function softDeleteStudent(ctx: AuthContext, id: string): Promise<v
     },
   })
 
+  // Log table status TRƯỚC khi invalidate cache để đảm bảo data đã được commit
+  await logTableStatusAfterMutation("after-delete", id)
+
   resourceLogger.cache({
     resource: "students",
     action: "cache-invalidate",
@@ -522,6 +596,9 @@ export async function bulkSoftDeleteStudents(ctx: AuthContext, ids: string[]): P
     },
   })
 
+  // Log table status TRƯỚC khi invalidate cache để đảm bảo data đã được commit
+  await logTableStatusAfterMutation("after-bulk-delete", students.map((s) => s.id), result.count)
+
   resourceLogger.cache({
     resource: "students",
     action: "cache-invalidate",
@@ -561,7 +638,6 @@ export async function bulkSoftDeleteStudents(ctx: AuthContext, ids: string[]): P
     await notifySuperAdminsOfBulkStudentAction(
       "delete",
       ctx.actorId,
-      result.count,
       students
     )
 
@@ -614,6 +690,9 @@ export async function restoreStudent(ctx: AuthContext, id: string): Promise<void
       deletedAt: null,
     },
   })
+
+  // Log table status TRƯỚC khi invalidate cache để đảm bảo data đã được commit
+  await logTableStatusAfterMutation("after-restore", id)
 
   resourceLogger.cache({
     resource: "students",
@@ -730,6 +809,9 @@ export async function bulkRestoreStudents(ctx: AuthContext, ids: string[]): Prom
     },
   })
 
+  // Log table status TRƯỚC khi invalidate cache để đảm bảo data đã được commit
+  await logTableStatusAfterMutation("after-bulk-restore", studentsToRestore.map((s) => s.id), result.count)
+
   resourceLogger.cache({
     resource: "students",
     action: "cache-invalidate",
@@ -769,7 +851,6 @@ export async function bulkRestoreStudents(ctx: AuthContext, ids: string[]): Prom
     await notifySuperAdminsOfBulkStudentAction(
       "restore",
       ctx.actorId,
-      result.count,
       studentsToRestore
     )
 
@@ -978,7 +1059,6 @@ export async function bulkHardDeleteStudents(ctx: AuthContext, ids: string[]): P
     await notifySuperAdminsOfBulkStudentAction(
       "hard-delete",
       ctx.actorId,
-      result.count,
       students
     )
 

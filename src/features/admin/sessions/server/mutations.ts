@@ -3,7 +3,7 @@
 import type { Prisma } from "@prisma/client"
 import { PERMISSIONS, canPerformAnyAction } from "@/lib/permissions"
 import { prisma } from "@/lib/database"
-import { logger } from "@/lib/config"
+import { resourceLogger } from "@/lib/config"
 import { mapSessionRecord, type SessionWithRelations } from "./helpers"
 import type { ListedSession } from "../types"
 import type { BulkActionResult } from "../types"
@@ -31,6 +31,79 @@ export { ApplicationError, ForbiddenError, NotFoundError, type AuthContext }
 
 function sanitizeSession(session: SessionWithRelations): ListedSession {
   return mapSessionRecord(session)
+}
+
+/**
+ * Helper function để log trạng thái hiện tại của table sau mutations
+ * Note: Sessions sử dụng isActive thay vì deletedAt
+ */
+async function logTableStatusAfterMutation(
+  action: "after-delete" | "after-restore" | "after-bulk-delete" | "after-bulk-restore",
+  affectedIds: string | string[],
+  affectedCount?: number
+): Promise<void> {
+  const actionType = action.startsWith("after-bulk-") 
+    ? (action === "after-bulk-delete" ? "bulk-delete" : "bulk-restore")
+    : (action === "after-delete" ? "delete" : "restore")
+
+  resourceLogger.actionFlow({
+    resource: "sessions",
+    action: actionType,
+    step: "start",
+    metadata: { 
+      loggingTableStatus: true, 
+      affectedCount,
+      affectedIds: Array.isArray(affectedIds) ? affectedIds.length : 1,
+    },
+  })
+
+  // Sessions sử dụng isActive thay vì deletedAt
+  const [activeCount, deletedCount] = await Promise.all([
+    prisma.session.count({ where: { isActive: true } }),
+    prisma.session.count({ where: { isActive: false } }),
+  ])
+
+  const isBulk = action.startsWith("after-bulk-")
+  const structure = isBulk
+    ? {
+        action,
+        deletedCount: action === "after-bulk-delete" ? affectedCount : undefined,
+        restoredCount: action === "after-bulk-restore" ? affectedCount : undefined,
+        currentActiveCount: activeCount,
+        currentDeletedCount: deletedCount,
+        affectedSessionIds: Array.isArray(affectedIds) ? affectedIds : [affectedIds],
+        summary: action === "after-bulk-delete" 
+          ? `Đã xóa ${affectedCount} session. Hiện tại: ${activeCount} active, ${deletedCount} đã xóa`
+          : `Đã khôi phục ${affectedCount} session. Hiện tại: ${activeCount} active, ${deletedCount} đã xóa`,
+      }
+    : {
+        action,
+        currentActiveCount: activeCount,
+        currentDeletedCount: deletedCount,
+        affectedSessionId: typeof affectedIds === "string" ? affectedIds : affectedIds[0],
+        summary: action === "after-delete"
+          ? `Đã xóa 1 session. Hiện tại: ${activeCount} active, ${deletedCount} đã xóa`
+          : `Đã khôi phục 1 session. Hiện tại: ${activeCount} active, ${deletedCount} đã xóa`,
+      }
+
+  resourceLogger.dataStructure({
+    resource: "sessions",
+    dataType: "table",
+    structure,
+  })
+
+  resourceLogger.actionFlow({
+    resource: "sessions",
+    action: actionType,
+    step: "success",
+    metadata: {
+      tableStatusLogged: true,
+      activeCount,
+      deletedCount,
+      affectedCount,
+      summary: structure.summary,
+    },
+  })
 }
 
 export async function createSession(ctx: AuthContext, input: CreateSessionInput): Promise<ListedSession> {
@@ -258,6 +331,9 @@ export async function softDeleteSession(ctx: AuthContext, id: string): Promise<v
     },
   })
 
+  // Log table status TRƯỚC khi invalidate cache để đảm bảo data đã được commit
+  await logTableStatusAfterMutation("after-delete", id)
+
   // Emit socket event để update UI
   await emitSessionUpsert(id, "active")
 
@@ -283,9 +359,26 @@ export async function bulkSoftDeleteSessions(ctx: AuthContext, ids: string[]): P
     throw new ApplicationError("Danh sách session trống", 400)
   }
 
-  const result = await prisma.session.updateMany({
+  // Lấy thông tin sessions trước khi delete để tạo notifications
+  const sessions = await prisma.session.findMany({
     where: {
       id: { in: ids },
+      isActive: true,
+    },
+    include: {
+      user: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
+    },
+  })
+
+  const result = await prisma.session.updateMany({
+    where: {
+      id: { in: sessions.map((s) => s.id) },
       isActive: true,
     },
     data: {
@@ -293,24 +386,38 @@ export async function bulkSoftDeleteSessions(ctx: AuthContext, ids: string[]): P
     },
   })
 
+  // Log table status TRƯỚC khi invalidate cache để đảm bảo data đã được commit
+  await logTableStatusAfterMutation("after-bulk-delete", sessions.map((s) => s.id), result.count)
+
   // Emit socket events để update UI - await song song để đảm bảo tất cả events được emit
   // Sử dụng Promise.allSettled để không bị fail nếu một event lỗi
   if (result.count > 0) {
     // Emit events song song và await tất cả để đảm bảo hoàn thành
-    const emitPromises = ids.map((id) => 
-      emitSessionUpsert(id, "active").catch((error) => {
-        logger.error(`Failed to emit session:upsert for ${id}`, error as Error)
+    const emitPromises = sessions.map((s) => 
+      emitSessionUpsert(s.id, "active").catch((error) => {
+        resourceLogger.actionFlow({
+          resource: "sessions",
+          action: "bulk-delete",
+          step: "error",
+          metadata: { 
+            sessionId: s.id,
+            error: error instanceof Error ? error.message : "Unknown error",
+          },
+        })
         return null // Return null để Promise.allSettled không throw
       })
     )
     // Await tất cả events nhưng không fail nếu một số lỗi
     await Promise.allSettled(emitPromises)
 
-    // Emit một notification tổng hợp cho bulk action
+    // Emit một notification tổng hợp cho bulk action với sessions data
     await notifySuperAdminsOfBulkSessionAction(
       "delete",
       ctx.actorId,
-      result.count
+      sessions.map((s) => ({
+        userName: s.user.name,
+        userEmail: s.user.email,
+      }))
     )
   }
 
@@ -339,6 +446,9 @@ export async function restoreSession(ctx: AuthContext, id: string): Promise<void
     },
   })
 
+  // Log table status TRƯỚC khi invalidate cache để đảm bảo data đã được commit
+  await logTableStatusAfterMutation("after-restore", id)
+
   // Emit socket event để update UI
   await emitSessionUpsert(id, "deleted")
 
@@ -364,9 +474,26 @@ export async function bulkRestoreSessions(ctx: AuthContext, ids: string[]): Prom
     throw new ApplicationError("Danh sách session trống", 400)
   }
 
-  const result = await prisma.session.updateMany({
+  // Lấy thông tin sessions trước khi restore để tạo notifications
+  const sessions = await prisma.session.findMany({
     where: {
       id: { in: ids },
+      isActive: false,
+    },
+    include: {
+      user: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
+    },
+  })
+
+  const result = await prisma.session.updateMany({
+    where: {
+      id: { in: sessions.map((s) => s.id) },
       isActive: false,
     },
     data: {
@@ -374,24 +501,38 @@ export async function bulkRestoreSessions(ctx: AuthContext, ids: string[]): Prom
     },
   })
 
+  // Log table status TRƯỚC khi invalidate cache để đảm bảo data đã được commit
+  await logTableStatusAfterMutation("after-bulk-restore", sessions.map((s) => s.id), result.count)
+
   // Emit socket events để update UI - await song song để đảm bảo tất cả events được emit
   // Sử dụng Promise.allSettled để không bị fail nếu một event lỗi
   if (result.count > 0) {
     // Emit events song song và await tất cả để đảm bảo hoàn thành
-    const emitPromises = ids.map((id) => 
-      emitSessionUpsert(id, "deleted").catch((error) => {
-        logger.error(`Failed to emit session:upsert for ${id}`, error as Error)
+    const emitPromises = sessions.map((s) => 
+      emitSessionUpsert(s.id, "deleted").catch((error) => {
+        resourceLogger.actionFlow({
+          resource: "sessions",
+          action: "bulk-restore",
+          step: "error",
+          metadata: { 
+            sessionId: s.id,
+            error: error instanceof Error ? error.message : "Unknown error",
+          },
+        })
         return null // Return null để Promise.allSettled không throw
       })
     )
     // Await tất cả events nhưng không fail nếu một số lỗi
     await Promise.allSettled(emitPromises)
 
-    // Emit một notification tổng hợp cho bulk action
+    // Emit một notification tổng hợp cho bulk action với sessions data
     await notifySuperAdminsOfBulkSessionAction(
       "restore",
       ctx.actorId,
-      result.count
+      sessions.map((s) => ({
+        userName: s.user.name,
+        userEmail: s.user.email,
+      }))
     )
   }
 
@@ -460,12 +601,20 @@ export async function bulkHardDeleteSessions(ctx: AuthContext, ids: string[]): P
     throw new ApplicationError("Danh sách session trống", 400)
   }
 
-  // Lấy thông tin sessions để kiểm tra trạng thái
+  // Lấy thông tin sessions để kiểm tra trạng thái và tạo notifications
   const allSessions = await prisma.session.findMany({
     where: {
       id: { in: ids },
     },
-    select: { id: true, userId: true, accessToken: true, isActive: true },
+    include: {
+      user: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
+    },
   })
 
   if (allSessions.length === 0) {
@@ -478,7 +627,7 @@ export async function bulkHardDeleteSessions(ctx: AuthContext, ids: string[]): P
   // Vì đã check quyền SESSIONS_MANAGE ở trên
   const result = await prisma.session.deleteMany({
     where: {
-      id: { in: ids },
+      id: { in: allSessions.map((s) => s.id) },
     },
   })
 
@@ -489,20 +638,31 @@ export async function bulkHardDeleteSessions(ctx: AuthContext, ids: string[]): P
     const previousStatuses = allSessions.map(s => (s.isActive ? "active" : "deleted") as "active" | "deleted")
     
     // Emit events (emitSessionRemove trả về void, không phải Promise)
-    ids.forEach((id, index) => {
+    allSessions.forEach((s, index) => {
       const previousStatus = previousStatuses[index] || "active"
       try {
-        emitSessionRemove(id, previousStatus)
+        emitSessionRemove(s.id, previousStatus)
       } catch (error) {
-        logger.error(`Failed to emit session:remove for ${id}`, error as Error)
+        resourceLogger.actionFlow({
+          resource: "sessions",
+          action: "bulk-hard-delete",
+          step: "error",
+          metadata: { 
+            sessionId: s.id,
+            error: error instanceof Error ? error.message : "Unknown error",
+          },
+        })
       }
     })
 
-    // Emit một notification tổng hợp cho bulk action
+    // Emit một notification tổng hợp cho bulk action với sessions data
     await notifySuperAdminsOfBulkSessionAction(
       "hard-delete",
       ctx.actorId,
-      result.count
+      allSessions.map((s) => ({
+        userName: s.user.name,
+        userEmail: s.user.email,
+      }))
     )
   }
 

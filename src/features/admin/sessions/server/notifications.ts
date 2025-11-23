@@ -3,7 +3,7 @@
  */
 
 import { prisma } from "@/lib/database"
-import { logger } from "@/lib/config"
+import { resourceLogger } from "@/lib/config"
 import { getSocketServer, storeNotificationInCache, mapNotificationToPayload } from "@/lib/socket/state"
 import { createNotificationForSuperAdmins } from "@/features/admin/notifications/server/mutations"
 import { NotificationKind } from "@prisma/client"
@@ -17,6 +17,28 @@ async function getActorInfo(actorId: string) {
     select: { id: true, email: true, name: true },
   })
   return actor
+}
+
+/**
+ * Format session names cho bulk notifications
+ * Rút gọn: chỉ hiển thị user name/email
+ */
+export function formatSessionNames(
+  sessions: Array<{ userName: string | null; userEmail: string }>,
+  maxDisplay: number = 3
+): string {
+  if (sessions.length === 0) return ""
+  
+  const names = sessions.slice(0, maxDisplay).map((s) => {
+    return s.userName || s.userEmail || "Không xác định"
+  })
+  
+  if (sessions.length <= maxDisplay) {
+    return names.join(", ")
+  }
+  
+  const remaining = sessions.length - maxDisplay
+  return `${names.join(", ")} và ${remaining} session khác`
 }
 
 /**
@@ -35,17 +57,7 @@ export async function notifySuperAdminsOfSessionAction(
   }
 ) {
   try {
-    logger.debug("[notifySuperAdmins] Starting session notification", {
-      action,
-      actorId,
-      sessionId: session.id,
-      userId: session.userId,
-      hasChanges: !!changes,
-      changesKeys: changes ? Object.keys(changes) : [],
-    })
-
     const actor = await getActorInfo(actorId)
-    const actorName = actor?.name || actor?.email || "Hệ thống"
 
     // Lấy thông tin user của session
     const sessionUser = await prisma.user.findUnique({
@@ -60,8 +72,8 @@ export async function notifySuperAdminsOfSessionAction(
 
     switch (action) {
       case "create":
-        title = "🔐 Session mới được tạo"
-        description = `${actorName} đã tạo session cho người dùng "${userName}"`
+        title = "Tạo session"
+        description = `${userName}`
         break
       case "update":
         const changeDescriptions: string[] = []
@@ -80,31 +92,22 @@ export async function notifySuperAdminsOfSessionAction(
         if (changes?.expiresAt) {
           changeDescriptions.push(`Thời gian hết hạn: ${changes.expiresAt.old} → ${changes.expiresAt.new}`)
         }
-        title = "✏️ Session được cập nhật"
-        description = `${actorName} đã cập nhật session cho người dùng "${userName}"${
-          changeDescriptions.length > 0 ? `\nThay đổi: ${changeDescriptions.join(", ")}` : ""
-        }`
+        title = "Cập nhật session"
+        description = `${userName}${changeDescriptions.length > 0 ? `\n${changeDescriptions.join(", ")}` : ""}`
         break
       case "delete":
-        title = "🗑️ Session bị xóa"
-        description = `${actorName} đã xóa session cho người dùng "${userName}"`
+        title = "Xóa session"
+        description = `${userName}`
         break
       case "restore":
-        title = "♻️ Session được khôi phục"
-        description = `${actorName} đã khôi phục session cho người dùng "${userName}"`
+        title = "Khôi phục session"
+        description = `${userName}`
         break
       case "hard-delete":
-        title = "⚠️ Session bị xóa vĩnh viễn"
-        description = `${actorName} đã xóa vĩnh viễn session cho người dùng "${userName}"`
+        title = "Xóa vĩnh viễn session"
+        description = `${userName}`
         break
     }
-
-    logger.debug("[notifySuperAdmins] Creating notifications in DB", {
-      title,
-      description,
-      actionUrl,
-      action,
-    })
     const result = await createNotificationForSuperAdmins(
       title,
       description,
@@ -122,16 +125,8 @@ export async function notifySuperAdminsOfSessionAction(
         timestamp: new Date().toISOString(),
       }
     )
-    logger.debug("[notifySuperAdmins] Notifications created", {
-      count: result.count,
-      action,
-    })
 
     const io = getSocketServer()
-    logger.debug("[notifySuperAdmins] Socket server status", {
-      hasSocketServer: !!io,
-      notificationCount: result.count,
-    })
     if (io && result.count > 0) {
       const superAdmins = await prisma.user.findMany({
         where: {
@@ -148,11 +143,6 @@ export async function notifySuperAdminsOfSessionAction(
           },
         },
         select: { id: true },
-      })
-
-      logger.debug("[notifySuperAdmins] Found super admins", {
-        count: superAdmins.length,
-        adminIds: superAdmins.map((a) => a.id),
       })
 
       const createdNotifications = await prisma.notification.findMany({
@@ -174,19 +164,13 @@ export async function notifySuperAdminsOfSessionAction(
         take: superAdmins.length,
       })
 
-      for (let i = 0; i < superAdmins.length; i++) {
-        const admin = superAdmins[i]
+      for (const admin of superAdmins) {
         const dbNotification = createdNotifications.find((n) => n.userId === admin.id)
 
         if (dbNotification) {
           const socketNotification = mapNotificationToPayload(dbNotification)
           storeNotificationInCache(admin.id, socketNotification)
           io.to(`user:${admin.id}`).emit("notification:new", socketNotification)
-          logger.debug("[notifySuperAdmins] Emitted to user room", {
-            adminId: admin.id,
-            room: `user:${admin.id}`,
-            notificationId: dbNotification.id,
-          })
         } else {
           const fallbackNotification = {
             id: `session-${action}-${session.id}-${Date.now()}`,
@@ -208,21 +192,25 @@ export async function notifySuperAdminsOfSessionAction(
           }
           storeNotificationInCache(admin.id, fallbackNotification)
           io.to(`user:${admin.id}`).emit("notification:new", fallbackNotification)
-          logger.debug("[notifySuperAdmins] Emitted fallback notification to user room", {
-            adminId: admin.id,
-            room: `user:${admin.id}`,
-          })
         }
       }
 
       if (createdNotifications.length > 0) {
         const roleNotification = mapNotificationToPayload(createdNotifications[0])
         io.to("role:super_admin").emit("notification:new", roleNotification)
-        logger.debug("[notifySuperAdmins] Emitted to role room: role:super_admin")
       }
     }
   } catch (error) {
-    logger.error("[notifications] Failed to notify super admins of session action", error as Error)
+    resourceLogger.actionFlow({
+      resource: "sessions",
+      action: "error",
+      step: "error",
+      metadata: { 
+        action: "notify-super-admins", 
+        sessionId: session.id,
+        error: error instanceof Error ? error.message : "Unknown error",
+      },
+    })
   }
 }
 
@@ -233,27 +221,31 @@ export async function notifySuperAdminsOfSessionAction(
 export async function notifySuperAdminsOfBulkSessionAction(
   action: "delete" | "restore" | "hard-delete",
   actorId: string,
-  count: number
-) {
+  sessions: Array<{ userName: string | null; userEmail: string }>
+): Promise<void> {
+  if (sessions.length === 0) return
+
   try {
     const actor = await getActorInfo(actorId)
-    const actorName = actor?.name || actor?.email || "Hệ thống"
+
+    const namesText = formatSessionNames(sessions, 3)
+    const count = sessions.length
 
     let title = ""
     let description = ""
 
     switch (action) {
       case "delete":
-        title = "🗑️ Nhiều sessions bị xóa"
-        description = `${actorName} đã xóa ${count} session`
+        title = `Xóa ${count} session`
+        description = namesText || `${count} session`
         break
       case "restore":
-        title = "♻️ Nhiều sessions được khôi phục"
-        description = `${actorName} đã khôi phục ${count} session`
+        title = `Khôi phục ${count} session`
+        description = namesText || `${count} session`
         break
       case "hard-delete":
-        title = "⚠️ Nhiều sessions bị xóa vĩnh viễn"
-        description = `${actorName} đã xóa vĩnh viễn ${count} session`
+        title = `Xóa vĩnh viễn ${count} session`
+        description = namesText || `${count} session`
         break
     }
 
@@ -270,6 +262,7 @@ export async function notifySuperAdminsOfBulkSessionAction(
         actorName: actor?.name || actor?.email,
         actorEmail: actor?.email,
         count,
+        sessionNames: sessions.map(s => s.userName || s.userEmail),
         timestamp: new Date().toISOString(),
       }
     )
@@ -327,7 +320,16 @@ export async function notifySuperAdminsOfBulkSessionAction(
       }
     }
   } catch (error) {
-    logger.error("[notifications] Failed to notify super admins of bulk session action", error as Error)
+    resourceLogger.actionFlow({
+      resource: "sessions",
+      action: "error",
+      step: "error",
+      metadata: { 
+        action: "notify-super-admins-bulk",
+        count: sessions.length,
+        error: error instanceof Error ? error.message : "Unknown error",
+      },
+    })
   }
 }
 
