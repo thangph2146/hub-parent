@@ -5,10 +5,12 @@
  * 
  * Structure:
  * - queries.ts: Generic query patterns và helpers
- * - cache.ts: Cache utilities
  * - helpers.ts: Shared helper functions
  * - errors.ts: Shared error classes
  * - mutations-helpers.ts: Shared mutation helpers
+ * 
+ * LƯU Ý: Không sử dụng caching cho admin data theo chuẩn Next.js 16
+ * Tất cả queries đều fetch fresh data từ database
  */
 
 // Helpers
@@ -29,9 +31,6 @@ export {
   type ResourceResponse,
 } from "./helpers"
 
-// Cache utilities
-export { cache } from "./cache"
-
 // Error classes
 export {
   ApplicationError,
@@ -44,6 +43,13 @@ export {
   ensurePermission,
   type AuthContext,
 } from "./mutations-helpers"
+
+// New mutation helpers (logTableStatusAfterMutation, logActionFlow, logDetailAction)
+export {
+  logTableStatusAfterMutation,
+  logActionFlow,
+  logDetailAction,
+} from "./mutation-helpers"
 
 // Auth helpers
 export {
@@ -58,14 +64,6 @@ export {
   getTablePermissionsAsync,
   type TablePermissions,
 } from "./page-helpers"
-
-// Cache invalidation helpers
-export {
-  invalidateResourceCache,
-  invalidateResourceCacheBulk,
-  type ResourceName,
-  type InvalidateCacheOptions,
-} from "./cache-invalidation"
 
 // Column options helpers
 export {

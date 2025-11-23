@@ -10,7 +10,7 @@
  * - Promise.all cho phép fetch usersData và roles đồng thời, không block lẫn nhau
  */
 
-import { listUsersCached, getRolesCached } from "../server/cache"
+import { listUsers, getActiveRoles } from "../server/queries"
 import { serializeUsersList } from "../server/helpers"
 import { UsersTableClient } from "./users-table.client"
 
@@ -22,15 +22,16 @@ export interface UsersTableProps {
 }
 
 export async function UsersTable({ canDelete, canRestore, canManage, canCreate }: UsersTableProps) {
+  // Sử dụng non-cached functions để đảm bảo data luôn fresh
+  // Theo chuẩn Next.js 16: không cache admin data
   // Fetch usersData và roles song song với Promise.all
-  // Cả hai đều cần thiết để render table, nên fetch song song là tối ưu nhất
   const [usersData, roles] = await Promise.all([
-    listUsersCached({
+    listUsers({
       page: 1,
       limit: 10,
       status: "active",
     }),
-    getRolesCached(),
+    getActiveRoles(),
   ])
 
   return (

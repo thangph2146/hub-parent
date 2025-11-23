@@ -3,7 +3,7 @@
  * POST /api/admin/posts - Create post
  */
 import { NextRequest, NextResponse } from "next/server"
-import { listPostsCached } from "@/features/admin/posts/server/cache"
+import { listPosts } from "@/features/admin/posts/server/queries"
 import { createGetRoute, createPostRoute } from "@/lib/api/api-route-wrapper"
 import type { ApiRouteContext } from "@/lib/api/types"
 import { validatePagination, sanitizeSearchQuery } from "@/lib/api/validation"
@@ -48,7 +48,9 @@ async function getPostsHandler(req: NextRequest, context: ApiRouteContext) {
   }
 
   const activeFilters = Object.keys(columnFilters).length > 0 ? columnFilters : undefined
-  const result = await listPostsCached({
+  // Sử dụng listPosts (non-cached) để đảm bảo data luôn fresh
+  // API routes cần fresh data, không nên sử dụng cache để tránh trả về dữ liệu cũ
+  const result = await listPosts({
     page: paginationValidation.page!,
     limit: paginationValidation.limit!,
     search: searchValidation.value || undefined,

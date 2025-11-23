@@ -3,7 +3,6 @@
 import type { Prisma } from "@prisma/client"
 import { PERMISSIONS, canPerformAnyAction } from "@/lib/permissions"
 import { prisma } from "@/lib/database"
-import { resourceLogger } from "@/lib/config"
 import { mapRoleRecord, type ListedRole } from "./queries"
 import {
   CreateRoleSchema,
@@ -17,8 +16,9 @@ import {
   ForbiddenError,
   NotFoundError,
   ensurePermission,
-  invalidateResourceCache,
-  invalidateResourceCacheBulk,
+  logTableStatusAfterMutation,
+  logActionFlow,
+  logDetailAction,
   type AuthContext,
 } from "@/features/admin/resources/server"
 import type { BulkActionResult } from "@/features/admin/resources/types"
@@ -31,26 +31,14 @@ export type { BulkActionResult }
 export async function createRole(ctx: AuthContext, input: CreateRoleInput): Promise<ListedRole> {
   const startTime = Date.now()
   
-  resourceLogger.actionFlow({
-    resource: "roles",
-    action: "create",
-    step: "start",
-    metadata: { actorId: ctx.actorId, input: { name: input.name, displayName: input.displayName } },
-  })
-
+  logActionFlow("roles", "create", "start", { actorId: ctx.actorId, input: { name: input.name, displayName: input.displayName } })
   ensurePermission(ctx, PERMISSIONS.ROLES_CREATE, PERMISSIONS.ROLES_MANAGE)
 
-  // Validate input với zod
   const validatedInput = CreateRoleSchema.parse(input)
 
   const existing = await prisma.role.findUnique({ where: { name: validatedInput.name.trim() } })
   if (existing) {
-    resourceLogger.actionFlow({
-      resource: "roles",
-      action: "create",
-      step: "error",
-      metadata: { error: "Tên vai trò đã tồn tại", name: validatedInput.name.trim() },
-    })
+    logActionFlow("roles", "create", "error", { error: "Tên vai trò đã tồn tại", name: validatedInput.name.trim() })
     throw new ApplicationError("Tên vai trò đã tồn tại", 400)
   }
 
@@ -66,56 +54,16 @@ export async function createRole(ctx: AuthContext, input: CreateRoleInput): Prom
 
   const sanitized = mapRoleRecord(role)
 
-  // Invalidate cache - cần invalidate cả active và deleted views
-  resourceLogger.cache({
-    resource: "roles",
-    action: "cache-invalidate",
-    operation: "invalidate",
-    resourceId: sanitized.id,
-    tags: ["roles", `role-${sanitized.id}`, "active-roles", "deleted-roles"],
-  })
-  await invalidateResourceCache({
-    resource: "roles",
-    id: sanitized.id,
-    additionalTags: ["active-roles", "deleted-roles"],
-  })
-
-  // Emit socket event for real-time updates
-  resourceLogger.socket({
-    resource: "roles",
-    action: "create",
-    event: "role:upsert",
-    resourceId: sanitized.id,
-    payload: { roleId: sanitized.id, status: "active" },
-  })
   await emitRoleUpsert(sanitized.id, null)
 
-  // Emit notification realtime
-  await notifySuperAdminsOfRoleAction(
-    "create",
-    ctx.actorId,
-    {
-      id: sanitized.id,
-      name: sanitized.name,
-      displayName: sanitized.displayName,
-    }
-  )
-
-  resourceLogger.actionFlow({
-    resource: "roles",
-    action: "create",
-    step: "success",
-    duration: Date.now() - startTime,
-    metadata: { roleId: sanitized.id, roleName: sanitized.name, roleDisplayName: sanitized.displayName },
+  await notifySuperAdminsOfRoleAction("create", ctx.actorId, {
+    id: sanitized.id,
+    name: sanitized.name,
+    displayName: sanitized.displayName,
   })
 
-  resourceLogger.detailAction({
-    resource: "roles",
-    action: "create",
-    resourceId: sanitized.id,
-    roleName: sanitized.name,
-    roleDisplayName: sanitized.displayName,
-  })
+  logActionFlow("roles", "create", "success", { roleId: sanitized.id, roleName: sanitized.name, roleDisplayName: sanitized.displayName }, startTime)
+  logDetailAction("roles", "create", sanitized.id, sanitized as unknown as Record<string, unknown>)
 
   return sanitized
 }
@@ -123,32 +71,20 @@ export async function createRole(ctx: AuthContext, input: CreateRoleInput): Prom
 export async function updateRole(ctx: AuthContext, id: string, input: UpdateRoleInput): Promise<ListedRole> {
   const startTime = Date.now()
   
-  resourceLogger.actionFlow({
-    resource: "roles",
-    action: "update",
-    step: "start",
-    metadata: { roleId: id, actorId: ctx.actorId, input },
-  })
-
+  logActionFlow("roles", "update", "start", { roleId: id, actorId: ctx.actorId, input })
   ensurePermission(ctx, PERMISSIONS.ROLES_UPDATE, PERMISSIONS.ROLES_MANAGE)
 
-  // Validate ID
   if (!id || typeof id !== "string" || id.trim() === "") {
     throw new ApplicationError("ID vai trò không hợp lệ", 400)
   }
 
-  // Validate input với zod
   const validatedInput = UpdateRoleSchema.parse(input)
-
-  const existing = await prisma.role.findUnique({
-    where: { id },
-  })
+  const existing = await prisma.role.findUnique({ where: { id } })
 
   if (!existing || existing.deletedAt) {
     throw new NotFoundError("Vai trò không tồn tại")
   }
 
-  // Track changes và build update data
   const changes: {
     name?: { old: string; new: string }
     displayName?: { old: string; new: string }
@@ -158,34 +94,23 @@ export async function updateRole(ctx: AuthContext, id: string, input: UpdateRole
   } = {}
   const updateData: Prisma.RoleUpdateInput = {}
 
-  // Check và update name
   if (validatedInput.name !== undefined) {
     const trimmedName = validatedInput.name.trim()
     if (trimmedName !== existing.name) {
       if (existing.name === "super_admin") {
-        resourceLogger.actionFlow({
-          resource: "roles",
-          action: "update",
-          step: "error",
-          metadata: { roleId: id, error: "Không thể đổi tên vai trò super_admin" },
-        })
+        logActionFlow("roles", "update", "error", { roleId: id, error: "Không thể đổi tên vai trò super_admin" })
         throw new ApplicationError("Không thể đổi tên vai trò super_admin", 400)
       }
       const nameExists = await prisma.role.findFirst({ where: { name: trimmedName, id: { not: id } } })
       if (nameExists) {
-        resourceLogger.actionFlow({
-          resource: "roles",
-          action: "update",
-          step: "error",
-          metadata: { roleId: id, error: "Tên vai trò đã tồn tại", newName: trimmedName },
-        })
+        logActionFlow("roles", "update", "error", { roleId: id, error: "Tên vai trò đã tồn tại", newName: trimmedName })
         throw new ApplicationError("Tên vai trò đã tồn tại", 400)
       }
       updateData.name = trimmedName
       changes.name = { old: existing.name, new: trimmedName }
     }
   }
-  // Update displayName
+
   if (validatedInput.displayName !== undefined) {
     const trimmedDisplayName = validatedInput.displayName.trim()
     if (trimmedDisplayName !== existing.displayName) {
@@ -194,7 +119,6 @@ export async function updateRole(ctx: AuthContext, id: string, input: UpdateRole
     }
   }
 
-  // Update description
   if (validatedInput.description !== undefined) {
     const trimmedDescription = validatedInput.description?.trim() || null
     if (trimmedDescription !== existing.description) {
@@ -203,7 +127,6 @@ export async function updateRole(ctx: AuthContext, id: string, input: UpdateRole
     }
   }
 
-  // Update permissions
   if (validatedInput.permissions !== undefined) {
     const oldPerms = existing.permissions.sort()
     const newPerms = validatedInput.permissions.sort()
@@ -213,22 +136,14 @@ export async function updateRole(ctx: AuthContext, id: string, input: UpdateRole
     }
   }
 
-  // Update isActive
   if (validatedInput.isActive !== undefined && validatedInput.isActive !== existing.isActive) {
     updateData.isActive = validatedInput.isActive
     changes.isActive = { old: existing.isActive, new: validatedInput.isActive }
   }
 
-  // Chỉ update nếu có thay đổi
   if (Object.keys(updateData).length === 0) {
     const sanitized = mapRoleRecord(existing)
-    resourceLogger.actionFlow({
-      resource: "roles",
-      action: "update",
-      step: "success",
-      duration: Date.now() - startTime,
-      metadata: { roleId: sanitized.id, roleName: sanitized.name, changes: {}, noChanges: true },
-    })
+    logActionFlow("roles", "update", "success", { roleId: sanitized.id, roleName: sanitized.name, changes: {}, noChanges: true }, startTime)
     return sanitized
   }
 
@@ -238,55 +153,18 @@ export async function updateRole(ctx: AuthContext, id: string, input: UpdateRole
   })
 
   const sanitized = mapRoleRecord(updated)
-
-  // Invalidate cache - cần invalidate cả active và deleted views
-  resourceLogger.cache({
-    resource: "roles",
-    action: "cache-invalidate",
-    operation: "invalidate",
-    resourceId: sanitized.id,
-    tags: ["roles", `role-${sanitized.id}`, "active-roles", "deleted-roles"],
-  })
-  await invalidateResourceCache({
-    resource: "roles",
-    id: sanitized.id,
-    additionalTags: ["active-roles", "deleted-roles"],
-  })
-
-  // Determine previous status for socket event
   const previousStatus: "active" | "deleted" | null = existing.deletedAt ? "deleted" : "active"
 
-  // Emit socket event for real-time updates
   await emitRoleUpsert(sanitized.id, previousStatus)
 
-  // Emit notification realtime
-  await notifySuperAdminsOfRoleAction(
-    "update",
-    ctx.actorId,
-    {
-      id: sanitized.id,
-      name: sanitized.name,
-      displayName: sanitized.displayName,
-    },
-    Object.keys(changes).length > 0 ? changes : undefined
-  )
+  await notifySuperAdminsOfRoleAction("update", ctx.actorId, {
+    id: sanitized.id,
+    name: sanitized.name,
+    displayName: sanitized.displayName,
+  }, Object.keys(changes).length > 0 ? changes : undefined)
 
-  resourceLogger.actionFlow({
-    resource: "roles",
-    action: "update",
-    step: "success",
-    duration: Date.now() - startTime,
-    metadata: { roleId: sanitized.id, roleName: sanitized.name, changes },
-  })
-
-  resourceLogger.detailAction({
-    resource: "roles",
-    action: "update",
-    resourceId: sanitized.id,
-    roleName: sanitized.name,
-    roleDisplayName: sanitized.displayName,
-    changes,
-  })
+  logActionFlow("roles", "update", "success", { roleId: sanitized.id, roleName: sanitized.name, changes }, startTime)
+  logDetailAction("roles", "update", sanitized.id, { ...sanitized, changes } as unknown as Record<string, unknown>)
 
   return sanitized
 }
@@ -294,34 +172,17 @@ export async function updateRole(ctx: AuthContext, id: string, input: UpdateRole
 export async function softDeleteRole(ctx: AuthContext, id: string): Promise<void> {
   const startTime = Date.now()
   
-  resourceLogger.actionFlow({
-    resource: "roles",
-    action: "delete",
-    step: "start",
-    metadata: { roleId: id, actorId: ctx.actorId },
-  })
-
+  logActionFlow("roles", "delete", "start", { roleId: id, actorId: ctx.actorId })
   ensurePermission(ctx, PERMISSIONS.ROLES_DELETE, PERMISSIONS.ROLES_MANAGE)
 
   const role = await prisma.role.findUnique({ where: { id } })
   if (!role || role.deletedAt) {
-    resourceLogger.actionFlow({
-      resource: "roles",
-      action: "delete",
-      step: "error",
-      metadata: { roleId: id, error: "Vai trò không tồn tại" },
-    })
+    logActionFlow("roles", "delete", "error", { roleId: id, error: "Vai trò không tồn tại" })
     throw new NotFoundError("Vai trò không tồn tại")
   }
 
-  // Prevent deleting super_admin role
   if (role.name === "super_admin") {
-    resourceLogger.actionFlow({
-      resource: "roles",
-      action: "delete",
-      step: "error",
-      metadata: { roleId: id, roleName: role.name, error: "Không thể xóa vai trò super_admin" },
-    })
+    logActionFlow("roles", "delete", "error", { roleId: id, roleName: role.name, error: "Không thể xóa vai trò super_admin" })
     throw new ApplicationError("Không thể xóa vai trò super_admin", 400)
   }
 
@@ -329,65 +190,31 @@ export async function softDeleteRole(ctx: AuthContext, id: string): Promise<void
 
   await prisma.role.update({
     where: { id },
-    data: {
-      deletedAt: new Date(),
-      isActive: false,
-    },
+    data: { deletedAt: new Date(), isActive: false },
   })
 
-  // Invalidate cache - cần invalidate cả active và deleted views
-  resourceLogger.cache({
-    resource: "roles",
-    action: "cache-invalidate",
-    operation: "invalidate",
-    resourceId: id,
-    tags: ["roles", `role-${id}`, "active-roles", "deleted-roles"],
-  })
-  await invalidateResourceCache({
-    resource: "roles",
-    id,
-    additionalTags: ["active-roles", "deleted-roles"],
-  })
-
-  // Emit socket event for real-time updates
-  resourceLogger.socket({
+  await logTableStatusAfterMutation({
     resource: "roles",
     action: "delete",
-    event: "role:upsert",
-    resourceId: id,
-    payload: { roleId: id, previousStatus, newStatus: "deleted" },
+    prismaModel: prisma.role,
+    affectedIds: id,
   })
+
   await emitRoleUpsert(id, previousStatus)
 
-  // Emit notification realtime
-  await notifySuperAdminsOfRoleAction(
-    "delete",
-    ctx.actorId,
-    {
-      id: role.id,
-      name: role.name,
-      displayName: role.displayName,
-    }
-  )
-
-  resourceLogger.actionFlow({
-    resource: "roles",
-    action: "delete",
-    step: "success",
-    duration: Date.now() - startTime,
-    metadata: { roleId: id, roleName: role.name, roleDisplayName: role.displayName },
+  await notifySuperAdminsOfRoleAction("delete", ctx.actorId, {
+    id: role.id,
+    name: role.name,
+    displayName: role.displayName,
   })
+
+  logActionFlow("roles", "delete", "success", { roleId: id, roleName: role.name, roleDisplayName: role.displayName }, startTime)
 }
 
 export async function bulkSoftDeleteRoles(ctx: AuthContext, ids: string[]): Promise<BulkActionResult> {
   const startTime = Date.now()
   
-  resourceLogger.actionFlow({
-    resource: "roles",
-    action: "bulk-delete",
-    step: "start",
-    metadata: { count: ids.length, roleIds: ids, actorId: ctx.actorId },
-  })
+  logActionFlow("roles", "bulk-delete", "start", { count: ids.length, roleIds: ids, actorId: ctx.actorId })
 
   ensurePermission(ctx, PERMISSIONS.ROLES_DELETE, PERMISSIONS.ROLES_MANAGE)
 
@@ -412,16 +239,11 @@ export async function bulkSoftDeleteRoles(ctx: AuthContext, ids: string[]): Prom
   const superAdminRole = roles.find((r) => r.name === "super_admin")
   if (superAdminRole) {
     const errorMessage = "Không thể xóa vai trò super_admin"
-    resourceLogger.actionFlow({
-      resource: "roles",
-      action: "bulk-delete",
-      step: "error",
-      metadata: {
-        requestedCount: ids.length,
-        foundCount: roles.length,
-        error: errorMessage,
-        superAdminRoleId: superAdminRole.id,
-      },
+    logActionFlow("roles", "bulk-delete", "error", {
+      requestedCount: ids.length,
+      foundCount: roles.length,
+      error: errorMessage,
+      superAdminRoleId: superAdminRole.id,
     })
     throw new ApplicationError(errorMessage, 400)
   }
@@ -436,20 +258,15 @@ export async function bulkSoftDeleteRoles(ctx: AuthContext, ids: string[]): Prom
     const alreadyDeletedCount = alreadyDeletedRoles.length
     const notFoundCount = ids.length - allRoles.length
     
-    resourceLogger.actionFlow({
-      resource: "roles",
-      action: "bulk-delete",
-      step: "start",
-      metadata: {
-        requestedCount: ids.length,
-        foundCount: roles.length,
-        allRolesCount: allRoles.length,
-        alreadyDeletedCount,
-        notFoundCount,
-        alreadyDeletedRoleIds: alreadyDeletedRoles.map(r => r.id),
-        alreadyDeletedRoleNames: alreadyDeletedRoles.map(r => r.displayName),
-        notFoundIds: ids.filter(id => !allRoles.some(r => r.id === id)),
-      },
+    logActionFlow("roles", "bulk-delete", "start", {
+      requestedCount: ids.length,
+      foundCount: roles.length,
+      allRolesCount: allRoles.length,
+      alreadyDeletedCount,
+      notFoundCount,
+      alreadyDeletedRoleIds: alreadyDeletedRoles.map(r => r.id),
+      alreadyDeletedRoleNames: alreadyDeletedRoles.map(r => r.displayName),
+      notFoundIds: ids.filter(id => !allRoles.some(r => r.id === id)),
     })
     
     let errorMessage = "Không có vai trò nào có thể xóa"
@@ -467,17 +284,12 @@ export async function bulkSoftDeleteRoles(ctx: AuthContext, ids: string[]): Prom
       errorMessage += ` (${parts.join(", ")})`
     }
     
-    resourceLogger.actionFlow({
-      resource: "roles",
-      action: "bulk-delete",
-      step: "error",
-      metadata: {
-        requestedCount: ids.length,
-        foundCount: roles.length,
-        alreadyDeletedCount,
-        notFoundCount,
-        error: errorMessage,
-      },
+    logActionFlow("roles", "bulk-delete", "error", {
+      requestedCount: ids.length,
+      foundCount: roles.length,
+      alreadyDeletedCount,
+      notFoundCount,
+      error: errorMessage,
     })
     
     throw new ApplicationError(errorMessage, 400)
@@ -494,34 +306,21 @@ export async function bulkSoftDeleteRoles(ctx: AuthContext, ids: string[]): Prom
     },
   })
 
-  // Invalidate cache cho bulk operation - cần invalidate cả active và deleted views
-  resourceLogger.cache({
-    resource: "roles",
-    action: "cache-invalidate",
-    operation: "invalidate",
-    tags: ["roles", "active-roles", "deleted-roles"],
-  })
-  await invalidateResourceCacheBulk({
-    resource: "roles",
-    additionalTags: ["active-roles", "deleted-roles"],
-  })
+  if (result.count > 0) {
+    await logTableStatusAfterMutation({
+      resource: "roles",
+      action: "bulk-delete",
+      prismaModel: prisma.role,
+      affectedIds: roles.map((role) => role.id),
+      affectedCount: result.count,
+    })
+  }
 
   // Emit socket events và tạo bulk notification
   if (result.count > 0 && roles.length > 0) {
     // Emit events song song
     const emitPromises = roles.map((role) => 
       emitRoleUpsert(role.id, "active").catch((error) => {
-        resourceLogger.socket({
-          resource: "roles",
-          action: "bulk-delete",
-          event: "role:upsert",
-          resourceId: role.id,
-          payload: { 
-            roleId: role.id, 
-            roleName: role.name,
-            error: error instanceof Error ? error.message : String(error),
-          },
-        })
         return null
       })
     )
@@ -535,13 +334,7 @@ export async function bulkSoftDeleteRoles(ctx: AuthContext, ids: string[]): Prom
       roles
     )
 
-    resourceLogger.actionFlow({
-      resource: "roles",
-      action: "bulk-delete",
-      step: "success",
-      duration: Date.now() - startTime,
-      metadata: { requestedCount: ids.length, affectedCount: result.count },
-    })
+    logActionFlow("roles", "bulk-delete", "success", { requestedCount: ids.length, affectedCount: result.count }, startTime)
   }
 
   return { success: true, message: `Đã xóa ${result.count} vai trò`, affected: result.count }
@@ -550,23 +343,12 @@ export async function bulkSoftDeleteRoles(ctx: AuthContext, ids: string[]): Prom
 export async function restoreRole(ctx: AuthContext, id: string): Promise<void> {
   const startTime = Date.now()
   
-  resourceLogger.actionFlow({
-    resource: "roles",
-    action: "restore",
-    step: "start",
-    metadata: { roleId: id, actorId: ctx.actorId },
-  })
-
+  logActionFlow("roles", "restore", "start", { roleId: id, actorId: ctx.actorId })
   ensurePermission(ctx, PERMISSIONS.ROLES_UPDATE, PERMISSIONS.ROLES_MANAGE)
 
   const role = await prisma.role.findUnique({ where: { id } })
   if (!role || !role.deletedAt) {
-    resourceLogger.actionFlow({
-      resource: "roles",
-      action: "restore",
-      step: "error",
-      metadata: { roleId: id, error: "Vai trò không tồn tại hoặc chưa bị xóa" },
-    })
+    logActionFlow("roles", "restore", "error", { roleId: id, error: "Vai trò không tồn tại hoặc chưa bị xóa" })
     throw new NotFoundError("Vai trò không tồn tại hoặc chưa bị xóa")
   }
 
@@ -574,65 +356,31 @@ export async function restoreRole(ctx: AuthContext, id: string): Promise<void> {
 
   await prisma.role.update({
     where: { id },
-    data: {
-      deletedAt: null,
-      isActive: true,
-    },
+    data: { deletedAt: null, isActive: true },
   })
 
-  // Invalidate cache - cần invalidate cả active và deleted views
-  resourceLogger.cache({
-    resource: "roles",
-    action: "cache-invalidate",
-    operation: "invalidate",
-    resourceId: id,
-    tags: ["roles", `role-${id}`, "active-roles", "deleted-roles"],
-  })
-  await invalidateResourceCache({
-    resource: "roles",
-    id,
-    additionalTags: ["active-roles", "deleted-roles"],
-  })
-
-  // Emit socket event for real-time updates
-  resourceLogger.socket({
+  await logTableStatusAfterMutation({
     resource: "roles",
     action: "restore",
-    event: "role:upsert",
-    resourceId: id,
-    payload: { roleId: id, previousStatus, newStatus: "active" },
+    prismaModel: prisma.role,
+    affectedIds: id,
   })
+
   await emitRoleUpsert(id, previousStatus)
 
-  // Emit notification realtime
-  await notifySuperAdminsOfRoleAction(
-    "restore",
-    ctx.actorId,
-    {
-      id: role.id,
-      name: role.name,
-      displayName: role.displayName,
-    }
-  )
-
-  resourceLogger.actionFlow({
-    resource: "roles",
-    action: "restore",
-    step: "success",
-    duration: Date.now() - startTime,
-    metadata: { roleId: id, roleName: role.name, roleDisplayName: role.displayName },
+  await notifySuperAdminsOfRoleAction("restore", ctx.actorId, {
+    id: role.id,
+    name: role.name,
+    displayName: role.displayName,
   })
+
+  logActionFlow("roles", "restore", "success", { roleId: id, roleName: role.name, roleDisplayName: role.displayName }, startTime)
 }
 
 export async function bulkRestoreRoles(ctx: AuthContext, ids: string[]): Promise<BulkActionResult> {
   const startTime = Date.now()
   
-  resourceLogger.actionFlow({
-    resource: "roles",
-    action: "bulk-restore",
-    step: "start",
-    metadata: { count: ids.length, roleIds: ids, actorId: ctx.actorId },
-  })
+  logActionFlow("roles", "bulk-restore", "start", { count: ids.length, roleIds: ids, actorId: ctx.actorId })
 
   ensurePermission(ctx, PERMISSIONS.ROLES_UPDATE, PERMISSIONS.ROLES_MANAGE)
 
@@ -669,31 +417,26 @@ export async function bulkRestoreRoles(ctx: AuthContext, ids: string[]): Promise
   const activeIds = activeRoles.map(r => r.id)
 
   // Log chi tiết để debug - bao gồm deletedAt values
-  resourceLogger.actionFlow({
-    resource: "roles",
-    action: "bulk-restore",
-    step: "start",
-    metadata: {
-      requestedCount: ids.length,
-      foundCount: allRequestedRoles.length,
-      softDeletedCount: softDeletedRoles.length,
-      activeCount: activeRoles.length,
-      notFoundCount,
-      requestedIds: ids,
-      foundIds,
-      softDeletedIds,
-      activeIds,
-      notFoundIds,
-      // Log chi tiết deletedAt values để debug
-      allRequestedRolesDetails: allRequestedRoles.map(r => ({
-        id: r.id,
-        name: r.name,
-        deletedAt: r.deletedAt,
-        deletedAtType: typeof r.deletedAt,
-        deletedAtIsNull: r.deletedAt === null,
-        deletedAtIsNotNull: r.deletedAt !== null,
-      })),
-    },
+  logActionFlow("roles", "bulk-restore", "start", {
+    requestedCount: ids.length,
+    foundCount: allRequestedRoles.length,
+    softDeletedCount: softDeletedRoles.length,
+    activeCount: activeRoles.length,
+    notFoundCount,
+    requestedIds: ids,
+    foundIds,
+    softDeletedIds,
+    activeIds,
+    notFoundIds,
+    // Log chi tiết deletedAt values để debug
+    allRequestedRolesDetails: allRequestedRoles.map(r => ({
+      id: r.id,
+      name: r.name,
+      deletedAt: r.deletedAt,
+      deletedAtType: typeof r.deletedAt,
+      deletedAtIsNull: r.deletedAt === null,
+      deletedAtIsNotNull: r.deletedAt !== null,
+    })),
   })
 
   // Nếu không có role nào đã bị soft delete, throw error với message chi tiết
@@ -710,18 +453,13 @@ export async function bulkRestoreRoles(ctx: AuthContext, ids: string[]): Promise
       ? `Không có vai trò nào để khôi phục (${parts.join(", ")})`
       : `Không tìm thấy vai trò nào để khôi phục`
 
-    resourceLogger.actionFlow({
-      resource: "roles",
-      action: "bulk-restore",
-      step: "error",
-      metadata: {
-        requestedCount: ids.length,
-        foundCount: allRequestedRoles.length,
-        softDeletedCount: softDeletedRoles.length,
-        activeCount: activeRoles.length,
-        notFoundCount,
-        error: errorMessage,
-      },
+    logActionFlow("roles", "bulk-restore", "error", {
+      requestedCount: ids.length,
+      foundCount: allRequestedRoles.length,
+      softDeletedCount: softDeletedRoles.length,
+      activeCount: activeRoles.length,
+      notFoundCount,
+      error: errorMessage,
     })
 
     throw new ApplicationError(errorMessage, 400)
@@ -740,34 +478,21 @@ export async function bulkRestoreRoles(ctx: AuthContext, ids: string[]): Promise
     },
   })
 
-  // Invalidate cache cho bulk operation - cần invalidate cả active và deleted views
-  resourceLogger.cache({
-    resource: "roles",
-    action: "cache-invalidate",
-    operation: "invalidate",
-    tags: ["roles", "active-roles", "deleted-roles"],
-  })
-  await invalidateResourceCacheBulk({
-    resource: "roles",
-    additionalTags: ["active-roles", "deleted-roles"],
-  })
+  if (result.count > 0) {
+    await logTableStatusAfterMutation({
+      resource: "roles",
+      action: "bulk-restore",
+      prismaModel: prisma.role,
+      affectedIds: rolesToRestore.map((r) => r.id),
+      affectedCount: result.count,
+    })
+  }
 
   // Emit socket events và tạo bulk notification
   if (result.count > 0 && rolesToRestore.length > 0) {
     // Emit events song song
     const emitPromises = rolesToRestore.map((role) => 
       emitRoleUpsert(role.id, "deleted").catch((error) => {
-        resourceLogger.socket({
-          resource: "roles",
-          action: "bulk-restore",
-          event: "role:upsert",
-          resourceId: role.id,
-          payload: { 
-            roleId: role.id, 
-            roleName: role.name,
-            error: error instanceof Error ? error.message : String(error),
-          },
-        })
         return null
       })
     )
@@ -781,13 +506,7 @@ export async function bulkRestoreRoles(ctx: AuthContext, ids: string[]): Promise
       rolesToRestore
     )
 
-    resourceLogger.actionFlow({
-      resource: "roles",
-      action: "bulk-restore",
-      step: "success",
-      duration: Date.now() - startTime,
-      metadata: { requestedCount: ids.length, affectedCount: result.count },
-    })
+    logActionFlow("roles", "bulk-restore", "success", { requestedCount: ids.length, affectedCount: result.count }, startTime)
   }
 
   // Tạo message chi tiết nếu có roles không thể restore
@@ -812,12 +531,7 @@ export async function bulkRestoreRoles(ctx: AuthContext, ids: string[]): Promise
 export async function hardDeleteRole(ctx: AuthContext, id: string): Promise<void> {
   const startTime = Date.now()
   
-  resourceLogger.actionFlow({
-    resource: "roles",
-    action: "hard-delete",
-    step: "start",
-    metadata: { roleId: id, actorId: ctx.actorId },
-  })
+  logActionFlow("roles", "hard-delete", "start", { roleId: id, actorId: ctx.actorId })
 
   if (!canPerformAnyAction(ctx.permissions, ctx.roles, [PERMISSIONS.ROLES_MANAGE])) {
     throw new ForbiddenError()
@@ -829,23 +543,12 @@ export async function hardDeleteRole(ctx: AuthContext, id: string): Promise<void
   })
 
   if (!role) {
-    resourceLogger.actionFlow({
-      resource: "roles",
-      action: "hard-delete",
-      step: "error",
-      metadata: { roleId: id, error: "Vai trò không tồn tại" },
-    })
+    logActionFlow("roles", "hard-delete", "error", { roleId: id, error: "Vai trò không tồn tại" })
     throw new NotFoundError("Vai trò không tồn tại")
   }
 
-  // Prevent deleting super_admin role
   if (role.name === "super_admin") {
-    resourceLogger.actionFlow({
-      resource: "roles",
-      action: "hard-delete",
-      step: "error",
-      metadata: { roleId: id, roleName: role.name, error: "Không thể xóa vĩnh viễn vai trò super_admin" },
-    })
+    logActionFlow("roles", "hard-delete", "error", { roleId: id, roleName: role.name, error: "Không thể xóa vĩnh viễn vai trò super_admin" })
     throw new ApplicationError("Không thể xóa vĩnh viễn vai trò super_admin", 400)
   }
 
@@ -855,28 +558,7 @@ export async function hardDeleteRole(ctx: AuthContext, id: string): Promise<void
     where: { id },
   })
 
-  // Invalidate cache - cần invalidate cả active và deleted views
-  resourceLogger.cache({
-    resource: "roles",
-    action: "cache-invalidate",
-    operation: "invalidate",
-    resourceId: id,
-    tags: ["roles", `role-${id}`, "active-roles", "deleted-roles"],
-  })
-  await invalidateResourceCache({
-    resource: "roles",
-    id,
-    additionalTags: ["active-roles", "deleted-roles"],
-  })
-
   // Emit socket event for real-time updates
-  resourceLogger.socket({
-    resource: "roles",
-    action: "hard-delete",
-    event: "role:remove",
-    resourceId: id,
-    payload: { roleId: id, previousStatus },
-  })
   emitRoleRemove(id, previousStatus)
 
   // Emit notification realtime
@@ -886,24 +568,13 @@ export async function hardDeleteRole(ctx: AuthContext, id: string): Promise<void
     role
   )
 
-  resourceLogger.actionFlow({
-    resource: "roles",
-    action: "hard-delete",
-    step: "success",
-    duration: Date.now() - startTime,
-    metadata: { roleId: id, roleName: role.name, roleDisplayName: role.displayName },
-  })
+  logActionFlow("roles", "hard-delete", "success", { roleId: id, roleName: role.name, roleDisplayName: role.displayName }, startTime)
 }
 
 export async function bulkHardDeleteRoles(ctx: AuthContext, ids: string[]): Promise<BulkActionResult> {
   const startTime = Date.now()
   
-  resourceLogger.actionFlow({
-    resource: "roles",
-    action: "bulk-hard-delete",
-    step: "start",
-    metadata: { count: ids.length, roleIds: ids, actorId: ctx.actorId },
-  })
+  logActionFlow("roles", "bulk-hard-delete", "start", { count: ids.length, roleIds: ids, actorId: ctx.actorId })
 
   if (!canPerformAnyAction(ctx.permissions, ctx.roles, [PERMISSIONS.ROLES_MANAGE])) {
     throw new ForbiddenError()
@@ -925,51 +596,35 @@ export async function bulkHardDeleteRoles(ctx: AuthContext, ids: string[]): Prom
   const notFoundIds = ids.filter(id => !foundIds.includes(id))
   
   // Log để debug với đầy đủ thông tin
-  resourceLogger.actionFlow({
-    resource: "roles",
-    action: "bulk-hard-delete",
-    step: "start",
-    metadata: {
-      requestedCount: ids.length,
-      foundCount: roles.length,
-      notFoundCount: notFoundIds.length,
-      requestedIds: ids,
-      foundIds,
-      notFoundIds,
-    },
+  logActionFlow("roles", "bulk-hard-delete", "start", {
+    requestedCount: ids.length,
+    foundCount: roles.length,
+    notFoundCount: notFoundIds.length,
+    requestedIds: ids,
+    foundIds,
+    notFoundIds,
   })
 
   // Check if any role is super_admin
   const superAdminRole = roles.find((r) => r.name === "super_admin")
   if (superAdminRole) {
     const errorMessage = "Không thể xóa vĩnh viễn vai trò super_admin"
-    resourceLogger.actionFlow({
-      resource: "roles",
-      action: "bulk-hard-delete",
-      step: "error",
-      metadata: {
-        requestedCount: ids.length,
-        foundCount: roles.length,
-        error: errorMessage,
-        superAdminRoleId: superAdminRole.id,
-      },
+    logActionFlow("roles", "bulk-hard-delete", "error", {
+      requestedCount: ids.length,
+      foundCount: roles.length,
+      error: errorMessage,
+      superAdminRoleId: superAdminRole.id,
     })
     throw new ApplicationError(errorMessage, 400)
   }
 
-  // Nếu không tìm thấy role nào, throw error
   if (roles.length === 0) {
     const errorMessage = `Không tìm thấy vai trò nào để xóa vĩnh viễn`
-    resourceLogger.actionFlow({
-      resource: "roles",
-      action: "bulk-hard-delete",
-      step: "error",
-      metadata: {
-        requestedCount: ids.length,
-        foundCount: roles.length,
-        notFoundCount: notFoundIds.length,
-        error: errorMessage,
-      },
+    logActionFlow("roles", "bulk-hard-delete", "error", {
+      requestedCount: ids.length,
+      foundCount: roles.length,
+      notFoundCount: notFoundIds.length,
+      error: errorMessage,
     })
     throw new ApplicationError(errorMessage, 400)
   }
@@ -980,18 +635,6 @@ export async function bulkHardDeleteRoles(ctx: AuthContext, ids: string[]): Prom
     },
   })
 
-  // Invalidate cache cho bulk operation - cần invalidate cả active và deleted views
-  resourceLogger.cache({
-    resource: "roles",
-    action: "cache-invalidate",
-    operation: "invalidate",
-    tags: ["roles", "active-roles", "deleted-roles"],
-  })
-  await invalidateResourceCacheBulk({
-    resource: "roles",
-    additionalTags: ["active-roles", "deleted-roles"],
-  })
-
   // Emit socket events và tạo bulk notification
   if (result.count > 0 && roles.length > 0) {
     // Emit events (emitRoleRemove trả về void, không phải Promise)
@@ -1000,17 +643,6 @@ export async function bulkHardDeleteRoles(ctx: AuthContext, ids: string[]): Prom
       try {
         emitRoleRemove(role.id, previousStatus)
       } catch (error) {
-        resourceLogger.socket({
-          resource: "roles",
-          action: "bulk-hard-delete",
-          event: "role:remove",
-          resourceId: role.id,
-          payload: { 
-            roleId: role.id, 
-            roleName: role.name,
-            error: error instanceof Error ? error.message : String(error),
-          },
-        })
       }
     })
 
@@ -1022,13 +654,7 @@ export async function bulkHardDeleteRoles(ctx: AuthContext, ids: string[]): Prom
       roles
     )
 
-    resourceLogger.actionFlow({
-      resource: "roles",
-      action: "bulk-hard-delete",
-      step: "success",
-      duration: Date.now() - startTime,
-      metadata: { requestedCount: ids.length, affectedCount: result.count },
-    })
+    logActionFlow("roles", "bulk-hard-delete", "success", { requestedCount: ids.length, affectedCount: result.count }, startTime)
   }
 
   return { success: true, message: `Đã xóa vĩnh viễn ${result.count} vai trò`, affected: result.count }

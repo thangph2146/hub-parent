@@ -3,7 +3,7 @@
  * POST /api/admin/sessions - Create session
  */
 import { NextRequest, NextResponse } from "next/server"
-import { listSessionsCached } from "@/features/admin/sessions/server/cache"
+import { listSessions } from "@/features/admin/sessions/server/queries"
 import { serializeSessionsList } from "@/features/admin/sessions/server/helpers"
 import {
   createSession,
@@ -43,7 +43,9 @@ async function getSessionsHandler(req: NextRequest, _context: ApiRouteContext) {
     }
   })
 
-  const result = await listSessionsCached({
+  // Sử dụng listSessions (non-cached) để đảm bảo data luôn fresh
+  // API routes cần fresh data, không nên sử dụng cache để tránh trả về dữ liệu cũ
+  const result = await listSessions({
     page: paginationValidation.page,
     limit: paginationValidation.limit,
     search: searchValidation.value || undefined,

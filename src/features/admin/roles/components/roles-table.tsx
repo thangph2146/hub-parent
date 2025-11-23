@@ -5,7 +5,7 @@
  * Pattern: Server Component (data fetching) → Client Component (UI/interactions)
  */
 
-import { listRolesCached, getAllPermissionsCached } from "../server/cache"
+import { listRoles, getAllPermissionsOptions } from "../server/queries"
 import { serializeRolesList } from "../server/helpers"
 import { RolesTableClient } from "./roles-table.client"
 
@@ -17,13 +17,15 @@ export interface RolesTableProps {
 }
 
 export async function RolesTable({ canDelete, canRestore, canManage, canCreate }: RolesTableProps) {
+  // Sử dụng non-cached functions để đảm bảo data luôn fresh
+  // Theo chuẩn Next.js 16: không cache admin data
   const [rolesData, permissions] = await Promise.all([
-    listRolesCached({
+    listRoles({
       page: 1,
       limit: 10,
       status: "active",
     }),
-    getAllPermissionsCached(),
+    getAllPermissionsOptions(),
   ])
 
   return (

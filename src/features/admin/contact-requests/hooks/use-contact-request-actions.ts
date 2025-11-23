@@ -55,19 +55,8 @@ export function useContactRequestActions({
       setTogglingRequests((prev) => new Set(prev).add(row.id))
       setLoadingState((prev) => new Set(prev).add(row.id))
 
-      // Optimistic update chỉ khi không có socket (fallback)
-      if (!isSocketConnected) {
-        queryClient.setQueriesData<DataTableResult<ContactRequestRow>>(
-          { queryKey: queryKeys.adminContactRequests.all() as unknown[] },
-          (oldData) => {
-            if (!oldData) return oldData
-            const updatedRows = oldData.rows.map((r) =>
-              r.id === row.id ? { ...r, isRead: newStatus } : r
-            )
-            return { ...oldData, rows: updatedRows }
-          },
-        )
-      }
+      // Theo chuẩn Next.js 16: không update cache manually, chỉ invalidate
+      // Socket events sẽ tự động update cache nếu có
 
       try {
         await apiClient.put(apiRoutes.contactRequests.update(row.id), { isRead: newStatus })
@@ -88,10 +77,8 @@ export function useContactRequestActions({
           errorMessage
         )
         
-        // Rollback optimistic update nếu có lỗi
-        if (isSocketConnected) {
-          queryClient.invalidateQueries({ queryKey: queryKeys.adminContactRequests.all() })
-        }
+        // Invalidate queries để refresh data từ server
+        await queryClient.invalidateQueries({ queryKey: queryKeys.adminContactRequests.all() })
       } finally {
         setTogglingRequests((prev) => {
           const next = new Set(prev)

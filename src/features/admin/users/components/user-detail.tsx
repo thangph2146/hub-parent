@@ -5,7 +5,7 @@
  * Pattern: Server Component (data fetching) → Client Component (UI/interactions)
  */
 
-import { getUserDetailById } from "../server/cache"
+import { getUserDetailById } from "../server/queries"
 import { serializeUserDetail } from "../server/helpers"
 import { UserDetailClient } from "./user-detail.client"
 import type { UserDetailData } from "./user-detail.client"

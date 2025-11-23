@@ -2,9 +2,10 @@
  * Resource Logger - Logger chuẩn cho data table và data detail
  * 
  * Cung cấp logging chuẩn để theo dõi:
- * - Cấu trúc dữ liệu
+ * - Cấu trúc dữ liệu đầy đủ của table (columns, rows, pagination)
+ * - Cấu trúc dữ liệu đầy đủ của record detail (tất cả fields)
  * - Các action đang được sử dụng
- * - Working flow
+ * - Working flow chi tiết
  * - Action tracking cho data table và data detail
  */
 
@@ -48,12 +49,33 @@ export interface ResourceLogContext {
 }
 
 /**
- * Data structure logging
+ * Data structure logging - Log đầy đủ cấu trúc dữ liệu
  */
 export interface DataStructureLog {
   resource: string
   dataType: "table" | "detail" | "form"
-  structure: Record<string, unknown>
+  structure: {
+    // Cho table: columns, rows, pagination
+    columns?: string[]
+    rows?: Array<Record<string, unknown>>
+    pagination?: {
+      page: number
+      limit: number
+      total: number
+      totalPages: number
+    }
+    // Cho detail: tất cả fields của record
+    fields?: Record<string, unknown>
+    // Cho table status sau mutation
+    tableStatus?: {
+      activeCount: number
+      deletedCount: number
+      affectedCount?: number
+      affectedIds?: string[]
+      summary?: string
+    }
+    [key: string]: unknown
+  }
   rowCount?: number
 }
 
@@ -71,6 +93,7 @@ export interface ActionFlowLog {
 /**
  * Resource Logger instance
  */
+export type { ResourceAction }
 export const resourceLogger = {
   /**
    * Log action cho data table
@@ -90,29 +113,60 @@ export const resourceLogger = {
   },
 
   /**
-   * Log action cho data detail
+   * Log action cho data detail - Log đầy đủ thông tin record detail
    */
-  detailAction: (context: ResourceLogContext & { resourceId: string }) => {
-    logger.debug(`[${context.resource.toUpperCase()}] Detail Action: ${context.action}`, {
-      action: context.action,
-      resource: context.resource,
-      resourceId: context.resourceId,
-      ...Object.fromEntries(
-        Object.entries(context).filter(([key]) => !["resource", "action", "resourceId"].includes(key))
-      ),
+  detailAction: (context: ResourceLogContext & { 
+    resourceId: string
+    recordData?: Record<string, unknown>
+    fields?: string[]
+  }) => {
+    const { resource, action, resourceId, recordData, fields, ...rest } = context
+    const allFields = fields || (recordData ? Object.keys(recordData) : [])
+    logger.debug(`[${resource.toUpperCase()}] 📄 Detail Action: ${action}`, {
+      action,
+      resource,
+      resourceId,
+      fields: allFields,
+      fieldCount: allFields.length,
+      // Log đầy đủ recordData để theo dõi cấu trúc dữ liệu
+      recordData: recordData || undefined,
+      ...rest,
     })
   },
 
   /**
-   * Log data structure
+   * Log data structure - Log đầy đủ cấu trúc dữ liệu table hoặc detail
    */
   dataStructure: (log: DataStructureLog) => {
-    logger.debug(`[${log.resource.toUpperCase()}] Data Structure: ${log.dataType}`, {
-      resource: log.resource,
-      dataType: log.dataType,
-      structure: log.structure,
-      rowCount: log.rowCount,
-    })
+    const { resource, dataType, structure, rowCount } = log
+    
+    if (dataType === "table") {
+      logger.debug(`[${resource.toUpperCase()}] 📊 Table Structure`, {
+        resource,
+        dataType,
+        columns: structure.columns || [],
+        rowCount: rowCount ?? structure.rows?.length ?? 0,
+        pagination: structure.pagination,
+        sampleRows: structure.rows?.slice(0, 3), // Log 3 rows đầu để xem structure
+        totalRows: structure.rows?.length,
+        tableStatus: structure.tableStatus,
+      })
+    } else if (dataType === "detail") {
+      logger.debug(`[${resource.toUpperCase()}] 📄 Detail Structure`, {
+        resource,
+        dataType,
+        fields: Object.keys(structure.fields || {}),
+        fieldCount: Object.keys(structure.fields || {}).length,
+        data: structure.fields,
+      })
+    } else {
+      logger.debug(`[${resource.toUpperCase()}] 📋 ${dataType} Structure`, {
+        resource,
+        dataType,
+        structure,
+        rowCount,
+      })
+    }
   },
 
   /**

@@ -42,38 +42,35 @@ export function CategoryDetailClient({ categoryId, category, backUrl = "/admin/c
   })
 
   // Ưu tiên sử dụng React Query cache nếu có (dữ liệu mới nhất sau khi edit), fallback về props
-  const detailData = useResourceDetailData({
+  // Chỉ log sau khi fetch từ API xong để đảm bảo data mới nhất
+  const { data: detailData, isFetched, isFromApi, fetchedData } = useResourceDetailData({
     initialData: category,
     resourceId: categoryId,
     detailQueryKey: queryKeys.adminCategories.detail,
     resourceName: "categories",
   })
 
-  // Log detail load một lần cho mỗi categoryId (tránh duplicate trong React Strict Mode)
+  // Log detail load một lần cho mỗi categoryId (chỉ log sau khi fetch từ API xong)
+  // Sử dụng fetchedData (data từ API) thay vì detailData để đảm bảo log data mới nhất
   useEffect(() => {
     const logKey = `categories-detail-${categoryId}`
-    if (loggedCategoryIds.has(logKey)) return
+    // Chỉ log khi đã fetch xong, data từ API (isFromApi = true), và chưa log
+    // Sử dụng fetchedData (data từ API) để đảm bảo log data mới nhất
+    if (!isFetched || !isFromApi || loggedCategoryIds.has(logKey) || !fetchedData) return
     loggedCategoryIds.add(logKey)
     
     resourceLogger.detailAction({
       resource: "categories",
       action: "load-detail",
       resourceId: categoryId,
-      categoryName: detailData.name,
-      categorySlug: detailData.slug,
+      recordData: fetchedData as Record<string, unknown>,
     })
 
     resourceLogger.dataStructure({
       resource: "categories",
       dataType: "detail",
       structure: {
-        id: detailData.id,
-        name: detailData.name,
-        slug: detailData.slug,
-        description: detailData.description,
-        createdAt: detailData.createdAt,
-        updatedAt: detailData.updatedAt,
-        deletedAt: detailData.deletedAt,
+        fields: fetchedData as Record<string, unknown>,
       },
     })
 
@@ -83,7 +80,7 @@ export function CategoryDetailClient({ categoryId, category, backUrl = "/admin/c
         loggedCategoryIds.delete(logKey)
       }, 1000)
     }
-  }, [categoryId, detailData.id, detailData.name, detailData.slug, detailData.createdAt, detailData.updatedAt, detailData.deletedAt])
+  }, [categoryId, isFetched, isFromApi, fetchedData])
 
   const detailFields: ResourceDetailField<CategoryDetailData>[] = []
 

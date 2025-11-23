@@ -40,37 +40,35 @@ export function TagDetailClient({ tagId, tag, backUrl = "/admin/tags" }: TagDeta
   })
 
   // Ưu tiên sử dụng React Query cache nếu có (dữ liệu mới nhất sau khi edit), fallback về props
-  const detailData = useResourceDetailData({
+  // Chỉ log sau khi fetch từ API xong để đảm bảo data mới nhất
+  const { data: detailData, isFetched, isFromApi, fetchedData } = useResourceDetailData({
     initialData: tag,
     resourceId: tagId,
     detailQueryKey: queryKeys.adminTags.detail,
     resourceName: "tags",
   })
 
-  // Log detail load một lần cho mỗi tagId (tránh duplicate trong React Strict Mode)
+  // Log detail load một lần cho mỗi tagId (chỉ log sau khi fetch từ API xong)
+  // Sử dụng fetchedData (data từ API) thay vì detailData để đảm bảo log data mới nhất
   useEffect(() => {
     const logKey = `tags-detail-${tagId}`
-    if (loggedTagIds.has(logKey)) return
+    // Chỉ log khi đã fetch xong, data từ API (isFromApi = true), và chưa log
+    // Sử dụng fetchedData (data từ API) để đảm bảo log data mới nhất
+    if (!isFetched || !isFromApi || loggedTagIds.has(logKey) || !fetchedData) return
     loggedTagIds.add(logKey)
     
     resourceLogger.detailAction({
       resource: "tags",
       action: "load-detail",
       resourceId: tagId,
-      tagName: detailData.name,
-      tagSlug: detailData.slug,
+      recordData: fetchedData as Record<string, unknown>,
     })
 
     resourceLogger.dataStructure({
       resource: "tags",
       dataType: "detail",
       structure: {
-        id: detailData.id,
-        name: detailData.name,
-        slug: detailData.slug,
-        createdAt: detailData.createdAt,
-        updatedAt: detailData.updatedAt,
-        deletedAt: detailData.deletedAt,
+        fields: fetchedData as Record<string, unknown>,
       },
     })
 
@@ -80,7 +78,7 @@ export function TagDetailClient({ tagId, tag, backUrl = "/admin/tags" }: TagDeta
         loggedTagIds.delete(logKey)
       }, 1000)
     }
-  }, [tagId, detailData.id, detailData.name, detailData.slug, detailData.createdAt, detailData.updatedAt, detailData.deletedAt])
+  }, [tagId, isFetched, isFromApi, fetchedData])
 
   const detailFields: ResourceDetailField<TagDetailData>[] = []
 

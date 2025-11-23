@@ -272,6 +272,10 @@ export const queryKeys = {
     list: (params: AdminContactRequestsListParams): readonly unknown[] => {
       return ["adminContactRequests", normalizeListParams(params)]
     },
+    /**
+     * Contact request detail by ID
+     */
+    detail: (id: string): readonly unknown[] => ["adminContactRequests", "detail", id],
   },
 
   /**

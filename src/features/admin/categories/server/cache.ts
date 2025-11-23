@@ -1,11 +1,12 @@
 /**
  * Cached Database Queries for Categories
  * 
- * Sử dụng unstable_cache (Data Cache) kết hợp với React cache (Request Memoization)
- * - unstable_cache: Cache kết quả giữa các requests (Persisted Cache)
- * - React cache: Deduplicate requests trong cùng một render pass
+ * LƯU Ý: Theo chuẩn Next.js 16 và yêu cầu không cache admin data,
+ * các functions trong file này KHÔNG được sử dụng trong Server Components hoặc API routes.
+ * Chỉ giữ lại để tương thích ngược hoặc cho các use case đặc biệt.
  * 
- * Pattern: Server Component → Cache Function → Database Query
+ * Server Components và API routes nên sử dụng trực tiếp query functions từ queries.ts
+ * để đảm bảo data luôn fresh.
  */
 
 import { cache } from "react"

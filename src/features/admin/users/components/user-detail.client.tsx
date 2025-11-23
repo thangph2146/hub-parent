@@ -49,35 +49,49 @@ export interface UserDetailClientProps {
 export function UserDetailClient({ userId, user, backUrl = "/admin/users" }: UserDetailClientProps) {
   const router = useResourceRouter()
   
-  // Sử dụng React Query cache nếu có, fallback về initial data
-  const detailData = useResourceDetailData({
+  // Fetch fresh data từ API để đảm bảo data chính xác (theo chuẩn Next.js 16)
+  // Luôn fetch khi mount để đảm bảo data mới nhất từ API
+  const { data: detailData, isFetched, isFromApi, fetchedData } = useResourceDetailData({
     initialData: user,
     resourceId: userId,
     detailQueryKey: queryKeys.adminUsers.detail,
     resourceName: "users",
+    // Không cần apiRoute, useResourceDetailData sẽ tự động detect từ resourceName
+    fetchOnMount: true, // Luôn fetch khi mount để đảm bảo data fresh
   })
 
-  // Log detail action và data structure (chỉ log một lần)
+  // Log detail action và data structure (chỉ log một lần sau khi fetch từ API xong)
+  // Sử dụng fetchedData (data từ API) thay vì detailData để đảm bảo log data mới nhất
   const loggedUserIds = React.useRef<Set<string>>(new Set())
   React.useEffect(() => {
-    if (!loggedUserIds.current.has(userId)) {
-      loggedUserIds.current.add(userId)
-      
-      resourceLogger.detailAction({
-        resource: "users",
-        action: "load-detail",
-        resourceId: userId,
-        userName: detailData.name || detailData.email,
-        userEmail: detailData.email,
-      })
+    const logKey = `users-detail-${userId}`
+    // Chỉ log khi đã fetch xong, data từ API (isFromApi = true), và chưa log
+    // Sử dụng fetchedData (data từ API) để đảm bảo log data mới nhất
+    if (!isFetched || !isFromApi || loggedUserIds.current.has(logKey) || !fetchedData) return
+    loggedUserIds.current.add(logKey)
+    
+    resourceLogger.detailAction({
+      resource: "users",
+      action: "load-detail",
+      resourceId: userId,
+      recordData: fetchedData as Record<string, unknown>,
+    })
 
-      resourceLogger.dataStructure({
-        resource: "users",
-        dataType: "detail",
-        structure: detailData,
-      })
+    resourceLogger.dataStructure({
+      resource: "users",
+      dataType: "detail",
+      structure: {
+        fields: fetchedData as Record<string, unknown>,
+      },
+    })
+
+    // Cleanup khi component unmount hoặc userId thay đổi
+    return () => {
+      setTimeout(() => {
+        loggedUserIds.current.delete(logKey)
+      }, 1000)
     }
-  }, [userId, detailData])
+  }, [userId, isFetched, isFromApi, fetchedData])
 
   const detailFields: ResourceDetailField<UserDetailData>[] = []
 

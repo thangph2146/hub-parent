@@ -4,7 +4,7 @@
  * DELETE /api/admin/students/[id] - Soft delete student
  */
 import { NextRequest, NextResponse } from "next/server"
-import { getStudentDetailById } from "@/features/admin/students/server/cache"
+import { getStudentById } from "@/features/admin/students/server/queries"
 import { serializeStudentDetail } from "@/features/admin/students/server/helpers"
 import {
   updateStudent,
@@ -30,7 +30,9 @@ async function getStudentHandler(_req: NextRequest, context: ApiRouteContext, ..
   const actorId = context.session.user?.id
   const isSuperAdminUser = isSuperAdmin(context.roles)
 
-  const student = await getStudentDetailById(studentId, actorId, isSuperAdminUser)
+  // Sử dụng getStudentById (non-cached) để đảm bảo data luôn fresh
+  // API routes cần fresh data, không nên sử dụng cache để tránh trả về dữ liệu cũ
+  const student = await getStudentById(studentId, actorId, isSuperAdminUser)
 
   if (!student) {
     return NextResponse.json({ error: "Student not found" }, { status: 404 })

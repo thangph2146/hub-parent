@@ -66,30 +66,8 @@ export async function emitContactRequestUpsert(
     newStatus,
   }
 
-  // Emit to all super admins (contact requests are visible to all super admins)
-  const superAdmins = await prisma.user.findMany({
-    where: {
-      isActive: true,
-      deletedAt: null,
-      userRoles: {
-        some: {
-          role: {
-            name: "super_admin",
-            isActive: true,
-            deletedAt: null,
-          },
-        },
-      },
-    },
-    select: { id: true },
-  })
-
-  // Emit to each super admin user room
-  for (const admin of superAdmins) {
-    io.to(`user:${admin.id}`).emit("contact-request:upsert", upsertPayload)
-  }
-
-  // Also emit to role room for broadcast
+  // Emit to role room (tất cả super admins đều ở trong role room)
+  // Không cần emit đến từng user room để tránh duplicate events
   io.to(SUPER_ADMIN_ROOM).emit("contact-request:upsert", upsertPayload)
 }
 
@@ -157,30 +135,53 @@ export async function emitContactRequestNew(contactRequest: ListedContactRequest
     assignedToName: contactRequest.assignedTo?.name ?? null,
   }
 
-  // Emit to all super admins
-  const superAdmins = await prisma.user.findMany({
+  // Emit to role room (tất cả super admins đều ở trong role room)
+  // Không cần emit đến từng user room để tránh duplicate events
+  io.to(SUPER_ADMIN_ROOM).emit("contact-request:new", payload)
+}
+
+/**
+ * Emit batch contact-request:upsert events
+ * Được gọi khi bulk operations để tối ưu performance
+ * Thay vì emit từng event riêng lẻ, emit một batch event
+ */
+export async function emitContactRequestBatchUpsert(
+  contactRequestIds: string[],
+  previousStatus: ContactRequestStatus | null,
+): Promise<void> {
+  const io = getSocketServer()
+  if (!io || contactRequestIds.length === 0) return
+
+  // Fetch tất cả contact requests trong một query
+  const contactRequests = await prisma.contactRequest.findMany({
     where: {
-      isActive: true,
-      deletedAt: null,
-      userRoles: {
-        some: {
-          role: {
-            name: "super_admin",
-            isActive: true,
-            deletedAt: null,
-          },
+      id: { in: contactRequestIds },
+    },
+    include: {
+      assignedTo: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
         },
       },
     },
-    select: { id: true },
   })
 
-  // Emit to each super admin user room
-  for (const admin of superAdmins) {
-    io.to(`user:${admin.id}`).emit("contact-request:new", payload)
+  // Map contact requests to rows
+  const rows: ContactRequestRow[] = []
+  for (const contactRequest of contactRequests) {
+    const listed = mapContactRequestRecord(contactRequest)
+    const row = serializeContactRequestForTable(listed)
+    rows.push(row)
   }
 
-  // Also emit to role room for broadcast
-  io.to(SUPER_ADMIN_ROOM).emit("contact-request:new", payload)
+  // Emit batch event với tất cả rows
+  // Emit to role room (tất cả super admins đều ở trong role room)
+  // Không cần emit đến từng user room để tránh duplicate events
+  io.to(SUPER_ADMIN_ROOM).emit("contact-request:batch-upsert", {
+    contactRequests: rows,
+    previousStatus,
+  })
 }
 

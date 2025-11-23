@@ -163,43 +163,8 @@ export async function notifySuperAdminsOfCommentAction(
         take: superAdmins.length,
       })
 
-      // Emit to each super admin user room với notification từ database
-      for (let i = 0; i < superAdmins.length; i++) {
-        const admin = superAdmins[i]
-        const dbNotification = createdNotifications.find((n) => n.userId === admin.id)
-        
-        if (dbNotification) {
-          // Map notification từ database sang socket payload format
-          const socketNotification = mapNotificationToPayload(dbNotification)
-          storeNotificationInCache(admin.id, socketNotification)
-          io.to(`user:${admin.id}`).emit("notification:new", socketNotification)
-        } else {
-          // Fallback nếu không tìm thấy notification trong database
-          const fallbackNotification = {
-            id: `comment-${action}-${comment.id}-${Date.now()}`,
-            kind: "system" as const,
-            title,
-            description,
-            actionUrl,
-            timestamp: Date.now(),
-            read: false,
-            toUserId: admin.id,
-            metadata: {
-              type: `comment_${action}`,
-              actorId,
-              commentId: comment.id,
-              authorName: comment.authorName,
-              authorEmail: comment.authorEmail,
-              postTitle: comment.postTitle,
-              ...(changes && { changes }),
-            },
-          }
-          storeNotificationInCache(admin.id, fallbackNotification)
-          io.to(`user:${admin.id}`).emit("notification:new", fallbackNotification)
-        }
-      }
-
-      // Also emit to role room for broadcast (use first notification if available)
+      // Emit to role room (tất cả super admins đều ở trong role room)
+      // Không cần emit đến từng user room để tránh duplicate events
       if (createdNotifications.length > 0) {
         const roleNotification = mapNotificationToPayload(createdNotifications[0])
         io.to("role:super_admin").emit("notification:new", roleNotification)
@@ -316,17 +281,8 @@ export async function notifySuperAdminsOfBulkCommentAction(
         take: superAdmins.length,
       })
 
-      for (let i = 0; i < superAdmins.length; i++) {
-        const admin = superAdmins[i]
-        const dbNotification = createdNotifications.find((n) => n.userId === admin.id)
-        
-        if (dbNotification) {
-          const socketNotification = mapNotificationToPayload(dbNotification)
-          storeNotificationInCache(admin.id, socketNotification)
-          io.to(`user:${admin.id}`).emit("notification:new", socketNotification)
-        }
-      }
-
+      // Emit to role room (tất cả super admins đều ở trong role room)
+      // Không cần emit đến từng user room để tránh duplicate events
       if (createdNotifications.length > 0) {
         const roleNotification = mapNotificationToPayload(createdNotifications[0])
         io.to("role:super_admin").emit("notification:new", roleNotification)

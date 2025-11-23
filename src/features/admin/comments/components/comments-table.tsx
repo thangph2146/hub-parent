@@ -5,7 +5,7 @@
  * Pattern: Server Component (data fetching) → Client Component (UI/interactions)
  */
 
-import { listCommentsCached } from "../server/cache"
+import { listComments } from "../server/queries"
 import { serializeCommentsList } from "../server/helpers"
 import { CommentsTableClient } from "./comments-table.client"
 
@@ -17,7 +17,9 @@ export interface CommentsTableProps {
 }
 
 export async function CommentsTable({ canDelete, canRestore, canManage, canApprove }: CommentsTableProps) {
-  const commentsData = await listCommentsCached({
+  // Sử dụng listComments (non-cached) để đảm bảo data luôn fresh
+  // Theo chuẩn Next.js 16: không cache admin data
+  const commentsData = await listComments({
     page: 1,
     limit: 10,
     filters: {

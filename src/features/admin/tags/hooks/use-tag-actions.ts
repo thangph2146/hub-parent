@@ -99,36 +99,12 @@ export function useTagActions({
           await apiClient.post(actionConfig.endpoint)
         }
 
-        // Optimistic update chỉ khi không có socket (fallback)
-        if (!isSocketConnected) {
-          queryClient.setQueriesData<DataTableResult<TagRow>>(
-            { queryKey: queryKeys.adminTags.all() as unknown[] },
-            (oldData) => {
-              if (!oldData) return oldData
-              if (action === "delete") {
-                return {
-                  ...oldData,
-                  rows: oldData.rows.filter((r) => r.id !== row.id),
-                  total: Math.max(0, oldData.total - 1),
-                }
-              }
-              if (action === "restore") {
-                return {
-                  ...oldData,
-                  rows: [...oldData.rows, { ...row, deletedAt: null }],
-                  total: oldData.total + 1,
-                }
-              }
-              return oldData
-            }
-          )
-        }
-
         showFeedback("success", actionConfig.successTitle, actionConfig.successDescription)
 
-        // Socket events đã update cache, chỉ refresh nếu socket không connected
+        // Theo chuẩn Next.js 16: không update cache manually, chỉ invalidate
+        // Socket events sẽ tự động update cache nếu có
         if (!isSocketConnected) {
-        await runResourceRefresh({ refresh, resource: "tags" })
+          await runResourceRefresh({ refresh, resource: "tags" })
         }
 
         resourceLogger.actionFlow({

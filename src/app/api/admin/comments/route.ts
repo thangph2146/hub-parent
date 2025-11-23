@@ -2,7 +2,7 @@
  * API Route: GET /api/admin/comments - List comments
  */
 import { NextRequest } from "next/server"
-import { listCommentsCached } from "@/features/admin/comments/server/cache"
+import { listComments } from "@/features/admin/comments/server/queries"
 import { serializeCommentsList } from "@/features/admin/comments/server/helpers"
 import { createGetRoute } from "@/lib/api/api-route-wrapper"
 import type { ApiRouteContext } from "@/lib/api/types"
@@ -69,7 +69,9 @@ async function getCommentsHandler(req: NextRequest, _context: ApiRouteContext) {
     filters: Object.keys(filters).length > 0 ? filters : undefined,
   }
 
-  const result = await listCommentsCached(params)
+  // Sử dụng listComments (non-cached) để đảm bảo data luôn fresh
+  // API routes cần fresh data, không nên sử dụng cache để tránh trả về dữ liệu cũ
+  const result = await listComments(params)
 
   // Serialize result to match CommentsResponse format
   const serialized = serializeCommentsList(result)

@@ -135,6 +135,55 @@ export async function getUserColumnOptions(
   return mapToColumnOptions(results, column)
 }
 
+/**
+ * Get all active roles (non-cached)
+ * Theo chuẩn Next.js 16: không cache admin data
+ */
+export async function getActiveRoles(): Promise<Array<{ id: string; name: string; displayName: string }>> {
+  const roles = await prisma.role.findMany({
+    where: {
+      isActive: true,
+      deletedAt: null,
+    },
+    select: {
+      id: true,
+      name: true,
+      displayName: true,
+    },
+    orderBy: {
+      displayName: "asc",
+    },
+  })
+  return roles
+}
+
+/**
+ * Get active users for select options (non-cached)
+ * Theo chuẩn Next.js 16: không cache admin data
+ */
+export async function getActiveUsersForSelect(limit: number = 100): Promise<Array<{ label: string; value: string }>> {
+  const users = await prisma.user.findMany({
+    where: {
+      isActive: true,
+      deletedAt: null,
+    },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+    },
+    orderBy: {
+      name: "asc",
+    },
+    take: limit,
+  })
+
+  return users.map((user) => ({
+    label: user.name ? `${user.name} (${user.email})` : user.email || user.id,
+    value: user.id,
+  }))
+}
+
 export async function getUserById(id: string): Promise<ListedUser | null> {
   const user = await prisma.user.findUnique({
     where: { id },
@@ -158,6 +207,44 @@ export async function getUserById(id: string): Promise<ListedUser | null> {
   }
 
   return mapUserRecord(user)
+}
+
+/**
+ * Get user detail by ID (non-cached)
+ * Theo chuẩn Next.js 16: không cache admin data
+ * Trả về full detail data bao gồm bio, phone, address, emailVerified, updatedAt
+ */
+export async function getUserDetailById(id: string): Promise<UserDetail | null> {
+  const user = await prisma.user.findUnique({
+    where: { id },
+    include: {
+      userRoles: {
+        include: {
+          role: {
+            select: {
+              id: true,
+              name: true,
+              displayName: true,
+            },
+          },
+        },
+      },
+    },
+  })
+
+  if (!user) {
+    return null
+  }
+
+  // Map user record to UserDetail format (bao gồm các fields detail)
+  return {
+    ...mapUserRecord(user),
+    bio: user.bio,
+    phone: user.phone,
+    address: user.address,
+    emailVerified: user.emailVerified,
+    updatedAt: user.updatedAt,
+  }
 }
 
 // Re-export helpers for convenience

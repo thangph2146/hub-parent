@@ -52,42 +52,35 @@ export function StudentDetailClient({ studentId, student, backUrl = "/admin/stud
   })
 
   // Ưu tiên sử dụng React Query cache nếu có (dữ liệu mới nhất sau khi edit), fallback về props
-  const detailData = useResourceDetailData({
+  // Chỉ log sau khi fetch từ API xong để đảm bảo data mới nhất
+  const { data: detailData, isFetched, isFromApi, fetchedData } = useResourceDetailData({
     initialData: student,
     resourceId: studentId,
     detailQueryKey: queryKeys.adminStudents.detail,
     resourceName: "students",
   })
 
-  // Log detail action và data structure khi component mount
+  // Log detail action và data structure (chỉ log sau khi fetch từ API xong)
+  // Sử dụng fetchedData (data từ API) thay vì detailData để đảm bảo log data mới nhất
   React.useEffect(() => {
     const logKey = `students-detail-${studentId}`
-    if (loggedStudentIds.has(logKey)) return
+    // Chỉ log khi đã fetch xong, data từ API (isFromApi = true), và chưa log
+    // Sử dụng fetchedData (data từ API) để đảm bảo log data mới nhất
+    if (!isFetched || !isFromApi || loggedStudentIds.has(logKey) || !fetchedData) return
     loggedStudentIds.add(logKey)
 
     resourceLogger.detailAction({
       resource: "students",
       action: "load-detail",
       resourceId: studentId,
-      studentCode: detailData.studentCode,
-      studentName: detailData.name,
+      recordData: fetchedData as Record<string, unknown>,
     })
 
     resourceLogger.dataStructure({
       resource: "students",
       dataType: "detail",
       structure: {
-        id: detailData.id,
-        studentCode: detailData.studentCode,
-        name: detailData.name,
-        email: detailData.email,
-        isActive: detailData.isActive,
-        userId: detailData.userId,
-        userName: detailData.userName,
-        userEmail: detailData.userEmail,
-        createdAt: detailData.createdAt,
-        updatedAt: detailData.updatedAt,
-        deletedAt: detailData.deletedAt,
+        fields: fetchedData as Record<string, unknown>,
       },
     })
 
@@ -97,7 +90,7 @@ export function StudentDetailClient({ studentId, student, backUrl = "/admin/stud
         loggedStudentIds.delete(logKey)
       }, 1000)
     }
-  }, [studentId, detailData.id, detailData.studentCode, detailData.name, detailData.createdAt, detailData.updatedAt, detailData.deletedAt])
+  }, [studentId, isFetched, isFromApi, fetchedData])
 
   const detailFields: ResourceDetailField<StudentDetailData>[] = []
 

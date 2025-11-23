@@ -5,7 +5,7 @@
  * Pattern: Server Component (data fetching) → Client Component (UI/interactions)
  */
 
-import { listCategoriesCached } from "../server/cache"
+import { listCategories } from "../server/queries"
 import { serializeCategoriesList } from "../server/helpers"
 import { CategoriesTableClient } from "./categories-table.client"
 
@@ -17,7 +17,9 @@ export interface CategoriesTableProps {
 }
 
 export async function CategoriesTable({ canDelete, canRestore, canManage, canCreate }: CategoriesTableProps) {
-  const categoriesData = await listCategoriesCached({
+  // Sử dụng listCategories (non-cached) để đảm bảo data luôn fresh
+  // Theo chuẩn Next.js 16: không cache admin data
+  const categoriesData = await listCategories({
     page: 1,
     limit: 10,
     status: "active",

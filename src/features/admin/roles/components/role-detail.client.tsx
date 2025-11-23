@@ -64,40 +64,35 @@ export function RoleDetailClient({ roleId, role, backUrl = "/admin/roles" }: Rol
   const [permissionsOpen, setPermissionsOpen] = React.useState(false)
 
   // Ưu tiên sử dụng React Query cache nếu có (dữ liệu mới nhất sau khi edit), fallback về props
-  const detailData = useResourceDetailData({
+  // Chỉ log sau khi fetch từ API xong để đảm bảo data mới nhất
+  const { data: detailData, isFetched, isFromApi, fetchedData } = useResourceDetailData({
     initialData: role,
     resourceId: roleId,
     detailQueryKey: queryKeys.adminRoles.detail,
     resourceName: "roles",
   })
 
-  // Log detail load một lần cho mỗi roleId (tránh duplicate trong React Strict Mode)
+  // Log detail load một lần cho mỗi roleId (chỉ log sau khi fetch từ API xong)
+  // Sử dụng fetchedData (data từ API) thay vì detailData để đảm bảo log data mới nhất
   React.useEffect(() => {
     const logKey = `roles-detail-${roleId}`
-    if (loggedRoleIds.has(logKey)) return
+    // Chỉ log khi đã fetch xong, data từ API (isFromApi = true), và chưa log
+    // Sử dụng fetchedData (data từ API) để đảm bảo log data mới nhất
+    if (!isFetched || !isFromApi || loggedRoleIds.has(logKey) || !fetchedData) return
     loggedRoleIds.add(logKey)
     
     resourceLogger.detailAction({
       resource: "roles",
       action: "load-detail",
       resourceId: roleId,
-      roleName: detailData.name,
-      roleDisplayName: detailData.displayName,
+      recordData: fetchedData as Record<string, unknown>,
     })
 
     resourceLogger.dataStructure({
       resource: "roles",
       dataType: "detail",
       structure: {
-        id: detailData.id,
-        name: detailData.name,
-        displayName: detailData.displayName,
-        description: detailData.description,
-        permissions: detailData.permissions,
-        isActive: detailData.isActive,
-        createdAt: detailData.createdAt,
-        updatedAt: detailData.updatedAt,
-        deletedAt: detailData.deletedAt,
+        fields: fetchedData as Record<string, unknown>,
       },
     })
 
@@ -107,7 +102,7 @@ export function RoleDetailClient({ roleId, role, backUrl = "/admin/roles" }: Rol
         loggedRoleIds.delete(logKey)
       }, 1000)
     }
-  }, [roleId, detailData.id, detailData.name, detailData.displayName, detailData.createdAt, detailData.updatedAt, detailData.deletedAt])
+  }, [roleId, isFetched, isFromApi, fetchedData])
 
   // Get grouped permissions
   const permissionsGroups = getAllPermissionsOptionGroups()
@@ -347,7 +342,6 @@ export function RoleDetailClient({ roleId, role, backUrl = "/admin/roles" }: Rol
 
   return (
     <ResourceDetailPage<RoleDetailData>
-      data={role}
       fields={detailFields}
       detailSections={detailSections}
       title={detailData.displayName}

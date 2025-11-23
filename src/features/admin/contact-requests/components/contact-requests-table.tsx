@@ -5,10 +5,10 @@
  * Pattern: Server Component (data fetching) → Client Component (UI/interactions)
  */
 
-import { listContactRequestsCached } from "../server/cache"
+import { listContactRequests } from "../server/queries"
 import { serializeContactRequestsList } from "../server/helpers"
 import { ContactRequestsTableClient } from "./contact-requests-table.client"
-import { getActiveUsersForSelectCached } from "@/features/admin/users/server/cache"
+import { getActiveUsersForSelect } from "@/features/admin/users/server/queries"
 
 export interface ContactRequestsTableProps {
   canDelete?: boolean
@@ -19,13 +19,15 @@ export interface ContactRequestsTableProps {
 }
 
 export async function ContactRequestsTable({ canDelete, canRestore, canManage, canUpdate, canAssign }: ContactRequestsTableProps) {
+  // Sử dụng non-cached functions để đảm bảo data luôn fresh
+  // Theo chuẩn Next.js 16: không cache admin data
   const [contactRequestsData, usersOptions] = await Promise.all([
-    listContactRequestsCached({
+    listContactRequests({
       page: 1,
       limit: 10,
       status: "active",
     }),
-    getActiveUsersForSelectCached(100),
+    getActiveUsersForSelect(100),
   ])
 
   return (

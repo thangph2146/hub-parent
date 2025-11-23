@@ -5,10 +5,10 @@
  * Pattern: Server Component (data fetching) → Client Component (UI/interactions)
  */
 
-import { listSessionsCached } from "../server/cache"
+import { listSessions } from "../server/queries"
 import { serializeSessionsList } from "../server/helpers"
 import { SessionsTableClient } from "./sessions-table.client"
-import { getActiveUsersForSelectCached } from "@/features/admin/users/server/cache"
+import { getActiveUsersForSelect } from "@/features/admin/users/server/queries"
 
 export interface SessionsTableProps {
   canDelete?: boolean
@@ -18,13 +18,15 @@ export interface SessionsTableProps {
 }
 
 export async function SessionsTable({ canDelete, canRestore, canManage, canCreate }: SessionsTableProps) {
+  // Sử dụng non-cached functions để đảm bảo data luôn fresh
+  // Theo chuẩn Next.js 16: không cache admin data
   const [sessionsData, usersOptions] = await Promise.all([
-    listSessionsCached({
+    listSessions({
       page: 1,
       limit: 10,
       status: "active",
     }),
-    getActiveUsersForSelectCached(100),
+    getActiveUsersForSelect(100),
   ])
 
   return (

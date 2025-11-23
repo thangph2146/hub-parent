@@ -7,13 +7,13 @@ export default function UserEditPageLoading() {
       <AdminHeader
         breadcrumbs={[
           { label: "Users", href: "/admin/users" },
+          { label: "Chi tiết", href: "#" },
           { label: "Chỉnh sửa", isActive: true },
         ]}
       />
       <div className="flex flex-1 flex-col gap-4 p-4">
-        <ResourceFormSkeleton fieldCount={8} title={true} showCard={false} />
+        <ResourceFormSkeleton variant="page" fieldCount={8} showCard={false} />
       </div>
     </>
   )
 }
-

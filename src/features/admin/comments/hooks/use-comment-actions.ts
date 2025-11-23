@@ -55,40 +55,37 @@ export function useCommentActions({
       setTogglingComments((prev) => new Set(prev).add(row.id))
       setLoadingState((prev) => new Set(prev).add(row.id))
 
-      // Optimistic update chỉ khi không có socket (fallback)
-      if (!isSocketConnected) {
-        queryClient.setQueriesData<DataTableResult<CommentRow>>(
-          { queryKey: queryKeys.adminComments.all() as unknown[] },
-          (oldData) => {
-            if (!oldData) return oldData
-            const updatedRows = oldData.rows.map((r) =>
-              r.id === row.id ? { ...r, approved: newStatus } : r
-            )
-            return { ...oldData, rows: updatedRows }
-          },
-        )
-      }
+      // Theo chuẩn Next.js 16: không update cache manually, chỉ invalidate
+      // Socket events sẽ tự động update cache nếu có
 
       try {
-        if (newStatus) {
-          resourceLogger.tableAction({
-            resource: "comments",
-            action: "approve",
-            resourceId: row.id,
+        resourceLogger.actionFlow({
+          resource: "comments",
+          action: newStatus ? "approve" : "unapprove",
+          step: "start",
+          metadata: {
+            commentId: row.id,
             authorName: row.authorName,
-          })
+          },
+        })
+
+        if (newStatus) {
           await apiClient.post(apiRoutes.comments.approve(row.id))
           showFeedback("success", COMMENT_MESSAGES.APPROVE_SUCCESS, `Đã duyệt bình luận từ ${row.authorName || row.authorEmail}`)
         } else {
-          resourceLogger.tableAction({
-            resource: "comments",
-            action: "unapprove",
-            resourceId: row.id,
-            authorName: row.authorName,
-          })
           await apiClient.post(apiRoutes.comments.unapprove(row.id))
           showFeedback("success", COMMENT_MESSAGES.UNAPPROVE_SUCCESS, `Đã hủy duyệt bình luận từ ${row.authorName || row.authorEmail}`)
         }
+
+        resourceLogger.actionFlow({
+          resource: "comments",
+          action: newStatus ? "approve" : "unapprove",
+          step: "success",
+          metadata: {
+            commentId: row.id,
+            authorName: row.authorName,
+          },
+        })
       } catch (error: unknown) {
         // Extract error message từ axios error response
         let errorMessage: string = COMMENT_MESSAGES.UNKNOWN_ERROR
@@ -98,12 +95,21 @@ export function useCommentActions({
         } else if (error instanceof Error) {
           errorMessage = error.message
         }
+        resourceLogger.actionFlow({
+          resource: "comments",
+          action: newStatus ? "approve" : "unapprove",
+          step: "error",
+          metadata: {
+            commentId: row.id,
+            authorName: row.authorName,
+            error: errorMessage,
+          },
+        })
+
         showFeedback("error", newStatus ? COMMENT_MESSAGES.APPROVE_ERROR : COMMENT_MESSAGES.UNAPPROVE_ERROR, `Không thể ${newStatus ? "duyệt" : "hủy duyệt"} bình luận`, errorMessage)
         
-        // Rollback optimistic update nếu có lỗi
-        if (!isSocketConnected) {
-          queryClient.invalidateQueries({ queryKey: queryKeys.adminComments.all() })
-        }
+        // Invalidate queries để refresh data từ server
+        await queryClient.invalidateQueries({ queryKey: queryKeys.adminComments.all() })
       } finally {
         setTogglingComments((prev) => {
           const next = new Set(prev)

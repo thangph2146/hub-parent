@@ -7,7 +7,7 @@
  * - Dynamic route vì có search query parameter
  */
 import { NextRequest } from "next/server"
-import { getUserColumnOptionsCached } from "@/features/admin/users/server/cache"
+import { getUserColumnOptions } from "@/features/admin/users/server/queries"
 import { createGetRoute } from "@/lib/api/api-route-wrapper"
 import type { ApiRouteContext } from "@/lib/api/types"
 import { createOptionsHandler } from "@/lib/api/options-route-helper"
@@ -15,7 +15,7 @@ import { createOptionsHandler } from "@/lib/api/options-route-helper"
 async function getUserOptionsHandler(req: NextRequest, _context: ApiRouteContext) {
   return createOptionsHandler(req, {
     allowedColumns: ["email", "name"],
-    getOptions: (column, search, limit) => getUserColumnOptionsCached(column, search, limit),
+    getOptions: (column, search, limit) => getUserColumnOptions(column, search, limit),
   })
 }
 

@@ -5,7 +5,7 @@
  */
 
 export { logger } from "./logger"
-export { resourceLogger } from "./resource-logger"
+export { resourceLogger, type ResourceAction } from "./resource-logger"
 
 export { getMenuData } from "./menu-data"
 export type { MenuItem, MenuSubItem, MenuProject } from "./navigation-types"

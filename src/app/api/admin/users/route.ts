@@ -3,7 +3,7 @@
  * POST /api/admin/users - Create user
  */
 import { NextRequest, NextResponse } from "next/server"
-import { listUsersCached } from "@/features/admin/users/server/cache"
+import { listUsers } from "@/features/admin/users/server/queries"
 import {
   createUser,
   type AuthContext,
@@ -43,7 +43,9 @@ async function getUsersHandler(req: NextRequest, _context: ApiRouteContext) {
   })
 
   const activeFilters = Object.keys(columnFilters).length > 0 ? columnFilters : undefined
-  const result = await listUsersCached({
+  // Sử dụng listUsers (non-cached) để đảm bảo data luôn fresh
+  // API routes cần fresh data, không nên sử dụng cache để tránh trả về dữ liệu cũ
+  const result = await listUsers({
     page: paginationValidation.page!,
     limit: paginationValidation.limit!,
     search: searchValidation.value || undefined,

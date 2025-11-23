@@ -4,7 +4,6 @@ import bcrypt from "bcryptjs"
 import type { Prisma } from "@prisma/client"
 import { PERMISSIONS, canPerformAnyAction } from "@/lib/permissions"
 import { prisma } from "@/lib/database"
-import { resourceLogger } from "@/lib/config"
 import { mapUserRecord, type ListedUser, type UserWithRoles } from "./queries"
 import { notifySuperAdminsOfUserAction, notifySuperAdminsOfBulkUserAction } from "./notifications"
 import {
@@ -12,8 +11,9 @@ import {
   ForbiddenError,
   NotFoundError,
   ensurePermission,
-  invalidateResourceCache,
-  invalidateResourceCacheBulk,
+  logTableStatusAfterMutation,
+  logActionFlow,
+  logDetailAction,
   type AuthContext,
 } from "@/features/admin/resources/server"
 import type { BulkActionResult } from "@/features/admin/resources/types"
@@ -23,35 +23,7 @@ import { PROTECTED_SUPER_ADMIN_EMAIL } from "../constants"
 
 // Re-export for backward compatibility with API routes
 export { ApplicationError, ForbiddenError, NotFoundError, type AuthContext }
-
-/**
- * Helper để xử lý bulk operations với error handling và logging
- */
-async function handleBulkOperation<T>(
-  operation: () => Promise<T>,
-  action: "bulk-delete" | "bulk-restore" | "bulk-hard-delete",
-  metadata: Record<string, unknown>,
-  errorType?: string
-): Promise<T | null> {
-  try {
-    return await operation()
-  } catch (error) {
-    resourceLogger.actionFlow({
-      resource: "users",
-      action,
-      step: "error",
-      metadata: {
-        ...metadata,
-        error: error instanceof Error ? error.message : String(error),
-        ...(errorType && { errorType }),
-      },
-    })
-    return null
-  }
-}
-
-// Re-export BulkActionResult from resources for consistency
-export type { BulkActionResult } from "@/features/admin/resources/types"
+export type { BulkActionResult }
 
 function sanitizeUser(user: UserWithRoles): ListedUser {
   return mapUserRecord(user)
@@ -113,36 +85,28 @@ export async function createUser(ctx: AuthContext, input: CreateUserSchema): Pro
     }
   )
 
-  // Emit socket event
   await emitUserUpsert(user.id, null)
 
-  // Invalidate cache
-  await invalidateResourceCache({ resource: "users", id: user.id })
+  const sanitized = sanitizeUser(user)
+  const startTime = Date.now()
+  logActionFlow("users", "create", "success", { userId: user.id, userEmail: user.email, userName: user.name }, startTime)
+  logDetailAction("users", "create", user.id, sanitized as unknown as Record<string, unknown>)
 
-  resourceLogger.actionFlow({
-    resource: "users",
-    action: "create",
-    step: "success",
-    metadata: {
-      userId: user.id,
-      userEmail: user.email,
-      userName: user.name,
-    },
-  })
-
-  return sanitizeUser(user)
+  return sanitized
 }
 
 export async function updateUser(ctx: AuthContext, id: string, input: UpdateUserSchema): Promise<ListedUser> {
   ensurePermission(ctx, PERMISSIONS.USERS_UPDATE, PERMISSIONS.USERS_MANAGE)
 
-  // Validate ID
+  const startTime = Date.now()
+  logActionFlow("users", "update", "init", { userId: id })
+
   if (!id || typeof id !== "string" || id.trim() === "") {
     throw new ApplicationError("ID người dùng không hợp lệ", 400)
   }
 
-  // Validate input với zod
   const validatedInput = updateUserSchema.parse(input)
+  logActionFlow("users", "update", "start", { userId: id, changes: Object.keys(validatedInput) }, startTime)
 
   const existing = await prisma.user.findUnique({
     where: { id },
@@ -293,25 +257,27 @@ export async function updateUser(ctx: AuthContext, id: string, input: UpdateUser
     )
   }
 
-  // Emit socket event
   const previousStatus: "active" | "deleted" = existing.deletedAt ? "deleted" : "active"
   await emitUserUpsert(user.id, previousStatus)
 
-  // Invalidate cache - QUAN TRỌNG: phải invalidate detail page để cập nhật ngay
-  await invalidateResourceCache({ resource: "users", id: user.id })
+  const sanitized = sanitizeUser(user)
+  logActionFlow("users", "update", "success", { userId: user.id, userEmail: user.email, changes: Object.keys(changes) }, startTime)
+  logDetailAction("users", "update", user.id, { ...sanitized, changes } as unknown as Record<string, unknown>)
 
-  return sanitizeUser(user)
+  return sanitized
 }
 
 export async function softDeleteUser(ctx: AuthContext, id: string): Promise<void> {
   ensurePermission(ctx, PERMISSIONS.USERS_DELETE, PERMISSIONS.USERS_MANAGE)
+
+  const startTime = Date.now()
+  logActionFlow("users", "delete", "init", { userId: id })
 
   const user = await prisma.user.findUnique({ where: { id } })
   if (!user || user.deletedAt) {
     throw new NotFoundError("User không tồn tại")
   }
 
-  // Không cho phép xóa super admin
   if (user.email === PROTECTED_SUPER_ADMIN_EMAIL) {
     throw new ForbiddenError("Không thể xóa tài khoản super admin")
   }
@@ -324,22 +290,18 @@ export async function softDeleteUser(ctx: AuthContext, id: string): Promise<void
     },
   })
 
-  // Tạo system notification cho super admin
-  await notifySuperAdminsOfUserAction(
-    "delete",
-    ctx.actorId,
-    {
-      id: user.id,
-      email: user.email,
-      name: user.name,
-    }
-  )
+  await logTableStatusAfterMutation({
+    resource: "users",
+    action: "delete",
+    prismaModel: prisma.user,
+    affectedIds: id,
+  })
 
-  // Emit socket event
+  await notifySuperAdminsOfUserAction("delete", ctx.actorId, { id: user.id, email: user.email, name: user.name })
   await emitUserUpsert(id, "active")
 
-  // Invalidate cache
-  await invalidateResourceCache({ resource: "users", id })
+  logActionFlow("users", "delete", "success", { userId: id, userEmail: user.email }, startTime)
+  logDetailAction("users", "delete", id, { id: user.id, email: user.email, name: user.name } as unknown as Record<string, unknown>)
 }
 
 export async function bulkSoftDeleteUsers(ctx: AuthContext, ids: string[]): Promise<BulkActionResult> {
@@ -361,19 +323,14 @@ export async function bulkSoftDeleteUsers(ctx: AuthContext, ids: string[]): Prom
   const foundIds = users.map(u => u.id)
   const notFoundIds = ids.filter(id => !foundIds.includes(id))
   
-  // Log để debug với đầy đủ thông tin
-  resourceLogger.actionFlow({
-    resource: "users",
-    action: "bulk-delete",
-    step: "start",
-    metadata: {
-      requestedCount: ids.length,
-      foundCount: users.length,
-      notFoundCount: notFoundIds.length,
-      requestedIds: ids,
-      foundIds,
-      notFoundIds,
-    },
+  const startTime = Date.now()
+  logActionFlow("users", "bulk-delete", "start", {
+    requestedCount: ids.length,
+    foundCount: users.length,
+    notFoundCount: notFoundIds.length,
+    requestedIds: ids,
+    foundIds,
+    notFoundIds,
   })
 
   // Kiểm tra xem có super admin trong danh sách không
@@ -403,18 +360,13 @@ export async function bulkSoftDeleteUsers(ctx: AuthContext, ids: string[]): Prom
       errorMessage = `Không tìm thấy người dùng nào trong danh sách (có thể đã bị xóa hoặc không tồn tại)`
     }
     
-    resourceLogger.actionFlow({
-      resource: "users",
-      action: "bulk-delete",
-      step: "error",
-      metadata: {
-        requestedCount: ids.length,
-        foundCount: users.length,
-        alreadyDeletedCount,
-        superAdminCount,
-        error: errorMessage,
-      },
-    })
+    logActionFlow("users", "bulk-delete", "error", {
+      requestedCount: ids.length,
+      foundCount: users.length,
+      alreadyDeletedCount,
+      superAdminCount,
+      error: errorMessage,
+    }, startTime)
     
     throw new ApplicationError(errorMessage, 400)
   }
@@ -430,34 +382,38 @@ export async function bulkSoftDeleteUsers(ctx: AuthContext, ids: string[]): Prom
     },
   })
 
-  // Emit socket events và tạo bulk notification
-  const deletableUsers = users.filter((u) => u.email !== PROTECTED_SUPER_ADMIN_EMAIL)
-  if (result.count > 0 && deletableUsers.length > 0) {
-    // Batch emit socket events
-    await handleBulkOperation(
-      () => emitBatchUserUpsert(deletableUsers.map(u => u.id), "active"),
-      "bulk-delete",
-      { count: result.count }
-    )
-
-    // Tạo bulk notification với tên records
-    await handleBulkOperation(
-      () => notifySuperAdminsOfBulkUserAction("delete", ctx.actorId, result.count, deletableUsers),
-      "bulk-delete",
-      { count: result.count },
-      "notification"
-    )
-
-    resourceLogger.actionFlow({
+  if (result.count > 0) {
+    await logTableStatusAfterMutation({
       resource: "users",
       action: "bulk-delete",
-      step: "success",
-      metadata: { requestedCount: ids.length, affectedCount: result.count },
+      prismaModel: prisma.user,
+      affectedIds: filteredIds,
+      affectedCount: result.count,
     })
   }
 
-  // Invalidate cache cho bulk operation
-  await invalidateResourceCacheBulk({ resource: "users" })
+  const deletableUsers = users.filter((u) => u.email !== PROTECTED_SUPER_ADMIN_EMAIL)
+  if (result.count > 0 && deletableUsers.length > 0) {
+    try {
+      await emitBatchUserUpsert(deletableUsers.map(u => u.id), "active")
+    } catch (error) {
+      logActionFlow("users", "bulk-delete", "error", {
+        error: error instanceof Error ? error.message : String(error),
+        count: result.count,
+      })
+    }
+
+    try {
+      await notifySuperAdminsOfBulkUserAction("delete", ctx.actorId, result.count, deletableUsers)
+    } catch (error) {
+      logActionFlow("users", "bulk-delete", "error", {
+        error: error instanceof Error ? error.message : String(error),
+        notificationError: true,
+      })
+    }
+
+    logActionFlow("users", "bulk-delete", "success", { requestedCount: ids.length, affectedCount: result.count }, startTime)
+  }
 
   return { success: true, message: `Đã xóa ${result.count} người dùng`, affected: result.count }
 }
@@ -478,33 +434,21 @@ export async function restoreUser(ctx: AuthContext, id: string): Promise<void> {
     },
   })
 
-  // Tạo system notification cho super admin
-  await notifySuperAdminsOfUserAction(
-    "restore",
-    ctx.actorId,
-    {
-      id: user.id,
-      email: user.email,
-      name: user.name,
-    }
-  )
+  const startTime = Date.now()
+  logActionFlow("users", "restore", "init", { userId: id })
 
-  // Emit socket event
-  await emitUserUpsert(id, "deleted")
-
-  // Invalidate cache
-  await invalidateResourceCache({ resource: "users", id })
-
-  resourceLogger.actionFlow({
+  await logTableStatusAfterMutation({
     resource: "users",
     action: "restore",
-    step: "success",
-    metadata: {
-      userId: user.id,
-      userEmail: user.email,
-      userName: user.name,
-    },
+    prismaModel: prisma.user,
+    affectedIds: id,
   })
+
+  await notifySuperAdminsOfUserAction("restore", ctx.actorId, { id: user.id, email: user.email, name: user.name })
+  await emitUserUpsert(id, "deleted")
+
+  logActionFlow("users", "restore", "success", { userId: user.id, userEmail: user.email }, startTime)
+  logDetailAction("users", "restore", id, { id: user.id, email: user.email, name: user.name } as unknown as Record<string, unknown>)
 }
 
 export async function bulkRestoreUsers(ctx: AuthContext, ids: string[]): Promise<BulkActionResult> {
@@ -526,19 +470,14 @@ export async function bulkRestoreUsers(ctx: AuthContext, ids: string[]): Promise
   const foundIds = users.map(u => u.id)
   const notFoundIds = ids.filter(id => !foundIds.includes(id))
   
-  // Log để debug với đầy đủ thông tin
-  resourceLogger.actionFlow({
-    resource: "users",
-    action: "bulk-restore",
-    step: "start",
-    metadata: {
-      requestedCount: ids.length,
-      foundCount: users.length,
-      notFoundCount: notFoundIds.length,
-      requestedIds: ids,
-      foundIds,
-      notFoundIds,
-    },
+  const startTime = Date.now()
+  logActionFlow("users", "bulk-restore", "start", {
+    requestedCount: ids.length,
+    foundCount: users.length,
+    notFoundCount: notFoundIds.length,
+    requestedIds: ids,
+    foundIds,
+    notFoundIds,
   })
 
   // Kiểm tra nếu không có user nào để restore
@@ -559,21 +498,16 @@ export async function bulkRestoreUsers(ctx: AuthContext, ids: string[]): Promise
       errorMessage += `. ${notFoundCount} người dùng không tồn tại`
     }
     
-    resourceLogger.actionFlow({
-      resource: "users",
-      action: "bulk-restore",
-      step: "error",
-      metadata: {
-        requestedCount: ids.length,
-        foundCount: users.length,
-        notFoundCount,
-        alreadyActiveCount,
-        requestedIds: ids,
-        foundIds,
-        notFoundIds,
-        error: errorMessage,
-      },
-    })
+    logActionFlow("users", "bulk-restore", "error", {
+      requestedCount: ids.length,
+      foundCount: users.length,
+      notFoundCount,
+      alreadyActiveCount,
+      requestedIds: ids,
+      foundIds,
+      notFoundIds,
+      error: errorMessage,
+    }, startTime)
     
     throw new ApplicationError(errorMessage, 400)
   }
@@ -589,33 +523,37 @@ export async function bulkRestoreUsers(ctx: AuthContext, ids: string[]): Promise
     },
   })
 
-  // Emit socket events và tạo bulk notification
-  if (result.count > 0 && users.length > 0) {
-    // Batch emit socket events
-    await handleBulkOperation(
-      () => emitBatchUserUpsert(users.map(u => u.id), "deleted"),
-      "bulk-restore",
-      { count: result.count }
-    )
-
-    // Tạo bulk notification với tên records
-    await handleBulkOperation(
-      () => notifySuperAdminsOfBulkUserAction("restore", ctx.actorId, result.count, users),
-      "bulk-restore",
-      { count: result.count },
-      "notification"
-    )
-
-    resourceLogger.actionFlow({
+  if (result.count > 0) {
+    await logTableStatusAfterMutation({
       resource: "users",
       action: "bulk-restore",
-      step: "success",
-      metadata: { requestedCount: ids.length, affectedCount: result.count },
+      prismaModel: prisma.user,
+      affectedIds: ids,
+      affectedCount: result.count,
     })
   }
 
-  // Invalidate cache cho bulk operation
-  await invalidateResourceCacheBulk({ resource: "users" })
+  if (result.count > 0 && users.length > 0) {
+    try {
+      await emitBatchUserUpsert(users.map(u => u.id), "deleted")
+    } catch (error) {
+      logActionFlow("users", "bulk-restore", "error", {
+        error: error instanceof Error ? error.message : String(error),
+        count: result.count,
+      })
+    }
+
+    try {
+      await notifySuperAdminsOfBulkUserAction("restore", ctx.actorId, result.count, users)
+    } catch (error) {
+      logActionFlow("users", "bulk-restore", "error", {
+        error: error instanceof Error ? error.message : String(error),
+        notificationError: true,
+      })
+    }
+
+    logActionFlow("users", "bulk-restore", "success", { requestedCount: ids.length, affectedCount: result.count }, startTime)
+  }
 
   return { success: true, message: `Đã khôi phục ${result.count} người dùng`, affected: result.count }
 }
@@ -660,7 +598,6 @@ export async function hardDeleteUser(ctx: AuthContext, id: string): Promise<void
   emitUserRemove(id, previousStatus)
 
   // Invalidate cache
-  await invalidateResourceCache({ resource: "users", id })
 }
 
 export async function bulkHardDeleteUsers(ctx: AuthContext, ids: string[]): Promise<BulkActionResult> {
@@ -683,19 +620,14 @@ export async function bulkHardDeleteUsers(ctx: AuthContext, ids: string[]): Prom
   const foundIds = users.map(u => u.id)
   const notFoundIds = ids.filter(id => !foundIds.includes(id))
   
-  // Log để debug với đầy đủ thông tin
-  resourceLogger.actionFlow({
-    resource: "users",
-    action: "bulk-hard-delete",
-    step: "start",
-    metadata: {
-      requestedCount: ids.length,
-      foundCount: users.length,
-      notFoundCount: notFoundIds.length,
-      requestedIds: ids,
-      foundIds,
-      notFoundIds,
-    },
+  const startTime = Date.now()
+  logActionFlow("users", "bulk-hard-delete", "start", {
+    requestedCount: ids.length,
+    foundCount: users.length,
+    notFoundCount: notFoundIds.length,
+    requestedIds: ids,
+    foundIds,
+    notFoundIds,
   })
 
   // Kiểm tra xem có super admin trong danh sách không
@@ -725,21 +657,16 @@ export async function bulkHardDeleteUsers(ctx: AuthContext, ids: string[]): Prom
       errorMessage = `Không tìm thấy người dùng nào trong danh sách`
     }
     
-    resourceLogger.actionFlow({
-      resource: "users",
-      action: "bulk-hard-delete",
-      step: "error",
-      metadata: {
-        requestedCount: ids.length,
-        foundCount: users.length,
-        notFoundCount,
-        superAdminCount,
-        requestedIds: ids,
-        foundIds,
-        notFoundIds,
-        error: errorMessage,
-      },
-    })
+    logActionFlow("users", "bulk-hard-delete", "error", {
+      requestedCount: ids.length,
+      foundCount: users.length,
+      notFoundCount,
+      superAdminCount,
+      requestedIds: ids,
+      foundIds,
+      notFoundIds,
+      error: errorMessage,
+    }, startTime)
     
     throw new ApplicationError(errorMessage, 400)
   }
@@ -772,16 +699,8 @@ export async function bulkHardDeleteUsers(ctx: AuthContext, ids: string[]): Prom
       deletableUsers
     )
 
-    resourceLogger.actionFlow({
-      resource: "users",
-      action: "bulk-hard-delete",
-      step: "success",
-      metadata: { requestedCount: ids.length, affectedCount: result.count },
-    })
+    logActionFlow("users", "bulk-hard-delete", "success", { requestedCount: ids.length, affectedCount: result.count }, startTime)
   }
-
-  // Invalidate cache cho bulk operation
-  await invalidateResourceCacheBulk({ resource: "users" })
 
   return { success: true, message: `Đã xóa vĩnh viễn ${result.count} người dùng`, affected: result.count }
 }

@@ -13,16 +13,17 @@
 export {
   listUsers,
   getUserById,
+  getUserDetailById,
   type ListUsersInput,
   type ListedUser,
   type UserDetail,
   type ListUsersResult,
 } from "./queries"
 
-// Cache functions
+// Cache functions (deprecated for admin data, kept for backward compatibility)
 export {
   listUsersCached,
-  getUserDetailById,
+  getUserDetailById as getUserDetailByIdCached,
   getRolesCached,
   getUserColumnOptionsCached,
   getActiveUsersForSelectCached,

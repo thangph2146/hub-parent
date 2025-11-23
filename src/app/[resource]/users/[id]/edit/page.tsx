@@ -3,7 +3,8 @@ import { AdminHeader } from "@/components/layouts/headers"
 import { UserEdit } from "@/features/admin/users/components/user-edit"
 import { validateRouteId } from "@/lib/validation/route-params"
 import { FormPageSuspense } from "@/features/admin/resources/components"
-import { getUserDetailById } from "@/features/admin/users/server/cache"
+import { getUserDetailById } from "@/features/admin/users/server/queries"
+import { truncateBreadcrumbLabel } from "@/features/admin/resources/utils"
 
 /**
  * User Edit Page Metadata (Dynamic)
@@ -59,9 +60,10 @@ export default async function EditUserPage({
 }) {
   const { id } = await params
   
-  // Fetch user data từ cache để hiển thị tên trong breadcrumb
+  // Fetch user data (non-cached) để hiển thị tên trong breadcrumb
+  // Theo chuẩn Next.js 16: không cache admin data
   const user = await getUserDetailById(id)
-  const userName = user?.name || user?.email || "Chi tiết"
+  const userName = truncateBreadcrumbLabel(user?.name || user?.email || "Chi tiết")
   
   // Validate route ID
   const validatedId = validateRouteId(id, "Người dùng")

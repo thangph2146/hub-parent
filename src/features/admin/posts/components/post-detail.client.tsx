@@ -63,37 +63,51 @@ export function PostDetailClient({ postId, post, backUrl = "/admin/posts" }: Pos
   })
 
   // Use React Query cache for latest data, fallback to Server Component props
-  const detailData = useResourceDetailData({
+  // Chỉ log sau khi fetch từ API xong để đảm bảo data mới nhất
+  const { data: detailData, isFetched, isFromApi, fetchedData } = useResourceDetailData({
     initialData: post,
     resourceId: postId,
     detailQueryKey: queryKeys.adminPosts.detail,
     resourceName: "posts",
   })
 
-  // Log detail load and data structure (only once per postId)
+  // Log detail load and data structure (only once per postId sau khi fetch từ API xong)
+  // Sử dụng fetchedData (data từ API) thay vì detailData để đảm bảo log data mới nhất
   const loggedPostIdsRef = React.useRef<Set<string>>(new Set())
   React.useEffect(() => {
-    if (!loggedPostIdsRef.current.has(postId) && detailData) {
-      loggedPostIdsRef.current.add(postId)
-      
-      resourceLogger.detailAction({
-        resource: "posts",
-        action: "load-detail",
-        resourceId: postId,
-        metadata: {
-          postId,
-          postTitle: detailData.title,
-          postSlug: detailData.slug,
-        },
-      })
+    const logKey = `posts-detail-${postId}`
+    // Chỉ log khi đã fetch xong, data từ API (isFromApi = true), và chưa log
+    // Sử dụng fetchedData (data từ API) để đảm bảo log data mới nhất
+    if (!isFetched || !isFromApi || loggedPostIdsRef.current.has(logKey) || !fetchedData) return
+    loggedPostIdsRef.current.add(logKey)
+    
+    resourceLogger.detailAction({
+      resource: "posts",
+      action: "load-detail",
+      resourceId: postId,
+      recordData: fetchedData as Record<string, unknown>,
+      metadata: {
+        postId,
+        postTitle: fetchedData.title,
+        postSlug: fetchedData.slug,
+      },
+    })
 
-      resourceLogger.dataStructure({
-        resource: "posts",
-        dataType: "detail",
-        structure: detailData,
-      })
+    resourceLogger.dataStructure({
+      resource: "posts",
+      dataType: "detail",
+      structure: {
+        fields: fetchedData as Record<string, unknown>,
+      },
+    })
+
+    // Cleanup khi component unmount hoặc postId thay đổi
+    return () => {
+      setTimeout(() => {
+        loggedPostIdsRef.current.delete(logKey)
+      }, 1000)
     }
-  }, [postId, detailData])
+  }, [postId, isFetched, isFromApi, fetchedData])
 
   const detailFields: ResourceDetailField<PostDetailData>[] = []
 

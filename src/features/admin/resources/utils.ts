@@ -4,7 +4,7 @@
  * Các hàm utility chung được dùng bởi nhiều resource features
  */
 
-import { resourceLogger } from "@/lib/config"
+import { logActionFlow } from "./server/mutation-helpers"
 
 /**
  * Format date to Vietnamese locale
@@ -190,92 +190,9 @@ function getResourceSingularName(resourceName: string): string {
 }
 
 /**
- * Helper function để cập nhật React Query cache sau khi edit resource
- * Cập nhật cả detail cache và list cache với dữ liệu mới từ response
- */
-export function updateResourceCacheAfterEdit({
-  queryClient,
-  resourceId,
-  responseData,
-  allQueryKey,
-  detailQueryKey,
-}: {
-  queryClient: ReturnType<typeof import("@tanstack/react-query").useQueryClient>
-  resourceId: string
-  responseData: Record<string, unknown>
-  allQueryKey: readonly unknown[]
-  detailQueryKey: (id: string) => readonly unknown[]
-}): void {
-  // Cập nhật detail cache - đảm bảo structure đúng { data: ... }
-  const currentDetailData = queryClient.getQueryData<{ data: Record<string, unknown> }>(detailQueryKey(resourceId))
-  queryClient.setQueryData(detailQueryKey(resourceId), { 
-    data: { ...(currentDetailData?.data || {}), ...responseData }
-  })
-
-  // Cập nhật list cache với item đã được edit
-  // Đảm bảo structure đúng: DataTableResult<T> = { rows, page, limit, total, totalPages }
-  const listQueries = queryClient.getQueriesData({ queryKey: allQueryKey })
-  for (const [queryKey, queryData] of listQueries) {
-    if (queryData && typeof queryData === "object" && "rows" in queryData) {
-      const data = queryData as { 
-        rows: Array<Record<string, unknown>>; 
-        page: number;
-        limit: number;
-        total: number;
-        totalPages: number;
-        [key: string]: unknown;
-      }
-      const rowIndex = data.rows.findIndex((row) => row.id === resourceId)
-      if (rowIndex >= 0) {
-        // Tạo object mới để React Query detect được thay đổi
-        const updatedRows = [...data.rows]
-        const currentRow = updatedRows[rowIndex]
-        const oldData = { ...currentRow }
-        
-        // Merge responseData vào currentRow, ưu tiên responseData (dữ liệu mới từ server)
-        // Sử dụng !== undefined để đảm bảo null values được áp dụng đúng cách
-        const mergedRow: typeof currentRow = { ...currentRow }
-        for (const key in responseData) {
-          if (responseData[key] !== undefined) {
-            ;(mergedRow as Record<string, unknown>)[key] = responseData[key]
-          }
-        }
-        updatedRows[rowIndex] = mergedRow
-        const newData = { ...mergedRow }
-        
-        // Tạo object mới hoàn toàn để React Query detect được thay đổi
-        // Spread tất cả properties từ data để đảm bảo không mất bất kỳ field nào
-        const updatedData = { 
-          ...data, 
-          rows: updatedRows 
-        }
-        
-        // Sử dụng setQueryData với option để đảm bảo React Query detect được thay đổi
-        queryClient.setQueryData(queryKey, updatedData)
-        
-        // Log để debug cache update với đầy đủ oldData và newData
-        resourceLogger.actionFlow({
-          resource: "resources",
-          action: "update",
-          step: "success",
-          metadata: {
-            resourceId,
-            queryKey: queryKey.slice(0, 2),
-            rowIndex,
-            oldData,
-            newData,
-            fieldsUpdated: Object.keys(responseData),
-            cacheType: "list-cache-updated",
-          },
-        })
-      }
-    }
-  }
-}
-
-/**
  * Helper function để tạo onSuccess handler cho resource edit forms
- * Tự động cập nhật cache và invalidate queries
+ * Theo chuẩn Next.js 16: Chỉ invalidate queries, không update cache manually
+ * Socket events sẽ trigger refresh tự động
  */
 export function createResourceEditOnSuccess({
   queryClient,
@@ -297,50 +214,32 @@ export function createResourceEditOnSuccess({
   return async (response: import("axios").AxiosResponse) => {
     const responseData = response?.data?.data
 
-    // Cập nhật React Query cache với dữ liệu mới từ response TRƯỚC KHI invalidate
-    // Điều này đảm bảo detail page hiển thị dữ liệu mới ngay lập tức
-    if (resourceId && responseData) {
-      const updatedData = {
-        ...responseData,
-        updatedAt: responseData.updatedAt || new Date().toISOString(),
-      }
-      
-      // Cập nhật cả detail và list cache với dữ liệu mới
-      updateResourceCacheAfterEdit({
-        queryClient,
-        resourceId,
-        responseData: updatedData,
-        allQueryKey,
-        detailQueryKey,
-      })
-    }
-
-    // Invalidate queries trong background để đảm bảo data mới nhất từ server
-    // Cache đã được cập nhật trước đó nên UI sẽ hiển thị dữ liệu mới ngay
-    // Không await để không block navigation
-    // Socket events sẽ trigger refresh nếu có, nên không cần refetch ngay
-    void queryClient.invalidateQueries({ queryKey: allQueryKey, refetchType: "none" })
+    // Invalidate và refetch queries - Next.js 16 pattern: invalidate + refetch để đảm bảo data fresh
+    // Socket events sẽ trigger refresh tự động nếu có, nhưng refetch ngay để đảm bảo data được cập nhật
+    await queryClient.invalidateQueries({ queryKey: allQueryKey, refetchType: "active" })
     if (resourceId) {
-      void queryClient.invalidateQueries({ queryKey: detailQueryKey(resourceId), refetchType: "none" })
+      // Refetch detail query ngay để đảm bảo detail page hiển thị data mới nhất
+      await queryClient.invalidateQueries({ queryKey: detailQueryKey(resourceId), refetchType: "active" })
+      await queryClient.refetchQueries({ queryKey: detailQueryKey(resourceId) })
     }
 
-    // Log success
+    // Log success với đầy đủ thông tin
     const recordName = getRecordName?.(responseData) || (responseData?.name as string | undefined)
     const singularName = getResourceSingularName(resourceName)
-    const resourceIdKey = `${singularName}Id` // tagId, categoryId, etc.
-    const resourceNameKey = `${singularName}Name` // tagName, categoryName, etc.
+    const resourceIdKey = `${singularName}Id`
+    const resourceNameKey = `${singularName}Name`
     
-    resourceLogger.actionFlow({
-      resource: resourceName,
-      action: "update",
-      step: "success",
-      metadata: {
+    logActionFlow(
+      resourceName,
+      "update",
+      "success",
+      {
         [resourceIdKey]: resourceId,
         [resourceNameKey]: recordName,
         responseStatus: response?.status,
-        cacheType: "react-query-detail-and-list",
-      },
-    })
+        cacheStrategy: "invalidate-only-nextjs16",
+      }
+    )
 
     if (onSuccess) {
       onSuccess()

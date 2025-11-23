@@ -9,7 +9,7 @@
  * - Data được stream progressive với Suspense boundaries ở page level
  */
 
-import { listPostsCached } from "../server/cache"
+import { listPosts } from "../server/queries"
 import { serializePostsList } from "../server/helpers"
 import { PostsTableClient } from "./posts-table.client"
 
@@ -21,8 +21,9 @@ export interface PostsTableProps {
 }
 
 export async function PostsTable({ canDelete, canRestore, canManage, canCreate }: PostsTableProps) {
-  // Fetch posts data
-  const postsData = await listPostsCached({
+  // Sử dụng listPosts (non-cached) để đảm bảo data luôn fresh
+  // Theo chuẩn Next.js 16: không cache admin data
+  const postsData = await listPosts({
     page: 1,
     limit: 10,
     status: "active",

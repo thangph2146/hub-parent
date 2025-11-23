@@ -213,15 +213,9 @@ export function useResourceFormSubmit({
           logger.debug("[useResourceFormSubmit] onSuccess handler completed")
         }
 
-        // Đợi một chút để đảm bảo server cache được invalidate hoàn toàn
-        // Next.js cache invalidation có thể mất một chút thời gian
-        // Đặc biệt quan trọng với Server Component cache (unstable_cache)
-        // Delay đủ lâu để đảm bảo revalidateTag và revalidatePath hoàn tất
-        // Tăng delay lên 1000ms để đảm bảo cache invalidation hoàn tất trước khi navigate
-        logger.debug("[useResourceFormSubmit] Waiting for cache invalidation")
-        await new Promise((resolve) => setTimeout(resolve, 1000))
-
-        // Handle navigation sau khi invalidate cache
+        // Theo chuẩn Next.js 16: invalidate queries là async và không block
+        // Không cần delay vì React Query sẽ tự động refetch khi cần
+        // Handle navigation ngay sau khi invalidate
         logger.debug("[useResourceFormSubmit] Handling navigation", { 
           hasToDetail: !!navigation?.toDetail,
           hasFallback: !!navigation?.fallback,

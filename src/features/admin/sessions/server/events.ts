@@ -7,7 +7,7 @@ import { prisma } from "@/lib/database"
 import { getSocketServer } from "@/lib/socket/state"
 import { mapSessionRecord, serializeSessionForTable } from "./helpers"
 import type { SessionRow } from "../types"
-import { logger } from "@/lib/config"
+import { resourceLogger } from "@/lib/config"
 
 const SUPER_ADMIN_ROOM = "role:super_admin"
 
@@ -65,12 +65,13 @@ export async function emitSessionUpsert(
 
   const newStatus = resolveStatusFromRow(row)
 
+  // Emit to role room (tất cả super admins đều ở trong role room)
+  // Không cần emit đến từng user room để tránh duplicate events
   io.to(SUPER_ADMIN_ROOM).emit("session:upsert", {
     session: row,
     previousStatus,
     newStatus,
   })
-  logger.debug("Socket session:upsert emitted", { sessionId, previousStatus, newStatus })
 }
 
 /**
@@ -85,6 +86,57 @@ export function emitSessionRemove(sessionId: string, previousStatus: SessionStat
     id: sessionId,
     previousStatus,
   })
-  logger.debug("Socket session:remove emitted", { sessionId, previousStatus })
+}
+
+/**
+ * Emit batch session:upsert events
+ * Được gọi khi bulk operations để tối ưu performance
+ * Thay vì emit từng event riêng lẻ, emit một batch event
+ */
+export async function emitSessionBatchUpsert(
+  sessionIds: string[],
+  previousStatus: SessionStatus | null,
+): Promise<void> {
+  const io = getSocketServer()
+  if (!io || sessionIds.length === 0) return
+
+  // Fetch tất cả sessions trong một query
+  const sessions = await prisma.session.findMany({
+    where: {
+      id: { in: sessionIds },
+    },
+    include: {
+      user: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
+    },
+  })
+
+  // Map sessions to rows
+  const rows: SessionRow[] = []
+  for (const session of sessions) {
+    const listed = mapSessionRecord(session)
+    const row = serializeSessionForTable({
+      ...listed,
+      userName: session.user.name,
+      userEmail: session.user.email,
+    })
+    rows.push(row)
+  }
+
+  // Emit batch event với tất cả rows
+  // Emit to role room (tất cả super admins đều ở trong role room)
+  // Không cần emit đến từng user room để tránh duplicate events
+  io.to(SUPER_ADMIN_ROOM).emit("session:batch-upsert", {
+    sessions: rows.map((row) => ({
+      session: row,
+      previousStatus,
+      newStatus: resolveStatusFromRow(row),
+    })),
+  })
 }
 

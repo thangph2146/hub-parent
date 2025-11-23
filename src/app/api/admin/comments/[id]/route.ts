@@ -4,7 +4,7 @@
  * DELETE /api/admin/comments/[id] - Soft delete comment
  */
 import { NextRequest } from "next/server"
-import { getCommentDetailById } from "@/features/admin/comments/server/cache"
+import { getCommentById } from "@/features/admin/comments/server/queries"
 import { serializeCommentDetail } from "@/features/admin/comments/server/helpers"
 import {
   updateComment,
@@ -25,7 +25,9 @@ async function getCommentHandler(_req: NextRequest, _context: ApiRouteContext, .
     return createErrorResponse("Comment ID is required", { status: 400 })
   }
 
-  const comment = await getCommentDetailById(commentId)
+  // Sử dụng getCommentById (non-cached) để đảm bảo data luôn fresh
+  // API routes cần fresh data, không nên sử dụng cache để tránh trả về dữ liệu cũ
+  const comment = await getCommentById(commentId)
 
   if (!comment) {
     return createErrorResponse("Comment not found", { status: 404 })

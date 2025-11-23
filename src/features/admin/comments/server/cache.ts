@@ -10,7 +10,6 @@
 
 import { cache } from "react"
 import { unstable_cache } from "next/cache"
-import { resourceLogger } from "@/lib/config"
 import { listComments, getCommentById, getCommentColumnOptions } from "./queries"
 import type { ListCommentsInput, ListCommentsResult, CommentDetail } from "../types"
 
@@ -67,14 +66,6 @@ export const listCommentsCached = cache(async (params: ListCommentsInput = {}): 
   // Xác định status từ filters.deleted
   const status = normalizedParams.filters?.deleted === true ? "deleted" : normalizedParams.filters?.deleted === false ? "active" : "all"
   const statusTag = status === "deleted" ? "deleted-comments" : status === "active" ? "active-comments" : "all-comments"
-  
-  resourceLogger.cache({
-    resource: "comments",
-    action: "query",
-    operation: "read",
-    tags: ['comments', statusTag],
-    metadata: { cacheKey, params: normalizedParams },
-  })
   
   return unstable_cache(
     async () => listComments(normalizedParams),

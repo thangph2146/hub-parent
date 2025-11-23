@@ -4,10 +4,11 @@ import { useEffect, useMemo, useState } from "react"
 import { useSession } from "next-auth/react"
 import { useQueryClient } from "@tanstack/react-query"
 import { useSocket } from "@/hooks/use-socket"
-import { logger } from "@/lib/config"
+import { resourceLogger } from "@/lib/config"
 import type { ContactRequestRow } from "../types"
 import type { DataTableResult } from "@/components/tables"
 import { queryKeys, type AdminContactRequestsListParams, invalidateQueries } from "@/lib/query-keys"
+import type { ContactRequestDetailData } from "../components/contact-request-detail.client"
 import {
   matchesSearch,
   matchesFilters,
@@ -37,30 +38,16 @@ function updateContactRequestQueries(
     queryKey: queryKeys.adminContactRequests.all() as unknown[],
   })
   
-  logger.debug("Found contact request queries to update", { count: queries.length })
-  
-  for (const [key, data] of queries) {
-    if (!Array.isArray(key) || key.length < 2) continue
-    const params = key[1] as AdminContactRequestsListParams | undefined
-    if (!params || !data) {
-      logger.debug("Skipping query", { hasParams: !!params, hasData: !!data })
-      continue
-    }
-    const next = updater({ key, params, data })
-    if (next) {
-      logger.debug("Setting query data", {
-        key: key.slice(0, 2),
-        oldRowsCount: data.rows.length,
-        newRowsCount: next.rows.length,
-        oldTotal: data.total,
-        newTotal: next.total,
-      })
-      queryClient.setQueryData(key, next)
-      updated = true
-    } else {
-      logger.debug("Updater returned null, skipping update")
-    }
-  }
+      for (const [key, data] of queries) {
+        if (!Array.isArray(key) || key.length < 2) continue
+        const params = key[1] as AdminContactRequestsListParams | undefined
+        if (!params || !data) continue
+        const next = updater({ key, params, data })
+        if (next) {
+          queryClient.setQueryData(key, next)
+          updated = true
+        }
+      }
   
   return updated
 }
@@ -83,10 +70,6 @@ export function useContactRequestsSocketBridge() {
 
     // Handle contact-request:new event
     const detachNew = on<[{ id: string; name: string; email: string; phone?: string | null; subject: string; status: string; priority: string; createdAt: string; assignedToId?: string | null; assignedToName?: string | null }]>("contact-request:new", (payload) => {
-      logger.debug("Received contact-request:new", {
-        contactRequestId: payload.id,
-        subject: payload.subject,
-      })
 
       const row = convertSocketPayloadToRow(payload, payload.assignedToName ?? null)
       const rowStatus: "active" | "deleted" = "active"
@@ -96,15 +79,6 @@ export function useContactRequestsSocketBridge() {
         const includesByStatus = shouldIncludeInStatus(params.status, rowStatus)
         const existingIndex = data.rows.findIndex((r) => r.id === row.id)
         const shouldInclude = matches && includesByStatus
-
-        logger.debug("Processing contact request update", {
-          contactRequestId: row.id,
-          viewStatus: params.status,
-          rowStatus,
-          includesByStatus,
-          existingIndex,
-          shouldInclude,
-        })
 
         if (existingIndex === -1 && !shouldInclude) {
           return null
@@ -142,11 +116,6 @@ export function useContactRequestsSocketBridge() {
           totalPages,
         }
 
-        logger.debug("Cache updated for contact request", {
-          contactRequestId: row.id,
-          rowsCount: result.rows.length,
-          total: result.total,
-        })
 
         return result
       })
@@ -163,28 +132,47 @@ export function useContactRequestsSocketBridge() {
       const { contactRequest, previousStatus, newStatus } = payload as ContactRequestUpsertPayload
       const rowStatus: "active" | "deleted" = contactRequest.deletedAt ? "deleted" : "active"
 
-      logger.debug("Received contact-request:upsert", {
-        contactRequestId: contactRequest.id,
-        previousStatus,
-        newStatus,
-        rowStatus,
-        deletedAt: contactRequest.deletedAt,
+      resourceLogger.socket({
+        resource: "contact-requests",
+        action: "socket-update",
+        event: "contact-request:upsert",
+        resourceId: contactRequest.id,
+        payload: { contactRequestId: contactRequest.id, previousStatus, newStatus, rowStatus },
       })
+
+      // Update detail query cache nếu có
+      const detailQueryKey = queryKeys.adminContactRequests.detail(contactRequest.id)
+      const detailData = queryClient.getQueryData<{ data: ContactRequestDetailData }>(detailQueryKey)
+      if (detailData) {
+        queryClient.setQueryData(detailQueryKey, {
+          data: {
+            ...detailData.data,
+            ...contactRequest,
+            assignedTo: contactRequest.assignedToName
+              ? {
+                  id: detailData.data.assignedToId || "",
+                  name: contactRequest.assignedToName,
+                  email: detailData.data.assignedTo?.email || "",
+                }
+              : null,
+            updatedAt: contactRequest.updatedAt,
+            deletedAt: contactRequest.deletedAt,
+          },
+        })
+        resourceLogger.socket({
+          resource: "contact-requests",
+          action: "cache-refresh",
+          event: "contact-request:upsert",
+          resourceId: contactRequest.id,
+          payload: { cacheType: "detail-cache-updated" },
+        })
+      }
 
       const updated = updateContactRequestQueries(queryClient, ({ params, data }) => {
         const matches = matchesFilters(params.filters, contactRequest) && matchesSearch(params.search, contactRequest)
         const includesByStatus = shouldIncludeInStatus(params.status, rowStatus)
         const existingIndex = data.rows.findIndex((row) => row.id === contactRequest.id)
         const shouldInclude = matches && includesByStatus
-
-        logger.debug("Processing contact request update", {
-          contactRequestId: contactRequest.id,
-          viewStatus: params.status,
-          rowStatus,
-          includesByStatus,
-          existingIndex,
-          shouldInclude,
-        })
 
         if (existingIndex === -1 && !shouldInclude) {
           return null
@@ -226,12 +214,6 @@ export function useContactRequestsSocketBridge() {
           totalPages,
         }
 
-        logger.debug("Cache updated for contact request", {
-          contactRequestId: contactRequest.id,
-          rowsCount: result.rows.length,
-          total: result.total,
-          wasRemoved: existingIndex >= 0 && !shouldInclude,
-        })
 
         return result
       })
@@ -245,10 +227,6 @@ export function useContactRequestsSocketBridge() {
 
     // Handle contact-request:assigned event
     const detachAssigned = on<[{ id: string; assignedToId?: string | null; assignedToName?: string | null }]>("contact-request:assigned", (payload) => {
-      logger.debug("Received contact-request:assigned", {
-        contactRequestId: payload.id,
-        assignedToId: payload.assignedToId,
-      })
 
       const updated = updateContactRequestQueries(queryClient, ({ data }) => {
         const existingIndex = data.rows.findIndex((r) => r.id === payload.id)
@@ -279,25 +257,15 @@ export function useContactRequestsSocketBridge() {
     // Handle contact-request:remove event
     const detachRemove = on<[ContactRequestRemovePayload]>("contact-request:remove", (payload) => {
       const { id } = payload as ContactRequestRemovePayload
-      logger.debug("Received contact-request:remove", { contactRequestId: id })
       
       const updated = updateContactRequestQueries(queryClient, ({ params, data }) => {
         const result = removeRowFromPage(data.rows, id)
         if (!result.removed) {
-          logger.debug("Contact request not found in current view", { contactRequestId: id, viewStatus: params.status })
           return null
         }
         
         const total = Math.max(0, data.total - 1)
         const totalPages = total === 0 ? 0 : Math.ceil(total / data.limit)
-        
-        logger.debug("Removed contact request from cache", {
-          contactRequestId: id,
-          oldRowsCount: data.rows.length,
-          newRowsCount: result.rows.length,
-          oldTotal: data.total,
-          newTotal: total,
-        })
         
         return {
           ...data,
@@ -314,11 +282,102 @@ export function useContactRequestsSocketBridge() {
       }
     })
 
+    // Batch upsert handler (tối ưu cho bulk operations)
+    const detachBatchUpsert = on<[{ contactRequests: ContactRequestRow[]; previousStatus: "active" | "deleted" | null }]>("contact-request:batch-upsert", (payload) => {
+      const { contactRequests, previousStatus } = payload as { contactRequests: ContactRequestRow[]; previousStatus: "active" | "deleted" | null }
+      
+      resourceLogger.socket({
+        resource: "contact-requests",
+        action: "socket-update",
+        event: "contact-request:batch-upsert",
+        payload: { count: contactRequests.length, previousStatus },
+      })
+
+      let anyUpdated = false
+      for (const contactRequest of contactRequests) {
+        const rowStatus: "active" | "deleted" = contactRequest.deletedAt ? "deleted" : "active"
+
+        // Update detail query cache nếu có
+        const detailQueryKey = queryKeys.adminContactRequests.detail(contactRequest.id)
+        const detailData = queryClient.getQueryData<{ data: ContactRequestDetailData }>(detailQueryKey)
+        if (detailData) {
+          queryClient.setQueryData(detailQueryKey, {
+            data: {
+              ...detailData.data,
+              ...contactRequest,
+              assignedTo: contactRequest.assignedToName
+                ? {
+                    id: detailData.data.assignedToId || "",
+                    name: contactRequest.assignedToName,
+                    email: detailData.data.assignedTo?.email || "",
+                  }
+                : null,
+              updatedAt: contactRequest.updatedAt,
+              deletedAt: contactRequest.deletedAt,
+            },
+          })
+        }
+
+        const updated = updateContactRequestQueries(queryClient, ({ params, data }) => {
+          const matches = matchesFilters(params.filters, contactRequest) && matchesSearch(params.search, contactRequest)
+          const includesByStatus = shouldIncludeInStatus(params.status, rowStatus)
+          const existingIndex = data.rows.findIndex((row) => row.id === contactRequest.id)
+          const shouldInclude = matches && includesByStatus
+
+          if (existingIndex === -1 && !shouldInclude) {
+            return null
+          }
+
+          const next: DataTableResult<ContactRequestRow> = { ...data }
+          let total = next.total
+          let rows = next.rows
+
+          if (shouldInclude) {
+            if (existingIndex >= 0) {
+              const updated = [...rows]
+              updated[existingIndex] = contactRequest
+              rows = updated
+            } else if (params.page === 1) {
+              rows = insertRowIntoPage(rows, contactRequest, next.limit)
+              total = total + 1
+            }
+          } else if (existingIndex >= 0) {
+            const result = removeRowFromPage(rows, contactRequest.id)
+            rows = result.rows
+            if (result.removed) {
+              total = Math.max(0, total - 1)
+            }
+          } else {
+            return null
+          }
+
+          const totalPages = total === 0 ? 0 : Math.ceil(total / next.limit)
+
+          return {
+            ...next,
+            rows,
+            total,
+            totalPages,
+          }
+        })
+        if (updated) {
+          anyUpdated = true
+        }
+      }
+
+      if (anyUpdated) {
+        setCacheVersion((prev) => prev + 1)
+        // Invalidate unread counts để cập nhật contact requests count
+        invalidateQueries.unreadCounts(queryClient, session?.user?.id)
+      }
+    })
+
     return () => {
       detachNew?.()
       detachUpsert?.()
       detachAssigned?.()
       detachRemove?.()
+      detachBatchUpsert?.()
     }
   }, [session?.user?.id, on, queryClient])
 

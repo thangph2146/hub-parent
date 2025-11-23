@@ -5,7 +5,7 @@
  * Pattern: Server Component (data fetching) → Client Component (UI/interactions)
  */
 
-import { getUserDetailById, getRolesCached } from "../server/cache"
+import { getActiveRoles, getUserDetailById } from "../server/queries"
 import { serializeUserDetail } from "../server/helpers"
 import { UserEditClient } from "./user-edit.client"
 import type { UserEditClientProps } from "./user-edit.client"
@@ -32,7 +32,7 @@ export async function UserEdit({
 }: UserEditProps) {
   const [user, roles] = await Promise.all([
     getUserDetailById(userId),
-    getRolesCached(),
+    getActiveRoles(),
   ])
 
   if (!user) {

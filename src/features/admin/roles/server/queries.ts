@@ -117,6 +117,70 @@ export async function getRoleColumnOptions(
   return mapToColumnOptions(results, column)
 }
 
+/**
+ * Get all available permissions as flat options (non-cached)
+ * Theo chuẩn Next.js 16: không cache admin data
+ */
+export async function getAllPermissionsOptions(): Promise<Array<{ label: string; value: string }>> {
+  const { PERMISSIONS } = await import("@/lib/permissions")
+  
+  // Map resource names to Vietnamese labels
+  const resourceLabels: Record<string, string> = {
+    dashboard: "Dashboard",
+    users: "Người dùng",
+    posts: "Bài viết",
+    categories: "Danh mục",
+    tags: "Thẻ",
+    comments: "Bình luận",
+    roles: "Vai trò",
+    messages: "Tin nhắn",
+    notifications: "Thông báo",
+    contact_requests: "Liên hệ",
+    students: "Học sinh",
+    settings: "Cài đặt",
+  }
+
+  // Map action names to Vietnamese labels
+  const actionLabels: Record<string, string> = {
+    view: "Xem",
+    create: "Tạo",
+    update: "Cập nhật",
+    delete: "Xóa",
+    publish: "Xuất bản",
+    approve: "Duyệt",
+    assign: "Gán",
+    manage: "Quản lý",
+  }
+
+  // Track unique permission values to avoid duplicates
+  const seenValues = new Set<string>()
+  
+  return Object.entries(PERMISSIONS)
+    .map(([_key, value]) => {
+      const permissionValue = String(value)
+      
+      // Skip if we've already seen this permission value
+      if (seenValues.has(permissionValue)) {
+        return null
+      }
+      
+      const [resource, action] = permissionValue.split(":")
+      const resourceLabel = resourceLabels[resource] || resource
+      const actionLabel = actionLabels[action] || action
+      const label = `${actionLabel} - ${resourceLabel}`
+      
+      // Mark this permission value as seen
+      seenValues.add(permissionValue)
+      
+      return {
+        label,
+        value: permissionValue,
+      }
+    })
+    .filter((item): item is { label: string; value: string } => item !== null)
+    .sort((a, b) => a.label.localeCompare(b.label))
+}
+
 export async function getRoleById(id: string): Promise<RoleDetail | null> {
   const role = await prisma.role.findUnique({
     where: { id },

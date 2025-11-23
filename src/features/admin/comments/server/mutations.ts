@@ -8,7 +8,6 @@
 
 import { PERMISSIONS, canPerformAnyAction } from "@/lib/permissions"
 import { prisma } from "@/lib/database"
-import { resourceLogger } from "@/lib/config"
 import { mapCommentRecord, type CommentWithRelations } from "./helpers"
 import type { ListedComment } from "../types"
 import {
@@ -21,8 +20,9 @@ import {
   ForbiddenError,
   NotFoundError,
   ensurePermission,
-  invalidateResourceCache,
-  invalidateResourceCacheBulk,
+  logTableStatusAfterMutation,
+  logActionFlow,
+  logDetailAction,
   type AuthContext,
 } from "@/features/admin/resources/server"
 import type { BulkActionResult } from "@/features/admin/resources/types"
@@ -31,77 +31,6 @@ import { emitCommentUpsert, emitCommentRemove, emitCommentBatchUpsert } from "./
 // Re-export for backward compatibility with API routes
 export { ApplicationError, ForbiddenError, NotFoundError, type AuthContext }
 export type { BulkActionResult }
-
-/**
- * Helper function để log trạng thái hiện tại của table sau mutations
- */
-async function logTableStatusAfterMutation(
-  action: "after-delete" | "after-restore" | "after-bulk-delete" | "after-bulk-restore",
-  affectedIds: string | string[],
-  affectedCount?: number
-): Promise<void> {
-  const actionType = action.startsWith("after-bulk-") 
-    ? (action === "after-bulk-delete" ? "bulk-delete" : "bulk-restore")
-    : (action === "after-delete" ? "delete" : "restore")
-
-  resourceLogger.actionFlow({
-    resource: "comments",
-    action: actionType,
-    step: "start",
-    metadata: { 
-      loggingTableStatus: true, 
-      affectedCount,
-      affectedIds: Array.isArray(affectedIds) ? affectedIds.length : 1,
-    },
-  })
-
-  const [activeCount, deletedCount] = await Promise.all([
-    prisma.comment.count({ where: { deletedAt: null } }),
-    prisma.comment.count({ where: { deletedAt: { not: null } } }),
-  ])
-
-  const isBulk = action.startsWith("after-bulk-")
-  const structure = isBulk
-    ? {
-        action,
-        deletedCount: action === "after-bulk-delete" ? affectedCount : undefined,
-        restoredCount: action === "after-bulk-restore" ? affectedCount : undefined,
-        currentActiveCount: activeCount,
-        currentDeletedCount: deletedCount,
-        affectedCommentIds: Array.isArray(affectedIds) ? affectedIds : [affectedIds],
-        summary: action === "after-bulk-delete" 
-          ? `Đã xóa ${affectedCount} bình luận. Hiện tại: ${activeCount} active, ${deletedCount} đã xóa`
-          : `Đã khôi phục ${affectedCount} bình luận. Hiện tại: ${activeCount} active, ${deletedCount} đã xóa`,
-      }
-    : {
-        action,
-        currentActiveCount: activeCount,
-        currentDeletedCount: deletedCount,
-        affectedCommentId: typeof affectedIds === "string" ? affectedIds : affectedIds[0],
-        summary: action === "after-delete"
-          ? `Đã xóa 1 bình luận. Hiện tại: ${activeCount} active, ${deletedCount} đã xóa`
-          : `Đã khôi phục 1 bình luận. Hiện tại: ${activeCount} active, ${deletedCount} đã xóa`,
-      }
-
-  resourceLogger.dataStructure({
-    resource: "comments",
-    dataType: "table",
-    structure,
-  })
-
-  resourceLogger.actionFlow({
-    resource: "comments",
-    action: actionType,
-    step: "success",
-    metadata: {
-      tableStatusLogged: true,
-      activeCount,
-      deletedCount,
-      affectedCount,
-      summary: structure.summary,
-    },
-  })
-}
 
 /**
  * Helper function để xử lý bulk operation sau khi update database
@@ -116,48 +45,44 @@ async function handleBulkOperationAfterUpdate(
   previousStatus: "active" | "deleted",
   ctx: AuthContext
 ): Promise<string> {
-  // Log table status TRƯỚC khi invalidate cache để đảm bảo data đã được commit
-  await logTableStatusAfterMutation(
-    action === "bulk-delete" ? "after-bulk-delete" : "after-bulk-restore",
-    commentIds,
-    resultCount
-  )
+  await logTableStatusAfterMutation({
+    resource: "comments",
+    action: action === "bulk-delete" ? "bulk-delete" : "bulk-restore",
+    prismaModel: prisma.comment,
+    affectedIds: commentIds,
+    affectedCount: resultCount,
+  })
 
   if (resultCount > 0) {
-    resourceLogger.socket({
-      resource: "comments",
-      action,
-      event: "comment:batch-upsert",
-      resourceId: commentIds.join(","),
-      payload: { commentIds, previousStatus },
-    })
-    await emitCommentBatchUpsert(commentIds, previousStatus)
+    try {
+      await emitCommentBatchUpsert(commentIds, previousStatus)
+    } catch (error) {
+      logActionFlow("comments", action, "error", {
+        error: error instanceof Error ? error.message : String(error),
+        count: resultCount,
+      })
+    }
 
-    await notifySuperAdminsOfBulkCommentAction(
-      action === "bulk-delete" ? "delete" : "restore",
-      ctx.actorId,
-      comments.map((c) => ({
-        id: c.id,
-        content: c.content,
-        authorName: c.author.name,
-        authorEmail: c.author.email,
-        postTitle: c.post.title,
-      }))
-    )
+    try {
+      await notifySuperAdminsOfBulkCommentAction(
+        action === "bulk-delete" ? "delete" : "restore",
+        ctx.actorId,
+        comments.map((c) => ({
+          id: c.id,
+          content: c.content,
+          authorName: c.author.name,
+          authorEmail: c.author.email,
+          postTitle: c.post.title,
+        }))
+      )
+    } catch (error) {
+      logActionFlow("comments", action, "error", {
+        error: error instanceof Error ? error.message : String(error),
+        notificationError: true,
+      })
+    }
   }
 
-  resourceLogger.cache({
-    resource: "comments",
-    action: "cache-invalidate",
-    operation: "invalidate-bulk",
-    tags: ["comments", "active-comments", "deleted-comments"],
-  })
-  await invalidateResourceCacheBulk({
-    resource: "comments",
-    additionalTags: ["active-comments", "deleted-comments"],
-  })
-
-  // Tạo success message với tên comments đã được format
   const namesText = comments.length > 0 ? formatCommentNames(
     comments.map((c) => ({
       authorName: c.author.name,
@@ -174,28 +99,17 @@ async function handleBulkOperationAfterUpdate(
 
 export async function updateComment(ctx: AuthContext, id: string, input: UpdateCommentInput): Promise<ListedComment> {
   const startTime = Date.now()
-
-  resourceLogger.actionFlow({
-    resource: "comments",
-    action: "update",
-    step: "start",
-    metadata: { commentId: id, actorId: ctx.actorId },
-  })
+  logActionFlow("comments", "update", "init", { commentId: id, actorId: ctx.actorId })
 
   ensurePermission(ctx, PERMISSIONS.COMMENTS_MANAGE)
 
   if (!id || typeof id !== "string" || id.trim() === "") {
-    resourceLogger.actionFlow({
-      resource: "comments",
-      action: "update",
-      step: "error",
-      metadata: { commentId: id, error: "ID bình luận không hợp lệ" },
-    })
+    logActionFlow("comments", "update", "error", { commentId: id, error: "ID bình luận không hợp lệ" }, startTime)
     throw new ApplicationError("ID bình luận không hợp lệ", 400)
   }
 
-  // Validate input với zod
   const validatedInput = UpdateCommentSchema.parse(input)
+  logActionFlow("comments", "update", "start", { commentId: id, changes: Object.keys(validatedInput) }, startTime)
 
   const existing = await prisma.comment.findUnique({
     where: { id },
@@ -217,12 +131,7 @@ export async function updateComment(ctx: AuthContext, id: string, input: UpdateC
   })
 
   if (!existing || existing.deletedAt) {
-    resourceLogger.actionFlow({
-      resource: "comments",
-      action: "update",
-      step: "error",
-      metadata: { commentId: id, error: "Bình luận không tồn tại" },
-    })
+    logActionFlow("comments", "update", "error", { commentId: id, error: "Bình luận không tồn tại" }, startTime)
     throw new NotFoundError("Bình luận không tồn tại")
   }
 
@@ -252,15 +161,8 @@ export async function updateComment(ctx: AuthContext, id: string, input: UpdateC
     updateData.approved = validatedInput.approved
   }
 
-  // Chỉ update nếu có thay đổi
   if (Object.keys(updateData).length === 0) {
-    resourceLogger.actionFlow({
-      resource: "comments",
-      action: "update",
-      step: "success",
-      duration: Date.now() - startTime,
-      metadata: { commentId: id, message: "Không có thay đổi" },
-    })
+    logActionFlow("comments", "update", "success", { commentId: id, message: "Không có thay đổi" }, startTime)
     return mapCommentRecord(existing)
   }
 
@@ -285,27 +187,6 @@ export async function updateComment(ctx: AuthContext, id: string, input: UpdateC
   })
 
   const sanitized = mapCommentRecord(comment)
-
-  resourceLogger.cache({
-    resource: "comments",
-    action: "cache-invalidate",
-    operation: "invalidate",
-    resourceId: sanitized.id,
-    tags: ["comments", `comment-${sanitized.id}`, "active-comments", "deleted-comments"],
-  })
-  await invalidateResourceCache({
-    resource: "comments",
-    id: sanitized.id,
-    additionalTags: ["active-comments", "deleted-comments"],
-  })
-
-  resourceLogger.socket({
-    resource: "comments",
-    action: "update",
-    event: "comment:upsert",
-    resourceId: sanitized.id,
-    payload: { commentId: sanitized.id, previousStatus: existing.deletedAt ? "deleted" : "active" },
-  })
   await emitCommentUpsert(comment.id, existing.deletedAt ? "deleted" : "active")
 
   await notifySuperAdminsOfCommentAction(
@@ -321,21 +202,8 @@ export async function updateComment(ctx: AuthContext, id: string, input: UpdateC
     Object.keys(changes).length > 0 ? changes : undefined
   )
 
-  resourceLogger.actionFlow({
-    resource: "comments",
-    action: "update",
-    step: "success",
-    duration: Date.now() - startTime,
-    metadata: { commentId: sanitized.id, authorName: sanitized.authorName },
-  })
-
-  resourceLogger.detailAction({
-    resource: "comments",
-    action: "update",
-    resourceId: sanitized.id,
-    authorName: sanitized.authorName,
-    postTitle: sanitized.postTitle,
-  })
+  logActionFlow("comments", "update", "success", { commentId: sanitized.id, authorName: sanitized.authorName }, startTime)
+  logDetailAction("comments", "update", sanitized.id, sanitized as unknown as Record<string, unknown>)
 
   return sanitized
 }
@@ -350,13 +218,7 @@ async function toggleCommentApproval(
 ): Promise<void> {
   const startTime = Date.now()
   const targetApproved = action === "approve"
-
-  resourceLogger.actionFlow({
-    resource: "comments",
-    action,
-    step: "start",
-    metadata: { commentId: id, actorId: ctx.actorId },
-  })
+  logActionFlow("comments", action, "start", { commentId: id, actorId: ctx.actorId })
 
   ensurePermission(ctx, PERMISSIONS.COMMENTS_APPROVE, PERMISSIONS.COMMENTS_MANAGE)
 
@@ -380,25 +242,15 @@ async function toggleCommentApproval(
   })
 
   if (!comment || comment.deletedAt) {
-    resourceLogger.actionFlow({
-      resource: "comments",
-      action,
-      step: "error",
-      metadata: { commentId: id, error: "Bình luận không tồn tại" },
-    })
+    logActionFlow("comments", action, "error", { commentId: id, error: "Bình luận không tồn tại" }, startTime)
     throw new NotFoundError("Bình luận không tồn tại")
   }
 
   if (comment.approved === targetApproved) {
-    resourceLogger.actionFlow({
-      resource: "comments",
-      action,
-      step: "error",
-      metadata: { 
-        commentId: id, 
-        error: targetApproved ? "Bình luận đã được duyệt" : "Bình luận chưa được duyệt" 
-      },
-    })
+    logActionFlow("comments", action, "error", { 
+      commentId: id, 
+      error: targetApproved ? "Bình luận đã được duyệt" : "Bình luận chưa được duyệt" 
+    }, startTime)
     throw new ApplicationError(
       targetApproved ? "Bình luận đã được duyệt" : "Bình luận chưa được duyệt",
       400
@@ -410,27 +262,7 @@ async function toggleCommentApproval(
     data: { approved: targetApproved },
   })
 
-  resourceLogger.cache({
-    resource: "comments",
-    action: "cache-invalidate",
-    operation: "invalidate",
-    resourceId: id,
-    tags: ["comments", `comment-${id}`, "active-comments", "deleted-comments"],
-  })
-  await invalidateResourceCache({
-    resource: "comments",
-    id,
-    additionalTags: ["active-comments", "deleted-comments"],
-  })
-
   const previousStatus: "active" | "deleted" = comment.deletedAt ? "deleted" : "active"
-  resourceLogger.socket({
-    resource: "comments",
-    action,
-    event: "comment:upsert",
-    resourceId: id,
-    payload: { commentId: id, previousStatus },
-  })
   await emitCommentUpsert(comment.id, previousStatus)
 
   await notifySuperAdminsOfCommentAction(
@@ -445,21 +277,13 @@ async function toggleCommentApproval(
     }
   )
 
-  resourceLogger.actionFlow({
-    resource: "comments",
-    action,
-    step: "success",
-    duration: Date.now() - startTime,
-    metadata: { commentId: id, authorName: comment.author.name },
-  })
-
-  resourceLogger.detailAction({
-    resource: "comments",
-    action,
-    resourceId: id,
+  logActionFlow("comments", action, "success", { commentId: id, authorName: comment.author.name }, startTime)
+  logDetailAction("comments", action, id, {
+    id: comment.id,
+    content: comment.content,
     authorName: comment.author.name,
     postTitle: comment.post.title,
-  })
+  } as unknown as Record<string, unknown>)
 }
 
 export async function approveComment(ctx: AuthContext, id: string): Promise<void> {
@@ -472,13 +296,7 @@ export async function unapproveComment(ctx: AuthContext, id: string): Promise<vo
 
 export async function softDeleteComment(ctx: AuthContext, id: string): Promise<void> {
   const startTime = Date.now()
-
-  resourceLogger.actionFlow({
-    resource: "comments",
-    action: "delete",
-    step: "start",
-    metadata: { commentId: id, actorId: ctx.actorId },
-  })
+  logActionFlow("comments", "delete", "init", { commentId: id, actorId: ctx.actorId })
 
   ensurePermission(ctx, PERMISSIONS.COMMENTS_DELETE, PERMISSIONS.COMMENTS_MANAGE)
 
@@ -502,12 +320,7 @@ export async function softDeleteComment(ctx: AuthContext, id: string): Promise<v
   })
 
   if (!comment || comment.deletedAt) {
-    resourceLogger.actionFlow({
-      resource: "comments",
-      action: "delete",
-      step: "error",
-      metadata: { commentId: id, error: "Bình luận không tồn tại" },
-    })
+    logActionFlow("comments", "delete", "error", { commentId: id, error: "Bình luận không tồn tại" }, startTime)
     throw new NotFoundError("Bình luận không tồn tại")
   }
 
@@ -518,31 +331,14 @@ export async function softDeleteComment(ctx: AuthContext, id: string): Promise<v
     },
   })
 
-  // Log table status TRƯỚC khi invalidate cache để đảm bảo data đã được commit
-  await logTableStatusAfterMutation("after-delete", id)
-
-  resourceLogger.cache({
-    resource: "comments",
-    action: "cache-invalidate",
-    operation: "invalidate",
-    resourceId: id,
-    tags: ["comments", `comment-${id}`, "active-comments", "deleted-comments"],
-  })
-  await invalidateResourceCache({
-    resource: "comments",
-    id,
-    additionalTags: ["active-comments", "deleted-comments"],
-  })
-
-  resourceLogger.socket({
+  await logTableStatusAfterMutation({
     resource: "comments",
     action: "delete",
-    event: "comment:upsert",
-    resourceId: id,
-    payload: { commentId: id, previousStatus: "active" },
+    prismaModel: prisma.comment,
+    affectedIds: id,
   })
-  await emitCommentUpsert(comment.id, "active")
 
+  await emitCommentUpsert(comment.id, "active")
   await notifySuperAdminsOfCommentAction(
     "delete",
     ctx.actorId,
@@ -555,34 +351,23 @@ export async function softDeleteComment(ctx: AuthContext, id: string): Promise<v
     }
   )
 
-  resourceLogger.actionFlow({
-    resource: "comments",
-    action: "delete",
-    step: "success",
-    duration: Date.now() - startTime,
-    metadata: { commentId: id, authorName: comment.author.name },
-  })
+  logActionFlow("comments", "delete", "success", { commentId: id, authorName: comment.author.name }, startTime)
+  logDetailAction("comments", "delete", id, {
+    id: comment.id,
+    content: comment.content,
+    authorName: comment.author.name,
+    postTitle: comment.post.title,
+  } as unknown as Record<string, unknown>)
 }
 
 export async function bulkSoftDeleteComments(ctx: AuthContext, ids: string[]): Promise<BulkActionResult> {
   const startTime = Date.now()
-
-  resourceLogger.actionFlow({
-    resource: "comments",
-    action: "bulk-delete",
-    step: "start",
-    metadata: { count: ids.length, commentIds: ids, actorId: ctx.actorId },
-  })
+  logActionFlow("comments", "bulk-delete", "start", { count: ids.length, commentIds: ids, actorId: ctx.actorId })
 
   ensurePermission(ctx, PERMISSIONS.COMMENTS_DELETE, PERMISSIONS.COMMENTS_MANAGE)
 
   if (!ids || ids.length === 0) {
-    resourceLogger.actionFlow({
-      resource: "comments",
-      action: "bulk-delete",
-      step: "error",
-      metadata: { error: "Danh sách bình luận trống" },
-    })
+    logActionFlow("comments", "bulk-delete", "error", { error: "Danh sách bình luận trống" }, startTime)
     throw new ApplicationError("Danh sách bình luận trống", 400)
   }
 
@@ -619,19 +404,14 @@ export async function bulkSoftDeleteComments(ctx: AuthContext, ids: string[]): P
     const alreadyDeletedCount = alreadyDeletedComments.length
     const notFoundCount = ids.length - allComments.length
 
-    resourceLogger.actionFlow({
-      resource: "comments",
-      action: "bulk-delete",
-      step: "error",
-      metadata: {
-        requestedCount: ids.length,
-        foundCount: comments.length,
-        allCommentsCount: allComments.length,
-        alreadyDeletedCount,
-        notFoundCount,
-        error: "Không có bình luận nào có thể xóa",
-      },
-    })
+    logActionFlow("comments", "bulk-delete", "error", {
+      requestedCount: ids.length,
+      foundCount: comments.length,
+      allCommentsCount: allComments.length,
+      alreadyDeletedCount,
+      notFoundCount,
+      error: "Không có bình luận nào có thể xóa",
+    }, startTime)
 
     let errorMessage = "Không có bình luận nào có thể xóa"
     const parts: string[] = []
@@ -668,26 +448,14 @@ export async function bulkSoftDeleteComments(ctx: AuthContext, ids: string[]): P
 
   const message = await handleBulkOperationAfterUpdate("bulk-delete", commentIds, comments, result.count, "active", ctx)
 
-  resourceLogger.actionFlow({
-    resource: "comments",
-    action: "bulk-delete",
-    step: "success",
-    duration: Date.now() - startTime,
-    metadata: { count: result.count, commentIds },
-  })
+  logActionFlow("comments", "bulk-delete", "success", { count: result.count, commentIds }, startTime)
 
   return { success: true, message, affected: result.count }
 }
 
 export async function restoreComment(ctx: AuthContext, id: string): Promise<void> {
   const startTime = Date.now()
-
-  resourceLogger.actionFlow({
-    resource: "comments",
-    action: "restore",
-    step: "start",
-    metadata: { commentId: id, actorId: ctx.actorId },
-  })
+  logActionFlow("comments", "restore", "init", { commentId: id, actorId: ctx.actorId })
 
   ensurePermission(ctx, PERMISSIONS.COMMENTS_MANAGE)
 
@@ -711,12 +479,7 @@ export async function restoreComment(ctx: AuthContext, id: string): Promise<void
   })
 
   if (!comment || !comment.deletedAt) {
-    resourceLogger.actionFlow({
-      resource: "comments",
-      action: "restore",
-      step: "error",
-      metadata: { commentId: id, error: "Bình luận không tồn tại hoặc chưa bị xóa" },
-    })
+    logActionFlow("comments", "restore", "error", { commentId: id, error: "Bình luận không tồn tại hoặc chưa bị xóa" }, startTime)
     throw new NotFoundError("Bình luận không tồn tại hoặc chưa bị xóa")
   }
 
@@ -727,31 +490,14 @@ export async function restoreComment(ctx: AuthContext, id: string): Promise<void
     },
   })
 
-  // Log table status TRƯỚC khi invalidate cache để đảm bảo data đã được commit
-  await logTableStatusAfterMutation("after-restore", id)
-
-  resourceLogger.cache({
-    resource: "comments",
-    action: "cache-invalidate",
-    operation: "invalidate",
-    resourceId: id,
-    tags: ["comments", `comment-${id}`, "active-comments", "deleted-comments"],
-  })
-  await invalidateResourceCache({
-    resource: "comments",
-    id,
-    additionalTags: ["active-comments", "deleted-comments"],
-  })
-
-  resourceLogger.socket({
+  await logTableStatusAfterMutation({
     resource: "comments",
     action: "restore",
-    event: "comment:upsert",
-    resourceId: id,
-    payload: { commentId: id, previousStatus: "deleted" },
+    prismaModel: prisma.comment,
+    affectedIds: id,
   })
-  await emitCommentUpsert(comment.id, "deleted")
 
+  await emitCommentUpsert(comment.id, "deleted")
   await notifySuperAdminsOfCommentAction(
     "restore",
     ctx.actorId,
@@ -764,13 +510,13 @@ export async function restoreComment(ctx: AuthContext, id: string): Promise<void
     }
   )
 
-  resourceLogger.actionFlow({
-    resource: "comments",
-    action: "restore",
-    step: "success",
-    duration: Date.now() - startTime,
-    metadata: { commentId: id, authorName: comment.author.name },
-  })
+  logActionFlow("comments", "restore", "success", { commentId: id, authorName: comment.author.name }, startTime)
+  logDetailAction("comments", "restore", id, {
+    id: comment.id,
+    content: comment.content,
+    authorName: comment.author.name,
+    postTitle: comment.post.title,
+  } as unknown as Record<string, unknown>)
 }
 
 export async function bulkRestoreComments(ctx: AuthContext, ids: string[]): Promise<BulkActionResult> {
@@ -779,12 +525,7 @@ export async function bulkRestoreComments(ctx: AuthContext, ids: string[]): Prom
   ensurePermission(ctx, PERMISSIONS.COMMENTS_MANAGE)
 
   if (!ids || ids.length === 0) {
-    resourceLogger.actionFlow({
-      resource: "comments",
-      action: "bulk-restore",
-      step: "error",
-      metadata: { error: "Danh sách bình luận trống" },
-    })
+    logActionFlow("comments", "bulk-restore", "error", { error: "Danh sách bình luận trống" }, startTime)
     throw new ApplicationError("Danh sách bình luận trống", 400)
   }
 
@@ -811,23 +552,18 @@ export async function bulkRestoreComments(ctx: AuthContext, ids: string[]): Prom
   const softDeletedIds = softDeletedComments.map((c) => c.id)
   const activeIds = activeComments.map((c) => c.id)
 
-  resourceLogger.actionFlow({
-    resource: "comments",
-    action: "bulk-restore",
-    step: "start",
-    metadata: {
-      requestedCount: ids.length,
-      foundCount: allRequestedComments.length,
-      softDeletedCount: softDeletedComments.length,
-      activeCount: activeComments.length,
-      notFoundCount,
-      requestedIds: ids,
-      foundIds,
-      softDeletedIds,
-      activeIds,
-      notFoundIds,
-      actorId: ctx.actorId,
-    },
+  logActionFlow("comments", "bulk-restore", "start", {
+    requestedCount: ids.length,
+    foundCount: allRequestedComments.length,
+    softDeletedCount: softDeletedComments.length,
+    activeCount: activeComments.length,
+    notFoundCount,
+    requestedIds: ids,
+    foundIds,
+    softDeletedIds,
+    activeIds,
+    notFoundIds,
+    actorId: ctx.actorId,
   })
 
   // Nếu không có comment nào đã bị soft delete, throw error với message chi tiết
@@ -844,19 +580,14 @@ export async function bulkRestoreComments(ctx: AuthContext, ids: string[]): Prom
       ? `Không có bình luận nào để khôi phục (${parts.join(", ")})`
       : `Không tìm thấy bình luận nào để khôi phục`
 
-    resourceLogger.actionFlow({
-      resource: "comments",
-      action: "bulk-restore",
-      step: "error",
-      metadata: {
-        requestedCount: ids.length,
-        foundCount: allRequestedComments.length,
-        softDeletedCount: softDeletedComments.length,
-        activeCount: activeComments.length,
-        notFoundCount,
-        error: errorMessage,
-      },
-    })
+    logActionFlow("comments", "bulk-restore", "error", {
+      requestedCount: ids.length,
+      foundCount: allRequestedComments.length,
+      softDeletedCount: softDeletedComments.length,
+      activeCount: activeComments.length,
+      notFoundCount,
+      error: errorMessage,
+    }, startTime)
 
     throw new ApplicationError(errorMessage, 400)
   }
@@ -898,34 +629,17 @@ export async function bulkRestoreComments(ctx: AuthContext, ids: string[]): Prom
 
   const message = await handleBulkOperationAfterUpdate("bulk-restore", commentIds, comments, result.count, "deleted", ctx)
 
-  resourceLogger.actionFlow({
-    resource: "comments",
-    action: "bulk-restore",
-    step: "success",
-    duration: Date.now() - startTime,
-    metadata: { count: result.count, commentIds },
-  })
+  logActionFlow("comments", "bulk-restore", "success", { count: result.count, commentIds }, startTime)
 
   return { success: true, message, affected: result.count }
 }
 
 export async function hardDeleteComment(ctx: AuthContext, id: string): Promise<void> {
   const startTime = Date.now()
-
-  resourceLogger.actionFlow({
-    resource: "comments",
-    action: "hard-delete",
-    step: "start",
-    metadata: { commentId: id, actorId: ctx.actorId },
-  })
+  logActionFlow("comments", "hard-delete", "init", { commentId: id, actorId: ctx.actorId })
 
   if (!canPerformAnyAction(ctx.permissions, ctx.roles, [PERMISSIONS.COMMENTS_MANAGE])) {
-    resourceLogger.actionFlow({
-      resource: "comments",
-      action: "hard-delete",
-      step: "error",
-      metadata: { commentId: id, error: "Không có quyền" },
-    })
+    logActionFlow("comments", "hard-delete", "error", { commentId: id, error: "Không có quyền" }, startTime)
     throw new ForbiddenError()
   }
 
@@ -949,52 +663,18 @@ export async function hardDeleteComment(ctx: AuthContext, id: string): Promise<v
   })
 
   if (!comment) {
-    resourceLogger.actionFlow({
-      resource: "comments",
-      action: "hard-delete",
-      step: "error",
-      metadata: { commentId: id, error: "Bình luận không tồn tại" },
-    })
+    logActionFlow("comments", "hard-delete", "error", { commentId: id, error: "Bình luận không tồn tại" }, startTime)
     throw new NotFoundError("Bình luận không tồn tại")
   }
 
-  // Chỉ cho phép hard delete khi comment đã bị soft delete
   if (!comment.deletedAt) {
-    resourceLogger.actionFlow({
-      resource: "comments",
-      action: "hard-delete",
-      step: "error",
-      metadata: { commentId: id, error: "Chỉ có thể xóa vĩnh viễn bình luận đã bị xóa" },
-    })
+    logActionFlow("comments", "hard-delete", "error", { commentId: id, error: "Chỉ có thể xóa vĩnh viễn bình luận đã bị xóa" }, startTime)
     throw new ApplicationError("Chỉ có thể xóa vĩnh viễn bình luận đã bị xóa", 400)
   }
 
   const previousStatus: "active" | "deleted" = comment.deletedAt ? "deleted" : "active"
 
-  await prisma.comment.delete({
-    where: { id },
-  })
-
-  resourceLogger.cache({
-    resource: "comments",
-    action: "cache-invalidate",
-    operation: "invalidate",
-    resourceId: id,
-    tags: ["comments", `comment-${id}`, "active-comments", "deleted-comments"],
-  })
-  await invalidateResourceCache({
-    resource: "comments",
-    id,
-    additionalTags: ["active-comments", "deleted-comments"],
-  })
-
-  resourceLogger.socket({
-    resource: "comments",
-    action: "hard-delete",
-    event: "comment:remove",
-    resourceId: id,
-    payload: { commentId: id, previousStatus },
-  })
+  await prisma.comment.delete({ where: { id } })
   emitCommentRemove(comment.id, previousStatus)
 
   await notifySuperAdminsOfCommentAction(
@@ -1009,42 +689,26 @@ export async function hardDeleteComment(ctx: AuthContext, id: string): Promise<v
     }
   )
 
-  resourceLogger.actionFlow({
-    resource: "comments",
-    action: "hard-delete",
-    step: "success",
-    duration: Date.now() - startTime,
-    metadata: { commentId: id, authorName: comment.author.name },
-  })
+  logActionFlow("comments", "hard-delete", "success", { commentId: id, authorName: comment.author.name }, startTime)
+  logDetailAction("comments", "hard-delete", id, {
+    id: comment.id,
+    content: comment.content,
+    authorName: comment.author.name,
+    postTitle: comment.post.title,
+  } as unknown as Record<string, unknown>)
 }
 
 export async function bulkHardDeleteComments(ctx: AuthContext, ids: string[]): Promise<BulkActionResult> {
   const startTime = Date.now()
-
-  resourceLogger.actionFlow({
-    resource: "comments",
-    action: "bulk-hard-delete",
-    step: "start",
-    metadata: { count: ids.length, commentIds: ids, actorId: ctx.actorId },
-  })
+  logActionFlow("comments", "bulk-hard-delete", "start", { count: ids.length, commentIds: ids, actorId: ctx.actorId })
 
   if (!canPerformAnyAction(ctx.permissions, ctx.roles, [PERMISSIONS.COMMENTS_MANAGE])) {
-    resourceLogger.actionFlow({
-      resource: "comments",
-      action: "bulk-hard-delete",
-      step: "error",
-      metadata: { error: "Không có quyền" },
-    })
+    logActionFlow("comments", "bulk-hard-delete", "error", { error: "Không có quyền" }, startTime)
     throw new ForbiddenError()
   }
 
   if (!ids || ids.length === 0) {
-    resourceLogger.actionFlow({
-      resource: "comments",
-      action: "bulk-hard-delete",
-      step: "error",
-      metadata: { error: "Danh sách bình luận trống" },
-    })
+    logActionFlow("comments", "bulk-hard-delete", "error", { error: "Danh sách bình luận trống" }, startTime)
     throw new ApplicationError("Danh sách bình luận trống", 400)
   }
 
@@ -1073,12 +737,7 @@ export async function bulkHardDeleteComments(ctx: AuthContext, ids: string[]): P
   })
 
   if (comments.length === 0) {
-    resourceLogger.actionFlow({
-      resource: "comments",
-      action: "bulk-hard-delete",
-      step: "error",
-      metadata: { error: "Không tìm thấy bình luận nào để xóa vĩnh viễn" },
-    })
+    logActionFlow("comments", "bulk-hard-delete", "error", { error: "Không tìm thấy bình luận nào để xóa vĩnh viễn" }, startTime)
     throw new ApplicationError("Không tìm thấy bình luận nào để xóa vĩnh viễn", 400)
   }
 
@@ -1092,41 +751,29 @@ export async function bulkHardDeleteComments(ctx: AuthContext, ids: string[]): P
   const commentIds = comments.map((c) => c.id)
 
   if (result.count > 0) {
-    // Emit events (emitCommentRemove trả về void, không phải Promise)
     for (const comment of comments) {
-      resourceLogger.socket({
-        resource: "comments",
-        action: "bulk-hard-delete",
-        event: "comment:remove",
-        resourceId: comment.id,
-        payload: { commentId: comment.id, previousStatus: "deleted" },
-      })
       emitCommentRemove(comment.id, "deleted")
     }
 
-    await notifySuperAdminsOfBulkCommentAction(
-      "hard-delete",
-      ctx.actorId,
-      comments.map((c) => ({
-        id: c.id,
-        content: c.content,
-        authorName: c.author.name,
-        authorEmail: c.author.email,
-        postTitle: c.post.title,
-      }))
-    )
+    try {
+      await notifySuperAdminsOfBulkCommentAction(
+        "hard-delete",
+        ctx.actorId,
+        comments.map((c) => ({
+          id: c.id,
+          content: c.content,
+          authorName: c.author.name,
+          authorEmail: c.author.email,
+          postTitle: c.post.title,
+        }))
+      )
+    } catch (error) {
+      logActionFlow("comments", "bulk-hard-delete", "error", {
+        error: error instanceof Error ? error.message : String(error),
+        notificationError: true,
+      })
+    }
   }
-
-  resourceLogger.cache({
-    resource: "comments",
-    action: "cache-invalidate",
-    operation: "invalidate-bulk",
-    tags: ["comments", "active-comments", "deleted-comments"],
-  })
-  await invalidateResourceCacheBulk({
-    resource: "comments",
-    additionalTags: ["active-comments", "deleted-comments"],
-  })
 
   const namesText = comments.length > 0 ? formatCommentNames(
     comments.map((c) => ({
@@ -1140,36 +787,19 @@ export async function bulkHardDeleteComments(ctx: AuthContext, ids: string[]): P
     ? `Đã xóa vĩnh viễn ${result.count} bình luận: ${namesText}`
     : `Đã xóa vĩnh viễn ${result.count} bình luận`
 
-  resourceLogger.actionFlow({
-    resource: "comments",
-    action: "bulk-hard-delete",
-    step: "success",
-    duration: Date.now() - startTime,
-    metadata: { count: result.count, commentIds },
-  })
+  logActionFlow("comments", "bulk-hard-delete", "success", { count: result.count, commentIds }, startTime)
 
   return { success: true, message, affected: result.count }
 }
 
 export async function bulkApproveComments(ctx: AuthContext, ids: string[]): Promise<BulkActionResult> {
   const startTime = Date.now()
-
-  resourceLogger.actionFlow({
-    resource: "comments",
-    action: "bulk-approve",
-    step: "start",
-    metadata: { count: ids.length, commentIds: ids, actorId: ctx.actorId },
-  })
+  logActionFlow("comments", "bulk-approve", "start", { count: ids.length, commentIds: ids, actorId: ctx.actorId })
 
   ensurePermission(ctx, PERMISSIONS.COMMENTS_APPROVE, PERMISSIONS.COMMENTS_MANAGE)
 
   if (!ids || ids.length === 0) {
-    resourceLogger.actionFlow({
-      resource: "comments",
-      action: "bulk-approve",
-      step: "error",
-      metadata: { error: "Danh sách bình luận trống" },
-    })
+    logActionFlow("comments", "bulk-approve", "error", { error: "Danh sách bình luận trống" }, startTime)
     throw new ApplicationError("Danh sách bình luận trống", 400)
   }
 
@@ -1198,12 +828,7 @@ export async function bulkApproveComments(ctx: AuthContext, ids: string[]): Prom
   })
 
   if (comments.length === 0) {
-    resourceLogger.actionFlow({
-      resource: "comments",
-      action: "bulk-approve",
-      step: "error",
-      metadata: { error: "Không tìm thấy bình luận nào để duyệt" },
-    })
+    logActionFlow("comments", "bulk-approve", "error", { error: "Không tìm thấy bình luận nào để duyệt" }, startTime)
     throw new ApplicationError("Không tìm thấy bình luận nào để duyệt", 400)
   }
 
@@ -1221,38 +846,34 @@ export async function bulkApproveComments(ctx: AuthContext, ids: string[]): Prom
   const commentIds = comments.map((c) => c.id)
 
   if (result.count > 0) {
-    resourceLogger.socket({
-      resource: "comments",
-      action: "bulk-approve",
-      event: "comment:batch-upsert",
-      resourceId: commentIds.join(","),
-      payload: { commentIds, previousStatus: "active" },
-    })
-    await emitCommentBatchUpsert(commentIds, "active")
+    try {
+      await emitCommentBatchUpsert(commentIds, "active")
+    } catch (error) {
+      logActionFlow("comments", "bulk-approve", "error", {
+        error: error instanceof Error ? error.message : String(error),
+        count: result.count,
+      })
+    }
 
-    await notifySuperAdminsOfBulkCommentAction(
-      "approve",
-      ctx.actorId,
-      comments.map((c) => ({
-        id: c.id,
-        content: c.content,
-        authorName: c.author.name,
-        authorEmail: c.author.email,
-        postTitle: c.post.title,
-      }))
-    )
+    try {
+      await notifySuperAdminsOfBulkCommentAction(
+        "approve",
+        ctx.actorId,
+        comments.map((c) => ({
+          id: c.id,
+          content: c.content,
+          authorName: c.author.name,
+          authorEmail: c.author.email,
+          postTitle: c.post.title,
+        }))
+      )
+    } catch (error) {
+      logActionFlow("comments", "bulk-approve", "error", {
+        error: error instanceof Error ? error.message : String(error),
+        notificationError: true,
+      })
+    }
   }
-
-  resourceLogger.cache({
-    resource: "comments",
-    action: "cache-invalidate",
-    operation: "invalidate-bulk",
-    tags: ["comments", "active-comments", "deleted-comments"],
-  })
-  await invalidateResourceCacheBulk({
-    resource: "comments",
-    additionalTags: ["active-comments", "deleted-comments"],
-  })
 
   const namesText = comments.length > 0 ? formatCommentNames(
     comments.map((c) => ({
@@ -1266,36 +887,19 @@ export async function bulkApproveComments(ctx: AuthContext, ids: string[]): Prom
     ? `Đã duyệt ${result.count} bình luận: ${namesText}`
     : `Đã duyệt ${result.count} bình luận`
 
-  resourceLogger.actionFlow({
-    resource: "comments",
-    action: "bulk-approve",
-    step: "success",
-    duration: Date.now() - startTime,
-    metadata: { count: result.count, commentIds },
-  })
+  logActionFlow("comments", "bulk-approve", "success", { count: result.count, commentIds }, startTime)
 
   return { success: true, message, affected: result.count }
 }
 
 export async function bulkUnapproveComments(ctx: AuthContext, ids: string[]): Promise<BulkActionResult> {
   const startTime = Date.now()
-
-  resourceLogger.actionFlow({
-    resource: "comments",
-    action: "bulk-unapprove",
-    step: "start",
-    metadata: { count: ids.length, commentIds: ids, actorId: ctx.actorId },
-  })
+  logActionFlow("comments", "bulk-unapprove", "start", { count: ids.length, commentIds: ids, actorId: ctx.actorId })
 
   ensurePermission(ctx, PERMISSIONS.COMMENTS_APPROVE, PERMISSIONS.COMMENTS_MANAGE)
 
   if (!ids || ids.length === 0) {
-    resourceLogger.actionFlow({
-      resource: "comments",
-      action: "bulk-unapprove",
-      step: "error",
-      metadata: { error: "Danh sách bình luận trống" },
-    })
+    logActionFlow("comments", "bulk-unapprove", "error", { error: "Danh sách bình luận trống" }, startTime)
     throw new ApplicationError("Danh sách bình luận trống", 400)
   }
 
@@ -1324,12 +928,7 @@ export async function bulkUnapproveComments(ctx: AuthContext, ids: string[]): Pr
   })
 
   if (comments.length === 0) {
-    resourceLogger.actionFlow({
-      resource: "comments",
-      action: "bulk-unapprove",
-      step: "error",
-      metadata: { error: "Không tìm thấy bình luận nào để hủy duyệt" },
-    })
+    logActionFlow("comments", "bulk-unapprove", "error", { error: "Không tìm thấy bình luận nào để hủy duyệt" }, startTime)
     throw new ApplicationError("Không tìm thấy bình luận nào để hủy duyệt", 400)
   }
 
@@ -1347,38 +946,34 @@ export async function bulkUnapproveComments(ctx: AuthContext, ids: string[]): Pr
   const commentIds = comments.map((c) => c.id)
 
   if (result.count > 0) {
-    resourceLogger.socket({
-      resource: "comments",
-      action: "bulk-unapprove",
-      event: "comment:batch-upsert",
-      resourceId: commentIds.join(","),
-      payload: { commentIds, previousStatus: "active" },
-    })
-    await emitCommentBatchUpsert(commentIds, "active")
+    try {
+      await emitCommentBatchUpsert(commentIds, "active")
+    } catch (error) {
+      logActionFlow("comments", "bulk-unapprove", "error", {
+        error: error instanceof Error ? error.message : String(error),
+        count: result.count,
+      })
+    }
 
-    await notifySuperAdminsOfBulkCommentAction(
-      "unapprove",
-      ctx.actorId,
-      comments.map((c) => ({
-        id: c.id,
-        content: c.content,
-        authorName: c.author.name,
-        authorEmail: c.author.email,
-        postTitle: c.post.title,
-      }))
-    )
+    try {
+      await notifySuperAdminsOfBulkCommentAction(
+        "unapprove",
+        ctx.actorId,
+        comments.map((c) => ({
+          id: c.id,
+          content: c.content,
+          authorName: c.author.name,
+          authorEmail: c.author.email,
+          postTitle: c.post.title,
+        }))
+      )
+    } catch (error) {
+      logActionFlow("comments", "bulk-unapprove", "error", {
+        error: error instanceof Error ? error.message : String(error),
+        notificationError: true,
+      })
+    }
   }
-
-  resourceLogger.cache({
-    resource: "comments",
-    action: "cache-invalidate",
-    operation: "invalidate-bulk",
-    tags: ["comments", "active-comments", "deleted-comments"],
-  })
-  await invalidateResourceCacheBulk({
-    resource: "comments",
-    additionalTags: ["active-comments", "deleted-comments"],
-  })
 
   const namesText = comments.length > 0 ? formatCommentNames(
     comments.map((c) => ({
@@ -1392,13 +987,7 @@ export async function bulkUnapproveComments(ctx: AuthContext, ids: string[]): Pr
     ? `Đã hủy duyệt ${result.count} bình luận: ${namesText}`
     : `Đã hủy duyệt ${result.count} bình luận`
 
-  resourceLogger.actionFlow({
-    resource: "comments",
-    action: "bulk-unapprove",
-    step: "success",
-    duration: Date.now() - startTime,
-    metadata: { count: result.count, commentIds },
-  })
+  logActionFlow("comments", "bulk-unapprove", "success", { count: result.count, commentIds }, startTime)
 
   return { success: true, message, affected: result.count }
 }

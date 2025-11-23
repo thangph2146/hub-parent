@@ -3,7 +3,6 @@
 import type { Prisma } from "@prisma/client"
 import { PERMISSIONS, canPerformAnyAction, isSuperAdmin } from "@/lib/permissions"
 import { prisma } from "@/lib/database"
-import { resourceLogger } from "@/lib/config"
 import { mapStudentRecord, type StudentWithRelations } from "./helpers"
 import type { ListedStudent } from "../types"
 import {
@@ -19,8 +18,9 @@ import {
   ForbiddenError,
   NotFoundError,
   ensurePermission,
-  invalidateResourceCache,
-  invalidateResourceCacheBulk,
+  logTableStatusAfterMutation,
+  logActionFlow,
+  logDetailAction,
   type AuthContext,
 } from "@/features/admin/resources/server"
 import type { BulkActionResult } from "@/features/admin/resources/types"
@@ -30,91 +30,15 @@ import { emitStudentUpsert, emitStudentRemove, emitStudentBatchUpsert } from "./
 export { ApplicationError, ForbiddenError, NotFoundError, type AuthContext }
 export type { BulkActionResult }
 
-/**
- * Helper function để log trạng thái hiện tại của table sau mutations
- */
-async function logTableStatusAfterMutation(
-  action: "after-delete" | "after-restore" | "after-bulk-delete" | "after-bulk-restore",
-  affectedIds: string | string[],
-  affectedCount?: number
-): Promise<void> {
-  const actionType = action.startsWith("after-bulk-") 
-    ? (action === "after-bulk-delete" ? "bulk-delete" : "bulk-restore")
-    : (action === "after-delete" ? "delete" : "restore")
-
-  resourceLogger.actionFlow({
-    resource: "students",
-    action: actionType,
-    step: "start",
-    metadata: { 
-      loggingTableStatus: true, 
-      affectedCount,
-      affectedIds: Array.isArray(affectedIds) ? affectedIds.length : 1,
-    },
-  })
-
-  const [activeCount, deletedCount] = await Promise.all([
-    prisma.student.count({ where: { deletedAt: null } }),
-    prisma.student.count({ where: { deletedAt: { not: null } } }),
-  ])
-
-  const isBulk = action.startsWith("after-bulk-")
-  const structure = isBulk
-    ? {
-        action,
-        deletedCount: action === "after-bulk-delete" ? affectedCount : undefined,
-        restoredCount: action === "after-bulk-restore" ? affectedCount : undefined,
-        currentActiveCount: activeCount,
-        currentDeletedCount: deletedCount,
-        affectedStudentIds: Array.isArray(affectedIds) ? affectedIds : [affectedIds],
-        summary: action === "after-bulk-delete" 
-          ? `Đã xóa ${affectedCount} học sinh. Hiện tại: ${activeCount} active, ${deletedCount} đã xóa`
-          : `Đã khôi phục ${affectedCount} học sinh. Hiện tại: ${activeCount} active, ${deletedCount} đã xóa`,
-      }
-    : {
-        action,
-        currentActiveCount: activeCount,
-        currentDeletedCount: deletedCount,
-        affectedStudentId: typeof affectedIds === "string" ? affectedIds : affectedIds[0],
-        summary: action === "after-delete"
-          ? `Đã xóa 1 học sinh. Hiện tại: ${activeCount} active, ${deletedCount} đã xóa`
-          : `Đã khôi phục 1 học sinh. Hiện tại: ${activeCount} active, ${deletedCount} đã xóa`,
-      }
-
-  resourceLogger.dataStructure({
-    resource: "students",
-    dataType: "table",
-    structure,
-  })
-
-  resourceLogger.actionFlow({
-    resource: "students",
-    action: actionType,
-    step: "success",
-    metadata: {
-      tableStatusLogged: true,
-      activeCount,
-      deletedCount,
-      affectedCount,
-      summary: structure.summary,
-    },
-  })
-}
-
 export async function createStudent(ctx: AuthContext, input: CreateStudentInput): Promise<ListedStudent> {
   const startTime = Date.now()
-
-  resourceLogger.actionFlow({
-    resource: "students",
-    action: "create",
-    step: "start",
-    metadata: { actorId: ctx.actorId, input: { studentCode: input.studentCode, name: input.name } },
-  })
+  logActionFlow("students", "create", "init", { actorId: ctx.actorId, input: { studentCode: input.studentCode, name: input.name } })
 
   ensurePermission(ctx, PERMISSIONS.STUDENTS_CREATE, PERMISSIONS.STUDENTS_MANAGE)
 
   const validatedInput = CreateStudentSchema.parse(input)
   const trimmedStudentCode = validatedInput.studentCode.trim()
+  logActionFlow("students", "create", "start", { studentCode: trimmedStudentCode }, startTime)
 
   const existing = await prisma.student.findFirst({
     where: {
@@ -124,12 +48,7 @@ export async function createStudent(ctx: AuthContext, input: CreateStudentInput)
   })
 
   if (existing) {
-    resourceLogger.actionFlow({
-      resource: "students",
-      action: "create",
-      step: "error",
-      metadata: { error: "Mã học sinh đã tồn tại", studentCode: trimmedStudentCode },
-    })
+    logActionFlow("students", "create", "error", { error: "Mã học sinh đã tồn tại", studentCode: trimmedStudentCode }, startTime)
     throw new ApplicationError("Mã học sinh đã tồn tại", 400)
   }
 
@@ -141,12 +60,7 @@ export async function createStudent(ctx: AuthContext, input: CreateStudentInput)
   }
 
   if (!isSuperAdminUser && validatedInput.userId && validatedInput.userId !== ctx.actorId) {
-    resourceLogger.actionFlow({
-      resource: "students",
-      action: "create",
-      step: "error",
-      metadata: { error: "Không có quyền liên kết học sinh với tài khoản khác" },
-    })
+    logActionFlow("students", "create", "error", { error: "Không có quyền liên kết học sinh với tài khoản khác" }, startTime)
     throw new ForbiddenError("Bạn không có quyền liên kết học sinh với tài khoản khác")
   }
 
@@ -171,28 +85,7 @@ export async function createStudent(ctx: AuthContext, input: CreateStudentInput)
 
   const sanitized = mapStudentRecord(student)
 
-  resourceLogger.cache({
-    resource: "students",
-    action: "cache-invalidate",
-    operation: "invalidate",
-    resourceId: sanitized.id,
-    tags: ["students", `student-${sanitized.id}`, "active-students", "deleted-students"],
-  })
-  await invalidateResourceCache({
-    resource: "students",
-    id: sanitized.id,
-    additionalTags: ["active-students", "deleted-students"],
-  })
-
-  resourceLogger.socket({
-    resource: "students",
-    action: "create",
-    event: "student:upsert",
-    resourceId: sanitized.id,
-    payload: { studentId: sanitized.id, status: "active" },
-  })
   await emitStudentUpsert(sanitized.id, null)
-
   await notifySuperAdminsOfStudentAction(
     "create",
     ctx.actorId,
@@ -203,34 +96,15 @@ export async function createStudent(ctx: AuthContext, input: CreateStudentInput)
     }
   )
 
-  resourceLogger.actionFlow({
-    resource: "students",
-    action: "create",
-    step: "success",
-    duration: Date.now() - startTime,
-    metadata: { studentId: sanitized.id, studentCode: sanitized.studentCode },
-  })
-
-  resourceLogger.detailAction({
-    resource: "students",
-    action: "create",
-    resourceId: sanitized.id,
-    studentCode: sanitized.studentCode,
-    studentName: sanitized.name,
-  })
+  logActionFlow("students", "create", "success", { studentId: sanitized.id, studentCode: sanitized.studentCode }, startTime)
+  logDetailAction("students", "create", sanitized.id, sanitized as unknown as Record<string, unknown>)
 
   return sanitized
 }
 
 export async function updateStudent(ctx: AuthContext, id: string, input: UpdateStudentInput): Promise<ListedStudent> {
   const startTime = Date.now()
-
-  resourceLogger.actionFlow({
-    resource: "students",
-    action: "update",
-    step: "start",
-    metadata: { studentId: id, actorId: ctx.actorId, input },
-  })
+  logActionFlow("students", "update", "init", { studentId: id, actorId: ctx.actorId })
 
   ensurePermission(ctx, PERMISSIONS.STUDENTS_UPDATE, PERMISSIONS.STUDENTS_MANAGE)
 
@@ -239,6 +113,7 @@ export async function updateStudent(ctx: AuthContext, id: string, input: UpdateS
   }
 
   const validatedInput = UpdateStudentSchema.parse(input)
+  logActionFlow("students", "update", "start", { studentId: id, changes: Object.keys(validatedInput) }, startTime)
 
   const existing = await prisma.student.findUnique({
     where: { id },
@@ -254,33 +129,18 @@ export async function updateStudent(ctx: AuthContext, id: string, input: UpdateS
   })
 
   if (!existing || existing.deletedAt) {
-    resourceLogger.actionFlow({
-      resource: "students",
-      action: "update",
-      step: "error",
-      metadata: { studentId: id, error: "Học sinh không tồn tại" },
-    })
+    logActionFlow("students", "update", "error", { studentId: id, error: "Học sinh không tồn tại" }, startTime)
     throw new NotFoundError("Học sinh không tồn tại")
   }
 
   const isSuperAdminUser = isSuperAdmin(ctx.roles)
   if (!isSuperAdminUser && existing.userId !== ctx.actorId) {
-    resourceLogger.actionFlow({
-      resource: "students",
-      action: "update",
-      step: "error",
-      metadata: { studentId: id, error: "Bạn chỉ có thể cập nhật học sinh của chính mình" },
-    })
+    logActionFlow("students", "update", "error", { studentId: id, error: "Bạn chỉ có thể cập nhật học sinh của chính mình" }, startTime)
     throw new ForbiddenError("Bạn chỉ có thể cập nhật học sinh của chính mình")
   }
 
   if (!isSuperAdminUser && validatedInput.userId !== undefined && validatedInput.userId !== existing.userId) {
-    resourceLogger.actionFlow({
-      resource: "students",
-      action: "update",
-      step: "error",
-      metadata: { studentId: id, error: "Bạn không có quyền thay đổi liên kết tài khoản" },
-    })
+    logActionFlow("students", "update", "error", { studentId: id, error: "Bạn không có quyền thay đổi liên kết tài khoản" }, startTime)
     throw new ForbiddenError("Bạn không có quyền thay đổi liên kết tài khoản")
   }
 
@@ -304,12 +164,7 @@ export async function updateStudent(ctx: AuthContext, id: string, input: UpdateS
         },
       })
       if (codeExists) {
-        resourceLogger.actionFlow({
-          resource: "students",
-          action: "update",
-          step: "error",
-          metadata: { studentId: id, error: "Mã học sinh đã được sử dụng", newCode: trimmedStudentCode },
-        })
+        logActionFlow("students", "update", "error", { studentId: id, error: "Mã học sinh đã được sử dụng", newCode: trimmedStudentCode }, startTime)
         throw new ApplicationError("Mã học sinh đã được sử dụng", 400)
       }
       updateData.studentCode = trimmedStudentCode
@@ -349,13 +204,7 @@ export async function updateStudent(ctx: AuthContext, id: string, input: UpdateS
   }
 
   if (Object.keys(updateData).length === 0) {
-    resourceLogger.actionFlow({
-      resource: "students",
-      action: "update",
-      step: "success",
-      duration: Date.now() - startTime,
-      metadata: { studentId: id, studentCode: existing.studentCode, message: "Không có thay đổi nào được thực hiện" },
-    })
+    logActionFlow("students", "update", "success", { studentId: id, studentCode: existing.studentCode, message: "Không có thay đổi nào được thực hiện" }, startTime)
     return mapStudentRecord(existing)
   }
 
@@ -379,28 +228,7 @@ export async function updateStudent(ctx: AuthContext, id: string, input: UpdateS
   const sanitized = mapStudentRecord(student)
   const previousStatus: "active" | "deleted" = existing.deletedAt ? "deleted" : "active"
 
-  resourceLogger.cache({
-    resource: "students",
-    action: "cache-invalidate",
-    operation: "invalidate",
-    resourceId: sanitized.id,
-    tags: ["students", `student-${sanitized.id}`, "active-students", "deleted-students"],
-  })
-  await invalidateResourceCache({
-    resource: "students",
-    id: sanitized.id,
-    additionalTags: ["active-students", "deleted-students"],
-  })
-
-  resourceLogger.socket({
-    resource: "students",
-    action: "update",
-    event: "student:upsert",
-    resourceId: sanitized.id,
-    payload: { studentId: sanitized.id, previousStatus, newStatus: sanitized.deletedAt ? "deleted" : "active" },
-  })
   await emitStudentUpsert(sanitized.id, previousStatus)
-
   await notifySuperAdminsOfStudentAction(
     "update",
     ctx.actorId,
@@ -412,57 +240,27 @@ export async function updateStudent(ctx: AuthContext, id: string, input: UpdateS
     Object.keys(changes).length > 0 ? changes : undefined
   )
 
-  resourceLogger.actionFlow({
-    resource: "students",
-    action: "update",
-    step: "success",
-    duration: Date.now() - startTime,
-    metadata: { studentId: sanitized.id, studentCode: sanitized.studentCode, changes },
-  })
-
-  resourceLogger.detailAction({
-    resource: "students",
-    action: "update",
-    resourceId: sanitized.id,
-    studentCode: sanitized.studentCode,
-    studentName: sanitized.name,
-    changes,
-  })
+  logActionFlow("students", "update", "success", { studentId: sanitized.id, studentCode: sanitized.studentCode, changes: Object.keys(changes) }, startTime)
+  logDetailAction("students", "update", sanitized.id, { ...sanitized, changes } as unknown as Record<string, unknown>)
 
   return sanitized
 }
 
 export async function softDeleteStudent(ctx: AuthContext, id: string): Promise<void> {
   const startTime = Date.now()
-
-  resourceLogger.actionFlow({
-    resource: "students",
-    action: "delete",
-    step: "start",
-    metadata: { studentId: id, actorId: ctx.actorId },
-  })
+  logActionFlow("students", "delete", "init", { studentId: id, actorId: ctx.actorId })
 
   ensurePermission(ctx, PERMISSIONS.STUDENTS_DELETE, PERMISSIONS.STUDENTS_MANAGE)
 
   const student = await prisma.student.findUnique({ where: { id } })
   if (!student || student.deletedAt) {
-    resourceLogger.actionFlow({
-      resource: "students",
-      action: "delete",
-      step: "error",
-      metadata: { studentId: id, error: "Học sinh không tồn tại" },
-    })
+    logActionFlow("students", "delete", "error", { studentId: id, error: "Học sinh không tồn tại" }, startTime)
     throw new NotFoundError("Học sinh không tồn tại")
   }
 
   const isSuperAdminUser = isSuperAdmin(ctx.roles)
   if (!isSuperAdminUser && student.userId !== ctx.actorId) {
-    resourceLogger.actionFlow({
-      resource: "students",
-      action: "delete",
-      step: "error",
-      metadata: { studentId: id, error: "Bạn chỉ có thể xóa học sinh của chính mình" },
-    })
+    logActionFlow("students", "delete", "error", { studentId: id, error: "Bạn chỉ có thể xóa học sinh của chính mình" }, startTime)
     throw new ForbiddenError("Bạn chỉ có thể xóa học sinh của chính mình")
   }
 
@@ -475,31 +273,14 @@ export async function softDeleteStudent(ctx: AuthContext, id: string): Promise<v
     },
   })
 
-  // Log table status TRƯỚC khi invalidate cache để đảm bảo data đã được commit
-  await logTableStatusAfterMutation("after-delete", id)
-
-  resourceLogger.cache({
-    resource: "students",
-    action: "cache-invalidate",
-    operation: "invalidate",
-    resourceId: id,
-    tags: ["students", `student-${id}`, "active-students", "deleted-students"],
-  })
-  await invalidateResourceCache({
-    resource: "students",
-    id,
-    additionalTags: ["active-students", "deleted-students"],
-  })
-
-  resourceLogger.socket({
+  await logTableStatusAfterMutation({
     resource: "students",
     action: "delete",
-    event: "student:upsert",
-    resourceId: id,
-    payload: { studentId: id, previousStatus, newStatus: "deleted" },
+    prismaModel: prisma.student,
+    affectedIds: id,
   })
-  await emitStudentUpsert(id, previousStatus)
 
+  await emitStudentUpsert(id, previousStatus)
   await notifySuperAdminsOfStudentAction(
     "delete",
     ctx.actorId,
@@ -510,28 +291,18 @@ export async function softDeleteStudent(ctx: AuthContext, id: string): Promise<v
     }
   )
 
-  resourceLogger.actionFlow({
-    resource: "students",
-    action: "delete",
-    step: "success",
-    duration: Date.now() - startTime,
-    metadata: { studentId: id, studentCode: student.studentCode, studentName: student.name },
-  })
+  logActionFlow("students", "delete", "success", { studentId: id, studentCode: student.studentCode }, startTime)
+  logDetailAction("students", "delete", id, { id: student.id, studentCode: student.studentCode, name: student.name } as unknown as Record<string, unknown>)
 }
 
 export async function bulkSoftDeleteStudents(ctx: AuthContext, ids: string[]): Promise<BulkActionResult> {
   const startTime = Date.now()
-
-  resourceLogger.actionFlow({
-    resource: "students",
-    action: "bulk-delete",
-    step: "start",
-    metadata: { count: ids.length, studentIds: ids, actorId: ctx.actorId },
-  })
+  logActionFlow("students", "bulk-delete", "start", { count: ids.length, studentIds: ids, actorId: ctx.actorId })
 
   ensurePermission(ctx, PERMISSIONS.STUDENTS_DELETE, PERMISSIONS.STUDENTS_MANAGE)
 
   if (!ids || ids.length === 0) {
+    logActionFlow("students", "bulk-delete", "error", { error: "Danh sách học sinh trống" }, startTime)
     throw new ApplicationError("Danh sách học sinh trống", 400)
   }
 
@@ -555,18 +326,13 @@ export async function bulkSoftDeleteStudents(ctx: AuthContext, ids: string[]): P
     const alreadyDeletedCount = alreadyDeletedStudents.length
     const notFoundCount = ids.length - allStudents.length
 
-    resourceLogger.actionFlow({
-      resource: "students",
-      action: "bulk-delete",
-      step: "error",
-      metadata: {
-        requestedCount: ids.length,
-        foundCount: students.length,
-        alreadyDeletedCount,
-        notFoundCount,
-        error: "Không có học sinh nào có thể xóa",
-      },
-    })
+    logActionFlow("students", "bulk-delete", "error", {
+      requestedCount: ids.length,
+      foundCount: students.length,
+      alreadyDeletedCount,
+      notFoundCount,
+      error: "Không có học sinh nào có thể xóa",
+    }, startTime)
 
     let errorMessage = "Không có học sinh nào có thể xóa"
     const parts: string[] = []
@@ -596,58 +362,35 @@ export async function bulkSoftDeleteStudents(ctx: AuthContext, ids: string[]): P
     },
   })
 
-  // Log table status TRƯỚC khi invalidate cache để đảm bảo data đã được commit
-  await logTableStatusAfterMutation("after-bulk-delete", students.map((s) => s.id), result.count)
-
-  resourceLogger.cache({
+  // Log table status sau khi commit data
+  await logTableStatusAfterMutation({
     resource: "students",
-    action: "cache-invalidate",
-    operation: "invalidate",
-    tags: ["students", "active-students", "deleted-students"],
-  })
-  await invalidateResourceCacheBulk({
-    resource: "students",
-    additionalTags: ["active-students", "deleted-students"],
+    action: "bulk-delete",
+    prismaModel: prisma.student,
+    affectedIds: students.map((s) => s.id),
+    affectedCount: result.count,
   })
 
   if (result.count > 0 && students.length > 0) {
-    resourceLogger.socket({
-      resource: "students",
-      action: "bulk-delete",
-      event: "student:batch-upsert",
-      payload: {
-        studentIds: students.map((s) => s.id),
-        previousStatus: "active",
-        count: students.length,
-      },
-    })
-    await emitStudentBatchUpsert(
-      students.map((s) => s.id),
-      "active"
-    ).catch((error) => {
-      resourceLogger.socket({
-        resource: "students",
-        action: "bulk-delete",
-        event: "student:batch-upsert",
-        payload: {
-          error: error instanceof Error ? error.message : String(error),
-        },
+    try {
+      await emitStudentBatchUpsert(students.map((s) => s.id), "active")
+    } catch (error) {
+      logActionFlow("students", "bulk-delete", "error", {
+        error: error instanceof Error ? error.message : String(error),
+        count: result.count,
       })
-    })
+    }
 
-    await notifySuperAdminsOfBulkStudentAction(
-      "delete",
-      ctx.actorId,
-      students
-    )
+    try {
+      await notifySuperAdminsOfBulkStudentAction("delete", ctx.actorId, students)
+    } catch (error) {
+      logActionFlow("students", "bulk-delete", "error", {
+        error: error instanceof Error ? error.message : String(error),
+        notificationError: true,
+      })
+    }
 
-    resourceLogger.actionFlow({
-      resource: "students",
-      action: "bulk-delete",
-      step: "success",
-      duration: Date.now() - startTime,
-      metadata: { requestedCount: ids.length, affectedCount: result.count },
-    })
+    logActionFlow("students", "bulk-delete", "success", { requestedCount: ids.length, affectedCount: result.count }, startTime)
   }
 
   // Format message với tên học sinh
@@ -661,28 +404,15 @@ export async function bulkSoftDeleteStudents(ctx: AuthContext, ids: string[]): P
 
 export async function restoreStudent(ctx: AuthContext, id: string): Promise<void> {
   const startTime = Date.now()
-
-  resourceLogger.actionFlow({
-    resource: "students",
-    action: "restore",
-    step: "start",
-    metadata: { studentId: id, actorId: ctx.actorId },
-  })
+  logActionFlow("students", "restore", "init", { studentId: id, actorId: ctx.actorId })
 
   ensurePermission(ctx, PERMISSIONS.STUDENTS_UPDATE, PERMISSIONS.STUDENTS_MANAGE)
 
   const student = await prisma.student.findUnique({ where: { id } })
   if (!student || !student.deletedAt) {
-    resourceLogger.actionFlow({
-      resource: "students",
-      action: "restore",
-      step: "error",
-      metadata: { studentId: id, error: "Học sinh không tồn tại hoặc chưa bị xóa" },
-    })
+    logActionFlow("students", "restore", "error", { studentId: id, error: "Học sinh không tồn tại hoặc chưa bị xóa" }, startTime)
     throw new NotFoundError("Học sinh không tồn tại hoặc chưa bị xóa")
   }
-
-  const previousStatus: "active" | "deleted" = student.deletedAt ? "deleted" : "active"
 
   await prisma.student.update({
     where: { id },
@@ -691,31 +421,15 @@ export async function restoreStudent(ctx: AuthContext, id: string): Promise<void
     },
   })
 
-  // Log table status TRƯỚC khi invalidate cache để đảm bảo data đã được commit
-  await logTableStatusAfterMutation("after-restore", id)
-
-  resourceLogger.cache({
-    resource: "students",
-    action: "cache-invalidate",
-    operation: "invalidate",
-    resourceId: id,
-    tags: ["students", `student-${id}`, "active-students", "deleted-students"],
-  })
-  await invalidateResourceCache({
-    resource: "students",
-    id,
-    additionalTags: ["active-students", "deleted-students"],
-  })
-
-  resourceLogger.socket({
+  await logTableStatusAfterMutation({
     resource: "students",
     action: "restore",
-    event: "student:upsert",
-    resourceId: id,
-    payload: { studentId: id, previousStatus, newStatus: "active" },
+    prismaModel: prisma.student,
+    affectedIds: id,
   })
-  await emitStudentUpsert(id, previousStatus)
 
+  const previousStatus: "active" | "deleted" = student.deletedAt ? "deleted" : "active"
+  await emitStudentUpsert(id, previousStatus)
   await notifySuperAdminsOfStudentAction(
     "restore",
     ctx.actorId,
@@ -726,28 +440,18 @@ export async function restoreStudent(ctx: AuthContext, id: string): Promise<void
     }
   )
 
-  resourceLogger.actionFlow({
-    resource: "students",
-    action: "restore",
-    step: "success",
-    duration: Date.now() - startTime,
-    metadata: { studentId: id, studentCode: student.studentCode, studentName: student.name },
-  })
+  logActionFlow("students", "restore", "success", { studentId: id, studentCode: student.studentCode }, startTime)
+  logDetailAction("students", "restore", id, { id: student.id, studentCode: student.studentCode, name: student.name } as unknown as Record<string, unknown>)
 }
 
 export async function bulkRestoreStudents(ctx: AuthContext, ids: string[]): Promise<BulkActionResult> {
   const startTime = Date.now()
-
-  resourceLogger.actionFlow({
-    resource: "students",
-    action: "bulk-restore",
-    step: "start",
-    metadata: { count: ids.length, studentIds: ids, actorId: ctx.actorId },
-  })
+  logActionFlow("students", "bulk-restore", "start", { count: ids.length, studentIds: ids, actorId: ctx.actorId })
 
   ensurePermission(ctx, PERMISSIONS.STUDENTS_UPDATE, PERMISSIONS.STUDENTS_MANAGE)
 
   if (!ids || ids.length === 0) {
+    logActionFlow("students", "bulk-restore", "error", { error: "Danh sách học sinh trống" }, startTime)
     throw new ApplicationError("Danh sách học sinh trống", 400)
   }
 
@@ -781,19 +485,14 @@ export async function bulkRestoreStudents(ctx: AuthContext, ids: string[]): Prom
       ? `Không có học sinh nào để khôi phục (${parts.join(", ")})`
       : `Không tìm thấy học sinh nào để khôi phục`
 
-    resourceLogger.actionFlow({
-      resource: "students",
-      action: "bulk-restore",
-      step: "error",
-      metadata: {
-        requestedCount: ids.length,
-        foundCount: allRequestedStudents.length,
-        softDeletedCount: softDeletedStudents.length,
-        activeCount: activeStudents.length,
-        notFoundCount,
-        error: errorMessage,
-      },
-    })
+    logActionFlow("students", "bulk-restore", "error", {
+      requestedCount: ids.length,
+      foundCount: allRequestedStudents.length,
+      softDeletedCount: softDeletedStudents.length,
+      activeCount: activeStudents.length,
+      notFoundCount,
+      error: errorMessage,
+    }, startTime)
 
     throw new ApplicationError(errorMessage, 400)
   }
@@ -809,58 +508,35 @@ export async function bulkRestoreStudents(ctx: AuthContext, ids: string[]): Prom
     },
   })
 
-  // Log table status TRƯỚC khi invalidate cache để đảm bảo data đã được commit
-  await logTableStatusAfterMutation("after-bulk-restore", studentsToRestore.map((s) => s.id), result.count)
-
-  resourceLogger.cache({
+  // Log table status sau khi commit data
+  await logTableStatusAfterMutation({
     resource: "students",
-    action: "cache-invalidate",
-    operation: "invalidate",
-    tags: ["students", "active-students", "deleted-students"],
-  })
-  await invalidateResourceCacheBulk({
-    resource: "students",
-    additionalTags: ["active-students", "deleted-students"],
+    action: "bulk-restore",
+    prismaModel: prisma.student,
+    affectedIds: studentsToRestore.map((s) => s.id),
+    affectedCount: result.count,
   })
 
   if (result.count > 0 && studentsToRestore.length > 0) {
-    resourceLogger.socket({
-      resource: "students",
-      action: "bulk-restore",
-      event: "student:batch-upsert",
-      payload: {
-        studentIds: studentsToRestore.map((s) => s.id),
-        previousStatus: "deleted",
-        count: studentsToRestore.length,
-      },
-    })
-    await emitStudentBatchUpsert(
-      studentsToRestore.map((s) => s.id),
-      "deleted"
-    ).catch((error) => {
-      resourceLogger.socket({
-        resource: "students",
-        action: "bulk-restore",
-        event: "student:batch-upsert",
-        payload: {
-          error: error instanceof Error ? error.message : String(error),
-        },
+    try {
+      await emitStudentBatchUpsert(studentsToRestore.map((s) => s.id), "deleted")
+    } catch (error) {
+      logActionFlow("students", "bulk-restore", "error", {
+        error: error instanceof Error ? error.message : String(error),
+        count: result.count,
       })
-    })
+    }
 
-    await notifySuperAdminsOfBulkStudentAction(
-      "restore",
-      ctx.actorId,
-      studentsToRestore
-    )
+    try {
+      await notifySuperAdminsOfBulkStudentAction("restore", ctx.actorId, studentsToRestore)
+    } catch (error) {
+      logActionFlow("students", "bulk-restore", "error", {
+        error: error instanceof Error ? error.message : String(error),
+        notificationError: true,
+      })
+    }
 
-    resourceLogger.actionFlow({
-      resource: "students",
-      action: "bulk-restore",
-      step: "success",
-      duration: Date.now() - startTime,
-      metadata: { requestedCount: ids.length, affectedCount: result.count },
-    })
+    logActionFlow("students", "bulk-restore", "success", { requestedCount: ids.length, affectedCount: result.count }, startTime)
   }
 
   // Format message với tên học sinh
@@ -885,13 +561,7 @@ export async function bulkRestoreStudents(ctx: AuthContext, ids: string[]): Prom
 
 export async function hardDeleteStudent(ctx: AuthContext, id: string): Promise<void> {
   const startTime = Date.now()
-
-  resourceLogger.actionFlow({
-    resource: "students",
-    action: "hard-delete",
-    step: "start",
-    metadata: { studentId: id, actorId: ctx.actorId },
-  })
+  logActionFlow("students", "hard-delete", "init", { studentId: id, actorId: ctx.actorId })
 
   if (!canPerformAnyAction(ctx.permissions, ctx.roles, [PERMISSIONS.STUDENTS_MANAGE])) {
     throw new ForbiddenError()
@@ -903,67 +573,23 @@ export async function hardDeleteStudent(ctx: AuthContext, id: string): Promise<v
   })
 
   if (!student) {
-    resourceLogger.actionFlow({
-      resource: "students",
-      action: "hard-delete",
-      step: "error",
-      metadata: { studentId: id, error: "Học sinh không tồn tại" },
-    })
+    logActionFlow("students", "hard-delete", "error", { studentId: id, error: "Học sinh không tồn tại" }, startTime)
     throw new NotFoundError("Học sinh không tồn tại")
   }
 
   const previousStatus: "active" | "deleted" = student.deletedAt ? "deleted" : "active"
 
-  await prisma.student.delete({
-    where: { id },
-  })
-
-  resourceLogger.cache({
-    resource: "students",
-    action: "cache-invalidate",
-    operation: "invalidate",
-    resourceId: id,
-    tags: ["students", `student-${id}`, "active-students", "deleted-students"],
-  })
-  await invalidateResourceCache({
-    resource: "students",
-    id,
-    additionalTags: ["active-students", "deleted-students"],
-  })
-
-  resourceLogger.socket({
-    resource: "students",
-    action: "hard-delete",
-    event: "student:remove",
-    resourceId: id,
-    payload: { studentId: id, previousStatus },
-  })
+  await prisma.student.delete({ where: { id } })
   emitStudentRemove(id, previousStatus)
+  await notifySuperAdminsOfStudentAction("hard-delete", ctx.actorId, student)
 
-  await notifySuperAdminsOfStudentAction(
-    "hard-delete",
-    ctx.actorId,
-    student
-  )
-
-  resourceLogger.actionFlow({
-    resource: "students",
-    action: "hard-delete",
-    step: "success",
-    duration: Date.now() - startTime,
-    metadata: { studentId: id, studentCode: student.studentCode },
-  })
+  logActionFlow("students", "hard-delete", "success", { studentId: id, studentCode: student.studentCode }, startTime)
+  logDetailAction("students", "hard-delete", id, student as unknown as Record<string, unknown>)
 }
 
 export async function bulkHardDeleteStudents(ctx: AuthContext, ids: string[]): Promise<BulkActionResult> {
   const startTime = Date.now()
-
-  resourceLogger.actionFlow({
-    resource: "students",
-    action: "bulk-hard-delete",
-    step: "start",
-    metadata: { count: ids.length, studentIds: ids, actorId: ctx.actorId },
-  })
+  logActionFlow("students", "bulk-hard-delete", "start", { count: ids.length, studentIds: ids, actorId: ctx.actorId })
 
   if (!canPerformAnyAction(ctx.permissions, ctx.roles, [PERMISSIONS.STUDENTS_MANAGE])) {
     throw new ForbiddenError()
@@ -989,33 +615,23 @@ export async function bulkHardDeleteStudents(ctx: AuthContext, ids: string[]): P
   const foundIds = students.map(s => s.id)
   const notFoundIds = ids.filter(id => !foundIds.includes(id))
 
-  resourceLogger.actionFlow({
-    resource: "students",
-    action: "bulk-hard-delete",
-    step: "start",
-    metadata: {
-      requestedCount: ids.length,
-      foundCount: students.length,
-      notFoundCount: notFoundIds.length,
-      requestedIds: ids,
-      foundIds,
-      notFoundIds,
-    },
+  logActionFlow("students", "bulk-hard-delete", "start", {
+    requestedCount: ids.length,
+    foundCount: students.length,
+    notFoundCount: notFoundIds.length,
+    requestedIds: ids,
+    foundIds,
+    notFoundIds,
   })
 
   if (students.length === 0) {
     const errorMessage = `Không tìm thấy học sinh nào để xóa vĩnh viễn`
-    resourceLogger.actionFlow({
-      resource: "students",
-      action: "bulk-hard-delete",
-      step: "error",
-      metadata: {
-        requestedCount: ids.length,
-        foundCount: students.length,
-        notFoundCount: notFoundIds.length,
-        error: errorMessage,
-      },
-    })
+    logActionFlow("students", "bulk-hard-delete", "error", {
+      requestedCount: ids.length,
+      foundCount: students.length,
+      notFoundCount: notFoundIds.length,
+      error: errorMessage,
+    }, startTime)
     throw new ApplicationError(errorMessage, 400)
   }
 
@@ -1025,50 +641,29 @@ export async function bulkHardDeleteStudents(ctx: AuthContext, ids: string[]): P
     },
   })
 
-  resourceLogger.cache({
-    resource: "students",
-    action: "cache-invalidate",
-    operation: "invalidate",
-    tags: ["students", "active-students", "deleted-students"],
-  })
-  await invalidateResourceCacheBulk({
-    resource: "students",
-    additionalTags: ["active-students", "deleted-students"],
-  })
-
   if (result.count > 0 && students.length > 0) {
     students.forEach((student) => {
       const previousStatus: "active" | "deleted" = student.deletedAt ? "deleted" : "active"
       try {
         emitStudentRemove(student.id, previousStatus)
       } catch (error) {
-        resourceLogger.socket({
-          resource: "students",
-          action: "bulk-hard-delete",
-          event: "student:remove",
-          resourceId: student.id,
-          payload: {
-            studentId: student.id,
-            studentCode: student.studentCode,
-            error: error instanceof Error ? error.message : String(error),
-          },
-        })
+        logActionFlow("students", "bulk-hard-delete", "error", {
+          studentId: student.id,
+          error: error instanceof Error ? error.message : String(error),
+        }, startTime)
       }
     })
 
-    await notifySuperAdminsOfBulkStudentAction(
-      "hard-delete",
-      ctx.actorId,
-      students
-    )
+    try {
+      await notifySuperAdminsOfBulkStudentAction("hard-delete", ctx.actorId, students)
+    } catch (error) {
+      logActionFlow("students", "bulk-hard-delete", "error", {
+        error: error instanceof Error ? error.message : String(error),
+        notificationError: true,
+      }, startTime)
+    }
 
-    resourceLogger.actionFlow({
-      resource: "students",
-      action: "bulk-hard-delete",
-      step: "success",
-      duration: Date.now() - startTime,
-      metadata: { requestedCount: ids.length, affectedCount: result.count },
-    })
+    logActionFlow("students", "bulk-hard-delete", "success", { requestedCount: ids.length, affectedCount: result.count }, startTime)
   }
 
   // Format message với tên học sinh

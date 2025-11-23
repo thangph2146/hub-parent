@@ -5,7 +5,7 @@
  * Pattern: Server Component (data fetching) → Client Component (UI/interactions)
  */
 
-import { listTagsCached } from "../server/cache"
+import { listTags } from "../server/queries"
 import { serializeTagsList } from "../server/helpers"
 import { TagsTableClient } from "./tags-table.client"
 
@@ -17,7 +17,9 @@ export interface TagsTableProps {
 }
 
 export async function TagsTable({ canDelete, canRestore, canManage, canCreate }: TagsTableProps) {
-  const tagsData = await listTagsCached({
+  // Sử dụng listTags (non-cached) để đảm bảo data luôn fresh
+  // Theo chuẩn Next.js 16: không cache admin data
+  const tagsData = await listTags({
     page: 1,
     limit: 10,
     status: "active",

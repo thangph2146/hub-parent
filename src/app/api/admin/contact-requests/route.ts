@@ -2,7 +2,7 @@
  * API Route: GET /api/admin/contact-requests - List contact requests
  */
 import { NextRequest, NextResponse } from "next/server"
-import { listContactRequestsCached } from "@/features/admin/contact-requests/server/cache"
+import { listContactRequests } from "@/features/admin/contact-requests/server/queries"
 import { serializeContactRequestsList } from "@/features/admin/contact-requests/server/helpers"
 import { createGetRoute } from "@/lib/api/api-route-wrapper"
 import type { ApiRouteContext } from "@/lib/api/types"
@@ -35,7 +35,9 @@ async function getContactRequestsHandler(req: NextRequest, _context: ApiRouteCon
     }
   })
 
-  const result = await listContactRequestsCached({
+  // Sử dụng listContactRequests (non-cached) để đảm bảo data luôn fresh
+  // API routes cần fresh data, không nên sử dụng cache để tránh trả về dữ liệu cũ
+  const result = await listContactRequests({
     page: paginationValidation.page,
     limit: paginationValidation.limit,
     search: searchValidation.value || undefined,

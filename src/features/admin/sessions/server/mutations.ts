@@ -3,7 +3,6 @@
 import type { Prisma } from "@prisma/client"
 import { PERMISSIONS, canPerformAnyAction } from "@/lib/permissions"
 import { prisma } from "@/lib/database"
-import { resourceLogger } from "@/lib/config"
 import { mapSessionRecord, type SessionWithRelations } from "./helpers"
 import type { ListedSession } from "../types"
 import type { BulkActionResult } from "../types"
@@ -15,14 +14,14 @@ import {
   type UpdateSessionInput,
 } from "./schemas"
 import { notifySuperAdminsOfSessionAction, notifySuperAdminsOfBulkSessionAction } from "./notifications"
-import { emitSessionUpsert, emitSessionRemove } from "./events"
+import { emitSessionUpsert, emitSessionRemove, emitSessionBatchUpsert } from "./events"
 import {
   ApplicationError,
   ForbiddenError,
   NotFoundError,
   ensurePermission,
-  invalidateResourceCache,
-  invalidateResourceCacheBulk,
+  logActionFlow,
+  logDetailAction,
   type AuthContext,
 } from "@/features/admin/resources/server"
 
@@ -34,74 +33,47 @@ function sanitizeSession(session: SessionWithRelations): ListedSession {
 }
 
 /**
- * Helper function để log trạng thái hiện tại của table sau mutations
- * Note: Sessions sử dụng isActive thay vì deletedAt
+ * Helper để log table status cho sessions (sử dụng isActive thay vì deletedAt)
  */
-async function logTableStatusAfterMutation(
-  action: "after-delete" | "after-restore" | "after-bulk-delete" | "after-bulk-restore",
+async function logSessionTableStatus(
+  action: "delete" | "restore" | "bulk-delete" | "bulk-restore",
   affectedIds: string | string[],
   affectedCount?: number
 ): Promise<void> {
-  const actionType = action.startsWith("after-bulk-") 
-    ? (action === "after-bulk-delete" ? "bulk-delete" : "bulk-restore")
-    : (action === "after-delete" ? "delete" : "restore")
-
-  resourceLogger.actionFlow({
-    resource: "sessions",
-    action: actionType,
-    step: "start",
-    metadata: { 
-      loggingTableStatus: true, 
-      affectedCount,
-      affectedIds: Array.isArray(affectedIds) ? affectedIds.length : 1,
-    },
+  logActionFlow("sessions", action, "start", { 
+    loggingTableStatus: true, 
+    affectedCount,
+    affectedIds: Array.isArray(affectedIds) ? affectedIds.length : 1,
   })
 
-  // Sessions sử dụng isActive thay vì deletedAt
   const [activeCount, deletedCount] = await Promise.all([
     prisma.session.count({ where: { isActive: true } }),
     prisma.session.count({ where: { isActive: false } }),
   ])
 
-  const isBulk = action.startsWith("after-bulk-")
-  const structure = isBulk
-    ? {
-        action,
-        deletedCount: action === "after-bulk-delete" ? affectedCount : undefined,
-        restoredCount: action === "after-bulk-restore" ? affectedCount : undefined,
-        currentActiveCount: activeCount,
-        currentDeletedCount: deletedCount,
-        affectedSessionIds: Array.isArray(affectedIds) ? affectedIds : [affectedIds],
-        summary: action === "after-bulk-delete" 
-          ? `Đã xóa ${affectedCount} session. Hiện tại: ${activeCount} active, ${deletedCount} đã xóa`
-          : `Đã khôi phục ${affectedCount} session. Hiện tại: ${activeCount} active, ${deletedCount} đã xóa`,
-      }
-    : {
-        action,
-        currentActiveCount: activeCount,
-        currentDeletedCount: deletedCount,
-        affectedSessionId: typeof affectedIds === "string" ? affectedIds : affectedIds[0],
-        summary: action === "after-delete"
-          ? `Đã xóa 1 session. Hiện tại: ${activeCount} active, ${deletedCount} đã xóa`
-          : `Đã khôi phục 1 session. Hiện tại: ${activeCount} active, ${deletedCount} đã xóa`,
-      }
+  const isBulk = action.startsWith("bulk-")
+  const summary = isBulk
+    ? (action === "bulk-delete" 
+        ? `Đã xóa ${affectedCount} session. Hiện tại: ${activeCount} active, ${deletedCount} đã xóa`
+        : `Đã khôi phục ${affectedCount} session. Hiện tại: ${activeCount} active, ${deletedCount} đã xóa`)
+    : (action === "delete"
+        ? `Đã xóa 1 session. Hiện tại: ${activeCount} active, ${deletedCount} đã xóa`
+        : `Đã khôi phục 1 session. Hiện tại: ${activeCount} active, ${deletedCount} đã xóa`)
 
-  resourceLogger.dataStructure({
-    resource: "sessions",
-    dataType: "table",
-    structure,
-  })
-
-  resourceLogger.actionFlow({
-    resource: "sessions",
-    action: actionType,
-    step: "success",
-    metadata: {
-      tableStatusLogged: true,
-      activeCount,
-      deletedCount,
+  logActionFlow("sessions", action, "success", {
+    tableStatusLogged: true,
+    activeCount,
+    deletedCount,
+    affectedCount,
+    affectedIds: Array.isArray(affectedIds) ? affectedIds : [affectedIds],
+    summary,
+    dataStructure: {
+      dataType: "table",
+      currentActiveCount: activeCount,
+      currentDeletedCount: deletedCount,
       affectedCount,
-      summary: structure.summary,
+      affectedIds: Array.isArray(affectedIds) ? affectedIds : [affectedIds],
+      summary,
     },
   })
 }
@@ -161,8 +133,11 @@ export async function createSession(ctx: AuthContext, input: CreateSessionInput)
     }
   )
 
-  // Invalidate cache
-  await invalidateResourceCache({ resource: "sessions", id: sanitized.id })
+  await emitSessionUpsert(sanitized.id, null)
+
+  const startTime = Date.now()
+  logActionFlow("sessions", "create", "success", { sessionId: sanitized.id, userId: sanitized.userId }, startTime)
+  logDetailAction("sessions", "create", sanitized.id, sanitized as unknown as Record<string, unknown>)
 
   return sanitized
 }
@@ -294,7 +269,15 @@ export async function updateSession(ctx: AuthContext, id: string, input: UpdateS
 
   const sanitized = sanitizeSession(session)
 
-  // Emit notification realtime
+  if (Object.keys(updateData).length === 0) {
+    const startTime = Date.now()
+    logActionFlow("sessions", "update", "success", { sessionId: id, message: "Không có thay đổi" }, startTime)
+    return sanitized
+  }
+
+  const previousStatus: "active" | "deleted" = existing.isActive ? "active" : "deleted"
+  await emitSessionUpsert(id, previousStatus)
+
   await notifySuperAdminsOfSessionAction(
     "update",
     ctx.actorId,
@@ -306,8 +289,9 @@ export async function updateSession(ctx: AuthContext, id: string, input: UpdateS
     Object.keys(changes).length > 0 ? changes : undefined
   )
 
-  // Invalidate cache - QUAN TRỌNG: phải invalidate detail page để cập nhật ngay
-  await invalidateResourceCache({ resource: "sessions", id })
+  const startTime = Date.now()
+  logActionFlow("sessions", "update", "success", { sessionId: id, userId: sanitized.userId, changes: Object.keys(changes) }, startTime)
+  logDetailAction("sessions", "update", id, sanitized as unknown as Record<string, unknown>)
 
   return sanitized
 }
@@ -318,6 +302,9 @@ export async function updateSession(ctx: AuthContext, id: string, input: UpdateS
  */
 export async function softDeleteSession(ctx: AuthContext, id: string): Promise<void> {
   ensurePermission(ctx, PERMISSIONS.SESSIONS_DELETE, PERMISSIONS.SESSIONS_MANAGE)
+
+  const startTime = Date.now()
+  logActionFlow("sessions", "delete", "init", { sessionId: id })
 
   const session = await prisma.session.findUnique({ where: { id } })
   if (!session || !session.isActive) {
@@ -331,13 +318,8 @@ export async function softDeleteSession(ctx: AuthContext, id: string): Promise<v
     },
   })
 
-  // Log table status TRƯỚC khi invalidate cache để đảm bảo data đã được commit
-  await logTableStatusAfterMutation("after-delete", id)
-
-  // Emit socket event để update UI
+  await logSessionTableStatus("delete", id)
   await emitSessionUpsert(id, "active")
-
-  // Emit notification realtime
   await notifySuperAdminsOfSessionAction(
     "delete",
     ctx.actorId,
@@ -348,18 +330,21 @@ export async function softDeleteSession(ctx: AuthContext, id: string): Promise<v
     }
   )
 
-  // Invalidate cache
-  await invalidateResourceCache({ resource: "sessions", id })
+  logActionFlow("sessions", "delete", "success", { sessionId: id, userId: session.userId }, startTime)
+  logDetailAction("sessions", "delete", id, { id: session.id, userId: session.userId, accessToken: session.accessToken } as unknown as Record<string, unknown>)
 }
 
 export async function bulkSoftDeleteSessions(ctx: AuthContext, ids: string[]): Promise<BulkActionResult> {
   ensurePermission(ctx, PERMISSIONS.SESSIONS_DELETE, PERMISSIONS.SESSIONS_MANAGE)
 
+  const startTime = Date.now()
+  logActionFlow("sessions", "bulk-delete", "start", { count: ids.length, sessionIds: ids })
+
   if (!ids || ids.length === 0) {
+    logActionFlow("sessions", "bulk-delete", "error", { error: "Danh sách session trống" }, startTime)
     throw new ApplicationError("Danh sách session trống", 400)
   }
 
-  // Lấy thông tin sessions trước khi delete để tạo notifications
   const sessions = await prisma.session.findMany({
     where: {
       id: { in: ids },
@@ -386,43 +371,36 @@ export async function bulkSoftDeleteSessions(ctx: AuthContext, ids: string[]): P
     },
   })
 
-  // Log table status TRƯỚC khi invalidate cache để đảm bảo data đã được commit
-  await logTableStatusAfterMutation("after-bulk-delete", sessions.map((s) => s.id), result.count)
+  await logSessionTableStatus("bulk-delete", sessions.map((s) => s.id), result.count)
 
-  // Emit socket events để update UI - await song song để đảm bảo tất cả events được emit
-  // Sử dụng Promise.allSettled để không bị fail nếu một event lỗi
   if (result.count > 0) {
-    // Emit events song song và await tất cả để đảm bảo hoàn thành
-    const emitPromises = sessions.map((s) => 
-      emitSessionUpsert(s.id, "active").catch((error) => {
-        resourceLogger.actionFlow({
-          resource: "sessions",
-          action: "bulk-delete",
-          step: "error",
-          metadata: { 
-            sessionId: s.id,
-            error: error instanceof Error ? error.message : "Unknown error",
-          },
-        })
-        return null // Return null để Promise.allSettled không throw
+    try {
+      await emitSessionBatchUpsert(sessions.map((s) => s.id), "active")
+    } catch (error) {
+      logActionFlow("sessions", "bulk-delete", "error", {
+        error: error instanceof Error ? error.message : String(error),
+        count: result.count,
       })
-    )
-    // Await tất cả events nhưng không fail nếu một số lỗi
-    await Promise.allSettled(emitPromises)
+    }
 
-    // Emit một notification tổng hợp cho bulk action với sessions data
-    await notifySuperAdminsOfBulkSessionAction(
-      "delete",
-      ctx.actorId,
-      sessions.map((s) => ({
-        userName: s.user.name,
-        userEmail: s.user.email,
-      }))
-    )
+    try {
+      await notifySuperAdminsOfBulkSessionAction(
+        "delete",
+        ctx.actorId,
+        sessions.map((s) => ({
+          userName: s.user.name,
+          userEmail: s.user.email,
+        }))
+      )
+    } catch (error) {
+      logActionFlow("sessions", "bulk-delete", "error", {
+        error: error instanceof Error ? error.message : String(error),
+        notificationError: true,
+      })
+    }
+
+    logActionFlow("sessions", "bulk-delete", "success", { requestedCount: ids.length, affectedCount: result.count }, startTime)
   }
-
-  // Invalidate cache cho bulk operation
-  await invalidateResourceCacheBulk({ resource: "sessions" })
 
   return { success: true, message: `Đã xóa ${result.count} session`, affectedCount: result.count }
 }
@@ -433,6 +411,9 @@ export async function bulkSoftDeleteSessions(ctx: AuthContext, ids: string[]): P
  */
 export async function restoreSession(ctx: AuthContext, id: string): Promise<void> {
   ensurePermission(ctx, PERMISSIONS.SESSIONS_UPDATE, PERMISSIONS.SESSIONS_MANAGE)
+
+  const startTime = Date.now()
+  logActionFlow("sessions", "restore", "init", { sessionId: id })
 
   const session = await prisma.session.findUnique({ where: { id } })
   if (!session || session.isActive) {
@@ -446,13 +427,8 @@ export async function restoreSession(ctx: AuthContext, id: string): Promise<void
     },
   })
 
-  // Log table status TRƯỚC khi invalidate cache để đảm bảo data đã được commit
-  await logTableStatusAfterMutation("after-restore", id)
-
-  // Emit socket event để update UI
+  await logSessionTableStatus("restore", id)
   await emitSessionUpsert(id, "deleted")
-
-  // Emit notification realtime
   await notifySuperAdminsOfSessionAction(
     "restore",
     ctx.actorId,
@@ -463,8 +439,8 @@ export async function restoreSession(ctx: AuthContext, id: string): Promise<void
     }
   )
 
-  // Invalidate cache
-  await invalidateResourceCache({ resource: "sessions", id })
+  logActionFlow("sessions", "restore", "success", { sessionId: id, userId: session.userId }, startTime)
+  logDetailAction("sessions", "restore", id, { id: session.id, userId: session.userId, accessToken: session.accessToken } as unknown as Record<string, unknown>)
 }
 
 export async function bulkRestoreSessions(ctx: AuthContext, ids: string[]): Promise<BulkActionResult> {
@@ -501,43 +477,37 @@ export async function bulkRestoreSessions(ctx: AuthContext, ids: string[]): Prom
     },
   })
 
-  // Log table status TRƯỚC khi invalidate cache để đảm bảo data đã được commit
-  await logTableStatusAfterMutation("after-bulk-restore", sessions.map((s) => s.id), result.count)
+  await logSessionTableStatus("bulk-restore", sessions.map((s) => s.id), result.count)
 
-  // Emit socket events để update UI - await song song để đảm bảo tất cả events được emit
-  // Sử dụng Promise.allSettled để không bị fail nếu một event lỗi
   if (result.count > 0) {
-    // Emit events song song và await tất cả để đảm bảo hoàn thành
-    const emitPromises = sessions.map((s) => 
-      emitSessionUpsert(s.id, "deleted").catch((error) => {
-        resourceLogger.actionFlow({
-          resource: "sessions",
-          action: "bulk-restore",
-          step: "error",
-          metadata: { 
-            sessionId: s.id,
-            error: error instanceof Error ? error.message : "Unknown error",
-          },
-        })
-        return null // Return null để Promise.allSettled không throw
+    try {
+      await emitSessionBatchUpsert(sessions.map((s) => s.id), "deleted")
+    } catch (error) {
+      logActionFlow("sessions", "bulk-restore", "error", {
+        error: error instanceof Error ? error.message : String(error),
+        count: result.count,
       })
-    )
-    // Await tất cả events nhưng không fail nếu một số lỗi
-    await Promise.allSettled(emitPromises)
+    }
 
-    // Emit một notification tổng hợp cho bulk action với sessions data
-    await notifySuperAdminsOfBulkSessionAction(
-      "restore",
-      ctx.actorId,
-      sessions.map((s) => ({
-        userName: s.user.name,
-        userEmail: s.user.email,
-      }))
-    )
+    try {
+      await notifySuperAdminsOfBulkSessionAction(
+        "restore",
+        ctx.actorId,
+        sessions.map((s) => ({
+          userName: s.user.name,
+          userEmail: s.user.email,
+        }))
+      )
+    } catch (error) {
+      logActionFlow("sessions", "bulk-restore", "error", {
+        error: error instanceof Error ? error.message : String(error),
+        notificationError: true,
+      })
+    }
+
+    const startTime = Date.now()
+    logActionFlow("sessions", "bulk-restore", "success", { requestedCount: ids.length, affectedCount: result.count }, startTime)
   }
-
-  // Invalidate cache cho bulk operation
-  await invalidateResourceCacheBulk({ resource: "sessions" })
 
   return { success: true, message: `Đã khôi phục ${result.count} session`, affectedCount: result.count }
 }
@@ -551,6 +521,9 @@ export async function hardDeleteSession(ctx: AuthContext, id: string): Promise<v
     throw new ForbiddenError()
   }
 
+  const startTime = Date.now()
+  logActionFlow("sessions", "hard-delete", "init", { sessionId: id })
+
   const session = await prisma.session.findUnique({
     where: { id },
     select: { id: true, userId: true, accessToken: true, isActive: true },
@@ -560,29 +533,18 @@ export async function hardDeleteSession(ctx: AuthContext, id: string): Promise<v
     throw new NotFoundError("Session không tồn tại")
   }
 
-  // Chỉ hard delete khi isActive=false (đã bị soft delete)
   if (session.isActive) {
     throw new ApplicationError("Chỉ có thể xóa vĩnh viễn session đã bị xóa (isActive=false)", 400)
   }
 
   const previousStatus: "active" | "deleted" = session.isActive ? "active" : "deleted"
 
-  await prisma.session.delete({
-    where: { id },
-  })
-
-  // Emit socket event để update UI
+  await prisma.session.delete({ where: { id } })
   emitSessionRemove(id, previousStatus)
+  await notifySuperAdminsOfSessionAction("hard-delete", ctx.actorId, session)
 
-  // Emit notification realtime
-  await notifySuperAdminsOfSessionAction(
-    "hard-delete",
-    ctx.actorId,
-    session
-  )
-
-  // Invalidate cache
-  await invalidateResourceCache({ resource: "sessions", id })
+  logActionFlow("sessions", "hard-delete", "success", { sessionId: id, userId: session.userId }, startTime)
+  logDetailAction("sessions", "hard-delete", id, session as unknown as Record<string, unknown>)
 }
 
 export async function bulkHardDeleteSessions(ctx: AuthContext, ids: string[]): Promise<BulkActionResult> {
@@ -631,43 +593,45 @@ export async function bulkHardDeleteSessions(ctx: AuthContext, ids: string[]): P
     },
   })
 
-  // Emit socket events để update UI - fire and forget để tránh timeout
-  // Emit song song cho tất cả sessions đã bị hard delete
+  // Emit socket events để update UI
   if (result.count > 0) {
     // Xác định previousStatus cho mỗi session
     const previousStatuses = allSessions.map(s => (s.isActive ? "active" : "deleted") as "active" | "deleted")
     
     // Emit events (emitSessionRemove trả về void, không phải Promise)
+    const startTime = Date.now()
+    logActionFlow("sessions", "bulk-hard-delete", "start", { count: ids.length, sessionIds: ids })
+
     allSessions.forEach((s, index) => {
       const previousStatus = previousStatuses[index] || "active"
       try {
         emitSessionRemove(s.id, previousStatus)
       } catch (error) {
-        resourceLogger.actionFlow({
-          resource: "sessions",
-          action: "bulk-hard-delete",
-          step: "error",
-          metadata: { 
-            sessionId: s.id,
-            error: error instanceof Error ? error.message : "Unknown error",
-          },
-        })
+        logActionFlow("sessions", "bulk-hard-delete", "error", { 
+          sessionId: s.id,
+          error: error instanceof Error ? error.message : "Unknown error",
+        }, startTime)
       }
     })
 
-    // Emit một notification tổng hợp cho bulk action với sessions data
-    await notifySuperAdminsOfBulkSessionAction(
-      "hard-delete",
-      ctx.actorId,
-      allSessions.map((s) => ({
-        userName: s.user.name,
-        userEmail: s.user.email,
-      }))
-    )
-  }
+    try {
+      await notifySuperAdminsOfBulkSessionAction(
+        "hard-delete",
+        ctx.actorId,
+        allSessions.map((s) => ({
+          userName: s.user.name,
+          userEmail: s.user.email,
+        }))
+      )
+    } catch (error) {
+      logActionFlow("sessions", "bulk-hard-delete", "error", {
+        error: error instanceof Error ? error.message : String(error),
+        notificationError: true,
+      }, startTime)
+    }
 
-  // Invalidate cache cho bulk operation
-  await invalidateResourceCacheBulk({ resource: "sessions" })
+    logActionFlow("sessions", "bulk-hard-delete", "success", { requestedCount: ids.length, affectedCount: result.count }, startTime)
+  }
 
   return { success: true, message: `Đã xóa vĩnh viễn ${result.count} session`, affectedCount: result.count }
 }

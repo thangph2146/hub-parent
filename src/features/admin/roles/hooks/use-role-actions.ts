@@ -10,7 +10,7 @@ import { apiRoutes } from "@/lib/api/routes"
 import { queryKeys } from "@/lib/query-keys"
 import { useResourceBulkProcessing } from "@/features/admin/resources/hooks"
 import type { ResourceRefreshHandler } from "@/features/admin/resources/types"
-import { logger, resourceLogger } from "@/lib/config"
+import { logger, resourceLogger, type ResourceAction } from "@/lib/config"
 import type { RoleRow } from "../types"
 import type { DataTableResult } from "@/components/tables"
 import type { FeedbackVariant } from "@/components/dialogs"
@@ -54,31 +54,34 @@ export function useRoleActions({
 
       setTogglingRoles((prev) => new Set(prev).add(row.id))
 
-      // Optimistic update chỉ khi không có socket (fallback)
-      if (!isSocketConnected) {
-        queryClient.setQueriesData<DataTableResult<RoleRow>>(
-          { queryKey: queryKeys.adminRoles.all() as unknown[] },
-          (oldData) => {
-            if (!oldData) return oldData
-            const updatedRows = oldData.rows.map((r) =>
-              r.id === row.id ? { ...r, isActive: newStatus } : r
-            )
-            return { ...oldData, rows: updatedRows }
-          },
-        )
-      }
+      // Theo chuẩn Next.js 16: không update cache manually, chỉ invalidate
+      // Socket events sẽ tự động update cache nếu có
 
       try {
-        resourceLogger.tableAction({
+        resourceLogger.actionFlow({
           resource: "roles",
           action: "toggle-status",
-          roleId: row.id,
-          roleName: row.displayName,
-          newStatus,
+          step: "start",
+          metadata: {
+            roleId: row.id,
+            roleName: row.displayName,
+            newStatus,
+          },
         })
 
         await apiClient.put(apiRoutes.roles.update(row.id), {
           isActive: newStatus,
+        })
+
+        resourceLogger.actionFlow({
+          resource: "roles",
+          action: "toggle-status",
+          step: "success",
+          metadata: {
+            roleId: row.id,
+            roleName: row.displayName,
+            newStatus,
+          },
         })
 
         showFeedback(
@@ -89,6 +92,19 @@ export function useRoleActions({
         // Socket events sẽ tự động update cache, không cần manual refresh
       } catch (error: unknown) {
         const errorMessage = error instanceof Error ? error.message : ROLE_MESSAGES.UNKNOWN_ERROR
+        
+        resourceLogger.actionFlow({
+          resource: "roles",
+          action: "toggle-status",
+          step: "error",
+          metadata: {
+            roleId: row.id,
+            roleName: row.displayName,
+            newStatus,
+            error: errorMessage,
+          },
+        })
+
         showFeedback(
           "error",
           newStatus ? ROLE_MESSAGES.TOGGLE_ACTIVE_ERROR : ROLE_MESSAGES.TOGGLE_INACTIVE_ERROR,
@@ -96,7 +112,7 @@ export function useRoleActions({
           errorMessage
         )
         
-        // Rollback optimistic update nếu có lỗi
+        // Invalidate queries để refresh data từ server
         if (!isSocketConnected) {
           queryClient.invalidateQueries({ queryKey: queryKeys.adminRoles.all() })
         }
@@ -179,13 +195,6 @@ export function useRoleActions({
           },
         })
 
-        resourceLogger.tableAction({
-          resource: "roles",
-          action,
-          roleId: row.id,
-          roleName: row.displayName,
-        })
-
         if (actionConfig.method === "delete") {
           await apiClient.delete(actionConfig.endpoint)
         } else {
@@ -247,11 +256,14 @@ export function useRoleActions({
       if (!startBulkProcessing()) return
 
       try {
-        resourceLogger.tableAction({
+        resourceLogger.actionFlow({
           resource: "roles",
-          action: `bulk-${action}`,
-          count: ids.length,
-          roleIds: ids,
+          action: `bulk-${action}` as ResourceAction,
+          step: "start",
+          metadata: {
+            count: ids.length,
+            ids: ids.slice(0, 5), // Log 5 IDs đầu
+          },
         })
 
         const response = await apiClient.post<{ success: boolean; message: string; data?: { affected: number; message?: string } }>(apiRoutes.roles.bulk, { action, ids })
@@ -274,6 +286,17 @@ export function useRoleActions({
         }
 
         const message = messages[action]
+        
+        resourceLogger.actionFlow({
+          resource: "roles",
+          action: `bulk-${action}` as ResourceAction,
+          step: "success",
+          metadata: {
+            count: ids.length,
+            affected,
+          },
+        })
+
         showFeedback("success", message.title, message.description)
         clearSelection()
 
@@ -288,15 +311,18 @@ export function useRoleActions({
           delete: ROLE_MESSAGES.BULK_DELETE_ERROR,
           "hard-delete": ROLE_MESSAGES.BULK_HARD_DELETE_ERROR,
         }
-        showFeedback("error", errorTitles[action], `Không thể thực hiện thao tác cho ${ids.length} vai trò`, errorMessage)
         
-        resourceLogger.tableAction({
+        resourceLogger.actionFlow({
           resource: "roles",
-          action: `bulk-${action}`,
-          count: ids.length,
-          roleIds: ids,
-          error: errorMessage,
+          action: `bulk-${action}` as ResourceAction,
+          step: "error",
+          metadata: {
+            count: ids.length,
+            error: errorMessage,
+          },
         })
+
+        showFeedback("error", errorTitles[action], `Không thể thực hiện thao tác cho ${ids.length} vai trò`, errorMessage)
         
         if (action !== "restore") {
           throw error

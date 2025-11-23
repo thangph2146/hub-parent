@@ -86,7 +86,8 @@ export function CommentDetailClient({ commentId, comment, backUrl = "/admin/comm
   })
 
   // Ưu tiên sử dụng React Query cache nếu có (dữ liệu mới nhất sau khi edit), fallback về props
-  const detailData = useResourceDetailData({
+  // Chỉ log sau khi fetch từ API xong để đảm bảo data mới nhất
+  const { data: detailData, isFetched, isFromApi, fetchedData } = useResourceDetailData({
     initialData: comment,
     resourceId: commentId,
     detailQueryKey: queryKeys.adminComments.detail,
@@ -101,35 +102,27 @@ export function CommentDetailClient({ commentId, comment, backUrl = "/admin/comm
     setApproved(detailData.approved)
   }, [detailData.approved])
 
-  // Log detail action và data structure khi component mount
+  // Log detail action và data structure (chỉ log sau khi fetch từ API xong)
+  // Sử dụng fetchedData (data từ API) thay vì detailData để đảm bảo log data mới nhất
   React.useEffect(() => {
     const logKey = `comments-detail-${commentId}`
-    if (loggedCommentIds.has(logKey)) return
+    // Chỉ log khi đã fetch xong, data từ API (isFromApi = true), và chưa log
+    // Sử dụng fetchedData (data từ API) để đảm bảo log data mới nhất
+    if (!isFetched || !isFromApi || loggedCommentIds.has(logKey) || !fetchedData) return
     loggedCommentIds.add(logKey)
 
     resourceLogger.detailAction({
       resource: "comments",
       action: "load-detail",
       resourceId: commentId,
-      authorName: detailData.authorName,
-      postTitle: detailData.postTitle,
+      recordData: fetchedData as Record<string, unknown>,
     })
 
     resourceLogger.dataStructure({
       resource: "comments",
       dataType: "detail",
       structure: {
-        id: detailData.id,
-        content: detailData.content,
-        approved: detailData.approved,
-        authorId: detailData.authorId,
-        authorName: detailData.authorName,
-        authorEmail: detailData.authorEmail,
-        postId: detailData.postId,
-        postTitle: detailData.postTitle,
-        createdAt: detailData.createdAt,
-        updatedAt: detailData.updatedAt,
-        deletedAt: detailData.deletedAt,
+        fields: fetchedData as Record<string, unknown>,
       },
     })
 
@@ -139,7 +132,7 @@ export function CommentDetailClient({ commentId, comment, backUrl = "/admin/comm
         loggedCommentIds.delete(logKey)
       }, 1000)
     }
-  }, [commentId, detailData.id, detailData.authorName, detailData.postTitle, detailData.createdAt, detailData.updatedAt, detailData.deletedAt])
+  }, [commentId, isFetched, isFromApi, fetchedData])
 
   const handleToggleApprove = React.useCallback(
     async (newStatus: boolean) => {
@@ -149,37 +142,14 @@ export function CommentDetailClient({ commentId, comment, backUrl = "/admin/comm
         resource: "comments",
         action: newStatus ? "approve" : "unapprove",
         resourceId: commentId,
+        recordData: detailData as Record<string, unknown>,
         authorName: detailData.authorName,
       })
 
       setIsToggling(true)
       
-      // Optimistic update: cập nhật cache ngay lập tức
-      const detailQueryKey = queryKeys.adminComments.detail(commentId)
-      const currentDetailData = queryClient.getQueryData<{ data: CommentDetailData }>(detailQueryKey)
-      if (currentDetailData) {
-        queryClient.setQueryData(detailQueryKey, {
-          data: {
-            ...currentDetailData.data,
-            approved: newStatus,
-            updatedAt: new Date().toISOString(),
-          },
-        })
-      }
-      
-      // Cập nhật list cache nếu có
-      queryClient.setQueriesData<DataTableResult<CommentRow>>(
-        { queryKey: queryKeys.adminComments.all() as unknown[] },
-        (oldData) => {
-          if (!oldData) return oldData
-          const updatedRows = oldData.rows.map((r) =>
-            r.id === commentId ? { ...r, approved: newStatus } : r
-          )
-          return { ...oldData, rows: updatedRows }
-        },
-      )
-      
-      setApproved(newStatus)
+      // Theo chuẩn Next.js 16: không update cache manually, chỉ invalidate
+      // Socket events sẽ tự động update cache nếu có
 
       try {
         if (newStatus) {
@@ -187,23 +157,25 @@ export function CommentDetailClient({ commentId, comment, backUrl = "/admin/comm
         } else {
           await apiClient.post(apiRoutes.comments.unapprove(commentId))
         }
+        
+        // Invalidate queries để refresh data từ server
+        // Socket events sẽ tự động update cache nếu có
+        await queryClient.invalidateQueries({ queryKey: queryKeys.adminComments.all() })
+        await queryClient.invalidateQueries({ queryKey: queryKeys.adminComments.detail(commentId) })
+        
+        setApproved(newStatus)
       } catch (error) {
         resourceLogger.detailAction({
           resource: "comments",
           action: newStatus ? "approve" : "unapprove",
-          error: error instanceof Error ? error.message : "Unknown error",
           resourceId: commentId,
+          recordData: detailData as Record<string, unknown>,
+          error: error instanceof Error ? error.message : "Unknown error",
         })
         
-        // Rollback optimistic update
-        if (currentDetailData) {
-          queryClient.setQueryData(detailQueryKey, currentDetailData)
-        }
-        queryClient.invalidateQueries({ queryKey: queryKeys.adminComments.all() })
-        queryClient.invalidateQueries({ queryKey: detailQueryKey })
-        
-        // Revert state on error
-        setApproved(!newStatus)
+        // Invalidate queries để refresh data từ server
+        await queryClient.invalidateQueries({ queryKey: queryKeys.adminComments.all() })
+        await queryClient.invalidateQueries({ queryKey: queryKeys.adminComments.detail(commentId) })
       } finally {
         setIsToggling(false)
       }

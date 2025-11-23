@@ -5,7 +5,7 @@
  * Pattern: Server Component (data fetching) → Client Component (UI/interactions)
  */
 
-import { listStudentsCached } from "../server/cache"
+import { listStudents } from "../server/queries"
 import { serializeStudentsList } from "../server/helpers"
 import { StudentsTableClient } from "./students-table.client"
 
@@ -26,7 +26,9 @@ export async function StudentsTable({
   actorId,
   isSuperAdmin: isSuperAdminUser = false,
 }: StudentsTableProps) {
-  const studentsData = await listStudentsCached({
+  // Sử dụng listStudents (non-cached) để đảm bảo data luôn fresh
+  // Theo chuẩn Next.js 16: không cache admin data
+  const studentsData = await listStudents({
     page: 1,
     limit: 10,
     status: "active",

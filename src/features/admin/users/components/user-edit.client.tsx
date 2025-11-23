@@ -10,7 +10,7 @@
 import { useSession } from "next-auth/react"
 import { useQueryClient } from "@tanstack/react-query"
 import { ResourceForm, type ResourceFormField } from "@/features/admin/resources/components"
-import { useResourceFormSubmit } from "@/features/admin/resources/hooks"
+import { useResourceFormSubmit, useResourceDetailData } from "@/features/admin/resources/hooks"
 import { createResourceEditOnSuccess } from "@/features/admin/resources/utils"
 import { apiRoutes } from "@/lib/api/routes"
 import { queryKeys } from "@/lib/query-keys"
@@ -44,7 +44,7 @@ export interface UserEditClientProps {
 }
 
 export function UserEditClient({
-  user,
+  user: initialUser,
   open = true,
   onOpenChange,
   onSuccess,
@@ -59,6 +59,21 @@ export function UserEditClient({
   const currentUserRoles = session?.roles || []
   const isSuperAdminUser = isSuperAdmin(currentUserRoles)
   const { roles } = useRoles({ initialRoles: rolesFromServer })
+
+  // Fetch fresh data từ API để đảm bảo data chính xác (theo chuẩn Next.js 16)
+  // Luôn fetch khi có resourceId để đảm bảo data mới nhất, không phụ thuộc vào variant
+  const resourceId = userId || initialUser?.id
+  const { data: userData, isFetching } = useResourceDetailData({
+    initialData: initialUser || ({} as UserEditData),
+    resourceId: resourceId || "",
+    detailQueryKey: queryKeys.adminUsers.detail,
+    resourceName: "users",
+    // Không cần apiRoute, useResourceDetailData sẽ tự động detect từ resourceName
+    fetchOnMount: !!resourceId, // Luôn fetch khi có resourceId để đảm bảo data fresh
+  })
+
+  // Sử dụng fresh data từ API nếu có, fallback về initial data
+  const user = (userData as UserEditData | null) || initialUser
 
   const { handleSubmit } = useResourceFormSubmit({
     apiRoute: (id) => apiRoutes.users.update(id),
