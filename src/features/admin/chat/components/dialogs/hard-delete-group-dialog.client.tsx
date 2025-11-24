@@ -84,9 +84,6 @@ export function HardDeleteGroupDialog({
               {GROUP_CONFIRM_MESSAGES.HARD_DELETE_DESCRIPTION(group?.name)}
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-2 py-2">
-            {GROUP_CONFIRM_MESSAGES.HARD_DELETE_DESCRIPTION(group?.name)}
-          </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isDeleting}>
               {GROUP_CONFIRM_MESSAGES.CANCEL_LABEL}

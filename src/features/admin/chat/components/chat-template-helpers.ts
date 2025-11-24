@@ -47,13 +47,16 @@ export async function refreshGroupData(groupId: string): Promise<Group | null> {
   try {
     const response = await requestJson<Group>(withApiBase(apiRoutes.adminGroups.detail(groupId)))
     if (response.status === 404 || !response.ok) {
-      return null
+      // Throw error với message từ API để caller có thể hiển thị đúng message
+      const errorMessage = response.error || "Nhóm không tồn tại hoặc bạn không phải thành viên"
+      throw new Error(errorMessage)
     }
     return (response.data as Group) ?? null
   } catch (error) {
     const { logger } = await import("@/lib/config")
     logger.error("Error refreshing group data", error)
-    return null
+    // Re-throw error để caller có thể xử lý message
+    throw error
   }
 }
 

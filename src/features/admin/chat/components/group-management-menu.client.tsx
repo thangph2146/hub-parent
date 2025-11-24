@@ -74,7 +74,7 @@ export function GroupManagementMenu({
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 onClick={() => setDeleteDialogOpen(true)}
-                className="text-destructive focus:text-destructive"
+                variant="destructive"
               >
                 <Trash2 className="mr-2 h-4 w-4 text-destructive" />
                 Xóa nhóm

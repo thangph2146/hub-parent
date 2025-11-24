@@ -47,7 +47,7 @@ export function DeleteGroupDialog({
   })
   const { feedback, showFeedback, handleFeedbackOpenChange } = useGroupFeedback()
   const { deleteConfirm, setDeleteConfirm, handleDeleteConfirm } = useGroupDeleteConfirm()
-  const { executeSingleAction, deletingGroups } = useGroupDialogActions({
+  const { executeSingleAction, deletingGroups, hardDeletingGroups } = useGroupDialogActions({
     canDelete: true,
     canRestore: false,
     canManage: true,
@@ -71,11 +71,22 @@ export function DeleteGroupDialog({
   }
 
   const handleHardDeleteClick = () => {
-    onOpenChange(false)
-    setHardDeleteDialogOpen(true)
+    if (!group) return
+
+    setDeleteConfirm({
+      open: true,
+      type: "hard",
+      group,
+      onConfirm: async () => {
+        await executeSingleAction("hard-delete", group)
+        onOpenChange(false)
+      },
+    })
   }
 
   const isDeleting = group ? deletingGroups.has(group.id) : false
+  const isHardDeleting = group ? hardDeletingGroups.has(group.id) : false
+  const isProcessing = isDeleting || isHardDeleting
 
   return (
     <>
@@ -94,7 +105,7 @@ export function DeleteGroupDialog({
             <Button 
               variant="secondary" 
               onClick={handleSoftDelete} 
-              disabled={isDeleting} 
+              disabled={isProcessing} 
               className="w-full justify-start"
             >
               {isDeleting ? (
@@ -107,14 +118,19 @@ export function DeleteGroupDialog({
             <Button 
               variant="destructive" 
               onClick={handleHardDeleteClick} 
-              disabled={isDeleting}
+              disabled={isProcessing}
               className="w-full justify-start"
             >
+              {isHardDeleting ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Trash className="mr-2 h-4 w-4" />
+              )}
               {GROUP_LABELS.HARD_DELETE}
             </Button>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isDeleting}>
+            <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isProcessing}>
               {GROUP_CONFIRM_MESSAGES.CANCEL_LABEL}
             </Button>
           </DialogFooter>
@@ -130,19 +146,33 @@ export function DeleteGroupDialog({
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 <AlertTriangle className="h-5 w-5 text-destructive" />
-                {GROUP_CONFIRM_MESSAGES.DELETE_TITLE(deleteConfirm.group?.name)}
+                {deleteConfirm.type === "hard"
+                  ? GROUP_CONFIRM_MESSAGES.HARD_DELETE_TITLE(deleteConfirm.group?.name)
+                  : deleteConfirm.type === "restore"
+                    ? GROUP_CONFIRM_MESSAGES.RESTORE_TITLE(deleteConfirm.group?.name)
+                    : GROUP_CONFIRM_MESSAGES.DELETE_TITLE(deleteConfirm.group?.name)}
               </DialogTitle>
               <DialogDescription>
-                {GROUP_CONFIRM_MESSAGES.DELETE_DESCRIPTION(deleteConfirm.group?.name)}
+                {deleteConfirm.type === "hard"
+                  ? GROUP_CONFIRM_MESSAGES.HARD_DELETE_DESCRIPTION(deleteConfirm.group?.name)
+                  : deleteConfirm.type === "restore"
+                    ? GROUP_CONFIRM_MESSAGES.RESTORE_DESCRIPTION(deleteConfirm.group?.name)
+                    : GROUP_CONFIRM_MESSAGES.DELETE_DESCRIPTION(deleteConfirm.group?.name)}
               </DialogDescription>
             </DialogHeader>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setDeleteConfirm(null)} disabled={isDeleting}>
+              <Button variant="outline" onClick={() => setDeleteConfirm(null)} disabled={isProcessing}>
                 {GROUP_CONFIRM_MESSAGES.CANCEL_LABEL}
               </Button>
-              <Button variant="destructive" onClick={handleDeleteConfirm} disabled={isDeleting}>
-                {isDeleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {GROUP_CONFIRM_MESSAGES.CONFIRM_LABEL}
+              <Button variant="destructive" onClick={handleDeleteConfirm} disabled={isProcessing}>
+                {(deleteConfirm.type === "hard" ? isHardDeleting : isDeleting) && (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                )}
+                {deleteConfirm.type === "hard"
+                  ? GROUP_CONFIRM_MESSAGES.HARD_DELETE_LABEL
+                  : deleteConfirm.type === "restore"
+                    ? GROUP_CONFIRM_MESSAGES.RESTORE_LABEL
+                    : GROUP_CONFIRM_MESSAGES.CONFIRM_LABEL}
               </Button>
             </DialogFooter>
           </DialogContent>

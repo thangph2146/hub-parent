@@ -42,10 +42,12 @@ export function useGroupActions({
       setContactsState((prev) => updateContactWithGroupData(prev, currentChat.id, groupData))
     } catch (error) {
       logger.error("Failed to refresh group data", error as Error)
+      // Hiển thị error message từ API nếu có, nếu không thì dùng message mặc định
+      const errorMessage = error instanceof Error ? error.message : "Không thể cập nhật thông tin nhóm. Vui lòng thử lại sau."
       toast({
         variant: "destructive",
-        title: "Lỗi cập nhật nhóm",
-        description: "Không thể cập nhật thông tin nhóm. Vui lòng thử lại sau.",
+        title: "Không thể tải nhóm",
+        description: errorMessage,
       })
     }
   }, [currentChat, setContactsState, toast])
