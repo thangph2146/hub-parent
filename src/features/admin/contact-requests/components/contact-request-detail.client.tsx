@@ -1,7 +1,6 @@
 "use client"
 
 import * as React from "react"
-import { useEffect, useRef } from "react"
 import { User, Mail, Phone, FileText, MessageSquare, AlertCircle, UserCheck, Calendar, Clock, Edit, CheckCircle2, XCircle } from "lucide-react"
 import { 
   ResourceDetailPage, 
@@ -14,9 +13,8 @@ import { Badge } from "@/components/ui/badge"
 import { Card } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { useResourceRouter } from "@/hooks/use-resource-segment"
-import { useResourceDetailData } from "@/features/admin/resources/hooks"
+import { useResourceDetailData, useResourceDetailLogger } from "@/features/admin/resources/hooks"
 import { queryKeys } from "@/lib/query-keys"
-import { resourceLogger } from "@/lib/config"
 import { formatDateVi } from "../utils"
 import { cn } from "@/lib/utils"
 
@@ -79,49 +77,24 @@ export interface ContactRequestDetailClientProps {
 export function ContactRequestDetailClient({ contactRequestId, contactRequest, backUrl = "/admin/contact-requests" }: ContactRequestDetailClientProps) {
   const router = useResourceRouter()
 
-  // useRef để track logged state (tránh duplicate logs trong React Strict Mode)
-  const loggedDataKeyRef = useRef<string | null>(null)
-
-  // Fetch fresh data từ API để đảm bảo data chính xác (theo chuẩn Next.js 16)
-  // Luôn fetch khi mount để đảm bảo data mới nhất từ API
+  // Fetch fresh data từ API để đảm bảo data mới nhất
   const { data: detailData, isFetched, isFromApi, fetchedData } = useResourceDetailData({
     initialData: contactRequest,
     resourceId: contactRequestId,
     detailQueryKey: queryKeys.adminContactRequests.detail,
     resourceName: "contact-requests",
-    fetchOnMount: true, // Luôn fetch khi mount để đảm bảo data fresh
+    fetchOnMount: true,
   })
 
-  // Log detail action và data structure (chỉ log một lần sau khi fetch từ API xong)
-  // Sử dụng fetchedData (data từ API) thay vì detailData để đảm bảo log data mới nhất
-  useEffect(() => {
-    // Chỉ log khi đã fetch xong, data từ API (isFromApi = true), và có fetchedData
-    if (!isFetched || !isFromApi || !fetchedData) return
-    
-    // Tạo unique key từ data để đảm bảo chỉ log khi data thực sự thay đổi
-    const dataKey = `${contactRequestId}-${fetchedData.updatedAt || fetchedData.createdAt || ""}`
-    
-    // Nếu đã log cho data key này rồi, skip
-    if (loggedDataKeyRef.current === dataKey) return
-    
-    // Mark as logged
-    loggedDataKeyRef.current = dataKey
-    
-    resourceLogger.detailAction({
-      resource: "contact-requests",
-      action: "load-detail",
-      resourceId: contactRequestId,
-      recordData: fetchedData as Record<string, unknown>,
-    })
-
-    resourceLogger.dataStructure({
-      resource: "contact-requests",
-      dataType: "detail",
-      structure: {
-        fields: fetchedData as Record<string, unknown>,
-      },
-    })
-  }, [contactRequestId, isFetched, isFromApi, fetchedData?.id, fetchedData?.updatedAt, fetchedData?.createdAt])
+  // Log detail action và data structure (sử dụng hook chuẩn)
+  useResourceDetailLogger({
+    resourceName: "contact-requests",
+    resourceId: contactRequestId,
+    data: detailData,
+    isFetched,
+    isFromApi,
+    fetchedData,
+  })
 
   const detailFields: ResourceDetailField<ContactRequestDetailData>[] = []
 

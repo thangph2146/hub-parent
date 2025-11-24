@@ -1,6 +1,5 @@
 "use client"
 
-import { useEffect, useRef } from "react"
 import { Tag, Hash, Calendar, Clock, Edit } from "lucide-react"
 import { 
   ResourceDetailPage, 
@@ -11,9 +10,8 @@ import {
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { queryKeys } from "@/lib/query-keys"
-import { resourceLogger } from "@/lib/config"
 import { formatDateVi } from "../utils"
-import { useResourceNavigation, useResourceDetailData } from "@/features/admin/resources/hooks"
+import { useResourceNavigation, useResourceDetailData, useResourceDetailLogger } from "@/features/admin/resources/hooks"
 
 export interface TagDetailData {
   id: string
@@ -36,49 +34,24 @@ export function TagDetailClient({ tagId, tag, backUrl = "/admin/tags" }: TagDeta
     invalidateQueryKey: queryKeys.adminTags.all(),
   })
 
-  // useRef để track logged state (tránh duplicate logs trong React Strict Mode)
-  const loggedDataKeyRef = useRef<string | null>(null)
-
-  // Ưu tiên sử dụng React Query cache nếu có (dữ liệu mới nhất sau khi edit), fallback về props
-  // Chỉ log sau khi fetch từ API xong để đảm bảo data mới nhất
+  // Fetch fresh data từ API để đảm bảo data mới nhất
   const { data: detailData, isFetched, isFromApi, fetchedData } = useResourceDetailData({
     initialData: tag,
     resourceId: tagId,
     detailQueryKey: queryKeys.adminTags.detail,
     resourceName: "tags",
-    fetchOnMount: true, // Luôn fetch khi mount để đảm bảo data fresh
+    fetchOnMount: true,
   })
 
-  // Log detail load một lần cho mỗi unique data state (chỉ log sau khi fetch từ API xong)
-  // Sử dụng fetchedData (data từ API) thay vì detailData để đảm bảo log data mới nhất
-  useEffect(() => {
-    // Chỉ log khi đã fetch xong, data từ API (isFromApi = true), và có fetchedData
-    if (!isFetched || !isFromApi || !fetchedData) return
-    
-    // Tạo unique key từ data để đảm bảo chỉ log khi data thực sự thay đổi
-    const dataKey = `${tagId}-${fetchedData.updatedAt || fetchedData.createdAt || ""}`
-    
-    // Nếu đã log cho data key này rồi, skip
-    if (loggedDataKeyRef.current === dataKey) return
-    
-    // Mark as logged
-    loggedDataKeyRef.current = dataKey
-    
-    resourceLogger.detailAction({
-      resource: "tags",
-      action: "load-detail",
-      resourceId: tagId,
-      recordData: fetchedData as Record<string, unknown>,
-    })
-
-    resourceLogger.dataStructure({
-      resource: "tags",
-      dataType: "detail",
-      structure: {
-        fields: fetchedData as Record<string, unknown>,
-      },
-    })
-  }, [tagId, isFetched, isFromApi, fetchedData?.id, fetchedData?.updatedAt, fetchedData?.createdAt])
+  // Log detail action và data structure (sử dụng hook chuẩn)
+  useResourceDetailLogger({
+    resourceName: "tags",
+    resourceId: tagId,
+    data: detailData,
+    isFetched,
+    isFromApi,
+    fetchedData,
+  })
 
   const detailFields: ResourceDetailField<TagDetailData>[] = []
 

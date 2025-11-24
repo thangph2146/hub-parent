@@ -15,9 +15,9 @@ import { Switch } from "@/components/ui/switch"
 import { formatDateVi } from "../utils"
 import { apiClient } from "@/lib/api/axios"
 import { apiRoutes } from "@/lib/api/routes"
-import { resourceLogger } from "@/lib/config"
-import { useResourceNavigation, useResourceDetailData } from "@/features/admin/resources/hooks"
+import { useResourceNavigation, useResourceDetailData, useResourceDetailLogger } from "@/features/admin/resources/hooks"
 import { queryKeys } from "@/lib/query-keys"
+import { resourceLogger } from "@/lib/config/resource-logger"
 
 export interface CommentDetailData {
   id: string
@@ -80,18 +80,24 @@ export function CommentDetailClient({ commentId, comment, backUrl = "/admin/comm
     invalidateQueryKey: queryKeys.adminComments.all(),
   })
 
-  // Ưu tiên sử dụng React Query cache nếu có (dữ liệu mới nhất sau khi edit), fallback về props
-  // Chỉ log sau khi fetch từ API xong để đảm bảo data mới nhất
+  // Fetch fresh data từ API để đảm bảo data mới nhất
   const { data: detailData, isFetched, isFromApi, fetchedData } = useResourceDetailData({
     initialData: comment,
     resourceId: commentId,
     detailQueryKey: queryKeys.adminComments.detail,
     resourceName: "comments",
-    fetchOnMount: true, // Luôn fetch khi mount để đảm bảo data fresh
+    fetchOnMount: true,
   })
 
-  // useRef để track logged state (tránh duplicate logs trong React Strict Mode)
-  const loggedDataKeyRef = React.useRef<string | null>(null)
+  // Log detail action và data structure (sử dụng hook chuẩn)
+  useResourceDetailLogger({
+    resourceName: "comments",
+    resourceId: commentId,
+    data: detailData,
+    isFetched,
+    isFromApi,
+    fetchedData,
+  })
 
   const [isToggling, setIsToggling] = React.useState(false)
   const [approved, setApproved] = React.useState(detailData.approved)
@@ -100,37 +106,6 @@ export function CommentDetailClient({ commentId, comment, backUrl = "/admin/comm
   React.useEffect(() => {
     setApproved(detailData.approved)
   }, [detailData.approved])
-
-  // Log detail action và data structure (chỉ log sau khi fetch từ API xong)
-  // Sử dụng fetchedData (data từ API) thay vì detailData để đảm bảo log data mới nhất
-  React.useEffect(() => {
-    // Chỉ log khi đã fetch xong, data từ API (isFromApi = true), và có fetchedData
-    if (!isFetched || !isFromApi || !fetchedData) return
-    
-    // Tạo unique key từ data để đảm bảo chỉ log khi data thực sự thay đổi
-    const dataKey = `${commentId}-${fetchedData.updatedAt || fetchedData.createdAt || ""}`
-    
-    // Nếu đã log cho data key này rồi, skip
-    if (loggedDataKeyRef.current === dataKey) return
-    
-    // Mark as logged
-    loggedDataKeyRef.current = dataKey
-
-    resourceLogger.detailAction({
-      resource: "comments",
-      action: "load-detail",
-      resourceId: commentId,
-      recordData: fetchedData as Record<string, unknown>,
-    })
-
-    resourceLogger.dataStructure({
-      resource: "comments",
-      dataType: "detail",
-      structure: {
-        fields: fetchedData as Record<string, unknown>,
-      },
-    })
-  }, [commentId, isFetched, isFromApi, fetchedData?.id, fetchedData?.updatedAt, fetchedData?.createdAt])
 
   const handleToggleApprove = React.useCallback(
     async (newStatus: boolean) => {

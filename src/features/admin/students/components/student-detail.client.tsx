@@ -12,12 +12,11 @@ import {
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
-import { useResourceNavigation, useResourceDetailData } from "@/features/admin/resources/hooks"
+import { useResourceNavigation, useResourceDetailData, useResourceDetailLogger } from "@/features/admin/resources/hooks"
 import { useResourceRouter } from "@/hooks/use-resource-segment"
 import { queryKeys } from "@/lib/query-keys"
 import { formatDateVi } from "../utils"
 import { cn } from "@/lib/utils"
-import { resourceLogger } from "@/lib/config"
 
 export interface StudentDetailData {
   id: string
@@ -48,49 +47,24 @@ export function StudentDetailClient({ studentId, student, backUrl = "/admin/stud
     invalidateQueryKey: queryKeys.adminStudents.all(),
   })
 
-  // useRef để track logged state (tránh duplicate logs trong React Strict Mode)
-  const loggedDataKeyRef = React.useRef<string | null>(null)
-
-  // Ưu tiên sử dụng React Query cache nếu có (dữ liệu mới nhất sau khi edit), fallback về props
-  // Chỉ log sau khi fetch từ API xong để đảm bảo data mới nhất
+  // Fetch fresh data từ API để đảm bảo data mới nhất
   const { data: detailData, isFetched, isFromApi, fetchedData } = useResourceDetailData({
     initialData: student,
     resourceId: studentId,
     detailQueryKey: queryKeys.adminStudents.detail,
     resourceName: "students",
-    fetchOnMount: true, // Luôn fetch khi mount để đảm bảo data fresh
+    fetchOnMount: true,
   })
 
-  // Log detail action và data structure (chỉ log sau khi fetch từ API xong)
-  // Sử dụng fetchedData (data từ API) thay vì detailData để đảm bảo log data mới nhất
-  React.useEffect(() => {
-    // Chỉ log khi đã fetch xong, data từ API (isFromApi = true), và có fetchedData
-    if (!isFetched || !isFromApi || !fetchedData) return
-    
-    // Tạo unique key từ data để đảm bảo chỉ log khi data thực sự thay đổi
-    const dataKey = `${studentId}-${fetchedData.updatedAt || fetchedData.createdAt || ""}`
-    
-    // Nếu đã log cho data key này rồi, skip
-    if (loggedDataKeyRef.current === dataKey) return
-    
-    // Mark as logged
-    loggedDataKeyRef.current = dataKey
-
-    resourceLogger.detailAction({
-      resource: "students",
-      action: "load-detail",
-      resourceId: studentId,
-      recordData: fetchedData as Record<string, unknown>,
-    })
-
-    resourceLogger.dataStructure({
-      resource: "students",
-      dataType: "detail",
-      structure: {
-        fields: fetchedData as Record<string, unknown>,
-      },
-    })
-  }, [studentId, isFetched, isFromApi, fetchedData?.id, fetchedData?.updatedAt, fetchedData?.createdAt])
+  // Log detail action và data structure (sử dụng hook chuẩn)
+  useResourceDetailLogger({
+    resourceName: "students",
+    resourceId: studentId,
+    data: detailData,
+    isFetched,
+    isFromApi,
+    fetchedData,
+  })
 
   const detailFields: ResourceDetailField<StudentDetailData>[] = []
 

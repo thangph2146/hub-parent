@@ -13,11 +13,10 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
-import { useResourceNavigation, useResourceDetailData } from "@/features/admin/resources/hooks"
+import { useResourceNavigation, useResourceDetailData, useResourceDetailLogger } from "@/features/admin/resources/hooks"
 import { queryKeys } from "@/lib/query-keys"
 import { formatDateVi } from "../utils"
 import { getAllPermissionsOptionGroups } from "../form-fields"
-import { resourceLogger } from "@/lib/config"
 import {
   Popover,
   PopoverContent,
@@ -60,49 +59,24 @@ export function RoleDetailClient({ roleId, role, backUrl = "/admin/roles" }: Rol
   })
   const [permissionsOpen, setPermissionsOpen] = React.useState(false)
 
-  // useRef để track logged state (tránh duplicate logs trong React Strict Mode)
-  const loggedDataKeyRef = React.useRef<string | null>(null)
-
-  // Ưu tiên sử dụng React Query cache nếu có (dữ liệu mới nhất sau khi edit), fallback về props
-  // Chỉ log sau khi fetch từ API xong để đảm bảo data mới nhất
+  // Fetch fresh data từ API để đảm bảo data mới nhất
   const { data: detailData, isFetched, isFromApi, fetchedData } = useResourceDetailData({
     initialData: role,
     resourceId: roleId,
     detailQueryKey: queryKeys.adminRoles.detail,
     resourceName: "roles",
-    fetchOnMount: true, // Luôn fetch khi mount để đảm bảo data fresh
+    fetchOnMount: true,
   })
 
-  // Log detail load một lần cho mỗi unique data state (chỉ log sau khi fetch từ API xong)
-  // Sử dụng fetchedData (data từ API) thay vì detailData để đảm bảo log data mới nhất
-  React.useEffect(() => {
-    // Chỉ log khi đã fetch xong, data từ API (isFromApi = true), và có fetchedData
-    if (!isFetched || !isFromApi || !fetchedData) return
-    
-    // Tạo unique key từ data để đảm bảo chỉ log khi data thực sự thay đổi
-    const dataKey = `${roleId}-${fetchedData.updatedAt || fetchedData.createdAt || ""}`
-    
-    // Nếu đã log cho data key này rồi, skip
-    if (loggedDataKeyRef.current === dataKey) return
-    
-    // Mark as logged
-    loggedDataKeyRef.current = dataKey
-    
-    resourceLogger.detailAction({
-      resource: "roles",
-      action: "load-detail",
-      resourceId: roleId,
-      recordData: fetchedData as Record<string, unknown>,
-    })
-
-    resourceLogger.dataStructure({
-      resource: "roles",
-      dataType: "detail",
-      structure: {
-        fields: fetchedData as Record<string, unknown>,
-      },
-    })
-  }, [roleId, isFetched, isFromApi, fetchedData?.id, fetchedData?.updatedAt, fetchedData?.createdAt])
+  // Log detail action và data structure (sử dụng hook chuẩn)
+  useResourceDetailLogger({
+    resourceName: "roles",
+    resourceId: roleId,
+    data: detailData,
+    isFetched,
+    isFromApi,
+    fetchedData,
+  })
 
   // Get grouped permissions
   const permissionsGroups = getAllPermissionsOptionGroups()
