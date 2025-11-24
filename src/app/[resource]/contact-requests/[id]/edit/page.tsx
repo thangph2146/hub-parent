@@ -4,7 +4,7 @@ import { ContactRequestEdit } from "@/features/admin/contact-requests/components
 import { validateRouteId } from "@/lib/validation/route-params"
 import { FormPageSuspense } from "@/features/admin/resources/components"
 import { getContactRequestById } from "@/features/admin/contact-requests/server/queries"
-import { truncateBreadcrumbLabel } from "@/features/admin/resources/utils"
+import { createEditBreadcrumbs, truncateBreadcrumbLabel } from "@/features/admin/resources/utils"
 
 /**
  * Contact Request Edit Page Metadata (Dynamic)
@@ -64,11 +64,12 @@ export default async function ContactRequestEditPage({
     return (
       <>
         <AdminHeader
-          breadcrumbs={[
-            { label: "Yêu cầu liên hệ", href: "/admin/contact-requests" },
-            { label: contactRequestName, href: `/admin/contact-requests/${id}` },
-            { label: "Chỉnh sửa", href: `/admin/contact-requests/${id}/edit` },
-          ]}
+          breadcrumbs={createEditBreadcrumbs({
+            listLabel: "Yêu cầu liên hệ",
+            listPath: "/admin/contact-requests",
+            detailLabel: contactRequestName,
+            detailPath: `/admin/contact-requests/${id}`,
+          })}
         />
         <div className="flex flex-1 flex-col gap-4 p-4">
           <div className="flex min-h-[400px] flex-1 items-center justify-center">
@@ -87,11 +88,12 @@ export default async function ContactRequestEditPage({
   return (
     <>
       <AdminHeader
-        breadcrumbs={[
-          { label: "Yêu cầu liên hệ", href: "/admin/contact-requests" },
-          { label: contactRequestName, href: `/admin/contact-requests/${id}` },
-          { label: "Chỉnh sửa", isActive: true },
-        ]}
+        breadcrumbs={createEditBreadcrumbs({
+          listLabel: "Yêu cầu liên hệ",
+          listPath: "/admin/contact-requests",
+          detailLabel: contactRequestName,
+          detailPath: `/admin/contact-requests/${id}`,
+        })}
       />
       <div className="flex flex-1 flex-col gap-4 p-4">
         <FormPageSuspense fieldCount={8} sectionCount={2}>

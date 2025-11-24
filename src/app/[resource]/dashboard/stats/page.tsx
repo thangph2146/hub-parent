@@ -3,6 +3,7 @@ import { Suspense } from "react"
 import { AdminHeader } from "@/components/layouts/headers"
 import { DashboardStats } from "@/features/admin/dashboard/dashboard-stats"
 import { DashboardStatsSkeleton } from "@/components/layouts/skeletons"
+import { createNestedBreadcrumbs } from "@/features/admin/resources/utils"
 
 /**
  * Dashboard Stats Page Metadata
@@ -28,16 +29,11 @@ export default function Page() {
   return (
     <>
       <AdminHeader
-        breadcrumbs={[
-          {
-            label: "Dashboard",
-            href: "/admin/dashboard",
-          },
-          {
-            label: "Thống kê",
-            isActive: true,
-          },
-        ]}
+        breadcrumbs={createNestedBreadcrumbs({
+          parentLabel: "Dashboard",
+          parentPath: "/admin/dashboard",
+          currentLabel: "Thống kê",
+        })}
       />
       <Suspense fallback={<DashboardStatsSkeleton />}>
         <DashboardStats />

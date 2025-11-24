@@ -511,7 +511,7 @@ export function ContactRequestsTableClient({
     )
   }
 
-  const buildInitialParams = useCallback(
+  const _buildInitialParams = useCallback(
     (data: DataTableResult<ContactRequestRow>): AdminContactRequestsListParams => ({
       status: "active",
       page: data.page,

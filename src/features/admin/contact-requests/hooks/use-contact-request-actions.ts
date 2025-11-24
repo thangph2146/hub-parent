@@ -44,7 +44,7 @@ export function useContactRequestActions({
   const { bulkState, startBulkProcessing, stopBulkProcessing } = useResourceBulkProcessing()
 
   const handleToggleRead = useCallback(
-    async (row: ContactRequestRow, newStatus: boolean, refresh: ResourceRefreshHandler) => {
+    async (row: ContactRequestRow, newStatus: boolean, _refresh: ResourceRefreshHandler) => {
       if (!canUpdate) {
         showFeedback("error", CONTACT_REQUEST_MESSAGES.NO_PERMISSION, CONTACT_REQUEST_MESSAGES.NO_UPDATE_PERMISSION)
         return
@@ -96,7 +96,7 @@ export function useContactRequestActions({
         })
       }
     },
-    [canUpdate, isSocketConnected, showFeedback, queryClient],
+    [canUpdate, showFeedback, queryClient],
   )
 
   const executeSingleAction = useCallback(
@@ -174,7 +174,7 @@ export function useContactRequestActions({
         })
       }
     },
-    [canDelete, canRestore, canManage, showFeedback],
+    [canDelete, canRestore, canManage, showFeedback, queryClient],
   )
 
   const executeBulkAction = useCallback(
@@ -220,7 +220,7 @@ export function useContactRequestActions({
         stopBulkProcessing()
       }
     },
-    [showFeedback, startBulkProcessing, stopBulkProcessing],
+    [showFeedback, startBulkProcessing, stopBulkProcessing, queryClient],
   )
 
   return {

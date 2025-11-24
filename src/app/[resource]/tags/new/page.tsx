@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import { AdminHeader } from "@/components/layouts/headers"
 import { TagCreate } from "@/features/admin/tags/components/tag-create"
 import { FormPageSuspense } from "@/features/admin/resources/components"
+import { createCreateBreadcrumbs } from "@/features/admin/resources/utils"
 
 /**
  * Tag Create Page Metadata
@@ -29,10 +30,10 @@ export default async function TagCreatePage() {
   return (
     <>
       <AdminHeader
-        breadcrumbs={[
-          { label: "Thẻ tag", href: "/admin/tags" },
-          { label: "Tạo mới", isActive: true },
-        ]}
+        breadcrumbs={createCreateBreadcrumbs({
+          listLabel: "Thẻ tag",
+          listPath: "/admin/tags",
+        })}
       />
       <div className="flex flex-1 flex-col gap-4 p-4">
         <FormPageSuspense fieldCount={6} sectionCount={1}>

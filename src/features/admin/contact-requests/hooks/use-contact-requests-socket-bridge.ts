@@ -258,7 +258,7 @@ export function useContactRequestsSocketBridge() {
     const detachRemove = on<[ContactRequestRemovePayload]>("contact-request:remove", (payload) => {
       const { id } = payload as ContactRequestRemovePayload
       
-      const updated = updateContactRequestQueries(queryClient, ({ params, data }) => {
+      const updated = updateContactRequestQueries(queryClient, ({ params: _params, data }) => {
         const result = removeRowFromPage(data.rows, id)
         if (!result.removed) {
           return null

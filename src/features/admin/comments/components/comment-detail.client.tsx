@@ -18,8 +18,6 @@ import { apiRoutes } from "@/lib/api/routes"
 import { resourceLogger } from "@/lib/config"
 import { useResourceNavigation, useResourceDetailData } from "@/features/admin/resources/hooks"
 import { queryKeys } from "@/lib/query-keys"
-import type { CommentRow } from "../types"
-import type { DataTableResult } from "@/components/tables"
 
 export interface CommentDetailData {
   id: string
@@ -77,7 +75,7 @@ const StatusField = ({ approved, canApprove, onToggle, isToggling }: StatusField
 
 export function CommentDetailClient({ commentId, comment, backUrl = "/admin/comments", canApprove = false }: CommentDetailClientProps) {
   const queryClient = useQueryClient()
-  const { navigateBack, router } = useResourceNavigation({
+  useResourceNavigation({
     queryClient,
     invalidateQueryKey: queryKeys.adminComments.all(),
   })

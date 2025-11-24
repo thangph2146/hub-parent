@@ -267,7 +267,7 @@ export function NotificationsTableClient({
     buildQueryKey: buildNotificationsQueryKey,
   })
 
-  const buildInitialParams = useCallback(
+  const _buildInitialParams = useCallback(
     (data: DataTableResult<NotificationRow>): AdminNotificationsListParams => ({
       status: "all",
       page: data.page,

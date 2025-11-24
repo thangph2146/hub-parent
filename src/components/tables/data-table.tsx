@@ -171,7 +171,7 @@ export function DataTable<T extends object>({
         () => ({ ...defaultFilters }),
     )
     const [showFilters, setShowFilters] = useState<boolean>(true)
-    const initialQueryRef = useRef(defaultQuery)
+    const _initialQueryRef = useRef(defaultQuery)
     const hasConsumedInitialRef = useRef(!initialData)
 
     // Luôn ưu tiên loader (loader đã check cache từ React Query)

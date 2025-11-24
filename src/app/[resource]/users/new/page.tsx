@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import { AdminHeader } from "@/components/layouts/headers"
 import { UserCreate } from "@/features/admin/users/components/user-create"
 import { FormPageSuspense } from "@/features/admin/resources/components"
+import { createCreateBreadcrumbs } from "@/features/admin/resources/utils"
 
 /**
  * User Create Page Metadata
@@ -30,10 +31,10 @@ export default async function UserCreatePage() {
   return (
     <>
       <AdminHeader
-        breadcrumbs={[
-          { label: "Users", href: "/admin/users" },
-          { label: "Tạo mới", isActive: true },
-        ]}
+        breadcrumbs={createCreateBreadcrumbs({
+          listLabel: "Users",
+          listPath: "/admin/users",
+        })}
       />
       <div className="flex flex-1 flex-col gap-4 p-4">
         <FormPageSuspense fieldCount={8} sectionCount={2}>

@@ -8,7 +8,7 @@
 
 import { PERMISSIONS, canPerformAnyAction } from "@/lib/permissions"
 import { prisma } from "@/lib/database"
-import { mapCommentRecord, type CommentWithRelations } from "./helpers"
+import { mapCommentRecord } from "./helpers"
 import type { ListedComment } from "../types"
 import {
   UpdateCommentSchema,

@@ -217,7 +217,7 @@ export async function bulkSoftDeleteCategories(ctx: AuthContext, ids: string[]):
   })
 
   const foundIds = categories.map(c => c.id)
-  const notFoundIds = ids.filter(id => !foundIds.includes(id))
+  const _notFoundIds = ids.filter(id => !foundIds.includes(id))
 
   if (categories.length === 0) {
     const allCategories = await prisma.category.findMany({

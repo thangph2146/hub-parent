@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import { AdminHeader } from "@/components/layouts/headers"
 import { RoleCreate } from "@/features/admin/roles/components/role-create"
 import { FormPageSuspense } from "@/features/admin/resources/components"
+import { createCreateBreadcrumbs } from "@/features/admin/resources/utils"
 
 /**
  * Role Create Page Metadata
@@ -29,10 +30,10 @@ export default async function RoleCreatePage() {
   return (
     <>
       <AdminHeader
-        breadcrumbs={[
-          { label: "Vai trò", href: "/admin/roles" },
-          { label: "Tạo mới", isActive: true },
-        ]}
+        breadcrumbs={createCreateBreadcrumbs({
+          listLabel: "Vai trò",
+          listPath: "/admin/roles",
+        })}
       />
       <div className="flex flex-1 flex-col gap-4 p-4">
         <FormPageSuspense fieldCount={6} sectionCount={2}>

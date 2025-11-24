@@ -4,7 +4,6 @@ import { useEffect, useMemo, useState } from "react"
 import { useSession } from "next-auth/react"
 import { useQueryClient } from "@tanstack/react-query"
 import { useSocket } from "@/hooks/use-socket"
-import { resourceLogger } from "@/lib/config"
 import type { CategoryRow } from "../types"
 import type { DataTableResult } from "@/components/tables"
 import { queryKeys, type AdminCategoriesListParams } from "@/lib/query-keys"
@@ -69,7 +68,7 @@ export function useCategoriesSocketBridge() {
     if (!session?.user?.id) return
 
     const detachUpsert = on<[CategoryUpsertPayload]>("category:upsert", (payload) => {
-      const { category, previousStatus, newStatus } = payload as CategoryUpsertPayload
+      const { category } = payload as CategoryUpsertPayload
       const rowStatus: "active" | "deleted" = category.deletedAt ? "deleted" : "active"
 
       const updated = updateCategoryQueries(queryClient, ({ params, data }) => {

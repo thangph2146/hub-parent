@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import { AdminHeader } from "@/components/layouts/headers"
 import { SessionCreate } from "@/features/admin/sessions/components/session-create"
 import { FormPageSuspense } from "@/features/admin/resources/components"
+import { createCreateBreadcrumbs } from "@/features/admin/resources/utils"
 
 /**
  * Session Create Page Metadata
@@ -29,10 +30,10 @@ export default async function SessionCreatePage() {
   return (
     <>
       <AdminHeader
-        breadcrumbs={[
-          { label: "Session", href: "/admin/sessions" },
-          { label: "Tạo mới", isActive: true },
-        ]}
+        breadcrumbs={createCreateBreadcrumbs({
+          listLabel: "Session",
+          listPath: "/admin/sessions",
+        })}
       />
       <div className="flex flex-1 flex-col gap-4 p-4">
         <FormPageSuspense fieldCount={6} sectionCount={1}>

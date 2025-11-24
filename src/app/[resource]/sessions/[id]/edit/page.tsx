@@ -4,7 +4,7 @@ import { SessionEdit } from "@/features/admin/sessions/components/session-edit"
 import { validateRouteId } from "@/lib/validation/route-params"
 import { FormPageSuspense } from "@/features/admin/resources/components"
 import { getSessionById } from "@/features/admin/sessions/server/queries"
-import { truncateBreadcrumbLabel } from "@/features/admin/resources/utils"
+import { createEditBreadcrumbs, truncateBreadcrumbLabel } from "@/features/admin/resources/utils"
 
 /**
  * Session Edit Page Metadata (Dynamic)
@@ -63,11 +63,12 @@ export default async function SessionEditPage({ params }: SessionEditPageProps) 
     return (
       <>
         <AdminHeader
-          breadcrumbs={[
-            { label: "Session", href: "/admin/sessions" },
-            { label: sessionName, href: `/admin/sessions/${id}` },
-            { label: "Chỉnh sửa", href: `/admin/sessions/${id}/edit` },
-          ]}
+          breadcrumbs={createEditBreadcrumbs({
+            listLabel: "Session",
+            listPath: "/admin/sessions",
+            detailLabel: sessionName,
+            detailPath: `/admin/sessions/${id}`,
+          })}
         />
         <div className="flex flex-1 flex-col gap-4 p-4">
           <div className="flex min-h-[400px] flex-1 items-center justify-center">
@@ -86,11 +87,12 @@ export default async function SessionEditPage({ params }: SessionEditPageProps) 
   return (
     <>
       <AdminHeader
-        breadcrumbs={[
-          { label: "Session", href: "/admin/sessions" },
-          { label: sessionName, href: `/admin/sessions/${id}` },
-          { label: "Chỉnh sửa", isActive: true },
-        ]}
+        breadcrumbs={createEditBreadcrumbs({
+          listLabel: "Session",
+          listPath: "/admin/sessions",
+          detailLabel: sessionName,
+          detailPath: `/admin/sessions/${id}`,
+        })}
       />
       <div className="flex flex-1 flex-col gap-4 p-4">
         <FormPageSuspense fieldCount={6} sectionCount={1}>

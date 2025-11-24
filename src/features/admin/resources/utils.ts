@@ -256,6 +256,26 @@ export function createCreateBreadcrumbs({
 }
 
 /**
+ * Tạo breadcrumbs cho nested page (như dashboard/stats)
+ */
+export function createNestedBreadcrumbs({
+  resourceSegment = DEFAULT_RESOURCE_SEGMENT,
+  parentLabel,
+  parentPath,
+  currentLabel,
+}: {
+  resourceSegment?: string
+  parentLabel: string
+  parentPath: string
+  currentLabel: string
+}): AdminBreadcrumbItem[] {
+  return [
+    { label: parentLabel, href: applyResourceSegmentToPath(parentPath, resourceSegment) },
+    { label: currentLabel, isActive: true },
+  ]
+}
+
+/**
  * Helper function để chuyển resource name từ plural sang singular
  * Ví dụ: "categories" -> "category", "tags" -> "tag"
  */

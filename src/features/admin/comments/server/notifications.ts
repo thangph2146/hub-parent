@@ -4,7 +4,7 @@
 
 import { prisma } from "@/lib/database"
 import { resourceLogger } from "@/lib/config"
-import { getSocketServer, storeNotificationInCache, mapNotificationToPayload } from "@/lib/socket/state"
+import { getSocketServer, mapNotificationToPayload } from "@/lib/socket/state"
 import { createNotificationForSuperAdmins } from "@/features/admin/notifications/server/mutations"
 import { NotificationKind } from "@prisma/client"
 import type { CommentWithRelations } from "./helpers"
@@ -56,7 +56,7 @@ export async function notifySuperAdminsOfCommentAction(
 ) {
   try {
     const actor = await getActorInfo(actorId)
-    const actorName = actor?.name || actor?.email || "Hệ thống"
+    const _actorName = actor?.name || actor?.email || "Hệ thống"
     const authorName = comment.authorName || comment.authorEmail
 
     let title = ""
@@ -197,7 +197,7 @@ export async function notifySuperAdminsOfBulkCommentAction(
 
   try {
     const actor = await getActorInfo(actorId)
-    const actorName = actor?.name || actor?.email || "Hệ thống"
+    const _actorName = actor?.name || actor?.email || "Hệ thống"
 
     const namesText = formatCommentNames(comments, 3)
     const count = comments.length

@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import { AdminHeader } from "@/components/layouts/headers"
 import { AccountProfile } from "@/features/admin/accounts/components"
 import { appConfig } from "@/lib/config"
+import { createListBreadcrumbs } from "@/features/admin/resources/utils"
 
 /**
  * Accounts Page Metadata
@@ -35,11 +36,7 @@ export const metadata: Metadata = {
 export default async function AccountsPage() {
   return (
     <>
-      <AdminHeader
-        breadcrumbs={[
-          { label: "Tài khoản", isActive: true },
-        ]}
-      />
+      <AdminHeader breadcrumbs={createListBreadcrumbs({ listLabel: "Tài khoản" })} />
       <div className="flex flex-1 flex-col gap-4 p-4">
         <AccountProfile variant="page" />
       </div>

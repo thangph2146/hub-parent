@@ -11,10 +11,9 @@ import { queryKeys } from "@/lib/query-keys"
 import type { ResourceRefreshHandler } from "@/features/admin/resources/types"
 import { runResourceRefresh, useResourceBulkProcessing } from "@/features/admin/resources/hooks"
 import type { CategoryRow } from "../types"
-import type { DataTableResult } from "@/components/tables"
 import type { FeedbackVariant } from "@/components/dialogs"
 import { CATEGORY_MESSAGES } from "../constants/messages"
-import { logger, resourceLogger } from "@/lib/config"
+import { resourceLogger } from "@/lib/config"
 
 interface UseCategoryActionsOptions {
   canDelete: boolean

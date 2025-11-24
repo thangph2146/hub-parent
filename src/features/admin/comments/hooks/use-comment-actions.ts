@@ -229,7 +229,7 @@ export function useCommentActions({
         })
       }
     },
-    [canDelete, canRestore, canManage, showFeedback, refreshTable],
+    [canDelete, canRestore, canManage, showFeedback, queryClient, refreshTable],
   )
 
   const executeBulkAction = useCallback(
@@ -303,7 +303,7 @@ export function useCommentActions({
         stopBulkProcessing()
       }
     },
-    [showFeedback, startBulkProcessing, stopBulkProcessing, refreshTable],
+    [showFeedback, startBulkProcessing, stopBulkProcessing, queryClient, refreshTable],
   )
 
   return {

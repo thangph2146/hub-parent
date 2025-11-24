@@ -201,7 +201,7 @@ export async function bulkSoftDeleteTags(ctx: AuthContext, ids: string[]): Promi
   })
 
   const foundIds = tags.map(t => t.id)
-  const notFoundIds = ids.filter(id => !foundIds.includes(id))
+  const _notFoundIds = ids.filter(id => !foundIds.includes(id))
 
   if (tags.length === 0) {
     const allTags = await prisma.tag.findMany({
@@ -254,7 +254,7 @@ export async function bulkSoftDeleteTags(ctx: AuthContext, ids: string[]): Promi
   if (result.count > 0) {
     // Emit events song song
     const emitPromises = tags.map((tag) => 
-      emitTagUpsert(tag.id, "active").catch((error) => {
+      emitTagUpsert(tag.id, "active").catch((_error) => {
         return null
       })
     )
@@ -370,7 +370,7 @@ export async function bulkRestoreTags(ctx: AuthContext, ids: string[]): Promise<
   if (result.count > 0) {
     // Emit events song song
     const emitPromises = tagsToRestore.map((tag) => 
-      emitTagUpsert(tag.id, "deleted").catch((error) => {
+      emitTagUpsert(tag.id, "deleted").catch((_error) => {
         return null
       })
     )
@@ -464,7 +464,7 @@ export async function bulkHardDeleteTags(ctx: AuthContext, ids: string[]): Promi
       const previousStatus: "active" | "deleted" = tag.deletedAt ? "deleted" : "active"
       try {
         emitTagRemove(tag.id, previousStatus)
-      } catch (error) {
+      } catch {
       }
     })
 

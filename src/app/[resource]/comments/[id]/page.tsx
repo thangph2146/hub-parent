@@ -4,7 +4,7 @@ import { CommentDetail } from "@/features/admin/comments/components/comment-deta
 import { validateRouteId } from "@/lib/validation/route-params"
 import { FormPageSuspense } from "@/features/admin/resources/components"
 import { getCommentById } from "@/features/admin/comments/server/queries"
-import { truncateBreadcrumbLabel } from "@/features/admin/resources/utils"
+import { createDetailBreadcrumbs, truncateBreadcrumbLabel } from "@/features/admin/resources/utils"
 
 /**
  * Comment Detail Page Metadata (Dynamic)
@@ -67,10 +67,12 @@ export default async function CommentDetailPage({
     return (
       <>
         <AdminHeader
-          breadcrumbs={[
-            { label: "Bình luận", href: "/admin/comments" },
-            { label: authorName, href: `/admin/comments/${id}` },
-          ]}
+          breadcrumbs={createDetailBreadcrumbs({
+            listLabel: "Bình luận",
+            listPath: "/admin/comments",
+            detailLabel: authorName,
+            detailPath: `/admin/comments/${id}`,
+          })}
         />
         <div className="flex flex-1 flex-col gap-4 p-4">
           <div className="flex min-h-[400px] flex-1 items-center justify-center">
@@ -89,10 +91,12 @@ export default async function CommentDetailPage({
   return (
     <>
       <AdminHeader
-        breadcrumbs={[
-          { label: "Bình luận", href: "/admin/comments" },
-          { label: authorName, isActive: true },
-        ]}
+        breadcrumbs={createDetailBreadcrumbs({
+          listLabel: "Bình luận",
+          listPath: "/admin/comments",
+          detailLabel: authorName,
+          detailPath: `/admin/comments/${id}`,
+        })}
       />
       <div className="flex flex-1 flex-col gap-4 p-4">
         <FormPageSuspense fieldCount={6} sectionCount={1}>

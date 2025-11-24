@@ -69,7 +69,7 @@ export function useCommentsSocketBridge() {
     if (!session?.user?.id) return
 
     const detachUpsert = on<[CommentUpsertPayload]>("comment:upsert", (payload) => {
-      const { comment, previousStatus, newStatus } = payload as CommentUpsertPayload
+      const { comment } = payload as CommentUpsertPayload
       const rowStatus: "active" | "deleted" = comment.deletedAt ? "deleted" : "active"
 
       // Update detail query cache nếu có
@@ -117,10 +117,6 @@ export function useCommentsSocketBridge() {
             total = total + 1
           } else {
             // On pages > 1 we only adjust total if comment previously existed
-            if (previousStatus && previousStatus !== rowStatus) {
-              // If moved to this status from different view and this page is not 1, we can't insert accurately
-              // Leave as is until manual refresh
-            }
           }
         } else if (existingIndex >= 0) {
           // Comment đang ở trong list nhưng không match với view hiện tại (ví dụ: chuyển từ active sang deleted)
@@ -152,7 +148,7 @@ export function useCommentsSocketBridge() {
 
     // Batch upsert handler (tối ưu cho bulk operations)
     const detachBatchUpsert = on<[{ comments: CommentRow[]; previousStatus: "active" | "deleted" | null }]>("comment:batch-upsert", (payload) => {
-      const { comments, previousStatus } = payload as { comments: CommentRow[]; previousStatus: "active" | "deleted" | null }
+      const { comments } = payload as { comments: CommentRow[]; previousStatus: "active" | "deleted" | null }
 
       let anyUpdated = false
       for (const comment of comments) {

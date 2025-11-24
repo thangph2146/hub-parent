@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import { AdminHeader } from "@/components/layouts/headers"
 import { MessagesPage } from "@/features/admin/chat/components/messages-page"
 import { MessagesPageSuspense } from "@/features/admin/resources/components"
+import { createNestedBreadcrumbs } from "@/features/admin/resources/utils"
 
 export const metadata: Metadata = {
   title: "Hộp thư đến",
@@ -12,10 +13,11 @@ export default async function MessagesInboxPage() {
   return (
     <>
       <AdminHeader
-        breadcrumbs={[
-          { label: "Tin nhắn", href: "/admin/messages" },
-          { label: "Hộp thư đến", isActive: true },
-        ]}
+        breadcrumbs={createNestedBreadcrumbs({
+          parentLabel: "Tin nhắn",
+          parentPath: "/admin/messages",
+          currentLabel: "Hộp thư đến",
+        })}
       />
       <div className="flex flex-1 flex-col overflow-hidden">
         <MessagesPageSuspense>

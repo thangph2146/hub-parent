@@ -32,7 +32,6 @@ import { useCommentRowActions } from "@/features/admin/comments/utils/row-action
 import type { AdminCommentsListParams } from "@/lib/query-keys"
 import type { CommentRow, CommentsResponse, CommentsTableClientProps } from "../types"
 import { COMMENT_CONFIRM_MESSAGES, COMMENT_LABELS } from "../constants"
-import { resourceLogger } from "@/lib/config"
 
 export function CommentsTableClient({
   canDelete = false,
@@ -279,7 +278,7 @@ export function CommentsTableClient({
       selectedIds,
       selectedRows,
       clearSelection,
-      refresh,
+      refresh: _refresh,
     }: {
       selectedIds: string[]
       selectedRows: CommentRow[]
@@ -379,7 +378,7 @@ export function CommentsTableClient({
     ({
       selectedIds,
       clearSelection,
-      refresh,
+      refresh: _refresh,
     }: {
       selectedIds: string[]
       clearSelection: () => void

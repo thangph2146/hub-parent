@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import { AdminHeader } from "@/components/layouts/headers"
 import { StudentCreate } from "@/features/admin/students/components/student-create"
 import { FormPageSuspense } from "@/features/admin/resources/components"
+import { createCreateBreadcrumbs } from "@/features/admin/resources/utils"
 
 /**
  * Student Create Page Metadata
@@ -29,10 +30,10 @@ export default async function StudentCreatePage() {
   return (
     <>
       <AdminHeader
-        breadcrumbs={[
-          { label: "Học sinh", href: "/admin/students" },
-          { label: "Tạo mới", isActive: true },
-        ]}
+        breadcrumbs={createCreateBreadcrumbs({
+          listLabel: "Học sinh",
+          listPath: "/admin/students",
+        })}
       />
       <div className="flex flex-1 flex-col gap-4 p-4">
         <FormPageSuspense fieldCount={8} sectionCount={2}>

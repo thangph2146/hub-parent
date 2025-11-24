@@ -233,7 +233,7 @@ export async function bulkSoftDeleteRoles(ctx: AuthContext, ids: string[]): Prom
   })
 
   const foundIds = roles.map(r => r.id)
-  const notFoundIds = ids.filter(id => !foundIds.includes(id))
+  const _notFoundIds = ids.filter(id => !foundIds.includes(id))
 
   // Check if any role is super_admin
   const superAdminRole = roles.find((r) => r.name === "super_admin")
@@ -320,7 +320,7 @@ export async function bulkSoftDeleteRoles(ctx: AuthContext, ids: string[]): Prom
   if (result.count > 0 && roles.length > 0) {
     // Emit events song song
     const emitPromises = roles.map((role) => 
-      emitRoleUpsert(role.id, "active").catch((error) => {
+      emitRoleUpsert(role.id, "active").catch((_error) => {
         return null
       })
     )
@@ -492,7 +492,7 @@ export async function bulkRestoreRoles(ctx: AuthContext, ids: string[]): Promise
   if (result.count > 0 && rolesToRestore.length > 0) {
     // Emit events song song
     const emitPromises = rolesToRestore.map((role) => 
-      emitRoleUpsert(role.id, "deleted").catch((error) => {
+      emitRoleUpsert(role.id, "deleted").catch((_error) => {
         return null
       })
     )
@@ -593,16 +593,16 @@ export async function bulkHardDeleteRoles(ctx: AuthContext, ids: string[]): Prom
   })
 
   const foundIds = roles.map(r => r.id)
-  const notFoundIds = ids.filter(id => !foundIds.includes(id))
+  const _notFoundIds = ids.filter(id => !foundIds.includes(id))
   
   // Log để debug với đầy đủ thông tin
   logActionFlow("roles", "bulk-hard-delete", "start", {
     requestedCount: ids.length,
     foundCount: roles.length,
-    notFoundCount: notFoundIds.length,
+    notFoundCount: _notFoundIds.length,
     requestedIds: ids,
     foundIds,
-    notFoundIds,
+    _notFoundIds,
   })
 
   // Check if any role is super_admin
@@ -623,7 +623,7 @@ export async function bulkHardDeleteRoles(ctx: AuthContext, ids: string[]): Prom
     logActionFlow("roles", "bulk-hard-delete", "error", {
       requestedCount: ids.length,
       foundCount: roles.length,
-      notFoundCount: notFoundIds.length,
+      notFoundCount: _notFoundIds.length,
       error: errorMessage,
     })
     throw new ApplicationError(errorMessage, 400)
@@ -642,7 +642,7 @@ export async function bulkHardDeleteRoles(ctx: AuthContext, ids: string[]): Prom
       const previousStatus: "active" | "deleted" = role.deletedAt ? "deleted" : "active"
       try {
         emitRoleRemove(role.id, previousStatus)
-      } catch (error) {
+      } catch {
       }
     })
 

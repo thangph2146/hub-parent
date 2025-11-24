@@ -4,7 +4,7 @@ import { NotificationDetail } from "@/features/admin/notifications/components/no
 import { validateRouteId } from "@/lib/validation/route-params"
 import { FormPageSuspense } from "@/features/admin/resources/components"
 import { getNotificationById } from "@/features/admin/notifications/server/queries"
-import { truncateBreadcrumbLabel } from "@/features/admin/resources/utils"
+import { createDetailBreadcrumbs, truncateBreadcrumbLabel } from "@/features/admin/resources/utils"
 
 /**
  * Notification Detail Page Metadata (Dynamic)
@@ -65,10 +65,12 @@ export default async function NotificationDetailPage({
     return (
       <>
         <AdminHeader
-          breadcrumbs={[
-            { label: "Thông báo", href: "/admin/notifications" },
-            { label: notificationTitle, href: `/admin/notifications/${id}` },
-          ]}
+          breadcrumbs={createDetailBreadcrumbs({
+            listLabel: "Thông báo",
+            listPath: "/admin/notifications",
+            detailLabel: notificationTitle,
+            detailPath: `/admin/notifications/${id}`,
+          })}
         />
         <div className="flex flex-1 flex-col gap-4 p-4">
           <div className="flex min-h-[400px] flex-1 items-center justify-center">
@@ -87,10 +89,12 @@ export default async function NotificationDetailPage({
   return (
     <>
       <AdminHeader
-        breadcrumbs={[
-          { label: "Thông báo", href: "/admin/notifications" },
-          { label: notificationTitle, isActive: true },
-        ]}
+        breadcrumbs={createDetailBreadcrumbs({
+          listLabel: "Thông báo",
+          listPath: "/admin/notifications",
+          detailLabel: notificationTitle,
+          detailPath: `/admin/notifications/${id}`,
+        })}
       />
       <div className="flex flex-1 flex-col gap-4 p-4">
         <FormPageSuspense fieldCount={6} sectionCount={1}>

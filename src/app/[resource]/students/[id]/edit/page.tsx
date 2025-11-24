@@ -4,7 +4,7 @@ import { StudentEdit } from "@/features/admin/students/components/student-edit"
 import { validateRouteId } from "@/lib/validation/route-params"
 import { FormPageSuspense } from "@/features/admin/resources/components"
 import { getStudentById } from "@/features/admin/students/server/queries"
-import { truncateBreadcrumbLabel } from "@/features/admin/resources/utils"
+import { createEditBreadcrumbs, truncateBreadcrumbLabel } from "@/features/admin/resources/utils"
 import { getAuthInfo } from "@/features/admin/resources/server"
 
 /**
@@ -67,11 +67,12 @@ export default async function StudentEditPage({ params }: StudentEditPageProps) 
     return (
       <>
         <AdminHeader
-          breadcrumbs={[
-            { label: "Học sinh", href: "/admin/students" },
-            { label: studentName, href: `/admin/students/${id}` },
-            { label: "Chỉnh sửa", href: `/admin/students/${id}/edit` },
-          ]}
+          breadcrumbs={createEditBreadcrumbs({
+            listLabel: "Học sinh",
+            listPath: "/admin/students",
+            detailLabel: studentName,
+            detailPath: `/admin/students/${id}`,
+          })}
         />
         <div className="flex flex-1 flex-col gap-4 p-4">
           <div className="flex min-h-[400px] flex-1 items-center justify-center">
@@ -90,11 +91,12 @@ export default async function StudentEditPage({ params }: StudentEditPageProps) 
   return (
     <>
       <AdminHeader
-        breadcrumbs={[
-          { label: "Học sinh", href: "/admin/students" },
-          { label: studentName, href: `/admin/students/${id}` },
-          { label: "Chỉnh sửa", isActive: true },
-        ]}
+        breadcrumbs={createEditBreadcrumbs({
+          listLabel: "Học sinh",
+          listPath: "/admin/students",
+          detailLabel: studentName,
+          detailPath: `/admin/students/${id}`,
+        })}
       />
       <div className="flex flex-1 flex-col gap-4 p-4">
         <FormPageSuspense fieldCount={8} sectionCount={2}>

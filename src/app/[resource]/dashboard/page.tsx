@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import { AdminHeader } from "@/components/layouts/headers"
 import { DashboardWelcome } from "@/features/admin/dashboard/dashboard-welcome"
+import { createListBreadcrumbs } from "@/features/admin/resources/utils"
 
 /**
  * Dashboard Page Metadata
@@ -17,14 +18,7 @@ export const metadata: Metadata = {
 export default function Page() {
   return (
     <>
-      <AdminHeader
-        breadcrumbs={[
-          {
-            label: "Dashboard",
-            isActive: true,
-          },
-        ]}
-      />
+      <AdminHeader breadcrumbs={createListBreadcrumbs({ listLabel: "Dashboard" })} />
       <DashboardWelcome />
     </>
   )

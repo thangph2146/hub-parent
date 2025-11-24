@@ -4,7 +4,7 @@ import { RoleEdit } from "@/features/admin/roles/components/role-edit"
 import { validateRouteId } from "@/lib/validation/route-params"
 import { FormPageSuspense } from "@/features/admin/resources/components"
 import { getRoleById } from "@/features/admin/roles/server/queries"
-import { truncateBreadcrumbLabel } from "@/features/admin/resources/utils"
+import { createEditBreadcrumbs, truncateBreadcrumbLabel } from "@/features/admin/resources/utils"
 
 /**
  * Role Edit Page Metadata (Dynamic)
@@ -63,11 +63,12 @@ export default async function RoleEditPage({
     return (
       <>
         <AdminHeader
-          breadcrumbs={[
-            { label: "Vai trò", href: "/admin/roles" },
-            { label: roleName, href: `/admin/roles/${id}` },
-            { label: "Chỉnh sửa", href: `/admin/roles/${id}/edit` },
-          ]}
+          breadcrumbs={createEditBreadcrumbs({
+            listLabel: "Vai trò",
+            listPath: "/admin/roles",
+            detailLabel: roleName,
+            detailPath: `/admin/roles/${id}`,
+          })}
         />
         <div className="flex flex-1 flex-col gap-4 p-4">
           <div className="flex min-h-[400px] flex-1 items-center justify-center">
@@ -86,11 +87,12 @@ export default async function RoleEditPage({
   return (
     <>
       <AdminHeader
-        breadcrumbs={[
-          { label: "Vai trò", href: "/admin/roles" },
-          { label: roleName, href: `/admin/roles/${id}` },
-          { label: "Chỉnh sửa", isActive: true },
-        ]}
+        breadcrumbs={createEditBreadcrumbs({
+          listLabel: "Vai trò",
+          listPath: "/admin/roles",
+          detailLabel: roleName,
+          detailPath: `/admin/roles/${id}`,
+        })}
       />
       <div className="flex flex-1 flex-col gap-4 p-4">
         <FormPageSuspense fieldCount={6} sectionCount={2}>

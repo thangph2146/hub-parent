@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useMemo, useEffect, useRef, useState } from "react"
+import { useCallback, useMemo, useState } from "react"
 import { useResourceRouter } from "@/hooks/use-resource-segment"
 import { Plus, RotateCcw, Trash2, AlertTriangle } from "lucide-react"
 
@@ -288,7 +288,7 @@ export function CategoriesTableClient({
     [executeBulkAction, setDeleteConfirm],
   )
 
-  const buildInitialParams = useCallback(
+  const _buildInitialParams = useCallback(
     (data: DataTableResult<CategoryRow>): AdminCategoriesListParams => ({
       status: "active",
       page: data.page,

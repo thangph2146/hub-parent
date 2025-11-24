@@ -4,7 +4,7 @@ import { TagEdit } from "@/features/admin/tags/components/tag-edit"
 import { validateRouteId } from "@/lib/validation/route-params"
 import { FormPageSuspense } from "@/features/admin/resources/components"
 import { getTagById } from "@/features/admin/tags/server/queries"
-import { truncateBreadcrumbLabel } from "@/features/admin/resources/utils"
+import { createEditBreadcrumbs, truncateBreadcrumbLabel } from "@/features/admin/resources/utils"
 
 /**
  * Tag Edit Page Metadata (Dynamic)
@@ -63,11 +63,12 @@ export default async function TagEditPage({ params }: TagEditPageProps) {
     return (
       <>
         <AdminHeader
-          breadcrumbs={[
-            { label: "Thẻ tag", href: "/admin/tags" },
-            { label: tagName, href: `/admin/tags/${id}` },
-            { label: "Chỉnh sửa", href: `/admin/tags/${id}/edit` },
-          ]}
+          breadcrumbs={createEditBreadcrumbs({
+            listLabel: "Thẻ tag",
+            listPath: "/admin/tags",
+            detailLabel: tagName,
+            detailPath: `/admin/tags/${id}`,
+          })}
         />
         <div className="flex flex-1 flex-col gap-4 p-4">
           <div className="flex min-h-[400px] flex-1 items-center justify-center">
@@ -86,11 +87,12 @@ export default async function TagEditPage({ params }: TagEditPageProps) {
   return (
     <>
       <AdminHeader
-        breadcrumbs={[
-          { label: "Thẻ tag", href: "/admin/tags" },
-          { label: tagName, href: `/admin/tags/${id}` },
-          { label: "Chỉnh sửa", isActive: true },
-        ]}
+        breadcrumbs={createEditBreadcrumbs({
+          listLabel: "Thẻ tag",
+          listPath: "/admin/tags",
+          detailLabel: tagName,
+          detailPath: `/admin/tags/${id}`,
+        })}
       />
       <div className="flex flex-1 flex-col gap-4 p-4">
         <FormPageSuspense fieldCount={6} sectionCount={1}>
