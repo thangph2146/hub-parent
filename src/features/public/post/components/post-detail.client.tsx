@@ -40,7 +40,7 @@ export function PostDetailClient({ post }: PostDetailClientProps) {
           <div className="flex flex-wrap items-center gap-4 sm:gap-6 text-sm text-muted-foreground pt-2 border-t">
             <div className="flex items-center gap-2">
               <User className="h-4 w-4" />
-              <span className="font-medium">{post.author.name || post.author.email}</span>
+              <span className="font-medium">{post.author.name ?? post.author.email}</span>
             </div>
             {post.publishedAt && (
               <div className="flex items-center gap-2">
