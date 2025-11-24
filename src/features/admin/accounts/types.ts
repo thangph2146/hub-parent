@@ -22,12 +22,6 @@ export interface AccountProfile {
   [key: string]: unknown
 }
 
-export interface UpdateAccountInput {
-  name?: string | null
-  bio?: string | null
-  phone?: string | null
-  address?: string | null
-  password?: string
-  avatar?: string | null
-}
+// Re-export UpdateAccountInput from schemas to ensure consistency
+export type { UpdateAccountInput } from "./server/schemas"
 

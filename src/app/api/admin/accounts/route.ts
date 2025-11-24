@@ -12,7 +12,7 @@ import {
 } from "@/features/admin/resources/server"
 import { createGetRoute, createPutRoute } from "@/lib/api/api-route-wrapper"
 import type { ApiRouteContext } from "@/lib/api/types"
-import type { UpdateAccountInput } from "@/features/admin/accounts/types"
+import type { UpdateAccountInput } from "@/features/admin/accounts/server/schemas"
 
 async function getAccountHandler(_req: NextRequest, context: ApiRouteContext) {
   const userId = context.session.user?.id
