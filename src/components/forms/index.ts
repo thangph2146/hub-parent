@@ -6,4 +6,5 @@
 
 export { SignIn } from "./sign-in-form"
 export { SignUpForm } from "./sign-up-form"
+export { ForgotPasswordForm } from "./forgot-password-form"
 

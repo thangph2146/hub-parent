@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import { getSession } from "@/lib/auth/auth-server"
 import { PublicHeader } from "@/components/layouts/headers"
 import { PermissionGate } from "@/components/layouts/shared"
+import { PublicFooter } from "@/components/layouts/footers"
 
 /**
  * Auth Layout Metadata
@@ -61,6 +62,7 @@ export default async function AuthLayout({
         </PermissionGate>
         </div>
       </div>
+      <PublicFooter />
     </>
   )
 }

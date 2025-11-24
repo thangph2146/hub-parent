@@ -223,10 +223,10 @@ export function SignUpForm({
           </form>
           <div className="bg-muted relative hidden md:block">
             <Image
-              src="https://ui.shadcn.com/placeholder.svg"
+              src="https://hub.edu.vn/DATA/IMAGES/2025/06/06/20250606095214z6676928339374_824596735893cad9e9d4402075fcccd2.jpg"
               alt="Hình ảnh"
-              width={500}
-              height={500}
+              width={1000}
+              height={1000}
               loading="eager"
               className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
             />    

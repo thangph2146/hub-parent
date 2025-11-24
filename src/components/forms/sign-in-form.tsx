@@ -165,7 +165,7 @@ export function SignIn({
           <form onSubmit={handleSubmit} className="p-6 md:p-8">
             <FieldGroup>
               <div className="flex flex-col items-center gap-2 text-center">
-                <h1 className="text-2xl font-bold">Chào mừng trở lại</h1>
+                <h1 className="text-2xl font-bold">Đăng nhập vào hệ thống</h1>
               </div>
               {error && (
                 <div className="rounded-lg bg-destructive/10 p-3 text-sm text-destructive">
@@ -188,7 +188,7 @@ export function SignIn({
                 <div className="flex items-center">
                   <FieldLabel htmlFor="password">Mật khẩu</FieldLabel>
                   <Link
-                    href="/forgot-password"
+                    href="/auth/forgot-password"
                     className="ml-auto text-sm underline-offset-2 hover:underline"
                   >
                     Quên mật khẩu?
@@ -257,10 +257,10 @@ export function SignIn({
           </form>
           <div className="bg-muted relative hidden md:block">
             <Image
-              src="https://ui.shadcn.com/placeholder.svg"
+              src="https://hub.edu.vn/DATA/IMAGES/2024/12/31/20241231235033-1vehub.jpg"
               alt="Hình ảnh"
-              width={500}
-              height={500}
+              width={1000}
+              height={1000}
               loading="eager"
               className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
             />    
