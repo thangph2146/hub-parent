@@ -36,6 +36,6 @@ export async function NotificationDetail({ notificationId, backUrl = "/admin/not
   const notificationForDetail: NotificationDetailData = serializeNotificationDetail(notification) as NotificationDetailData
 
   // Pass data to client component for rendering
-  return <NotificationDetailClient notification={notificationForDetail} backUrl={backUrl} />
+  return <NotificationDetailClient notificationId={notificationId} notification={notificationForDetail} backUrl={backUrl} />
 }
 

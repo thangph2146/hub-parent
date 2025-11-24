@@ -24,6 +24,7 @@ import { Card } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { formatDateVi } from "@/features/admin/users/utils"
 import { cn } from "@/lib/utils"
+import { useResourceDetailData, useResourceDetailLogger } from "@/features/admin/resources/hooks"
 
 const NOTIFICATION_KINDS: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
   MESSAGE: { label: "Tin nhắn", variant: "default" },
@@ -55,11 +56,32 @@ export interface NotificationDetailData extends Record<string, unknown> {
 }
 
 export interface NotificationDetailClientProps {
+  notificationId: string
   notification: NotificationDetailData
   backUrl?: string
 }
 
-export function NotificationDetailClient({ notification, backUrl = "/admin/notifications" }: NotificationDetailClientProps) {
+export function NotificationDetailClient({ notificationId, notification, backUrl = "/admin/notifications" }: NotificationDetailClientProps) {
+  // Fetch fresh data từ API để đảm bảo data mới nhất
+  // Notifications không có adminNotifications.detail, sử dụng notifications.admin() thay thế
+  const { data: detailData, isFetched, isFromApi, fetchedData } = useResourceDetailData({
+    initialData: notification,
+    resourceId: notificationId,
+    detailQueryKey: (id: string) => ["notifications", "admin", "detail", id] as const,
+    resourceName: "notifications",
+    fetchOnMount: true,
+  })
+
+  // Log detail action và data structure (sử dụng hook chuẩn)
+  useResourceDetailLogger({
+    resourceName: "notifications",
+    resourceId: notificationId,
+    data: detailData,
+    isFetched,
+    isFromApi,
+    fetchedData,
+  })
+
   const detailFields: ResourceDetailField<NotificationDetailData>[] = []
 
   const detailSections: ResourceDetailSection<NotificationDetailData>[] = [
@@ -68,7 +90,7 @@ export function NotificationDetailClient({ notification, backUrl = "/admin/notif
       title: "Thông tin cơ bản",
       description: "Thông tin chính của thông báo",
       fieldsContent: (_fields, data) => {
-        const notificationData = data as NotificationDetailData
+        const notificationData = (data || detailData) as NotificationDetailData
         const kindConfigData = NOTIFICATION_KINDS[notificationData.kind] || { label: notificationData.kind, variant: "secondary" as const }
         
         return (
@@ -252,11 +274,11 @@ export function NotificationDetailClient({ notification, backUrl = "/admin/notif
 
   return (
     <ResourceDetailClient<NotificationDetailData>
-      data={notification}
+      data={detailData}
       fields={detailFields}
       detailSections={detailSections}
-      title={notification.title}
-      description={`Thông báo ${(NOTIFICATION_KINDS[notification.kind] || { label: notification.kind }).label.toLowerCase()} cho ${notification.user?.email || "người dùng"}`}
+      title={detailData.title}
+      description={`Thông báo ${(NOTIFICATION_KINDS[detailData.kind] || { label: detailData.kind }).label.toLowerCase()} cho ${detailData.user?.email || "người dùng"}`}
       backUrl={backUrl}
       backLabel="Quay lại danh sách"
     />
