@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useMemo } from "react"
+import { useCallback, useMemo, useState } from "react"
 import { RotateCcw, Trash2, AlertTriangle } from "lucide-react"
 
 import { ConfirmDialog } from "@/components/dialogs"
@@ -15,6 +15,7 @@ import type { ResourceViewMode } from "@/features/admin/resources/types"
 import {
   useResourceTableLoader,
   useResourceTableRefresh,
+  useResourceTableLogger,
 } from "@/features/admin/resources/hooks"
 import { normalizeSearch, sanitizeFilters } from "@/features/admin/resources/utils"
 import { apiClient } from "@/lib/api/axios"
@@ -45,6 +46,9 @@ export function ContactRequestsTableClient({
   const { feedback, showFeedback, handleFeedbackOpenChange } = useContactRequestFeedback()
   const { deleteConfirm, setDeleteConfirm, handleDeleteConfirm } = useContactRequestDeleteConfirm()
 
+  // Track current view để log khi view thay đổi
+  const [currentViewId, setCurrentViewId] = useState<string>("new")
+
   const getInvalidateQueryKey = useCallback(() => queryKeys.adminContactRequests.all(), [])
   const { onRefreshReady, refresh: refreshTable } = useResourceTableRefresh({
     queryClient,
@@ -70,6 +74,35 @@ export function ContactRequestsTableClient({
     canUpdate,
     isSocketConnected,
     showFeedback,
+  })
+
+  // Log table structure khi data thay đổi sau refetch hoặc khi view thay đổi
+  useResourceTableLogger<ContactRequestRow>({
+    resourceName: "contact-requests",
+    initialData,
+    initialDataByView: initialData ? { new: initialData } : undefined,
+    currentViewId,
+    queryClient,
+    buildQueryKey: (params) => queryKeys.adminContactRequests.list({
+      ...params,
+      search: undefined,
+      filters: undefined,
+    }),
+    columns: ["id", "name", "email", "phone", "subject", "status", "priority", "isRead", "assignedToName", "createdAt", "deletedAt"],
+    getRowData: (row) => ({
+      id: row.id,
+      name: row.name,
+      email: row.email,
+      phone: row.phone,
+      subject: row.subject,
+      status: row.status,
+      priority: row.priority,
+      isRead: row.isRead,
+      assignedToName: row.assignedToName,
+      createdAt: row.createdAt,
+      deletedAt: row.deletedAt,
+    }),
+    cacheVersion: bulkState.isProcessing ? undefined : cacheVersion, // Skip logging khi đang bulk
   })
 
   const handleToggleReadWithRefresh = useCallback(
@@ -533,6 +566,7 @@ export function ContactRequestsTableClient({
         initialDataByView={initialDataByView}
         fallbackRowCount={6}
         onRefreshReady={onRefreshReady}
+        onViewChange={setCurrentViewId}
       />
 
       {/* Delete Confirmation Dialog */}

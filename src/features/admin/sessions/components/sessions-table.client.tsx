@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useMemo } from "react"
+import { useCallback, useMemo, useState } from "react"
 import { useResourceRouter } from "@/hooks/use-resource-segment"
 import { Plus, RotateCcw, Trash2, AlertTriangle } from "lucide-react"
 
@@ -13,6 +13,7 @@ import type { ResourceViewMode } from "@/features/admin/resources/types"
 import {
   useResourceTableRefresh,
   useResourceTableLoader,
+  useResourceTableLogger,
 } from "@/features/admin/resources/hooks"
 import { sanitizeFilters, normalizeSearch } from "@/features/admin/resources/utils"
 import { apiClient } from "@/lib/api/axios"
@@ -43,6 +44,9 @@ export function SessionsTableClient({
   const { feedback, showFeedback, handleFeedbackOpenChange } = useSessionFeedback()
   const { deleteConfirm, setDeleteConfirm, handleDeleteConfirm } = useSessionDeleteConfirm()
 
+  // Track current view để log khi view thay đổi
+  const [currentViewId, setCurrentViewId] = useState<string>("active")
+
   const getInvalidateQueryKey = useCallback(() => queryKeys.adminSessions.all(), [])
   const { onRefreshReady, refresh: refreshTable } = useResourceTableRefresh({
     queryClient,
@@ -64,6 +68,32 @@ export function SessionsTableClient({
     canRestore,
     canManage,
     showFeedback,
+  })
+
+  // Log table structure khi data thay đổi sau refetch hoặc khi view thay đổi
+  useResourceTableLogger<SessionRow>({
+    resourceName: "sessions",
+    initialData,
+    initialDataByView: initialData ? { active: initialData } : undefined,
+    currentViewId,
+    queryClient,
+    buildQueryKey: (params) => queryKeys.adminSessions.list({
+      ...params,
+      search: undefined,
+      filters: undefined,
+    }),
+    columns: ["id", "userId", "userEmail", "ipAddress", "userAgent", "isActive", "createdAt", "deletedAt"],
+    getRowData: (row) => ({
+      id: row.id,
+      userId: row.userId,
+      userEmail: row.userEmail,
+      ipAddress: row.ipAddress,
+      userAgent: row.userAgent,
+      isActive: row.isActive,
+      createdAt: row.createdAt,
+      deletedAt: row.deletedAt,
+    }),
+    cacheVersion: bulkState.isProcessing ? undefined : cacheVersion, // Skip logging khi đang bulk
   })
 
   const handleToggleStatusWithRefresh = useCallback(
@@ -481,6 +511,7 @@ export function SessionsTableClient({
         fallbackRowCount={6}
         headerActions={headerActions}
         onRefreshReady={onRefreshReady}
+        onViewChange={setCurrentViewId}
       />
 
       {/* Delete Confirmation Dialog */}

@@ -1,9 +1,17 @@
+/**
+ * Hook để fetch roles từ API
+ * Sử dụng TanStack Query với createAdminQueryOptions để đảm bảo không cache
+ * Theo chuẩn Next.js 16: luôn fetch fresh data từ API
+ */
+
 "use client"
 
-import { useEffect, useMemo, useRef, useState } from "react"
+import { useMemo } from "react"
+import { useQuery } from "@tanstack/react-query"
 import { apiClient } from "@/lib/api/axios"
 import { apiRoutes } from "@/lib/api/routes"
-import { logger } from "@/lib/config"
+import { queryKeys } from "@/lib/query-keys"
+import { createAdminQueryOptions } from "@/features/admin/resources/config"
 import type { Role } from "../utils"
 
 export interface UseRolesOptions {
@@ -19,57 +27,35 @@ export interface UseRolesOptions {
 
 export function useRoles(options: UseRolesOptions = {}) {
   const { initialRoles = [], enabled = true } = options
-  const initialRolesProvided = useMemo(() => initialRoles.length > 0, [initialRoles])
+  // Sử dụng length trực tiếp thay vì useMemo để tránh React Compiler warning
+  const initialRolesProvided = initialRoles.length > 0
 
-  const [roles, setRoles] = useState<Role[]>(initialRoles)
-  const [isLoading, setIsLoading] = useState(enabled && !initialRolesProvided)
-  const [error, setError] = useState<Error | null>(null)
-  const hasFetchedRef = useRef(false)
-
-  // Đồng bộ state khi initialRoles thay đổi
-  useEffect(() => {
-    if (initialRolesProvided) {
-      setRoles(initialRoles)
-      setIsLoading(false)
-    }
-  }, [initialRoles, initialRolesProvided])
-
-  useEffect(() => {
-    if (!enabled || initialRolesProvided || hasFetchedRef.current) {
-      return
-    }
-
-    let isCancelled = false
-
-    async function fetchRoles() {
-      try {
-        hasFetchedRef.current = true
-        setIsLoading(true)
-        setError(null)
+  // Sử dụng TanStack Query với createAdminQueryOptions để đảm bảo không cache
+  // Theo chuẩn Next.js 16: luôn fetch fresh data từ API
+  const { data, isLoading, error } = useQuery(
+    createAdminQueryOptions<{ data: Role[] }>({
+      queryKey: queryKeys.roles.list(),
+      queryFn: async () => {
         const response = await apiClient.get<{ data: Role[] }>(apiRoutes.roles.list())
-        if (!isCancelled) {
-          setRoles(response.data.data)
-        }
-      } catch (err) {
-        const error = err instanceof Error ? err : new Error("Failed to fetch roles")
-        logger.error("Error fetching roles", error as Error)
-        if (!isCancelled) {
-          setError(error)
-        }
-      } finally {
-        if (!isCancelled) {
-          setIsLoading(false)
-        }
-      }
+        return response.data
+      },
+      enabled: enabled && !initialRolesProvided, // Chỉ fetch khi enabled và chưa có initialRoles
+      initialData: initialRolesProvided ? { data: initialRoles } : undefined, // Sử dụng initialRoles nếu có
+    })
+  )
+
+  // Ưu tiên: fetchedData > initialRoles
+  const roles = useMemo(() => {
+    if (data?.data) {
+      return data.data
     }
+    return initialRoles
+  }, [data, initialRoles])
 
-    fetchRoles()
-
-    return () => {
-      isCancelled = true
-    }
-  }, [enabled, initialRolesProvided])
-
-  return { roles, isLoading, error }
+  return {
+    roles,
+    isLoading: isLoading && !initialRolesProvided, // Chỉ loading khi đang fetch và chưa có initialRoles
+    error: error as Error | null,
+  }
 }
 

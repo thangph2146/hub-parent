@@ -3,7 +3,6 @@
 import * as React from "react"
 import { useQuery } from "@tanstack/react-query"
 import { apiClient } from "@/lib/api/axios"
-import { createAdminQueryOptions } from "../config"
 import type { ColumnFilterSelectOption } from "@/components/tables"
 
 interface UseFilterOptionsParams {

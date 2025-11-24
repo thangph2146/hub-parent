@@ -349,40 +349,72 @@ export function ResourceForm<T extends Record<string, unknown>>({
 
   // Helper function để scroll tới field có lỗi
   const scrollToField = (fieldName: string) => {
-    // Sử dụng requestAnimationFrame để đảm bảo DOM đã render
+    // Sử dụng double requestAnimationFrame để đảm bảo DOM đã render và errors đã hiển thị
     requestAnimationFrame(() => {
-      const fieldElement = document.getElementById(fieldName)
-      if (!fieldElement) return
+      requestAnimationFrame(() => {
+        const fieldElement = document.getElementById(fieldName)
+        if (!fieldElement) {
+          // Thử tìm bằng name attribute nếu không tìm thấy bằng id
+          const fieldByName = document.querySelector(`[name="${fieldName}"]`) as HTMLElement
+          if (!fieldByName) return
+          
+          // Scroll tới field được tìm thấy
+          fieldByName.scrollIntoView({ behavior: "smooth", block: "center" })
+          fieldByName.focus()
+          return
+        }
 
-      // Tìm scroll container (ScrollArea trong dialog/sheet hoặc window)
-      let scrollContainer: HTMLElement | null = null
-      
-      if (variant === "dialog") {
-        // Tìm ScrollArea trong Dialog
-        const dialog = fieldElement.closest('[role="dialog"]')
-        scrollContainer = dialog?.querySelector('[data-slot="scroll-area-viewport"]') as HTMLElement | null
-      } else if (variant === "sheet") {
-        // Tìm ScrollArea trong Sheet
-        const sheet = fieldElement.closest('[data-state]')
-        scrollContainer = sheet?.querySelector('[data-slot="scroll-area-viewport"]') as HTMLElement | null
-      }
+        // Tìm scroll container (ScrollArea trong dialog/sheet hoặc window)
+        let scrollContainer: HTMLElement | null = null
+        
+        if (variant === "dialog") {
+          // Tìm ScrollArea trong Dialog
+          const dialog = fieldElement.closest('[role="dialog"]')
+          scrollContainer = dialog?.querySelector('[data-slot="scroll-area-viewport"]') as HTMLElement | null
+        } else if (variant === "sheet") {
+          // Tìm ScrollArea trong Sheet
+          const sheet = fieldElement.closest('[data-state]')
+          scrollContainer = sheet?.querySelector('[data-slot="scroll-area-viewport"]') as HTMLElement | null
+        } else {
+          // Page variant: tìm scroll container từ form
+          const form = fieldElement.closest('form')
+          if (form) {
+            // Tìm parent scroll container
+            let parent = form.parentElement
+            while (parent && parent !== document.body) {
+              const overflow = window.getComputedStyle(parent).overflowY
+              if (overflow === "auto" || overflow === "scroll") {
+                scrollContainer = parent
+                break
+              }
+              parent = parent.parentElement
+            }
+          }
+        }
 
-      if (scrollContainer) {
-        // Scroll trong ScrollArea
-        const elementRect = fieldElement.getBoundingClientRect()
-        const containerRect = scrollContainer.getBoundingClientRect()
-        const scrollTop = scrollContainer.scrollTop + (elementRect.top - containerRect.top) - 20 // 20px offset
-        scrollContainer.scrollTo({ top: scrollTop, behavior: "smooth" })
-      } else {
-        // Fallback: scroll window
-        fieldElement.scrollIntoView({ behavior: "smooth", block: "center" })
-      }
+        if (scrollContainer) {
+          // Scroll trong ScrollArea
+          const elementRect = fieldElement.getBoundingClientRect()
+          const containerRect = scrollContainer.getBoundingClientRect()
+          const scrollTop = scrollContainer.scrollTop + (elementRect.top - containerRect.top) - 20 // 20px offset
+          scrollContainer.scrollTo({ top: Math.max(0, scrollTop), behavior: "smooth" })
+        } else {
+          // Fallback: scroll window
+          fieldElement.scrollIntoView({ behavior: "smooth", block: "center" })
+        }
 
-      // Focus vào input field
-      const input = fieldElement.querySelector<HTMLElement>("input, textarea, select")
-      if (input) {
-        input.focus()
-      }
+        // Focus vào input field với delay nhỏ để đảm bảo scroll đã hoàn thành
+        setTimeout(() => {
+          const input = fieldElement.querySelector<HTMLElement>("input, textarea, select, [role='combobox']")
+          if (input) {
+            input.focus()
+            // Highlight field với error state
+            if (input instanceof HTMLElement) {
+              input.scrollIntoView({ behavior: "smooth", block: "nearest" })
+            }
+          }
+        }, 100)
+      })
     })
   }
 
