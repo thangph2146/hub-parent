@@ -6,7 +6,7 @@
 import { useEffect, useRef, useMemo } from "react"
 import type { QueryClient } from "@tanstack/react-query"
 import type { DataTableResult } from "@/components/tables"
-import { resourceLogger } from "@/lib/config"
+import { resourceLogger } from "@/lib/config/resource-logger"
 import type { QueryKey } from "@tanstack/react-query"
 
 interface UseResourceTableLoggerOptions<T extends object> {
@@ -34,7 +34,7 @@ export function useResourceTableLogger<T extends object>({
   buildQueryKey,
   columns,
   getRowData,
-  cacheVersion,
+  cacheVersion: _cacheVersion,
 }: UseResourceTableLoggerOptions<T>) {
   const lastLoggedKeyRef = useRef<string | null>(null)
   const lastViewIdRef = useRef<string | undefined>(undefined)
@@ -64,7 +64,7 @@ export function useResourceTableLogger<T extends object>({
       search: undefined,
       filters: undefined,
     })
-  }, [currentInitialData?.page, currentInitialData?.limit, currentViewStatus, buildQueryKey])
+  }, [currentInitialData, currentViewStatus, buildQueryKey])
 
   // Log khi data thay đổi hoặc khi view thay đổi - Tối ưu: tránh duplicate
   useEffect(() => {

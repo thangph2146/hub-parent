@@ -9,7 +9,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query"
 import type { QueryKey } from "@tanstack/react-query"
 import { apiClient } from "@/lib/api/axios"
 import { apiRoutes } from "@/lib/api/routes"
-import { logger } from "@/lib/config"
+import { createAdminQueryOptions } from "../config"
 
 interface UseResourceDetailDataOptions<T> {
   /**
@@ -124,9 +124,8 @@ export function useResourceDetailData<T extends Record<string, unknown>>({
 
   // Fetch từ API khi cần để đảm bảo data luôn fresh (theo chuẩn Next.js 16)
   // Theo chuẩn Next.js 16: không cache admin data - luôn fetch fresh data từ API
-  // staleTime: 0 đảm bảo data luôn được coi là stale và refetch khi cần
-  // React Query tự động deduplicate requests với cùng queryKey, không cần lo về duplicate fetches
-  const { data: fetchedData, isFetched, isFetching } = useQuery<{ data: T }>({
+  // Sử dụng createAdminQueryOptions để đảm bảo consistency với tất cả admin features
+  const queryOptions = createAdminQueryOptions<{ data: T }>({
     queryKey,
     queryFn: async () => {
       // Chỉ log khi thực sự fetch (không log khi sử dụng cache)
@@ -135,13 +134,17 @@ export function useResourceDetailData<T extends Record<string, unknown>>({
       return response.data
     },
     enabled: fetchOnMount && !!resourceId, // Chỉ fetch khi fetchOnMount = true và có resourceId
-    staleTime: 0, // Luôn coi là stale - đảm bảo luôn fetch fresh data (theo chuẩn Next.js 16: không cache admin data)
-    gcTime: 5 * 60 * 1000, // 5 minutes - chỉ giữ cache trong memory để tránh flash of old data, không dùng cho fresh data
-    refetchOnMount: fetchOnMount && !!resourceId ? "always" : false, // Luôn refetch khi mount nếu fetchOnMount = true để đảm bảo data fresh (đặc biệt sau khi edit)
-    refetchOnWindowFocus: false, // Không refetch khi window focus (tránh unnecessary requests)
-    refetchOnReconnect: false, // Không refetch khi reconnect (tránh unnecessary requests)
     initialData: queryClient.getQueryData<{ data: T }>(queryKey) || { data: initialData }, // Sử dụng cache hoặc initialData làm initialData
   })
+  
+  // Override refetchOnMount nếu cần
+  if (fetchOnMount && !!resourceId) {
+    queryOptions.refetchOnMount = "always"
+  } else {
+    queryOptions.refetchOnMount = false
+  }
+  
+  const { data: fetchedData, isFetched, isFetching } = useQuery(queryOptions)
 
   // Ưu tiên: fetchedData > cachedData > initialData
   const detailData = useMemo(() => {

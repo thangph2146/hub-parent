@@ -191,7 +191,7 @@ export interface CreateBreadcrumbsOptions {
  * Tạo breadcrumbs cho list page
  */
 export function createListBreadcrumbs({
-  resourceSegment = DEFAULT_RESOURCE_SEGMENT,
+  resourceSegment: _resourceSegment = DEFAULT_RESOURCE_SEGMENT,
   listLabel,
 }: Pick<CreateBreadcrumbsOptions, "resourceSegment" | "listLabel">): AdminBreadcrumbItem[] {
   return [{ label: listLabel, isActive: true }]

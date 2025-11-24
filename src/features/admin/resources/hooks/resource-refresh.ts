@@ -29,7 +29,7 @@ const lastRefreshTime = new Map<string, number>()
 export async function runResourceRefresh({
   refresh,
   resource = "unknown",
-  skipIfSocketRefreshed = true,
+  skipIfSocketRefreshed: _skipIfSocketRefreshed = true,
   debounceMs = 500,
 }: RunResourceRefreshOptions): Promise<void> {
   if (!refresh) return

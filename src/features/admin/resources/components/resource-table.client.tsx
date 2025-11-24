@@ -25,7 +25,6 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { ChevronDown } from "lucide-react"
 import { useIsMobile } from "@/hooks/use-mobile"
-import { logger } from "@/lib/config"
 import { useDebouncedCallback } from "@/hooks/use-debounced-callback"
 import type {
   ResourceTableLoader,
@@ -70,6 +69,7 @@ export function ResourceTableClient<T extends object>({
   const [selectedIds, setSelectedIds] = useState<string[]>([])
   const [refreshKey, setRefreshKey] = useState(0)
   const lastViewIdRef = useRef<string | undefined>(currentViewId)
+  const [hasViewChanged, setHasViewChanged] = useState(false)
 
   const activeView =
     viewModes.find((view) => view.id === currentViewId) ?? viewModes[0]
@@ -127,12 +127,23 @@ export function ResourceTableClient<T extends object>({
       lastViewIdRef.current = currentViewId
       setCurrentViewId(viewId)
       setSelectedIds([])
+      setHasViewChanged(true)
       // Force refresh khi view thay đổi để fetch data mới từ API
       handleRefresh()
       onViewChange?.(viewId)
     },
     [currentViewId, handleRefresh, onViewChange],
   )
+  
+  // Reset hasViewChanged khi view ổn định (sử dụng timeout để tránh cascading renders)
+  useEffect(() => {
+    if (hasViewChanged) {
+      const timeoutId = setTimeout(() => {
+        setHasViewChanged(false)
+      }, 0)
+      return () => clearTimeout(timeoutId)
+    }
+  }, [hasViewChanged, currentViewId])
 
   // Notify parent về view hiện tại khi mount hoặc khi view thay đổi
   useEffect(() => {
@@ -176,8 +187,10 @@ export function ResourceTableClient<T extends object>({
 
   // Chỉ dùng initialData khi view chưa thay đổi (lần đầu mount)
   // Khi view thay đổi, không dùng initialData để force fetch data mới từ API
-  const viewChanged = lastViewIdRef.current !== currentViewId
-  const initialData = viewChanged ? undefined : initialDataByView?.[activeView.id]
+  const initialData = useMemo(() => {
+    if (hasViewChanged) return undefined
+    return initialDataByView?.[activeView.id]
+  }, [hasViewChanged, initialDataByView, activeView.id])
 
   const viewModeButtons = useMemo(() => {
     if (viewModes.length <= 1) return null

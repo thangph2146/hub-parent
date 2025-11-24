@@ -1,5 +1,7 @@
 /**
  * Shared Hooks for Admin Resources
+ * 
+ * Tất cả admin features nên sử dụng các hooks này để đảm bảo consistency
  */
 
 export { useResourceFormSubmit } from "./use-resource-form-submit"
@@ -24,4 +26,10 @@ export { useResourceDetailData } from "./use-resource-detail-data"
 
 // Table logger helpers
 export { useResourceTableLogger } from "./use-resource-table-logger"
+
+// Detail logger helpers
+export { useResourceDetailLogger } from "./use-resource-detail-logger"
+
+// Form logger helpers
+export { useResourceFormLogger } from "./use-resource-form-logger"
 
