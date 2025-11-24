@@ -132,15 +132,29 @@ export function ContactRequestEditClient({
     return null
   }
 
+  // Check nếu contactRequest đã bị xóa - redirect về detail page (vẫn cho xem nhưng không được chỉnh sửa)
+  const isDeleted = contactRequest.deletedAt !== null && contactRequest.deletedAt !== undefined
+
+  // Disable form khi record đã bị xóa (cho dialog/sheet mode)
+  const formDisabled = isDeleted && variant !== "page"
+  
+  // Wrap handleSubmit để prevent submit khi deleted
+  const handleSubmitWrapper = async (data: Partial<ContactRequestFormData>) => {
+    if (isDeleted) {
+      return { success: false, error: "Bản ghi đã bị xóa, không thể chỉnh sửa" }
+    }
+    return handleSubmit(data)
+  }
+
   const editFields = getBaseContactRequestFields(usersOptions)
 
   return (
     <ResourceForm<ContactRequestFormData>
       data={contactRequest}
-      fields={editFields}
-      onSubmit={handleSubmit}
+      fields={editFields.map(field => ({ ...field, disabled: formDisabled || field.disabled }))}
+      onSubmit={handleSubmitWrapper}
       title="Chỉnh sửa yêu cầu liên hệ"
-      description={`Cập nhật thông tin yêu cầu liên hệ: ${contactRequest?.subject || ""}`}
+      description={isDeleted ? "Bản ghi đã bị xóa, không thể chỉnh sửa" : `Cập nhật thông tin yêu cầu liên hệ: ${contactRequest?.subject || ""}`}
       submitLabel="Cập nhật"
       cancelLabel="Hủy"
       backUrl={backUrl}

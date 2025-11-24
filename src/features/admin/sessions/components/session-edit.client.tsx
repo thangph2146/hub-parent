@@ -100,17 +100,31 @@ export function SessionEditClient({
     return null
   }
 
+  // Check nếu session đã bị xóa - redirect về detail page (vẫn cho xem nhưng không được chỉnh sửa)
+  const isDeleted = session.deletedAt !== null && session.deletedAt !== undefined
+
+  // Disable form khi record đã bị xóa (cho dialog/sheet mode)
+  const formDisabled = isDeleted && variant !== "page"
+  
+  // Wrap handleSubmit để prevent submit khi deleted
+  const handleSubmitWrapper = async (data: Partial<SessionFormData>) => {
+    if (isDeleted) {
+      return { success: false, error: "Bản ghi đã bị xóa, không thể chỉnh sửa" }
+    }
+    return handleSubmit(data)
+  }
+
   const editFields = getBaseSessionFields(usersFromServer)
   const formSections = getSessionFormSections()
 
   return (
     <ResourceForm<SessionFormData>
       data={session}
-      fields={editFields}
+      fields={editFields.map(field => ({ ...field, disabled: formDisabled || field.disabled }))}
       sections={formSections}
-      onSubmit={handleSubmit}
+      onSubmit={handleSubmitWrapper}
       title="Chỉnh sửa session"
-      description="Cập nhật thông tin session"
+      description={isDeleted ? "Bản ghi đã bị xóa, không thể chỉnh sửa" : "Cập nhật thông tin session"}
       submitLabel="Lưu thay đổi"
       cancelLabel="Hủy"
       backUrl={backUrl}

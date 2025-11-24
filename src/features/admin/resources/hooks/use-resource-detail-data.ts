@@ -144,7 +144,8 @@ export function useResourceDetailData<T extends Record<string, unknown>>({
     queryOptions.refetchOnMount = false
   }
   
-  const { data: fetchedData, isFetched, isFetching } = useQuery(queryOptions)
+  // Theo chuẩn TanStack Query v5: sử dụng object syntax với spread operator
+  const { data: fetchedData, isFetched, isFetching } = useQuery({ ...queryOptions })
 
   // Ưu tiên: fetchedData > cachedData > initialData
   const detailData = useMemo(() => {

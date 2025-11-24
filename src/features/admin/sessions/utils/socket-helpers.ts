@@ -10,7 +10,7 @@ import type { AdminSessionsListParams } from "@/lib/query-keys"
  * Kiểm tra xem session có match với search term không
  */
 export function matchesSearch(search: string | undefined, row: SessionRow): boolean {
-  if (!search) return true
+  if (!search || typeof search !== "string") return true
   const term = search.trim().toLowerCase()
   if (!term) return true
   return [

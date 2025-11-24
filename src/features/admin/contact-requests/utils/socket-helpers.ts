@@ -9,7 +9,7 @@ import type { ContactRequestRow } from "../types"
  * Kiểm tra xem contact request có match với search term không
  */
 export function matchesSearch(search: string | undefined, row: ContactRequestRow): boolean {
-  if (!search) return true
+  if (!search || typeof search !== "string") return true
   const term = search.trim().toLowerCase()
   if (!term) return true
   return [

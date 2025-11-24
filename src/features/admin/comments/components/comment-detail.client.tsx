@@ -99,6 +99,9 @@ export function CommentDetailClient({ commentId, comment, backUrl = "/admin/comm
     fetchedData,
   })
 
+  // Ẩn approve switch khi record đã bị xóa (vẫn cho xem chi tiết nhưng không được chỉnh sửa)
+  const isDeleted = detailData.deletedAt !== null && detailData.deletedAt !== undefined
+
   const [isToggling, setIsToggling] = React.useState(false)
   const [approved, setApproved] = React.useState(detailData.approved)
 
@@ -109,7 +112,7 @@ export function CommentDetailClient({ commentId, comment, backUrl = "/admin/comm
 
   const handleToggleApprove = React.useCallback(
     async (newStatus: boolean) => {
-      if (!canApprove || isToggling) return
+      if (!canApprove || isToggling || isDeleted) return
 
       resourceLogger.detailAction({
         resource: "comments",
@@ -153,7 +156,7 @@ export function CommentDetailClient({ commentId, comment, backUrl = "/admin/comm
         setIsToggling(false)
       }
     },
-    [canApprove, commentId, isToggling, detailData, queryClient],
+    [canApprove, commentId, isToggling, detailData, queryClient, isDeleted],
   )
 
   const detailFields: ResourceDetailField<CommentDetailData>[] = []
@@ -186,7 +189,7 @@ export function CommentDetailClient({ commentId, comment, backUrl = "/admin/comm
             {/* Status */}
             <StatusField 
               approved={approved} 
-              canApprove={canApprove}
+              canApprove={canApprove && !isDeleted}
               onToggle={handleToggleApprove}
               isToggling={isToggling}
             />

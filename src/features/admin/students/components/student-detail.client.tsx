@@ -195,6 +195,9 @@ export function StudentDetailClient({ studentId, student, backUrl = "/admin/stud
     },
   ]
 
+  // Ẩn edit button khi record đã bị xóa (vẫn cho xem chi tiết nhưng không được chỉnh sửa)
+  const isDeleted = detailData.deletedAt !== null && detailData.deletedAt !== undefined
+
   return (
     <ResourceDetailClient<StudentDetailData>
       data={detailData}
@@ -205,14 +208,16 @@ export function StudentDetailClient({ studentId, student, backUrl = "/admin/stud
       backUrl={backUrl}
       onBack={() => navigateBack(backUrl)}
       actions={
-        <Button
-          variant="outline"
-          onClick={() => router.push(`/admin/students/${studentId}/edit`)}
-          className="gap-2"
-        >
-          <Edit className="h-4 w-4" />
-          Chỉnh sửa
-        </Button>
+        !isDeleted ? (
+          <Button
+            variant="outline"
+            onClick={() => router.push(`/admin/students/${studentId}/edit`)}
+            className="gap-2"
+          >
+            <Edit className="h-4 w-4" />
+            Chỉnh sửa
+          </Button>
+        ) : null
       }
     />
   )

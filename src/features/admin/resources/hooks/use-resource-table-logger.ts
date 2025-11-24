@@ -219,7 +219,8 @@ export function useResourceTableLogger<T extends object>({
     }
   }, [currentQueryKey, queryClient, currentInitialData, currentViewId, currentViewStatus, logData])
 
-  // Subscribe vào cache changes để log ngay khi data được fetch
+  // Subscribe vào cache changes để log ngay khi data được fetch từ API
+  // Chỉ log khi data thực sự được fetch từ API (không phải từ socket updates)
   useEffect(() => {
     // Subscribe vào query cache để detect khi data được fetch và update cache
     const unsubscribe = queryClient.getQueryCache().subscribe((event) => {
@@ -227,8 +228,11 @@ export function useResourceTableLogger<T extends object>({
         // Check xem có phải query key của view hiện tại không
         if (isQueryKeyEqual(event.query.queryKey, currentQueryKey)) {
           const data = event.query.state.data as DataTableResult<T> | undefined
-          if (data) {
-            // Data đã được fetch và update cache, log ngay
+          // Chỉ log khi data được fetch từ API (state.status === "success" và có data)
+          // Tránh log khi socket updates cache (sẽ được log bởi useEffect chính)
+          if (data && event.query.state.status === "success") {
+            // Kiểm tra xem data này đã được log chưa để tránh duplicate
+            // logData sẽ tự kiểm tra và skip nếu đã log
             logData(data, currentViewId || "active", currentViewStatus)
           }
         }

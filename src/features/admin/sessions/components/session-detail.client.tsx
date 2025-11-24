@@ -185,6 +185,9 @@ export function SessionDetailClient({ sessionId, session, backUrl = "/admin/sess
     },
   ]
 
+  // Ẩn edit button khi record đã bị xóa (vẫn cho xem chi tiết nhưng không được chỉnh sửa)
+  const isDeleted = detailData.deletedAt !== null && detailData.deletedAt !== undefined
+
   return (
     <ResourceDetailClient<SessionDetailData>
       data={detailData}
@@ -195,14 +198,16 @@ export function SessionDetailClient({ sessionId, session, backUrl = "/admin/sess
       backUrl={backUrl}
       backLabel="Quay lại danh sách"
       actions={
-        <Button
-          variant="outline"
-          onClick={() => router.push(`/admin/sessions/${sessionId}/edit`)}
-          className="gap-2"
-        >
-          <Edit className="h-4 w-4" />
-          Chỉnh sửa
-        </Button>
+        !isDeleted ? (
+          <Button
+            variant="outline"
+            onClick={() => router.push(`/admin/sessions/${sessionId}/edit`)}
+            className="gap-2"
+          >
+            <Edit className="h-4 w-4" />
+            Chỉnh sửa
+          </Button>
+        ) : null
       }
     />
   )

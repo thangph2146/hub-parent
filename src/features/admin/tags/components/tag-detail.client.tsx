@@ -102,6 +102,9 @@ export function TagDetailClient({ tagId, tag, backUrl = "/admin/tags" }: TagDeta
     },
   ]
 
+  // Ẩn edit button khi record đã bị xóa (vẫn cho xem chi tiết nhưng không được chỉnh sửa)
+  const isDeleted = detailData.deletedAt !== null && detailData.deletedAt !== undefined
+
   return (
     <ResourceDetailClient<TagDetailData>
       data={detailData}
@@ -113,14 +116,16 @@ export function TagDetailClient({ tagId, tag, backUrl = "/admin/tags" }: TagDeta
       backLabel="Quay lại danh sách"
       onBack={() => navigateBack(backUrl)}
       actions={
-        <Button
-          variant="outline"
-          onClick={() => router.push(`/admin/tags/${tagId}/edit`)}
-          className="gap-2"
-        >
-          <Edit className="h-4 w-4" />
-          Chỉnh sửa
-        </Button>
+        !isDeleted ? (
+          <Button
+            variant="outline"
+            onClick={() => router.push(`/admin/tags/${tagId}/edit`)}
+            className="gap-2"
+          >
+            <Edit className="h-4 w-4" />
+            Chỉnh sửa
+          </Button>
+        ) : null
       }
     />
   )

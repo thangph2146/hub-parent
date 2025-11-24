@@ -314,6 +314,9 @@ export function RoleDetailClient({ roleId, role, backUrl = "/admin/roles" }: Rol
     },
   ]
 
+  // Ẩn edit button khi record đã bị xóa (vẫn cho xem chi tiết nhưng không được chỉnh sửa)
+  const isDeleted = detailData.deletedAt !== null && detailData.deletedAt !== undefined
+
   return (
     <ResourceDetailClient<RoleDetailData>
       fields={detailFields}
@@ -325,14 +328,16 @@ export function RoleDetailClient({ roleId, role, backUrl = "/admin/roles" }: Rol
       onBack={() => navigateBack(backUrl)}
       data={detailData}
       actions={
-        <Button
-          variant="outline"
-          onClick={() => router.push(`/admin/roles/${roleId}/edit`)}
-          className="gap-2"
-        >
-          <Edit className="h-4 w-4" />
-          Chỉnh sửa
-        </Button>
+        !isDeleted ? (
+          <Button
+            variant="outline"
+            onClick={() => router.push(`/admin/roles/${roleId}/edit`)}
+            className="gap-2"
+          >
+            <Edit className="h-4 w-4" />
+            Chỉnh sửa
+          </Button>
+        ) : null
       }
     />
   )

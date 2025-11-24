@@ -23,6 +23,7 @@ export interface PostEditData {
     authorId: string
     categoryIds?: string[] | string
     tagIds?: string[] | string
+    deletedAt?: string | null
     [key: string]: unknown
 }
 
@@ -217,6 +218,10 @@ export function PostEditClient({
         return null
     }
 
+    // Check nếu post đã bị xóa - redirect về detail page (vẫn cho xem nhưng không được chỉnh sửa)
+    const isDeleted = post.deletedAt !== null && post.deletedAt !== undefined
+
+
     const editFields: ResourceFormField<PostEditData>[] = [
         {
             name: "title",
@@ -325,17 +330,28 @@ export function PostEditClient({
         },
     ]
 
+    // Disable form khi record đã bị xóa (cho dialog/sheet mode)
+    const formDisabled = isDeleted && variant !== "page"
+    
+    // Wrap handleSubmit để prevent submit khi deleted
+    const handleSubmitWrapper = async (data: Partial<PostEditData>) => {
+        if (isDeleted) {
+            return { success: false, error: "Bản ghi đã bị xóa, không thể chỉnh sửa" }
+        }
+        return handleSubmit(data)
+    }
+
     return (
         <ResourceForm<PostEditData>
             data={post}
-            fields={editFields}
+            fields={editFields.map(field => ({ ...field, disabled: formDisabled || field.disabled }))}
             sections={editSections}
-            onSubmit={handleSubmit}
+            onSubmit={handleSubmitWrapper}
             open={open}
             onOpenChange={onOpenChange}
             variant={variant}
             title="Chỉnh sửa bài viết"
-            description="Cập nhật thông tin bài viết"
+            description={isDeleted ? "Bản ghi đã bị xóa, không thể chỉnh sửa" : "Cập nhật thông tin bài viết"}
             submitLabel="Lưu thay đổi"
             cancelLabel="Hủy"
             backUrl={backUrl}

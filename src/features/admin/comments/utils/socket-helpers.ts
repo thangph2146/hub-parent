@@ -3,7 +3,7 @@
  * Tách ra để dễ test và tái sử dụng
  */
 
-import { resourceLogger } from "@/lib/config"
+import { resourceLogger } from "@/lib/config/resource-logger"
 import type { CommentRow } from "../types"
 import type { AdminCommentsListParams } from "@/lib/query-keys"
 
@@ -11,7 +11,7 @@ import type { AdminCommentsListParams } from "@/lib/query-keys"
  * Kiểm tra xem comment có match với search term không
  */
 export function matchesSearch(search: string | undefined, row: CommentRow): boolean {
-  if (!search) return true
+  if (!search || typeof search !== "string") return true
   const term = search.trim().toLowerCase()
   if (!term) return true
   return [row.content, row.authorName ?? "", row.authorEmail, row.postTitle]

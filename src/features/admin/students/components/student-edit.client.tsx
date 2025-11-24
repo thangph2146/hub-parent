@@ -114,17 +114,31 @@ export function StudentEditClient({
     return null
   }
 
+  // Check nếu student đã bị xóa - redirect về detail page (vẫn cho xem nhưng không được chỉnh sửa)
+  const isDeleted = student.deletedAt !== null && student.deletedAt !== undefined
+
+  // Disable form khi record đã bị xóa (cho dialog/sheet mode)
+  const formDisabled = isDeleted && variant !== "page"
+  
+  // Wrap handleSubmit để prevent submit khi deleted
+  const handleSubmitWrapper = async (data: Partial<StudentFormData>) => {
+    if (isDeleted) {
+      return { success: false, error: "Bản ghi đã bị xóa, không thể chỉnh sửa" }
+    }
+    return handleSubmit(data)
+  }
+
   const editFields = getBaseStudentFields(usersFromServer, isSuperAdmin)
   const formSections = getStudentFormSections()
 
   return (
     <ResourceForm<StudentFormData>
       data={student}
-      fields={editFields}
+      fields={editFields.map(field => ({ ...field, disabled: formDisabled || field.disabled }))}
       sections={formSections}
-      onSubmit={handleSubmit}
+      onSubmit={handleSubmitWrapper}
       title="Chỉnh sửa học sinh"
-      description="Cập nhật thông tin học sinh"
+      description={isDeleted ? "Bản ghi đã bị xóa, không thể chỉnh sửa" : "Cập nhật thông tin học sinh"}
       submitLabel="Lưu thay đổi"
       cancelLabel="Hủy"
       backUrl={backUrl}

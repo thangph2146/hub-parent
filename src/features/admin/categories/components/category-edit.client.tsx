@@ -104,15 +104,29 @@ export function CategoryEditClient({
     return null
   }
 
+  // Check nếu category đã bị xóa - redirect về detail page (vẫn cho xem nhưng không được chỉnh sửa)
+  const isDeleted = category.deletedAt !== null && category.deletedAt !== undefined
+
+  // Disable form khi record đã bị xóa (cho dialog/sheet mode)
+  const formDisabled = isDeleted && variant !== "page"
+  
+  // Wrap handleSubmit để prevent submit khi deleted
+  const handleSubmitWrapper = async (data: Partial<CategoryFormData>) => {
+    if (isDeleted) {
+      return { success: false, error: "Bản ghi đã bị xóa, không thể chỉnh sửa" }
+    }
+    return handleSubmit(data)
+  }
+
   const editFields = getBaseCategoryFields()
 
   return (
     <ResourceForm<CategoryFormData>
       data={category}
-      fields={editFields}
-      onSubmit={handleSubmit}
+      fields={editFields.map(field => ({ ...field, disabled: formDisabled || field.disabled }))}
+      onSubmit={handleSubmitWrapper}
       title="Chỉnh sửa danh mục"
-      description="Cập nhật thông tin danh mục"
+      description={isDeleted ? "Bản ghi đã bị xóa, không thể chỉnh sửa" : "Cập nhật thông tin danh mục"}
       submitLabel="Lưu thay đổi"
       cancelLabel="Hủy"
       backUrl={backUrl}

@@ -118,6 +118,20 @@ export function RoleEditClient({
     return null
   }
 
+  // Check nếu role đã bị xóa - redirect về detail page (vẫn cho xem nhưng không được chỉnh sửa)
+  const isDeleted = role.deletedAt !== null && role.deletedAt !== undefined
+
+  // Disable form khi record đã bị xóa (cho dialog/sheet mode)
+  const formDisabled = isDeleted && variant !== "page"
+  
+  // Wrap handleSubmit để prevent submit khi deleted
+  const handleSubmitWrapper = async (data: Partial<RoleFormData>) => {
+    if (isDeleted) {
+      return { success: false, error: "Bản ghi đã bị xóa, không thể chỉnh sửa" }
+    }
+    return handleSubmit(data)
+  }
+
   const editFields = getBaseRoleFields(permissionsFromServer).map((field) => {
     // Disable name field for super_admin
     if (field.name === "name" && role.name === "super_admin") {
@@ -126,6 +140,10 @@ export function RoleEditClient({
         disabled: true,
         description: "Không thể thay đổi tên vai trò super_admin",
       }
+    }
+    // Disable all fields if deleted
+    if (formDisabled) {
+      return { ...field, disabled: true }
     }
     return field
   })
@@ -136,9 +154,9 @@ export function RoleEditClient({
       data={role}
       fields={editFields}
       sections={formSections}
-      onSubmit={handleSubmit}
+      onSubmit={handleSubmitWrapper}
       title="Chỉnh sửa vai trò"
-      description="Cập nhật thông tin vai trò"
+      description={isDeleted ? "Bản ghi đã bị xóa, không thể chỉnh sửa" : "Cập nhật thông tin vai trò"}
       submitLabel="Lưu thay đổi"
       cancelLabel="Hủy"
       backUrl={backUrl}

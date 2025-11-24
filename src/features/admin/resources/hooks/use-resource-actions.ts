@@ -12,7 +12,7 @@ import { apiClient } from "@/lib/api/axios"
 import { createAdminMutationOptions } from "../config"
 import { useResourceBulkProcessing } from "./use-resource-bulk-processing"
 import { runResourceRefresh } from "./resource-refresh"
-import { resourceLogger } from "@/lib/config"
+import { resourceLogger } from "@/lib/config/resource-logger"
 import type { ResourceRefreshHandler } from "../types"
 import type { FeedbackVariant } from "@/components/dialogs"
 import type { QueryKey } from "@tanstack/react-query"
@@ -175,8 +175,9 @@ export function useResourceActions<T extends { id: string }>(
   const { bulkState, startBulkProcessing, stopBulkProcessing } = useResourceBulkProcessing()
   
   // Single action mutation
-  const singleActionMutation = useMutation(
-    createAdminMutationOptions({
+  // Theo chuẩn TanStack Query v5: sử dụng object syntax với spread operator
+  const singleActionMutation = useMutation({
+    ...createAdminMutationOptions({
       mutationFn: async ({ action, row }: { action: "delete" | "restore" | "hard-delete"; row: T }) => {
         const endpoint = {
           delete: config.apiRoutes.delete(row.id),
@@ -242,12 +243,13 @@ export function useResourceActions<T extends { id: string }>(
           },
         })
       },
-    })
-  )
+    }),
+  })
   
   // Bulk action mutation
-  const bulkActionMutation = useMutation(
-    createAdminMutationOptions({
+  // Theo chuẩn TanStack Query v5: sử dụng object syntax với spread operator
+  const bulkActionMutation = useMutation({
+    ...createAdminMutationOptions({
       mutationFn: async ({ action, ids }: { action: "delete" | "restore" | "hard-delete"; ids: string[] }) => {
         return apiClient.post(config.apiRoutes.bulk, { action, ids })
       },
@@ -304,8 +306,8 @@ export function useResourceActions<T extends { id: string }>(
           },
         })
       },
-    })
-  )
+    }),
+  })
   
   const executeSingleAction = useCallback(
     async (

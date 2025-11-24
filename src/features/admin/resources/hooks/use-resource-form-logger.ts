@@ -7,6 +7,9 @@ import { useEffect, useRef } from "react"
 import { resourceLogger } from "@/lib/config/resource-logger"
 import type { ResourceAction } from "@/lib/config/resource-logger"
 
+// Debounce delay cho form logging (ms)
+const FORM_LOG_DEBOUNCE_MS = 500
+
 interface UseResourceFormLoggerOptions<T extends Record<string, unknown>> {
   resourceName: string
   resourceId?: string
@@ -46,44 +49,67 @@ export function useResourceFormLogger<T extends Record<string, unknown>>({
 }: UseResourceFormLoggerOptions<T>) {
   const loggedFormDataKeyRef = useRef<string | null>(null)
   const loggedSubmitRef = useRef<boolean>(false)
+  const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
-  // Log form structure khi form data thay đổi
+  // Log form structure khi form data thay đổi (với debounce để tránh log quá nhiều khi user type)
   useEffect(() => {
-    if (!formData || isSubmitting) return
+    if (!formData || isSubmitting) {
+      // Clear timeout nếu đang submitting
+      if (debounceTimeoutRef.current) {
+        clearTimeout(debounceTimeoutRef.current)
+        debounceTimeoutRef.current = null
+      }
+      return
+    }
 
-    // Tạo unique key từ form data - sort keys để đảm bảo consistent
-    // Loại bỏ các field không quan trọng cho comparison (như content editor state)
-    const normalizedData = Object.keys(formData)
-      .sort()
-      .reduce((acc, key) => {
-        const value = formData[key]
-        // Chỉ include các giá trị primitive và array, skip complex objects như editor content
-        if (value === null || value === undefined || typeof value !== "object" || Array.isArray(value)) {
-          acc[key] = value
-        } else {
-          // Với object phức tạp, chỉ lưu type để tránh duplicate do thứ tự properties
-          acc[key] = `[object:${typeof value}]`
-        }
-        return acc
-      }, {} as Record<string, unknown>)
-    
-    const formDataKey = JSON.stringify(normalizedData)
+    // Clear previous timeout
+    if (debounceTimeoutRef.current) {
+      clearTimeout(debounceTimeoutRef.current)
+    }
 
-    // Nếu đã log cho form data này rồi, skip
-    if (loggedFormDataKeyRef.current === formDataKey) return
+    // Debounce logging để tránh log quá nhiều khi user đang type
+    debounceTimeoutRef.current = setTimeout(() => {
+      // Tạo unique key từ form data - sort keys để đảm bảo consistent
+      // Loại bỏ các field không quan trọng cho comparison (như content editor state)
+      const normalizedData = Object.keys(formData)
+        .sort()
+        .reduce((acc, key) => {
+          const value = formData[key]
+          // Chỉ include các giá trị primitive và array, skip complex objects như editor content
+          if (value === null || value === undefined || typeof value !== "object" || Array.isArray(value)) {
+            acc[key] = value
+          } else {
+            // Với object phức tạp, chỉ lưu type để tránh duplicate do thứ tự properties
+            acc[key] = `[object:${typeof value}]`
+          }
+          return acc
+        }, {} as Record<string, unknown>)
+      
+      const formDataKey = JSON.stringify(normalizedData)
 
-    // Mark as logged
-    loggedFormDataKeyRef.current = formDataKey
+      // Nếu đã log cho form data này rồi, skip
+      if (loggedFormDataKeyRef.current === formDataKey) return
 
-    // Log form structure
-    resourceLogger.dataStructure({
-      resource: resourceName,
-      dataType: "form",
-      structure: {
-        fields: formData as Record<string, unknown>,
-        action,
-      },
-    })
+      // Mark as logged
+      loggedFormDataKeyRef.current = formDataKey
+
+      // Log form structure
+      resourceLogger.dataStructure({
+        resource: resourceName,
+        dataType: "form",
+        structure: {
+          fields: formData as Record<string, unknown>,
+          action,
+        },
+      })
+    }, FORM_LOG_DEBOUNCE_MS)
+
+    return () => {
+      if (debounceTimeoutRef.current) {
+        clearTimeout(debounceTimeoutRef.current)
+        debounceTimeoutRef.current = null
+      }
+    }
   }, [resourceName, action, formData, isSubmitting])
 
   // Log submit action

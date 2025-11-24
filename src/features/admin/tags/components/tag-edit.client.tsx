@@ -103,15 +103,29 @@ export function TagEditClient({
     return null
   }
 
+  // Check nếu tag đã bị xóa - redirect về detail page (vẫn cho xem nhưng không được chỉnh sửa)
+  const isDeleted = tag.deletedAt !== null && tag.deletedAt !== undefined
+
+  // Disable form khi record đã bị xóa (cho dialog/sheet mode)
+  const formDisabled = isDeleted && variant !== "page"
+  
+  // Wrap handleSubmit để prevent submit khi deleted
+  const handleSubmitWrapper = async (data: Partial<TagFormData>) => {
+    if (isDeleted) {
+      return { success: false, error: "Bản ghi đã bị xóa, không thể chỉnh sửa" }
+    }
+    return handleSubmit(data)
+  }
+
   const editFields = getBaseTagFields()
 
   return (
     <ResourceForm<TagFormData>
       data={tag}
-      fields={editFields}
-      onSubmit={handleSubmit}
+      fields={editFields.map(field => ({ ...field, disabled: formDisabled || field.disabled }))}
+      onSubmit={handleSubmitWrapper}
       title="Chỉnh sửa thẻ tag"
-      description="Cập nhật thông tin thẻ tag"
+      description={isDeleted ? "Bản ghi đã bị xóa, không thể chỉnh sửa" : "Cập nhật thông tin thẻ tag"}
       submitLabel="Cập nhật"
       cancelLabel="Hủy"
       backUrl={backUrl}

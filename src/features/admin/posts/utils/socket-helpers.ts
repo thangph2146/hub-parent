@@ -10,7 +10,7 @@ import type { AdminPostsListParams } from "@/lib/query-keys"
  * Kiểm tra xem post có match với search term không
  */
 export function matchesSearch(search: string | undefined, row: PostRow): boolean {
-  if (!search) return true
+  if (!search || typeof search !== "string") return true
   const term = search.trim().toLowerCase()
   if (!term) return true
   return [row.title, row.slug, row.excerpt].some((value) => 

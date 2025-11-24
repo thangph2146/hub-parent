@@ -131,6 +131,20 @@ export function UserEditClient({
     return null
   }
 
+  // Check nếu user đã bị xóa - redirect về detail page (vẫn cho xem nhưng không được chỉnh sửa)
+  const isDeleted = user.deletedAt !== null && user.deletedAt !== undefined
+
+  // Disable form khi record đã bị xóa (cho dialog/sheet mode)
+  const formDisabled = isDeleted && variant !== "page"
+  
+  // Wrap handleSubmit để prevent submit khi deleted
+  const handleSubmitWrapper = async (data: Partial<UserEditData>) => {
+    if (isDeleted) {
+      return { success: false, error: "Bản ghi đã bị xóa, không thể chỉnh sửa" }
+    }
+    return handleSubmit(data)
+  }
+
   // roleIds đã được transform trong useMemo ở trên
   const roleDefaultValue = typeof user?.roleIds === "string" ? user.roleIds : ""
   const baseFields = getBaseUserFields(roles, roleDefaultValue) as unknown as ResourceFormField<UserEditData>[]
@@ -145,24 +159,28 @@ export function UserEditClient({
         description: "Không thể vô hiệu hóa tài khoản super admin",
       }
     }
+    // Disable all fields if deleted
+    if (formDisabled) {
+      return { ...field, disabled: true }
+    }
     return field
   })
   
   const finalEditFields = [
     ...editFields,
-    ...(isSuperAdminUser ? [getPasswordEditField() as unknown as ResourceFormField<UserEditData>] : []),
+    ...(isSuperAdminUser && !formDisabled ? [getPasswordEditField() as unknown as ResourceFormField<UserEditData>] : []),
   ]
 
   return (
     <ResourceForm<UserEditData>
       data={user}
       fields={finalEditFields}
-      onSubmit={handleSubmit}
+      onSubmit={handleSubmitWrapper}
       open={open}
       onOpenChange={onOpenChange}
       variant={variant}
       title="Chỉnh sửa người dùng"
-      description="Cập nhật thông tin người dùng"
+      description={isDeleted ? "Bản ghi đã bị xóa, không thể chỉnh sửa" : "Cập nhật thông tin người dùng"}
       submitLabel="Lưu thay đổi"
       cancelLabel="Hủy"
       backUrl={backUrl}
