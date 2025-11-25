@@ -10,6 +10,7 @@ import { PermissionGate } from "@/components/layouts/shared"
 import type { Permission } from "@/lib/permissions"
 import { DEFAULT_RESOURCE_SEGMENT } from "@/lib/permissions"
 import { ResourceSegmentProvider } from "@/hooks/use-resource-segment"
+import { ScrollArea } from "@/components/ui/scroll-area"
 
 /**
  * Admin Layout Metadata
@@ -84,10 +85,12 @@ export default async function AdminLayout({
             </Suspense>
           }
         />
-        <SidebarInset className="flex flex-col w-full overflow-x-hidden max-h-[calc(100dvh-20px)] overflow-y-auto">
-          <PermissionGate>
+        <SidebarInset className="flex flex-col w-full overflow-x-hidden">
+          <ScrollArea className="max-h-[calc(100dvh-20px)] overflow-y-auto">
+            <PermissionGate>
               {children}
-          </PermissionGate>
+            </PermissionGate>
+          </ScrollArea>
         </SidebarInset>
       </SidebarProvider>
     </ResourceSegmentProvider>

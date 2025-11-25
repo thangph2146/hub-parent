@@ -33,30 +33,6 @@ export function DashboardStatsSkeleton() {
             </div>
           </div>
         </div>
-
-        {/* Overview Cards Grid */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {Array.from({ length: 8 }).map((_, index) => (
-            <Card key={index} className="relative overflow-hidden">
-              <div className="absolute top-0 left-0 w-full h-1">
-                <Skeleton className="h-full w-full" />
-              </div>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <Skeleton className="h-4 w-24" />
-                <Skeleton className="h-10 w-10 rounded-xl" />
-              </CardHeader>
-              <CardContent>
-                <Skeleton className="h-8 w-20 mb-2" />
-                <div className="flex items-center gap-1.5">
-                  <Skeleton className="h-3.5 w-3.5 rounded" />
-                  <Skeleton className="h-3 w-16" />
-                  <Skeleton className="h-3 w-24" />
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
         {/* Charts Row */}
         <div className="grid gap-6 lg:grid-cols-2">
           {/* Line Chart Skeleton */}
@@ -105,31 +81,6 @@ export function DashboardStatsSkeleton() {
             </CardContent>
           </Card>
         </div>
-
-        {/* Top Posts Skeleton */}
-        <Card className="relative overflow-hidden">
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <Skeleton className="h-6 w-6 rounded" />
-              <Skeleton className="h-6 w-48" />
-            </div>
-            <Skeleton className="h-4 w-64 mt-2" />
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {Array.from({ length: 5 }).map((_, index) => (
-                <div key={index} className="flex items-center gap-4 p-4 rounded-xl border">
-                  <Skeleton className="h-10 w-10 rounded-full" />
-                  <div className="flex-1">
-                    <Skeleton className="h-4 w-64 mb-1" />
-                    <Skeleton className="h-3 w-32" />
-                  </div>
-                  <Skeleton className="h-5 w-5 rounded" />
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
       </div>
     </div>
   )
