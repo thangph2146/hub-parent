@@ -193,11 +193,26 @@ export async function getDashboardStats(): Promise<DashboardStatsData> {
 
   // Fetch monthly data for last 6 months
   const monthlyData = []
-  const monthNames = ["Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4", "Tháng 5", "Tháng 6"]
+  
+  // Tên tháng bằng tiếng Việt
+  const monthNames = [
+    "Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4", "Tháng 5", "Tháng 6",
+    "Tháng 7", "Tháng 8", "Tháng 9", "Tháng 10", "Tháng 11", "Tháng 12"
+  ]
   
   for (let i = 5; i >= 0; i--) {
     const monthStart = new Date(now.getFullYear(), now.getMonth() - i, 1)
     const monthEnd = new Date(now.getFullYear(), now.getMonth() - i + 1, 0)
+    
+    // Tính toán tháng và năm thực tế
+    const monthIndex = monthStart.getMonth() // 0-11
+    const year = monthStart.getFullYear()
+    const monthName = monthNames[monthIndex]
+    
+    // Format: "Tháng X/YYYY" hoặc chỉ "Tháng X" nếu cùng năm hiện tại
+    const monthLabel = year === now.getFullYear() 
+      ? monthName 
+      : `${monthName}/${year}`
     
     const [users, posts, comments, categories, tags, messages, notifications, contactRequests, students, sessions, roles] = await Promise.all([
       prisma.user.count({
@@ -268,7 +283,7 @@ export async function getDashboardStats(): Promise<DashboardStatsData> {
     ])
 
     monthlyData.push({
-      month: monthNames[5 - i] || `Tháng ${now.getMonth() - i + 1}`,
+      month: monthLabel,
       users,
       posts,
       comments,
