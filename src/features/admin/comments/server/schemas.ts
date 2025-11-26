@@ -1,7 +1,3 @@
-/**
- * Zod validation schemas cho comments
- */
-
 import { z } from "zod"
 
 export const UpdateCommentSchema = z.object({

@@ -32,7 +32,10 @@ export interface ListCommentsInput {
   filters?: {
     approved?: boolean
     authorId?: string
+    authorName?: string
+    authorEmail?: string
     postId?: string
+    postTitle?: string
     deleted?: boolean
   }
 }
@@ -75,8 +78,5 @@ export interface ListCommentsResult {
   }
 }
 
-// Types are now exported from schemas.ts
 export type { UpdateCommentInput, BulkCommentActionInput } from "./server/schemas"
-// BulkActionResult is exported from resources/types.ts
 export type { BulkActionResult } from "@/features/admin/resources/types"
-

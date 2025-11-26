@@ -1,14 +1,7 @@
-/**
- * Helper Functions for Comments Server Logic
- * 
- * Chứa các helper functions được dùng chung bởi queries, cache, và mutations
- */
-
 import type { Prisma } from "@prisma/client"
 import type { DataTableResult } from "@/components/tables"
-import { applyStatusFilter } from "@/features/admin/resources/server"
-import type { ListCommentsInput, ListedComment, CommentDetail, ListCommentsResult } from "../types"
-import type { CommentRow } from "../types"
+import { applyStatusFilter, applyRelationFilters } from "@/features/admin/resources/server"
+import type { ListCommentsInput, ListedComment, CommentDetail, ListCommentsResult, CommentRow } from "../types"
 
 type CommentWithRelations = Prisma.CommentGetPayload<{
   include: {
@@ -28,9 +21,6 @@ type CommentWithRelations = Prisma.CommentGetPayload<{
   }
 }>
 
-/**
- * Map Prisma comment record to ListedComment format
- */
 export function mapCommentRecord(comment: CommentWithRelations): ListedComment {
   return {
     id: comment.id,
@@ -47,62 +37,37 @@ export function mapCommentRecord(comment: CommentWithRelations): ListedComment {
   }
 }
 
-/**
- * Build Prisma where clause from ListCommentsInput
- * Sử dụng helpers từ @resources để đảm bảo nhất quán
- */
+const RELATION_CONFIGS = {
+  author: { idField: "authorId", fieldMap: { authorName: "name", authorEmail: "email" }, operators: { name: "contains", email: "contains" } },
+  post: { idField: "postId", fieldMap: { postTitle: "title" }, operators: { title: "contains" } },
+} as const
+
 export function buildWhereClause(params: ListCommentsInput): Prisma.CommentWhereInput {
   const where: Prisma.CommentWhereInput = {}
   const filters = params.filters || {}
 
-  // Xác định status từ filters.deleted để sử dụng applyStatusFilter
-  let status: "active" | "deleted" | "all" = "active"
-  if (filters.deleted === true) {
-    status = "deleted"
-  } else if (filters.deleted === false) {
-    status = "active"
-  } else {
-    // Mặc định active khi không có filter
-    status = "active"
+  applyStatusFilter(where, filters.deleted === true ? "deleted" : "active")
+
+  if (params.search?.trim()) {
+    const s = params.search.trim()
+    where.OR = [
+      { content: { contains: s, mode: "insensitive" } },
+      { author: { name: { contains: s, mode: "insensitive" } } },
+      { author: { email: { contains: s, mode: "insensitive" } } },
+      { post: { title: { contains: s, mode: "insensitive" } } },
+    ]
   }
 
-  // Apply status filter sử dụng helper từ @resources
-  applyStatusFilter(where, status)
+  Object.assign(where, {
+    ...(filters.approved !== undefined && { approved: filters.approved }),
+    ...(filters.authorId && { authorId: filters.authorId }),
+    ...(filters.postId && { postId: filters.postId }),
+  })
 
-  // Search filter with relations (comments có relations nên cần custom logic)
-  if (params.search) {
-    const searchValue = params.search.trim()
-    if (searchValue.length > 0) {
-      where.OR = [
-        { content: { contains: searchValue, mode: "insensitive" } },
-        { author: { name: { contains: searchValue, mode: "insensitive" } } },
-        { author: { email: { contains: searchValue, mode: "insensitive" } } },
-        { post: { title: { contains: searchValue, mode: "insensitive" } } },
-      ]
-    }
-  }
-
-  // Approved filter
-  if (filters.approved !== undefined) {
-    where.approved = filters.approved
-  }
-
-  // Author filter
-  if (filters.authorId) {
-    where.authorId = filters.authorId
-  }
-
-  // Post filter
-  if (filters.postId) {
-    where.postId = filters.postId
-  }
-
+  applyRelationFilters(where, filters, RELATION_CONFIGS)
   return where
 }
 
-/**
- * Serialize comment data for DataTable format
- */
 export function serializeCommentForTable(comment: ListedComment): CommentRow {
   return {
     id: comment.id,
@@ -118,9 +83,6 @@ export function serializeCommentForTable(comment: ListedComment): CommentRow {
   }
 }
 
-/**
- * Serialize ListCommentsResult to DataTable format
- */
 export function serializeCommentsList(data: ListCommentsResult): DataTableResult<CommentRow> {
   return {
     page: data.pagination.page,
@@ -131,23 +93,8 @@ export function serializeCommentsList(data: ListCommentsResult): DataTableResult
   }
 }
 
-/**
- * Serialize CommentDetail to client format
- */
-export function serializeCommentDetail(comment: CommentDetail) {
-  return {
-    id: comment.id,
-    content: comment.content,
-    approved: comment.approved,
-    authorId: comment.authorId,
-    authorName: comment.authorName,
-    authorEmail: comment.authorEmail,
-    postId: comment.postId,
-    postTitle: comment.postTitle,
-    createdAt: comment.createdAt,
-    updatedAt: comment.updatedAt,
-    deletedAt: comment.deletedAt,
-  }
+export function serializeCommentDetail(comment: CommentDetail): CommentDetail {
+  return comment
 }
 
 export type { CommentWithRelations }

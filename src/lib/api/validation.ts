@@ -360,3 +360,45 @@ export function sanitizeSearchQuery(query: string, maxLength = 100): { valid: bo
   return { valid: true, value: sanitized }
 }
 
+/**
+ * Parse column filters from URL search params
+ */
+export function parseColumnFilters(searchParams: URLSearchParams, maxLength = 100): Record<string, string> {
+  const filters: Record<string, string> = {}
+  searchParams.forEach((value, key) => {
+    if (key.startsWith("filter[")) {
+      const k = key.replace("filter[", "").replace("]", "")
+      const v = sanitizeSearchQuery(value, maxLength)
+      if (v.valid && v.value) filters[k] = v.value
+    }
+  })
+  return filters
+}
+
+/**
+ * Build filters object from columnFilters with automatic mapping
+ */
+export function buildFilters<T extends Record<string, unknown>>(
+  columnFilters: Record<string, string>,
+  status: "active" | "deleted" | "all",
+  filterKeys: (keyof T)[]
+): Partial<T> & { deleted?: boolean } {
+  const filters = {} as Partial<T> & { deleted?: boolean }
+  
+  if (status === "deleted") filters.deleted = true
+  else if (status === "active") filters.deleted = false
+  
+  for (const key of filterKeys) {
+    const value = columnFilters[key as string]
+    if (value) {
+      if (key === "approved") {
+        ;(filters as any)[key] = value === "true"
+      } else {
+        ;(filters as any)[key] = value
+      }
+    }
+  }
+  
+  return filters
+}
+

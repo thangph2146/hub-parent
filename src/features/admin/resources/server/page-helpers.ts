@@ -1,16 +1,6 @@
-/**
- * Shared Page Helpers for Admin Features
- * 
- * Helper functions để check permissions cho page components
- * Giảm duplicate code trong các page.tsx files
- */
-
 import { canPerformAction, canPerformAnyAction, type Permission } from "@/lib/permissions"
 import { getAuthInfo, type AuthInfo } from "./auth-helpers"
 
-/**
- * Permission flags for table actions
- */
 export interface TablePermissions {
   canDelete: boolean
   canRestore: boolean
@@ -18,13 +8,6 @@ export interface TablePermissions {
   canCreate: boolean
 }
 
-/**
- * Get table permissions for a resource
- * 
- * @param authInfo - Auth info from getAuthInfo()
- * @param resourcePermissions - Resource-specific permissions
- * @returns TablePermissions object
- */
 export function getTablePermissions(
   authInfo: AuthInfo,
   resourcePermissions: {
@@ -35,7 +18,6 @@ export function getTablePermissions(
   }
 ): TablePermissions {
   const { permissions, roles } = authInfo
-
   const managePermissions = Array.isArray(resourcePermissions.manage)
     ? resourcePermissions.manage
     : [resourcePermissions.manage]
@@ -48,13 +30,6 @@ export function getTablePermissions(
   }
 }
 
-/**
- * Get table permissions for a resource (convenience function)
- * Fetches auth info and returns table permissions in one call
- * 
- * @param resourcePermissions - Resource-specific permissions
- * @returns TablePermissions object
- */
 export async function getTablePermissionsAsync(
   resourcePermissions: {
     delete: Permission[]
@@ -63,7 +38,6 @@ export async function getTablePermissionsAsync(
     create: Permission
   }
 ): Promise<TablePermissions> {
-  const authInfo = await getAuthInfo()
-  return getTablePermissions(authInfo, resourcePermissions)
+  return getTablePermissions(await getAuthInfo(), resourcePermissions)
 }
 

@@ -1,11 +1,5 @@
 "use server"
 
-/**
- * CRUD Operations for Comments
- * 
- * Tất cả mutations đều sử dụng Zod validation và emit realtime notifications
- */
-
 import { PERMISSIONS, canPerformAnyAction } from "@/lib/permissions"
 import { prisma } from "@/lib/database"
 import { mapCommentRecord } from "./helpers"
@@ -28,15 +22,9 @@ import {
 import type { BulkActionResult } from "@/features/admin/resources/types"
 import { emitCommentUpsert, emitCommentRemove, emitCommentBatchUpsert } from "./events"
 
-// Re-export for backward compatibility with API routes
 export { ApplicationError, ForbiddenError, NotFoundError, type AuthContext }
 export type { BulkActionResult }
 
-/**
- * Helper function để xử lý bulk operation sau khi update database
- * Bao gồm: log table status, emit socket events, send notifications, invalidate cache
- * Returns: success message với tên comments đã được format
- */
 async function handleBulkOperationAfterUpdate(
   action: "bulk-delete" | "bulk-restore",
   commentIds: string[],
@@ -83,18 +71,11 @@ async function handleBulkOperationAfterUpdate(
     }
   }
 
-  const namesText = comments.length > 0 ? formatCommentNames(
-    comments.map((c) => ({
-      authorName: c.author.name,
-      authorEmail: c.author.email,
-      content: c.content,
-    })),
-    3
-  ) : ""
+  const namesText = comments.length > 0
+    ? formatCommentNames(comments.map((c) => ({ authorName: c.author.name, authorEmail: c.author.email, content: c.content })), 3)
+    : ""
   const actionText = action === "bulk-delete" ? "xóa" : "khôi phục"
-  return namesText
-    ? `Đã ${actionText} ${resultCount} bình luận: ${namesText}`
-    : `Đã ${actionText} ${resultCount} bình luận`
+  return namesText ? `Đã ${actionText} ${resultCount} bình luận: ${namesText}` : `Đã ${actionText} ${resultCount} bình luận`
 }
 
 export async function updateComment(ctx: AuthContext, id: string, input: UpdateCommentInput): Promise<ListedComment> {

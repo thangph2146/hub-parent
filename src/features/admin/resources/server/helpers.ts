@@ -1,18 +1,7 @@
-/**
- * Generic Helper Functions for Resources
- * 
- * Chứa các helper functions generic được dùng chung bởi các resource features
- * Có thể được extend hoặc customize cho từng resource cụ thể
- */
-
 import type { DataTableResult } from "@/components/tables"
 import { logger } from "@/lib/config"
 import type { ResourcePagination, ResourceResponse } from "../types"
 
-/**
- * Serialize date to ISO string
- * Handles Date objects, date strings, and other date-like values
- */
 export function serializeDate(date: Date | string | null | undefined): string | null {
   if (!date) return null
   
@@ -40,9 +29,6 @@ export function serializeDate(date: Date | string | null | undefined): string | 
   }
 }
 
-/**
- * Serialize dates in an object
- */
 export function serializeDates<T extends Record<string, unknown>>(
   data: T,
   dateFields: (keyof T)[]
@@ -56,9 +42,6 @@ export function serializeDates<T extends Record<string, unknown>>(
   return serialized
 }
 
-/**
- * Build pagination metadata
- */
 export function buildPagination(
   page: number,
   limit: number,
@@ -72,9 +55,6 @@ export function buildPagination(
   }
 }
 
-/**
- * Validate pagination params
- */
 export function validatePagination(
   page?: number,
   limit?: number,
@@ -86,10 +66,6 @@ export function validatePagination(
   }
 }
 
-/**
- * Generic serialize function for DataTable
- * Override this in specific resource helpers
- */
 export function serializeResourceForTable<T extends Record<string, unknown>>(
   item: T,
   dateFields: (keyof T)[] = []
@@ -97,9 +73,6 @@ export function serializeResourceForTable<T extends Record<string, unknown>>(
   return serializeDates(item, dateFields) as T
 }
 
-/**
- * Serialize ResourceResponse to DataTable format
- */
 export function serializeResourceList<T extends Record<string, unknown>>(
   data: ResourceResponse<T>,
   dateFields: (keyof T)[] = []
@@ -113,10 +86,6 @@ export function serializeResourceList<T extends Record<string, unknown>>(
   }
 }
 
-/**
- * Apply status filter to Prisma where clause (active/deleted/all)
- * Uses deletedAt field for soft delete pattern
- */
 export function applyStatusFilter<T extends Record<string, unknown>>(
   where: T,
   status?: "active" | "deleted" | "all"
@@ -132,12 +101,6 @@ export function applyStatusFilter<T extends Record<string, unknown>>(
   // "all" means no filter applied
 }
 
-/**
- * Apply search filter with OR conditions
- * @param where - Prisma where clause object
- * @param search - Search query string
- * @param fields - Array of field names to search in
- */
 export function applySearchFilter<T extends Record<string, unknown>>(
   where: T,
   search: string | undefined,
@@ -156,10 +119,6 @@ export function applySearchFilter<T extends Record<string, unknown>>(
   ;(where as any).OR = orConditions
 }
 
-/**
- * Apply date filter to Prisma where clause
- * Filters by date range (start of day to end of day)
- */
 export function applyDateFilter<T extends Record<string, unknown>>(
   where: T,
   dateField: keyof T,
@@ -186,9 +145,6 @@ export function applyDateFilter<T extends Record<string, unknown>>(
   }
 }
 
-/**
- * Apply boolean filter to Prisma where clause
- */
 export function applyBooleanFilter<T extends Record<string, unknown>>(
   where: T,
   field: keyof T,
@@ -206,9 +162,6 @@ export function applyBooleanFilter<T extends Record<string, unknown>>(
   }
 }
 
-/**
- * Apply string filter with contains (case-insensitive)
- */
 export function applyStringFilter<T extends Record<string, unknown>>(
   where: T,
   field: keyof T,
@@ -224,8 +177,93 @@ export function applyStringFilter<T extends Record<string, unknown>>(
 }
 
 /**
- * Apply status filter from filters object (for backward compatibility)
+ * Apply single relation filter (legacy - use applyRelationFilters for multiple filters)
  */
+export function applyRelationFilter<T extends Record<string, unknown>>(
+  where: T,
+  relationField: string,
+  idField: string,
+  value: string | undefined,
+  relationFilters: Record<string, "contains" | "equals"> = { name: "contains" }
+): void {
+  if (!value) return
+
+  const trimmedValue = value.trim()
+  if (trimmedValue.length === 0) return
+
+  // Import validateCUID dynamically để tránh circular dependency
+  const { validateCUID } = require("@/lib/api/validation")
+  const cuidValidation = validateCUID(trimmedValue)
+
+  if (cuidValidation.valid) {
+    // Giá trị là ID (cuid format) - filter theo ID field trực tiếp
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ;(where as any)[idField] = trimmedValue
+  } else {
+    // Giá trị là text - filter theo relation fields
+    const relationConditions: Record<string, unknown> = {}
+    for (const [field, operator] of Object.entries(relationFilters)) {
+      if (operator === "contains") {
+        relationConditions[field] = { contains: trimmedValue, mode: "insensitive" as const }
+      } else {
+        relationConditions[field] = { equals: trimmedValue, mode: "insensitive" as const }
+      }
+    }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ;(where as any)[relationField] = relationConditions
+  }
+}
+
+export interface RelationFilterConfig {
+  idField: string
+  fieldMap: Record<string, string>
+  operators?: Record<string, "contains" | "equals">
+}
+
+export function applyRelationFilters<T extends Record<string, unknown>>(
+  where: T,
+  filters: Record<string, string | boolean | undefined> | undefined,
+  relationConfigs: Record<string, RelationFilterConfig>
+): void {
+  if (!filters) return
+
+  const { validateCUID } = require("@/lib/api/validation")
+
+  for (const [relationField, config] of Object.entries(relationConfigs)) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if ((where as any)[config.idField]) continue
+
+    const relationFilters = Object.entries(config.fieldMap)
+      .map(([k, v]) => {
+        const val = filters[k]
+        return typeof val === "string" && val.trim() ? { field: v, value: val.trim() } : null
+      })
+      .filter((f): f is { field: string; value: string } => f !== null)
+
+    if (relationFilters.length === 0) continue
+
+    const operators = config.operators || {}
+    const idFilter = relationFilters.find((f) => validateCUID(f.value).valid)
+
+    if (idFilter) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ;(where as any)[config.idField] = idFilter.value
+    } else {
+      const conditions: Record<string, unknown> = {}
+      for (const { field, value } of relationFilters) {
+        const op = operators[field] || "contains"
+        conditions[field] = op === "contains"
+          ? { contains: value, mode: "insensitive" as const }
+          : { equals: value, mode: "insensitive" as const }
+      }
+      if (Object.keys(conditions).length > 0) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ;(where as any)[relationField] = conditions
+      }
+    }
+  }
+}
+
 export function applyStatusFilterFromFilters<T extends Record<string, unknown>>(
   where: T,
   statusValue: string | undefined

@@ -14,6 +14,7 @@ import {
   applyDateFilter,
   applyStringFilter,
   applyBooleanFilter,
+  applyRelationFilters,
 } from "@/features/admin/resources/server"
 import type { ListContactRequestsInput, ListedContactRequest, ContactRequestDetail, ListContactRequestsResult } from "../types"
 import type { ContactRequestRow } from "../types"
@@ -117,6 +118,15 @@ export function buildWhereClause(params: ListContactRequestsInput): Prisma.Conta
           break
       }
     }
+
+    // Tự động xử lý relation filters - không cần check từng field
+    applyRelationFilters(where, params.filters, {
+      assignedTo: {
+        idField: "assignedToId",
+        fieldMap: { assignedToName: "name" },
+        operators: { name: "contains" },
+      },
+    })
   }
 
   return where
