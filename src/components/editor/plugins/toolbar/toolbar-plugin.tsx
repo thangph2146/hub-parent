@@ -49,7 +49,7 @@ export function ToolbarPlugin({
 
       <div
         className={cn(
-          "vertical-align-middle sticky top-0 z-20 flex flex-wrap items-center gap-2 overflow-x-auto border-b bg-background/95 p-1 shadow-sm supports-[backdrop-filter]:bg-background/60",
+          "vertical-align-middle sticky top-16 z-20 flex flex-wrap items-center gap-2 overflow-x-auto border-b bg-background/95 p-1 shadow-sm supports-[backdrop-filter]:bg-background/60 supports-[backdrop-filter]:backdrop-blur-sm",
           className
         )}
         style={style}

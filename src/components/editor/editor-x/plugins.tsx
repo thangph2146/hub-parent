@@ -186,13 +186,7 @@ export function Plugins({
           )}
         </ToolbarPlugin>
       )}
-      <ScrollArea
-        className={cn(
-          "relative w-full",
-          readOnly ? "" : "h-[calc(60dvh)] overflow-y-auto"
-        )}
-        style={constrainedWidthStyle}
-      >
+    
         <div className="relative w-full" style={constrainedWidthStyle}>
           {!readOnly && <AutoFocusPlugin />}
           <RichTextPlugin
@@ -307,7 +301,6 @@ export function Plugins({
             </>
           )}
         </div>
-      </ScrollArea>
       {!readOnly && (
         <ActionsPlugin>
           <div
