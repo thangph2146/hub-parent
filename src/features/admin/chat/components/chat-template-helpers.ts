@@ -1,16 +1,8 @@
-/**
- * Helper functions cho ChatTemplate
- * Tách logic để code ngắn gọn và dễ test
- */
-
 import type { Contact, Group, GroupRole } from "@/components/chat/types"
 import { apiRoutes } from "@/lib/api/routes"
 import { withApiBase } from "@/lib/config/api-paths"
 import { requestJson } from "@/lib/api/client"
 
-/**
- * Get current user role in a group
- */
 export function getCurrentUserRole(contact: Contact | null, currentUserId: string): GroupRole | undefined {
   if (!contact || contact.type !== "GROUP" || !contact.group) return undefined
   
@@ -21,9 +13,6 @@ export function getCurrentUserRole(contact: Contact | null, currentUserId: strin
   return member?.role
 }
 
-/**
- * Create Contact from Group
- */
 export function createGroupContact(group: Group): Contact {
   return {
     id: group.id,
@@ -40,9 +29,6 @@ export function createGroupContact(group: Group): Contact {
   }
 }
 
-/**
- * Refresh group data from API
- */
 export async function refreshGroupData(groupId: string): Promise<Group | null> {
   try {
     const response = await requestJson<Group>(withApiBase(apiRoutes.adminGroups.detail(groupId)))
@@ -60,9 +46,6 @@ export async function refreshGroupData(groupId: string): Promise<Group | null> {
   }
 }
 
-/**
- * Update contact with group data
- */
 export function updateContactWithGroupData(
   contacts: Contact[],
   contactId: string,

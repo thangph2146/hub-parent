@@ -1,8 +1,3 @@
-/**
- * Helper function để tạo Session record khi user đăng nhập
- * Được gọi từ API route sau khi đăng nhập thành công
- */
-
 import { randomBytes } from "crypto"
 import { prisma } from "@/lib/database"
 import { emitSessionUpsert } from "./events"
@@ -14,10 +9,6 @@ interface CreateLoginSessionParams {
   ipAddress?: string | null
 }
 
-/**
- * Tạo Session record khi user đăng nhập
- * Tự động generate accessToken và refreshToken
- */
 export async function createLoginSession({
   userId,
   userAgent,

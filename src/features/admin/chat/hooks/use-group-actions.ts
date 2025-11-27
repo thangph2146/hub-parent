@@ -1,8 +1,3 @@
-/**
- * Hook để handle group actions (hard delete, refresh)
- * Tách logic để code ngắn gọn và dễ test
- */
-
 import { useCallback } from "react"
 import { useToast } from "@/hooks/use-toast"
 import { logger } from "@/lib/config"

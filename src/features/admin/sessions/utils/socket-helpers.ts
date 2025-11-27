@@ -1,14 +1,6 @@
-/**
- * Helper functions cho socket bridge
- * Tách ra để dễ test và tái sử dụng
- */
-
 import type { SessionRow } from "../types"
 import type { AdminSessionsListParams } from "@/lib/query-keys"
 
-/**
- * Kiểm tra xem session có match với search term không
- */
 export function matchesSearch(search: string | undefined, row: SessionRow): boolean {
   if (!search || typeof search !== "string") return true
   const term = search.trim().toLowerCase()
@@ -21,9 +13,6 @@ export function matchesSearch(search: string | undefined, row: SessionRow): bool
   ].some((value) => value.toLowerCase().includes(term))
 }
 
-/**
- * Kiểm tra xem session có match với filters không
- */
 export function matchesFilters(
   filters: AdminSessionsListParams["filters"],
   row: SessionRow
@@ -56,10 +45,6 @@ export function matchesFilters(
   return true
 }
 
-/**
- * Kiểm tra xem session có nên được include trong status view không
- * Note: Session model không có deletedAt, sử dụng isActive=false để đánh dấu "deleted"
- */
 export function shouldIncludeInStatus(
   paramsStatus: AdminSessionsListParams["status"],
   rowStatus: "active" | "deleted"
@@ -69,9 +54,6 @@ export function shouldIncludeInStatus(
   return paramsStatus === rowStatus
 }
 
-/**
- * Insert hoặc update row vào page
- */
 export function insertRowIntoPage(
   rows: SessionRow[],
   row: SessionRow,
@@ -90,9 +72,6 @@ export function insertRowIntoPage(
   return next
 }
 
-/**
- * Remove row khỏi page
- */
 export function removeRowFromPage(
   rows: SessionRow[],
   id: string
@@ -104,9 +83,6 @@ export function removeRowFromPage(
   return { rows: next, removed: true }
 }
 
-/**
- * Convert socket session payload to SessionRow
- */
 export function convertSocketPayloadToRow(
   payload: {
     id: string

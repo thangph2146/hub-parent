@@ -1,8 +1,3 @@
-/**
- * Hook để log form actions (create, update)
- * Standardize logging cho tất cả form components
- */
-
 import { useEffect, useRef } from "react"
 import { resourceLogger } from "@/lib/config/resource-logger"
 import type { ResourceAction } from "@/lib/config/resource-logger"
@@ -20,24 +15,6 @@ interface UseResourceFormLoggerOptions<T extends Record<string, unknown>> {
   submitError?: string | null
 }
 
-/**
- * Hook để log form actions
- * Log khi form data thay đổi hoặc khi submit
- * 
- * @example
- * ```typescript
- * const [formData, setFormData] = useState({...})
- * const [isSubmitting, setIsSubmitting] = useState(false)
- * 
- * useResourceFormLogger({
- *   resourceName: "students",
- *   resourceId: studentId,
- *   action: "update",
- *   formData,
- *   isSubmitting,
- * })
- * ```
- */
 export function useResourceFormLogger<T extends Record<string, unknown>>({
   resourceName,
   resourceId,

@@ -1,14 +1,6 @@
-/**
- * Helper functions cho socket bridge
- * Tách ra để dễ test và tái sử dụng
- */
-
 import type { TagRow } from "../types"
 import type { AdminTagsListParams } from "@/lib/query-keys"
 
-/**
- * Kiểm tra xem tag có match với search term không
- */
 export function matchesSearch(search: string | undefined, row: TagRow): boolean {
   if (!search || typeof search !== "string") return true
   const term = search.trim().toLowerCase()
@@ -16,9 +8,6 @@ export function matchesSearch(search: string | undefined, row: TagRow): boolean 
   return [row.name, row.slug].some((value) => value.toLowerCase().includes(term))
 }
 
-/**
- * Kiểm tra xem tag có match với filters không
- */
 export function matchesFilters(
   filters: AdminTagsListParams["filters"],
   row: TagRow
@@ -40,9 +29,6 @@ export function matchesFilters(
   return true
 }
 
-/**
- * Kiểm tra xem tag có nên được include trong status view không
- */
 export function shouldIncludeInStatus(
   paramsStatus: AdminTagsListParams["status"],
   rowStatus: "active" | "deleted"
@@ -52,9 +38,6 @@ export function shouldIncludeInStatus(
   return paramsStatus === rowStatus
 }
 
-/**
- * Insert hoặc update row vào page
- */
 export function insertRowIntoPage(
   rows: TagRow[],
   row: TagRow,
@@ -73,9 +56,6 @@ export function insertRowIntoPage(
   return next
 }
 
-/**
- * Remove row khỏi page
- */
 export function removeRowFromPage(
   rows: TagRow[],
   id: string

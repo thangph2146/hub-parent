@@ -1,10 +1,3 @@
-/**
- * Non-cached Database Queries for Roles
- * 
- * Chứa các database queries không có cache wrapper
- * Sử dụng cho các trường hợp cần fresh data hoặc trong API routes
- */
-
 import type { Prisma } from "@prisma/client"
 import { prisma } from "@/lib/database"
 import {
@@ -64,9 +57,6 @@ export async function listRoles(params: ListRolesInput = {}): Promise<ListRolesR
   }
 }
 
-/**
- * Get unique values for a specific column (for filter options)
- */
 export async function getRoleColumnOptions(
   column: string,
   search?: string,
@@ -115,10 +105,6 @@ export async function getRoleColumnOptions(
   return mapToColumnOptions(results, column)
 }
 
-/**
- * Get all available permissions as flat options (non-cached)
- * Theo chuẩn Next.js 16: không cache admin data
- */
 export async function getAllPermissionsOptions(): Promise<Array<{ label: string; value: string }>> {
   const { PERMISSIONS } = await import("@/lib/permissions")
   

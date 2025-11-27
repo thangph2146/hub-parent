@@ -1,10 +1,3 @@
-/**
- * Non-cached Database Queries for Users
- * 
- * Chứa các database queries không có cache wrapper
- * Sử dụng cho các trường hợp cần fresh data hoặc trong API routes
- */
-
 import type { Prisma } from "@prisma/client"
 import { prisma } from "@/lib/database"
 import { validatePagination, buildPagination, type ResourcePagination } from "@/features/admin/resources/server"
@@ -84,9 +77,6 @@ export async function listUsers(params: ListUsersInput = {}): Promise<ListUsersR
   }
 }
 
-/**
- * Get unique values for a specific column (for filter options)
- */
 export async function getUserColumnOptions(
   column: string,
   search?: string,
@@ -135,10 +125,6 @@ export async function getUserColumnOptions(
   return mapToColumnOptions(results, column)
 }
 
-/**
- * Get all active roles (non-cached)
- * Theo chuẩn Next.js 16: không cache admin data
- */
 export async function getActiveRoles(): Promise<Array<{ id: string; name: string; displayName: string }>> {
   const roles = await prisma.role.findMany({
     where: {
@@ -157,10 +143,6 @@ export async function getActiveRoles(): Promise<Array<{ id: string; name: string
   return roles
 }
 
-/**
- * Get active roles for select options (non-cached)
- * Theo chuẩn Next.js 16: không cache admin data
- */
 export async function getActiveRolesForSelect(): Promise<Array<{ label: string; value: string }>> {
   const roles = await prisma.role.findMany({
     where: {
@@ -183,10 +165,6 @@ export async function getActiveRolesForSelect(): Promise<Array<{ label: string; 
   }))
 }
 
-/**
- * Get active users for select options (non-cached)
- * Theo chuẩn Next.js 16: không cache admin data
- */
 export async function getActiveUsersForSelect(limit: number = 100): Promise<Array<{ label: string; value: string }>> {
   const users = await prisma.user.findMany({
     where: {
@@ -235,11 +213,6 @@ export async function getUserById(id: string): Promise<ListedUser | null> {
   return mapUserRecord(user)
 }
 
-/**
- * Get user detail by ID (non-cached)
- * Theo chuẩn Next.js 16: không cache admin data
- * Trả về full detail data bao gồm bio, phone, address, emailVerified, updatedAt
- */
 export async function getUserDetailById(id: string): Promise<UserDetail | null> {
   const user = await prisma.user.findUnique({
     where: { id },

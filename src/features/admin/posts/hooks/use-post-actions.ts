@@ -1,8 +1,3 @@
-/**
- * Custom hook để xử lý các actions của posts
- * Sử dụng useResourceActions dùng chung để đảm bảo consistency
- */
-
 import { useResourceActions } from "@/features/admin/resources/hooks"
 import { apiRoutes } from "@/lib/api/routes"
 import { queryKeys } from "@/lib/query-keys"

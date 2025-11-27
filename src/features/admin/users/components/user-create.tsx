@@ -1,10 +1,3 @@
-/**
- * Server Component: User Create
- * 
- * Fetches roles và pass xuống client component
- * Pattern: Server Component (data fetching) → Client Component (UI/interactions)
- */
-
 import { getActiveRoles } from "../server/queries"
 import { UserCreateClient } from "./user-create.client"
 

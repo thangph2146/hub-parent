@@ -4,46 +4,16 @@ import { logger } from "@/lib/config/logger"
 
 interface UseResourceTableRefreshOptions {
   queryClient: QueryClient
-  /**
-   * Hàm tạo queryKey cần invalidate trước khi refresh (ví dụ queryKeys.adminTags.all)
-   */
   getInvalidateQueryKey?: () => QueryKey
-  /**
-   * Version từ socket bridge để trigger soft refresh
-   */
   cacheVersion?: number
 }
 
 interface UseResourceTableRefreshResult {
-  /**
-   * Truyền trực tiếp vào props onRefreshReady của ResourceTableClient
-   */
   onRefreshReady: (refresh: () => void) => void
-  /**
-   * Trigger refresh đầy đủ (invalidate + reload)
-   */
   refresh: () => Promise<void>
-  /**
-   * Trigger soft refresh (không invalidate cache)
-   */
   softRefresh: () => void
 }
 
-/**
- * Quản lý vòng đời refresh cho ResourceTableClient
- * - Tự động invalidate query trước khi refresh
- * - Hỗ trợ soft refresh khi có realtime updates
- * - Giữ refresh function để dùng cho các mutation callbacks
- * 
- * @example
- * ```tsx
- * const { onRefreshReady, refresh, softRefresh } = useResourceTableRefresh({
- *   queryClient,
- *   getInvalidateQueryKey: () => queryKeys.adminTags.all(),
- *   cacheVersion: socketBridge.cacheVersion,
- * })
- * ```
- */
 export function useResourceTableRefresh({
   queryClient,
   getInvalidateQueryKey,
@@ -79,8 +49,6 @@ export function useResourceTableRefresh({
       refreshRef.current = async () => {
         const invalidateKey = getInvalidateQueryKey?.()
         if (invalidateKey) {
-          // Invalidate và refetch queries - Next.js 16 pattern: đảm bảo data fresh
-          // Refetch ngay để đảm bảo table hiển thị data mới ngay sau mutations
           await queryClient.invalidateQueries({ queryKey: invalidateKey, refetchType: "active" })
           await queryClient.refetchQueries({ queryKey: invalidateKey, type: "active" })
         }
@@ -96,7 +64,6 @@ export function useResourceTableRefresh({
   )
 
   useEffect(() => {
-    // Chỉ trigger khi cacheVersion thực sự thay đổi (tránh duplicate trong React Strict Mode)
     if (!cacheVersion || cacheVersion === lastCacheVersionRef.current) return
 
     lastCacheVersionRef.current = cacheVersion

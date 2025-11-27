@@ -1,10 +1,3 @@
-/**
- * Client Component: Post Create Form
- * 
- * Handles form interactions, validation, và API calls
- * Pattern: Server Component → Client Component (UI/interactions)
- */
-
 "use client"
 
 import { useSession } from "next-auth/react"

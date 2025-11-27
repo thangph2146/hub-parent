@@ -1,9 +1,3 @@
-/**
- * Hook để log detail action và data structure
- * Standardize logging cho tất cả detail components
- * Theo chuẩn Next.js 16: chỉ log khi data từ API (isFromApi = true)
- */
-
 import { useEffect, useRef } from "react"
 import { resourceLogger } from "@/lib/config/resource-logger"
 
@@ -16,24 +10,6 @@ interface UseResourceDetailLoggerOptions<T extends Record<string, unknown>> {
   fetchedData?: T
 }
 
-/**
- * Hook để log detail action và data structure
- * Chỉ log một lần sau khi fetch từ API xong
- * 
- * @example
- * ```typescript
- * const { data, isFetched, isFromApi, fetchedData } = useResourceDetailData({...})
- * 
- * useResourceDetailLogger({
- *   resourceName: "students",
- *   resourceId: studentId,
- *   data,
- *   isFetched,
- *   isFromApi,
- *   fetchedData,
- * })
- * ```
- */
 export function useResourceDetailLogger<T extends Record<string, unknown>>({
   resourceName,
   resourceId,

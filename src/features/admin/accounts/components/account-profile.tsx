@@ -1,10 +1,3 @@
-/**
- * Server Component: Account Profile
- * 
- * Fetches current user's account data và pass xuống client component
- * Pattern: Server Component (data fetching) → Client Component (UI/interactions)
- */
-
 import { getCurrentUserProfile } from "../server/queries"
 import { getAuthInfo } from "@/features/admin/resources/server"
 import { AccountProfileClient } from "./account-profile.client"

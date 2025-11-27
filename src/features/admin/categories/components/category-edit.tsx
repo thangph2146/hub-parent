@@ -1,10 +1,3 @@
-/**
- * Server Component: Category Edit
- * 
- * Fetches category data, sau đó pass xuống client component
- * Pattern: Server Component (data fetching) → Client Component (UI/interactions)
- */
-
 import { getCategoryById } from "../server/queries"
 import { serializeCategoryDetail } from "../server/helpers"
 import { CategoryEditClient } from "./category-edit.client"

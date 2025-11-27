@@ -1,7 +1,3 @@
-/**
- * Form field definitions cho account profile form
- */
-
 import type { ResourceFormField, ResourceFormSection } from "@/features/admin/resources/components"
 import React from "react"
 import { User, AlignLeft, Phone, MapPin, Lock, UserCircle } from "lucide-react"
@@ -16,9 +12,6 @@ export interface AccountFormData {
   [key: string]: unknown
 }
 
-/**
- * Sections cho account form
- */
 export function getAccountFormSections(): ResourceFormSection[] {
   return [
     {
@@ -39,9 +32,6 @@ export function getAccountFormSections(): ResourceFormSection[] {
   ]
 }
 
-/**
- * Fields cho account profile form
- */
 export function getAccountFields(): ResourceFormField<AccountFormData>[] {
   return [
     {

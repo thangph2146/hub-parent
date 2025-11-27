@@ -1,10 +1,3 @@
-/**
- * Client Component: Resource Detail Page
- * 
- * Generic detail page component với sections support
- * Pattern: Server Component → Client Component (UI/interactions)
- */
-
 "use client"
 
 import * as React from "react"

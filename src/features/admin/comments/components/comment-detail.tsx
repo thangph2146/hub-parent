@@ -1,10 +1,3 @@
-/**
- * Server Component: Comment Detail
- * 
- * Fetches comment data và pass xuống client component
- * Pattern: Server Component (data fetching) → Client Component (UI/interactions)
- */
-
 import { getCommentById } from "../server/queries"
 import { serializeCommentDetail } from "../server/helpers"
 import { CommentDetailClient } from "./comment-detail.client"

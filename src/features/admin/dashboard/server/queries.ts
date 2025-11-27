@@ -52,20 +52,11 @@ export interface DashboardStatsData {
   }>
 }
 
-/**
- * Calculate percentage change between current and previous period
- */
 function calculateChange(current: number, previous: number): number {
   if (previous === 0) return current > 0 ? 100 : 0
   return ((current - previous) / previous) * 100
 }
 
-/**
- * Get dashboard statistics from database (non-cached)
- * Fetches real data from Prisma based on schema.prisma
- * 
- * Theo chuẩn Next.js 16: không cache admin data - luôn fetch fresh data
- */
 export async function getDashboardStats(): Promise<DashboardStatsData> {
   const now = new Date()
   const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1)
@@ -393,10 +384,6 @@ export async function getDashboardStats(): Promise<DashboardStatsData> {
       }
 }
 
-/**
- * Cached version (deprecated - chỉ giữ lại để tương thích ngược)
- * @deprecated Sử dụng getDashboardStats() thay vì getDashboardStatsCached()
- */
 export const getDashboardStatsCached = cache(async (): Promise<DashboardStatsData> => {
   return getDashboardStats()
 })

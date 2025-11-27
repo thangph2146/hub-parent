@@ -1,10 +1,3 @@
-/**
- * Client Component: Resource Form
- * 
- * Generic form component hỗ trợ page, dialog, và sheet variants
- * Pattern: Server Component → Client Component (UI/interactions)
- */
-
 "use client"
 
 import { useState, useEffect, useRef } from "react"

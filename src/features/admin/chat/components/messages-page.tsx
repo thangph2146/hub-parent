@@ -1,10 +1,3 @@
-/**
- * Server Component: Messages Page
- * 
- * Fetches conversations và pass xuống client component
- * Pattern: Server Component (data fetching) → Client Component (UI/interactions)
- */
-
 import { getAuthInfo } from "@/features/admin/resources/server/auth-helpers"
 import {
   listConversations,

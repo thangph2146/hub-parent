@@ -1,15 +1,4 @@
-/**
- * Server-side exports for Users feature
- * 
- * Structure:
- * - queries.ts: Non-cached database queries
- * - cache.ts: Cached functions using React cache()
- * - mutations.ts: Data mutations (create, update, delete)
- * - helpers.ts: Shared helper functions
- * - notifications.ts: Realtime notifications via Socket.IO
- */
-
-// Queries (non-cached)
+// Queries
 export {
   listUsers,
   getUserById,

@@ -1,10 +1,3 @@
-/**
- * Non-cached Database Queries for Posts
- * 
- * Chứa các database queries không có cache wrapper
- * Sử dụng cho các trường hợp cần fresh data hoặc trong API routes
- */
-
 import type { Prisma } from "@prisma/client"
 import { prisma } from "@/lib/database"
 import { validatePagination, buildPagination, type ResourcePagination } from "@/features/admin/resources/server"
@@ -112,9 +105,6 @@ export async function listPosts(params: ListPostsInput = {}): Promise<ListPostsR
   }
 }
 
-/**
- * Get unique values for a specific column (for filter options)
- */
 export async function getPostColumnOptions(
   column: string,
   search?: string,

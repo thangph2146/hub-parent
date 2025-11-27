@@ -1,14 +1,4 @@
-/**
- * Server-side exports for Notifications feature
- * 
- * Structure:
- * - queries.ts: Non-cached database queries (theo chuẩn Next.js 16: không cache admin data)
- * - helpers.ts: Helper functions for serialization
- * 
- * LƯU Ý: cache.ts đã được xóa theo chuẩn Next.js 16 - không cache admin data
- */
-
-// Non-cached queries (theo chuẩn Next.js 16: không cache admin data)
+// Non-cached queries
 export {
   listNotifications,
   getNotificationById,

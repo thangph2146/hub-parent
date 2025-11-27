@@ -1,10 +1,3 @@
-/**
- * Server Component: Student Create
- * 
- * Fetches users options với cached query, sau đó pass xuống client component
- * Pattern: Server Component (data fetching với cache) → Client Component (UI/interactions)
- */
-
 import { StudentCreateClient } from "./student-create.client"
 import { getActiveUsersForSelect } from "@/features/admin/users/server/queries"
 import { getAuthInfo } from "@/features/admin/resources/server"

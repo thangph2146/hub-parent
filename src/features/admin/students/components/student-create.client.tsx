@@ -1,10 +1,3 @@
-/**
- * Client Component: Student Create Form
- * 
- * Handles form interactions, validation, và API calls
- * Pattern: Server Component → Client Component (UI/interactions)
- */
-
 "use client"
 
 import { ResourceForm } from "@/features/admin/resources/components"

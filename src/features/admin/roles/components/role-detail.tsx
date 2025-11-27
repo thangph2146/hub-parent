@@ -1,10 +1,3 @@
-/**
- * Server Component: Role Detail
- * 
- * Fetches role data và pass xuống client component
- * Pattern: Server Component (data fetching) → Client Component (UI/interactions)
- */
-
 import { getRoleById } from "../server/queries"
 import { serializeRoleDetail } from "../server/helpers"
 import { RoleDetailClient } from "./role-detail.client"

@@ -34,9 +34,6 @@ interface StudentBatchUpsertPayload {
   }>
 }
 
-/**
- * Update student queries với updater function
- */
 function updateStudentQueries(
   queryClient: ReturnType<typeof useQueryClient>,
   updater: (args: { key: unknown[]; params: AdminStudentsListParams; data: DataTableResult<StudentRow> }) => DataTableResult<StudentRow> | null,
@@ -61,16 +58,10 @@ function updateStudentQueries(
   return updated
 }
 
-/**
- * Tính toán totalPages từ total và limit
- */
 function calculateTotalPages(total: number, limit: number): number {
   return total === 0 ? 0 : Math.ceil(total / limit)
 }
 
-/**
- * Xử lý upsert một student vào query data
- */
 function handleStudentUpsert(
   student: StudentRow,
   params: AdminStudentsListParams,
@@ -114,9 +105,6 @@ function handleStudentUpsert(
   }
 }
 
-/**
- * Xử lý batch upsert nhiều students
- */
 function handleBatchUpsert(
   students: StudentRow[],
   params: AdminStudentsListParams,
@@ -160,9 +148,6 @@ function handleBatchUpsert(
   }
 }
 
-/**
- * Debounce cache version update - tối ưu để tránh duplicate updates
- */
 const CACHE_UPDATE_DEBOUNCE_MS = 150
 
 export function useStudentsSocketBridge() {
@@ -180,9 +165,6 @@ export function useStudentsSocketBridge() {
 
   const [isConnected, setIsConnected] = useState<boolean>(() => Boolean(socket?.connected))
 
-  /**
-   * Debounced cache version update - chỉ update một lần cho mỗi batch events
-   */
   const updateCacheVersion = useCallback(() => {
     if (cacheVersionTimeoutRef.current) {
       clearTimeout(cacheVersionTimeoutRef.current)

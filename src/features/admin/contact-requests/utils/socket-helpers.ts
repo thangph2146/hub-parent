@@ -1,13 +1,5 @@
-/**
- * Helper functions cho socket bridge
- * Tách ra để dễ test và tái sử dụng
- */
-
 import type { ContactRequestRow } from "../types"
 
-/**
- * Kiểm tra xem contact request có match với search term không
- */
 export function matchesSearch(search: string | undefined, row: ContactRequestRow): boolean {
   if (!search || typeof search !== "string") return true
   const term = search.trim().toLowerCase()
@@ -22,9 +14,6 @@ export function matchesSearch(search: string | undefined, row: ContactRequestRow
     .some((value) => value.toLowerCase().includes(term))
 }
 
-/**
- * Kiểm tra xem contact request có match với filters không
- */
 export function matchesFilters(
   filters: Record<string, string> | undefined,
   row: ContactRequestRow
@@ -63,9 +52,6 @@ export function matchesFilters(
   return true
 }
 
-/**
- * Kiểm tra xem contact request có nên được include trong status view không
- */
 export function shouldIncludeInStatus(
   paramsStatus: "active" | "deleted" | "all" | undefined,
   rowStatus: "active" | "deleted"
@@ -75,9 +61,6 @@ export function shouldIncludeInStatus(
   return paramsStatus === rowStatus
 }
 
-/**
- * Insert hoặc update row vào page
- */
 export function insertRowIntoPage(
   rows: ContactRequestRow[],
   row: ContactRequestRow,
@@ -96,9 +79,6 @@ export function insertRowIntoPage(
   return next
 }
 
-/**
- * Remove row khỏi page
- */
 export function removeRowFromPage(
   rows: ContactRequestRow[],
   id: string
@@ -110,9 +90,6 @@ export function removeRowFromPage(
   return { rows: next, removed: true }
 }
 
-/**
- * Convert socket contact request payload to ContactRequestRow
- */
 export function convertSocketPayloadToRow(
   payload: {
     id: string

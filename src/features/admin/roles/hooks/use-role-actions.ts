@@ -1,9 +1,3 @@
-/**
- * Custom hook để xử lý các actions của roles
- * Sử dụng useResourceActions dùng chung cho delete/restore/hard-delete
- * Giữ lại handleToggleStatus và super_admin check riêng vì là logic đặc biệt
- */
-
 import { useCallback, useState } from "react"
 import { useQueryClient } from "@tanstack/react-query"
 import { apiClient } from "@/lib/api/axios"

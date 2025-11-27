@@ -1,10 +1,3 @@
-/**
- * Server Component: Student Detail
- * 
- * Fetches student data và pass xuống client component
- * Pattern: Server Component (data fetching) → Client Component (UI/interactions)
- */
-
 import { getStudentById } from "../server/queries"
 import { serializeStudentDetail } from "../server/helpers"
 import { StudentDetailClient } from "./student-detail.client"

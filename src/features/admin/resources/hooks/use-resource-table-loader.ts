@@ -11,12 +11,6 @@ interface UseResourceTableLoaderOptions<T extends object, P> {
   buildQueryKey: (params: P) => QueryKey
 }
 
-/**
- * Tạo loader chuẩn cho ResourceTable dựa trên fetcher + query client
- * Theo chuẩn Next.js 16: không cache admin data - luôn fetch fresh data từ API
- * Socket updates sẽ update cache trực tiếp, nhưng khi load table sẽ luôn fetch fresh data
- * Sử dụng createAdminFetchOptions để đảm bảo consistency với tất cả admin features
- */
 export function useResourceTableLoader<T extends object, P>({
   queryClient,
   fetcher,

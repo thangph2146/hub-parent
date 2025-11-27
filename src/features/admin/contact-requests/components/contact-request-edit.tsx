@@ -1,10 +1,3 @@
-/**
- * Server Component: Contact Request Edit
- * 
- * Fetches contact request data và users options, sau đó pass xuống client component
- * Pattern: Server Component (data fetching) → Client Component (UI/interactions)
- */
-
 import { getContactRequestById } from "../server/queries"
 import { serializeContactRequestDetail } from "../server/helpers"
 import { ContactRequestEditClient } from "./contact-request-edit.client"

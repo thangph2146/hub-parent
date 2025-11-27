@@ -1,11 +1,3 @@
-/**
- * Shared Hook for Resource Actions
- * 
- * Hook dùng chung để xử lý các actions (delete, restore, hard-delete) cho tất cả admin features
- * Sử dụng TanStack Query mutations với createAdminMutationOptions để đảm bảo không cache
- * Theo chuẩn Next.js 16: luôn fetch fresh data sau mutations
- */
-
 import { useCallback, useState } from "react"
 import { useQueryClient, useMutation } from "@tanstack/react-query"
 import { apiClient } from "@/lib/api/axios"
@@ -18,46 +10,16 @@ import type { FeedbackVariant } from "@/components/dialogs"
 import type { QueryKey } from "@tanstack/react-query"
 
 export interface ResourceActionConfig<T extends { id: string }> {
-  /**
-   * Resource name để logging (ví dụ: "posts", "categories")
-   */
   resourceName: string
-  
-  /**
-   * Query keys cho resource này
-   */
   queryKeys: {
-    /**
-     * Query key function để invalidate tất cả queries của resource
-     */
     all: () => QueryKey
   }
-  
-  /**
-   * API routes cho resource này
-   */
   apiRoutes: {
-    /**
-     * Delete endpoint function
-     */
     delete: (id: string) => string
-    /**
-     * Restore endpoint function
-     */
     restore: (id: string) => string
-    /**
-     * Hard delete endpoint function
-     */
     hardDelete: (id: string) => string
-    /**
-     * Bulk action endpoint
-     */
     bulk: string
   }
-  
-  /**
-   * Messages cho các actions
-   */
   messages: {
     DELETE_SUCCESS: string
     DELETE_ERROR: string
@@ -73,97 +35,35 @@ export interface ResourceActionConfig<T extends { id: string }> {
     BULK_HARD_DELETE_ERROR: string
     UNKNOWN_ERROR: string
   }
-  
-  /**
-   * Function để lấy tên của record (dùng cho messages)
-   */
   getRecordName: (row: T) => string
-  
-  /**
-   * Permissions
-   */
   permissions: {
     canDelete: boolean
     canRestore: boolean
     canManage: boolean
   }
-  
-  /**
-   * Feedback handler
-   */
   showFeedback: (variant: FeedbackVariant, title: string, description?: string, details?: string) => void
-  
-  /**
-   * Socket connection status (optional)
-   */
   isSocketConnected?: boolean
-  
-  /**
-   * Custom metadata cho logging (optional)
-   */
   getLogMetadata?: (row: T) => Record<string, unknown>
 }
 
 export interface UseResourceActionsResult<T extends { id: string }> {
-  /**
-   * Execute single action (delete, restore, hard-delete)
-   */
   executeSingleAction: (
     action: "delete" | "restore" | "hard-delete",
     row: T,
     refresh: ResourceRefreshHandler
   ) => Promise<void>
-  
-  /**
-   * Execute bulk action
-   */
   executeBulkAction: (
     action: "delete" | "restore" | "hard-delete",
     ids: string[],
     refresh: ResourceRefreshHandler,
     clearSelection: () => void
   ) => Promise<void>
-  
-  /**
-   * Loading states
-   */
   deletingIds: Set<string>
   restoringIds: Set<string>
   hardDeletingIds: Set<string>
-  
-  /**
-   * Bulk processing state
-   */
   bulkState: ReturnType<typeof useResourceBulkProcessing>["bulkState"]
 }
 
-/**
- * Hook dùng chung để xử lý resource actions
- * 
- * @example
- * ```typescript
- * const actions = useResourceActions({
- *   resourceName: "posts",
- *   queryKeys: {
- *     all: () => queryKeys.adminPosts.all(),
- *   },
- *   apiRoutes: {
- *     delete: (id) => apiRoutes.posts.delete(id),
- *     restore: (id) => apiRoutes.posts.restore(id),
- *     hardDelete: (id) => apiRoutes.posts.hardDelete(id),
- *     bulk: apiRoutes.posts.bulk,
- *   },
- *   messages: POST_MESSAGES,
- *   getRecordName: (row) => row.title,
- *   permissions: {
- *     canDelete,
- *     canRestore,
- *     canManage,
- *   },
- *   showFeedback,
- * })
- * ```
- */
 export function useResourceActions<T extends { id: string }>(
   config: ResourceActionConfig<T>
 ): UseResourceActionsResult<T> {

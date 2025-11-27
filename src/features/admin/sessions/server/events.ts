@@ -1,8 +1,3 @@
-/**
- * Socket events emission cho sessions
- * Tách logic emit socket events ra khỏi mutations để code sạch hơn
- */
-
 import { prisma } from "@/lib/database"
 import { getSocketServer } from "@/lib/socket/state"
 import { mapSessionRecord, serializeSessionForTable } from "./helpers"
@@ -43,10 +38,6 @@ async function fetchSessionRow(sessionId: string): Promise<SessionRow | null> {
   })
 }
 
-/**
- * Emit session:upsert event
- * Được gọi khi session được tạo, cập nhật, restore, toggle status
- */
 export async function emitSessionUpsert(
   sessionId: string,
   previousStatus: SessionStatus | null,
@@ -73,10 +64,6 @@ export async function emitSessionUpsert(
   })
 }
 
-/**
- * Emit session:remove event
- * Được gọi khi session bị hard delete
- */
 export function emitSessionRemove(sessionId: string, previousStatus: SessionStatus): void {
   const io = getSocketServer()
   if (!io) return
@@ -87,11 +74,6 @@ export function emitSessionRemove(sessionId: string, previousStatus: SessionStat
   })
 }
 
-/**
- * Emit batch session:upsert events
- * Được gọi khi bulk operations để tối ưu performance
- * Thay vì emit từng event riêng lẻ, emit một batch event
- */
 export async function emitSessionBatchUpsert(
   sessionIds: string[],
   previousStatus: SessionStatus | null,

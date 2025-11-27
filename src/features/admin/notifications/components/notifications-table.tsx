@@ -1,9 +1,3 @@
-/**
- * Server Component: Notifications Table
- * 
- * Fetches initial data và pass xuống client component
- * Pattern: Server Component (data fetching) → Client Component (UI/interactions)
- */
 import type { DataTableResult } from "@/components/tables"
 import { logger } from "@/lib/config"
 import { listNotifications } from "../server/queries"

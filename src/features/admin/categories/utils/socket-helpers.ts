@@ -1,14 +1,6 @@
-/**
- * Helper functions cho socket bridge
- * Tách ra để dễ test và tái sử dụng
- */
-
 import type { CategoryRow } from "../types"
 import type { AdminCategoriesListParams } from "@/lib/query-keys"
 
-/**
- * Kiểm tra xem category có match với search term không
- */
 export function matchesSearch(search: string | undefined, row: CategoryRow): boolean {
   if (!search || typeof search !== "string") return true
   const term = search.trim().toLowerCase()
@@ -18,9 +10,6 @@ export function matchesSearch(search: string | undefined, row: CategoryRow): boo
   )
 }
 
-/**
- * Kiểm tra xem category có match với filters không
- */
 export function matchesFilters(
   filters: AdminCategoriesListParams["filters"],
   row: CategoryRow
@@ -42,9 +31,6 @@ export function matchesFilters(
   return true
 }
 
-/**
- * Kiểm tra xem category có nên được include trong status view không
- */
 export function shouldIncludeInStatus(
   paramsStatus: AdminCategoriesListParams["status"],
   rowStatus: "active" | "deleted"
@@ -54,9 +40,6 @@ export function shouldIncludeInStatus(
   return paramsStatus === rowStatus
 }
 
-/**
- * Insert hoặc update row vào page
- */
 export function insertRowIntoPage(
   rows: CategoryRow[],
   row: CategoryRow,
@@ -75,9 +58,6 @@ export function insertRowIntoPage(
   return next
 }
 
-/**
- * Remove row khỏi page
- */
 export function removeRowFromPage(
   rows: CategoryRow[],
   id: string

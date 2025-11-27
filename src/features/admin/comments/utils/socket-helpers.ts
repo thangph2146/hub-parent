@@ -1,15 +1,7 @@
-/**
- * Helper functions cho socket bridge
- * Tách ra để dễ test và tái sử dụng
- */
-
 import { resourceLogger } from "@/lib/config/resource-logger"
 import type { CommentRow } from "../types"
 import type { AdminCommentsListParams } from "@/lib/query-keys"
 
-/**
- * Kiểm tra xem comment có match với search term không
- */
 export function matchesSearch(search: string | undefined, row: CommentRow): boolean {
   if (!search || typeof search !== "string") return true
   const term = search.trim().toLowerCase()
@@ -18,9 +10,6 @@ export function matchesSearch(search: string | undefined, row: CommentRow): bool
     .some((value) => value.toLowerCase().includes(term))
 }
 
-/**
- * Kiểm tra xem comment có match với filters không
- */
 export function matchesFilters(
   filters: AdminCommentsListParams["filters"],
   row: CommentRow
@@ -56,9 +45,6 @@ export function matchesFilters(
   return true
 }
 
-/**
- * Kiểm tra xem comment có nên được include trong status view không
- */
 export function shouldIncludeInStatus(
   paramsStatus: AdminCommentsListParams["status"],
   rowStatus: "active" | "deleted"
@@ -68,9 +54,6 @@ export function shouldIncludeInStatus(
   return paramsStatus === rowStatus
 }
 
-/**
- * Insert hoặc update row vào page
- */
 export function insertRowIntoPage(
   rows: CommentRow[],
   row: CommentRow,
@@ -109,9 +92,6 @@ export function insertRowIntoPage(
   return result
 }
 
-/**
- * Remove row khỏi page
- */
 export function removeRowFromPage(
   rows: CommentRow[],
   id: string

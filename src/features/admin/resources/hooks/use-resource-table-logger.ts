@@ -1,8 +1,3 @@
-/**
- * Hook để log table structure khi data thay đổi sau refetch
- * Track data từ React Query cache và log khi data mới được refetch
- */
-
 import { useEffect, useRef, useMemo, useCallback } from "react"
 import type { QueryClient } from "@tanstack/react-query"
 import type { DataTableResult } from "@/components/tables"
@@ -21,11 +16,6 @@ interface UseResourceTableLoggerOptions<T extends object> {
   cacheVersion?: number
 }
 
-/**
- * Hook để log table structure khi data thay đổi sau refetch
- * Track data từ React Query cache và log khi data mới được refetch
- * Fix: Log ngay khi view thay đổi, không cần đợi data
- */
 export function useResourceTableLogger<T extends object>({
   resourceName,
   initialData,

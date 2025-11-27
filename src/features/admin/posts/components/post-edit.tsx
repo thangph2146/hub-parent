@@ -1,10 +1,3 @@
-/**
- * Server Component: Post Edit
- * 
- * Fetches post data và pass xuống client component
- * Pattern: Server Component (data fetching) → Client Component (UI/interactions)
- */
-
 import { getPostById } from "../server/queries"
 import { serializePostDetail } from "../server/helpers"
 import { PostEditClient } from "./post-edit.client"

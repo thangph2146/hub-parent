@@ -1,14 +1,6 @@
-/**
- * Helper functions cho socket bridge
- * Tách ra để dễ test và tái sử dụng
- */
-
 import type { PostRow } from "../types"
 import type { AdminPostsListParams } from "@/lib/query-keys"
 
-/**
- * Kiểm tra xem post có match với search term không
- */
 export function matchesSearch(search: string | undefined, row: PostRow): boolean {
   if (!search || typeof search !== "string") return true
   const term = search.trim().toLowerCase()
@@ -18,9 +10,6 @@ export function matchesSearch(search: string | undefined, row: PostRow): boolean
   )
 }
 
-/**
- * Kiểm tra xem post có match với filters không
- */
 export function matchesFilters(
   filters: AdminPostsListParams["filters"],
   row: PostRow
@@ -48,9 +37,6 @@ export function matchesFilters(
   return true
 }
 
-/**
- * Kiểm tra xem post có nên được include trong status view không
- */
 export function shouldIncludeInStatus(
   paramsStatus: AdminPostsListParams["status"],
   rowStatus: "active" | "deleted"
@@ -60,9 +46,6 @@ export function shouldIncludeInStatus(
   return paramsStatus === rowStatus
 }
 
-/**
- * Insert hoặc update row vào page
- */
 export function insertRowIntoPage(
   rows: PostRow[],
   row: PostRow,
@@ -81,9 +64,6 @@ export function insertRowIntoPage(
   return next
 }
 
-/**
- * Remove row khỏi page
- */
 export function removeRowFromPage(
   rows: PostRow[],
   id: string

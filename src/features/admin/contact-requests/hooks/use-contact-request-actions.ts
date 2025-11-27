@@ -1,9 +1,3 @@
-/**
- * Custom hook để xử lý các actions của contact requests
- * Sử dụng useResourceActions dùng chung cho delete/restore/hard-delete
- * Giữ lại handleToggleRead riêng vì là logic đặc biệt
- */
-
 import { useCallback, useState } from "react"
 import { useQueryClient } from "@tanstack/react-query"
 import { apiClient } from "@/lib/api/axios"

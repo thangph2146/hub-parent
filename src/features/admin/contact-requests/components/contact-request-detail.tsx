@@ -1,10 +1,3 @@
-/**
- * Server Component: Contact Request Detail
- * 
- * Fetches contact request data và pass xuống client component
- * Pattern: Server Component (data fetching) → Client Component (UI/interactions)
- */
-
 import { getContactRequestById } from "../server/queries"
 import { serializeContactRequestDetail } from "../server/helpers"
 import { ContactRequestDetailClient } from "./contact-request-detail.client"

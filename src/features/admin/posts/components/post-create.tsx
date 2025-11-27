@@ -1,10 +1,3 @@
-/**
- * Server Component: Post Create
- * 
- * Fetches users options với cached query, sau đó pass xuống client component
- * Pattern: Server Component (data fetching với cache) → Client Component (UI/interactions)
- */
-
 import { PostCreateClient } from "./post-create.client"
 import { getActiveUsersForSelect } from "@/features/admin/users/server/queries"
 import { getActiveCategoriesForSelect } from "@/features/admin/categories/server/queries"

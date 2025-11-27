@@ -1,10 +1,3 @@
-/**
- * Server Component: Session Detail
- * 
- * Fetches session data và pass xuống client component
- * Pattern: Server Component (data fetching) → Client Component (UI/interactions)
- */
-
 import { getSessionById } from "../server/queries"
 import { serializeSessionDetail } from "../server/helpers"
 import { SessionDetailClient } from "./session-detail.client"

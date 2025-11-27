@@ -1,10 +1,3 @@
-/**
- * Shared Hook for Resource Form Submission
- * 
- * Hook để handle form submission với error handling, toast notifications,
- * và navigation. Giảm duplicate code trong các create/edit client components.
- */
-
 import { useResourceRouter } from "@/hooks/use-resource-segment"
 import { useToast } from "@/hooks/use-toast"
 import { extractAxiosErrorMessage } from "@/lib/utils/api-utils"
@@ -14,86 +7,27 @@ import { logger } from "@/lib/config"
 import type { AxiosResponse } from "axios"
 
 export interface UseResourceFormSubmitOptions {
-  /**
-   * API route for create/update
-   * For update, can be a function that takes resource ID
-   */
   apiRoute: string | ((resourceId: string) => string)
-  
-  /**
-   * HTTP method (POST for create, PUT/PATCH for update)
-   */
   method?: "POST" | "PUT" | "PATCH"
-  
-  /**
-   * Resource ID for update operations
-   */
   resourceId?: string
-  
-  /**
-   * Success messages
-   */
   messages: {
     successTitle: string
     successDescription: string
     errorTitle: string
     errorDescription?: string
   }
-  
-  /**
-   * Navigation options
-   */
   navigation?: {
-    /**
-     * Navigate to detail page after success
-     * If true, will navigate to /admin/{resource}/{id}
-     * If string, will navigate to that path
-     * If function, will call with response data
-     */
     toDetail?: boolean | string | ((response: AxiosResponse) => string | undefined)
-    /**
-     * Fallback navigation path (default: backUrl or list page)
-     */
     fallback?: string
   }
-  
-  /**
-   * Transform data before sending
-   */
   transformData?: (data: Record<string, unknown>) => Record<string, unknown>
-  
-  /**
-   * Custom success handler
-   */
   onSuccess?: (response: AxiosResponse) => void | Promise<void>
 }
 
 export interface UseResourceFormSubmitResult {
-  /**
-   * Submit handler function
-   */
   handleSubmit: (data: Record<string, unknown>) => Promise<{ success: boolean; error?: string }>
 }
 
-/**
- * Hook for handling resource form submission
- * 
- * @example
- * ```typescript
- * const { handleSubmit } = useResourceFormSubmit({
- *   apiRoute: apiRoutes.users.create,
- *   method: "POST",
- *   messages: {
- *     successTitle: "Tạo người dùng thành công",
- *     successDescription: "Người dùng mới đã được tạo thành công.",
- *     errorTitle: "Lỗi tạo người dùng",
- *   },
- *   navigation: {
- *     toDetail: true, // Navigate to detail page
- *   },
- * })
- * ```
- */
 export function useResourceFormSubmit({
   apiRoute,
   method = "POST",

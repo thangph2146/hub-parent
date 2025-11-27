@@ -1,16 +1,9 @@
-/**
- * Helper functions để emit notifications realtime cho comments actions
- */
-
 import { prisma } from "@/lib/database"
 import { resourceLogger } from "@/lib/config"
 import { getSocketServer, mapNotificationToPayload } from "@/lib/socket/state"
 import { createNotificationForSuperAdmins } from "@/features/admin/notifications/server/mutations"
 import { NotificationKind } from "@prisma/client"
 
-/**
- * Helper function để lấy thông tin actor (người thực hiện action)
- */
 async function getActorInfo(actorId: string) {
   const actor = await prisma.user.findUnique({
     where: { id: actorId },
@@ -19,10 +12,6 @@ async function getActorInfo(actorId: string) {
   return actor
 }
 
-/**
- * Format comment names cho bulk notifications
- * Rút gọn: chỉ hiển thị author name/email, không cần content preview
- */
 export function formatCommentNames(
   comments: Array<{ authorName: string | null; authorEmail: string; content?: string }>,
   maxDisplay: number = 3
@@ -41,9 +30,6 @@ export function formatCommentNames(
   return `${names.join(", ")} và ${remaining} bình luận khác`
 }
 
-/**
- * Helper function để tạo system notification cho super admin về comment actions
- */
 export async function notifySuperAdminsOfCommentAction(
   action: "approve" | "unapprove" | "update" | "delete" | "restore" | "hard-delete",
   actorId: string,
@@ -184,9 +170,6 @@ export async function notifySuperAdminsOfCommentAction(
   }
 }
 
-/**
- * Helper function để tạo system notification cho super admin về bulk comment actions
- */
 export async function notifySuperAdminsOfBulkCommentAction(
   action: "approve" | "unapprove" | "delete" | "restore" | "hard-delete",
   actorId: string,

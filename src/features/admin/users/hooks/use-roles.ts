@@ -1,9 +1,3 @@
-/**
- * Hook để fetch roles từ API
- * Sử dụng TanStack Query với createAdminQueryOptions để đảm bảo không cache
- * Theo chuẩn Next.js 16: luôn fetch fresh data từ API
- */
-
 "use client"
 
 import { useMemo } from "react"
@@ -15,13 +9,7 @@ import { createAdminQueryOptions } from "@/features/admin/resources/config"
 import type { Role } from "../utils"
 
 export interface UseRolesOptions {
-  /**
-   * Danh sách roles được cung cấp sẵn (từ Server Component) để tránh fetch lại
-   */
   initialRoles?: Role[]
-  /**
-   * Có cho phép fetch roles hay không (mặc định true)
-   */
   enabled?: boolean
 }
 

@@ -1,10 +1,3 @@
-/**
- * Server Component: Role Edit
- * 
- * Fetches role data và permissions, sau đó pass xuống client component
- * Pattern: Server Component (data fetching) → Client Component (UI/interactions)
- */
-
 import { getRoleById } from "../server/queries"
 import { getAllPermissionsOptions } from "../server/queries"
 import { serializeRoleDetail } from "../server/helpers"

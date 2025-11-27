@@ -11,15 +11,6 @@ interface UseFilterOptionsParams {
   limit?: number
 }
 
-/**
- * Hook để fetch filter options từ API route options
- * Sử dụng TanStack Query để cache và deduplicate requests
- * Sử dụng API route /api/admin/{resource}/options?column={column}&search={search}
- * 
- * @param optionsEndpoint - Endpoint để lấy options (ví dụ: apiRoutes.categories.options({ column: "name" }))
- * @param searchQuery - Search query để filter options
- * @param limit - Maximum number of options
- */
 export function useFilterOptions({
   optionsEndpoint,
   searchQuery = "",
@@ -54,9 +45,6 @@ export function useFilterOptions({
   return { options, isLoading }
 }
 
-/**
- * Simple debounce hook
- */
 function useDebounce<T>(value: T, delay: number): T {
   const [debouncedValue, setDebouncedValue] = React.useState<T>(value)
 

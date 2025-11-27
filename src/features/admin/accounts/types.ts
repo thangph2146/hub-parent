@@ -1,8 +1,3 @@
-/**
- * Types for Accounts Feature
- * Quản lý thông tin cá nhân của user hiện tại
- */
-
 export interface AccountProfile {
   id: string
   email: string

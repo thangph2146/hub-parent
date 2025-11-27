@@ -189,9 +189,6 @@ export async function updateComment(ctx: AuthContext, id: string, input: UpdateC
   return sanitized
 }
 
-/**
- * Helper function để xử lý approve/unapprove comment
- */
 async function toggleCommentApproval(
   ctx: AuthContext,
   id: string,

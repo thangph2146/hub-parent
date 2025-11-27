@@ -1,10 +1,3 @@
-/**
- * Server Component: Category Detail
- * 
- * Fetches category data và pass xuống client component
- * Pattern: Server Component (data fetching) → Client Component (UI/interactions)
- */
-
 import { getCategoryById } from "../server/queries"
 import { serializeCategoryDetail } from "../server/helpers"
 import { CategoryDetailClient } from "./category-detail.client"

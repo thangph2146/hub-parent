@@ -1,10 +1,3 @@
-/**
- * Non-cached Database Queries for Tags
- * 
- * Chứa các database queries không có cache wrapper
- * Sử dụng cho các trường hợp cần fresh data hoặc trong API routes
- */
-
 import type { Prisma } from "@prisma/client"
 import { prisma } from "@/lib/database"
 import {
@@ -37,9 +30,6 @@ export async function listTags(params: ListTagsInput = {}): Promise<ListTagsResu
   }
 }
 
-/**
- * Get unique values for a specific column (for filter options)
- */
 export async function getTagColumnOptions(
   column: string,
   search?: string,
@@ -101,10 +91,6 @@ export async function getTagById(id: string): Promise<TagDetail | null> {
   return mapTagRecord(tag)
 }
 
-/**
- * Get active tags for select options (non-cached)
- * Theo chuẩn Next.js 16: không cache admin data
- */
 export async function getActiveTagsForSelect(limit: number = 100): Promise<Array<{ label: string; value: string }>> {
   const tags = await prisma.tag.findMany({
     where: {

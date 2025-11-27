@@ -1,9 +1,3 @@
-/**
- * Hook để sử dụng React Query cache cho detail data với fallback về Server Component props
- * Đảm bảo detail page hiển thị dữ liệu mới nhất từ React Query cache sau khi edit
- * Theo chuẩn Next.js 16: fetch từ API khi cần để đảm bảo data luôn fresh
- */
-
 import { useMemo } from "react"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import type { QueryKey } from "@tanstack/react-query"
@@ -12,79 +6,22 @@ import { apiRoutes } from "@/lib/api/routes"
 import { createAdminQueryOptions } from "../config"
 
 interface UseResourceDetailDataOptions<T> {
-  /**
-   * Initial data từ Server Component props
-   */
   initialData: T
-  /**
-   * Resource ID
-   */
   resourceId: string
-  /**
-   * Query key function để lấy detail data từ React Query cache
-   */
   detailQueryKey: (id: string) => QueryKey
-  /**
-   * Resource name để logging và xác định API route
-   */
   resourceName?: string
-  /**
-   * API route function để fetch detail data (optional, sẽ tự động detect từ resourceName)
-   */
   apiRoute?: (id: string) => string
-  /**
-   * Có nên fetch từ API ngay khi mount không (default: true để đảm bảo data fresh)
-   */
   fetchOnMount?: boolean
 }
 
 interface UseResourceDetailDataResult<T> {
-  /**
-   * Detail data (ưu tiên fetchedData > cachedData > initialData)
-   */
   data: T
-  /**
-   * Đã fetch từ API xong chưa (để biết khi nào có thể log data mới)
-   */
   isFetched: boolean
-  /**
-   * Đang fetch từ API không
-   */
   isFetching: boolean
-  /**
-   * Data có phải từ API fetch không (không phải initialData)
-   * Dùng để biết khi nào nên log (chỉ log khi isFromApi = true)
-   */
   isFromApi: boolean
-  /**
-   * Data từ API fetch (nếu có) - dùng để log data mới nhất
-   * Chỉ có giá trị khi isFromApi = true
-   */
   fetchedData?: T
 }
 
-/**
- * Hook để sử dụng React Query cache cho detail data
- * Ưu tiên React Query cache nếu có, fallback về initial data từ Server Component
- * Tự động fetch từ API khi cần để đảm bảo data luôn fresh (theo chuẩn Next.js 16)
- * 
- * @example
- * ```tsx
- * const { data: detailData, isFetched } = useResourceDetailData({
- *   initialData: category,
- *   resourceId: categoryId,
- *   detailQueryKey: queryKeys.adminCategories.detail,
- *   resourceName: "categories",
- * })
- * 
- * // Chỉ log khi đã fetch xong để đảm bảo data mới nhất
- * useEffect(() => {
- *   if (isFetched) {
- *     resourceLogger.detailAction({ ... })
- *   }
- * }, [isFetched, detailData])
- * ```
- */
 export function useResourceDetailData<T extends Record<string, unknown>>({
   initialData,
   resourceId,
@@ -96,95 +33,56 @@ export function useResourceDetailData<T extends Record<string, unknown>>({
   const queryClient = useQueryClient()
   const queryKey = detailQueryKey(resourceId)
 
-  // Tự động detect API route từ resourceName nếu không được cung cấp
   const resolvedApiRoute = useMemo(() => {
     if (apiRoute) return apiRoute(resourceId)
-    
-    // Map resourceName sang apiRoutes (hỗ trợ cả kebab-case và camelCase)
     try {
-      // Thử với resourceName trực tiếp (có thể là kebab-case như "contact-requests")
       let resourceRoutes = (apiRoutes as unknown as Record<string, { detail?: (id: string) => string }>)[resourceName]
-      
-      // Nếu không tìm thấy, thử convert kebab-case sang camelCase (contact-requests -> contactRequests)
       if (!resourceRoutes?.detail && resourceName.includes("-")) {
         const camelCaseName = resourceName.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase())
         resourceRoutes = (apiRoutes as unknown as Record<string, { detail?: (id: string) => string }>)[camelCaseName]
       }
-      
-      if (resourceRoutes?.detail) {
-        return resourceRoutes.detail(resourceId)
-      }
+      if (resourceRoutes?.detail) return resourceRoutes.detail(resourceId)
     } catch {
       // Ignore type errors
     }
-    
-    // Fallback: tạo route từ resourceName (apiClient sẽ tự động thêm /api prefix)
     return `/admin/${resourceName}/${resourceId}`
   }, [apiRoute, resourceId, resourceName])
 
-  // Fetch từ API khi cần để đảm bảo data luôn fresh (theo chuẩn Next.js 16)
-  // Theo chuẩn Next.js 16: không cache admin data - luôn fetch fresh data từ API
-  // Sử dụng createAdminQueryOptions để đảm bảo consistency với tất cả admin features
   const queryOptions = createAdminQueryOptions<{ data: T }>({
     queryKey,
     queryFn: async () => {
-      // Chỉ log khi thực sự fetch (không log khi sử dụng cache)
-      // React Query sẽ tự động deduplicate requests với cùng queryKey
       const response = await apiClient.get<{ data: T }>(resolvedApiRoute)
       return response.data
     },
-    enabled: fetchOnMount && !!resourceId, // Chỉ fetch khi fetchOnMount = true và có resourceId
-    initialData: queryClient.getQueryData<{ data: T }>(queryKey) || { data: initialData }, // Sử dụng cache hoặc initialData làm initialData
+    enabled: fetchOnMount && !!resourceId,
+    initialData: queryClient.getQueryData<{ data: T }>(queryKey) || { data: initialData },
   })
   
-  // Override refetchOnMount nếu cần
   if (fetchOnMount && !!resourceId) {
     queryOptions.refetchOnMount = "always"
   } else {
     queryOptions.refetchOnMount = false
   }
   
-  // Theo chuẩn TanStack Query v5: sử dụng object syntax với spread operator
   const { data: fetchedData, isFetched, isFetching } = useQuery({ ...queryOptions })
 
-  // Ưu tiên: fetchedData > cachedData > initialData
   const detailData = useMemo(() => {
-    // 1. Ưu tiên data vừa fetch từ API (data mới nhất)
-    if (fetchedData?.data) {
-      return fetchedData.data
-    }
-
-    // 2. Sử dụng React Query cache nếu có (có thể là data từ API trước đó)
+    if (fetchedData?.data) return fetchedData.data
     const cachedData = queryClient.getQueryData<{ data: T }>(queryKey)
-    if (cachedData?.data) {
-      return cachedData.data
-    }
-
-    // 3. Fallback về initial data từ Server Component
+    if (cachedData?.data) return cachedData.data
     return initialData
   }, [fetchedData, queryClient, queryKey, initialData])
 
-  // Xác định isFromApi: chỉ true khi đã fetch từ API xong VÀ có data từ API
-  // Đảm bảo chỉ log khi data thực sự từ API, không phải initialData
   const isFromApi = useMemo(() => {
-    // Chỉ isFromApi = true khi:
-    // 1. Đã fetch xong (isFetched = true)
-    // 2. VÀ có fetchedData từ API (fetchedData?.data có)
-    // Điều này đảm bảo data thực sự từ API, không phải initialData
-    if (isFetched && fetchedData?.data) {
-      return true
-    }
-
-    // Nếu chưa fetch xong hoặc không có fetchedData, không phải từ API
-    return false
+    return isFetched && !!fetchedData?.data
   }, [isFetched, fetchedData])
 
   return {
     data: detailData,
-    isFetched: isFetched || !fetchOnMount, // Nếu không fetch thì coi như đã fetch (sử dụng initialData)
+    isFetched: isFetched || !fetchOnMount,
     isFetching,
-    isFromApi, // Chỉ log khi isFromApi = true để đảm bảo data mới từ API
-    fetchedData: fetchedData?.data, // Data từ API để log (chỉ có khi isFromApi = true)
+    isFromApi,
+    fetchedData: fetchedData?.data,
   }
 }
 

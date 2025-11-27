@@ -1,10 +1,3 @@
-/**
- * Server Component: Student Edit
- * 
- * Fetches student data, sau đó pass xuống client component
- * Pattern: Server Component (data fetching) → Client Component (UI/interactions)
- */
-
 import { getStudentById } from "../server/queries"
 import { serializeStudentDetail } from "../server/helpers"
 import { StudentEditClient } from "./student-edit.client"

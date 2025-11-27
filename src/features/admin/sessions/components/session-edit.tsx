@@ -1,10 +1,3 @@
-/**
- * Server Component: Session Edit
- * 
- * Fetches session data, sau đó pass xuống client component
- * Pattern: Server Component (data fetching) → Client Component (UI/interactions)
- */
-
 import { getSessionById } from "../server/queries"
 import { serializeSessionDetail } from "../server/helpers"
 import { SessionEditClient } from "./session-edit.client"

@@ -1,10 +1,6 @@
 "use server"
 
-/**
- * Mutations for Accounts
- * 
- * Các hàm để cập nhật thông tin tài khoản cá nhân
- */
+"use server"
 
 import bcrypt from "bcryptjs"
 import type { Prisma } from "@prisma/client"
@@ -18,12 +14,6 @@ import {
   type AuthContext,
 } from "@/features/admin/resources/server"
 
-/**
- * Update current user's account profile
- * 
- * Chỉ cho phép user cập nhật thông tin của chính mình
- * Không cho phép thay đổi email, isActive, roles
- */
 export async function updateCurrentUserAccount(
   ctx: AuthContext,
   input: UpdateAccountInput

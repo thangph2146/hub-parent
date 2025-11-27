@@ -1,9 +1,3 @@
-/**
- * Non-cached Database Queries for Notifications
- * 
- * Chứa các database queries không có cache wrapper
- * Sử dụng cho các trường hợp cần fresh data hoặc trong API routes
- */
 import { validatePagination, buildPagination, type ResourcePagination, applyBooleanFilter } from "@/features/admin/resources/server"
 import { Prisma, NotificationKind } from "@prisma/client"
 import { prisma } from "@/lib/database"

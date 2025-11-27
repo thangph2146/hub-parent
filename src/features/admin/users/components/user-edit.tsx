@@ -1,10 +1,3 @@
-/**
- * Server Component: User Edit
- * 
- * Fetches user data và roles, sau đó pass xuống client component
- * Pattern: Server Component (data fetching) → Client Component (UI/interactions)
- */
-
 import { getActiveRoles, getUserDetailById } from "../server/queries"
 import { serializeUserDetail } from "../server/helpers"
 import { UserEditClient } from "./user-edit.client"

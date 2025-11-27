@@ -1,7 +1,3 @@
-/**
- * Zod validation schemas cho accounts
- */
-
 import { z } from "zod"
 
 export const UpdateAccountSchema = z.object({
