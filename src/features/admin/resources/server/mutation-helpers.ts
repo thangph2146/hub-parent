@@ -34,7 +34,6 @@ export async function logTableStatusAfterMutation(options: {
   ])
 
   const isBulk = action.startsWith("bulk-")
-  const singular = resource.endsWith("s") ? resource.slice(0, -1) : resource
   const ids = Array.isArray(affectedIds) ? affectedIds : [affectedIds]
   const summary = isBulk
     ? `Đã ${action === "bulk-delete" ? "xóa" : "khôi phục"} ${affectedCount} ${resource}. Hiện tại: ${activeCount} active, ${deletedCount} đã xóa`

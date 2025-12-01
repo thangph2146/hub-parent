@@ -447,7 +447,7 @@ export function DataTable<T extends object>({
                             ))}
                         </select>
                     </div>
-                    <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                    <div className="flex items-center gap-6 sm:gap-2 flex-wrap">
                         {columns.some((col) => col.filter) && (
                             <Button
                                 type="button"
@@ -512,7 +512,7 @@ export function DataTable<T extends object>({
                     <TableHeader>
                         <TableRow>
                             {selectionEnabled ? (
-                                <TableHead className="w-8 sm:w-10 align-middle px-1 sm:px-3">
+                                <TableHead className="w-6 max-w-6 min-w-6 align-middle px-1 sm:px-3">
                                     <SelectionCheckbox
                                         checked={allVisibleSelected}
                                         indeterminate={someVisibleSelected}
@@ -537,7 +537,7 @@ export function DataTable<T extends object>({
                         </TableRow>
                         {columns.some((col) => col.filter) && showFilters && (
                             <TableRow className="border-t border-border bg-muted/40">
-                                {selectionEnabled ? <TableHead className="min-w-[100px] w-8 sm:w-10 bg-muted/40 px-1 sm:px-3" /> : null}
+                                {selectionEnabled ? <TableHead className="w-10 max-w-10 min-w-10 bg-muted/40 px-1 sm:px-3" /> : null}
                                 {columns.map((column) => (
                                     <TableHead
                                         key={`filter-${column.accessorKey}`}
@@ -657,7 +657,7 @@ function TableBodyContent<T extends object>({
                 return (
                     <TableRow key={rowId} className="group">
                         {showSelection ? (
-                            <TableCell className="w-8 sm:w-10 align-middle px-1 sm:px-3">
+                            <TableCell className="w-6 max-w-6 min-w-6 align-middle px-1 sm:px-3">
                                 <SelectionCheckbox
                                     checked={rowSelected}
                                     indeterminate={false}
@@ -714,7 +714,7 @@ function TableSummary<T extends object>({
                 <span className="hidden sm:inline">Hiển thị {startIndex}-{endIndex} trong {result.total} kết quả</span>
                 <span className="sm:hidden">{startIndex}-{endIndex} / {result.total}</span>
             </div>
-            <div className="flex items-center gap-1.5 sm:gap-2">
+            <div className="flex items-center gap-6 sm:gap-2">
                 <Button
                     type="button"
                     variant="outline"
@@ -799,7 +799,7 @@ function SelectionCheckbox({ checked, indeterminate, disabled, onCheckedChange }
         <input
             ref={ref}
             type="checkbox"
-            className="h-5 w-5 rounded border-border text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+            className="h-6 w-6 rounded border-border text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
             checked={checked}
             disabled={disabled}
             onChange={(event) => {

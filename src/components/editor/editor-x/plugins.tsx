@@ -101,8 +101,6 @@ import { IMAGE } from "@/components/editor/transformers/markdown-image-transform
 import { TABLE } from "@/components/editor/transformers/markdown-table-transformer"
 import { TWEET } from "@/components/editor/transformers/markdown-tweet-transformer"
 import { Separator } from "@/components/ui/separator"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { cn } from "@/lib/utils"
 import { useEditorContainer } from "@/components/editor/context/editor-container-context"
 
 const placeholder = "Press / for commands..."

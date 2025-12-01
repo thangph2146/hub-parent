@@ -9,9 +9,9 @@ export function applyColumnOptionsStatusFilter<T extends Record<string, unknown>
   status: "active" | "deleted" | "all" = "active"
 ): void {
   if (status === "active") {
-    ;(where as any).deletedAt = null
+    ;(where as Record<string, unknown>).deletedAt = null
   } else if (status === "deleted") {
-    ;(where as any).deletedAt = { not: null }
+    ;(where as Record<string, unknown>).deletedAt = { not: null }
   }
 }
 
@@ -21,7 +21,7 @@ export function applyColumnOptionsSearchFilter<T extends Record<string, unknown>
   field: keyof T
 ): void {
   if (!search?.trim()) return
-  ;(where as any)[field] = { contains: search.trim(), mode: "insensitive" }
+  ;(where as Record<string, unknown>)[field as string] = { contains: search.trim(), mode: "insensitive" }
 }
 
 export function buildColumnOptionsWhereClause<T extends Record<string, unknown>>(

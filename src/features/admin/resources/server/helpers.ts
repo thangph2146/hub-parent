@@ -1,6 +1,7 @@
 import type { DataTableResult } from "@/components/tables"
 import { logger } from "@/lib/config"
 import type { ResourcePagination, ResourceResponse } from "../types"
+import { validateCUID } from "@/lib/api/validation"
 
 export function serializeDate(date: Date | string | null | undefined): string | null {
   if (!date) return null
@@ -187,7 +188,6 @@ export function applyRelationFilter<T extends Record<string, unknown>>(
 
   const trimmedValue = value.trim()
   if (trimmedValue.length === 0) return
-  const { validateCUID } = require("@/lib/api/validation")
   const cuidValidation = validateCUID(trimmedValue)
 
   if (cuidValidation.valid) {
@@ -219,8 +219,6 @@ export function applyRelationFilters<T extends Record<string, unknown>>(
   relationConfigs: Record<string, RelationFilterConfig>
 ): void {
   if (!filters) return
-
-  const { validateCUID } = require("@/lib/api/validation")
 
   for (const [relationField, config] of Object.entries(relationConfigs)) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

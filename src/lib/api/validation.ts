@@ -391,10 +391,11 @@ export function buildFilters<T extends Record<string, unknown>>(
   for (const key of filterKeys) {
     const value = columnFilters[key as string]
     if (value) {
+      const keyStr = key as string
       if (key === "approved") {
-        ;(filters as any)[key] = value === "true"
+        ;(filters as Record<string, unknown>)[keyStr] = value === "true"
       } else {
-        ;(filters as any)[key] = value
+        ;(filters as Record<string, unknown>)[keyStr] = value
       }
     }
   }
