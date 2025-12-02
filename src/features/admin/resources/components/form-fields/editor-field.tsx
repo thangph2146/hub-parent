@@ -37,12 +37,10 @@ export function EditorField({
   // Ref để track xem có đang sync từ external value không
   const isSyncingRef = useRef(false)
 
-  // Sync external value changes to internal state
   useEffect(() => {
     if (value && typeof value === "object" && value !== null) {
       try {
         const newState = value as unknown as SerializedEditorState
-        // Only update if different to avoid unnecessary re-renders
         const currentStateStr = editorState ? JSON.stringify(editorState) : null
         const newStateStr = JSON.stringify(newState)
         if (currentStateStr !== newStateStr) {

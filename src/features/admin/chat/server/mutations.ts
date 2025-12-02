@@ -12,7 +12,7 @@ import { emitGroupDeleted, emitGroupHardDeleted, emitGroupRestored } from "./eve
 export interface CreateMessageInput {
   content: string
   subject?: string
-  receiverId?: string | null // Nullable for group messages
+  receiverId?: string | null
   groupId?: string | null
   parentId?: string | null
   type?: "NOTIFICATION" | "ANNOUNCEMENT" | "PERSONAL" | "SYSTEM"
@@ -260,7 +260,6 @@ export async function markMessageAsRead(ctx: AuthContext, messageId: string, use
       },
     })
 
-    // Return message with reads
     const messageWithReads = await prisma.message.findUnique({
       where: { id: messageId },
       include: {
@@ -923,7 +922,6 @@ export async function updateGroup(ctx: AuthContext, input: UpdateGroupInput) {
     throw new ApplicationError("Unauthorized", 401)
   }
 
-  // Verify user is owner or admin
   const userMember = await prisma.groupMember.findFirst({
     where: {
       groupId: input.groupId,
@@ -937,7 +935,6 @@ export async function updateGroup(ctx: AuthContext, input: UpdateGroupInput) {
     throw new ApplicationError("Bạn không có quyền chỉnh sửa nhóm", 403)
   }
 
-  // Verify group exists
   const group = await prisma.group.findUnique({
     where: { id: input.groupId },
   })
@@ -946,7 +943,6 @@ export async function updateGroup(ctx: AuthContext, input: UpdateGroupInput) {
     throw new NotFoundError("Nhóm không tồn tại")
   }
 
-  // Update group
   const updated = await prisma.group.update({
     where: { id: input.groupId },
     data: {
@@ -1294,7 +1290,6 @@ export async function updateGroupMemberRole(ctx: AuthContext, input: UpdateGroup
     throw new ApplicationError("Không thể thay đổi vai trò của chủ nhóm", 400)
   }
 
-  // Update role
   await prisma.groupMember.update({
     where: { id: targetMember.id },
     data: {

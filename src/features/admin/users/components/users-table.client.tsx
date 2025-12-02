@@ -258,7 +258,6 @@ export function UsersTableClient({
         userIds: ids,
       })
 
-      // Actions cần confirmation
       if (action === "delete" || action === "restore" || action === "hard-delete") {
         setDeleteConfirm({
           open: true,

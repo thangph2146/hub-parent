@@ -41,7 +41,6 @@ export interface CommentDetailClientProps {
   canApprove?: boolean
 }
 
-// Status field with Switch
 interface StatusFieldProps {
   approved: boolean
   canApprove: boolean

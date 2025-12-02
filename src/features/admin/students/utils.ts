@@ -14,7 +14,6 @@ export function validateStudentCode(value: unknown): { valid: boolean; error?: s
   if (trimmed.length > 50) {
     return { valid: false, error: "Mã học sinh không được vượt quá 50 ký tự" }
   }
-  // Allow alphanumeric, underscore, and hyphen
   const codeRegex = /^[a-zA-Z0-9_-]+$/
   if (!codeRegex.test(trimmed)) {
     return {

@@ -37,7 +37,7 @@ export interface ResourceFormField<T = unknown> {
   label: string
   description?: string
   type?: "text" | "email" | "password" | "number" | "textarea" | "select" | "multiple-select" | "checkbox" | "switch" | "date" | "image" | "editor" | "slug"
-  sourceField?: string // Field name để auto-generate slug (ví dụ: "title")
+  sourceField?: string
   placeholder?: string
   required?: boolean
   disabled?: boolean
@@ -47,7 +47,7 @@ export interface ResourceFormField<T = unknown> {
   icon?: React.ReactNode
   render?: (field: ResourceFormField<T>, value: unknown, onChange: (value: unknown) => void) => React.ReactNode
   validate?: (value: unknown) => { valid: boolean; error?: string }
-  section?: string // Section ID để group fields
+  section?: string
 }
 
 export interface ResourceFormSection {
@@ -57,12 +57,10 @@ export interface ResourceFormSection {
 }
 
 export interface ResourceFormProps<T extends Record<string, unknown>> {
-  // Data
   data: T | null
   fields: ResourceFormField<T>[]
-  sections?: ResourceFormSection[] // Section definitions với title/description
+  sections?: ResourceFormSection[]
   
-  // Config
   title?: string
   description?: string
   submitLabel?: string
@@ -70,11 +68,10 @@ export interface ResourceFormProps<T extends Record<string, unknown>> {
   backUrl?: string
   backLabel?: string
   
-  // Handlers
   onSubmit: (data: Partial<T>) => Promise<{ success: boolean; error?: string }>
   onCancel?: () => void
   onSuccess?: () => void
-  onBack?: () => void | Promise<void> // Callback khi click button quay lại
+  onBack?: () => void | Promise<void>
   
   // UI
   className?: string
@@ -157,12 +154,10 @@ export function ResourceForm<T extends Record<string, unknown>>({
   const [submitSuccess, setSubmitSuccess] = useState(false)
   const formRef = useRef<HTMLFormElement>(null)
 
-  // Auto-detect action và resourceId từ data
   const detectedAction: "create" | "update" = action || (data?.id ? "update" : "create")
   const detectedResourceId = resourceId || (data?.id as string | undefined)
   const detectedResourceName = resourceName || "resource"
 
-  // Sync data prop vào formData khi data thay đổi (ví dụ khi fetch từ API xong)
   useEffect(() => {
     if (!data) return
 
@@ -202,7 +197,6 @@ export function ResourceForm<T extends Record<string, unknown>>({
           }
         } else {
           if (dataValue !== undefined) {
-            // Cho phép null, empty string, và các giá trị khác
             const newValue = dataValue === null ? "" : dataValue
             
             // So sánh để tránh update không cần thiết
@@ -655,7 +649,6 @@ export function ResourceForm<T extends Record<string, unknown>>({
     )
   }
 
-  // Page mode
   const formElement = showCard ? (
     <Card className={className}>
       {(title || description) && (

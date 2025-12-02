@@ -74,8 +74,6 @@ export function useResourceActions<T extends { id: string }>(
   
   const { bulkState, startBulkProcessing, stopBulkProcessing } = useResourceBulkProcessing()
   
-  // Single action mutation
-  // Theo chuẩn TanStack Query v5: sử dụng object syntax với spread operator
   const singleActionMutation = useMutation({
     ...createAdminMutationOptions({
       mutationFn: async ({ action, row }: { action: "delete" | "restore" | "hard-delete"; row: T }) => {
@@ -144,8 +142,6 @@ export function useResourceActions<T extends { id: string }>(
     }),
   })
   
-  // Bulk action mutation
-  // Theo chuẩn TanStack Query v5: sử dụng object syntax với spread operator
   const bulkActionMutation = useMutation({
     ...createAdminMutationOptions({
       mutationFn: async ({ action, ids }: { action: "delete" | "restore" | "hard-delete"; ids: string[] }) => {

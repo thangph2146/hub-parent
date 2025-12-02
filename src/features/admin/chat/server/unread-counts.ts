@@ -2,22 +2,19 @@ import { prisma } from "@/lib/database"
 import { cache } from "react"
 
 export async function getTotalUnreadMessagesCount(userId: string): Promise<number> {
-  // Count personal messages (receiverId = userId và isRead = false)
   const personalUnreadCount = await prisma.message.count({
     where: {
       receiverId: userId,
       isRead: false,
       deletedAt: null,
-      groupId: null, // Chỉ personal messages
+      groupId: null,
     },
   })
 
-  // Count group messages (user chưa đọc - không có trong MessageRead)
-  // Lấy tất cả groups mà user là member
   const userGroupMemberships = await prisma.groupMember.findMany({
     where: {
       userId,
-      leftAt: null, // Chỉ groups đang active
+      leftAt: null,
     },
     select: {
       groupId: true,
@@ -28,8 +25,6 @@ export async function getTotalUnreadMessagesCount(userId: string): Promise<numbe
 
   let groupUnreadCount = 0
   if (groupIds.length > 0) {
-    // Count messages trong groups mà user chưa đọc
-    // (senderId != userId và không có trong MessageRead)
     groupUnreadCount = await prisma.message.count({
       where: {
         groupId: { in: groupIds },

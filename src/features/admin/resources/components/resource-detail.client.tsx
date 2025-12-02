@@ -25,21 +25,19 @@ export interface ResourceDetailField<T = unknown> {
   render?: (value: unknown, data: T) => React.ReactNode
   format?: (value: unknown) => string
   type?: "text" | "date" | "boolean" | "number" | "custom"
-  section?: string // Section ID để group fields
+  section?: string
 }
 
 export interface ResourceDetailSection<T = unknown> extends ResourceFormSection {
-  fieldHeader?: React.ReactNode // Custom node render trước fields trong section
-  fieldFooter?: React.ReactNode // Custom node render sau fields trong section
-  fieldsContent?: (fields: ResourceDetailField<T>[], data: T) => React.ReactNode // Custom render cho fields
+  fieldHeader?: React.ReactNode
+  fieldFooter?: React.ReactNode
+  fieldsContent?: (fields: ResourceDetailField<T>[], data: T) => React.ReactNode
 }
 
 export interface ResourceDetailClientProps<T extends Record<string, unknown>> {
-  // Data
   data: T | null
   isLoading?: boolean
 
-  // Fields config - có thể là mảng fields hoặc object với title, description, fields
   fields: ResourceDetailField<T>[] | {
     title?: string
     description?: string
@@ -52,23 +50,18 @@ export interface ResourceDetailClientProps<T extends Record<string, unknown>> {
   backUrl?: string
   backLabel?: string
 
-  // Actions
   actions?: React.ReactNode
 
-  // Custom sections (legacy - sẽ được thay thế bởi detailSections)
   sections?: Array<{
     title: string
     description?: string
     fields: ResourceDetailField<T>[]
   }>
   
-  // Detail sections definitions (tương tự editSections)
-  detailSections?: ResourceDetailSection<T>[] // Section definitions với title/description cho detail view
+  detailSections?: ResourceDetailSection<T>[]
   
-  // Custom node render sau tất cả sections
   afterSections?: React.ReactNode
   
-  // Callback khi click button quay lại
   onBack?: () => void | Promise<void>
 }
 
@@ -347,7 +340,6 @@ export function ResourceDetailClient<T extends Record<string, unknown>>({
               {/* Render sections từ detailSections - bao gồm cả sections có fieldsContent nhưng không có fields */}
               {detailSections?.map((section) => {
                 const sectionFields = grouped[section.id] || []
-                // Render section nếu có fields hoặc có fieldsContent
                 if (sectionFields.length > 0 || section.fieldsContent) {
                   return <React.Fragment key={section.id}>{renderSection(section.id, sectionFields)}</React.Fragment>
                 }

@@ -134,10 +134,6 @@ export function useResourceFormSubmit({
           title: messages.successTitle,
           description: messages.successDescription,
         })
-
-        // Call custom success handler TRƯỚC navigation để invalidate cache
-        // Điều này đảm bảo server cache và React Query cache được invalidate
-        // trước khi navigate đến detail page
         if (onSuccess) {
           logger.debug("[useResourceFormSubmit] Calling onSuccess handler")
           await onSuccess(response)
@@ -158,7 +154,6 @@ export function useResourceFormSubmit({
           } else if (typeof navigation.toDetail === "string") {
             detailPath = navigation.toDetail
           } else if (response.data?.data?.id) {
-            // Auto-generate detail path from API route
             if (typeof apiRoute === "string") {
               const normalizedRoute = stripApiBase(apiRoute)
               const resourcePath = normalizedRoute
@@ -171,7 +166,6 @@ export function useResourceFormSubmit({
 
           if (detailPath) {
             logger.debug("[useResourceFormSubmit] Navigating to detail", { detailPath })
-            // Navigate với cache-busting parameter để force Server Component refetch
             const url = new URL(detailPath, window.location.origin)
             url.searchParams.set("_t", Date.now().toString())
             router.replace(url.pathname + url.search)

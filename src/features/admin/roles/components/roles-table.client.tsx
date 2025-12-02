@@ -329,7 +329,6 @@ export function RolesTableClient({
     (action: "delete" | "restore" | "hard-delete", ids: string[], refresh: () => void, clearSelection: () => void) => {
       if (ids.length === 0) return
 
-      // Actions cần confirmation
       if (action === "delete" || action === "restore" || action === "hard-delete") {
         setDeleteConfirm({
           open: true,

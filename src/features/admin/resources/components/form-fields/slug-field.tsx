@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState, useCallback } from "react"
 import { FieldContent, FieldError } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { generateSlug } from "@/lib/utils/generate-slug"
@@ -12,7 +12,7 @@ interface SlugFieldProps<T> {
   error?: string
   onChange: (value: unknown) => void
   isPending?: boolean
-  sourceValue?: unknown // Giá trị của source field (như title) để auto-generate
+  sourceValue?: unknown 
 }
 
 export function SlugField<T>({
@@ -28,9 +28,16 @@ export function SlugField<T>({
   const slugManuallyEditedRef = useRef<boolean>(false)
   const previousSourceValueRef = useRef<string | null>(null)
   const isInitialMountRef = useRef<boolean>(true)
+  const onChangeRef = useRef(onChange)
+  const fieldValueRef = useRef(fieldValue)
+  const sourceValueRef = useRef(typeof sourceValue === "string" ? sourceValue : "")
 
-  // Sync với external value changes (khi data mới được load)
   useEffect(() => {
+    onChangeRef.current = onChange
+  }, [onChange])
+
+  useEffect(() => {
+    fieldValueRef.current = fieldValue
     if (fieldValue !== slugValue && !slugManuallyEditedRef.current) {
       setSlugValue(fieldValue)
       if (fieldValue) {
@@ -39,30 +46,22 @@ export function SlugField<T>({
     }
   }, [fieldValue, slugValue])
 
-  // Auto-generate slug từ source field (như title)
-  useEffect(() => {
-    const sourceStr = typeof sourceValue === "string" ? sourceValue : ""
+  const processSourceChange = useCallback(() => {
+    const sourceStr = sourceValueRef.current
     
-    // On initial mount, set previous value to current source value
-    // This prevents auto-generation on mount when editing existing data
     if (isInitialMountRef.current) {
       previousSourceValueRef.current = sourceStr || null
       isInitialMountRef.current = false
-      // If slug is empty but source has value, generate slug on initial mount
       if (!slugValue && sourceStr.trim()) {
         const generatedSlug = generateSlug(sourceStr)
         if (generatedSlug) {
           setSlugValue(generatedSlug)
-          onChange(generatedSlug)
+          onChangeRef.current(generatedSlug)
         }
       }
       return
     }
     
-    // Only auto-generate if:
-    // 1. Not manually edited
-    // 2. Source value exists and is not empty
-    // 3. Source value has changed from previous
     if (
       !slugManuallyEditedRef.current &&
       sourceStr.trim() &&
@@ -71,20 +70,23 @@ export function SlugField<T>({
       const generatedSlug = generateSlug(sourceStr)
       if (generatedSlug && generatedSlug !== slugValue) {
         setSlugValue(generatedSlug)
-        onChange(generatedSlug)
+        onChangeRef.current(generatedSlug)
       }
       previousSourceValueRef.current = sourceStr
     } else if (sourceStr !== previousSourceValueRef.current) {
-      // Update previous value even if not generating
       previousSourceValueRef.current = sourceStr || null
     }
+  }, [slugValue])
+
+  useEffect(() => {
+    const sourceStr = typeof sourceValue === "string" ? sourceValue : ""
+    sourceValueRef.current = sourceStr
+    processSourceChange()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sourceValue])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value
-    // Only mark as manually edited if user actually changes the value
-    // (not just when field is focused)
     if (newValue !== slugValue) {
       slugManuallyEditedRef.current = true
     }

@@ -92,7 +92,6 @@ export async function emitNotificationsSync(
   if (!io || notificationIds.length === 0) return
 
   try {
-    // Reload updated notifications và emit
     const updatedNotifications = await prisma.notification.findMany({
       where: { id: { in: notificationIds }, userId },
       take: 50,
@@ -100,7 +99,6 @@ export async function emitNotificationsSync(
 
     const payloads = updatedNotifications.map(mapNotificationToPayload)
 
-    // Update cache
     payloads.forEach((payload) => {
       storeNotificationInCache(userId, payload)
     })

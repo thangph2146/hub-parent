@@ -320,7 +320,6 @@ export function PostsTableClient({
         postIds: ids,
       })
 
-      // Actions cần confirmation
       if (action === "delete" || action === "restore" || action === "hard-delete") {
         setDeleteConfirm({
           open: true,

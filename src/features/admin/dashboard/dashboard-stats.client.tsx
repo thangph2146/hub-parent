@@ -63,10 +63,6 @@ const itemVariants = {
   },
 };
 
-// Extended Chart colors - sử dụng CSS variables và bổ sung thêm màu
-// Đảm bảo đủ màu cho tất cả resources (11 resources)
-// Ưu tiên màu sắc rõ ràng và phân biệt tốt cho các mục quan trọng
-// CSS variables chứa hex colors, sử dụng trực tiếp
 const CHART_COLORS = [
   "var(--chart-1)",              // Người dùng - Primary blue (#1f3368 / #3d5a9e)
   "var(--chart-2)",              // Bài viết - Primary red (#a71b29 / #c9444f)
@@ -85,8 +81,6 @@ const CHART_COLORS = [
   "hsl(142, 76%, 36%)",          // Emerald - #10b981
 ];
 
-// Màu sắc đặc biệt cho các mục quan trọng - đảm bảo hiển thị rõ ràng và đầy đủ
-// Sử dụng màu từ CSS variables để tương thích với theme (light/dark mode)
 const IMPORTANT_RESOURCE_COLORS: Record<string, string> = {
   users: "var(--chart-1)",       // Người dùng - màu primary blue
   posts: "var(--chart-2)",       // Bài viết - màu secondary red
@@ -226,7 +220,6 @@ export function DashboardStatsClient({ stats }: DashboardStatsClientProps) {
     color: CHART_COLORS[index % CHART_COLORS.length],
   }));
 
-  // Permission checks for all resources
   const canViewUsers =
     isSuperAdminUser || hasPermission(PERMISSIONS.USERS_VIEW);
   const canViewPosts =
@@ -251,7 +244,6 @@ export function DashboardStatsClient({ stats }: DashboardStatsClientProps) {
   const canViewDashboard =
     isSuperAdminUser || hasPermission(PERMISSIONS.DASHBOARD_VIEW);
 
-  // Check if user has any permission to view stats
   const hasAnyStatsPermission =
     canViewUsers ||
     canViewPosts ||
@@ -266,9 +258,6 @@ export function DashboardStatsClient({ stats }: DashboardStatsClientProps) {
     canViewRoles ||
     canViewDashboard;
 
-  // Define available chart resources with permissions
-  // Đảm bảo chỉ hiển thị resources mà user có permission
-  // Ưu tiên màu sắc rõ ràng cho các mục quan trọng (Người dùng, Bài viết, Danh mục)
   const availableResources = useMemo(
     () => {
       const allResources = [
@@ -276,7 +265,6 @@ export function DashboardStatsClient({ stats }: DashboardStatsClientProps) {
           key: "users",
           label: "Người dùng",
           permission: canViewUsers,
-          // Sử dụng màu đặc biệt cho mục quan trọng
           color: IMPORTANT_RESOURCE_COLORS.users || CHART_COLORS[0],
           isImportant: true,
         },
@@ -284,7 +272,6 @@ export function DashboardStatsClient({ stats }: DashboardStatsClientProps) {
           key: "posts",
           label: "Bài viết",
           permission: canViewPosts,
-          // Sử dụng màu đặc biệt cho mục quan trọng
           color: IMPORTANT_RESOURCE_COLORS.posts || CHART_COLORS[1],
           isImportant: true,
         },
@@ -299,7 +286,6 @@ export function DashboardStatsClient({ stats }: DashboardStatsClientProps) {
           key: "categories",
           label: "Danh mục",
           permission: canViewCategories,
-          // Sử dụng màu đặc biệt cho mục quan trọng
           color: IMPORTANT_RESOURCE_COLORS.categories || CHART_COLORS[3],
           isImportant: true,
         },
@@ -354,8 +340,6 @@ export function DashboardStatsClient({ stats }: DashboardStatsClientProps) {
         },
       ];
       
-      // Chỉ trả về resources mà user có permission xem
-      // Đảm bảo các mục quan trọng (users, posts, categories) luôn được ưu tiên hiển thị
       const filtered = allResources.filter((r) => r.permission);
       
       // Sắp xếp lại: các mục quan trọng lên đầu
@@ -380,22 +364,14 @@ export function DashboardStatsClient({ stats }: DashboardStatsClientProps) {
     ]
   );
 
-  // State for selected resources in chart
-  // Lazy initialization: chỉ tính toán khi component mount
   const [selectedResourcesState, setSelectedResources] = useState<Set<string>>(() => {
-    // Khởi tạo với empty set, sẽ được sync sau khi availableResources được tính toán
     return new Set();
   });
 
-  // State for chart type (line or bar)
   const [chartType, setChartType] = useState<"line" | "bar" | "composed">("composed");
   
-  // State for hidden series in legend
   const [hiddenSeries, setHiddenSeries] = useState<Set<string>>(new Set());
 
-  // Sync selected resources with available resources (filter out unavailable ones)
-  // Đảm bảo chỉ chọn resources mà user có permission
-  // Tự động chọn tất cả available resources nếu chưa có gì được chọn (initial state)
   const selectedResources = useMemo(() => {
     const availableKeys = new Set(availableResources.map((r) => r.key));
     
@@ -404,11 +380,7 @@ export function DashboardStatsClient({ stats }: DashboardStatsClientProps) {
       [...selectedResourcesState].filter((key) => availableKeys.has(key))
     );
     
-    // Nếu chưa có selection nào và có available resources, tự động chọn tất cả
-    // Điều này đảm bảo UX tốt khi component mount lần đầu
     if (filtered.size === 0 && availableKeys.size > 0 && selectedResourcesState.size === 0) {
-      // Sử dụng setTimeout để tránh update state trong render
-      // Nhưng vẫn trả về availableKeys để render ngay
       setTimeout(() => {
         setSelectedResources(availableKeys);
       }, 0);
@@ -418,7 +390,6 @@ export function DashboardStatsClient({ stats }: DashboardStatsClientProps) {
     return filtered;
   }, [selectedResourcesState, availableResources]);
 
-  // Toggle resource selection
   const toggleResource = (key: string) => {
     setSelectedResources((prev) => {
       const next = new Set(prev);
@@ -431,7 +402,6 @@ export function DashboardStatsClient({ stats }: DashboardStatsClientProps) {
     });
   };
 
-  // Toggle series visibility in legend
   const toggleSeriesVisibility = (key: string) => {
     setHiddenSeries((prev) => {
       const next = new Set(prev);
@@ -461,7 +431,6 @@ export function DashboardStatsClient({ stats }: DashboardStatsClientProps) {
     );
   }
 
-  // If user has no permissions, show empty state
   if (!hasAnyStatsPermission) {
     return (
       <div className="flex flex-1 flex-col items-center justify-center p-4 md:p-6 lg:p-8">

@@ -79,7 +79,6 @@ export function useSessionsSocketBridge() {
         const shouldInclude = matches && includesByStatus
 
         if (existingIndex === -1 && !shouldInclude) {
-          // Nothing to update for this page
           return null
         }
 
@@ -96,10 +95,7 @@ export function useSessionsSocketBridge() {
             rows = insertRowIntoPage(rows, sessionRow, next.limit)
             total = total + 1
           } else {
-            // On pages > 1 we only adjust total if session previously existed
             if (previousStatus && previousStatus !== rowStatus) {
-              // If moved to this status from different view and this page is not 1, we can't insert accurately
-              // Leave as is until manual refresh
             }
           }
         } else if (existingIndex >= 0) {
@@ -116,7 +112,6 @@ export function useSessionsSocketBridge() {
 
         const totalPages = total === 0 ? 0 : Math.ceil(total / next.limit)
 
-        // Luôn return object mới để React Query detect được thay đổi
         const result = {
           ...next,
           rows,

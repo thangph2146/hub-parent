@@ -158,7 +158,6 @@ export function useCommentActions({
     [canApprove, showFeedback, queryClient, refreshTable],
   )
 
-  // Giữ lại executeBulkAction riêng vì hỗ trợ approve/unapprove
   const { bulkState, startBulkProcessing, stopBulkProcessing } = useResourceBulkProcessing()
   const executeBulkAction = useCallback(
     async (

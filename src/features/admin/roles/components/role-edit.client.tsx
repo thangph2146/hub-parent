@@ -81,7 +81,6 @@ export function RoleEditClient({
         ...data,
         permissions: Array.isArray(data.permissions) ? data.permissions : [],
       }
-      // Prevent editing super_admin name (client-side check for UX)
       if (role) {
         const roleName = (role as RoleRow).name
         if (roleName === "super_admin" && (submitData as RoleEditData).name && (submitData as RoleEditData).name !== roleName) {

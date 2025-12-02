@@ -67,7 +67,6 @@ export async function createNotificationForSuperAdmins(
   kind: NotificationKind = NotificationKind.SYSTEM,
   metadata?: Record<string, unknown> | null
 ) {
-  // Find all super admin users
   const superAdmins = await prisma.user.findMany({
     where: {
       isActive: true,
@@ -132,7 +131,6 @@ export async function emitNotificationToSuperAdminsAfterCreate(
   _metadata?: Record<string, unknown> | null
 ) {
   try {
-    // Find all super admin users
     const superAdmins = await prisma.user.findMany({
       where: {
         isActive: true,
@@ -482,7 +480,6 @@ export async function bulkDelete(notificationIds: string[], userId: string) {
       systemCount: systemNotifications.length,
       totalCount: notificationIds.length,
     })
-    // Chỉ xóa các notifications không phải SYSTEM
     const deletableNotifications = notifications.filter((n) => n.kind !== NotificationKind.SYSTEM)
     const deletableIds = deletableNotifications.map((n) => n.id)
 
@@ -490,7 +487,6 @@ export async function bulkDelete(notificationIds: string[], userId: string) {
       throw new Error("Forbidden: System notifications cannot be deleted")
     }
 
-    // Xóa chỉ các notifications có thể xóa được
     const result = await prisma.notification.deleteMany({
       where: { 
         id: { in: deletableIds },

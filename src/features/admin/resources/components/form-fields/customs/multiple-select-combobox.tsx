@@ -37,7 +37,6 @@ export function MultipleSelectCombobox<T>({
 }: MultipleSelectComboboxProps<T>) {
   const [selectOpen, setSelectOpen] = useState(false)
 
-  // Normalize fieldValue to array
   const selectedValues = Array.isArray(fieldValue) 
     ? fieldValue.map(v => String(v))
     : fieldValue !== null && fieldValue !== undefined && fieldValue !== ""
@@ -152,7 +151,6 @@ export function MultipleSelectCombobox<T>({
           <CommandList>
             <CommandEmpty>Không tìm thấy.</CommandEmpty>
             {field.optionGroups ? (
-              // Render grouped options
               <>
                 {/* Select All option for grouped options */}
                 {allOptions.length > 0 && (
@@ -205,7 +203,6 @@ export function MultipleSelectCombobox<T>({
                 ))}
               </>
             ) : (
-              // Render flat options
               <CommandGroup>
                 {/* Select All option for flat options */}
                 {allOptions.length > 0 && (

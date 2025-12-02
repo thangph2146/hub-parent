@@ -65,7 +65,6 @@ export function useContactRequestActions({
     }),
   })
 
-  // Giữ lại handleToggleRead riêng vì là logic đặc biệt
   const handleToggleRead = useCallback(
     async (row: ContactRequestRow, newStatus: boolean, _refresh: ResourceRefreshHandler) => {
       if (!canUpdate) {

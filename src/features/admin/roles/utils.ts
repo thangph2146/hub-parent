@@ -11,7 +11,6 @@ export function validateRoleName(value: unknown): { valid: boolean; error?: stri
   if (trimmed.length < 2) {
     return { valid: false, error: "Tên vai trò phải có ít nhất 2 ký tự" }
   }
-  // Allow alphanumeric, underscore, and hyphen
   const nameRegex = /^[a-z0-9_-]+$/
   if (!nameRegex.test(trimmed)) {
     return {

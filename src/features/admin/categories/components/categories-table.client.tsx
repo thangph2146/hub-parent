@@ -269,7 +269,6 @@ export function CategoriesTableClient({
         categoryIds: ids,
       })
 
-      // Actions cần confirmation
       if (action === "delete" || action === "restore" || action === "hard-delete") {
         setDeleteConfirm({
           open: true,

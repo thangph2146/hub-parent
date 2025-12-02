@@ -13,7 +13,7 @@ export interface ListGroupsInput {
   page?: number
   limit?: number
   search?: string
-  includeDeleted?: boolean // Include deleted groups
+  includeDeleted?: boolean
 }
 
 export interface ConversationListItem {
@@ -81,7 +81,6 @@ export interface MessageDetail {
 export async function listConversations(params: ListConversationsInput): Promise<ListConversationsResult> {
   const { userId, page = 1, limit = 50, search } = params
 
-  // If search is provided, first find matching users
   let matchingUserIds: string[] | undefined = undefined
   if (search && search.trim().length > 0) {
     const searchValue = search.trim()
@@ -96,7 +95,6 @@ export async function listConversations(params: ListConversationsInput): Promise
     })
     matchingUserIds = matchingUsers.map((u) => u.id)
     
-    // If no users match, return empty result
     if (matchingUserIds.length === 0) {
       return {
         data: [],
@@ -475,8 +473,8 @@ export async function listGroups(input: ListGroupsInput) {
     leftAt: null,
     group: {
       ...(input.includeDeleted
-        ? {} // Include all groups (deleted and active)
-        : { deletedAt: null }), // Only active groups
+        ? {}
+        : { deletedAt: null }),
       ...(groupSearchFilter ? groupSearchFilter : {}),
     },
   }

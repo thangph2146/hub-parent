@@ -38,7 +38,6 @@ export function useResourceTableLogger<T extends object>({
     return "active"
   }, [currentViewId])
 
-  // Lấy initialData cho view hiện tại
   const currentInitialData = useMemo(() => {
     if (currentViewId && initialDataByView?.[currentViewId]) {
       return initialDataByView[currentViewId]
@@ -70,7 +69,6 @@ export function useResourceTableLogger<T extends object>({
             return row.deletedAt !== null && row.deletedAt !== undefined
           })
           if (!allDeleted) {
-            // Data không đúng view, skip log
             return false
           }
         } else if (viewStatus === "active") {
@@ -79,7 +77,6 @@ export function useResourceTableLogger<T extends object>({
             return row.deletedAt === null || row.deletedAt === undefined
           })
           if (!allActive) {
-            // Data không đúng view, skip log
             return false
           }
         }
@@ -156,11 +153,8 @@ export function useResourceTableLogger<T extends object>({
     const dataToLog = cachedData || currentInitialData
 
     if (dataToLog) {
-      // Có data ngay, log luôn
       logData(dataToLog, currentViewId || "active", currentViewStatus)
     } else if (viewChanged || isFirstMount) {
-      // View thay đổi hoặc lần đầu mount nhưng chưa có data
-      // Retry nhiều lần với interval ngắn hơn để đảm bảo log được data ngay
       let retryCount = 0
       const maxRetries = 20 // Tăng số lần retry
       const retryInterval = 50 // Giảm interval xuống 50ms để nhanh hơn

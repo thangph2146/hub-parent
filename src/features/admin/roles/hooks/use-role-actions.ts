@@ -67,7 +67,6 @@ export function useRoleActions({
       row: RoleRow,
       refresh: ResourceRefreshHandler
     ): Promise<void> => {
-      // Prevent actions on super_admin
       if (row.name === "super_admin") {
         const errorMsg = action === "hard-delete" 
           ? ROLE_MESSAGES.CANNOT_HARD_DELETE_SUPER_ADMIN
@@ -81,7 +80,6 @@ export function useRoleActions({
     [baseExecuteSingleAction, showFeedback]
   )
 
-  // Giữ lại handleToggleStatus riêng vì là logic đặc biệt
   const handleToggleStatus = useCallback(
     async (row: RoleRow, newStatus: boolean, _refresh: ResourceRefreshHandler) => {
       if (!canManage) {
@@ -89,7 +87,6 @@ export function useRoleActions({
         return
       }
 
-      // Prevent toggling super_admin
       if (row.name === "super_admin") {
         showFeedback("error", ROLE_MESSAGES.CANNOT_MODIFY_SUPER_ADMIN, ROLE_MESSAGES.CANNOT_MODIFY_SUPER_ADMIN)
         return

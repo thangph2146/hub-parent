@@ -90,13 +90,11 @@ export function useUserActions({
         return
       }
 
-      // Gọi baseExecuteBulkAction với filtered IDs
       return baseExecuteBulkAction(action, deletableIds, _refresh, clearSelection)
     },
     [baseExecuteBulkAction, showFeedback]
   )
 
-  // Giữ lại executeToggleActive riêng vì là logic đặc biệt
   const executeToggleActive = useCallback(
     async (row: UserRow, newStatus: boolean, _refresh: ResourceRefreshHandler): Promise<void> => {
       if (!canManage) {

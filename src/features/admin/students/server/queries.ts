@@ -46,7 +46,7 @@ export async function getStudentColumnOptions(
   isSuperAdmin?: boolean
 ): Promise<Array<{ label: string; value: string }>> {
   const where: Prisma.StudentWhereInput = {
-    deletedAt: null, // Only active students
+    deletedAt: null,
   }
 
   if (!isSuperAdmin && actorId) {
@@ -116,8 +116,6 @@ export async function getStudentById(
 ): Promise<StudentDetail | null> {
   const where: Prisma.StudentWhereUniqueInput = { id }
   
-  // If not super admin, add userId filter to ensure user can only access their own students
-  // So we'll check after fetching
   const student = await prisma.student.findUnique({
     where,
     include: {
