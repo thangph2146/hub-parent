@@ -13,7 +13,7 @@ export interface SessionRow {
   expiresAt: string
   lastActivity: string
   createdAt: string
-  deletedAt: string | null // Sẽ là null vì model không có deletedAt, nhưng giữ để tương thích với ResourceRow
+  deletedAt: string | null
 }
 
 export interface SessionsTableClientProps extends BaseResourceTableClientProps<SessionRow> {
@@ -42,7 +42,7 @@ export interface ListedSession {
   lastActivity: string
   createdAt: string
   updatedAt: string
-  deletedAt: string | null // Sẽ là null vì model không có deletedAt
+  deletedAt: string | null
   userName?: string | null
   userEmail?: string
 }

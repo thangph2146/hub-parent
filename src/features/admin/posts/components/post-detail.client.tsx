@@ -365,5 +365,4 @@ export function PostDetailClient({
   );
 }
 
-// Set displayName để tránh lỗi Performance API
 PostDetailClient.displayName = "PostDetailClient";

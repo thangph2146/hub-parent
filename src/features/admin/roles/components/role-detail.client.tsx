@@ -85,7 +85,6 @@ export function RoleDetailClient({ roleId, role, backUrl = "/admin/roles" }: Rol
 
   const detailFields: ResourceDetailField<RoleDetailData>[] = []
 
-  // Sections cho detail view - tách fields thành các sections
   const detailSections: ResourceDetailSection<RoleDetailData>[] = [
     {
       id: "basic",

@@ -4,7 +4,6 @@ import { PERMISSIONS } from "@/lib/permissions"
 // Get all permission values for validation
 const allPermissions = Object.values(PERMISSIONS) as string[]
 
-// Custom validation function for permissions
 const permissionSchema = z.string().refine(
   (val) => allPermissions.includes(val),
   { message: "Quyền không hợp lệ" }

@@ -77,7 +77,6 @@ export function getBaseStudentFields(
     },
   ]
 
-  // Chỉ super admin mới có thể chọn liên kết tài khoản
   if (isSuperAdmin) {
     fields.push({
       name: "userId",

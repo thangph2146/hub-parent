@@ -1,7 +1,6 @@
 export { NotificationsTable } from "./notifications-table"
 export { NotificationDetail } from "./notification-detail"
 
-// Client Components
 export { NotificationsTableClient } from "./notifications-table.client"
 export { NotificationDetailClient } from "./notification-detail.client"
 

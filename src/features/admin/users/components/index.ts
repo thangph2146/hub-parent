@@ -3,7 +3,6 @@ export { UserDetail } from "./user-detail"
 export { UserCreate } from "./user-create"
 export { UserEdit } from "./user-edit"
 
-// Client Components
 export { UsersTableClient } from "./users-table.client"
 export { UserDetailClient } from "./user-detail.client"
 export { UserCreateClient } from "./user-create.client"
