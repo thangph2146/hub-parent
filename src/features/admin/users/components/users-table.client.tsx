@@ -440,10 +440,8 @@ export function UsersTableClient({
     [initialData],
   )
 
-  // Track current view để log khi view thay đổi
   const [currentViewId, setCurrentViewId] = useState<string>("active")
 
-  // Log table structure khi data thay đổi sau refetch hoặc khi view thay đổi
   useResourceTableLogger<UserRow>({
     resourceName: "users",
     initialData,

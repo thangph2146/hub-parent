@@ -18,7 +18,6 @@ export function useRoles(options: UseRolesOptions = {}) {
   // Sử dụng length trực tiếp thay vì useMemo để tránh React Compiler warning
   const initialRolesProvided = initialRoles.length > 0
 
-  // Theo chuẩn Next.js 16: luôn fetch fresh data từ API
   const { data, isLoading, error } = useQuery(
     createAdminQueryOptions<{ data: Role[] }>({
       queryKey: queryKeys.roles.list(),
@@ -26,7 +25,7 @@ export function useRoles(options: UseRolesOptions = {}) {
         const response = await apiClient.get<{ data: Role[] }>(apiRoutes.roles.list())
         return response.data
       },
-      enabled: enabled && !initialRolesProvided, // Chỉ fetch khi enabled và chưa có initialRoles
+      enabled: enabled && !initialRolesProvided,
       initialData: initialRolesProvided ? { data: initialRoles } : undefined, // Sử dụng initialRoles nếu có
     })
   )
@@ -41,7 +40,7 @@ export function useRoles(options: UseRolesOptions = {}) {
 
   return {
     roles,
-    isLoading: isLoading && !initialRolesProvided, // Chỉ loading khi đang fetch và chưa có initialRoles
+    isLoading: isLoading && !initialRolesProvided,
     error: error as Error | null,
   }
 }

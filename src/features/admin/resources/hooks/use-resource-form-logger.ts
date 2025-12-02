@@ -27,10 +27,8 @@ export function useResourceFormLogger<T extends Record<string, unknown>>({
   const loggedSubmitRef = useRef<boolean>(false)
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
-  // Log form structure khi form data thay đổi (với debounce để tránh log quá nhiều khi user type)
   useEffect(() => {
     if (!formData || isSubmitting) {
-      // Clear timeout nếu đang submitting
       if (debounceTimeoutRef.current) {
         clearTimeout(debounceTimeoutRef.current)
         debounceTimeoutRef.current = null
@@ -38,14 +36,11 @@ export function useResourceFormLogger<T extends Record<string, unknown>>({
       return
     }
 
-    // Clear previous timeout
     if (debounceTimeoutRef.current) {
       clearTimeout(debounceTimeoutRef.current)
     }
 
     debounceTimeoutRef.current = setTimeout(() => {
-      // Tạo unique key từ form data - sort keys để đảm bảo consistent
-      // Loại bỏ các field không quan trọng cho comparison (như content editor state)
       const normalizedData = Object.keys(formData)
         .sort()
         .reduce((acc, key) => {
@@ -53,7 +48,6 @@ export function useResourceFormLogger<T extends Record<string, unknown>>({
           if (value === null || value === undefined || typeof value !== "object" || Array.isArray(value)) {
             acc[key] = value
           } else {
-            // Với object phức tạp, chỉ lưu type để tránh duplicate do thứ tự properties
             acc[key] = `[object:${typeof value}]`
           }
           return acc
@@ -61,13 +55,10 @@ export function useResourceFormLogger<T extends Record<string, unknown>>({
       
       const formDataKey = JSON.stringify(normalizedData)
 
-      // Nếu đã log cho form data này rồi, skip
       if (loggedFormDataKeyRef.current === formDataKey) return
 
-      // Mark as logged
       loggedFormDataKeyRef.current = formDataKey
 
-      // Log form structure
       resourceLogger.dataStructure({
         resource: resourceName,
         dataType: "form",
@@ -86,11 +77,9 @@ export function useResourceFormLogger<T extends Record<string, unknown>>({
     }
   }, [resourceName, action, formData, isSubmitting])
 
-  // Log submit action
   useEffect(() => {
     const actionType: ResourceAction = action === "create" ? "create" : "update"
 
-    // Log success
     if (!isSubmitting && submitSuccess && !loggedSubmitRef.current) {
       loggedSubmitRef.current = true
 
@@ -111,7 +100,6 @@ export function useResourceFormLogger<T extends Record<string, unknown>>({
       })
     }
 
-    // Log error
     if (submitError && !loggedSubmitRef.current) {
       loggedSubmitRef.current = true
       resourceLogger.actionFlow({
@@ -122,7 +110,6 @@ export function useResourceFormLogger<T extends Record<string, unknown>>({
       })
     }
 
-    // Reset khi bắt đầu submit mới
     if (isSubmitting) {
       loggedSubmitRef.current = false
     }

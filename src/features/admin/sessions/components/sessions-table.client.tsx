@@ -44,7 +44,6 @@ export function SessionsTableClient({
   const { feedback, showFeedback, handleFeedbackOpenChange } = useSessionFeedback()
   const { deleteConfirm, setDeleteConfirm, handleDeleteConfirm } = useSessionDeleteConfirm()
 
-  // Track current view để log khi view thay đổi
   const [currentViewId, setCurrentViewId] = useState<string>("active")
 
   const getInvalidateQueryKey = useCallback(() => queryKeys.adminSessions.all(), [])
@@ -70,7 +69,6 @@ export function SessionsTableClient({
     showFeedback,
   })
 
-  // Log table structure khi data thay đổi sau refetch hoặc khi view thay đổi
   useResourceTableLogger<SessionRow>({
     resourceName: "sessions",
     initialData,
@@ -93,7 +91,7 @@ export function SessionsTableClient({
       createdAt: row.createdAt,
       deletedAt: row.deletedAt,
     }),
-    cacheVersion: bulkState.isProcessing ? undefined : cacheVersion, // Skip logging khi đang bulk
+    cacheVersion: bulkState.isProcessing ? undefined : cacheVersion,
   })
 
   const handleToggleStatusWithRefresh = useCallback(
@@ -232,8 +230,6 @@ export function SessionsTableClient({
     buildQueryKey,
   })
 
-  // Theo chuẩn Next.js 16: không cache admin data - luôn fetch fresh data từ API
-  // Không cần useResourceInitialDataCache nữa
 
   const executeBulk = useCallback(
     (action: "delete" | "restore" | "hard-delete", ids: string[], refresh: () => void, clearSelection: () => void) => {

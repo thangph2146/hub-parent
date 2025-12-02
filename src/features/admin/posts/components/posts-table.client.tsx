@@ -110,7 +110,6 @@ export function PostsTableClient({
         })
 
         // Socket events đã update cache và trigger refresh qua cacheVersion
-        // Không cần manual refresh nữa để tránh duplicate refresh
       } catch (error: unknown) {
         // Extract error message từ response nếu có
         let errorMessage: string = "Đã xảy ra lỗi không xác định"
@@ -349,13 +348,8 @@ export function PostsTableClient({
     [],
   )
 
-  // Theo chuẩn Next.js 16: không cache admin data - luôn fetch fresh data từ API
-  // Không cần useResourceInitialDataCache nữa
-
-  // Track current view để log khi view thay đổi
   const [currentViewId, setCurrentViewId] = useState<string>("active")
 
-  // Log table structure khi data thay đổi sau refetch hoặc khi view thay đổi
   useResourceTableLogger<PostRow>({
     resourceName: "posts",
     initialData,

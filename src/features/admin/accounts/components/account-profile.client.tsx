@@ -43,17 +43,15 @@ export function AccountProfileClient({
   const router = useResourceRouter()
   const [isEditing, setIsEditing] = React.useState(false)
 
-  // Account profile không cần fetch từ API vì đã có data từ server
   useResourceDetailLogger({
     resourceName: "accounts",
     resourceId: account.id,
     data: account,
-    isFetched: true, // Data đã có từ server, không cần fetch
-    isFromApi: false, // Data từ server component, không phải từ API client
-    fetchedData: account, // Sử dụng account data làm fetchedData
+    isFetched: true,
+    isFromApi: false,
+    fetchedData: account,
   })
 
-  // Nếu đang edit, hiển thị form
   if (isEditing) {
     return (
       <AccountEditClient
@@ -76,7 +74,6 @@ export function AccountProfileClient({
     )
   }
 
-  // Hiển thị detail page
   const detailFields: ResourceDetailField<AccountProfile>[] = []
 
   const detailSections: ResourceDetailSection<AccountProfile>[] = [

@@ -85,7 +85,6 @@ export function PostEditClient({
       } else if (post.authorId && post.authorId !== "") {
         transformed.authorId = String(post.authorId)
       } else {
-        // Nếu không có author hoặc authorId, để empty string (sẽ được validate)
         transformed.authorId = ""
       }
 
@@ -106,7 +105,6 @@ export function PostEditClient({
           transformed.categoryIds = []
         }
       } else if (post.categoryIds !== undefined) {
-        // Nếu đã có categoryIds, giữ nguyên (có thể là array hoặc string)
         if (Array.isArray(post.categoryIds)) {
           transformed.categoryIds = post.categoryIds.length > 0 
             ? post.categoryIds.map(String).filter(Boolean)
@@ -137,7 +135,6 @@ export function PostEditClient({
           transformed.tagIds = []
         }
       } else if (post.tagIds !== undefined) {
-        // Nếu đã có tagIds, giữ nguyên (có thể là array hoặc string)
         if (Array.isArray(post.tagIds)) {
           transformed.tagIds = post.tagIds.length > 0
             ? post.tagIds.map(String).filter(Boolean)
@@ -246,7 +243,6 @@ export function PostEditClient({
             description: "Mô tả ngắn gọn về nội dung bài viết",
             section: "basic",
         },
-        // Chỉ super admin mới thấy field author
         ...(isSuperAdminUser && users.length > 0 ? [{
             name: "authorId",
             label: "Tác giả",

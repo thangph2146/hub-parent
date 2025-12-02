@@ -11,7 +11,6 @@ export interface UsersTableProps {
 }
 
 export async function UsersTable({ canDelete, canRestore, canManage, canCreate }: UsersTableProps) {
-  // Theo chuẩn Next.js 16: không cache admin data
   // Fetch usersData và roles song song với Promise.all
   const [usersData, roles] = await Promise.all([
     listUsers({

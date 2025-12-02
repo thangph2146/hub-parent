@@ -48,10 +48,8 @@ export function RolesTableClient({
   const { feedback, showFeedback, handleFeedbackOpenChange } = useRoleFeedback()
   const { deleteConfirm, setDeleteConfirm, handleDeleteConfirm } = useRoleDeleteConfirm()
 
-  // Track current view để log khi view thay đổi
   const [currentViewId, setCurrentViewId] = useState<string>("active")
 
-  // Log table structure khi data thay đổi sau refetch hoặc khi view thay đổi
   useResourceTableLogger<RoleRow>({
     resourceName: "roles",
     initialData,
@@ -247,7 +245,6 @@ export function RolesTableClient({
           totalPages: payload.pagination?.totalPages ?? 0,
         }
 
-        // Log table action và data structure
         resourceLogger.tableAction({
           resource: "roles",
           action: "load-table",
@@ -267,14 +264,13 @@ export function RolesTableClient({
               total: result.total,
               totalPages: result.totalPages,
             },
-            sampleRows: result.rows.map((row) => row as unknown as Record<string, unknown>), // Hiển thị đầy đủ rows hiện tại
+            sampleRows: result.rows.map((row) => row as unknown as Record<string, unknown>),
           },
           rowCount: result.rows.length,
         })
 
         return result
       } catch (error: unknown) {
-        // Log chi tiết lỗi để debug
         if (error && typeof error === "object" && "response" in error) {
           const axiosError = error as { response?: { data?: unknown; status?: number } }
           const errorMessage = axiosError.response?.data
@@ -361,8 +357,6 @@ export function RolesTableClient({
     [],
   )
 
-  // Theo chuẩn Next.js 16: không cache admin data - luôn fetch fresh data từ API
-  // Không cần useResourceInitialDataCache nữa
 
   const createActiveSelectionActions = useCallback(
     ({

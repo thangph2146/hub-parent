@@ -73,7 +73,6 @@ export function useContactRequestActions({
         return
       }
 
-      // Track loading state
       const setLoadingState = newStatus ? setMarkingReadRequests : setMarkingUnreadRequests
       setTogglingRequests((prev) => new Set(prev).add(row.id))
       setLoadingState((prev) => new Set(prev).add(row.id))

@@ -87,7 +87,6 @@ export function useResourceTableLogger<T extends object>({
         }
       }
 
-      // Tạo unique key: view + page + total + rowIds
       const rowIds = dataToLog.rows
         .map((r) => {
           const row = r as Record<string, unknown>
@@ -98,14 +97,11 @@ export function useResourceTableLogger<T extends object>({
 
       const dataKey = `${viewId || "active"}:${dataToLog.page}:${dataToLog.total}:${rowIds}`
 
-      // Skip nếu đã log data này rồi
       if (lastLoggedKeyRef.current === dataKey && lastViewIdRef.current === viewId) return false
 
-      // Mark as logged
       lastLoggedKeyRef.current = dataKey
       lastViewIdRef.current = viewId
 
-      // Log table action
       resourceLogger.tableAction({
         resource: resourceName,
         action: "load-table",
@@ -114,7 +110,6 @@ export function useResourceTableLogger<T extends object>({
         page: dataToLog.page,
       })
 
-      // Log structure với đầy đủ rows
       const allRows = dataToLog.rows.map((row) => getRowData(row as T))
 
       resourceLogger.dataStructure({
@@ -150,9 +145,7 @@ export function useResourceTableLogger<T extends object>({
     })
   }, [])
 
-  // Log khi data thay đổi hoặc khi view thay đổi
   useEffect(() => {
-    // Clear previous retry timeout
     if (retryTimeoutRef.current) {
       clearTimeout(retryTimeoutRef.current)
       retryTimeoutRef.current = null

@@ -63,10 +63,8 @@ export function StudentsTableClient({
     showFeedback,
   })
 
-  // Track current view để log khi view thay đổi
   const [currentViewId, setCurrentViewId] = useState<string>("active")
 
-  // Log table structure khi data thay đổi sau refetch hoặc khi view thay đổi
   useResourceTableLogger<StudentRow>({
     resourceName: "students",
     initialData,
@@ -88,16 +86,14 @@ export function StudentsTableClient({
       createdAt: row.createdAt,
       deletedAt: row.deletedAt,
     }),
-    cacheVersion: bulkState.isProcessing ? undefined : cacheVersion, // Skip logging khi đang bulk
+    cacheVersion: bulkState.isProcessing ? undefined : cacheVersion,
   })
 
   const getInvalidateQueryKey = useCallback(() => queryKeys.adminStudents.all(), [])
-  // Chỉ trigger refresh từ socket khi không có bulk operation đang chạy
-  // Khi có bulk operation, runResourceRefresh sẽ handle refresh
   const { onRefreshReady, refresh: refreshTable } = useResourceTableRefresh({
     queryClient,
     getInvalidateQueryKey,
-    cacheVersion: bulkState.isProcessing ? undefined : cacheVersion, // Skip socket refresh khi đang bulk
+    cacheVersion: bulkState.isProcessing ? undefined : cacheVersion,
   })
 
   const handleToggleStatusWithRefresh = useCallback(
@@ -212,7 +208,6 @@ export function StudentsTableClient({
         totalPages: payload.pagination?.totalPages ?? 0,
       }
 
-      // Log table action và data structure
       resourceLogger.tableAction({
         resource: "students",
         action: "load-table",
@@ -232,7 +227,7 @@ export function StudentsTableClient({
             total: result.total,
             totalPages: result.totalPages,
           },
-          sampleRows: result.rows.map((row) => row as unknown as Record<string, unknown>), // Hiển thị đầy đủ rows hiện tại
+          sampleRows: result.rows.map((row) => row as unknown as Record<string, unknown>),
         },
         rowCount: result.rows.length,
       })
@@ -265,8 +260,6 @@ export function StudentsTableClient({
     buildQueryKey,
   })
 
-  // Theo chuẩn Next.js 16: không cache admin data - luôn fetch fresh data từ API
-  // Không cần useResourceInitialDataCache nữa
 
   const executeBulk = useCallback(
     (action: "delete" | "restore" | "hard-delete", ids: string[], refresh: () => void, clearSelection: () => void) => {

@@ -31,7 +31,6 @@ export async function AccountEdit({
     )
   }
 
-  // Theo chuẩn Next.js 16: không cache admin data
   const account = await getCurrentUserProfile(authInfo.actorId)
 
   if (!account) {

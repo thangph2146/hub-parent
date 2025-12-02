@@ -48,7 +48,6 @@ export function EditorField({
         if (currentStateStr !== newStateStr) {
           isSyncingRef.current = true
           setEditorState(newState)
-          // Reset sync flag sau một tick
           setTimeout(() => {
             isSyncingRef.current = false
           }, 0)

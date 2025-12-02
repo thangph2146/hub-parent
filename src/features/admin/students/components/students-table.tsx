@@ -19,7 +19,6 @@ export async function StudentsTable({
   actorId,
   isSuperAdmin: isSuperAdminUser = false,
 }: StudentsTableProps) {
-  // Theo chuẩn Next.js 16: không cache admin data
   const studentsData = await listStudents({
     page: 1,
     limit: 10,

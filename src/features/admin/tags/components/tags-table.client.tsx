@@ -47,10 +47,8 @@ export function TagsTableClient({
   const { feedback, showFeedback, handleFeedbackOpenChange } = useTagFeedback()
   const { deleteConfirm, setDeleteConfirm, handleDeleteConfirm } = useTagDeleteConfirm()
 
-  // Track current view để log khi view thay đổi
   const [currentViewId, setCurrentViewId] = useState<string>("active")
 
-  // Log table structure khi data thay đổi sau refetch hoặc khi view thay đổi
   useResourceTableLogger<TagRow>({
     resourceName: "tags",
     initialData,
@@ -299,10 +297,6 @@ export function TagsTableClient({
     [],
   )
 
-  // Theo chuẩn Next.js 16: không cache admin data - luôn fetch fresh data từ API
-  // Không cần useResourceInitialDataCache nữa
-
-  // Helper function for active view selection actions
   const createActiveSelectionActions = useCallback(
     ({ selectedIds, clearSelection, refresh }: {
       selectedIds: string[]
@@ -359,7 +353,6 @@ export function TagsTableClient({
     [canManage, bulkState.isProcessing, executeBulk],
   )
 
-  // Helper function for deleted view selection actions
   const createDeletedSelectionActions = useCallback(
     ({ selectedIds, clearSelection, refresh }: {
       selectedIds: string[]

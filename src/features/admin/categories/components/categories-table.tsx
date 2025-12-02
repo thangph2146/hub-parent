@@ -10,7 +10,6 @@ export interface CategoriesTableProps {
 }
 
 export async function CategoriesTable({ canDelete, canRestore, canManage, canCreate }: CategoriesTableProps) {
-  // Theo chuẩn Next.js 16: không cache admin data
   const categoriesData = await listCategories({
     page: 1,
     limit: 10,

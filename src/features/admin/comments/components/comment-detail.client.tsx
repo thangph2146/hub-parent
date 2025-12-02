@@ -118,7 +118,6 @@ export function CommentDetailClient({ commentId, comment, backUrl = "/admin/comm
 
       setIsToggling(true)
       
-      // Theo chuẩn Next.js 16: không update cache manually, chỉ invalidate
       // Socket events sẽ tự động update cache nếu có
 
       try {

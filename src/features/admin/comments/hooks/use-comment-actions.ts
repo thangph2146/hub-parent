@@ -85,7 +85,6 @@ export function useCommentActions({
         return
       }
 
-      // Track loading state
       const setLoadingState = newStatus ? setApprovingComments : setUnapprovingComments
       setTogglingComments((prev) => new Set(prev).add(row.id))
       setLoadingState((prev) => new Set(prev).add(row.id))

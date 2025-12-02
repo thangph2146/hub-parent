@@ -33,7 +33,6 @@ export function SlugField<T>({
   useEffect(() => {
     if (fieldValue !== slugValue && !slugManuallyEditedRef.current) {
       setSlugValue(fieldValue)
-      // Reset manual edit flag when value changes from outside (e.g., new data loaded)
       if (fieldValue) {
         slugManuallyEditedRef.current = false
       }

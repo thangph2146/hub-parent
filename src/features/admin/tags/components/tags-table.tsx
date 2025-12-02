@@ -10,7 +10,6 @@ export interface TagsTableProps {
 }
 
 export async function TagsTable({ canDelete, canRestore, canManage, canCreate }: TagsTableProps) {
-  // Theo chuẩn Next.js 16: không cache admin data
   const tagsData = await listTags({
     page: 1,
     limit: 10,

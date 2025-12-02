@@ -111,10 +111,8 @@ export function useResourceFormSubmit({
         status: response.status,
         hasData: !!response.data,
         responseData: response.data,
-        // Log chi tiết response data để verify
         responseDetails: response.data?.data ? {
           id: response.data.data.id,
-          // Log các fields quan trọng từ response
           ...(typeof response.data.data === 'object' ? Object.keys(response.data.data).slice(0, 10).reduce((acc, key) => {
             acc[key] = (response.data.data as Record<string, unknown>)[key]
             return acc
@@ -146,8 +144,6 @@ export function useResourceFormSubmit({
           logger.debug("[useResourceFormSubmit] onSuccess handler completed")
         }
 
-        // Theo chuẩn Next.js 16: invalidate queries là async và không block
-        // Không cần delay vì React Query sẽ tự động refetch khi cần
         // Handle navigation ngay sau khi invalidate
         logger.debug("[useResourceFormSubmit] Handling navigation", { 
           hasToDetail: !!navigation?.toDetail,

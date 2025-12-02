@@ -87,7 +87,6 @@ export interface ResourceFormProps<T extends Record<string, unknown>> {
   open?: boolean
   onOpenChange?: (open: boolean) => void
   
-  // Logging (optional - tự động detect từ data)
   resourceName?: string
   resourceId?: string
   action?: "create" | "update"
@@ -135,7 +134,6 @@ export function ResourceForm<T extends Record<string, unknown>>({
       const dataValue = data?.[key]
       
       if (dataValue !== undefined && dataValue !== null) {
-        // Nếu là array (kể cả array rỗng), giữ nguyên
         if (Array.isArray(dataValue)) {
           initial[key] = dataValue as T[keyof T]
         } else {
@@ -224,7 +222,6 @@ export function ResourceForm<T extends Record<string, unknown>>({
               hasChanges = true
             }
           } else if (currentValue === undefined && field.type !== undefined) {
-            // Nếu chưa có giá trị và field có type, set empty string
             // Number đã được xử lý ở trên, các field khác set empty string
             updated[key] = "" as T[keyof T]
             hasChanges = true
@@ -236,7 +233,6 @@ export function ResourceForm<T extends Record<string, unknown>>({
     })
   }, [data, fields])
 
-  // Log form data khi thay đổi
   useResourceFormLogger({
     resourceName: detectedResourceName,
     resourceId: detectedResourceId,
@@ -252,7 +248,6 @@ export function ResourceForm<T extends Record<string, unknown>>({
       ...prev,
       [fieldName]: value,
     } as Partial<T>))
-    // Clear error for this field
     if (errors[fieldName]) {
       setErrors((prev) => {
         const next = { ...prev }
@@ -277,7 +272,7 @@ export function ResourceForm<T extends Record<string, unknown>>({
             newErrors[fieldName] = validation.error
           }
         }
-        return // Skip required check
+        return
       }
 
       const hasValue = field.name in formData

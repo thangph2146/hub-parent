@@ -11,7 +11,6 @@ export interface SessionsTableProps {
 }
 
 export async function SessionsTable({ canDelete, canRestore, canManage, canCreate }: SessionsTableProps) {
-  // Theo chuẩn Next.js 16: không cache admin data
   const [sessionsData, usersOptions] = await Promise.all([
     listSessions({
       page: 1,

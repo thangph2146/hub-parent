@@ -11,7 +11,6 @@ export interface PostsTableProps {
 }
 
 export async function PostsTable({ canDelete, canRestore, canManage, canCreate }: PostsTableProps) {
-  // Theo chuẩn Next.js 16: không cache admin data
   const postsData = await listPosts({
     page: 1,
     limit: 10,

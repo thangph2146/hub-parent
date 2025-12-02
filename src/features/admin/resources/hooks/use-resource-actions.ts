@@ -103,7 +103,6 @@ export function useResourceActions<T extends { id: string }>(
           type: "active" 
         })
         
-        // Log success
         const actionType = variables.action === "delete" 
           ? "delete" 
           : variables.action === "restore" 
@@ -165,7 +164,6 @@ export function useResourceActions<T extends { id: string }>(
           type: "active" 
         })
         
-        // Log success
         const actionType = variables.action === "delete" 
           ? "bulk-delete" 
           : variables.action === "restore" 
@@ -247,7 +245,6 @@ export function useResourceActions<T extends { id: string }>(
         return
       }
       
-      // Log action start
       resourceLogger.actionFlow({
         resource: config.resourceName,
         action,
@@ -304,7 +301,6 @@ export function useResourceActions<T extends { id: string }>(
       if (ids.length === 0) return
       if (!startBulkProcessing()) return
       
-      // Log action start
       resourceLogger.actionFlow({
         resource: config.resourceName,
         action: action === "delete" ? "bulk-delete" : action === "restore" ? "bulk-restore" : "bulk-hard-delete",
@@ -322,7 +318,6 @@ export function useResourceActions<T extends { id: string }>(
         const result = response.data?.data
         const affected = result?.affected ?? 0
         
-        // Nếu không có record nào được xử lý (affected === 0), hiển thị thông báo
         if (affected === 0) {
           const actionText = action === "restore" ? "khôi phục" : action === "delete" ? "xóa" : "xóa vĩnh viễn"
           const errorMessage = result?.message || `Không có ${config.resourceName} nào được ${actionText}`
@@ -343,7 +338,6 @@ export function useResourceActions<T extends { id: string }>(
           return
         }
         
-        // Hiển thị success message với số lượng thực tế đã xử lý
         const messages = {
           restore: { 
             title: config.messages.BULK_RESTORE_SUCCESS, 

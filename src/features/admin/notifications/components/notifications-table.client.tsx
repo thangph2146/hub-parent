@@ -55,10 +55,8 @@ export function NotificationsTableClient({
   const queryClient = useQueryClient()
   const { cacheVersion } = useNotificationsSocketBridge()
   
-  // Track current view để log khi view thay đổi
   const [currentViewId, setCurrentViewId] = useState<string>("all")
   
-  // Helper để build query key cho logger (không có search/filters)
   const buildNotificationsQueryKeyForLogger = useCallback(
     (params: { status?: string; page?: number; limit?: number; search?: string; filters?: Record<string, string> }): readonly unknown[] => {
       return [
@@ -67,14 +65,12 @@ export function NotificationsTableClient({
         params.status ?? "all",
         params.page ?? 1,
         params.limit ?? 10,
-        "", // search luôn empty cho logger
-        // filters không có trong logger query key
+        "",
       ]
     },
     [],
   )
   
-  // Log table structure khi data thay đổi sau refetch hoặc khi view thay đổi
   useResourceTableLogger<NotificationRow>({
     resourceName: "notifications",
     initialData,
@@ -321,10 +317,7 @@ export function NotificationsTableClient({
     [],
   )
 
-  // Theo chuẩn Next.js 16: không cache admin data - luôn fetch fresh data từ API
-  // Không cần useResourceInitialDataCache nữa
 
-  // Helper function to create selection actions
   const createSelectionActions = useCallback(
     ({ selectedIds, selectedRows, clearSelection, refresh }: {
       selectedIds: string[]

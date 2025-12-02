@@ -7,7 +7,7 @@ import { NotificationsTableClient } from "./notifications-table.client"
 
 export interface NotificationsTableProps {
   canManage?: boolean
-  userId?: string // Nếu có, chỉ fetch notifications của user này (không phải super admin)
+  userId?: string
   isSuperAdmin?: boolean // Flag để biết user có phải super admin không
 }
 
@@ -22,9 +22,6 @@ export async function NotificationsTable({ canManage, userId, isSuperAdmin }: No
   }
 
   try {
-    // Nếu userId được truyền vào, chỉ fetch notifications của user đó
-    // Nếu không (super admin), fetch tất cả notifications
-    // Theo chuẩn Next.js 16: không cache admin data
     const initial = await listNotifications({
       page: 1,
       limit: 10,

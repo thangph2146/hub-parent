@@ -46,7 +46,6 @@ export function ContactRequestsTableClient({
   const { feedback, showFeedback, handleFeedbackOpenChange } = useContactRequestFeedback()
   const { deleteConfirm, setDeleteConfirm, handleDeleteConfirm } = useContactRequestDeleteConfirm()
 
-  // Track current view để log khi view thay đổi
   const [currentViewId, setCurrentViewId] = useState<string>("new")
 
   const getInvalidateQueryKey = useCallback(() => queryKeys.adminContactRequests.all(), [])
@@ -76,7 +75,6 @@ export function ContactRequestsTableClient({
     showFeedback,
   })
 
-  // Log table structure khi data thay đổi sau refetch hoặc khi view thay đổi
   useResourceTableLogger<ContactRequestRow>({
     resourceName: "contact-requests",
     initialData,
@@ -102,7 +100,7 @@ export function ContactRequestsTableClient({
       createdAt: row.createdAt,
       deletedAt: row.deletedAt,
     }),
-    cacheVersion: bulkState.isProcessing ? undefined : cacheVersion, // Skip logging khi đang bulk
+    cacheVersion: bulkState.isProcessing ? undefined : cacheVersion,
   })
 
   const handleToggleReadWithRefresh = useCallback(
@@ -273,7 +271,6 @@ export function ContactRequestsTableClient({
   })
 
 
-  // Helper function for active view selection actions
   const createActiveSelectionActions = useCallback(
     ({ selectedIds, clearSelection, refresh }: {
       selectedIds: string[]
@@ -350,7 +347,6 @@ export function ContactRequestsTableClient({
     [canDelete, canManage, bulkState.isProcessing, setDeleteConfirm, executeBulkAction],
   )
 
-  // Helper function for deleted view selection actions
   const createDeletedSelectionActions = useCallback(
     ({ selectedIds, clearSelection, refresh }: {
       selectedIds: string[]

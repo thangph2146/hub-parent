@@ -110,7 +110,6 @@ export function PostCreateClient({
       description: "Mô tả ngắn gọn về nội dung bài viết",
       section: "basic",
     },
-    // Chỉ super admin mới thấy field author
     ...(isSuperAdminUser && users.length > 0
       ? [
           {
