@@ -92,7 +92,7 @@ export default async function PostPage({ searchParams }: PostPageProps) {
         {/* Main Content */}
         <div className="min-w-0">
           {/* Header with Sort */}
-          <div className="sticky top-14.5 z-50 w-full flex items-center justify-between gap-4 mb-8 border-b bg-background supports-[backdrop-filter]:bg-background/70 border-border backdrop-blur-lg">
+          <div className="sticky top-14.5 z-10 w-full flex items-center justify-between gap-4 mb-8 border-b bg-background supports-[backdrop-filter]:bg-background/70 border-border backdrop-blur-lg">
             <div>
               <h2 className="text-2xl font-semibold">Tất cả bài viết</h2>
               <p className="text-sm text-muted-foreground mt-1">
