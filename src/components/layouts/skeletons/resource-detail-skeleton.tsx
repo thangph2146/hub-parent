@@ -16,6 +16,7 @@ export interface ResourceDetailSkeletonProps {
 
 export function ResourceDetailSkeleton({
   showHeader = true,
+  fieldCount: _fieldCount,
   sectionCount = 1,
 }: ResourceDetailSkeletonProps) {
   return (
