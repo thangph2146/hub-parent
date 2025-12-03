@@ -2,8 +2,6 @@ import { prisma } from "@/lib/database"
 import { resourceLogger } from "@/lib/config"
 import { getSocketServer, storeNotificationInCache, mapNotificationToPayload } from "@/lib/socket/state"
 import { createNotificationForAllAdmins, emitNotificationToAllAdminsAfterCreate } from "@/features/admin/notifications/server/mutations"
-import { emitNotificationNewForAllAdmins } from "@/features/admin/notifications/server/events"
-import { DEFAULT_ROLES } from "@/lib/permissions"
 import { NotificationKind } from "@prisma/client"
 
 async function getActorInfo(actorId: string) {
