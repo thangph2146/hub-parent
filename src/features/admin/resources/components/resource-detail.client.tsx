@@ -313,7 +313,7 @@ export function ResourceDetailClient<T extends Record<string, unknown>>({
   }
 
   return (
-    <div className="flex flex-1 flex-col gap-6 p-4 md:p-6 lg:p-8 mx-auto w-full max-w-[100%]">
+    <div className="flex flex-1 flex-col gap-6 mx-auto w-full max-w-[100%]">
       {(title || resolvedBackUrl || actions) && (
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-border/50">
           <div className="space-y-1.5 flex-1 min-w-0">

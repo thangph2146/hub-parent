@@ -688,7 +688,7 @@ export function ResourceForm<T extends Record<string, unknown>>({
   )
 
   return (
-    <div className={cn("flex flex-1 flex-col gap-6 p-4 md:p-6 lg:p-8 mx-auto w-full max-w-[100%]", className)}>
+    <div className={cn("flex flex-1 flex-col gap-6 mx-auto w-full max-w-[100%]", className)}>
       {/* Header */}
       {(title || resolvedBackUrl) && (
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-border/50">
