@@ -20,48 +20,57 @@ async function markAllAsReadHandler(_req: NextRequest) {
   // Check if user is super admin
   const roles = (session as typeof session & { roles?: Array<{ name: string }> })?.roles || []
   const isSuperAdminUser = isSuperAdmin(roles)
+  const userEmail = session.user.email
+  
+  // QUAN TRỌNG: Chỉ superadmin@hub.edu.vn mới có thể mark tất cả notifications
+  // Các user khác (kể cả super admin khác) chỉ có thể mark notifications của chính họ
+  const PROTECTED_SUPER_ADMIN_EMAIL = "superadmin@hub.edu.vn"
+  const isProtectedSuperAdmin = userEmail === PROTECTED_SUPER_ADMIN_EMAIL
 
   logger.info("POST /api/notifications/mark-all-read: Processing request", {
     userId: session.user.id,
+    userEmail,
     isSuperAdmin: isSuperAdminUser,
+    isProtectedSuperAdmin,
   })
 
   // Build where clause
-  // IMPORTANT: Super admin chỉ có thể thao tác với notifications của chính mình
-  // - Super admin: chỉ mark SYSTEM notifications của chính mình + personal notifications
-  // - Regular user: chỉ mark personal notifications
-  // Super admin có thể XEM tất cả SYSTEM notifications nhưng chỉ THAO TÁC với của chính mình
+  // IMPORTANT: Logic mới:
+  // - Chỉ superadmin@hub.edu.vn: có thể mark tất cả SYSTEM notifications + personal notifications
+  // - Các user khác (kể cả super admin khác): chỉ mark notifications của chính mình
   let where: {
     isRead: boolean
     userId?: string
-    OR?: Array<{ userId: string; kind: NotificationKind } | { userId: string; kind: { not: NotificationKind } }>
+    OR?: Array<{ kind: NotificationKind } | { userId: string; kind: { not: NotificationKind } }>
     kind?: { not: NotificationKind }
   }
 
-  if (isSuperAdminUser) {
-    // Super admin: mark SYSTEM notifications của chính mình + personal notifications
-    // Không mark SYSTEM notifications của user khác
+  if (isProtectedSuperAdmin) {
+    // Chỉ superadmin@hub.edu.vn: mark tất cả SYSTEM notifications + personal notifications
     where = {
       isRead: false,
       OR: [
-        { userId: session.user.id, kind: NotificationKind.SYSTEM },
+        { kind: NotificationKind.SYSTEM },
         { userId: session.user.id, kind: { not: NotificationKind.SYSTEM } },
       ],
     }
   } else {
-    // Regular user: chỉ mark personal notifications (không phải SYSTEM)
+    // Các user khác: chỉ mark notifications của chính mình
     where = {
       isRead: false,
       userId: session.user.id,
-      kind: { not: NotificationKind.SYSTEM },
     }
   }
 
   logger.debug("POST /api/notifications/mark-all-read: Where clause", {
     userId: session.user.id,
+    userEmail,
     isSuperAdmin: isSuperAdminUser,
+    isProtectedSuperAdmin,
     where,
-    note: "Super admin chỉ có thể mark notifications của chính mình, không thể mark của user khác",
+    note: isProtectedSuperAdmin 
+      ? "superadmin@hub.edu.vn: có thể mark tất cả notifications" 
+      : "Chỉ mark notifications của chính mình",
   })
 
   // Check how many notifications match before update (for logging)
@@ -85,10 +94,14 @@ async function markAllAsReadHandler(_req: NextRequest) {
   
   logger.success("POST /api/notifications/mark-all-read: Marked all as read", {
     userId: session.user.id,
+    userEmail,
     isSuperAdmin: isSuperAdminUser,
+    isProtectedSuperAdmin,
     matchingCount: beforeCount,
     updatedCount: result.count,
-    note: "Super admin chỉ mark notifications của chính mình, không mark của user khác",
+    note: isProtectedSuperAdmin 
+      ? "superadmin@hub.edu.vn: đã mark tất cả notifications" 
+      : "Chỉ mark notifications của chính mình",
   })
 
   // Emit socket event để đồng bộ real-time
@@ -96,13 +109,13 @@ async function markAllAsReadHandler(_req: NextRequest) {
   if (io && result.count > 0) {
     try {
       // Reload notifications từ DB với cùng where clause như khi fetch
-      // Super admin: tất cả SYSTEM notifications + personal notifications
-      // Regular user: chỉ personal notifications
+      // Chỉ superadmin@hub.edu.vn: tất cả SYSTEM notifications + personal notifications
+      // Các user khác: chỉ personal notifications
       const fetchWhere: {
         OR?: Array<{ kind: NotificationKind } | { userId: string; kind: { not: NotificationKind } }>
         userId?: string
         kind?: { not: NotificationKind }
-      } = isSuperAdminUser
+      } = isProtectedSuperAdmin
         ? {
             OR: [
               { kind: NotificationKind.SYSTEM },

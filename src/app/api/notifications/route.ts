@@ -50,21 +50,34 @@ async function getUserNotificationsHandler(req: NextRequest) {
   // Check if user is super admin
   const roles = (session as typeof session & { roles?: Array<{ name: string }> })?.roles || []
   const isSuperAdminUser = isSuperAdmin(roles)
+  const userEmail = session.user.email
+  
+  // QUAN TRỌNG: Chỉ superadmin@hub.edu.vn mới thấy tất cả notifications
+  // Các user khác (kể cả super admin khác) chỉ thấy notifications của chính họ
+  const PROTECTED_SUPER_ADMIN_EMAIL = "superadmin@hub.edu.vn"
+  const isProtectedSuperAdmin = userEmail === PROTECTED_SUPER_ADMIN_EMAIL
+
+  logger.debug("GET /api/notifications: User info", {
+    userId: session.user.id,
+    userEmail,
+    isSuperAdmin: isSuperAdminUser,
+    isProtectedSuperAdmin,
+  })
 
   // Build where clause
-  // Logic giống như admin notifications:
-  // - Super admin: tất cả SYSTEM notifications + thông báo cá nhân
-  // - User thường: chỉ thông báo cá nhân (không phải SYSTEM)
+  // Logic mới:
+  // - Chỉ superadmin@hub.edu.vn: tất cả SYSTEM notifications + thông báo cá nhân
+  // - Các user khác (kể cả super admin khác): chỉ thông báo cá nhân (không phải SYSTEM)
   const where: Prisma.NotificationWhereInput = {
-    OR: isSuperAdminUser
+    OR: isProtectedSuperAdmin
       ? [
-          // Super admin: tất cả SYSTEM notifications
+          // Chỉ superadmin@hub.edu.vn: tất cả SYSTEM notifications
           { kind: NotificationKind.SYSTEM },
           // + thông báo cá nhân của user
           { userId: session.user.id, kind: { not: NotificationKind.SYSTEM } },
         ]
       : [
-          // User thường: chỉ thông báo cá nhân (không phải SYSTEM)
+          // Các user khác: chỉ thông báo cá nhân (không phải SYSTEM)
           { userId: session.user.id, kind: { not: NotificationKind.SYSTEM } },
         ],
   }
@@ -124,7 +137,9 @@ async function getUserNotificationsHandler(req: NextRequest) {
 
   logger.debug("GET /api/notifications: Returning notifications", {
     userId: session.user.id,
+    userEmail,
     isSuperAdmin: isSuperAdminUser,
+    isProtectedSuperAdmin,
     limit,
     offset,
     unreadOnly,

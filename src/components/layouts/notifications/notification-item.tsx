@@ -53,7 +53,21 @@ export function NotificationItem({
   const markAsRead = useMarkNotificationRead()
   
   // Check if current user is the owner of this notification
-  const isOwner = notification.userId === session?.user?.id
+  const currentUserId = session?.user?.id
+  const isOwner = notification.userId === currentUserId
+  
+  // Log khi component mount để track notifications được render
+  React.useEffect(() => {
+    logger.debug("NotificationItem: Component rendered", {
+      notificationId: notification.id,
+      title: notification.title,
+      userId: currentUserId,
+      notificationUserId: notification.userId,
+      isOwner,
+      isRead: notification.isRead,
+      kind: notification.kind,
+    })
+  }, [notification.id, notification.title, currentUserId, notification.userId, isOwner, notification.isRead, notification.kind])
 
   const Icon = kindIcons[notification.kind] || Info
   const styleClass = kindStyles[notification.kind] || kindStyles.INFO

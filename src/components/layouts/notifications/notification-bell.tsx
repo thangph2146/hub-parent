@@ -91,7 +91,6 @@ export function NotificationBell() {
     }
   }, [markAsRead.isSuccess, markAsRead.isError, markAsRead.data, markAsRead.error, session?.user?.id])
 
-  const unreadCount = data?.unreadCount || 0
   const rawNotifications = React.useMemo(() => data?.notifications || [], [data?.notifications])
   
   // Filter duplicate notifications by ID (fix duplicate key issue)
@@ -160,28 +159,55 @@ export function NotificationBell() {
   // Check nếu user là super admin để hiển thị link đến admin notifications page
   const roles = session?.roles ?? []
   const isSuperAdminUser = isSuperAdmin(roles)
+  const currentUserId = session?.user?.id
+  const userEmail = session?.user?.email
+  
+  // QUAN TRỌNG: Chỉ superadmin@hub.edu.vn mới thấy tất cả notifications
+  // Các user khác (kể cả super admin khác) chỉ thấy notifications của chính họ
+  const PROTECTED_SUPER_ADMIN_EMAIL = "superadmin@hub.edu.vn"
+  const isProtectedSuperAdmin = userEmail === PROTECTED_SUPER_ADMIN_EMAIL
+  
+  // Filter notifications:
+  // - Chỉ superadmin@hub.edu.vn: hiển thị tất cả notifications (của mình và của user khác)
+  // - Các user khác: chỉ hiển thị notifications của chính họ (owner)
+  const ownedNotifications = React.useMemo(() => {
+    if (isProtectedSuperAdmin) {
+      // superadmin@hub.edu.vn: hiển thị tất cả notifications
+      return uniqueNotifications
+    } else {
+      // Các user khác: chỉ hiển thị notifications của chính họ
+      return uniqueNotifications.filter(n => n.userId === currentUserId)
+    }
+  }, [uniqueNotifications, currentUserId, isProtectedSuperAdmin])
+  
+  // Tính lại unread count chỉ cho owned notifications
+  const ownedUnreadCount = React.useMemo(() => {
+    return ownedNotifications.filter(n => !n.isRead).length
+  }, [ownedNotifications])
   
   // Log notifications data để debug
   React.useEffect(() => {
     if (data) {
-      const currentUserId = session?.user?.id
-      const ownNotifications = uniqueNotifications.filter(n => n.userId === currentUserId)
       const otherNotifications = uniqueNotifications.filter(n => n.userId !== currentUserId)
-      const ownUnread = ownNotifications.filter(n => !n.isRead).length
       const otherUnread = otherNotifications.filter(n => !n.isRead).length
       
       logger.debug("NotificationBell: Notifications data updated", {
         userId: currentUserId,
+        userEmail,
         isSuperAdmin: isSuperAdminUser,
-        unreadCount: data.unreadCount,
+        isProtectedSuperAdmin,
+        apiUnreadCount: data.unreadCount,
+        ownedUnreadCount,
         total: data.total,
         rawNotificationsCount: rawNotifications.length,
         uniqueNotificationsCount: uniqueNotifications.length,
-        ownNotificationsCount: ownNotifications.length,
-        ownUnreadCount: ownUnread,
+        ownedNotificationsCount: ownedNotifications.length,
         otherNotificationsCount: otherNotifications.length,
         otherUnreadCount: otherUnread,
-        notifications: uniqueNotifications.map(n => ({
+        note: isProtectedSuperAdmin 
+          ? "superadmin@hub.edu.vn: hiển thị tất cả notifications" 
+          : "Chỉ hiển thị notifications của chính user (owner)",
+        ownedNotifications: ownedNotifications.map(n => ({
           id: n.id,
           userId: n.userId,
           title: n.title,
@@ -191,7 +217,7 @@ export function NotificationBell() {
         })),
       })
     }
-  }, [data, rawNotifications.length, uniqueNotifications, session?.user?.id, isSuperAdminUser])
+  }, [data, rawNotifications.length, uniqueNotifications, ownedNotifications, ownedUnreadCount, currentUserId, isSuperAdminUser, isProtectedSuperAdmin, userEmail])
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
@@ -203,9 +229,9 @@ export function NotificationBell() {
           aria-label="Thông báo"
         >
           <Bell className="h-5 w-5" />
-          {unreadCount > 0 && (
+          {ownedUnreadCount > 0 && (
             <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground">
-              {unreadCount > 99 ? "99+" : unreadCount}
+              {ownedUnreadCount > 99 ? "99+" : ownedUnreadCount}
             </span>
           )}
         </Button>
@@ -218,23 +244,31 @@ export function NotificationBell() {
         <div className="flex items-center justify-between border-b px-4 py-3">
           <h2 className="text-lg font-semibold">Thông báo</h2>
           <div className="flex items-center gap-2">
-            {unreadCount > 0 && (
+            {ownedUnreadCount > 0 && (
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => {
                   // Log chi tiết về notifications trước khi mark all as read
-                  const unreadNotifications = uniqueNotifications.filter(n => !n.isRead)
-                  const ownUnreadCount = unreadNotifications.filter(n => n.userId === session?.user?.id).length
-                  const otherUnreadCount = unreadNotifications.length - ownUnreadCount
+                  const unreadOwnedNotifications = ownedNotifications.filter(n => !n.isRead)
                   
                   logger.info("NotificationBell: Mark all as read clicked", {
-                    unreadCount,
-                    ownUnreadCount,
-                    otherUnreadCount,
-                    userId: session?.user?.id,
+                    ownedUnreadCount,
+                    totalOwnedNotifications: ownedNotifications.length,
+                    unreadOwnedNotifications: unreadOwnedNotifications.map(n => ({
+                      id: n.id,
+                      title: n.title,
+                      isRead: n.isRead,
+                      userId: n.userId,
+                      isOwner: n.userId === currentUserId,
+                    })),
+                    userId: currentUserId,
+                    userEmail,
                     isSuperAdmin: isSuperAdminUser,
-                    note: "Super admin chỉ mark notifications của chính mình",
+                    isProtectedSuperAdmin,
+                    note: isProtectedSuperAdmin 
+                      ? "superadmin@hub.edu.vn: có thể mark tất cả notifications" 
+                      : "Chỉ mark notifications của chính user (owner)",
                   })
                   markAllAsRead.mutate()
                 }}
@@ -257,7 +291,7 @@ export function NotificationBell() {
             <div className="flex items-center justify-center p-8">
               <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
             </div>
-          ) : uniqueNotifications.length === 0 ? (
+          ) : ownedNotifications.length === 0 ? (
             <div className="flex flex-col items-center justify-center p-8 text-center">
               <Bell className="mb-2 h-12 w-12 text-muted-foreground opacity-50" />
               <p className="text-sm font-medium">Không có thông báo</p>
@@ -267,8 +301,8 @@ export function NotificationBell() {
             </div>
           ) : (
             <div className="divide-y">
-              {/* Chỉ hiển thị tối đa 10 thông báo đầu tiên */}
-              {uniqueNotifications.slice(0, 10).map((notification, index) => (
+              {/* Chỉ hiển thị tối đa 10 thông báo đầu tiên của chính user (owner) */}
+              {ownedNotifications.slice(0, 10).map((notification, index) => (
                 <React.Fragment key={notification.id}>
                   <NotificationItem
                     notification={notification}
@@ -280,23 +314,27 @@ export function NotificationBell() {
                         title: notification.title,
                         isRead: notification.isRead,
                         actionUrl: notification.actionUrl,
-                        userId: session?.user?.id,
+                        userId: currentUserId,
                         notificationUserId: notification.userId,
                         isOwner,
+                        note: "Chỉ hiển thị notifications của chính user (owner)",
                       })
                       
                       // Tự động mark as read khi click vào notification (nếu chưa đọc)
-                      // CHỈ mark nếu là owner (không cho phép mark notifications của user khác)
+                      // Vì đã filter chỉ hiển thị owned notifications, nên luôn là owner
                       if (!notification.isRead && isOwner) {
                         logger.debug("NotificationBell: Auto-marking as read (owner)", {
                           notificationId: notification.id,
+                          title: notification.title,
+                          userId: currentUserId,
                         })
                         markAsRead.mutate({ id: notification.id, isRead: true })
                       } else if (!notification.isRead && !isOwner) {
-                        logger.warn("NotificationBell: Cannot mark as read - not owner", {
+                        logger.error("NotificationBell: Cannot mark as read - not owner (should not happen)", {
                           notificationId: notification.id,
-                          userId: session?.user?.id,
+                          userId: currentUserId,
                           notificationUserId: notification.userId,
+                          note: "This should not happen as we filter to only show owned notifications",
                         })
                       }
                       
@@ -315,7 +353,7 @@ export function NotificationBell() {
                       setOpen(false)
                     }}
                   />
-                  {index < Math.min(uniqueNotifications.length, 10) - 1 && <Separator />}
+                  {index < Math.min(ownedNotifications.length, 10) - 1 && <Separator />}
                 </React.Fragment>
               ))}
             </div>
@@ -323,7 +361,7 @@ export function NotificationBell() {
         </div>
 
         {/* Luôn hiển thị link "Xem tất cả" nếu có thông báo và user là super admin */}
-        {!isLoading && uniqueNotifications.length > 0 && isSuperAdminUser && (
+        {!isLoading && ownedNotifications.length > 0 && isProtectedSuperAdmin && (
           <>
             <Separator />
             <div className="p-2">
