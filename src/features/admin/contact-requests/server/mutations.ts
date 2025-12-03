@@ -665,3 +665,194 @@ export async function bulkHardDeleteContactRequests(ctx: AuthContext, ids: strin
   return { success: true, message, affected: result.count }
 }
 
+export async function bulkMarkAsReadContactRequests(ctx: AuthContext, ids: string[]): Promise<BulkActionResult> {
+  ensurePermission(ctx, PERMISSIONS.CONTACT_REQUESTS_UPDATE, PERMISSIONS.CONTACT_REQUESTS_MANAGE)
+
+  const startTime = Date.now()
+  logActionFlow("contact-requests", "bulk-mark-read", "start", { count: ids.length, contactRequestIds: ids })
+
+  if (!ids || ids.length === 0) {
+    logActionFlow("contact-requests", "bulk-mark-read", "error", { error: "Danh sách yêu cầu liên hệ trống" }, startTime)
+    throw new ApplicationError("Danh sách yêu cầu liên hệ trống", 400)
+  }
+
+  // Lấy thông tin contact requests trước khi update
+  const contactRequests = await prisma.contactRequest.findMany({
+    where: {
+      id: { in: ids },
+      deletedAt: null,
+      isRead: false,
+    },
+    select: { id: true, subject: true, name: true, email: true },
+  })
+
+  const result = await prisma.contactRequest.updateMany({
+    where: {
+      id: { in: contactRequests.map((cr) => cr.id) },
+      deletedAt: null,
+      isRead: false,
+    },
+    data: {
+      isRead: true,
+    },
+  })
+
+  if (result.count > 0) {
+    try {
+      await emitContactRequestBatchUpsert(contactRequests.map((cr) => cr.id), "active")
+    } catch (error) {
+      logActionFlow("contact-requests", "bulk-mark-read", "error", {
+        error: error instanceof Error ? error.message : String(error),
+        count: result.count,
+      })
+    }
+
+    try {
+      await notifySuperAdminsOfBulkContactRequestAction("mark-read", ctx.actorId, contactRequests)
+    } catch (error) {
+      logActionFlow("contact-requests", "bulk-mark-read", "error", {
+        error: error instanceof Error ? error.message : String(error),
+        notificationError: true,
+      })
+    }
+
+    logActionFlow("contact-requests", "bulk-mark-read", "success", { requestedCount: ids.length, affectedCount: result.count }, startTime)
+  }
+
+  const namesText = contactRequests.length > 0 ? formatContactRequestNames(contactRequests, 3) : ""
+  const message = namesText
+    ? `Đã đánh dấu đã đọc ${result.count} yêu cầu liên hệ: ${namesText}`
+    : `Đã đánh dấu đã đọc ${result.count} yêu cầu liên hệ`
+  
+  return { success: true, message, affected: result.count }
+}
+
+export async function bulkMarkAsUnreadContactRequests(ctx: AuthContext, ids: string[]): Promise<BulkActionResult> {
+  ensurePermission(ctx, PERMISSIONS.CONTACT_REQUESTS_UPDATE, PERMISSIONS.CONTACT_REQUESTS_MANAGE)
+
+  const startTime = Date.now()
+  logActionFlow("contact-requests", "bulk-mark-unread", "start", { count: ids.length, contactRequestIds: ids })
+
+  if (!ids || ids.length === 0) {
+    logActionFlow("contact-requests", "bulk-mark-unread", "error", { error: "Danh sách yêu cầu liên hệ trống" }, startTime)
+    throw new ApplicationError("Danh sách yêu cầu liên hệ trống", 400)
+  }
+
+  // Lấy thông tin contact requests trước khi update
+  const contactRequests = await prisma.contactRequest.findMany({
+    where: {
+      id: { in: ids },
+      deletedAt: null,
+      isRead: true,
+    },
+    select: { id: true, subject: true, name: true, email: true },
+  })
+
+  const result = await prisma.contactRequest.updateMany({
+    where: {
+      id: { in: contactRequests.map((cr) => cr.id) },
+      deletedAt: null,
+      isRead: true,
+    },
+    data: {
+      isRead: false,
+    },
+  })
+
+  if (result.count > 0) {
+    try {
+      await emitContactRequestBatchUpsert(contactRequests.map((cr) => cr.id), "active")
+    } catch (error) {
+      logActionFlow("contact-requests", "bulk-mark-unread", "error", {
+        error: error instanceof Error ? error.message : String(error),
+        count: result.count,
+      })
+    }
+
+    try {
+      await notifySuperAdminsOfBulkContactRequestAction("mark-unread", ctx.actorId, contactRequests)
+    } catch (error) {
+      logActionFlow("contact-requests", "bulk-mark-unread", "error", {
+        error: error instanceof Error ? error.message : String(error),
+        notificationError: true,
+      })
+    }
+
+    logActionFlow("contact-requests", "bulk-mark-unread", "success", { requestedCount: ids.length, affectedCount: result.count }, startTime)
+  }
+
+  const namesText = contactRequests.length > 0 ? formatContactRequestNames(contactRequests, 3) : ""
+  const message = namesText
+    ? `Đã đánh dấu chưa đọc ${result.count} yêu cầu liên hệ: ${namesText}`
+    : `Đã đánh dấu chưa đọc ${result.count} yêu cầu liên hệ`
+  
+  return { success: true, message, affected: result.count }
+}
+
+export async function bulkUpdateStatusContactRequests(ctx: AuthContext, ids: string[], status: "NEW" | "IN_PROGRESS" | "RESOLVED" | "CLOSED"): Promise<BulkActionResult> {
+  ensurePermission(ctx, PERMISSIONS.CONTACT_REQUESTS_UPDATE, PERMISSIONS.CONTACT_REQUESTS_MANAGE)
+
+  const startTime = Date.now()
+  logActionFlow("contact-requests", "bulk-update-status", "start", { count: ids.length, status, contactRequestIds: ids })
+
+  if (!ids || ids.length === 0) {
+    logActionFlow("contact-requests", "bulk-update-status", "error", { error: "Danh sách yêu cầu liên hệ trống" }, startTime)
+    throw new ApplicationError("Danh sách yêu cầu liên hệ trống", 400)
+  }
+
+  // Lấy thông tin contact requests trước khi update
+  const contactRequests = await prisma.contactRequest.findMany({
+    where: {
+      id: { in: ids },
+      deletedAt: null,
+    },
+    select: { id: true, subject: true, name: true, email: true },
+  })
+
+  const result = await prisma.contactRequest.updateMany({
+    where: {
+      id: { in: contactRequests.map((cr) => cr.id) },
+      deletedAt: null,
+    },
+    data: {
+      status,
+    },
+  })
+
+  if (result.count > 0) {
+    try {
+      await emitContactRequestBatchUpsert(contactRequests.map((cr) => cr.id), "active")
+    } catch (error) {
+      logActionFlow("contact-requests", "bulk-update-status", "error", {
+        error: error instanceof Error ? error.message : String(error),
+        count: result.count,
+      })
+    }
+
+    try {
+      await notifySuperAdminsOfBulkContactRequestAction("update-status", ctx.actorId, contactRequests, status)
+    } catch (error) {
+      logActionFlow("contact-requests", "bulk-update-status", "error", {
+        error: error instanceof Error ? error.message : String(error),
+        notificationError: true,
+      })
+    }
+
+    logActionFlow("contact-requests", "bulk-update-status", "success", { requestedCount: ids.length, affectedCount: result.count, status }, startTime)
+  }
+
+  const statusLabels: Record<string, string> = {
+    NEW: "Mới",
+    IN_PROGRESS: "Đang xử lý",
+    RESOLVED: "Đã xử lý",
+    CLOSED: "Đã đóng",
+  }
+
+  const namesText = contactRequests.length > 0 ? formatContactRequestNames(contactRequests, 3) : ""
+  const message = namesText
+    ? `Đã cập nhật trạng thái thành "${statusLabels[status]}" cho ${result.count} yêu cầu liên hệ: ${namesText}`
+    : `Đã cập nhật trạng thái thành "${statusLabels[status]}" cho ${result.count} yêu cầu liên hệ`
+  
+  return { success: true, message, affected: result.count }
+}
+

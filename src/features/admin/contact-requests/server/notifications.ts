@@ -252,9 +252,10 @@ export async function notifyUserOfContactRequestAssignment(
 }
 
 export async function notifySuperAdminsOfBulkContactRequestAction(
-  action: "delete" | "restore" | "hard-delete",
+  action: "delete" | "restore" | "hard-delete" | "mark-read" | "mark-unread" | "update-status",
   actorId: string,
-  contactRequests: Array<{ subject: string; name: string }>
+  contactRequests: Array<{ subject: string; name: string }>,
+  status?: "NEW" | "IN_PROGRESS" | "RESOLVED" | "CLOSED"
 ): Promise<void> {
   if (contactRequests.length === 0) return
 
@@ -280,6 +281,25 @@ export async function notifySuperAdminsOfBulkContactRequestAction(
         title = `Xóa vĩnh viễn ${count} yêu cầu liên hệ`
         description = namesText || `${count} yêu cầu liên hệ`
         break
+      case "mark-read":
+        title = `Đánh dấu đã đọc ${count} yêu cầu liên hệ`
+        description = namesText || `${count} yêu cầu liên hệ`
+        break
+      case "mark-unread":
+        title = `Đánh dấu chưa đọc ${count} yêu cầu liên hệ`
+        description = namesText || `${count} yêu cầu liên hệ`
+        break
+      case "update-status":
+        const statusLabels: Record<string, string> = {
+          NEW: "Mới",
+          IN_PROGRESS: "Đang xử lý",
+          RESOLVED: "Đã xử lý",
+          CLOSED: "Đã đóng",
+        }
+        const statusLabel = status ? statusLabels[status] : "Trạng thái"
+        title = `Cập nhật trạng thái ${count} yêu cầu liên hệ`
+        description = `${statusLabel}: ${namesText || `${count} yêu cầu liên hệ`}`
+        break
     }
 
     const actionUrl = `/admin/contact-requests`
@@ -296,6 +316,7 @@ export async function notifySuperAdminsOfBulkContactRequestAction(
         actorEmail: actor?.email,
         count,
         contactRequestNames: contactRequests.map(cr => cr.subject || cr.name),
+        ...(action === "update-status" && status ? { status } : {}),
         timestamp: new Date().toISOString(),
       }
     )

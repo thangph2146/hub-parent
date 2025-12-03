@@ -1,12 +1,19 @@
 "use client"
 
 import { useCallback, useMemo, useState } from "react"
-import { RotateCcw, Trash2, AlertTriangle } from "lucide-react"
+import { RotateCcw, Trash2, AlertTriangle, CheckCircle2, Circle, ChevronDown } from "lucide-react"
 
 import { ConfirmDialog } from "@/components/dialogs"
 import type { DataTableQueryState, DataTableResult } from "@/components/tables"
 import { FeedbackDialog } from "@/components/dialogs"
 import { Button } from "@/components/ui/button"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import type { ContactStatus } from "../types"
 import {
   ResourceTableClient,
   SelectionActionsWrapper,
@@ -59,6 +66,9 @@ export function ContactRequestsTableClient({
     handleToggleRead,
     executeSingleAction,
     executeBulkAction,
+    handleBulkMarkRead,
+    handleBulkMarkUnread,
+    handleBulkUpdateStatus,
     markingReadRequests,
     markingUnreadRequests,
     togglingRequests,
@@ -281,6 +291,84 @@ export function ContactRequestsTableClient({
         label={CONTACT_REQUEST_LABELS.SELECTED_CONTACT_REQUESTS(selectedIds.length)}
         actions={
           <>
+            {canUpdate && (
+              <>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  disabled={bulkState.isProcessing || selectedIds.length === 0}
+                  onClick={() => {
+                    setDeleteConfirm({
+                      open: true,
+                      type: "mark-read",
+                      bulkIds: selectedIds,
+                      onConfirm: async () => {
+                        await handleBulkMarkRead(selectedIds, refresh, clearSelection)
+                      },
+                    })
+                  }}
+                  className="whitespace-nowrap"
+                >
+                  <CheckCircle2 className="mr-2 h-5 w-5 shrink-0" />
+                  <span className="hidden sm:inline">Đánh dấu đã đọc ({selectedIds.length})</span>
+                  <span className="sm:hidden">Đã đọc</span>
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  disabled={bulkState.isProcessing || selectedIds.length === 0}
+                  onClick={() => {
+                    setDeleteConfirm({
+                      open: true,
+                      type: "mark-unread",
+                      bulkIds: selectedIds,
+                      onConfirm: async () => {
+                        await handleBulkMarkUnread(selectedIds, refresh, clearSelection)
+                      },
+                    })
+                  }}
+                  className="whitespace-nowrap"
+                >
+                  <Circle className="mr-2 h-5 w-5 shrink-0" />
+                  <span className="hidden sm:inline">Đánh dấu chưa đọc ({selectedIds.length})</span>
+                  <span className="sm:hidden">Chưa đọc</span>
+                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      disabled={bulkState.isProcessing || selectedIds.length === 0}
+                      className="whitespace-nowrap"
+                    >
+                      <span className="hidden sm:inline">Cập nhật trạng thái</span>
+                      <span className="sm:hidden">Trạng thái</span>
+                      <ChevronDown className="ml-2 h-4 w-4 shrink-0" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    {([
+                      { label: "Mới", value: "NEW" },
+                      { label: "Đang xử lý", value: "IN_PROGRESS" },
+                      { label: "Đã xử lý", value: "RESOLVED" },
+                      { label: "Đã đóng", value: "CLOSED" },
+                    ] as Array<{ label: string; value: ContactStatus }>).map((option) => (
+                      <DropdownMenuItem
+                        key={option.value}
+                        onClick={() => {
+                          handleBulkUpdateStatus(selectedIds, option.value, refresh, clearSelection)
+                        }}
+                      >
+                        {option.label}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </>
+            )}
             {canDelete && (
               <Button
                 type="button"
@@ -344,7 +432,7 @@ export function ContactRequestsTableClient({
         }
       />
     ),
-    [canDelete, canManage, bulkState.isProcessing, setDeleteConfirm, executeBulkAction],
+    [canUpdate, canDelete, canManage, bulkState.isProcessing, setDeleteConfirm, executeBulkAction, handleBulkMarkRead, handleBulkMarkUnread, handleBulkUpdateStatus],
   )
 
   const createDeletedSelectionActions = useCallback(

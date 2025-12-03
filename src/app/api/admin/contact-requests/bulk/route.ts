@@ -6,6 +6,9 @@ import {
   bulkSoftDeleteContactRequests,
   bulkRestoreContactRequests,
   bulkHardDeleteContactRequests,
+  bulkMarkAsReadContactRequests,
+  bulkMarkAsUnreadContactRequests,
+  bulkUpdateStatusContactRequests,
   type AuthContext,
   ApplicationError,
 } from "@/features/admin/contact-requests/server/mutations"
@@ -44,6 +47,12 @@ async function bulkContactRequestsHandler(req: NextRequest, context: ApiRouteCon
       result = await bulkRestoreContactRequests(ctx, validatedBody.ids)
     } else if (validatedBody.action === "hard-delete") {
       result = await bulkHardDeleteContactRequests(ctx, validatedBody.ids)
+    } else if (validatedBody.action === "mark-read") {
+      result = await bulkMarkAsReadContactRequests(ctx, validatedBody.ids)
+    } else if (validatedBody.action === "mark-unread") {
+      result = await bulkMarkAsUnreadContactRequests(ctx, validatedBody.ids)
+    } else if (validatedBody.action === "update-status") {
+      result = await bulkUpdateStatusContactRequests(ctx, validatedBody.ids, validatedBody.status)
     } else {
       return NextResponse.json({ error: "Action không hợp lệ" }, { status: 400 })
     }

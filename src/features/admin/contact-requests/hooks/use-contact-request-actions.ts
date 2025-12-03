@@ -3,9 +3,9 @@ import { useQueryClient } from "@tanstack/react-query"
 import { apiClient } from "@/lib/api/axios"
 import { apiRoutes } from "@/lib/api/routes"
 import { queryKeys } from "@/lib/query-keys"
-import { useResourceActions } from "@/features/admin/resources/hooks"
+import { useResourceActions, useResourceBulkProcessing } from "@/features/admin/resources/hooks"
 import type { ResourceRefreshHandler } from "@/features/admin/resources/types"
-import type { ContactRequestRow } from "../types"
+import type { ContactRequestRow, BulkActionResult } from "../types"
 import type { FeedbackVariant } from "@/components/dialogs"
 import { CONTACT_REQUEST_MESSAGES } from "../constants/messages"
 
@@ -30,6 +30,8 @@ export function useContactRequestActions({
   const [markingReadRequests, setMarkingReadRequests] = useState<Set<string>>(new Set())
   const [markingUnreadRequests, setMarkingUnreadRequests] = useState<Set<string>>(new Set())
   const [togglingRequests, setTogglingRequests] = useState<Set<string>>(new Set())
+
+  const { bulkState: customBulkState, startBulkProcessing, stopBulkProcessing } = useResourceBulkProcessing()
 
   const {
     executeSingleAction,
@@ -112,16 +114,162 @@ export function useContactRequestActions({
     [canUpdate, showFeedback, queryClient],
   )
 
+  const handleBulkMarkRead = useCallback(
+    async (ids: string[], refresh: ResourceRefreshHandler, clearSelection: () => void) => {
+      if (!canUpdate) {
+        showFeedback("error", CONTACT_REQUEST_MESSAGES.NO_PERMISSION, CONTACT_REQUEST_MESSAGES.NO_UPDATE_PERMISSION)
+        return
+      }
+
+      if (ids.length === 0) return
+      if (!startBulkProcessing()) return
+
+      try {
+        const response = await apiClient.post<{ data: BulkActionResult }>(apiRoutes.contactRequests.bulk, {
+          action: "mark-read",
+          ids,
+        })
+
+        const result = response.data.data
+        const affected = result?.affected ?? 0
+
+        if (affected === 0) {
+          showFeedback("error", "Không có thay đổi", "Không có yêu cầu liên hệ nào được đánh dấu đã đọc")
+          clearSelection()
+          return
+        }
+
+        showFeedback(
+          "success",
+          CONTACT_REQUEST_MESSAGES.MARK_READ_SUCCESS,
+          result?.message || `Đã đánh dấu đã đọc ${affected} yêu cầu liên hệ`
+        )
+        clearSelection()
+
+        await queryClient.invalidateQueries({ queryKey: queryKeys.adminContactRequests.all(), refetchType: "active" })
+        await queryClient.refetchQueries({ queryKey: queryKeys.adminContactRequests.all(), type: "active" })
+        await refresh?.()
+      } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : CONTACT_REQUEST_MESSAGES.UNKNOWN_ERROR
+        showFeedback("error", CONTACT_REQUEST_MESSAGES.MARK_READ_ERROR, "Không thể đánh dấu đã đọc yêu cầu liên hệ.", errorMessage)
+      } finally {
+        stopBulkProcessing()
+      }
+    },
+    [canUpdate, showFeedback, queryClient, startBulkProcessing, stopBulkProcessing],
+  )
+
+  const handleBulkMarkUnread = useCallback(
+    async (ids: string[], refresh: ResourceRefreshHandler, clearSelection: () => void) => {
+      if (!canUpdate) {
+        showFeedback("error", CONTACT_REQUEST_MESSAGES.NO_PERMISSION, CONTACT_REQUEST_MESSAGES.NO_UPDATE_PERMISSION)
+        return
+      }
+
+      if (ids.length === 0) return
+      if (!startBulkProcessing()) return
+
+      try {
+        const response = await apiClient.post<{ data: BulkActionResult }>(apiRoutes.contactRequests.bulk, {
+          action: "mark-unread",
+          ids,
+        })
+
+        const result = response.data.data
+        const affected = result?.affected ?? 0
+
+        if (affected === 0) {
+          showFeedback("error", "Không có thay đổi", "Không có yêu cầu liên hệ nào được đánh dấu chưa đọc")
+          clearSelection()
+          return
+        }
+
+        showFeedback(
+          "success",
+          CONTACT_REQUEST_MESSAGES.MARK_UNREAD_SUCCESS,
+          result?.message || `Đã đánh dấu chưa đọc ${affected} yêu cầu liên hệ`
+        )
+        clearSelection()
+
+        await queryClient.invalidateQueries({ queryKey: queryKeys.adminContactRequests.all(), refetchType: "active" })
+        await queryClient.refetchQueries({ queryKey: queryKeys.adminContactRequests.all(), type: "active" })
+        await refresh?.()
+      } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : CONTACT_REQUEST_MESSAGES.UNKNOWN_ERROR
+        showFeedback("error", CONTACT_REQUEST_MESSAGES.MARK_UNREAD_ERROR, "Không thể đánh dấu chưa đọc yêu cầu liên hệ.", errorMessage)
+      } finally {
+        stopBulkProcessing()
+      }
+    },
+    [canUpdate, showFeedback, queryClient, startBulkProcessing, stopBulkProcessing],
+  )
+
+  const handleBulkUpdateStatus = useCallback(
+    async (ids: string[], status: "NEW" | "IN_PROGRESS" | "RESOLVED" | "CLOSED", refresh: ResourceRefreshHandler, clearSelection: () => void) => {
+      if (!canUpdate) {
+        showFeedback("error", CONTACT_REQUEST_MESSAGES.NO_PERMISSION, CONTACT_REQUEST_MESSAGES.NO_UPDATE_PERMISSION)
+        return
+      }
+
+      if (ids.length === 0) return
+      if (!startBulkProcessing()) return
+
+      try {
+        const response = await apiClient.post<{ data: BulkActionResult }>(apiRoutes.contactRequests.bulk, {
+          action: "update-status",
+          ids,
+          status,
+        })
+
+        const result = response.data.data
+        const affected = result?.affected ?? 0
+
+        if (affected === 0) {
+          showFeedback("error", "Không có thay đổi", "Không có yêu cầu liên hệ nào được cập nhật trạng thái")
+          clearSelection()
+          return
+        }
+
+        const statusLabels: Record<string, string> = {
+          NEW: "Mới",
+          IN_PROGRESS: "Đang xử lý",
+          RESOLVED: "Đã xử lý",
+          CLOSED: "Đã đóng",
+        }
+
+        showFeedback(
+          "success",
+          "Cập nhật trạng thái thành công",
+          result?.message || `Đã cập nhật trạng thái thành "${statusLabels[status]}" cho ${affected} yêu cầu liên hệ`
+        )
+        clearSelection()
+
+        await queryClient.invalidateQueries({ queryKey: queryKeys.adminContactRequests.all(), refetchType: "active" })
+        await queryClient.refetchQueries({ queryKey: queryKeys.adminContactRequests.all(), type: "active" })
+        await refresh?.()
+      } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : CONTACT_REQUEST_MESSAGES.UNKNOWN_ERROR
+        showFeedback("error", "Cập nhật trạng thái thất bại", "Không thể cập nhật trạng thái yêu cầu liên hệ.", errorMessage)
+      } finally {
+        stopBulkProcessing()
+      }
+    },
+    [canUpdate, showFeedback, queryClient, startBulkProcessing, stopBulkProcessing],
+  )
+
   return {
     handleToggleRead,
     executeSingleAction,
     executeBulkAction,
+    handleBulkMarkRead,
+    handleBulkMarkUnread,
+    handleBulkUpdateStatus,
     markingReadRequests,
     markingUnreadRequests,
     togglingRequests,
     deletingRequests,
     restoringRequests,
     hardDeletingRequests,
-    bulkState,
+    bulkState: customBulkState.isProcessing ? customBulkState : bulkState,
   }
 }

@@ -29,10 +29,17 @@ export const AssignContactRequestSchema = z.object({
   assignedToId: z.string().cuid("ID người được giao không hợp lệ").nullable(),
 })
 
-export const BulkContactRequestActionSchema = z.object({
-  action: z.enum(["delete", "restore", "hard-delete"]),
-  ids: z.array(z.string().cuid("ID không hợp lệ")).min(1, "Danh sách ID không được trống"),
-})
+export const BulkContactRequestActionSchema = z.discriminatedUnion("action", [
+  z.object({
+    action: z.enum(["delete", "restore", "hard-delete", "mark-read", "mark-unread"]),
+    ids: z.array(z.string().cuid("ID không hợp lệ")).min(1, "Danh sách ID không được trống"),
+  }),
+  z.object({
+    action: z.literal("update-status"),
+    ids: z.array(z.string().cuid("ID không hợp lệ")).min(1, "Danh sách ID không được trống"),
+    status: ContactStatusSchema,
+  }),
+])
 
 export type CreateContactRequestInput = z.infer<typeof CreateContactRequestSchema>
 export type UpdateContactRequestInput = z.infer<typeof UpdateContactRequestSchema>
