@@ -212,9 +212,9 @@ export function ResourceDetailClient<T extends Record<string, unknown>>({
       return { gridClass: "grid-cols-1", gridResponsiveAttr: "true" as const }
     }
     if (fieldCount === 2) {
-      return { gridClass: "grid-cols-1 @md:grid-cols-2", gridResponsiveAttr: "true" as const }
+      return { gridClass: "grid-cols-1 sm:grid-cols-2", gridResponsiveAttr: "true" as const }
     }
-    return { gridClass: "grid-cols-1", gridResponsiveAttr: "auto-fit" as const }
+    return { gridClass: "grid-cols-1 sm:grid-cols-2", gridResponsiveAttr: "auto-fit" as const }
   }, [])
 
   const renderSection = React.useCallback((sectionId: string, sectionFields: ResourceDetailField<T>[]) => {
