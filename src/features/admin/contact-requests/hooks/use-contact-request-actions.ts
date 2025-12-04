@@ -68,7 +68,7 @@ export function useContactRequestActions({
   })
 
   const handleToggleRead = useCallback(
-    async (row: ContactRequestRow, newStatus: boolean, _refresh: ResourceRefreshHandler) => {
+    async (row: ContactRequestRow, newStatus: boolean, refresh?: ResourceRefreshHandler) => {
       if (!canUpdate) {
         showFeedback("error", CONTACT_REQUEST_MESSAGES.NO_PERMISSION, CONTACT_REQUEST_MESSAGES.NO_UPDATE_PERMISSION)
         return
@@ -80,6 +80,11 @@ export function useContactRequestActions({
 
       try {
         await apiClient.put(apiRoutes.contactRequests.update(row.id), { isRead: newStatus })
+        
+        await queryClient.invalidateQueries({ queryKey: queryKeys.adminContactRequests.all(), refetchType: "active" })
+        await queryClient.refetchQueries({ queryKey: queryKeys.adminContactRequests.all(), type: "active" })
+        await refresh?.()
+        
         showFeedback(
           "success",
           newStatus ? CONTACT_REQUEST_MESSAGES.MARK_READ_SUCCESS : CONTACT_REQUEST_MESSAGES.MARK_UNREAD_SUCCESS,
@@ -87,9 +92,6 @@ export function useContactRequestActions({
             ? `Yêu cầu liên hệ "${row.subject}" đã được đánh dấu là đã đọc.`
             : `Yêu cầu liên hệ "${row.subject}" đã được đánh dấu là chưa đọc.`
         )
-        
-        await queryClient.invalidateQueries({ queryKey: queryKeys.adminContactRequests.all(), refetchType: "active" })
-        await queryClient.refetchQueries({ queryKey: queryKeys.adminContactRequests.all(), type: "active" })
       } catch (error: unknown) {
         const errorMessage = error instanceof Error ? error.message : CONTACT_REQUEST_MESSAGES.UNKNOWN_ERROR
         showFeedback(
@@ -116,7 +118,7 @@ export function useContactRequestActions({
 
   const handleBulkMarkRead = useCallback(
     async (ids: string[], refresh: ResourceRefreshHandler, clearSelection: () => void) => {
-      if (!canUpdate) {
+      if (!canManage) {
         showFeedback("error", CONTACT_REQUEST_MESSAGES.NO_PERMISSION, CONTACT_REQUEST_MESSAGES.NO_UPDATE_PERMISSION)
         return
       }
@@ -156,12 +158,12 @@ export function useContactRequestActions({
         stopBulkProcessing()
       }
     },
-    [canUpdate, showFeedback, queryClient, startBulkProcessing, stopBulkProcessing],
+    [canManage, showFeedback, queryClient, startBulkProcessing, stopBulkProcessing],
   )
 
   const handleBulkMarkUnread = useCallback(
     async (ids: string[], refresh: ResourceRefreshHandler, clearSelection: () => void) => {
-      if (!canUpdate) {
+      if (!canManage) {
         showFeedback("error", CONTACT_REQUEST_MESSAGES.NO_PERMISSION, CONTACT_REQUEST_MESSAGES.NO_UPDATE_PERMISSION)
         return
       }
@@ -201,12 +203,12 @@ export function useContactRequestActions({
         stopBulkProcessing()
       }
     },
-    [canUpdate, showFeedback, queryClient, startBulkProcessing, stopBulkProcessing],
+    [canManage, showFeedback, queryClient, startBulkProcessing, stopBulkProcessing],
   )
 
   const handleBulkUpdateStatus = useCallback(
     async (ids: string[], status: "NEW" | "IN_PROGRESS" | "RESOLVED" | "CLOSED", refresh: ResourceRefreshHandler, clearSelection: () => void) => {
-      if (!canUpdate) {
+      if (!canManage) {
         showFeedback("error", CONTACT_REQUEST_MESSAGES.NO_PERMISSION, CONTACT_REQUEST_MESSAGES.NO_UPDATE_PERMISSION)
         return
       }
@@ -254,7 +256,7 @@ export function useContactRequestActions({
         stopBulkProcessing()
       }
     },
-    [canUpdate, showFeedback, queryClient, startBulkProcessing, stopBulkProcessing],
+    [canManage, showFeedback, queryClient, startBulkProcessing, stopBulkProcessing],
   )
 
   return {

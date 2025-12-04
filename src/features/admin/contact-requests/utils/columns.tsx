@@ -5,7 +5,11 @@ import type { DataTableColumn } from "@/components/tables"
 import { useDynamicFilterOptions } from "@/features/admin/resources/hooks/use-dynamic-filter-options"
 import { apiRoutes } from "@/lib/api/routes"
 import type { ContactRequestRow } from "../types"
-import { CONTACT_REQUEST_LABELS } from "../constants"
+import { 
+  CONTACT_REQUEST_LABELS, 
+  CONTACT_REQUEST_STATUS_COLORS, 
+  CONTACT_REQUEST_PRIORITY_COLORS 
+} from "../constants"
 
 interface UseContactRequestColumnsOptions {
   togglingRequests: Set<string>
@@ -61,26 +65,6 @@ export function useContactRequestColumns({
       MEDIUM: CONTACT_REQUEST_LABELS.MEDIUM,
       HIGH: CONTACT_REQUEST_LABELS.HIGH,
       URGENT: CONTACT_REQUEST_LABELS.URGENT,
-    }),
-    [],
-  )
-
-  const statusColors = useMemo<Record<string, "default" | "secondary" | "destructive" | "outline">>(
-    () => ({
-      NEW: "default",
-      IN_PROGRESS: "secondary",
-      RESOLVED: "outline",
-      CLOSED: "destructive",
-    }),
-    [],
-  )
-
-  const priorityColors = useMemo<Record<string, "default" | "secondary" | "destructive" | "outline">>(
-    () => ({
-      LOW: "outline",
-      MEDIUM: "default",
-      HIGH: "secondary",
-      URGENT: "destructive",
     }),
     [],
   )
@@ -161,7 +145,7 @@ export function useContactRequestColumns({
         className: "min-w-[120px] max-w-[150px]",
         headerClassName: "min-w-[120px] max-w-[150px]",
         cell: (row) => (
-          <Badge variant={statusColors[row.status] || "default"}>
+          <Badge variant={CONTACT_REQUEST_STATUS_COLORS[row.status] || "default"}>
             {statusLabels[row.status] || row.status}
           </Badge>
         ),
@@ -179,7 +163,7 @@ export function useContactRequestColumns({
         className: "min-w-[120px] max-w-[150px]",
         headerClassName: "min-w-[120px] max-w-[150px]",
         cell: (row) => (
-          <Badge variant={priorityColors[row.priority] || "default"}>
+          <Badge variant={CONTACT_REQUEST_PRIORITY_COLORS[row.priority] || "default"}>
             {priorityLabels[row.priority] || row.priority}
           </Badge>
         ),
@@ -265,8 +249,6 @@ export function useContactRequestColumns({
       subjectFilter.isLoading,
       statusLabels,
       priorityLabels,
-      statusColors,
-      priorityColors,
       initialUsersOptions,
       togglingRequests,
       canUpdate,

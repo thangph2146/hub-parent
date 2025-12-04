@@ -116,16 +116,10 @@ export function ContactRequestsTableClient({
   const handleToggleReadWithRefresh = useCallback(
     (row: ContactRequestRow, checked: boolean) => {
       if (!canUpdate) return
-      setDeleteConfirm({
-        open: true,
-        type: checked ? "mark-read" : "mark-unread",
-        row,
-        onConfirm: async () => {
-          await handleToggleRead(row, checked, refreshTable)
-        },
-      })
+      // Thực hiện trực tiếp không cần confirm dialog cho action đơn giản này
+      handleToggleRead(row, checked, refreshTable)
     },
-    [canUpdate, handleToggleRead, refreshTable, setDeleteConfirm],
+    [canUpdate, handleToggleRead, refreshTable],
   )
 
   const { baseColumns, deletedColumns } = useContactRequestColumns({
@@ -291,7 +285,7 @@ export function ContactRequestsTableClient({
         label={CONTACT_REQUEST_LABELS.SELECTED_CONTACT_REQUESTS(selectedIds.length)}
         actions={
           <>
-            {canUpdate && (
+            {canManage && (
               <>
                 <Button
                   type="button"
@@ -299,14 +293,8 @@ export function ContactRequestsTableClient({
                   variant="outline"
                   disabled={bulkState.isProcessing || selectedIds.length === 0}
                   onClick={() => {
-                    setDeleteConfirm({
-                      open: true,
-                      type: "mark-read",
-                      bulkIds: selectedIds,
-                      onConfirm: async () => {
-                        await handleBulkMarkRead(selectedIds, refresh, clearSelection)
-                      },
-                    })
+                    // Thực hiện trực tiếp không cần confirm dialog
+                    handleBulkMarkRead(selectedIds, refresh, clearSelection)
                   }}
                   className="whitespace-nowrap"
                 >
@@ -320,14 +308,8 @@ export function ContactRequestsTableClient({
                   variant="outline"
                   disabled={bulkState.isProcessing || selectedIds.length === 0}
                   onClick={() => {
-                    setDeleteConfirm({
-                      open: true,
-                      type: "mark-unread",
-                      bulkIds: selectedIds,
-                      onConfirm: async () => {
-                        await handleBulkMarkUnread(selectedIds, refresh, clearSelection)
-                      },
-                    })
+                    // Thực hiện trực tiếp không cần confirm dialog
+                    handleBulkMarkUnread(selectedIds, refresh, clearSelection)
                   }}
                   className="whitespace-nowrap"
                 >
@@ -335,39 +317,41 @@ export function ContactRequestsTableClient({
                   <span className="hidden sm:inline">Đánh dấu chưa đọc ({selectedIds.length})</span>
                   <span className="sm:hidden">Chưa đọc</span>
                 </Button>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="outline"
-                      disabled={bulkState.isProcessing || selectedIds.length === 0}
-                      className="whitespace-nowrap"
-                    >
-                      <span className="hidden sm:inline">Cập nhật trạng thái</span>
-                      <span className="sm:hidden">Trạng thái</span>
-                      <ChevronDown className="ml-2 h-4 w-4 shrink-0" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    {([
-                      { label: "Mới", value: "NEW" },
-                      { label: "Đang xử lý", value: "IN_PROGRESS" },
-                      { label: "Đã xử lý", value: "RESOLVED" },
-                      { label: "Đã đóng", value: "CLOSED" },
-                    ] as Array<{ label: string; value: ContactStatus }>).map((option) => (
-                      <DropdownMenuItem
-                        key={option.value}
-                        onClick={() => {
-                          handleBulkUpdateStatus(selectedIds, option.value, refresh, clearSelection)
-                        }}
-                      >
-                        {option.label}
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
               </>
+            )}
+            {canManage && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    disabled={bulkState.isProcessing || selectedIds.length === 0}
+                    className="whitespace-nowrap"
+                  >
+                    <span className="hidden sm:inline">Cập nhật trạng thái</span>
+                    <span className="sm:hidden">Trạng thái</span>
+                    <ChevronDown className="ml-2 h-4 w-4 shrink-0" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  {([
+                    { label: "Mới", value: "NEW" },
+                    { label: "Đang xử lý", value: "IN_PROGRESS" },
+                    { label: "Đã xử lý", value: "RESOLVED" },
+                    { label: "Đã đóng", value: "CLOSED" },
+                  ] as Array<{ label: string; value: ContactStatus }>).map((option) => (
+                    <DropdownMenuItem
+                      key={option.value}
+                      onClick={() => {
+                        handleBulkUpdateStatus(selectedIds, option.value, refresh, clearSelection)
+                      }}
+                    >
+                      {option.label}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
             )}
             {canDelete && (
               <Button
@@ -432,7 +416,7 @@ export function ContactRequestsTableClient({
         }
       />
     ),
-    [canUpdate, canDelete, canManage, bulkState.isProcessing, setDeleteConfirm, executeBulkAction, handleBulkMarkRead, handleBulkMarkUnread, handleBulkUpdateStatus],
+    [canDelete, canManage, bulkState.isProcessing, setDeleteConfirm, executeBulkAction, handleBulkMarkRead, handleBulkMarkUnread, handleBulkUpdateStatus],
   )
 
   const createDeletedSelectionActions = useCallback(
@@ -518,8 +502,8 @@ export function ContactRequestsTableClient({
         label: CONTACT_REQUEST_LABELS.NEW,
         status: "NEW",
         columns: baseColumns,
-        selectionEnabled: canDelete || canUpdate,
-        selectionActions: canDelete || canUpdate ? createActiveSelectionActions : undefined,
+        selectionEnabled: canDelete || canManage,
+        selectionActions: canDelete || canManage ? createActiveSelectionActions : undefined,
         rowActions: (row) => renderActiveRowActions(row),
         emptyMessage: CONTACT_REQUEST_LABELS.NO_CONTACT_REQUESTS,
       },
@@ -528,8 +512,8 @@ export function ContactRequestsTableClient({
         label: CONTACT_REQUEST_LABELS.ACTIVE_VIEW,
         status: "active",
         columns: baseColumns,
-        selectionEnabled: canDelete || canUpdate,
-        selectionActions: canDelete || canUpdate ? createActiveSelectionActions : undefined,
+        selectionEnabled: canDelete || canManage,
+        selectionActions: canDelete || canManage ? createActiveSelectionActions : undefined,
         rowActions: (row) => renderActiveRowActions(row),
         emptyMessage: CONTACT_REQUEST_LABELS.NO_CONTACT_REQUESTS,
       },
@@ -552,7 +536,6 @@ export function ContactRequestsTableClient({
     canDelete,
     canRestore,
     canManage,
-    canUpdate,
     createActiveSelectionActions,
     createDeletedSelectionActions,
     renderActiveRowActions,
@@ -578,18 +561,6 @@ export function ContactRequestsTableClient({
         deleteConfirm.row?.subject,
       )
     }
-    if (deleteConfirm.type === "mark-read") {
-      return CONTACT_REQUEST_CONFIRM_MESSAGES.MARK_READ_TITLE(
-        deleteConfirm.bulkIds?.length,
-        deleteConfirm.row?.subject,
-      )
-    }
-    if (deleteConfirm.type === "mark-unread") {
-      return CONTACT_REQUEST_CONFIRM_MESSAGES.MARK_UNREAD_TITLE(
-        deleteConfirm.bulkIds?.length,
-        deleteConfirm.row?.subject,
-      )
-    }
     return CONTACT_REQUEST_CONFIRM_MESSAGES.DELETE_TITLE(
       deleteConfirm.bulkIds?.length,
       deleteConfirm.row?.subject,
@@ -606,18 +577,6 @@ export function ContactRequestsTableClient({
     }
     if (deleteConfirm.type === "restore") {
       return CONTACT_REQUEST_CONFIRM_MESSAGES.RESTORE_DESCRIPTION(
-        deleteConfirm.bulkIds?.length,
-        deleteConfirm.row?.subject,
-      )
-    }
-    if (deleteConfirm.type === "mark-read") {
-      return CONTACT_REQUEST_CONFIRM_MESSAGES.MARK_READ_DESCRIPTION(
-        deleteConfirm.bulkIds?.length,
-        deleteConfirm.row?.subject,
-      )
-    }
-    if (deleteConfirm.type === "mark-unread") {
-      return CONTACT_REQUEST_CONFIRM_MESSAGES.MARK_UNREAD_DESCRIPTION(
         deleteConfirm.bulkIds?.length,
         deleteConfirm.row?.subject,
       )
@@ -665,7 +624,7 @@ export function ContactRequestsTableClient({
           variant={
             deleteConfirm.type === "hard" || deleteConfirm.type === "soft"
               ? "destructive"
-              : deleteConfirm.type === "restore" || deleteConfirm.type === "mark-read" || deleteConfirm.type === "mark-unread"
+              : deleteConfirm.type === "restore"
               ? "default"
               : "destructive"
           }
@@ -674,10 +633,6 @@ export function ContactRequestsTableClient({
               ? CONTACT_REQUEST_CONFIRM_MESSAGES.HARD_DELETE_LABEL
               : deleteConfirm.type === "restore"
               ? CONTACT_REQUEST_CONFIRM_MESSAGES.RESTORE_LABEL
-              : deleteConfirm.type === "mark-read"
-              ? CONTACT_REQUEST_CONFIRM_MESSAGES.MARK_READ_LABEL
-              : deleteConfirm.type === "mark-unread"
-              ? CONTACT_REQUEST_CONFIRM_MESSAGES.MARK_UNREAD_LABEL
               : CONTACT_REQUEST_CONFIRM_MESSAGES.CONFIRM_LABEL
           }
           cancelLabel={CONTACT_REQUEST_CONFIRM_MESSAGES.CANCEL_LABEL}
@@ -689,10 +644,6 @@ export function ContactRequestsTableClient({
                 ? restoringRequests.has(deleteConfirm.row.id)
                 : deleteConfirm.type === "hard"
                 ? hardDeletingRequests.has(deleteConfirm.row.id)
-                : deleteConfirm.type === "mark-read"
-                ? markingReadRequests.has(deleteConfirm.row.id)
-                : deleteConfirm.type === "mark-unread"
-                ? markingUnreadRequests.has(deleteConfirm.row.id)
                 : deletingRequests.has(deleteConfirm.row.id)
               : false)
           }
