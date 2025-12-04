@@ -9,6 +9,7 @@ import { appConfig } from "@/lib/config"
  * - File not-found.tsx được đặt ở app directory để handle 404 errors
  * - Tự động được render khi route không tồn tại
  * - Có thể được trigger bằng notFound() function từ Server Components
+ * - Tắt static generation để tránh lỗi build
  * 
  * Metadata:
  * - Export metadata từ server component để có SEO tốt hơn
@@ -25,6 +26,10 @@ import { appConfig } from "@/lib/config"
  * - Title sử dụng template từ root: "Trang không tìm thấy | CMS"
  * - Robots noindex để tránh index 404 pages
  */
+
+// Tắt static generation cho not-found page
+export const dynamic = 'force-dynamic'
+
 export const metadata: Metadata = {
   title: "Trang không tìm thấy",
   description: "Trang bạn đang tìm kiếm không tồn tại hoặc đã bị di chuyển",
