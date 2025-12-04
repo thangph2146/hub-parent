@@ -1,37 +1,37 @@
 /**
  * Server-side auth utilities
  */
-import { auth } from "./auth"
-import type { Permission } from "@/lib/permissions"
-import { prisma } from "@/lib/database"
-import { logger } from "@/lib/config"
+import { auth } from "./auth";
+import type { Permission } from "@/lib/permissions";
+import { prisma } from "@/lib/database";
+import { logger } from "@/lib/config";
 
 // Cache để tránh duplicate logs trong cùng một request/process
-const permissionLogCache = new Map<string, { timestamp: number }>()
-const LOG_DEBOUNCE_MS = 5000 // Chỉ log một lần mỗi 5 giây cho cùng một user
+const permissionLogCache = new Map<string, { timestamp: number }>();
+const LOG_DEBOUNCE_MS = 5000; // Chỉ log một lần mỗi 5 giây cho cùng một user
 
 // Cleanup cache định kỳ để tránh memory leak
 setInterval(() => {
-  const now = Date.now()
+  const now = Date.now();
   for (const [key, value] of permissionLogCache.entries()) {
     if (now - value.timestamp > LOG_DEBOUNCE_MS * 2) {
-      permissionLogCache.delete(key)
+      permissionLogCache.delete(key);
     }
   }
-}, LOG_DEBOUNCE_MS * 2)
+}, LOG_DEBOUNCE_MS * 2);
 
 export async function getSession() {
-  return auth()
+  return auth();
 }
 
 export async function requireAuth() {
-  const session = await getSession()
+  const session = await getSession();
 
   if (!session) {
-    throw new Error("Unauthorized")
+    throw new Error("Unauthorized");
   }
 
-  return session
+  return session;
 }
 
 /**
@@ -39,14 +39,14 @@ export async function requireAuth() {
  * This is important after seed or role updates
  */
 export async function getPermissions(): Promise<Permission[]> {
-  const session = await getSession()
-  
+  const session = await getSession();
+
   if (!session?.user?.email) {
-    return []
+    return [];
   }
 
-  const userEmail = session.user.email
-  const now = Date.now()
+  const userEmail = session.user.email;
+  const now = Date.now();
 
   try {
     // Always fetch from database to ensure permissions are up-to-date
@@ -60,20 +60,20 @@ export async function getPermissions(): Promise<Permission[]> {
           },
         },
       },
-    })
+    });
 
     if (!user || !user.isActive || user.deletedAt !== null) {
-      return []
+      return [];
     }
 
     // Extract permissions from all user roles
-    const permissions = user.userRoles.flatMap((ur) => ur.role.permissions)
-    
+    const permissions = user.userRoles.flatMap((ur) => ur.role.permissions);
+
     // Log for debugging (only in development) với debounce để tránh duplicate logs
     if (process.env.NODE_ENV === "development") {
-      const cacheKey = `${userEmail}-${user.id}`
-      const cached = permissionLogCache.get(cacheKey)
-      
+      const cacheKey = `${userEmail}-${user.id}`;
+      const cached = permissionLogCache.get(cacheKey);
+
       // Chỉ log nếu chưa log trong LOG_DEBOUNCE_MS gần đây
       if (!cached || now - cached.timestamp > LOG_DEBOUNCE_MS) {
         logger.debug("[getPermissions] Loaded permissions from database", {
@@ -82,22 +82,45 @@ export async function getPermissions(): Promise<Permission[]> {
           roles: user.userRoles.map((ur) => ur.role.name),
           permissionsCount: permissions.length,
           permissions: permissions.slice(0, 10),
-        })
-        
-        permissionLogCache.set(cacheKey, { timestamp: now })
+        });
+
+        permissionLogCache.set(cacheKey, { timestamp: now });
       }
     }
-    
-    return permissions as Permission[]
+
+    return permissions as Permission[];
   } catch (error) {
     logger.error("[getPermissions] Error loading permissions from database", {
       email: userEmail,
       error: error instanceof Error ? error.message : String(error),
-    })
-    // Fallback to session permissions if database query fails
+    });
+
+    // SECURITY: Fail-safe approach
+    // In production, if we can't fetch from database, deny access for security
+    // Only allow fallback in development mode for debugging
+
+    logger.warn(
+      "[getPermissions] Falling back to session permissions (DEVELOPMENT MODE ONLY)",
+      {
+        email: userEmail,
+        warning: "This is insecure and should never happen in production",
+      }
+    );
+    // Fallback to session permissions ONLY in development
     const sessionWithPerms = session as typeof session & {
-      permissions?: Permission[]
-    }
-    return (sessionWithPerms?.permissions || []) as Permission[]
+      permissions?: Permission[];
+    };
+    return (sessionWithPerms?.permissions || []) as Permission[];
+
+    // Production: Deny access if database query fails
+    // This prevents security issues if database is compromised or session is manipulated
+    logger.error(
+      "[getPermissions] Database query failed in production - denying access for security",
+      {
+        email: userEmail,
+        security: "Access denied to prevent potential security breach",
+      }
+    );
+    return []; // Return empty permissions to deny all access
   }
 }
