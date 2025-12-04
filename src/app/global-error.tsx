@@ -19,6 +19,9 @@ import { motion } from "framer-motion";
 
 // Tắt static generation cho global error page
 export const dynamic = 'force-dynamic'
+export const revalidate = 0
+export const runtime = 'nodejs'
+export const fetchCache = 'force-no-store'
 
 interface GlobalErrorProps {
   error: Error & { digest?: string };

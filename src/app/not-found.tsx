@@ -29,6 +29,9 @@ import { appConfig } from "@/lib/config"
 
 // Tắt static generation cho not-found page
 export const dynamic = 'force-dynamic'
+export const revalidate = 0
+export const runtime = 'nodejs'
+export const fetchCache = 'force-no-store'
 
 export const metadata: Metadata = {
   title: "Trang không tìm thấy",

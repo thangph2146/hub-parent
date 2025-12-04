@@ -27,6 +27,9 @@ import {
 
 // Tắt static generation cho error page
 export const dynamic = 'force-dynamic'
+export const revalidate = 0
+export const runtime = 'nodejs'
+export const fetchCache = 'force-no-store'
 
 interface ErrorProps {
   error: Error & { digest?: string }
