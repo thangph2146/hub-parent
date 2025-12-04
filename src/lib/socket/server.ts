@@ -10,6 +10,7 @@ import {
   type SocketNotificationPayload,
   type SocketNotificationKind,
 } from "@/lib/socket/state"
+import type { ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData } from "@/lib/socket/types"
 
 const notificationCache = getNotificationCache()
 
@@ -159,7 +160,9 @@ async function ensureUserNotificationsCached(userId: string) {
   }
 }
 
-export async function setupSocketHandlers(io: IOServer) {
+export async function setupSocketHandlers(
+  io: IOServer<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>
+) {
   logger.info("Setting up Socket.IO handlers", {
     action: "initialize_handlers",
   })
@@ -184,8 +187,8 @@ export async function setupSocketHandlers(io: IOServer) {
     })
   })
 
-  io.on("connection", async (socket: Socket) => {
-    const auth = socket.handshake.auth as { userId?: string; role?: string }
+  io.on("connection", async (socket: Socket<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>) => {
+    const auth = socket.handshake.auth as SocketData
     const userId = auth?.userId
     const role = auth?.role
     const socketId = socket.id
@@ -284,17 +287,34 @@ export async function setupSocketHandlers(io: IOServer) {
 
     socket.on(
       "message:send",
-      async ({
-        parentMessageId,
-        content,
-        fromUserId,
-        toUserId,
-      }: {
-        parentMessageId?: string
-        content: string
-        fromUserId: string
-        toUserId: string
-      }) => {
+      async (
+        {
+          parentMessageId,
+          content,
+          fromUserId,
+          toUserId,
+        }: {
+          parentMessageId?: string
+          content: string
+          fromUserId: string
+          toUserId: string
+        },
+        ack?: (response: { success?: boolean; error?: string; messageId?: string; notificationId?: string }) => void,
+      ) => {
+        // Validate required fields
+        if (!content || !fromUserId || !toUserId) {
+          logger.warn("Invalid message:send payload", {
+            socketId,
+            hasContent: !!content,
+            hasFromUserId: !!fromUserId,
+            hasToUserId: !!toUserId,
+          })
+          // Acknowledge với error nếu có ack callback
+          if (ack && typeof ack === "function") {
+            ack({ error: "Invalid payload" })
+          }
+          return
+        }
         const room = conversationRoom(fromUserId, toUserId)
 
         logger.info("Received message", {
@@ -306,20 +326,20 @@ export async function setupSocketHandlers(io: IOServer) {
           hasParent: !!parentMessageId,
         })
 
-        const payload = {
-          parentMessageId,
-          content,
-          fromUserId,
-          toUserId,
-          timestamp: Date.now(),
+        // Validate content length
+        if (content.length > 10000) {
+          logger.warn("Message content too long", {
+            socketId,
+            fromUserId,
+            contentLength: content.length,
+            maxLength: 10000,
+          })
+          // Acknowledge với error nếu có ack callback
+          if (ack && typeof ack === "function") {
+            ack({ error: "Message content too long" })
+          }
+          return
         }
-
-        io.to(room).emit("message:new", payload)
-        logger.success("Message broadcasted to conversation room", {
-          room,
-          fromUserId,
-          toUserId,
-        })
 
         const getActionUrl = (recipientId: string, messageId: string, senderId: string) => {
           const isFromAdmin = senderId.includes("admin") || senderId.startsWith("cmh8leuua")
@@ -373,6 +393,22 @@ export async function setupSocketHandlers(io: IOServer) {
 
         storeNotificationInCache(toUserId, notification)
 
+        // Emit message to conversation room
+        const messagePayload = {
+          parentMessageId,
+          content,
+          fromUserId,
+          toUserId,
+          timestamp: Date.now(),
+        }
+        io.to(room).emit("message:new", messagePayload)
+        logger.success("Message broadcasted to conversation room", {
+          room,
+          fromUserId,
+          toUserId,
+        })
+
+        // Emit notification to user
         io.to(userRoom(toUserId)).emit("notification:new", notification)
         logger.success("Notification sent to user room", {
           notificationId: notification.id,
@@ -388,6 +424,16 @@ export async function setupSocketHandlers(io: IOServer) {
         logger.debug("Admin notification sent", {
           room: roleRoom("ADMIN"),
         })
+
+        // Acknowledge success sau khi đã hoàn thành tất cả operations
+        // Socket.IO v4 retry mechanism - client sẽ retry nếu không nhận được ack
+        if (ack && typeof ack === "function") {
+          ack({ 
+            success: true, 
+            messageId: persistedId ?? undefined,
+            notificationId: notification.id,
+          })
+        }
       },
     )
 
@@ -399,10 +445,31 @@ export async function setupSocketHandlers(io: IOServer) {
           return
         }
 
+        if (!notificationId) {
+          logger.warn("notification:read called without notificationId", { socketId, userId })
+          return
+        }
+
         const userNotifications = notificationCache.get(userId) || []
         const notification = userNotifications.find((n) => n.id === notificationId)
         if (!notification) {
-          logger.warn("Notification not found", { socketId, userId, notificationId })
+          logger.warn("Notification not found in cache", { 
+            socketId, 
+            userId, 
+            notificationId,
+            cacheSize: userNotifications.length,
+          })
+          return
+        }
+
+        // QUAN TRỌNG: Chỉ cho phép mark read nếu notification thuộc về user này
+        if (notification.toUserId !== userId) {
+          logger.warn("User attempted to mark notification as read without ownership", {
+            socketId,
+            userId,
+            notificationId,
+            notificationToUserId: notification.toUserId,
+          })
           return
         }
 
@@ -423,13 +490,36 @@ export async function setupSocketHandlers(io: IOServer) {
       }
 
       const userNotifications = notificationCache.get(userId) || []
-      const count = userNotifications.length
-      userNotifications.forEach((n) => (n.read = true))
+      
+      // QUAN TRỌNG: Chỉ mark notifications thuộc về user này
+      // Filter để chỉ lấy notifications có toUserId === userId hiện tại
+      // (không mark SYSTEM notifications hoặc notifications của user khác)
+      const ownNotifications = userNotifications.filter((n) => n.toUserId === userId)
+      const unreadCount = ownNotifications.filter((n) => !n.read).length
+      
+      if (unreadCount === 0) {
+        logger.debug("No unread notifications to mark", { 
+          socketId, 
+          userId,
+          totalInCache: userNotifications.length,
+          ownNotifications: ownNotifications.length,
+        })
+        return
+      }
+
+      // Chỉ mark notifications thuộc về user này
+      ownNotifications.forEach((n) => (n.read = true))
+      
+      // Emit sync với tất cả notifications (bao gồm cả SYSTEM nếu có)
+      // nhưng chỉ mark read những notifications của user
       io.to(userRoom(userId)).emit("notifications:sync", userNotifications)
-      logger.info("All notifications marked as read", {
+      logger.info("All own notifications marked as read", {
         socketId,
         userId,
-        count,
+        totalInCache: userNotifications.length,
+        ownNotifications: ownNotifications.length,
+        unreadCount,
+        markedCount: unreadCount,
       })
     })
 

@@ -10,9 +10,18 @@ import {
   getSocketInitPromise,
   setSocketInitPromise,
 } from "@/lib/socket/state"
+import type { ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData } from "@/lib/socket/types"
 
 type ServerWithIO = HTTPServer & { io?: IOServer }
-const MAX_HTTP_BUFFER_SIZE = 5 * 1024 * 1024
+
+/**
+ * Socket.IO Configuration Constants
+ * - maxHttpBufferSize: Maximum size of HTTP request body (5MB)
+ * - maxPayload: Maximum size of WebSocket message payload (5MB)
+ * - path: Socket.IO endpoint path
+ */
+const MAX_HTTP_BUFFER_SIZE = 5 * 1024 * 1024 // 5MB
+const SOCKET_PATH = "/api/socket"
 
 export default async function handler(_req: NextApiRequest, res: NextApiResponse) {
   try {
@@ -45,14 +54,38 @@ export default async function handler(_req: NextApiRequest, res: NextApiResponse
     }
 
     if (!server.io) {
-      logger.info("Initializing Socket.IO server instance")
+      logger.info("Initializing Socket.IO server instance", {
+        path: SOCKET_PATH,
+        maxHttpBufferSize: MAX_HTTP_BUFFER_SIZE,
+      })
       const initPromise = (async () => {
-        const io = new IOServer(server, {
-          path: "/api/socket",
-          cors: { origin: true, credentials: true },
+        const io = new IOServer<
+          ClientToServerEvents,
+          ServerToClientEvents,
+          InterServerEvents,
+          SocketData
+        >(server, {
+          path: SOCKET_PATH,
+          cors: { 
+            origin: true, 
+            credentials: true,
+            methods: ["GET", "POST"],
+          },
+          transports: ["websocket", "polling"], // Support both transports
+          allowEIO3: false, // Disable Engine.IO v3 compatibility
           maxHttpBufferSize: MAX_HTTP_BUFFER_SIZE,
+          pingTimeout: 60000, // 60 seconds
+          pingInterval: 25000, // 25 seconds
+          upgradeTimeout: 10000, // 10 seconds
+          // Socket.IO v4.6.0+ Connection State Recovery
+          // Cho phép client recover missed events khi reconnect
+          connectionStateRecovery: {
+            maxDisconnectionDuration: 2 * 60 * 1000, // 2 minutes
+            skipMiddlewares: true, // Skip middlewares khi recovery
+          },
         })
 
+        // Configure engine options for payload size
         const engineOptions = io.engine.opts as { maxPayload?: number; maxHttpBufferSize: number }
         engineOptions.maxHttpBufferSize = MAX_HTTP_BUFFER_SIZE
         engineOptions.maxPayload = MAX_HTTP_BUFFER_SIZE
@@ -60,7 +93,10 @@ export default async function handler(_req: NextApiRequest, res: NextApiResponse
         await setupSocketHandlers(io)
         setSocketServer(io)
 
-        logger.success("Socket.IO server initialized successfully")
+        logger.success("Socket.IO server initialized successfully", {
+          path: SOCKET_PATH,
+          engine: io.engine?.constructor?.name ?? "unknown",
+        })
         return io
       })()
 

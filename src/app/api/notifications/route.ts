@@ -7,16 +7,17 @@
  * - unreadOnly: boolean to filter only unread notifications (default: false)
  * 
  * Logic:
- * - Super admin: hiển thị tất cả SYSTEM notifications + thông báo cá nhân
- * - User thường: chỉ hiển thị thông báo cá nhân (không phải SYSTEM)
+ * - Tất cả users (kể cả superadmin@hub.edu.vn): chỉ hiển thị notifications của chính user này
+ * - Bao gồm cả SYSTEM và personal notifications của user này
+ * - QUAN TRỌNG: Logic này nhất quán với "mark all as read" - chỉ mark notifications của user này
  */
 import { NextRequest } from "next/server"
 import { auth } from "@/lib/auth/auth"
 import { prisma } from "@/lib/database"
-import { NotificationKind, type Prisma } from "@prisma/client"
 import { createErrorResponse, createSuccessResponse } from "@/lib/config"
 import { isSuperAdmin } from "@/lib/permissions"
 import { logger } from "@/lib/config/logger"
+import { buildNotificationWhereClause, countUnreadNotificationsWithBreakdown } from "@/lib/notifications/count-helpers"
 
 async function getUserNotificationsHandler(req: NextRequest) {
   const session = await auth()
@@ -52,8 +53,8 @@ async function getUserNotificationsHandler(req: NextRequest) {
   const isSuperAdminUser = isSuperAdmin(roles)
   const userEmail = session.user.email
   
-  // QUAN TRỌNG: Chỉ superadmin@hub.edu.vn mới thấy tất cả notifications
-  // Các user khác (kể cả super admin khác) chỉ thấy notifications của chính họ
+  // QUAN TRỌNG: Tất cả users (kể cả superadmin@hub.edu.vn) chỉ thấy notifications của chính họ
+  // Logic này nhất quán với "mark all as read" - chỉ mark notifications của user này
   const PROTECTED_SUPER_ADMIN_EMAIL = "superadmin@hub.edu.vn"
   const isProtectedSuperAdmin = userEmail === PROTECTED_SUPER_ADMIN_EMAIL
 
@@ -64,30 +65,20 @@ async function getUserNotificationsHandler(req: NextRequest) {
     isProtectedSuperAdmin,
   })
 
-  // Build where clause
-  // Logic mới:
-  // - Chỉ superadmin@hub.edu.vn: tất cả SYSTEM notifications + thông báo cá nhân
-  // - Các user khác (kể cả super admin khác): chỉ thông báo cá nhân (không phải SYSTEM)
-  const where: Prisma.NotificationWhereInput = {
-    OR: isProtectedSuperAdmin
-      ? [
-          // Chỉ superadmin@hub.edu.vn: tất cả SYSTEM notifications
-          { kind: NotificationKind.SYSTEM },
-          // + thông báo cá nhân của user
-          { userId: session.user.id, kind: { not: NotificationKind.SYSTEM } },
-        ]
-      : [
-          // Các user khác: chỉ thông báo cá nhân (không phải SYSTEM)
-          { userId: session.user.id, kind: { not: NotificationKind.SYSTEM } },
-        ],
+  // Build where clause - Sử dụng shared helper để đảm bảo consistency với /api/admin/unread-counts
+  const countParams = {
+    userId: session.user.id,
+    userEmail,
+    isProtectedSuperAdmin,
   }
+  const where = buildNotificationWhereClause(countParams)
 
   if (unreadOnly) {
     where.isRead = false
   }
 
-  // Get notifications and counts
-  const [notifications, total, unreadCount] = await Promise.all([
+  // Get notifications and total count
+  const [notifications, total] = await Promise.all([
     prisma.notification.findMany({
       where,
       orderBy: { createdAt: "desc" },
@@ -95,12 +86,6 @@ async function getUserNotificationsHandler(req: NextRequest) {
       skip: offset,
     }),
     prisma.notification.count({ where }),
-    prisma.notification.count({
-      where: {
-        ...where,
-        isRead: false,
-      },
-    }),
   ])
 
   // Map to response format
@@ -135,7 +120,12 @@ async function getUserNotificationsHandler(req: NextRequest) {
     })
   }
 
-  logger.debug("GET /api/notifications: Returning notifications", {
+  // Đếm chi tiết để debug mismatch với /api/admin/unread-counts - Sử dụng shared helper
+  // QUAN TRỌNG: Sử dụng countResult.unreadCount thay vì tính riêng để đảm bảo consistency
+  const countResult = await countUnreadNotificationsWithBreakdown(countParams)
+  const unreadCount = countResult.unreadCount
+
+  logger.debug("GET /api/notifications: Returning notifications with detailed breakdown", {
     userId: session.user.id,
     userEmail,
     isSuperAdmin: isSuperAdminUser,
@@ -148,7 +138,14 @@ async function getUserNotificationsHandler(req: NextRequest) {
     notificationsCount: mappedNotifications.length,
     uniqueCount: uniqueIds.size,
     hasDuplicates,
-    notifications: mappedNotifications.map(n => ({
+    // Detailed breakdown từ shared helper để so sánh với /api/admin/unread-counts
+    systemUnreadCount: countResult.systemUnreadCount,
+    personalUnreadCount: countResult.personalUnreadCount,
+    allSystemUnreadCount: countResult.allSystemUnreadCount,
+    expectedUnreadCount: countResult.expectedCount,
+    countMatch: countResult.countMatchStatus,
+    whereClause: JSON.stringify(where),
+    notifications: mappedNotifications.slice(0, 5).map(n => ({
       id: n.id,
       title: n.title,
       isRead: n.isRead,

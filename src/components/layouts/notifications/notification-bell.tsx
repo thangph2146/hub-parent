@@ -5,7 +5,7 @@
 
 import * as React from "react"
 import { useRouter } from "next/navigation"
-import { Bell, CheckCheck, Loader2, ArrowRight } from "lucide-react"
+import { Bell, CheckCheck, Loader2, ArrowRight, Wifi, WifiOff } from "lucide-react"
 import { useSession } from "@/lib/auth"
 import { useNotifications, useMarkAllAsRead, useMarkNotificationRead, useNotificationsSocketBridge } from "@/hooks/use-notifications"
 import { Button } from "@/components/ui/button"
@@ -26,32 +26,69 @@ export function NotificationBell() {
   
   // Track socket connection status để tắt polling khi socket connected
   const [isSocketConnected, setIsSocketConnected] = React.useState(false)
+  const [connectionError, setConnectionError] = React.useState<string | null>(null)
 
   React.useEffect(() => {
     if (!socket) {
       setIsSocketConnected(false)
+      setConnectionError("Socket không khả dụng")
       return
     }
 
     // Check initial connection status
     setIsSocketConnected(socket.connected)
+    setConnectionError(null)
 
     const handleConnect = () => {
       setIsSocketConnected(true)
+      setConnectionError(null)
+      logger.debug("NotificationBell: Socket connected", {
+        socketId: socket.id,
+        userId: session?.user?.id,
+      })
     }
 
-    const handleDisconnect = () => {
+    const handleDisconnect = (reason: string) => {
       setIsSocketConnected(false)
+      logger.warn("NotificationBell: Socket disconnected", {
+        reason,
+        userId: session?.user?.id,
+      })
+    }
+
+    const handleConnectError = (error: Error) => {
+      setIsSocketConnected(false)
+      // Provide user-friendly error messages
+      const errorMessage = error.message || "Lỗi kết nối"
+      let userMessage = "Lỗi kết nối"
+      
+      if (errorMessage.includes("Invalid namespace")) {
+        userMessage = "Lỗi cấu hình kết nối"
+      } else if (errorMessage.includes("timeout")) {
+        userMessage = "Kết nối quá thời gian, đang thử lại..."
+      } else if (errorMessage.includes("websocket")) {
+        userMessage = "Lỗi WebSocket, đang thử lại..."
+      }
+      
+      setConnectionError(userMessage)
+      logger.error("NotificationBell: Socket connection error", {
+        error,
+        userMessage,
+        socketId: socket.id,
+        userId: session?.user?.id,
+      })
     }
 
     socket.on("connect", handleConnect)
     socket.on("disconnect", handleDisconnect)
+    socket.on("connect_error", handleConnectError)
 
     return () => {
       socket.off("connect", handleConnect)
       socket.off("disconnect", handleDisconnect)
+      socket.off("connect_error", handleConnectError)
     }
-  }, [socket])
+  }, [socket, session?.user?.id])
   
   // Tắt polling khi có socket connection (socket sẽ handle real-time updates)
   // Chỉ polling nếu không có socket connection (fallback)
@@ -63,19 +100,6 @@ export function NotificationBell() {
   const markAllAsRead = useMarkAllAsRead()
   const markAsRead = useMarkNotificationRead()
   const [open, setOpen] = React.useState(false)
-  
-  // Log mark all as read mutations
-  React.useEffect(() => {
-    if (markAllAsRead.isSuccess) {
-      logger.success("NotificationBell: Mark all as read successful", {
-        count: markAllAsRead.data?.count,
-        userId: session?.user?.id,
-      })
-    }
-    if (markAllAsRead.isError) {
-      logger.error("NotificationBell: Mark all as read failed", markAllAsRead.error)
-    }
-  }, [markAllAsRead.isSuccess, markAllAsRead.isError, markAllAsRead.data, markAllAsRead.error, session?.user?.id])
   
   // Log mark as read mutations
   React.useEffect(() => {
@@ -229,9 +253,9 @@ export function NotificationBell() {
           aria-label="Thông báo"
         >
           <Bell className="h-5 w-5" />
-          {ownedUnreadCount > 0 && (
+          {data && data.unreadCount > 0 && (
             <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground">
-              {ownedUnreadCount > 99 ? "99+" : ownedUnreadCount}
+              {data.unreadCount > 99 ? "99+" : data.unreadCount}
             </span>
           )}
         </Button>
@@ -242,9 +266,16 @@ export function NotificationBell() {
         sideOffset={8}
       >
         <div className="flex items-center justify-between border-b px-4 py-3">
-          <h2 className="text-lg font-semibold">Thông báo</h2>
           <div className="flex items-center gap-2">
-            {ownedUnreadCount > 0 && (
+            <h2 className="text-lg font-semibold">Thông báo</h2>
+            {isSocketConnected ? (
+              <Wifi className="h-4 w-4 text-green-500" />
+            ) : (
+              <WifiOff className="h-4 w-4 text-muted-foreground" />
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            {data && data.unreadCount > 0 && (
               <Button
                 variant="ghost"
                 size="sm"
@@ -266,10 +297,20 @@ export function NotificationBell() {
                     userEmail,
                     isSuperAdmin: isSuperAdminUser,
                     isProtectedSuperAdmin,
+                    apiUnreadCount: data?.unreadCount,
+                    totalFromAPI: data?.total,
                     note: isProtectedSuperAdmin 
                       ? "superadmin@hub.edu.vn: có thể mark tất cả notifications" 
                       : "Chỉ mark notifications của chính user (owner)",
                   })
+                  
+                  // Log trước khi gọi API
+                  logger.debug("NotificationBell: Calling markAllAsRead.mutate()", {
+                    userId: currentUserId,
+                    userEmail,
+                    expectedCount: data?.unreadCount,
+                  })
+                  
                   markAllAsRead.mutate()
                 }}
                 disabled={markAllAsRead.isPending}
@@ -287,6 +328,14 @@ export function NotificationBell() {
         </div>
 
         <div className="max-h-[400px] overflow-y-auto">
+          {connectionError && !isSocketConnected && (
+            <div className="border-b bg-yellow-50/50 px-4 py-2 text-xs text-yellow-700 dark:bg-yellow-950/20 dark:text-yellow-300">
+              <div className="flex items-center gap-2">
+                <WifiOff className="h-3 w-3" />
+                <span>Đang sử dụng chế độ offline. Thông báo có thể không cập nhật real-time.</span>
+              </div>
+            </div>
+          )}
           {isLoading ? (
             <div className="flex items-center justify-center p-8">
               <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />

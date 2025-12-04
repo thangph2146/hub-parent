@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react"
 import { io, type Socket } from "socket.io-client"
 import { logger } from "@/lib/config"
 import { withApiBase } from "@/lib/config/api-paths"
+import type { ClientToServerEvents, ServerToClientEvents, SocketData } from "@/lib/socket/types"
 
 export interface UseSocketOptions {
   userId?: string | null
@@ -77,6 +78,9 @@ class SocketManager {
   private lastAuth: SocketAuthOptions | null = null
   private isDisconnecting = false
   private lastReuseLogAt = 0
+  private isConnecting = false // Flag để prevent multiple connection attempts
+  private lastConnectAttemptAt = 0 // Track last connect attempt để debounce
+  private readonly CONNECT_DEBOUNCE_MS = 1000 // Debounce 1s giữa các connection attempts
 
   getSocket(): Socket | null {
     return this.socket
@@ -173,19 +177,21 @@ class SocketManager {
       return this.socket
     }
 
-    // Nếu đang có socket đang connecting, đợi nó hoàn thành
-    if (this.connectPromise) {
+    // Nếu đang connecting, đợi promise hiện tại
+    if (this.isConnecting && this.connectPromise) {
+      logger.debug("Đang connecting, đợi connection hiện tại hoàn thành", {
+        userId: auth.userId,
+      })
       const existingSocket = await this.connectPromise
-      // Kiểm tra lại sau khi connect xong
       if (existingSocket && existingSocket.connected && this.isSameAuth(auth)) {
         return existingSocket
       }
     }
 
-    // Nếu có socket nhưng chưa connected, đợi một chút rồi kiểm tra lại
-    if (this.socket && !this.socket.connected) {
-      // Đợi tối đa 5s để socket connect
-      for (let i = 0; i < 10; i++) {
+    // Nếu có socket nhưng chưa connected và không đang connecting, đợi một chút
+    if (this.socket && !this.socket.connected && !this.isConnecting) {
+      // Đợi tối đa 3s để socket connect (giảm từ 5s)
+      for (let i = 0; i < 6; i++) {
         await new Promise((resolve) => setTimeout(resolve, 500))
         if (this.socket && this.socket.connected) {
           if (this.isSameAuth(auth)) {
@@ -196,18 +202,54 @@ class SocketManager {
       }
     }
 
-    this.lastAuth = { userId: auth.userId, role: auth.role ?? null }
-
-    // Nếu vẫn chưa có socket hoặc socket không connected, tạo mới
-    if (this.connectPromise) {
+    // Nếu đang có connectPromise, return nó thay vì tạo mới
+    if (this.connectPromise && this.isConnecting) {
       return this.connectPromise
     }
 
-    this.connectPromise = this.createSocket(auth).catch((error) => {
-      const err = error instanceof Error ? error : new Error(String(error))
-      logger.error("Không thể khởi tạo Socket.IO", err)
-      return null
-    })
+    // Prevent multiple connection attempts
+    if (this.isConnecting) {
+      logger.debug("Đang connecting, bỏ qua request mới", { userId: auth.userId })
+      return this.socket // Return existing socket (có thể null)
+    }
+
+    // Debounce connection attempts - tránh spam khi nhiều components gọi cùng lúc
+    const now = Date.now()
+    const timeSinceLastAttempt = now - this.lastConnectAttemptAt
+    if (timeSinceLastAttempt < this.CONNECT_DEBOUNCE_MS && this.lastConnectAttemptAt > 0) {
+      logger.debug("Connection attempt debounced", {
+        userId: auth.userId,
+        timeSinceLastAttempt,
+        debounceMs: this.CONNECT_DEBOUNCE_MS,
+      })
+      // Return existing socket hoặc wait a bit
+      if (this.socket) {
+        return this.socket
+      }
+      // Wait for debounce period
+      await new Promise((resolve) => setTimeout(resolve, this.CONNECT_DEBOUNCE_MS - timeSinceLastAttempt))
+      // Check again after debounce
+      const socketAfterDebounce = this.socket
+      if (socketAfterDebounce && (socketAfterDebounce as Socket).connected && this.isSameAuth(auth)) {
+        return socketAfterDebounce
+      }
+    }
+
+    this.lastConnectAttemptAt = now
+    this.lastAuth = { userId: auth.userId, role: auth.role ?? null }
+    this.isConnecting = true
+
+    this.connectPromise = this.createSocket(auth)
+      .then((socket) => {
+        this.isConnecting = false
+        return socket
+      })
+      .catch((error) => {
+        this.isConnecting = false
+        const err = error instanceof Error ? error : new Error(String(error))
+        logger.error("Không thể khởi tạo Socket.IO", err)
+        return null
+      })
 
     const socket = await this.connectPromise
     this.connectPromise = null
@@ -235,29 +277,45 @@ class SocketManager {
     const { apiRoutes } = await import("@/lib/api/routes")
     const socketPath = withApiBase(apiRoutes.socket)
 
-    logger.info("Đang tạo socket connection (WebSocket only)", {
+    logger.info("Đang tạo socket connection", {
       userId: auth.userId,
       role: auth.role,
       path: socketPath,
-      transport: "websocket",
+      transports: ["websocket", "polling"],
     })
 
+    // Socket.IO client configuration
+    // socketPath should be "/api/socket" (full path)
+    // io() first arg is URL (optional), if not provided uses current origin
+    // path option is the Engine.IO path, not the namespace
+    // For Socket.IO, we connect to default namespace "/" with path "/api/socket"
     const socket = io({
-      path: socketPath,
-      transports: ["websocket"],
-      upgrade: false,
-      withCredentials: false,
+      path: socketPath, // Engine.IO path: "/api/socket"
+      transports: ["websocket", "polling"], // Support both transports, prefer websocket
+      upgrade: true, // Allow upgrade from polling to websocket
+      withCredentials: true, // Enable credentials for CORS
       reconnection: true,
       reconnectionAttempts: Infinity,
       reconnectionDelay: 1000,
       reconnectionDelayMax: 10000,
-      timeout: 20000,
+      randomizationFactor: 0.5, // Add randomness to reconnection delay
+      timeout: 20000, // Connection timeout (Manager level)
       forceNew: false,
+      // Socket.IO v4.6.0+ Retry mechanism
+      retries: 2, // Maximum number of retries for packets
+      ackTimeout: 5000, // Default timeout for acknowledgements (5 seconds)
+      // Socket.IO v4 configuration
       auth: {
         userId: auth.userId,
         role: auth.role ?? undefined,
-      },
-    })
+      } as SocketData,
+      // Additional options for better reliability
+      autoConnect: true,
+      closeOnBeforeunload: false, // Keep connection alive during page navigation
+      // Socket.IO v4.6.0+ Connection State Recovery
+      // Client sẽ tự động recover missed events khi reconnect
+      // Server phải enable connectionStateRecovery để feature này hoạt động
+    }) as Socket<ServerToClientEvents, ClientToServerEvents>
 
     let connectTimeout: NodeJS.Timeout | null = null
 
@@ -307,21 +365,54 @@ class SocketManager {
   private replaceActiveSocket(nextSocket: Socket) {
     const previous = this.socket
     if (previous && previous !== nextSocket) {
-      // Luôn disconnect socket cũ để đảm bảo chỉ có 1 socket instance
-      // Trừ khi đang đăng xuất (đã được xử lý ở disconnect())
-      try {
-        logger.info("Disconnecting socket cũ để thay thế bằng socket mới", {
+      // Chỉ disconnect socket cũ nếu nó không đang connecting
+      // Nếu đang connecting, đợi nó hoàn thành hoặc fail trước
+      const wasConnecting = !previous.connected && this.isConnecting
+      
+      if (wasConnecting) {
+        logger.debug("Socket cũ đang connecting, đợi nó hoàn thành trước khi replace", {
           oldSocketId: previous.id,
           newSocketId: nextSocket.id,
-          oldConnected: previous.connected,
         })
-        previous.removeAllListeners()
-        previous.disconnect()
-      } catch (error) {
-        logger.warn(
-          "Không thể thu hồi socket cũ",
-          error instanceof Error ? error : new Error(String(error)),
-        )
+        // Đợi tối đa 2s cho socket cũ connect hoặc fail
+        const timeout = setTimeout(() => {
+          if (previous && !previous.connected) {
+            try {
+              previous.removeAllListeners()
+              previous.disconnect()
+            } catch {
+              // Ignore errors khi disconnect
+            }
+          }
+        }, 2000)
+        
+        // Cleanup timeout nếu socket connect thành công
+        previous.once("connect", () => clearTimeout(timeout))
+        previous.once("connect_error", () => {
+          clearTimeout(timeout)
+          try {
+            previous.removeAllListeners()
+            previous.disconnect()
+          } catch {
+            // Ignore errors
+          }
+        })
+      } else {
+        // Socket cũ đã connected hoặc failed, có thể disconnect ngay
+        try {
+          logger.info("Disconnecting socket cũ để thay thế bằng socket mới", {
+            oldSocketId: previous.id,
+            newSocketId: nextSocket.id,
+            oldConnected: previous.connected,
+          })
+          previous.removeAllListeners()
+          previous.disconnect()
+        } catch (error) {
+          logger.warn(
+            "Không thể thu hồi socket cũ",
+            error instanceof Error ? error : new Error(String(error)),
+          )
+        }
       }
     }
     this.socket = nextSocket
@@ -329,10 +420,10 @@ class SocketManager {
 
   private attachPendingHandlers(socket: Socket) {
     for (const [event, handlers] of this.pendingHandlers.entries()) {
-    for (const handler of handlers) {
-      socket.on(event, handler as Parameters<Socket["on"]>[1])
+      for (const handler of handlers) {
+        socket.on(event, handler as Parameters<Socket["on"]>[1])
+      }
     }
-  }
   }
 
   private async ensureServerBootstrap(): Promise<boolean> {
@@ -378,7 +469,12 @@ class SocketManager {
     }
 
     // Log WebSocket errors với mức độ phù hợp
-    if (normalizedMessage.includes("timeout")) {
+    if (normalizedMessage.includes("invalid namespace")) {
+      logger.error("Socket.IO namespace error - kiểm tra path configuration", {
+        ...context,
+        hint: "Đảm bảo client và server sử dụng cùng path và namespace",
+      })
+    } else if (normalizedMessage.includes("timeout")) {
       logger.warn("WebSocket connection timeout, sẽ thử lại", context)
     } else if (
       normalizedMessage.includes("websocket") &&
@@ -447,12 +543,12 @@ export function useSocket({ userId, role }: UseSocketOptions) {
     if (!socket) {
       return
     }
-    
+
     const handleReconnect = () => {
-        const conv = lastConversationRef.current
-        if (conv) {
-          socket.emit("join-conversation", conv)
-        }
+      const conv = lastConversationRef.current
+      if (conv) {
+        socket.emit("join-conversation", conv)
+      }
     }
 
     socket.on("connect", handleReconnect)
@@ -466,26 +562,57 @@ export function useSocket({ userId, role }: UseSocketOptions) {
     const pair: SocketConversationPair = { a, b }
     lastConversationRef.current = pair
     socketManager.withSocket((socket) => {
-    socket.emit("join-conversation", pair)
+      socket.emit("join-conversation", pair)
     })
   }, [])
 
   const leaveConversation = useCallback((a: string, b: string) => {
     const pair: SocketConversationPair = { a, b }
     socketManager.withSocket((socket) => {
-    socket.emit("leave-conversation", pair)
+      socket.emit("leave-conversation", pair)
     })
   }, [])
 
   const sendMessage = useCallback(
-    ({ parentMessageId, content, fromUserId, toUserId }: SocketMessagePayload) => {
-      socketManager.withSocket((socket) => {
-      socket.emit("message:send", {
-        parentMessageId,
-        content,
-        fromUserId,
-        toUserId,
-      } satisfies SocketMessagePayload)
+    async ({ parentMessageId, content, fromUserId, toUserId }: SocketMessagePayload) => {
+      socketManager.withSocket(async (socket) => {
+        // Socket.IO v4.6.0+: Promise-based acknowledgements với emitWithAck()
+        // Sử dụng timeout() method để set timeout cho acknowledgement (5s)
+        // Client sẽ tự động retry dựa trên retries và ackTimeout config
+        try {
+          const response = await socket
+            .timeout(5000) // 5 seconds timeout
+            .emitWithAck("message:send", {
+              parentMessageId,
+              content,
+              fromUserId,
+              toUserId,
+            } satisfies SocketMessagePayload)
+
+          if (response?.error) {
+            logger.error("Message send failed", {
+              error: response.error,
+              fromUserId,
+              toUserId,
+              contentLength: content.length,
+            })
+          } else {
+            logger.debug("Message send acknowledged", {
+              messageId: response?.messageId,
+              notificationId: response?.notificationId,
+              fromUserId,
+              toUserId,
+            })
+          }
+        } catch (error) {
+          // Timeout hoặc server không acknowledge trong 5s
+          logger.error("Message send error (timeout or no ack received)", {
+            error: error instanceof Error ? error.message : String(error),
+            fromUserId,
+            toUserId,
+            contentLength: content.length,
+          })
+        }
       })
     },
     [],
@@ -535,13 +662,13 @@ export function useSocket({ userId, role }: UseSocketOptions) {
 
   const markNotificationAsRead = useCallback((notificationId: string) => {
     socketManager.withSocket((socket) => {
-    socket.emit("notification:read", { notificationId })
+      socket.emit("notification:read", { notificationId })
     })
   }, [])
 
   const markAllNotificationsAsRead = useCallback(() => {
     socketManager.withSocket((socket) => {
-    socket.emit("notifications:mark-all-read")
+      socket.emit("notifications:mark-all-read")
     })
   }, [])
 
@@ -580,3 +707,4 @@ export function useSocket({ userId, role }: UseSocketOptions) {
     on,
   }
 }
+

@@ -104,7 +104,7 @@ export function NotificationItem({
     markAsRead.mutate({ id: notification.id, isRead: newIsRead })
   }
   
-  // Log mutation results
+  // Log mutation results với better error handling
   React.useEffect(() => {
     if (markAsRead.isSuccess && markAsRead.data) {
       const isOwner = markAsRead.data.userId === session?.user?.id
@@ -119,15 +119,22 @@ export function NotificationItem({
       })
     }
     if (markAsRead.isError) {
+      const errorMessage = markAsRead.error instanceof Error 
+        ? markAsRead.error.message 
+        : String(markAsRead.error)
+      
       logger.error("NotificationItem: Mark as read failed", {
         notificationId: notification.id,
         title: notification.title,
         userId: session?.user?.id,
         notificationUserId: notification.userId,
         isOwner: notification.userId === session?.user?.id,
-        error: markAsRead.error,
+        error: errorMessage,
         action: "toggle_read",
       })
+      
+      // Có thể thêm toast notification ở đây nếu cần
+      // toast.error("Không thể cập nhật trạng thái thông báo")
     }
   }, [markAsRead.isSuccess, markAsRead.isError, markAsRead.data, markAsRead.error, notification.id, notification.title, notification.userId, session?.user?.id])
 

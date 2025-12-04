@@ -26,6 +26,15 @@ export function useUnreadCounts(options?: {
   return useQuery<UnreadCountsResponse>({
     queryKey: queryKeys.unreadCounts.user(session?.user?.id),
     queryFn: async () => {
+      const logger = (await import("@/lib/config")).logger
+      
+      logger.debug("useUnreadCounts: Fetching unread counts", {
+        userId: session?.user?.id,
+        userEmail: session?.user?.email,
+        disablePolling,
+        refetchInterval,
+      })
+      
       const response = await apiClient.get<{
         success: boolean
         data?: UnreadCountsResponse
@@ -35,8 +44,19 @@ export function useUnreadCounts(options?: {
 
       const payload = response.data.data
       if (!payload) {
+        logger.error("useUnreadCounts: Failed to fetch unread counts", {
+          error: response.data.error || response.data.message,
+          userId: session?.user?.id,
+        })
         throw new Error(response.data.error || response.data.message || "Không thể tải số lượng chưa đọc")
       }
+
+      logger.debug("useUnreadCounts: Unread counts fetched successfully", {
+        userId: session?.user?.id,
+        unreadMessages: payload.unreadMessages,
+        unreadNotifications: payload.unreadNotifications,
+        contactRequests: payload.contactRequests,
+      })
 
       return payload
     },

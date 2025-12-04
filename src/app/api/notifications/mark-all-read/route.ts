@@ -8,7 +8,7 @@ import { getSocketServer, getNotificationCache, mapNotificationToPayload } from 
 import { createErrorResponse, createSuccessResponse } from "@/lib/config"
 import { logger } from "@/lib/config/logger"
 import { isSuperAdmin } from "@/lib/permissions"
-import { NotificationKind } from "@prisma/client"
+import { buildOwnUnreadNotificationWhereClause, buildNotificationWhereClause, countUnreadNotificationsWithBreakdown } from "@/lib/notifications/count-helpers"
 
 async function markAllAsReadHandler(_req: NextRequest) {
   const session = await auth()
@@ -34,52 +34,37 @@ async function markAllAsReadHandler(_req: NextRequest) {
     isProtectedSuperAdmin,
   })
 
-  // Build where clause
-  // IMPORTANT: Logic mới:
-  // - Chỉ superadmin@hub.edu.vn: có thể mark tất cả SYSTEM notifications + personal notifications
-  // - Các user khác (kể cả super admin khác): chỉ mark notifications của chính mình
-  let where: {
-    isRead: boolean
-    userId?: string
-    OR?: Array<{ kind: NotificationKind } | { userId: string; kind: { not: NotificationKind } }>
-    kind?: { not: NotificationKind }
+  // Sử dụng shared helper function để đảm bảo logic nhất quán với /api/notifications và /api/admin/unread-counts
+  const countParams = {
+    userId: session.user.id,
+    userEmail,
+    isProtectedSuperAdmin,
   }
 
-  if (isProtectedSuperAdmin) {
-    // Chỉ superadmin@hub.edu.vn: mark tất cả SYSTEM notifications + personal notifications
-    where = {
-      isRead: false,
-      OR: [
-        { kind: NotificationKind.SYSTEM },
-        { userId: session.user.id, kind: { not: NotificationKind.SYSTEM } },
-      ],
-    }
-  } else {
-    // Các user khác: chỉ mark notifications của chính mình
-    where = {
-      isRead: false,
-      userId: session.user.id,
-    }
-  }
+  // Build where clause - CHỈ mark notifications của user này (không mark tất cả SYSTEM notifications)
+  // QUAN TRỌNG: Sử dụng buildOwnUnreadNotificationWhereClause để đảm bảo chỉ mark notifications của user này
+  const where = buildOwnUnreadNotificationWhereClause(countParams)
+  
+  // Đếm số lượng notifications của user này sẽ được mark
+  const ownUnreadCount = await prisma.notification.count({ where })
+  
+  // Đếm chi tiết để debug và verify (sử dụng countUnreadNotificationsWithBreakdown để so sánh)
+  const countResult = await countUnreadNotificationsWithBreakdown(countParams)
 
-  logger.debug("POST /api/notifications/mark-all-read: Where clause", {
+  logger.debug("POST /api/notifications/mark-all-read: Where clause and count breakdown", {
     userId: session.user.id,
     userEmail,
     isSuperAdmin: isSuperAdminUser,
     isProtectedSuperAdmin,
     where,
-    note: isProtectedSuperAdmin 
-      ? "superadmin@hub.edu.vn: có thể mark tất cả notifications" 
-      : "Chỉ mark notifications của chính mình",
-  })
-
-  // Check how many notifications match before update (for logging)
-  const beforeCount = await prisma.notification.count({ where })
-  
-  logger.debug("POST /api/notifications/mark-all-read: Before update", {
-    userId: session.user.id,
-    isSuperAdmin: isSuperAdminUser,
-    matchingCount: beforeCount,
+    ownUnreadCount, // Số lượng notifications của user này sẽ được mark
+    // Detailed breakdown từ shared helper (để so sánh)
+    totalUnreadCount: countResult.unreadCount, // Tổng số unread (có thể bao gồm SYSTEM của tất cả users nếu là protected super admin)
+    systemUnreadCount: countResult.systemUnreadCount, // SYSTEM notifications của user này
+    personalUnreadCount: countResult.personalUnreadCount, // Personal notifications của user này
+    allSystemUnreadCount: countResult.allSystemUnreadCount, // Tất cả SYSTEM notifications (nếu là protected super admin)
+    expectedOwnCount: countResult.systemUnreadCount + countResult.personalUnreadCount, // Số lượng notifications của user này
+    note: "CHỈ mark notifications của user này (không mark tất cả SYSTEM notifications của tất cả users)",
   })
 
   // Update all unread notifications matching the where clause
@@ -92,40 +77,50 @@ async function markAllAsReadHandler(_req: NextRequest) {
     },
   })
   
+  // Verify count match - so sánh với ownUnreadCount (số lượng notifications của user này)
+  const expectedOwnCount = countResult.systemUnreadCount + countResult.personalUnreadCount
+  const countMatch = result.count === ownUnreadCount && result.count === expectedOwnCount
+  if (!countMatch) {
+    logger.warn("POST /api/notifications/mark-all-read: Count mismatch after update", {
+      userId: session.user.id,
+      userEmail,
+      expectedOwnCount,
+      ownUnreadCount,
+      actualCount: result.count,
+      countBreakdown: {
+        systemUnreadCount: countResult.systemUnreadCount,
+        personalUnreadCount: countResult.personalUnreadCount,
+        allSystemUnreadCount: countResult.allSystemUnreadCount,
+        totalUnreadCount: countResult.unreadCount, // Tổng số unread (có thể bao gồm SYSTEM của tất cả users)
+      },
+      note: "Đã mark notifications của user này, không mark tất cả SYSTEM notifications của tất cả users",
+    })
+  }
+
   logger.success("POST /api/notifications/mark-all-read: Marked all as read", {
     userId: session.user.id,
     userEmail,
     isSuperAdmin: isSuperAdminUser,
     isProtectedSuperAdmin,
-    matchingCount: beforeCount,
+    expectedOwnCount,
+    ownUnreadCount,
     updatedCount: result.count,
-    note: isProtectedSuperAdmin 
-      ? "superadmin@hub.edu.vn: đã mark tất cả notifications" 
-      : "Chỉ mark notifications của chính mình",
+    countMatch,
+    countBreakdown: {
+      systemUnreadCount: countResult.systemUnreadCount,
+      personalUnreadCount: countResult.personalUnreadCount,
+      allSystemUnreadCount: countResult.allSystemUnreadCount,
+      totalUnreadCount: countResult.unreadCount, // Tổng số unread (có thể bao gồm SYSTEM của tất cả users)
+    },
+    note: "CHỈ mark notifications của user này (không mark tất cả SYSTEM notifications của tất cả users)",
   })
 
   // Emit socket event để đồng bộ real-time
   const io = getSocketServer()
   if (io && result.count > 0) {
     try {
-      // Reload notifications từ DB với cùng where clause như khi fetch
-      // Chỉ superadmin@hub.edu.vn: tất cả SYSTEM notifications + personal notifications
-      // Các user khác: chỉ personal notifications
-      const fetchWhere: {
-        OR?: Array<{ kind: NotificationKind } | { userId: string; kind: { not: NotificationKind } }>
-        userId?: string
-        kind?: { not: NotificationKind }
-      } = isProtectedSuperAdmin
-        ? {
-            OR: [
-              { kind: NotificationKind.SYSTEM },
-              { userId: session.user.id, kind: { not: NotificationKind.SYSTEM } },
-            ],
-          }
-        : {
-            userId: session.user.id,
-            kind: { not: NotificationKind.SYSTEM },
-          }
+      // Reload notifications từ DB với cùng where clause như khi fetch - Sử dụng shared helper
+      const fetchWhere = buildNotificationWhereClause(countParams)
 
       const notifications = await prisma.notification.findMany({
         where: fetchWhere,
@@ -156,7 +151,9 @@ export async function POST(req: NextRequest) {
   try {
     return await markAllAsReadHandler(req)
   } catch (error) {
-    console.error("Error marking all notifications as read:", error)
+    logger.error("POST /api/notifications/mark-all-read: Error marking all notifications as read", {
+      error: error instanceof Error ? error : new Error(String(error)),
+    })
     return createErrorResponse("Internal server error", { status: 500 })
   }
 }

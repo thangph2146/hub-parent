@@ -20,12 +20,17 @@ import {
 } from "@/features/admin/resources/components";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
+import { Switch } from "@/components/ui/switch";
 import { formatDateVi } from "@/features/admin/users/utils";
 import { cn } from "@/lib/utils";
 import {
   useResourceDetailData,
   useResourceDetailLogger,
 } from "@/features/admin/resources/hooks";
+import { useMarkNotificationRead } from "@/hooks/use-notifications";
+import { useToast } from "@/hooks/use-toast";
+import { useSession } from "next-auth/react";
+import { useQueryClient } from "@tanstack/react-query";
 
 const NOTIFICATION_KINDS: Record<
   string,
@@ -73,6 +78,11 @@ export function NotificationDetailClient({
   notification,
   backUrl = "/admin/notifications",
 }: NotificationDetailClientProps) {
+  const { data: session } = useSession();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const detailQueryKey = ["notifications", "admin", "detail", notificationId] as const;
+  
   const {
     data: detailData,
     isFetched,
@@ -84,7 +94,7 @@ export function NotificationDetailClient({
     detailQueryKey: (id: string) =>
       ["notifications", "admin", "detail", id] as const,
     resourceName: "notifications",
-    fetchOnMount: true,
+    fetchOnMount: false, // Tắt fetch vì route không có GET method
   });
 
   useResourceDetailLogger({
@@ -95,6 +105,70 @@ export function NotificationDetailClient({
     isFromApi,
     fetchedData,
   });
+
+  const markNotificationRead = useMarkNotificationRead();
+  const isOwner = session?.user?.id === detailData.userId;
+  const isToggling = markNotificationRead.isPending;
+
+  const handleToggleRead = async (checked: boolean) => {
+    if (!isOwner) {
+      toast({
+        title: "Không có quyền",
+        description: "Bạn chỉ có thể thay đổi trạng thái thông báo của chính mình.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const updatedNotification = await markNotificationRead.mutateAsync({
+        id: notificationId,
+        isRead: checked,
+      });
+      
+      // Cập nhật cache cho detail query
+      // updatedNotification từ mutation đã được parse dates, cần convert về string format
+      queryClient.setQueryData<{ data: NotificationDetailData }>(
+        detailQueryKey,
+        (oldData) => {
+          if (!oldData) {
+            return { data: detailData };
+          }
+          const readAtValue = updatedNotification.readAt
+            ? updatedNotification.readAt instanceof Date
+              ? updatedNotification.readAt.toISOString()
+              : typeof updatedNotification.readAt === "string"
+              ? updatedNotification.readAt
+              : null
+            : null;
+          
+          return {
+            data: {
+              ...oldData.data,
+              isRead: updatedNotification.isRead,
+              readAt: readAtValue,
+            },
+          };
+        }
+      );
+      
+      toast({
+        title: "Thành công",
+        description: checked
+          ? "Thông báo đã được đánh dấu là đã đọc."
+          : "Thông báo đã được đánh dấu là chưa đọc.",
+      });
+    } catch (error) {
+      toast({
+        title: "Lỗi",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Không thể cập nhật trạng thái thông báo.",
+        variant: "destructive",
+      });
+    }
+  };
 
   const detailFields: ResourceDetailField<NotificationDetailData>[] = [];
 
@@ -169,6 +243,7 @@ export function NotificationDetailClient({
       description: "Thông tin trạng thái của thông báo",
       fieldsContent: (_fields, data) => {
         const notificationData = data as NotificationDetailData;
+        const isNotificationOwner = session?.user?.id === notificationData.userId;
 
         return (
           <div className="space-y-6">
@@ -184,34 +259,30 @@ export function NotificationDetailClient({
                     : "bg-amber-500/10"
                 }
               >
-                <Badge
-                  className={cn(
-                    "text-sm font-medium px-2.5 py-1",
-                    notificationData.isRead
-                      ? "bg-green-500/10 hover:bg-green-500/20 text-green-700 dark:text-green-400 border-green-500/20"
-                      : "bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 dark:text-amber-400 border-amber-500/20"
-                  )}
-                  variant={notificationData.isRead ? "default" : "secondary"}
-                >
-                  {notificationData.isRead ? (
-                    <>
-                      <CheckCircle className="mr-1.5 h-3.5 w-3.5" />
-                      Đã đọc
-                    </>
-                  ) : (
-                    <>
-                      <XCircleIcon className="mr-1.5 h-3.5 w-3.5" />
-                      Chưa đọc
-                    </>
-                  )}
-                </Badge>
+                <div className="flex items-center gap-3">
+                  <Switch
+                    checked={notificationData.isRead}
+                    disabled={isToggling || !isNotificationOwner}
+                    onCheckedChange={handleToggleRead}
+                    aria-label={
+                      notificationData.isRead
+                        ? "Đánh dấu chưa đọc"
+                        : "Đánh dấu đã đọc"
+                    }
+                  />
+                  
+                </div>
+                {!isNotificationOwner && (
+                  <p className="text-xs text-muted-foreground mt-1.5">
+                    Chỉ có thể thay đổi trạng thái thông báo của chính mình
+                  </p>
+                )}
               </FieldItem>
 
               {/* Read Date */}
               {notificationData.readAt && (
                 <FieldItem icon={Clock} label="Ngày đọc">
                   <div className="flex items-center gap-2">
-                    <Clock className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                     <time
                       dateTime={notificationData.readAt}
                       className="text-sm font-medium text-foreground"
@@ -275,7 +346,6 @@ export function NotificationDetailClient({
               <FieldItem icon={Calendar} label="Ngày tạo">
                 {notificationData.createdAt ? (
                   <div className="flex items-center gap-2">
-                    <Calendar className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                     <time
                       dateTime={notificationData.createdAt}
                       className="text-sm font-medium text-foreground"

@@ -32,7 +32,7 @@ import type { MenuItem } from "@/lib/config"
 import type { LucideIcon } from "lucide-react"
 import { useQueryClient } from "@tanstack/react-query"
 import { queryKeys } from "@/lib/query-keys"
-
+import { logger } from "@/lib/config"
 // Icon mapping để tạo lại icon trong client component
 const iconMap: Record<string, LucideIcon> = {
   dashboard: LayoutDashboard,
@@ -125,32 +125,53 @@ export function NavMainWithBadges({ items }: NavMainWithBadgesProps) {
 
   // Track socket connection status để tắt polling khi socket connected
   const [isSocketConnected, setIsSocketConnected] = React.useState(false)
+  const [connectionState, setConnectionState] = React.useState<"connected" | "disconnected" | "connecting">("disconnected")
 
   React.useEffect(() => {
     if (!socket) {
       setIsSocketConnected(false)
+      setConnectionState("disconnected")
       return
     }
 
     setIsSocketConnected(socket.connected)
+    setConnectionState(socket.connected ? "connected" : "disconnected")
 
     const handleConnect = () => {
       setIsSocketConnected(true)
+      setConnectionState("connected")
       if (userId) {
         queryClient.invalidateQueries({ queryKey: queryKeys.unreadCounts.user(userId) })
       }
     }
 
-    const handleDisconnect = () => {
+    const handleDisconnect = (reason: string) => {
       setIsSocketConnected(false)
+      setConnectionState("disconnected")
+      // Log disconnect reason for debugging (chỉ log khi không phải manual disconnect)
+      if (reason !== "io client disconnect") {
+        logger.debug("NavMain: Socket disconnected", { 
+          reason, 
+          userId,
+          willReconnect: reason !== "io server disconnect",
+        })
+      }
+    }
+
+    const handleConnecting = () => {
+      setConnectionState("connecting")
     }
 
     socket.on("connect", handleConnect)
     socket.on("disconnect", handleDisconnect)
+    socket.on("reconnect_attempt", handleConnecting)
+    socket.on("reconnect", handleConnect)
 
     return () => {
       socket.off("connect", handleConnect)
       socket.off("disconnect", handleDisconnect)
+      socket.off("reconnect_attempt", handleConnecting)
+      socket.off("reconnect", handleConnect)
     }
   }, [socket, queryClient, userId])
 

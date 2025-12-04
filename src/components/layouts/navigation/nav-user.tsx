@@ -81,6 +81,7 @@ import { useContactRequestsSocketBridge } from "@/features/admin/contact-request
 import { useSocket } from "@/hooks/use-socket";
 import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/query-keys";
+import { logger } from "@/lib/config";
 
 export function NavUser({ className }: { className?: string }) {
   const { data: session, status } = useSession();
@@ -116,18 +117,23 @@ export function NavUser({ className }: { className?: string }) {
 
   // Track socket connection status để tắt polling khi socket connected
   const [isSocketConnected, setIsSocketConnected] = React.useState(false);
+  // Connection state tracking (có thể sử dụng trong tương lai cho UI indicators)
+  const [_connectionState, setConnectionState] = React.useState<"connected" | "disconnected" | "connecting">("disconnected");
 
   React.useEffect(() => {
     if (!socket) {
       setIsSocketConnected(false);
+      setConnectionState("disconnected");
       return;
     }
 
     // Check initial connection status
     setIsSocketConnected(socket.connected);
+    setConnectionState(socket.connected ? "connected" : "disconnected");
 
     const handleConnect = () => {
       setIsSocketConnected(true);
+      setConnectionState("connected");
       if (userId) {
         queryClient.invalidateQueries({
           queryKey: queryKeys.unreadCounts.user(userId),
@@ -135,16 +141,33 @@ export function NavUser({ className }: { className?: string }) {
       }
     };
 
-    const handleDisconnect = () => {
+    const handleDisconnect = (reason: string) => {
       setIsSocketConnected(false);
+      setConnectionState("disconnected");
+      // Log disconnect reason for debugging (chỉ log khi không phải manual disconnect)
+      if (reason !== "io client disconnect") {
+        logger.debug("NavUser: Socket disconnected", { 
+          reason, 
+          userId,
+          willReconnect: reason !== "io server disconnect",
+        });
+      }
+    };
+
+    const handleConnecting = () => {
+      setConnectionState("connecting");
     };
 
     socket.on("connect", handleConnect);
     socket.on("disconnect", handleDisconnect);
+    socket.on("reconnect_attempt", handleConnecting);
+    socket.on("reconnect", handleConnect);
 
     return () => {
       socket.off("connect", handleConnect);
       socket.off("disconnect", handleDisconnect);
+      socket.off("reconnect_attempt", handleConnecting);
+      socket.off("reconnect", handleConnect);
     };
   }, [socket, queryClient, userId]);
 
@@ -384,7 +407,7 @@ export function NavUser({ className }: { className?: string }) {
                 const isActive = item.isActive ?? false;
 
                 if (!React.isValidElement(item.icon)) {
-                  console.warn(
+                  logger.warn(
                     `Icon is not a valid React element for "${item.title}"`
                   );
                   return (
