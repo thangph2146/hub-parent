@@ -125,7 +125,7 @@ export function NavMainWithBadges({ items }: NavMainWithBadgesProps) {
 
   // Track socket connection status để tắt polling khi socket connected
   const [isSocketConnected, setIsSocketConnected] = React.useState(false)
-  const [connectionState, setConnectionState] = React.useState<"connected" | "disconnected" | "connecting">("disconnected")
+  const [_connectionState, setConnectionState] = React.useState<"connected" | "disconnected" | "connecting">("disconnected")
 
   React.useEffect(() => {
     if (!socket) {
