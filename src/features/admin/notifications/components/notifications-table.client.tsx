@@ -228,7 +228,7 @@ export function NotificationsTableClient({
         )
       }
 
-      logger.info("Notifications loaded successfully (client)", {
+      logger.debug("Notifications loaded successfully (client)", {
         totalNotifications: payload.data.length,
         pagination: payload.pagination,
       })

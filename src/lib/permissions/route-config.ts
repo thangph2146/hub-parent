@@ -38,15 +38,20 @@ interface ResourceConfig {
  * Generate standard admin API routes cho resource với soft delete
  */
 function generateStandardAdminApiRoutes(name: string, permissions: ResourceConfig["permissions"]): Array<{ path: string; method: HttpMethod; permissions: Permission[] }> {
+  // Bulk và hard-delete routes chấp nhận cả manage và delete permissions
+  const bulkPermissions = permissions.manage 
+    ? [permissions.manage, permissions.delete] 
+    : [permissions.delete]
+  
   return [
     { path: "", method: "GET", permissions: [permissions.view] },
     { path: "", method: "POST", permissions: [permissions.create] },
     { path: "/[id]", method: "GET", permissions: [permissions.view] },
     { path: "/[id]", method: "PUT", permissions: [permissions.update] },
     { path: "/[id]", method: "DELETE", permissions: [permissions.delete] },
-    { path: "/bulk", method: "POST", permissions: [permissions.manage || permissions.delete] },
+    { path: "/bulk", method: "POST", permissions: bulkPermissions },
     { path: "/[id]/restore", method: "POST", permissions: [permissions.update] },
-    { path: "/[id]/hard-delete", method: "DELETE", permissions: [permissions.manage || permissions.delete] },
+    { path: "/[id]/hard-delete", method: "DELETE", permissions: bulkPermissions },
   ]
 }
 
@@ -227,7 +232,7 @@ export const ROUTE_CONFIG: RoutePermissionConfig[] = [
   { path: "/api/admin/comments/[id]", method: "DELETE", permissions: [PERMISSIONS.COMMENTS_DELETE], type: "api" },
   { path: "/api/admin/comments/[id]/approve", method: "POST", permissions: [PERMISSIONS.COMMENTS_APPROVE], type: "api" },
   { path: "/api/admin/comments/[id]/unapprove", method: "POST", permissions: [PERMISSIONS.COMMENTS_APPROVE], type: "api" },
-  { path: "/api/admin/comments/bulk", method: "POST", permissions: [PERMISSIONS.COMMENTS_MANAGE], type: "api" },
+  { path: "/api/admin/comments/bulk", method: "POST", permissions: [PERMISSIONS.COMMENTS_DELETE, PERMISSIONS.COMMENTS_APPROVE, PERMISSIONS.COMMENTS_MANAGE], type: "api" },
   { path: "/api/admin/comments/[id]/restore", method: "POST", permissions: [PERMISSIONS.COMMENTS_MANAGE], type: "api" },
   { path: "/api/admin/comments/[id]/hard-delete", method: "DELETE", permissions: [PERMISSIONS.COMMENTS_MANAGE], type: "api" },
   { path: "/api/admin/comments/options", method: "GET", permissions: [PERMISSIONS.COMMENTS_VIEW], type: "api" },

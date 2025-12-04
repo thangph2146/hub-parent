@@ -386,7 +386,7 @@ export function PostsTableClient({
         label={POST_LABELS.SELECTED_POSTS(selectedIds.length)}
         actions={
           <>
-            {canDelete && (
+            {(canManage || canDelete) && (
               <Button
                 type="button"
                 size="sm"
@@ -431,7 +431,7 @@ export function PostsTableClient({
         }
       />
     ),
-    [canDelete, canManage, bulkState.isProcessing, executeBulk],
+    [canManage, canDelete, bulkState.isProcessing, executeBulk],
   )
 
   const createDeletedSelectionActions = useCallback(
@@ -503,8 +503,8 @@ export function PostsTableClient({
         label: POST_LABELS.ACTIVE_VIEW,
         status: "active",
         columns: baseColumns,
-        selectionEnabled: canDelete || canManage,
-        selectionActions: canDelete || canManage ? createActiveSelectionActions : undefined,
+        selectionEnabled: canManage || canDelete,
+        selectionActions: canManage || canDelete ? createActiveSelectionActions : undefined,
         rowActions: (row) => renderActiveRowActions(row),
         emptyMessage: POST_LABELS.NO_POSTS,
       },

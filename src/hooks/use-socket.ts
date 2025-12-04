@@ -278,6 +278,7 @@ class SocketManager {
     const socketPath = withApiBase(apiRoutes.socket)
 
     logger.info("Đang tạo socket connection", {
+      action: "socket_connect_start",
       userId: auth.userId,
       role: auth.role,
       path: socketPath,
@@ -326,6 +327,7 @@ class SocketManager {
       }
       const engine = socket.io.engine
       logger.success("Đã kết nối thành công với WebSocket", {
+        action: "socket_connect_success",
         socketId: socket.id,
         transport: engine.transport.name,
         userId: auth.userId,
@@ -428,18 +430,29 @@ class SocketManager {
 
   private async ensureServerBootstrap(): Promise<boolean> {
     if (!this.bootstrapPromise) {
-      logger.info("Bắt đầu bootstrap Socket.IO server")
+      logger.info("Bắt đầu bootstrap Socket.IO server", {
+        action: "bootstrap_start",
+      })
       this.bootstrapPromise = (async () => {
         try {
           const { apiRoutes } = await import("@/lib/api/routes")
           const socketEndpoint = withApiBase(apiRoutes.socket)
-          logger.debug(`Đang gọi ${socketEndpoint} để khởi tạo server`)
+          logger.debug("Đang gọi socket endpoint để khởi tạo server", {
+            endpoint: socketEndpoint,
+            path: apiRoutes.socket,
+          })
           const { apiClient } = await import("@/lib/api/axios")
           await apiClient.get(apiRoutes.socket)
-          logger.success("Server đã được khởi tạo thành công")
+          logger.success("Server đã được khởi tạo thành công", {
+            action: "bootstrap_success",
+            endpoint: socketEndpoint,
+          })
           return true
         } catch (error) {
-          logger.error("Bootstrap error", error instanceof Error ? error : new Error(String(error)))
+          logger.error("Bootstrap error", {
+            action: "bootstrap_error",
+            error: error instanceof Error ? error : new Error(String(error)),
+          })
           this.bootstrapPromise = null
           return false
         }

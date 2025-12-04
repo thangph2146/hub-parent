@@ -164,7 +164,7 @@ export async function setupSocketHandlers(
   io: IOServer<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>
 ) {
   logger.info("Setting up Socket.IO handlers", {
-    action: "initialize_handlers",
+    action: "socket_handlers_setup",
   })
 
   io.engine.on("connection_error", (err) => {
@@ -194,6 +194,7 @@ export async function setupSocketHandlers(
     const socketId = socket.id
 
     logger.success("New client connected", {
+      action: "socket_client_connected",
       socketId,
       userId: userId || "anonymous",
       role: role ?? null,

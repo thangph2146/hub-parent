@@ -55,8 +55,10 @@ export default async function handler(_req: NextApiRequest, res: NextApiResponse
 
     if (!server.io) {
       logger.info("Initializing Socket.IO server instance", {
+        action: "socket_server_init",
         path: SOCKET_PATH,
         maxHttpBufferSize: MAX_HTTP_BUFFER_SIZE,
+        transports: ["websocket", "polling"],
       })
       const initPromise = (async () => {
         const io = new IOServer<
@@ -94,8 +96,10 @@ export default async function handler(_req: NextApiRequest, res: NextApiResponse
         setSocketServer(io)
 
         logger.success("Socket.IO server initialized successfully", {
+          action: "socket_server_ready",
           path: SOCKET_PATH,
           engine: io.engine?.constructor?.name ?? "unknown",
+          maxHttpBufferSize: MAX_HTTP_BUFFER_SIZE,
         })
         return io
       })()

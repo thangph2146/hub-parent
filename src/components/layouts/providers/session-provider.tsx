@@ -29,10 +29,14 @@
 import { SessionProvider as NextAuthSessionProvider } from "next-auth/react"
 import type { SessionProviderProps } from "next-auth/react"
 import { useCreateLoginSession } from "@/hooks/use-create-login-session"
+import { usePermissions } from "@/hooks/use-permissions"
 
 function SessionProviderContent({ children }: { children: React.ReactNode }) {
   // Tự động tạo Session record sau khi đăng nhập thành công
   useCreateLoginSession()
+  
+  // Trigger usePermissions để log permissions khi session được load
+  usePermissions()
   
   return <>{children}</>
 }

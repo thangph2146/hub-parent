@@ -297,6 +297,28 @@ export function useResourceActions<T extends { id: string }>(
       if (ids.length === 0) return
       if (!startBulkProcessing()) return
       
+      // Check permission before making API call
+      const actionConfig = {
+        delete: {
+          permission: config.permissions.canManage || config.permissions.canDelete,
+          errorMessage: "Bạn không có quyền xóa hàng loạt",
+        },
+        restore: {
+          permission: config.permissions.canRestore,
+          errorMessage: "Bạn không có quyền khôi phục hàng loạt",
+        },
+        "hard-delete": {
+          permission: config.permissions.canManage,
+          errorMessage: "Bạn không có quyền xóa vĩnh viễn hàng loạt",
+        },
+      }[action]
+      
+      if (!actionConfig.permission) {
+        config.showFeedback("error", "Không có quyền", actionConfig.errorMessage)
+        stopBulkProcessing()
+        return
+      }
+      
       resourceLogger.actionFlow({
         resource: config.resourceName,
         action: action === "delete" ? "bulk-delete" : action === "restore" ? "bulk-restore" : "bulk-hard-delete",

@@ -6,7 +6,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { requireAuth, getPermissions } from "@/lib/auth"
 import type { Permission } from "@/lib/permissions"
-import { canPerformAnyAction } from "@/lib/permissions"
+import { canPerformAnyAction, isSuperAdmin } from "@/lib/permissions"
 import { getApiRoutePermissions, type HttpMethod } from "@/lib/permissions"
 import { withSecurity } from "./security"
 import { logger, createErrorResponse } from "@/lib/config"
@@ -65,14 +65,24 @@ export function createApiRoute(
       let requiredPermissions: Permission[] = []
       if (permissions) {
         requiredPermissions = Array.isArray(permissions) ? permissions : [permissions]
+        logger.debug("Using explicit permissions for route", {
+          url: req.nextUrl.pathname,
+          method: req.method,
+          permissions: requiredPermissions,
+        })
       } else if (options.autoDetectPermissions !== false) {
         const detected = getApiRoutePermissions(req.nextUrl.pathname, req.method as HttpMethod)
         if (detected.length > 0) {
           requiredPermissions = detected
           logger.debug("Auto-detected API route permissions", {
-            path: req.nextUrl.pathname,
+            url: req.nextUrl.pathname,
             method: req.method,
-            permissions: detected,
+            detectedPermissions: detected,
+          })
+        } else {
+          logger.debug("No permissions detected for route", {
+            url: req.nextUrl.pathname,
+            method: req.method,
           })
         }
       }
@@ -84,18 +94,37 @@ export function createApiRoute(
           : requiredPermissions.some((perm) => permissionsList.includes(perm))
 
         if (!isAuthorized) {
-          logger.warn("Forbidden API access attempt", {
-            path: req.nextUrl.pathname,
+          const isSuperAdminUser = isSuperAdmin(roles)
+          const permissionCheckDetails = requiredPermissions.map((perm) => ({
+            permission: perm,
+            has: permissionsList.includes(perm),
+          }))
+          
+          // Tìm permissions nào user đang thiếu
+          const missingPermissions = requiredPermissions.filter(
+            (perm) => !permissionsList.includes(perm)
+          )
+          
+          logger.warn("Access denied - Permission check failed", {
+            url: req.nextUrl.pathname,
             method: req.method,
-            userId: session?.user?.id,
-            userEmail: session?.user?.email,
-            roles: roles.map((r) => r.name),
-            requiredPermissions,
-            userPermissions: permissionsList,
-            hasRequiredPermission: requiredPermissions.map((perm) => ({
-              permission: perm,
-              has: permissionsList.includes(perm),
-            })),
+            status: 403,
+            user: {
+              id: session?.user?.id,
+              email: session?.user?.email,
+              roles: roles.map((r) => r.name),
+              isSuperAdmin: isSuperAdminUser,
+            },
+            permissions: {
+              required: requiredPermissions,
+              userHas: permissionsList,
+              userHasCount: permissionsList.length,
+              missing: missingPermissions,
+              missingCount: missingPermissions.length,
+              checkDetails: permissionCheckDetails,
+              canPerformAnyAction: canPerformAnyAction(permissionsList, roles, requiredPermissions),
+              allowSuperAdmin,
+            },
           })
           return createErrorResponse("Forbidden", { status: 403 })
         }
