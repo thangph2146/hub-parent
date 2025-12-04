@@ -12,9 +12,13 @@ import { motion } from "framer-motion";
  * - Phải là Client Component ("use client")
  * - Phải include <html> và <body> tags vì nó wrap toàn bộ app
  * - Chỉ được đặt ở root layout level
+ * - Tắt static generation để tránh lỗi build
  *
  * Xem thêm: https://nextjs.org/docs/app/api-reference/file-conventions/error
  */
+
+// Tắt static generation cho global error page
+export const dynamic = 'force-dynamic'
 
 interface GlobalErrorProps {
   error: Error & { digest?: string };

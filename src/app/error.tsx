@@ -20,9 +20,13 @@ import {
  * - File error.tsx được đặt ở app directory để handle errors
  * - Phải là Client Component ("use client")
  * - Tự động được render khi có error trong Server Components hoặc Client Components
+ * - Tắt static generation để tránh lỗi build
  * 
  * Xem thêm: https://nextjs.org/docs/app/api-reference/file-conventions/error
  */
+
+// Tắt static generation cho error page
+export const dynamic = 'force-dynamic'
 
 interface ErrorProps {
   error: Error & { digest?: string }
