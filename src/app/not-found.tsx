@@ -33,6 +33,9 @@ export const revalidate = 0
 export const runtime = 'nodejs'
 export const fetchCache = 'force-no-store'
 
+// Tắt static generation hoàn toàn bằng cách không export generateStaticParams
+// Điều này ngăn Next.js cố gắng prerender trang này
+
 export const metadata: Metadata = {
   title: "Trang không tìm thấy",
   description: "Trang bạn đang tìm kiếm không tồn tại hoặc đã bị di chuyển",

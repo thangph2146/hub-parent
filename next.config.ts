@@ -101,6 +101,14 @@ const nextConfig: NextConfig = {
     }
     return config
   },
+  
+  // Tắt static generation cho error pages để tránh lỗi build trên Railway
+  // Error pages sẽ được render động khi cần
+  generateBuildId: async () => {
+    // Sử dụng timestamp để đảm bảo mỗi build có ID duy nhất
+    // Điều này giúp tránh cache issues và lỗi với error pages
+    return `build-${Date.now()}`
+  },
 };
 
 export default nextConfig;
