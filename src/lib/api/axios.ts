@@ -19,6 +19,12 @@ export const apiClient = axios.create({
 // Request interceptor - thêm auth token và xử lý proxy
 apiClient.interceptors.request.use(
   (config) => {
+    // Nếu data là FormData, không set Content-Type header
+    // Browser/axios sẽ tự động set với boundary
+    if (config.data instanceof FormData) {
+      delete config.headers["Content-Type"]
+    }
+
     // Lấy token từ cookie hoặc localStorage
     if (typeof window !== "undefined") {
       const token = document.cookie

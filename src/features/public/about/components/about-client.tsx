@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import type React from "react";
 import dynamic from "next/dynamic"
 
@@ -50,7 +50,6 @@ export function AboutClient() {
   const [_leaderCarouselIndices, setLeaderCarouselIndices] = useState<
     Record<number, number>
   >({});
-  const leaderCarouselRefs = useRef<Record<number, HTMLDivElement | null>>({});
 
   // Detect screen size: xl = 1280px
   useEffect(() => {

@@ -167,6 +167,15 @@ export const apiRoutes = {
     updateMemberRole: (id: string, userId: string) => `/admin/groups/${id}/members/${userId}/role`,
     markRead: (id: string) => `/admin/groups/${id}/mark-read`,
   },
+
+  // Uploads
+  uploads: {
+    upload: "/admin/uploads",
+    list: "/admin/uploads",
+    delete: "/admin/uploads",
+    deleteFolder: "/admin/uploads",
+    createFolder: "/admin/uploads",
+  },
 } as const
 
 /**

@@ -1,5 +1,5 @@
 import type { Metadata } from "next"
-import { SignIn } from "@/components/forms"
+import { SignInForm } from "@/components/forms"
 
 /**
  * Sign In Page Metadata
@@ -14,6 +14,6 @@ export const metadata: Metadata = {
 }
 
 export default function SignInPage() {
-  return <SignIn />
+  return <SignInForm />
 }
 

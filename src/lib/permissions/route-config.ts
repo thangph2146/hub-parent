@@ -123,6 +123,9 @@ export const ROUTE_CONFIG: RoutePermissionConfig[] = [
   { path: "/admin/dashboard", permissions: [PERMISSIONS.DASHBOARD_VIEW], type: "page" },
   { path: "/admin/dashboard/stats", permissions: [PERMISSIONS.DASHBOARD_VIEW], type: "page" },
 
+  // Uploads
+  { path: "/admin/uploads", permissions: [PERMISSIONS.POSTS_CREATE, PERMISSIONS.POSTS_UPDATE, PERMISSIONS.POSTS_MANAGE], type: "page" },
+
   // Users
   ...generateResourceRoutes({
     name: "users",

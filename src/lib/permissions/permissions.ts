@@ -19,6 +19,7 @@ export const RESOURCES = {
   SESSIONS: "sessions",
   SETTINGS: "settings",
   ACCOUNTS: "accounts",
+  UPLOADS: "uploads",
 } as const
 
 // Action types
@@ -129,6 +130,12 @@ export const PERMISSIONS = {
   // Accounts (Personal Account Management)
   ACCOUNTS_VIEW: `${RESOURCES.ACCOUNTS}:${ACTIONS.VIEW}` as Permission,
   ACCOUNTS_UPDATE: `${RESOURCES.ACCOUNTS}:${ACTIONS.UPDATE}` as Permission,
+
+  // Uploads
+  UPLOADS_VIEW: `${RESOURCES.UPLOADS}:${ACTIONS.VIEW}` as Permission,
+  UPLOADS_CREATE: `${RESOURCES.UPLOADS}:${ACTIONS.CREATE}` as Permission,
+  UPLOADS_DELETE: `${RESOURCES.UPLOADS}:${ACTIONS.DELETE}` as Permission,
+  UPLOADS_MANAGE: `${RESOURCES.UPLOADS}:${ACTIONS.MANAGE}` as Permission,
 } as const
 
 // Mapping menu items với permissions
@@ -147,6 +154,7 @@ export const MENU_PERMISSIONS = {
   sessions: [PERMISSIONS.SESSIONS_VIEW],
   settings: [PERMISSIONS.SETTINGS_VIEW],
   accounts: [PERMISSIONS.ACCOUNTS_VIEW],
+  uploads: [PERMISSIONS.UPLOADS_VIEW],
 } as const
 
 // Default roles và permissions của chúng
@@ -188,6 +196,10 @@ export const DEFAULT_ROLES = {
       PERMISSIONS.CONTACT_REQUESTS_VIEW,
       PERMISSIONS.CONTACT_REQUESTS_UPDATE,
       PERMISSIONS.SETTINGS_VIEW,
+      PERMISSIONS.UPLOADS_VIEW,
+      PERMISSIONS.UPLOADS_CREATE,
+      PERMISSIONS.UPLOADS_DELETE,
+      PERMISSIONS.UPLOADS_MANAGE,
     ],
   },
   EDITOR: {
@@ -212,6 +224,8 @@ export const DEFAULT_ROLES = {
       PERMISSIONS.MESSAGES_MANAGE,
       PERMISSIONS.NOTIFICATIONS_VIEW,
       PERMISSIONS.NOTIFICATIONS_MANAGE,
+      PERMISSIONS.UPLOADS_VIEW,
+      PERMISSIONS.UPLOADS_CREATE,
     ],
   },
   AUTHOR: {
@@ -233,6 +247,8 @@ export const DEFAULT_ROLES = {
       PERMISSIONS.MESSAGES_MANAGE,
       PERMISSIONS.NOTIFICATIONS_VIEW,
       PERMISSIONS.NOTIFICATIONS_MANAGE,
+      PERMISSIONS.UPLOADS_VIEW,
+      PERMISSIONS.UPLOADS_CREATE,
     ],
   },
   USER: {

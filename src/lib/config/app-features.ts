@@ -20,6 +20,7 @@ import {
   Info,
   Mail,
   HelpCircle,
+  Upload,
 } from "lucide-react"
 
 import {
@@ -409,6 +410,27 @@ export const appFeatures: FeatureDefinition[] = [
       type: "resource",
       resourceName: "sessions",
     },
+  },
+  {
+    key: "uploads",
+    title: "Upload hình ảnh",
+    description: "Upload và quản lý hình ảnh",
+    permissions: [PERMISSIONS.POSTS_CREATE, PERMISSIONS.POSTS_UPDATE, PERMISSIONS.POSTS_MANAGE],
+    icon: createIcon(Upload),
+    navigation: {
+      group: "main",
+      order: 125,
+      href: "/admin/uploads",
+    },
+    components: [
+      {
+        id: "uploads.page",
+        label: "UploadsPage",
+        mode: "static",
+        modulePath: "@/app/[resource]/uploads/page",
+        description: "Page để upload hình ảnh",
+      },
+    ],
   },
   {
     key: "accounts",

@@ -26,7 +26,7 @@ const ERROR_MESSAGES: Record<string, string> = {
   Default: "Đã xảy ra lỗi khi đăng nhập. Vui lòng thử lại.",
 }
 
-export function SignIn({
+export function SignInForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
