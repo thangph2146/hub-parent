@@ -308,8 +308,8 @@ export function UploadsPageClient() {
                             ? `Chọn tất cả ${allImages.length} hình ảnh`
                             : `Chọn tất cả ${allImages.length} hình ảnh`}
                       </span>
-                      <span className="text-primary-foreground">
-                        Nhấn <kbd className="px-1.5 py-0.5 text-xs font-semibold bg-primary rounded border">Ctrl+A</kbd> để chọn/bỏ chọn
+                      <span className="">
+                        Nhấn <kbd className="px-1.5 py-0.5 text-xs font-semibold rounded border">Ctrl+A</kbd> để chọn/bỏ chọn
                       </span>
                     </div>
                   </TooltipContent>
