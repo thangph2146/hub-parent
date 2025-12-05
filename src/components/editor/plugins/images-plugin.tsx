@@ -47,6 +47,11 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs"
+import { useImagesList } from "@/features/admin/uploads/hooks/use-uploads-queries"
+import { Loader2, Folder, ChevronRight } from "lucide-react"
+import Image from "next/image"
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
+import type { FolderNode } from "@/features/admin/uploads/types"
 
 export type InsertImagePayload = Readonly<ImagePayload>
 
@@ -159,6 +164,260 @@ export function InsertImageUploadedDialogBody({
   )
 }
 
+// Component để hiển thị folder tree cho image picker
+function ImagePickerFolderTree({
+  folder,
+  level = 0,
+  openFolders,
+  setOpenFolders,
+  selectedImage,
+  onImageSelect,
+}: {
+  folder: FolderNode
+  level?: number
+  openFolders: Set<string>
+  setOpenFolders: React.Dispatch<React.SetStateAction<Set<string>>>
+  selectedImage: string | null
+  onImageSelect: (imageUrl: string, originalName: string) => void
+}) {
+  const hasContent = folder.images.length > 0 || folder.subfolders.length > 0
+  const isOpen = openFolders.has(folder.path)
+
+  const handleOpenChange = React.useCallback(
+    (open: boolean) => {
+      if (open) {
+        setOpenFolders((prev) => {
+          const newSet = new Set(prev)
+          newSet.add(folder.path)
+          return newSet
+        })
+      } else {
+        setOpenFolders((prev) => {
+          const newSet = new Set(prev)
+          newSet.delete(folder.path)
+          return newSet
+        })
+      }
+    },
+    [folder.path, setOpenFolders]
+  )
+
+  if (!hasContent) return null
+
+  return (
+    <Collapsible key={folder.path} open={isOpen} onOpenChange={handleOpenChange} className="mb-2">
+      <CollapsibleTrigger className="flex items-center gap-2 w-full px-2 py-1.5 hover:bg-muted rounded-md transition-colors text-left text-sm">
+        <ChevronRight className={`h-3.5 w-3.5 transition-transform shrink-0 ${isOpen ? "rotate-90" : ""}`} />
+        <Folder className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+        <span className="font-medium truncate">{folder.name}</span>
+        <span className="text-xs text-muted-foreground ml-auto shrink-0">
+          {`${folder.images.length} hình${folder.subfolders.length > 0 ? `, ${folder.subfolders.length} thư mục` : ""}`}
+        </span>
+      </CollapsibleTrigger>
+      <CollapsibleContent className="ml-4 mt-1">
+        {/* Render images in this folder */}
+        {folder.images.length > 0 && (
+          <div className="mb-3 grid grid-cols-4 gap-2">
+            {folder.images.map((image) => (
+              <button
+                key={image.fileName}
+                type="button"
+                onClick={() => onImageSelect(image.url, image.originalName)}
+                onDoubleClick={() => {
+                  // Double-click để insert ngay
+                  onImageSelect(image.url, image.originalName)
+                  // Trigger confirm sau một chút để state được update
+                  setTimeout(() => {
+                    const event = new Event("confirm-image-insert", { bubbles: true })
+                    document.dispatchEvent(event)
+                  }, 100)
+                }}
+                className={`relative aspect-square rounded-md overflow-hidden border-2 transition-all cursor-pointer ${
+                  selectedImage === image.url
+                    ? "border-primary ring-2 ring-primary ring-offset-1"
+                    : "border-border hover:border-primary/50"
+                }`}
+                title={`${image.originalName} - Double-click để chèn ngay`}
+              >
+                <Image
+                  src={image.url}
+                  alt={image.originalName}
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 25vw, 20vw"
+                  unoptimized
+                />
+              </button>
+            ))}
+          </div>
+        )}
+        {/* Render subfolders */}
+        {folder.subfolders.map((subfolder) => (
+          <ImagePickerFolderTree
+            key={subfolder.path}
+            folder={subfolder}
+            level={level + 1}
+            openFolders={openFolders}
+            setOpenFolders={setOpenFolders}
+            selectedImage={selectedImage}
+            onImageSelect={onImageSelect}
+          />
+        ))}
+      </CollapsibleContent>
+    </Collapsible>
+  )
+}
+
+export function InsertImageUploadsDialogBody({
+  onClick,
+}: {
+  onClick: (payload: InsertImagePayload) => void
+}) {
+  const [selectedImage, setSelectedImage] = useState<string | null>(null)
+  const [altText, setAltText] = useState("")
+  const [openFolders, setOpenFolders] = useState<Set<string>>(new Set())
+  const limit = 100 // Tăng limit để lấy nhiều hình ảnh hơn cho tree view
+
+  const { data: imagesData, isLoading } = useImagesList(1, limit)
+  const folderTree = imagesData?.folderTree
+
+  const isDisabled = !selectedImage
+
+  const handleImageSelect = React.useCallback((imageUrl: string, originalName: string) => {
+    setSelectedImage(imageUrl)
+    setAltText((prev) => prev || originalName)
+  }, [])
+
+  const handleConfirm = React.useCallback(() => {
+    if (selectedImage) {
+      // Đảm bảo URL là absolute nếu là relative URL từ uploads
+      let imageUrl = selectedImage
+      if (imageUrl.startsWith("/api/uploads")) {
+        // Relative URL từ uploads - giữ nguyên vì nó sẽ hoạt động với same-origin
+        imageUrl = selectedImage
+      } else if (!imageUrl.startsWith("http://") && !imageUrl.startsWith("https://") && !imageUrl.startsWith("data:")) {
+        // Nếu không phải absolute URL và không phải data URL, thêm protocol
+        imageUrl = `https://${imageUrl}`
+      }
+      
+      onClick({ altText: altText || "", src: imageUrl })
+    }
+  }, [selectedImage, altText, onClick])
+
+  // Listen for double-click confirm event
+  React.useEffect(() => {
+    const handleDoubleClickConfirm = () => {
+      // Use a ref to get the latest selectedImage
+      setTimeout(() => {
+        handleConfirm()
+      }, 50)
+    }
+    
+    document.addEventListener("confirm-image-insert", handleDoubleClickConfirm)
+    return () => {
+      document.removeEventListener("confirm-image-insert", handleDoubleClickConfirm)
+    }
+  }, [handleConfirm])
+
+  // Auto-expand root folders on mount
+  React.useEffect(() => {
+    if (folderTree && folderTree.subfolders.length > 0) {
+      setOpenFolders(new Set(folderTree.subfolders.map((f) => f.path)))
+    }
+  }, [folderTree])
+
+  return (
+    <div className="grid gap-4 py-4">
+      <div className="grid gap-2">
+        <Label>Chọn hình ảnh từ thư viện</Label>
+        {isLoading ? (
+          <div className="flex items-center justify-center py-8">
+            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+          </div>
+        ) : !folderTree || (folderTree.subfolders.length === 0 && folderTree.images.length === 0) ? (
+          <div className="text-center py-8 text-muted-foreground text-sm">
+            Chưa có hình ảnh nào được upload
+          </div>
+        ) : (
+          <div className="max-h-[350px] overflow-y-auto p-2 border rounded-md">
+            {/* Render root level images if any */}
+            {folderTree.images.length > 0 && (
+              <div className="mb-3">
+                <div className="text-xs font-medium text-muted-foreground mb-2 px-1">Root</div>
+                <div className="grid grid-cols-4 gap-2">
+                  {folderTree.images.map((image) => (
+                    <button
+                      key={image.fileName}
+                      type="button"
+                      onClick={() => handleImageSelect(image.url, image.originalName)}
+                      onDoubleClick={() => {
+                        handleImageSelect(image.url, image.originalName)
+                        setTimeout(() => {
+                          const event = new Event("confirm-image-insert", { bubbles: true })
+                          document.dispatchEvent(event)
+                        }, 100)
+                      }}
+                      className={`relative aspect-square rounded-md overflow-hidden border-2 transition-all cursor-pointer ${
+                        selectedImage === image.url
+                          ? "border-primary ring-2 ring-primary ring-offset-1"
+                          : "border-border hover:border-primary/50"
+                      }`}
+                      title={`${image.originalName} - Double-click để chèn ngay`}
+                    >
+                      <Image
+                        src={image.url}
+                        alt={image.originalName}
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 768px) 25vw, 20vw"
+                        unoptimized
+                      />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+            {/* Render folder tree */}
+            {folderTree.subfolders.map((subfolder) => (
+              <ImagePickerFolderTree
+                key={subfolder.path}
+                folder={subfolder}
+                level={0}
+                openFolders={openFolders}
+                setOpenFolders={setOpenFolders}
+                selectedImage={selectedImage}
+                onImageSelect={handleImageSelect}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+      {selectedImage && (
+        <div className="grid gap-2">
+          <Label htmlFor="alt-text-uploads">Alt Text</Label>
+          <Input
+            id="alt-text-uploads"
+            placeholder="Mô tả hình ảnh"
+            onChange={(e) => setAltText(e.target.value)}
+            value={altText}
+            data-test-id="image-modal-uploads-alt-text-input"
+          />
+        </div>
+      )}
+      <DialogFooter>
+        <Button
+          type="submit"
+          disabled={isDisabled}
+          onClick={handleConfirm}
+          data-test-id="image-modal-uploads-confirm-btn"
+        >
+          Chèn hình ảnh
+        </Button>
+      </DialogFooter>
+    </div>
+  )
+}
+
 export function InsertImageDialog({
   activeEditor,
   onClose,
@@ -191,8 +450,11 @@ export function InsertImageDialog({
   }
 
   return (
-    <Tabs defaultValue="url">
+    <Tabs defaultValue="uploads">
       <TabsList className="w-full">
+        <TabsTrigger value="uploads" className="w-full">
+          Thư viện
+        </TabsTrigger>
         <TabsTrigger value="url" className="w-full">
           URL
         </TabsTrigger>
@@ -200,6 +462,9 @@ export function InsertImageDialog({
           File
         </TabsTrigger>
       </TabsList>
+      <TabsContent value="uploads">
+        <InsertImageUploadsDialogBody onClick={onClick} />
+      </TabsContent>
       <TabsContent value="url">
         <InsertImageUriDialogBody onClick={onClick} />
       </TabsContent>
