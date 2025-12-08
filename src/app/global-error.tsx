@@ -57,7 +57,7 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
       <body suppressHydrationWarning>
         <div className="flex min-h-screen flex-col items-center justify-center p-4 bg-gradient-to-br from-background via-muted/20 to-background">
           <motion.div
-            className="w-full max-w-lg"
+            className="w-full"
             variants={containerVariants}
             initial="hidden"
             animate="visible"

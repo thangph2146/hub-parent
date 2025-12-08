@@ -21,6 +21,9 @@ import {
   Mail,
   HelpCircle,
   Upload,
+  ShoppingBag,
+  Package,
+  Ticket,
 } from "lucide-react"
 
 import {
@@ -123,7 +126,7 @@ export const appFeatures: FeatureDefinition[] = [
     icon: createIcon(Users),
     navigation: {
       group: "main",
-      order: 20,
+      order: 70,
       resourceName: "users",
       autoGenerateSubRoutes: true,
     },
@@ -180,7 +183,7 @@ export const appFeatures: FeatureDefinition[] = [
     icon: createIcon(FileText),
     navigation: {
       group: "main",
-      order: 30,
+      order: 20,
       href: "/admin/posts",
       subItems: [
         {
@@ -207,7 +210,7 @@ export const appFeatures: FeatureDefinition[] = [
     icon: createIcon(FolderTree),
     navigation: {
       group: "main",
-      order: 40,
+      order: 30,
       resourceName: "categories",
       autoGenerateSubRoutes: true,
     },
@@ -249,7 +252,7 @@ export const appFeatures: FeatureDefinition[] = [
     icon: createIcon(Tag),
     navigation: {
       group: "main",
-      order: 50,
+      order: 40,
       resourceName: "tags",
       autoGenerateSubRoutes: true,
     },
@@ -265,7 +268,7 @@ export const appFeatures: FeatureDefinition[] = [
     icon: createIcon(Shield),
     navigation: {
       group: "main",
-      order: 60,
+      order: 80,
       resourceName: "roles",
       autoGenerateSubRoutes: true,
     },
@@ -307,7 +310,7 @@ export const appFeatures: FeatureDefinition[] = [
     icon: createIcon(GraduationCap),
     navigation: {
       group: "main",
-      order: 70,
+      order: 90,
       resourceName: "students",
       autoGenerateSubRoutes: true,
     },
@@ -323,7 +326,7 @@ export const appFeatures: FeatureDefinition[] = [
     icon: createIcon(Send),
     navigation: {
       group: "main",
-      order: 80,
+      order: 100,
       href: "/admin/messages/inbox",
       subItems: [
         {
@@ -346,7 +349,7 @@ export const appFeatures: FeatureDefinition[] = [
     icon: createIcon(MessageSquare),
     navigation: {
       group: "main",
-      order: 90,
+      order: 110,
       resourceName: "comments",
       autoGenerateSubRoutes: false,
     },
@@ -362,7 +365,7 @@ export const appFeatures: FeatureDefinition[] = [
     icon: createIcon(Bell),
     navigation: {
       group: "main",
-      order: 100,
+      order: 120,
       href: "/admin/notifications",
     },
     components: [
@@ -387,7 +390,7 @@ export const appFeatures: FeatureDefinition[] = [
     icon: createIcon(BadgeHelp),
     navigation: {
       group: "main",
-      order: 110,
+      order: 130,
       href: "/admin/contact-requests",
     },
     api: {
@@ -397,13 +400,81 @@ export const appFeatures: FeatureDefinition[] = [
     },
   },
   {
+    key: "products",
+    title: "Sản phẩm",
+    description: "Quản lý sản phẩm và danh mục",
+    permissions: MENU_PERMISSIONS.products,
+    icon: createIcon(ShoppingBag),
+    navigation: {
+      group: "main",
+      order: 50,
+      resourceName: "products",
+      autoGenerateSubRoutes: true,
+    },
+    api: {
+      type: "resource",
+      resourceName: "products",
+    },
+  },
+  {
+    key: "orders",
+    title: "Đơn hàng",
+    description: "Quản lý đơn hàng và thanh toán",
+    permissions: MENU_PERMISSIONS.orders,
+    icon: createIcon(Package),
+    navigation: {
+      group: "main",
+      order: 60,
+      resourceName: "orders",
+      autoGenerateSubRoutes: true,
+      subItems: [
+        {
+          title: "Danh sách đơn hàng",
+          url: "/admin/orders",
+          permissions: [PERMISSIONS.ORDERS_VIEW],
+        },
+        {
+          title: "Thanh toán",
+          url: "/admin/orders/payments",
+          permissions: [PERMISSIONS.ORDERS_VIEW, PERMISSIONS.ORDERS_UPDATE],
+        },
+        {
+          title: "Xác nhận thanh toán",
+          url: "/admin/orders/payment-confirmations",
+          permissions: [PERMISSIONS.ORDERS_UPDATE, PERMISSIONS.ORDERS_MANAGE],
+        },
+      ],
+    },
+    api: {
+      type: "resource",
+      resourceName: "orders",
+    },
+  },
+  {
+    key: "gift_codes",
+    title: "Mã giảm giá",
+    description: "Quản lý mã giảm giá và khuyến mãi",
+    permissions: MENU_PERMISSIONS.gift_codes,
+    icon: createIcon(Ticket),
+    navigation: {
+      group: "main",
+      order: 70,
+      resourceName: "gift-codes",
+      autoGenerateSubRoutes: true,
+    },
+    api: {
+      type: "resource",
+      resourceName: "gift-codes",
+    },
+  },
+  {
     key: "sessions",
     title: "Phiên đăng nhập",
     permissions: MENU_PERMISSIONS.sessions,
     icon: createIcon(LogIn),
     navigation: {
       group: "main",
-      order: 120,
+      order: 140,
       href: "/admin/sessions",
     },
     api: {
@@ -419,7 +490,7 @@ export const appFeatures: FeatureDefinition[] = [
     icon: createIcon(Upload),
     navigation: {
       group: "main",
-      order: 125,
+      order: 150,
       href: "/admin/uploads",
     },
     components: [
@@ -604,7 +675,15 @@ const resolveBaseUrl = (nav: FeatureNavigationConfig | undefined, resourceSegmen
 
   if (nav.resourceName) {
     const route = getResourceMainRoute(nav.resourceName)
-    return route ? applyResourceSegmentToPath(route.path, resourceSegment) : null
+    if (!route) {
+      // Fallback: construct URL directly if route not found in ROUTE_CONFIG
+      // This ensures menu items still appear even if routes aren't registered
+      const fallbackPath = `/admin/${nav.resourceName}`
+      const baseUrl = applyResourceSegmentToPath(fallbackPath, resourceSegment)
+      return baseUrl
+    }
+    const baseUrl = applyResourceSegmentToPath(route.path, resourceSegment)
+    return baseUrl
   }
 
   return null
@@ -652,7 +731,7 @@ const buildMenuItemFromFeature = (
       )
     : undefined
 
-  return {
+  const menuItem = {
     key: feature.key,
     title: feature.title,
     url: baseUrl,
@@ -661,6 +740,8 @@ const buildMenuItemFromFeature = (
     items: filteredSubItems && filteredSubItems.length ? filteredSubItems : undefined,
     permissions: feature.permissions,
   }
+
+  return menuItem
 }
 
 export function buildNavigationMenu(
@@ -668,15 +749,19 @@ export function buildNavigationMenu(
   userPermissions: Permission[],
   resourceSegment: string,
 ): MenuItem[] {
-  return appFeatures
-    .filter((feature) => feature.navigation?.group === group)
-    .sort((a, b) => {
-      const orderA = a.navigation?.order ?? 0
-      const orderB = b.navigation?.order ?? 0
-      return orderA - orderB
-    })
+  const features = appFeatures.filter((feature) => feature.navigation?.group === group)
+
+  const sortedFeatures = features.sort((a, b) => {
+    const orderA = a.navigation?.order ?? 0
+    const orderB = b.navigation?.order ?? 0
+    return orderA - orderB
+  })
+
+  const menuItems = sortedFeatures
     .map((feature) => buildMenuItemFromFeature(feature, userPermissions, resourceSegment))
     .filter((item): item is MenuItem => Boolean(item))
+
+  return menuItems
 }
 
 export function getFeatureComponentStrategies(key: FeatureKey): FeatureComponentStrategy[] {

@@ -319,6 +319,36 @@ export const ROUTE_CONFIG: RoutePermissionConfig[] = [
     ],
   }),
 
+  // Products
+  ...generateResourceRoutes({
+    name: "products",
+    permissions: {
+      view: PERMISSIONS.PRODUCTS_VIEW,
+      create: PERMISSIONS.PRODUCTS_CREATE,
+      update: PERMISSIONS.PRODUCTS_UPDATE,
+      delete: PERMISSIONS.PRODUCTS_DELETE,
+      manage: PERMISSIONS.PRODUCTS_MANAGE,
+    },
+    adminApi: true, // Use standard admin API routes
+  }),
+
+  // Orders
+  ...generateResourceRoutes({
+    name: "orders",
+    permissions: {
+      view: PERMISSIONS.ORDERS_VIEW,
+      create: PERMISSIONS.ORDERS_CREATE,
+      update: PERMISSIONS.ORDERS_UPDATE,
+      delete: PERMISSIONS.ORDERS_DELETE,
+      manage: PERMISSIONS.ORDERS_MANAGE,
+    },
+    customPages: [
+      { path: "/admin/orders/payments", permissions: [PERMISSIONS.ORDERS_VIEW, PERMISSIONS.ORDERS_UPDATE] },
+      { path: "/admin/orders/payment-confirmations", permissions: [PERMISSIONS.ORDERS_UPDATE, PERMISSIONS.ORDERS_MANAGE] },
+    ],
+    adminApi: true, // Use standard admin API routes
+  }),
+
   // Settings
   { path: "/admin/settings", permissions: [PERMISSIONS.SETTINGS_VIEW], type: "page" },
   { path: "/admin/settings/general", permissions: [PERMISSIONS.SETTINGS_VIEW], type: "page" },

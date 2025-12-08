@@ -51,167 +51,66 @@
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 import { logger } from "@/lib/config"
+import { getProxyConfig } from "@/lib/proxy/config"
+import {
+  handleCORS,
+  handleMaintenanceMode,
+  handleIPWhitelist,
+  handleNextAuthRoutes,
+  handleProxyRequests,
+  applySecurityHeaders,
+  handlePreflightRequest,
+} from "@/lib/proxy/middleware-handlers"
 
-// Environment variables
-const ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS?.split(",") || [
-  "http://localhost:3000",
-]
-const ALLOWED_IPS = process.env.ALLOWED_IPS?.split(",") || []
-const MAINTENANCE_MODE = process.env.MAINTENANCE_MODE === "true"
-const MAINTENANCE_BYPASS_KEY = process.env.MAINTENANCE_BYPASS_KEY
-const EXTERNAL_API_BASE_URL =
-  process.env.EXTERNAL_API_BASE_URL || "http://localhost:8000/api"
-
-
-function getClientIP(request: NextRequest): string {
-  const forwarded = request.headers.get("x-forwarded-for")
-  const realIP = request.headers.get("x-real-ip")
-  const cfConnectingIP = request.headers.get("cf-connecting-ip")
-
-  if (forwarded) {
-    return forwarded.split(",")[0].trim()
-  }
-  if (realIP) {
-    return realIP
-  }
-  if (cfConnectingIP) {
-    return cfConnectingIP
-  }
-  return "unknown"
-}
-
-function checkIPWhitelist(ip: string): boolean {
-  if (ALLOWED_IPS.length === 0) {
-    return true
-  }
-  return ALLOWED_IPS.includes(ip)
-}
-
-function checkMaintenanceMode(request: NextRequest): boolean {
-  if (!MAINTENANCE_MODE) {
-    return false
-  }
-
-  const bypassKey =
-    request.headers.get("x-maintenance-bypass") ||
-    new URL(request.url).searchParams.get("bypass")
-
-  return bypassKey === MAINTENANCE_BYPASS_KEY
-}
-
-
+/**
+ * Main proxy function - orchestrates all middleware handlers
+ * Follows Single Responsibility: Each handler has one responsibility
+ * Follows Dependency Inversion: Config injected via getProxyConfig()
+ */
 export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname
   const origin = request.headers.get("origin")
+  
+  // Get configuration (Dependency Inversion Principle)
+  const config = getProxyConfig()
 
   // 1. CORS Check
-  if (origin && !ALLOWED_ORIGINS.includes(origin)) {
-    return NextResponse.json(
-      { error: "Origin not allowed" },
-      { status: 403 }
-    )
-  }
+  const corsResponse = handleCORS(request, config.allowedOrigins)
+  if (corsResponse) return corsResponse
 
   // 2. Maintenance Mode Check
-  if (MAINTENANCE_MODE && !checkMaintenanceMode(request)) {
-    const isApiRoute = pathname.startsWith("/api")
-    if (isApiRoute) {
-      return NextResponse.json(
-        {
-          error: "Maintenance mode is enabled",
-          message: "The system is currently under maintenance",
-        },
-        { status: 503 }
-      )
-    }
-    // Redirect to maintenance page
-    return NextResponse.redirect(new URL("/maintenance", request.url))
-  }
+  const maintenanceResponse = handleMaintenanceMode(request, pathname, {
+    maintenanceMode: config.maintenanceMode,
+    maintenanceBypassKey: config.maintenanceBypassKey,
+  })
+  if (maintenanceResponse) return maintenanceResponse
 
   // 3. IP Whitelist Check for Admin Routes
-  if (pathname.startsWith("/admin") || pathname.startsWith("/api/admin")) {
-    const clientIP = getClientIP(request)
-    if (!checkIPWhitelist(clientIP)) {
-      return NextResponse.json(
-        { error: "IP address not allowed" },
-        { status: 403 }
-      )
-    }
-  }
+  const ipWhitelistResponse = handleIPWhitelist(request, pathname, config.allowedIPs)
+  if (ipWhitelistResponse) return ipWhitelistResponse
 
-  // 4. Skip proxy for NextAuth routes (must pass through)
-  const isApiAuth = pathname.startsWith("/api/auth")
-  if (isApiAuth) {
-    // NextAuth routes should not be proxied or modified
-    return NextResponse.next()
-  }
+  // 4. Skip proxy for NextAuth routes
+  const nextAuthResponse = handleNextAuthRoutes(pathname)
+  if (nextAuthResponse) return nextAuthResponse
 
-  // 5. Proxy API requests sử dụng rewrite (theo NextJS documentation)
-  if (pathname.startsWith("/api/proxy/")) {
-    // Extract path sau /api/proxy/
-    const proxyPath = pathname.replace("/api/proxy/", "")
-    const queryString = request.nextUrl.search
+  // 5. Proxy API requests
+  const proxyResponse = handleProxyRequests(request, pathname, config.externalApiBaseUrl)
+  if (proxyResponse) return proxyResponse
 
-    // Build target URL
-    const targetUrl = new URL(`${EXTERNAL_API_BASE_URL}/${proxyPath}${queryString}`)
-
-    // Rewrite request to external API (proxy)
-    return NextResponse.rewrite(targetUrl)
-  }
-
-  // 6. Security Headers (giống @core-cms)
+  // 6. Apply security headers and continue
   const response = NextResponse.next()
-  
-  // Set pathname header for server components
-  response.headers.set("x-pathname", pathname)
-  
-  // Security headers
-  response.headers.set("X-Frame-Options", "DENY")
-  response.headers.set("X-Content-Type-Options", "nosniff")
-  response.headers.set("Referrer-Policy", "origin-when-cross-origin")
-  response.headers.set("X-DNS-Prefetch-Control", "on")
+  applySecurityHeaders(response, pathname, origin, config.allowedOrigins)
 
-  // 9. CORS headers for API routes (giống @core-cms)
-  if (pathname.startsWith("/api")) {
-    if (origin && ALLOWED_ORIGINS.includes(origin)) {
-      response.headers.set("Access-Control-Allow-Origin", origin)
-      response.headers.set("Access-Control-Allow-Credentials", "true")
-    } else {
-      // Allow all origins for API routes if no specific origin (giống @core-cms)
-      response.headers.set("Access-Control-Allow-Origin", "*")
-    }
-    response.headers.set(
-      "Access-Control-Allow-Methods",
-      "GET, POST, PUT, DELETE, PATCH, OPTIONS"
-    )
-    response.headers.set(
-      "Access-Control-Allow-Headers",
-      "Content-Type, Authorization, X-Requested-With"
-    )
+  // 7. Handle preflight requests
+  const preflightResponse = handlePreflightRequest(request, response)
+  if (preflightResponse) return preflightResponse
 
-    // Handle preflight requests
-    if (request.method === "OPTIONS") {
-      return new Response(null, { status: 200, headers: response.headers })
-    }
-  }
-
-  // 10. Static Asset Optimization (giống @core-cms)
-  if (pathname.startsWith("/_next/static/")) {
-    // Cache static assets for 1 year
-    response.headers.set(
-      "Cache-Control",
-      "public, max-age=31536000, immutable"
-    )
-  }
-
-  // 11. Development Mode Logging (giống @core-cms)
+  // 8. Development Mode Logging
   logger.debug("Proxy processing request", {
     method: request.method,
     pathname,
     url: request.url,
     userAgent: request.headers.get("user-agent"),
-    file: "proxy.ts",
-    line: 359,
   })
 
   return response

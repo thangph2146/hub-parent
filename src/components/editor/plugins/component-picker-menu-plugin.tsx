@@ -214,7 +214,7 @@ function MenuContent({
       >
         <CommandList>
           <CommandGroup>
-            {options.map((option, index) => (
+            {options.map((option) => (
               <CommandItem
                 key={option.key}
                 value={option.title}

@@ -451,6 +451,8 @@ export function ResourceForm<T extends Record<string, unknown>>({
     // Get source field value for slug auto-generation
     const sourceValue = field.sourceField ? formData[field.sourceField as keyof T] : undefined
     const isFullWidth = field.type === "textarea" || field.type === "select" || field.type === "image" || field.type === "editor" || field.type === "slug" || field.render
+    // Editor field should always be full width (like image field), even on mobile
+    const isEditorField = field.type === "editor"
 
     if (field.type === "checkbox") {
       return (
@@ -459,7 +461,7 @@ export function ResourceForm<T extends Record<string, unknown>>({
           id={fieldName}
           className={cn(
             "min-w-0",
-            isFullWidth && "@md:col-span-full"
+            isEditorField ? "col-span-full" : (isFullWidth && "@md:col-span-full")
           )}
           style={isFullWidth ? undefined : {
             minWidth: "200px"
@@ -495,7 +497,7 @@ export function ResourceForm<T extends Record<string, unknown>>({
         id={fieldName}
         className={cn(
           "min-w-0",
-          isFullWidth && "@md:col-span-full"
+          isEditorField ? "col-span-full" : (isFullWidth && "@md:col-span-full")
         )}
         style={isFullWidth ? undefined : {
           minWidth: "200px"

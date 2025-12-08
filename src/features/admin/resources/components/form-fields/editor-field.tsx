@@ -73,8 +73,8 @@ export function EditorField({
   }
 
   return (
-    <FieldContent>
-      <div className={className || "w-full max-w-5xl mx-auto"}>
+    <FieldContent className="w-full">
+      <div className={className || "w-full max-w-none"}>
         <Editor
           editorSerializedState={editorState || undefined}
           onSerializedChange={handleChange}

@@ -322,7 +322,9 @@ export function DataTable<T extends object>({
                 setInternalSelectedIds(next)
             }
             if (selectionOnChange) {
-                const rows = visibleRows
+                // Ensure visibleRows is always an array
+                const rowsArray = Array.isArray(visibleRows) ? visibleRows : []
+                const rows = rowsArray
                     .map((row, index) => ({ row, id: getRowId(row, index) }))
                     .filter(({ id }) => next.has(id))
                     .map(({ row }) => row)
@@ -373,18 +375,18 @@ export function DataTable<T extends object>({
         })
     }, [selectionEnabled, selectionDisabled, commitSelection])
 
-    const visibleRowMeta = useMemo(
-        () =>
-            visibleRows.map((row, index) => {
-                const id = getRowId(row, index)
-                return {
-                    id,
-                    row,
-                    selectable: selectionEnabled && !selectionDisabled && isRowSelectable(row),
-                }
-            }),
-        [visibleRows, getRowId, selectionEnabled, selectionDisabled, isRowSelectable],
-    )
+    const visibleRowMeta = useMemo(() => {
+        // Ensure visibleRows is always an array
+        const rows = Array.isArray(visibleRows) ? visibleRows : []
+        return rows.map((row, index) => {
+            const id = getRowId(row, index)
+            return {
+                id,
+                row,
+                selectable: selectionEnabled && !selectionDisabled && isRowSelectable(row),
+            }
+        })
+    }, [visibleRows, getRowId, selectionEnabled, selectionDisabled, isRowSelectable])
 
     const selectableVisibleIds = useMemo(
         () => visibleRowMeta.filter((meta) => meta.selectable).map((meta) => meta.id),
@@ -627,11 +629,33 @@ function TableBodyContent<T extends object>({
     totalColumns,
 }: TableBodyContentProps<T>) {
     const result = use(dataPromise)
+    
+    // Ensure result and result.rows are valid
+    const rows = useMemo(() => {
+        if (!result) {
+            console.warn("[TableBodyContent] result is null/undefined")
+            return []
+        }
+        if (!result.rows) {
+            console.warn("[TableBodyContent] result.rows is null/undefined", { result })
+            return []
+        }
+        if (!Array.isArray(result.rows)) {
+            console.warn("[TableBodyContent] result.rows is not an array", { 
+                type: typeof result.rows, 
+                value: result.rows,
+                result 
+            })
+            return []
+        }
+        return result.rows
+    }, [result])
+    
     useEffect(() => {
-        onVisibleRowsChange?.(result.rows)
-    }, [result.rows, onVisibleRowsChange])
+        onVisibleRowsChange?.(rows)
+    }, [rows, onVisibleRowsChange])
 
-    if (!result.rows.length) {
+    if (!rows.length) {
         return (
             <TableBody>
                 <TableRow>
@@ -645,7 +669,7 @@ function TableBodyContent<T extends object>({
 
     return (
         <TableBody>
-            {result.rows.map((row, index) => {
+            {rows.map((row, index) => {
                 const rowId = getRowId(row, index)
                 const rowSelectable = isRowSelectable(row)
                 const rowSelected = selectedIds.has(rowId)

@@ -63,7 +63,7 @@ export default function Error({ error, reset }: ErrorProps) {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center p-4 bg-gradient-to-br from-background via-muted/20 to-background">
       <motion.div
-        className="w-full max-w-md"
+        className="w-full"
         variants={containerVariants}
         initial="hidden"
         animate="visible"

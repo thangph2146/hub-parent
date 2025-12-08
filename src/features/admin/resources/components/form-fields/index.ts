@@ -10,6 +10,8 @@ export { ImageField } from "./image-field"
 export type { ImageFieldProps } from "./image-field"
 export { EditorField } from "./editor-field"
 export type { EditorFieldProps } from "./editor-field"
+export { MultipleImagesField } from "./multiple-images-field"
+export type { MultipleImagesFieldProps, ProductImage } from "./multiple-images-field"
 export { SlugField } from "./slug-field"
 export { renderFieldInput } from "./render-field"
 

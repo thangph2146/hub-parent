@@ -10,8 +10,8 @@ datasource db {
 }
 
 model User {
-  id                       String           @id @default(cuid())
-  email                    String           @unique
+  id                       String            @id @default(cuid())
+  email                    String            @unique
   name                     String?
   password                 String
   bio                      String?
@@ -19,24 +19,28 @@ model User {
   emailVerified            DateTime?
   phone                    String?
   address                  String?
-  isActive                 Boolean          @default(true)
-  createdAt                DateTime         @default(now())
-  updatedAt                DateTime         @updatedAt
+  isActive                 Boolean           @default(true)
+  createdAt                DateTime          @default(now())
+  updatedAt                DateTime          @updatedAt
   deletedAt                DateTime?
   accounts                 Account[]
   comments                 Comment[]
-  messagesReceived         Message[]        @relation("MessageReceiver")
-  messagesSent             Message[]        @relation("MessageSender")
+  messagesReceived         Message[]         @relation("MessageReceiver")
+  messagesSent             Message[]         @relation("MessageSender")
   posts                    Post[]
   sessions                 Session[]
   students                 Student[]
   userRoles                UserRole[]
   notifications            Notification[]
-  contactRequestsSubmitted ContactRequest[] @relation("ContactSubmittedBy")
-  contactRequestsAssigned  ContactRequest[] @relation("ContactAssignedTo")
-  groupsCreated            Group[]          @relation("GroupCreator")
-  groupMemberships         GroupMember[]    @relation("GroupMembers")
-  messageReads             MessageRead[]    @relation("MessageReads")
+  contactRequestsSubmitted ContactRequest[]  @relation("ContactSubmittedBy")
+  contactRequestsAssigned  ContactRequest[]  @relation("ContactAssignedTo")
+  groupsCreated            Group[]           @relation("GroupCreator")
+  groupMemberships         GroupMember[]     @relation("GroupMembers")
+  messageReads             MessageRead[]     @relation("MessageReads")
+  orders                   Order[]           @relation("CustomerOrders")
+  productReviews           ProductReview[]   @relation("ProductReviews")
+  productQuestions         ProductQuestion[] @relation("ProductQuestions")
+  productAnswers           ProductQuestion[] @relation("ProductAnswers")
 
   @@map("users")
 }
@@ -63,14 +67,15 @@ model Post {
 }
 
 model Category {
-  id          String         @id @default(cuid())
-  name        String         @unique
-  slug        String         @unique
+  id          String            @id @default(cuid())
+  name        String            @unique
+  slug        String            @unique
   description String?
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
   deletedAt   DateTime?
   posts       PostCategory[]
+  products    ProductCategory[]
 
   @@map("categories")
 }
@@ -369,4 +374,304 @@ model VerificationToken {
 
   @@unique([identifier, token])
   @@map("verification_tokens")
+}
+
+// Ecommerce Models
+model Product {
+  id                String            @id @default(cuid())
+  name              String
+  slug              String            @unique
+  description       String?           @db.Text
+  shortDescription  String?
+  sku               String            @unique
+  price             Decimal           @db.Decimal(10, 2)
+  compareAtPrice    Decimal?          @db.Decimal(10, 2)
+  cost              Decimal?          @db.Decimal(10, 2)
+  stock             Int               @default(0)
+  trackInventory    Boolean           @default(true)
+  weight            Decimal?          @db.Decimal(10, 2)
+  status            ProductStatus     @default(DRAFT)
+  featured          Boolean           @default(false)
+  specifications    Json? // Thông số kỹ thuật (JSON)
+  relatedProductIds String[]          @default([]) // IDs của sản phẩm liên quan
+  bundleProductIds  String[]          @default([]) // IDs của sản phẩm mua kèm
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  deletedAt         DateTime?
+  images            ProductImage[]
+  categories        ProductCategory[]
+  variants          ProductVariant[]
+  reviews           ProductReview[]
+  questions         ProductQuestion[]
+  orderItems        OrderItem[]
+  cartItems         CartItem[]
+  inventory         Inventory?
+
+  @@index([slug])
+  @@index([status])
+  @@index([featured])
+  @@index([createdAt])
+  @@map("products")
+}
+
+model ProductImage {
+  id        String   @id @default(cuid())
+  productId String
+  url       String
+  alt       String?
+  order     Int      @default(0)
+  isPrimary Boolean  @default(false)
+  createdAt DateTime @default(now())
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId, order])
+  @@map("product_images")
+}
+
+model ProductCategory {
+  productId  String
+  categoryId String
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@id([productId, categoryId])
+  @@map("product_categories")
+}
+
+model Order {
+  id              String        @id @default(cuid())
+  orderNumber     String        @unique
+  customerId      String?
+  customerEmail   String
+  customerName    String
+  customerPhone   String?
+  status          OrderStatus   @default(PENDING)
+  paymentStatus   PaymentStatus @default(PENDING)
+  paymentMethod   String?
+  shippingAddress Json?
+  billingAddress  Json?
+  subtotal        Decimal       @db.Decimal(10, 2)
+  tax             Decimal       @default(0) @db.Decimal(10, 2)
+  shipping        Decimal       @default(0) @db.Decimal(10, 2)
+  discount        Decimal       @default(0) @db.Decimal(10, 2)
+  total           Decimal       @db.Decimal(10, 2)
+  notes           String?       @db.Text
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  deletedAt       DateTime?
+  items           OrderItem[]
+  customer        User?         @relation("CustomerOrders", fields: [customerId], references: [id])
+
+  @@index([orderNumber])
+  @@index([customerId])
+  @@index([status])
+  @@index([paymentStatus])
+  @@index([createdAt])
+  @@map("orders")
+}
+
+model OrderItem {
+  id          String   @id @default(cuid())
+  orderId     String
+  productId   String
+  productName String
+  productSku  String
+  quantity    Int
+  price       Decimal  @db.Decimal(10, 2)
+  total       Decimal  @db.Decimal(10, 2)
+  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product     Product? @relation(fields: [productId], references: [id])
+
+  @@index([orderId])
+  @@index([productId])
+  @@map("order_items")
+}
+
+model Cart {
+  id        String     @id @default(cuid())
+  userId    String? // Nullable for guest carts
+  sessionId String? // For guest carts
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  expiresAt DateTime? // For guest carts
+  items     CartItem[]
+
+  @@unique([userId])
+  @@unique([sessionId])
+  @@index([userId])
+  @@index([sessionId])
+  @@map("carts")
+}
+
+model CartItem {
+  id        String   @id @default(cuid())
+  cartId    String
+  productId String
+  quantity  Int      @default(1)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  cart      Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([cartId, productId])
+  @@index([cartId])
+  @@index([productId])
+  @@map("cart_items")
+}
+
+model Inventory {
+  id                String   @id @default(cuid())
+  productId         String   @unique
+  quantity          Int      @default(0)
+  reserved          Int      @default(0) // Reserved for pending orders
+  lowStockThreshold Int      @default(10)
+  updatedAt         DateTime @updatedAt
+  product           Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([quantity])
+  @@map("inventory")
+}
+
+enum ProductStatus {
+  DRAFT
+  ACTIVE
+  INACTIVE
+  ARCHIVED
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  REFUNDED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+  PARTIALLY_REFUNDED
+}
+
+// Product Variants (màu sắc, size, phiên bản)
+model ProductVariant {
+  id        String   @id @default(cuid())
+  productId String
+  name      String // Tên variant: "AirPods Pro 3 2025", "Trắng", "128GB"
+  value     String? // Giá trị: "white", "128"
+  type      String // Loại: "version", "color", "size"
+  price     Decimal? @db.Decimal(10, 2) // Giá riêng (nếu khác giá gốc)
+  sku       String? // SKU riêng cho variant
+  stock     Int? // Stock riêng cho variant
+  imageUrl  String? // Hình ảnh riêng cho variant
+  order     Int      @default(0)
+  isDefault Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+  @@index([productId, type])
+  @@map("product_variants")
+}
+
+// Product Reviews (Đánh giá sản phẩm)
+model ProductReview {
+  id            String    @id @default(cuid())
+  productId     String
+  userId        String?
+  customerName  String // Tên khách hàng (nếu không đăng nhập)
+  customerEmail String? // Email khách hàng
+  rating        Int // 1-5 sao
+  title         String? // Tiêu đề đánh giá
+  comment       String    @db.Text
+  images        String[]  @default([]) // URLs của hình ảnh đánh giá
+  videos        String[]  @default([]) // URLs của video đánh giá
+  helpful       Int       @default(0) // Số lượt "hữu ích"
+  approved      Boolean   @default(false) // Phê duyệt đánh giá
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  deletedAt     DateTime?
+  product       Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user          User?     @relation("ProductReviews", fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([productId])
+  @@index([productId, approved])
+  @@index([rating])
+  @@map("product_reviews")
+}
+
+// Product Questions & Answers (Hỏi và đáp)
+model ProductQuestion {
+  id            String    @id @default(cuid())
+  productId     String
+  userId        String?
+  customerName  String // Tên người hỏi
+  customerEmail String? // Email người hỏi
+  question      String    @db.Text
+  answer        String?   @db.Text
+  answeredBy    String? // ID của admin trả lời
+  answeredAt    DateTime?
+  helpful       Int       @default(0)
+  approved      Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  deletedAt     DateTime?
+  product       Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user          User?     @relation("ProductQuestions", fields: [userId], references: [id], onDelete: SetNull)
+  answerer      User?     @relation("ProductAnswers", fields: [answeredBy], references: [id], onDelete: SetNull)
+
+  @@index([productId])
+  @@index([productId, approved])
+  @@map("product_questions")
+}
+
+// Gift Code / Promo Code Model
+model GiftCode {
+  id              String          @id @default(cuid())
+  code            String          @unique
+  description     String?
+  discountType    DiscountType    @default(PERCENTAGE)
+  discountValue   Decimal         @db.Decimal(10, 2)
+  minOrderAmount  Decimal?        @db.Decimal(10, 2)
+  maxDiscount     Decimal?        @db.Decimal(10, 2)
+  usageLimit      Int?            // Total usage limit
+  usedCount       Int             @default(0)
+  userLimit       Int?            // Limit per user (null = unlimited)
+  validFrom       DateTime        @default(now())
+  validUntil      DateTime?
+  isActive        Boolean         @default(true)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  deletedAt       DateTime?
+  usages          GiftCodeUsage[]
+
+  @@index([code])
+  @@index([isActive])
+  @@index([validFrom, validUntil])
+  @@map("gift_codes")
+}
+
+model GiftCodeUsage {
+  id          String    @id @default(cuid())
+  giftCodeId  String
+  orderId     String?
+  userId      String?
+  usedAt      DateTime  @default(now())
+  discount    Decimal   @db.Decimal(10, 2)
+  giftCode    GiftCode  @relation(fields: [giftCodeId], references: [id], onDelete: Cascade)
+
+  @@index([giftCodeId])
+  @@index([orderId])
+  @@index([userId])
+  @@map("gift_code_usages")
+}
+
+enum DiscountType {
+  PERCENTAGE
+  FIXED_AMOUNT
 }

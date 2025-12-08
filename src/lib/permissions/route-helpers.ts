@@ -24,9 +24,13 @@ export function getResourceRoutes(resourceName: string): RoutePermissionConfig[]
  * Get main route (list page) cho một resource
  */
 export function getResourceMainRoute(resourceName: string): RoutePermissionConfig | undefined {
-  return ROUTE_CONFIG.find(
-    (config) => config.type === "page" && config.path === `/admin/${resourceName}`
+  const expectedPath = `/admin/${resourceName}`
+  
+  const route = ROUTE_CONFIG.find(
+    (config) => config.type === "page" && config.path === expectedPath
   )
+  
+  return route
 }
 
 /**

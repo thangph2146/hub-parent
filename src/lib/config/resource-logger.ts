@@ -146,13 +146,15 @@ export const resourceLogger = {
     if (dataType === "table") {
       // Ưu tiên sampleRows nếu có, nếu không thì dùng rows (backward compatibility)
       const rowsToLog = structure.sampleRows || structure.rows || []
+      // Chỉ log summary, không log toàn bộ rows để giảm verbosity
       logger.debug(`[${resource.toUpperCase()}] 📊 Table Structure`, {
         resource,
         dataType,
         columns: structure.columns || [],
         rowCount: rowCount ?? rowsToLog.length,
         pagination: structure.pagination,
-        sampleRows: rowsToLog, // Hiển thị đầy đủ rows hiện tại
+        // Chỉ log 2 rows đầu tiên làm sample thay vì toàn bộ
+        sampleRows: rowsToLog.slice(0, 2),
         totalRows: rowsToLog.length,
         tableStatus: structure.tableStatus,
       })

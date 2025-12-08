@@ -80,6 +80,14 @@ export interface AdminUsersListParams extends BaseListParams {
   status?: "active" | "deleted" | "all"
 }
 
+export interface AdminProductsListParams extends BaseListParams {
+  status?: "active" | "deleted" | "all"
+}
+
+export interface AdminOrdersListParams extends BaseListParams {
+  status?: "active" | "deleted" | "all"
+}
+
 /**
  * Helper để tạo query key với optional params
  */
@@ -374,6 +382,44 @@ export const queryKeys = {
      * Post detail by ID
      */
     detail: (id: string): readonly unknown[] => ["adminPosts", "detail", id],
+  },
+  /**
+   * Admin Products query keys
+   */
+  adminProducts: {
+    /**
+     * Tất cả admin products queries
+     */
+    all: (): readonly unknown[] => ["adminProducts"],
+    /**
+     * Admin products list với normalized params
+     */
+    list: (params: AdminProductsListParams): readonly unknown[] => {
+      return ["adminProducts", normalizeListParams(params)]
+    },
+    /**
+     * Product detail by ID
+     */
+    detail: (id: string): readonly unknown[] => ["adminProducts", "detail", id],
+  },
+  /**
+   * Admin Orders query keys
+   */
+  adminOrders: {
+    /**
+     * Tất cả admin orders queries
+     */
+    all: (): readonly unknown[] => ["adminOrders"],
+    /**
+     * Admin orders list với normalized params
+     */
+    list: (params: AdminOrdersListParams): readonly unknown[] => {
+      return ["adminOrders", normalizeListParams(params)]
+    },
+    /**
+     * Order detail by ID
+     */
+    detail: (id: string): readonly unknown[] => ["adminOrders", "detail", id],
   },
 } as const
 

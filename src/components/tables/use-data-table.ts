@@ -59,7 +59,8 @@ export function useDataTable<T = unknown>(options: UseDataTableOptions) {
         setData(result.data as T[])
         setPagination(result.pagination)
       } catch (error) {
-        console.error("Error fetching data:", error)
+        // Error handling is done by the caller
+        throw error
       } finally {
         setLoading(false)
       }

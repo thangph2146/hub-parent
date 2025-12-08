@@ -23,7 +23,6 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { Separator } from "@/components/ui/separator"
 import { useResourceRouter } from "@/hooks/use-resource-segment"
 import { formatDateVi } from "@/features/admin/resources/utils"
 import { getUserInitials } from "@/features/admin/accounts/utils"
@@ -88,45 +87,53 @@ export function AccountProfileClient({
       title: "Thông tin cơ bản",
       description: "Thông tin đăng nhập và cá nhân",
       fieldHeader: (
-        <div className="flex items-center gap-4 p-4 bg-muted/50 rounded-lg border border-border/50">
-          <div className="relative">
-            <Avatar className="h-24 w-24 border-2 border-border">
-              <AvatarImage 
-                src={account.avatar || undefined} 
-                alt={account.name || account.email}
-                referrerPolicy="no-referrer"
-                crossOrigin="anonymous"
-              />
-              <AvatarFallback className="text-lg font-bold bg-gradient-to-br from-primary to-chart-1 text-primary-foreground">
-                {getUserInitials(account.name, account.email)}
-              </AvatarFallback>
-            </Avatar>
-            <div className="absolute -bottom-1 -right-1 h-6 w-6 rounded-full bg-green-500 border-2 border-background flex items-center justify-center">
-              <CheckCircle2 className="h-3.5 w-3.5 text-white" />
+        <Card className="overflow-hidden border-2 bg-gradient-to-br from-card via-card to-muted/20 shadow-sm">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 p-6">
+            <div className="relative group">
+              <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 via-primary/10 to-transparent rounded-full blur opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <Avatar className="relative h-28 w-28 border-4 border-background shadow-lg ring-2 ring-primary/10">
+                <AvatarImage 
+                  src={account.avatar || undefined} 
+                  alt={account.name || account.email}
+                  referrerPolicy="no-referrer"
+                  crossOrigin="anonymous"
+                  className="object-cover"
+                />
+                <AvatarFallback className="text-2xl font-bold bg-gradient-to-br from-primary via-primary/90 to-chart-1 text-primary-foreground">
+                  {getUserInitials(account.name, account.email)}
+                </AvatarFallback>
+              </Avatar>
+              <div className="absolute -bottom-1 -right-1 h-7 w-7 rounded-full bg-green-500 border-[3px] border-background flex items-center justify-center shadow-md">
+                <CheckCircle2 className="h-4 w-4 text-white" />
+              </div>
+            </div>
+            <div className="flex-1 min-w-0 space-y-3">
+              <div>
+                <h3 className="text-2xl font-bold tracking-tight text-foreground">
+                  {account.name || "Chưa có tên"}
+                </h3>
+                <p className="text-sm text-muted-foreground flex items-center gap-2 mt-1.5">
+                  <Mail className="h-4 w-4 shrink-0" />
+                  <span className="truncate">{account.email}</span>
+                </p>
+              </div>
+              {account.roles && account.roles.length > 0 && (
+                <div className="flex flex-wrap items-center gap-2">
+                  {account.roles.map((role) => (
+                    <Badge
+                      key={role.id}
+                      variant="secondary"
+                      className="text-xs font-medium bg-primary/10 text-primary border-primary/20 hover:bg-primary/20 transition-colors"
+                    >
+                      <Shield className="mr-1.5 h-3 w-3" />
+                      {role.displayName || role.name}
+                    </Badge>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
-          <div className="flex-1">
-            <h3 className="text-lg font-semibold">{account.name || "Chưa có tên"}</h3>
-            <p className="text-sm text-muted-foreground flex items-center gap-2 mt-1">
-              <Mail className="h-4 w-4" />
-              {account.email}
-            </p>
-            {account.roles && account.roles.length > 0 && (
-              <div className="flex flex-wrap items-center gap-2 mt-2">
-                {account.roles.map((role) => (
-                  <Badge
-                    key={role.id}
-                    variant="secondary"
-                    className="text-xs"
-                  >
-                    <Shield className="mr-1 h-3 w-3" />
-                    {role.displayName || role.name}
-                  </Badge>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
+        </Card>
       ),
       fieldsContent: (_fields, data) => {
         const accountData = data as AccountProfile
@@ -134,48 +141,124 @@ export function AccountProfileClient({
         return (
           <div className="space-y-6">
             <div className="grid gap-4 sm:grid-cols-2">
-              <FieldItem icon={User} label="Tên">
-                <div className="text-sm font-medium text-foreground">
-                  {accountData.name || "—"}
-                </div>
-              </FieldItem>
+              <Card className="p-4 border-border/50 bg-card/50 hover:bg-card transition-colors">
+                <FieldItem icon={User} label="Tên">
+                  <div className="text-base font-semibold text-foreground mt-1">
+                    {accountData.name || <span className="text-muted-foreground italic">Chưa cập nhật</span>}
+                  </div>
+                </FieldItem>
+              </Card>
 
-              <FieldItem icon={Phone} label="Số điện thoại">
-                <div className="text-sm font-medium text-foreground">
-                  {accountData.phone || "—"}
-                </div>
-              </FieldItem>
+              <Card className="p-4 border-border/50 bg-card/50 hover:bg-card transition-colors">
+                <FieldItem icon={Phone} label="Số điện thoại">
+                  <div className="text-base font-semibold text-foreground mt-1">
+                    {accountData.phone || <span className="text-muted-foreground italic">Chưa cập nhật</span>}
+                  </div>
+                </FieldItem>
+              </Card>
             </div>
 
             {accountData.bio && (
-              <>
-                <Separator />
-                <Card className="border border-border/50 bg-card p-5">
-                  <div className="flex items-start gap-3">
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted">
-                      <FileText className="h-4 w-4 text-muted-foreground" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="text-sm font-medium text-foreground mb-2">Giới thiệu</h3>
-                      <div className="text-sm leading-relaxed whitespace-pre-wrap text-foreground break-words">
-                        {accountData.bio}
-                      </div>
+              <Card className="border-2 border-border/50 bg-gradient-to-br from-card to-muted/20 p-6 shadow-sm">
+                <div className="flex items-start gap-4">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 ring-2 ring-primary/5">
+                    <FileText className="h-5 w-5 text-primary" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-sm font-semibold text-foreground mb-3 uppercase tracking-wide">Giới thiệu</h3>
+                    <div className="text-sm leading-relaxed whitespace-pre-wrap text-foreground/90 break-words">
+                      {accountData.bio}
                     </div>
                   </div>
-                </Card>
-              </>
+                </div>
+              </Card>
             )}
 
-            {accountData.address && (
-              <>
-                <Separator />
-                <FieldItem icon={MapPin} label="Địa chỉ">
-                  <div className="text-sm font-medium text-foreground">
-                    {accountData.address}
-                  </div>
-                </FieldItem>
-              </>
-            )}
+            {accountData.address && (() => {
+              // Parse address if it's a JSON string
+              let addressDisplay: string | React.ReactNode = accountData.address
+              let structuredAddress: {
+                address?: string
+                city?: string
+                district?: string
+                ward?: string
+                postalCode?: string
+              } | null = null
+
+              try {
+                const parsed = typeof accountData.address === "string" 
+                  ? JSON.parse(accountData.address) 
+                  : accountData.address
+                
+                if (parsed && typeof parsed === "object" && parsed !== null) {
+                  structuredAddress = parsed
+                  // Format: "Số nhà, Phường/Xã, Quận/Huyện, Thành phố, Mã bưu điện"
+                  const parts = [
+                    parsed.address,
+                    parsed.ward,
+                    parsed.district,
+                    parsed.city,
+                    parsed.postalCode,
+                  ].filter(Boolean)
+                  addressDisplay = parts.join(", ")
+                }
+              } catch {
+                // If not JSON, use as-is
+                addressDisplay = accountData.address
+              }
+
+              return (
+                <Card className="p-5 border-2 border-border/50 bg-gradient-to-br from-card to-muted/10 shadow-sm">
+                  <FieldItem icon={MapPin} label="Địa chỉ">
+                    <div className="space-y-3 mt-2">
+                      {structuredAddress ? (
+                        <div className="space-y-2">
+                          <div className="text-base font-semibold text-foreground">
+                            {addressDisplay}
+                          </div>
+                          <div className="grid gap-2 sm:grid-cols-2 text-sm text-muted-foreground">
+                            {structuredAddress.address && (
+                              <div className="flex items-start gap-2">
+                                <span className="font-medium min-w-[80px]">Số nhà:</span>
+                                <span>{structuredAddress.address}</span>
+                              </div>
+                            )}
+                            {structuredAddress.ward && (
+                              <div className="flex items-start gap-2">
+                                <span className="font-medium min-w-[80px]">Phường/Xã:</span>
+                                <span>{structuredAddress.ward}</span>
+                              </div>
+                            )}
+                            {structuredAddress.district && (
+                              <div className="flex items-start gap-2">
+                                <span className="font-medium min-w-[80px]">Quận/Huyện:</span>
+                                <span>{structuredAddress.district}</span>
+                              </div>
+                            )}
+                            {structuredAddress.city && (
+                              <div className="flex items-start gap-2">
+                                <span className="font-medium min-w-[80px]">Thành phố:</span>
+                                <span>{structuredAddress.city}</span>
+                              </div>
+                            )}
+                            {structuredAddress.postalCode && (
+                              <div className="flex items-start gap-2">
+                                <span className="font-medium min-w-[80px]">Mã bưu điện:</span>
+                                <span>{structuredAddress.postalCode}</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="text-base font-semibold text-foreground">
+                          {addressDisplay}
+                        </div>
+                      )}
+                    </div>
+                  </FieldItem>
+                </Card>
+              )
+            })()}
           </div>
         )
       },
@@ -189,32 +272,41 @@ export function AccountProfileClient({
         
         return (
           <div className="space-y-6">
-            <FieldItem icon={Mail} label="Email">
-              <div className="space-y-0.5">
-                <div className="text-sm font-medium text-foreground">
-                  {accountData.email}
+            <Card className="p-5 border-2 border-border/50 bg-gradient-to-br from-card to-muted/10 shadow-sm">
+              <FieldItem icon={Mail} label="Email">
+                <div className="space-y-3 mt-2">
+                  <div className="text-base font-semibold text-foreground">
+                    {accountData.email}
+                  </div>
+                  {accountData.emailVerified && (
+                    <Badge
+                      className="bg-green-500/15 hover:bg-green-500/25 text-green-700 dark:text-green-400 border-green-500/30 text-xs font-medium px-3 py-1"
+                      variant="outline"
+                    >
+                      <CheckCircle2 className="mr-1.5 h-3.5 w-3.5" />
+                      Đã xác thực email
+                    </Badge>
+                  )}
+                  {!accountData.emailVerified && (
+                    <Badge
+                      className="bg-yellow-500/15 hover:bg-yellow-500/25 text-yellow-700 dark:text-yellow-400 border-yellow-500/30 text-xs font-medium px-3 py-1"
+                      variant="outline"
+                    >
+                      Chưa xác thực
+                    </Badge>
+                  )}
                 </div>
-                {accountData.emailVerified && (
-                  <Badge
-                    className="bg-green-500/10 hover:bg-green-500/20 text-green-700 dark:text-green-400 border-green-500/20 text-xs"
-                    variant="default"
-                  >
-                    <CheckCircle2 className="mr-1 h-3 w-3" />
-                    Đã xác thực
-                  </Badge>
-                )}
-              </div>
-            </FieldItem>
+              </FieldItem>
+            </Card>
 
             {accountData.emailVerified && (
-              <>
-                <Separator />
+              <Card className="p-4 border-border/50 bg-card/50 hover:bg-card transition-colors">
                 <FieldItem icon={Clock} label="Ngày xác thực email">
-                  <div className="text-sm font-medium text-foreground">
+                  <div className="text-base font-semibold text-foreground mt-1">
                     {formatDateVi(accountData.emailVerified)}
                   </div>
                 </FieldItem>
-              </>
+              </Card>
             )}
           </div>
         )
@@ -230,17 +322,21 @@ export function AccountProfileClient({
         return (
           <div className="space-y-6">
             <div className="grid gap-4 sm:grid-cols-2">
-              <FieldItem icon={Calendar} label="Ngày tạo">
-                <div className="text-sm font-medium text-foreground">
-                  {accountData.createdAt ? formatDateVi(accountData.createdAt) : "—"}
-                </div>
-              </FieldItem>
+              <Card className="p-4 border-border/50 bg-card/50 hover:bg-card transition-colors">
+                <FieldItem icon={Calendar} label="Ngày tạo tài khoản">
+                  <div className="text-base font-semibold text-foreground mt-1">
+                    {accountData.createdAt ? formatDateVi(accountData.createdAt) : <span className="text-muted-foreground italic">—</span>}
+                  </div>
+                </FieldItem>
+              </Card>
 
-              <FieldItem icon={Clock} label="Cập nhật lần cuối">
-                <div className="text-sm font-medium text-foreground">
-                  {accountData.updatedAt ? formatDateVi(accountData.updatedAt) : "—"}
-                </div>
-              </FieldItem>
+              <Card className="p-4 border-border/50 bg-card/50 hover:bg-card transition-colors">
+                <FieldItem icon={Clock} label="Cập nhật lần cuối">
+                  <div className="text-base font-semibold text-foreground mt-1">
+                    {accountData.updatedAt ? formatDateVi(accountData.updatedAt) : <span className="text-muted-foreground italic">—</span>}
+                  </div>
+                </FieldItem>
+              </Card>
             </div>
           </div>
         )
@@ -249,24 +345,33 @@ export function AccountProfileClient({
   ]
 
   return (
-    <ResourceDetailClient<AccountProfile>
-      data={account}
-      fields={detailFields}
-      detailSections={detailSections}
-      title="Thông tin tài khoản"
-      description="Quản lý thông tin cá nhân của bạn"
-      actions={
-        canUpdate ? (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Thông tin tài khoản</h1>
+          <p className="text-muted-foreground mt-1.5">Quản lý thông tin cá nhân và cài đặt tài khoản của bạn</p>
+        </div>
+        {canUpdate && (
           <Button
             variant="default"
             onClick={() => setIsEditing(true)}
-            className="gap-2"
+            className="gap-2 shadow-sm"
+            size="lg"
           >
             <Edit className="h-4 w-4" />
             Chỉnh sửa
           </Button>
-        ) : null
-      }
-    />
+        )}
+      </div>
+
+      <ResourceDetailClient<AccountProfile>
+        data={account}
+        fields={detailFields}
+        detailSections={detailSections}
+        title=""
+        description=""
+        actions={null}
+      />
+    </div>
   )
 }

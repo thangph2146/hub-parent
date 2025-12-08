@@ -1,12 +1,18 @@
 import type { ResourceFormField, ResourceFormSection } from "@/features/admin/resources/components"
 import React from "react"
-import { User, AlignLeft, Phone, MapPin, Lock, UserCircle } from "lucide-react"
+import { User, AlignLeft, Phone, MapPin, Lock, UserCircle, Building2, Navigation } from "lucide-react"
 
 export interface AccountFormData {
   name?: string | null
   bio?: string | null
   phone?: string | null
   address?: string | null
+  // Structured address fields (for form input)
+  addressStreet?: string | null
+  addressWard?: string | null
+  addressDistrict?: string | null
+  addressCity?: string | null
+  addressPostalCode?: string | null
   password?: string
   avatar?: string | null
   [key: string]: unknown
@@ -23,6 +29,11 @@ export function getAccountFormSections(): ResourceFormSection[] {
       id: "additional",
       title: "Thông tin bổ sung",
       description: "Các thông tin bổ sung",
+    },
+    {
+      id: "address",
+      title: "Địa chỉ",
+      description: "Thông tin địa chỉ chi tiết",
     },
     {
       id: "security",
@@ -69,12 +80,44 @@ export function getAccountFields(): ResourceFormField<AccountFormData>[] {
       section: "additional",
     },
     {
-      name: "address",
-      label: "Địa chỉ",
-      type: "textarea",
-      placeholder: "Nhập địa chỉ",
+      name: "addressStreet",
+      label: "Số nhà, Đường",
+      type: "text",
+      placeholder: "Ví dụ: 125 Đường Đỗ Uyên",
       icon: React.createElement(MapPin, { className: "h-4 w-4" }),
-      section: "additional",
+      section: "address",
+    },
+    {
+      name: "addressWard",
+      label: "Phường/Xã",
+      type: "text",
+      placeholder: "Ví dụ: Phường 2",
+      icon: React.createElement(Building2, { className: "h-4 w-4" }),
+      section: "address",
+    },
+    {
+      name: "addressDistrict",
+      label: "Quận/Huyện",
+      type: "text",
+      placeholder: "Ví dụ: Quận Hoàn Kiếm",
+      icon: React.createElement(Navigation, { className: "h-4 w-4" }),
+      section: "address",
+    },
+    {
+      name: "addressCity",
+      label: "Thành phố/Tỉnh",
+      type: "text",
+      placeholder: "Ví dụ: Hà Nội",
+      icon: React.createElement(MapPin, { className: "h-4 w-4" }),
+      section: "address",
+    },
+    {
+      name: "addressPostalCode",
+      label: "Mã bưu điện",
+      type: "text",
+      placeholder: "Ví dụ: 71593 (tùy chọn)",
+      icon: React.createElement(MapPin, { className: "h-4 w-4" }),
+      section: "address",
     },
     {
       name: "password",

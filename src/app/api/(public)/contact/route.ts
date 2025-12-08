@@ -8,6 +8,7 @@ import { prisma } from "@/lib/database"
 import { CreateContactRequestSchema } from "@/features/admin/contact-requests/server/schemas"
 import { createErrorResponse, createSuccessResponse } from "@/lib/config"
 import { notifySuperAdminsOfContactRequestAction } from "@/features/admin/contact-requests/server/notifications"
+import { logger } from "@/lib/config/logger"
 
 export async function POST(req: NextRequest) {
   try {
@@ -68,7 +69,7 @@ export async function POST(req: NextRequest) {
       { status: 201 }
     )
   } catch (error) {
-    console.error("[POST /api/contact] Error:", error)
+    logger.error("[POST /api/contact] Error:", { error })
 
     const errorMessage = error instanceof Error
       ? error.message

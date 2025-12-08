@@ -62,6 +62,11 @@ export function useResourceTableLogger<T extends object>({
     (dataToLog: DataTableResult<T>, viewId: string, viewStatus: string) => {
       if (!dataToLog) return false
 
+      // Đảm bảo rows là một array
+      if (!Array.isArray(dataToLog.rows)) {
+        return false
+      }
+
       if (dataToLog.rows.length > 0) {
         if (viewStatus === "deleted") {
           const allDeleted = dataToLog.rows.every((r) => {

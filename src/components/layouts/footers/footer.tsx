@@ -18,7 +18,7 @@ import Link from "next/link";
 import { appConfig } from "@/lib/config";
 import { appFeatures } from "@/lib/config/app-features";
 import { getResourceMainRoute } from "@/lib/permissions/route-helpers";
-import { Logo } from "../../../../public/svg/Logo";
+import { Logo } from "../../../../public/svg/Logo"
 
 /**
  * Helper function để lấy route từ appFeatures
