@@ -192,11 +192,22 @@ export async function getProductBySlug(slug: string): Promise<ProductDetail | nu
       relatedProductIds: (product as { relatedProductIds?: string[] }).relatedProductIds || [],
     }
   } catch (error) {
-    console.error("Error fetching product by slug:", error)
-    // Re-throw database connection errors
-    if (error instanceof Error && error.message.includes("Can't reach database server")) {
-      throw new Error("Không thể kết nối đến database. Vui lòng kiểm tra kết nối mạng hoặc liên hệ quản trị viên.")
+    console.error("[getProductBySlug] Error fetching product:", error)
+    
+    // Check for database connection errors
+    const isConnectionError = error instanceof Error && (
+      error.message.includes("Can't reach database server") ||
+      error.message.includes("P1001") ||
+      error.message.includes("connection")
+    )
+    
+    if (isConnectionError) {
+      console.error("[getProductBySlug] Database connection error - returning null instead of throwing")
+      // Return null instead of throwing to allow graceful degradation
+      // The error.tsx will handle this if needed
+      return null
     }
+    
     // For other errors, return null to indicate product not found
     return null
   }

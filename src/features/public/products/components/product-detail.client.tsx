@@ -162,6 +162,10 @@ export function ProductDetailClient({ product: initialProduct, relatedProducts =
     [product.images, selectedImageIndex, primaryImage]
   )
 
+  // Navigation state
+  const canNavigatePrev = selectedImageIndex > 0
+  const canNavigateNext = selectedImageIndex < product.images.length - 1
+
   // Handle set primary image
   const handleSetPrimary = useCallback(async (imageId: string) => {
     if (!canManageProducts || isSettingPrimary) return
@@ -296,19 +300,31 @@ export function ProductDetailClient({ product: initialProduct, relatedProducts =
     }
   }, [getScrollElement, debouncedUpdateScroll, updateScrollButtons])
 
+  // Navigate to prev/next image
+  const handleNavigateImage = useCallback((direction: "prev" | "next") => {
+    const newIndex = direction === "prev"
+      ? Math.max(0, selectedImageIndex - 1)
+      : Math.min(product.images.length - 1, selectedImageIndex + 1)
+    
+    if (newIndex !== selectedImageIndex) {
+      setSelectedImageIndex(product.id, newIndex)
+      const scrollElement = getScrollElement()
+      if (scrollElement) {
+        const imageContainer = scrollElement.querySelector('.flex.gap-2') as HTMLElement
+        const thumbnail = imageContainer?.children[newIndex] as HTMLElement
+        thumbnail?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" })
+      }
+    }
+  }, [selectedImageIndex, product.images.length, product.id, setSelectedImageIndex, getScrollElement])
+
   // Update selected image when clicking on thumbnail
   const handleThumbnailClick = useCallback((index: number) => {
     setSelectedImageIndex(product.id, index)
-    // Scroll thumbnail into view if needed
     const scrollElement = getScrollElement()
     if (scrollElement) {
       const imageContainer = scrollElement.querySelector('.flex.gap-2') as HTMLElement
-      if (imageContainer) {
-        const thumbnail = imageContainer.children[index] as HTMLElement
-        if (thumbnail) {
-          thumbnail.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" })
-        }
-      }
+      const thumbnail = imageContainer?.children[index] as HTMLElement
+      thumbnail?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" })
     }
   }, [product.id, setSelectedImageIndex, getScrollElement])
 
@@ -382,19 +398,78 @@ export function ProductDetailClient({ product: initialProduct, relatedProducts =
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
         {/* Product Images */}
         <div className="space-y-4">
-          <div className="relative w-full aspect-square">
+          <div className="relative w-full aspect-square group">
             {displayImage ? (
-              <Image
-                src={displayImage.url}
-                alt={displayImage.alt || product.name}
-                fill
-                sizes="(max-width: 768px) 100vw, 50vw"
-                loading="eager"
-                priority
-                quality={95}
-                className="object-cover rounded-lg"
-                unoptimized={displayImage.url.includes("cellphones.com.vn") || displayImage.url.includes("cdn")}
-              />
+              <>
+                <Image
+                  src={displayImage.url}
+                  alt={displayImage.alt || product.name}
+                  fill
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                  loading="eager"
+                  priority
+                  quality={95}
+                  className="object-cover rounded-lg"
+                  unoptimized={displayImage.url.includes("cellphones.com.vn") || displayImage.url.includes("cdn")}
+                />
+                
+                {/* Navigation buttons */}
+                {product.images.length > 1 && (
+                  <>
+                    {canNavigatePrev && (
+                      <Button
+                        variant="secondary"
+                        size="icon"
+                        className="absolute left-2 top-1/2 -translate-y-1/2 h-10 w-10 backdrop-blur-sm shadow-lg opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                        onClick={() => handleNavigateImage("prev")}
+                        aria-label="Ảnh trước"
+                      >
+                        <ChevronLeft className="h-5 w-5" />
+                      </Button>
+                    )}
+                    {canNavigateNext && (
+                      <Button
+                        variant="secondary"
+                        size="icon"
+                        className="absolute right-2 top-1/2 -translate-y-1/2 h-10 w-10 backdrop-blur-sm shadow-lg opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                        onClick={() => handleNavigateImage("next")}
+                        aria-label="Ảnh sau"
+                      >
+                        <ChevronRight className="h-5 w-5" />
+                      </Button>
+                    )}
+                  </>
+                )}
+
+                {/* Primary badge */}
+                {displayImage.isPrimary && (
+                  <div className="absolute top-2 right-2 bg-primary text-primary-foreground rounded-full px-2 py-1 text-xs font-medium flex items-center gap-1">
+                    <Star className="h-3 w-3 fill-current" />
+                    Ảnh chính
+                  </div>
+                )}
+
+                {/* Set primary button (admin only) */}
+                {canManageProducts && !displayImage.isPrimary && (
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-sm shadow-lg"
+                    onClick={() => handleSetPrimary(displayImage.id)}
+                    disabled={isSettingPrimary}
+                    aria-label="Đặt làm ảnh chính"
+                  >
+                    {isSettingPrimary ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <>
+                        <Star className="h-4 w-4 mr-1" />
+                        Đặt làm ảnh chính
+                      </>
+                    )}
+                  </Button>
+                )}
+              </>
             ) : (
               <div className="w-full h-full bg-muted rounded-lg flex items-center justify-center">
                 <span className="text-muted-foreground">No Image</span>
