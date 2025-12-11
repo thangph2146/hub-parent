@@ -3,10 +3,8 @@
 import {
   Users,
   MessageSquare,
-  Bell,
   ArrowRight,
   GraduationCap,
-  Check,
   Phone,
   Mail,
 } from "lucide-react";

@@ -49,12 +49,4 @@ export const authApi = {
     await signOut({ callbackUrl: "/auth/sign-in" })
   },
 
-  // DEPRECATED: Use NextAuth useSession hook instead of API call
-  // This method is kept for backward compatibility only
-  // TODO: Remove this method and use useSession hook instead
-  getCurrentUser: async () => {
-    // Note: This endpoint may not exist. Use useSession hook instead.
-    const response = await apiClient.get(apiRoutes.auth.session)
-    return response.data
-  },
 } as const

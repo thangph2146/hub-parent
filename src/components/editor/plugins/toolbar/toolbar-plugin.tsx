@@ -6,7 +6,7 @@ import { COMMAND_PRIORITY_CRITICAL, SELECTION_CHANGE_COMMAND } from "lexical"
 
 import { ToolbarContext } from "@/components/editor/context/toolbar-context"
 import { useEditorModal } from "@/components/editor/editor-hooks/use-modal"
-import { cn } from "@/lib/utils/utils"
+import { cn } from "@/lib/utils"
 
 export function ToolbarPlugin({
   children,

@@ -180,16 +180,7 @@ export async function handleMutationRequest<TInput, TOutput>(
   const ctx = await createMutationContext(session)
   
   // Type-safe body parsing
-  let input: TInput
-  if (parseBody) {
-    input = parseBody(body)
-  } else {
-    // Runtime type check for safety
-    if (typeof body !== "object" || body === null) {
-      return createErrorResponse("Dữ liệu không hợp lệ: body phải là object", { status: 400 })
-    }
-    input = body as TInput
-  }
+  const input: TInput = parseBody ? parseBody(body) : (body as TInput)
   
   const result = await mutationFn(ctx, input)
 
