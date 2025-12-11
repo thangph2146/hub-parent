@@ -143,10 +143,22 @@ function validateAuthConfig() {
       logger.warn("📝 Please set NEXTAUTH_SECRET in your .env.local file")
       logger.warn("🔑 Generate a secret with: openssl rand -base64 32")
     }
+    
+    // Validate NEXTAUTH_URL
+    if (process.env.NEXTAUTH_URL) {
+      logger.info("✅ NEXTAUTH_URL is set", { url: process.env.NEXTAUTH_URL })
+    } else {
+      logger.warn("⚠️  NEXTAUTH_URL is not set! NextAuth will use request headers (trustHost).")
+      logger.warn("📝 Please set NEXTAUTH_URL in your environment variables")
+      logger.warn("🌐 Example: NEXTAUTH_URL=https://chame.hub.edu.vn")
+    }
   }
 }
 
 export const authConfig: NextAuthConfig = {
+  // trustHost: true allows NextAuth to use request headers
+  // However, if NEXTAUTH_URL is set, it will take precedence
+  // This ensures consistent domain usage even with reverse proxies or load balancers
   trustHost: true, // Important for Next.js 16
   // Adapter chỉ dùng khi cần database session, không dùng với JWT
   // adapter: PrismaAdapter(prisma) as any,
