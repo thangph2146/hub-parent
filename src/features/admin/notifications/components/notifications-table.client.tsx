@@ -169,7 +169,7 @@ export function NotificationsTableClient({
       limit,
       search,
       filters,
-      status,
+      status: _status,
     }: {
       page: number
       limit: number

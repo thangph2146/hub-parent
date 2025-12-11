@@ -648,7 +648,7 @@ export const authConfig: NextAuthConfig = {
       
       try {
         const nextAuthBaseUrl = new URL(nextAuthUrl)
-        const baseUrlObj = new URL(baseUrl)
+        const _baseUrlObj = new URL(baseUrl)
         
         // Nếu url là relative path, tạo absolute URL với NEXTAUTH_URL
         if (url.startsWith("/")) {
