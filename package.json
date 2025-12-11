@@ -11,7 +11,8 @@
     "start": "prisma generate && next start",
     "lint": "eslint",
     "db:push": "prisma db push",
-    "db:generate": "prisma generate"
+    "db:generate": "prisma generate",
+    "fix:prisma": "rm -rf node_modules/.pnpm/@prisma+client* node_modules/@prisma/client node_modules/.prisma && prisma generate"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
