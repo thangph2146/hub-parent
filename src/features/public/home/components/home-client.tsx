@@ -116,7 +116,7 @@ export function HomeClient({}: HomeClientProps) {
 
       {/* Registration Form Section */}
       <Section
-        padding="py-16 sm:py-20 lg:py-24"
+        padding="py-12"
         background="bg-background"
       >
         <ContactSection

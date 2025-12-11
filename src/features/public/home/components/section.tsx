@@ -20,7 +20,7 @@ export function Section({
     <section className={cn(padding, background, className)}>
       <div
         className={cn(
-          "container mx-auto px-4 sm:px-6 lg:px-8",
+          "container mx-auto flex flex-col gap-12 px-4 sm:px-6 lg:px-8",
           containerClassName
         )}
       >

@@ -122,8 +122,19 @@ async function handleRequest(
       const location = response.headers.get("location")
       
       // Log chi tiết cho error redirects
-      const hasError = location?.includes("error=")
-      const errorType = location ? new URL(location).searchParams.get("error") : null
+      let hasError = false
+      let errorType: string | null = null
+      
+      if (location) {
+        try {
+          const locationUrl = new URL(location)
+          hasError = locationUrl.searchParams.has("error")
+          errorType = locationUrl.searchParams.get("error")
+        } catch {
+          // Nếu không parse được URL, kiểm tra string
+          hasError = location.includes("error=")
+        }
+      }
       
       logger.info("NextAuth redirect response", {
         status: response.status,
@@ -135,10 +146,11 @@ async function handleRequest(
         hasError,
         errorType,
         requestHost: req.headers.get("host"),
+        nextAuthUrl: process.env.NEXTAUTH_URL,
       })
       
       // Đặc biệt log cho error redirects
-      if (hasError) {
+      if (hasError && errorType) {
         logger.warn("NextAuth error redirect detected", {
           location,
           errorType,
@@ -147,6 +159,26 @@ async function handleRequest(
           requestHost: req.headers.get("host"),
           nextAuthUrl: process.env.NEXTAUTH_URL,
         })
+        
+        // Nếu là Configuration error, log thêm thông tin
+        if (errorType === "Configuration") {
+          logger.error("NextAuth Configuration error - possible causes:", {
+            location,
+            pathname,
+            isCallback,
+            requestHost: req.headers.get("host"),
+            nextAuthUrl: process.env.NEXTAUTH_URL,
+            hasNextAuthSecret: !!process.env.NEXTAUTH_SECRET,
+            hasGoogleClientId: !!process.env.GOOGLE_CLIENT_ID,
+            hasGoogleClientSecret: !!process.env.GOOGLE_CLIENT_SECRET,
+            possibleCauses: [
+              "NEXTAUTH_SECRET không đúng hoặc chưa set",
+              "Google OAuth credentials không đúng",
+              "Callback URL trong Google Cloud Console không khớp",
+              "Domain mismatch trong callback request",
+            ],
+          })
+        }
       }
       
       if (location && process.env.NEXTAUTH_URL) {
