@@ -177,7 +177,7 @@ export function PublicHeader() {
             <Logo className="h-10 w-10 text-blue-100" />
           </Link>
           <div>
-            <h3 className="text-md text-center font-bold text-foreground">
+            <h3 className="text-sm md:text-md text-center font-bold text-foreground">
               Trường Đại học Ngân hàng
             </h3>
             <p className="text-sm font-medium">Thành Phố Hồ Chí Minh</p>
