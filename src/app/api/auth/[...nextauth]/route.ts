@@ -11,6 +11,57 @@ async function handleRequest(
   req: NextRequest
 ): Promise<Response> {
   try {
+    // Log để debug URL và headers
+    const requestHost = req.headers.get("host")
+    const requestUrl = req.url
+    logger.debug("NextAuth request", {
+      requestHost,
+      requestUrl,
+      nextAuthUrl: process.env.NEXTAUTH_URL,
+      hasNextAuthUrl: !!process.env.NEXTAUTH_URL,
+    })
+    
+    // Force sử dụng NEXTAUTH_URL từ env nếu có
+    // Điều này đảm bảo redirect URI luôn sử dụng đúng domain
+    if (process.env.NEXTAUTH_URL) {
+      const nextAuthUrl = new URL(process.env.NEXTAUTH_URL)
+      const currentUrl = new URL(req.url)
+      
+      // Chỉ override nếu domain khác nhau
+      if (currentUrl.host !== nextAuthUrl.host) {
+        logger.warn("NextAuth domain mismatch detected", {
+          requestHost: currentUrl.host,
+          expectedHost: nextAuthUrl.host,
+          nextAuthUrl: process.env.NEXTAUTH_URL,
+        })
+        
+        // Override Host header để đảm bảo NextAuth sử dụng đúng domain
+        req.headers.set("host", nextAuthUrl.host)
+        req.headers.set("x-forwarded-host", nextAuthUrl.host)
+        req.headers.set("x-forwarded-proto", nextAuthUrl.protocol.slice(0, -1)) // Remove ':'
+        
+        // Update request URL để đảm bảo đúng domain
+        currentUrl.host = nextAuthUrl.host
+        currentUrl.protocol = nextAuthUrl.protocol
+        
+        req = new NextRequest(currentUrl.toString(), {
+          method: req.method,
+          headers: req.headers,
+          body: req.body,
+        })
+        
+        logger.info("NextAuth request URL overridden", {
+          originalHost: requestHost,
+          newHost: nextAuthUrl.host,
+        })
+      }
+    } else {
+      logger.warn("NEXTAUTH_URL not set! NextAuth will use request headers (trustHost)", {
+        requestHost,
+        requestUrl,
+      })
+    }
+    
     const response = await handler(req)
     
     // Kiểm tra nếu là redirect response (3xx status) - giữ nguyên
