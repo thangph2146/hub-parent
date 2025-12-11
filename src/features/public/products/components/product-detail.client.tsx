@@ -7,14 +7,21 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
-import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react"
+import { ChevronLeft, ChevronRight, Loader2, Star } from "lucide-react"
 import type { ProductDetail, Product } from "../types"
 import { useCart } from "@/features/public/cart/hooks"
 import { Editor } from "@/components/editor/editor-x/editor"
 import { SerializedEditorState } from "lexical"
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { useProductImageStore } from "../store/product-image-store"
 import { useDebouncedCallback } from "@/hooks/use-debounced-callback"
+import { usePermissions } from "@/hooks/use-permissions"
+import { PERMISSIONS } from "@/lib/permissions"
+import { apiClient } from "@/lib/api/api-client"
+import { apiRoutes } from "@/lib/api/routes"
+import { useToast } from "@/hooks/use-toast"
+import { ProductVariantsSection } from "./product-variants-section"
+import { ProductInfoSections } from "./product-info-sections"
+import { RelatedProductsSection } from "./related-products-section"
 
 export interface ProductDetailClientProps {
   product: ProductDetail
@@ -23,40 +30,96 @@ export interface ProductDetailClientProps {
 
 // Memoized thumbnail component to prevent unnecessary re-renders
 const ProductThumbnail = memo<{
-  image: { id: string; url: string; alt?: string | null }
+  image: { id: string; url: string; alt?: string | null; isPrimary?: boolean }
   index: number
   productName: string
   isSelected: boolean
+  isPrimary: boolean
+  canSetPrimary: boolean
   onClick: (index: number) => void
-}>(({ image, index, productName, isSelected, onClick }) => {
+  onSetPrimary?: (imageId: string) => void
+}>(({ image, index, productName, isSelected, isPrimary, canSetPrimary, onClick, onSetPrimary }) => {
   return (
-    <button
-      onClick={() => onClick(index)}
-      className={`relative my-4 mx-1 flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all duration-200 ${
-        isSelected
-          ? "border-primary ring-2 ring-primary/20 scale-105"
-          : "border-transparent hover:border-muted-foreground/50"
-      }`}
-    >
-      <Image
-        src={image.url}
-        alt={image.alt || productName}
-        fill
-        sizes="80px"
-        quality={90}
-        className="object-cover transition-transform duration-200 hover:scale-110"
-        unoptimized={image.url.includes("cellphones.com.vn") || image.url.includes("cdn")}
-      />
-    </button>
+    <div className="relative my-4 mx-1 flex-shrink-0">
+      <button
+        onClick={() => onClick(index)}
+        className={`relative w-20 h-20 rounded-lg overflow-hidden border-2 transition-all duration-200 ${
+          isSelected
+            ? "border-primary ring-2 ring-primary/20 scale-105"
+            : "border-transparent hover:border-muted-foreground/50"
+        }`}
+      >
+        <Image
+          src={image.url}
+          alt={image.alt || productName}
+          fill
+          sizes="80px"
+          quality={90}
+          className="object-cover transition-transform duration-200 hover:scale-110"
+          unoptimized={image.url.includes("cellphones.com.vn") || image.url.includes("cdn")}
+        />
+        {isPrimary && (
+          <div className="absolute top-1 right-1 bg-primary text-primary-foreground rounded-full p-1">
+            <Star className="h-3 w-3 fill-current" />
+          </div>
+        )}
+      </button>
+      {canSetPrimary && !isPrimary && onSetPrimary && (
+        <Button
+          variant="ghost"
+          size="icon"
+          className="absolute top-1 right-1 h-6 w-6 backdrop-blur-sm shadow-sm hover:bg-background"
+          onClick={(e) => {
+            e.stopPropagation()
+            onSetPrimary(image.id)
+          }}
+          aria-label="Đặt làm ảnh chính"
+          title="Đặt làm ảnh chính"
+        >
+          <Star className="h-3 w-3 text-muted-foreground hover:text-primary" />
+        </Button>
+      )}
+    </div>
   )
 })
 ProductThumbnail.displayName = "ProductThumbnail"
 
-export function ProductDetailClient({ product, relatedProducts = [] }: ProductDetailClientProps) {
+export function ProductDetailClient({ product: initialProduct, relatedProducts = [] }: ProductDetailClientProps) {
   const router = useRouter()
   const [quantity, setQuantity] = useState(1)
+  const [product, setProduct] = useState(initialProduct)
+  const [isSettingPrimary, setIsSettingPrimary] = useState(false)
+  const [selectedVariants, setSelectedVariants] = useState<Record<string, string>>({})
   const { addToCart, isAddingToCart } = useCart()
+  const { toast } = useToast()
+  const { hasPermission } = usePermissions()
   const imageScrollRef = useRef<HTMLDivElement>(null)
+  
+  // Check if user can manage products
+  const canManageProducts = hasPermission(PERMISSIONS.PRODUCTS_MANAGE) || hasPermission(PERMISSIONS.PRODUCTS_UPDATE)
+
+  // Group variants by type
+  const variantsByType = useMemo(() => {
+    const variants = product.variants
+    if (!variants || variants.length === 0) return {}
+    return variants.reduce((acc, variant) => {
+      if (!acc[variant.type]) acc[variant.type] = []
+      acc[variant.type].push(variant)
+      return acc
+    }, {} as Record<string, typeof variants>)
+  }, [product.variants])
+
+  // Initialize selected variants with defaults
+  useEffect(() => {
+    if (product.variants && product.variants.length > 0) {
+      const defaults: Record<string, string> = {}
+      Object.keys(variantsByType).forEach((type) => {
+        const defaultVariant = variantsByType[type]?.find((v) => v.isDefault) || variantsByType[type]?.[0]
+        if (defaultVariant) defaults[type] = defaultVariant.id
+      })
+      setSelectedVariants(defaults)
+    }
+  }, [product.variants, variantsByType])
   
   // Zustand store for image state
   const selectedImageIndex = useProductImageStore(
@@ -124,6 +187,36 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
     () => product.images[selectedImageIndex] || primaryImage,
     [product.images, selectedImageIndex, primaryImage]
   )
+
+  // Navigation state
+  const canNavigatePrev = selectedImageIndex > 0
+  const canNavigateNext = selectedImageIndex < product.images.length - 1
+
+  // Handle set primary image
+  const handleSetPrimary = useCallback(async (imageId: string) => {
+    if (!canManageProducts || isSettingPrimary) return
+
+    setIsSettingPrimary(true)
+    try {
+      const response = await apiClient.post(apiRoutes.products.setPrimaryImage(product.id, imageId))
+      
+      if (response.data?.success && response.data?.data) {
+        setProduct((prev) => ({
+          ...prev,
+          images: response.data.data.images || prev.images,
+        }))
+        toast({ title: "Thành công", description: "Đã đặt làm ảnh chính" })
+      }
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Lỗi",
+        description: error instanceof Error ? error.message : "Không thể đặt ảnh chính",
+      })
+    } finally {
+      setIsSettingPrimary(false)
+    }
+  }, [canManageProducts, isSettingPrimary, product.id, toast])
 
   // Preload all images on mount
   useEffect(() => {
@@ -233,19 +326,31 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
     }
   }, [getScrollElement, debouncedUpdateScroll, updateScrollButtons])
 
+  // Navigate to prev/next image
+  const handleNavigateImage = useCallback((direction: "prev" | "next") => {
+    const newIndex = direction === "prev"
+      ? Math.max(0, selectedImageIndex - 1)
+      : Math.min(product.images.length - 1, selectedImageIndex + 1)
+    
+    if (newIndex !== selectedImageIndex) {
+      setSelectedImageIndex(product.id, newIndex)
+      const scrollElement = getScrollElement()
+      if (scrollElement) {
+        const imageContainer = scrollElement.querySelector('.flex.gap-2') as HTMLElement
+        const thumbnail = imageContainer?.children[newIndex] as HTMLElement
+        thumbnail?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" })
+      }
+    }
+  }, [selectedImageIndex, product.images.length, product.id, setSelectedImageIndex, getScrollElement])
+
   // Update selected image when clicking on thumbnail
   const handleThumbnailClick = useCallback((index: number) => {
     setSelectedImageIndex(product.id, index)
-    // Scroll thumbnail into view if needed
     const scrollElement = getScrollElement()
     if (scrollElement) {
       const imageContainer = scrollElement.querySelector('.flex.gap-2') as HTMLElement
-      if (imageContainer) {
-        const thumbnail = imageContainer.children[index] as HTMLElement
-        if (thumbnail) {
-          thumbnail.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" })
-        }
-      }
+      const thumbnail = imageContainer?.children[index] as HTMLElement
+      thumbnail?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" })
     }
   }, [product.id, setSelectedImageIndex, getScrollElement])
 
@@ -272,6 +377,7 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
       router.push("/checkout")
     }, 500)
   }, [product.stock, product.id, quantity, addToCart, router, isAddingToCart])
+
 
   const scrollImages = useCallback((direction: "left" | "right") => {
     const scrollElement = getScrollElement()
@@ -319,19 +425,78 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
         {/* Product Images */}
         <div className="space-y-4">
-          <div className="relative w-full aspect-square">
+          <div className="relative w-full aspect-square group">
             {displayImage ? (
-              <Image
-                src={displayImage.url}
-                alt={displayImage.alt || product.name}
-                fill
-                sizes="(max-width: 768px) 100vw, 50vw"
-                loading="eager"
-                priority
-                quality={95}
-                className="object-cover rounded-lg"
-                unoptimized={displayImage.url.includes("cellphones.com.vn") || displayImage.url.includes("cdn")}
-              />
+              <>
+                <Image
+                  src={displayImage.url}
+                  alt={displayImage.alt || product.name}
+                  fill
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                  loading="eager"
+                  priority
+                  quality={95}
+                  className="object-cover rounded-lg"
+                  unoptimized={displayImage.url.includes("cellphones.com.vn") || displayImage.url.includes("cdn")}
+                />
+                
+                {/* Navigation buttons */}
+                {product.images.length > 1 && (
+                  <>
+                    {canNavigatePrev && (
+                      <Button
+                        variant="secondary"
+                        size="icon"
+                        className="absolute left-2 top-1/2 -translate-y-1/2 h-10 w-10 backdrop-blur-sm shadow-lg opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                        onClick={() => handleNavigateImage("prev")}
+                        aria-label="Ảnh trước"
+                      >
+                        <ChevronLeft className="h-5 w-5" />
+                      </Button>
+                    )}
+                    {canNavigateNext && (
+                      <Button
+                        variant="secondary"
+                        size="icon"
+                        className="absolute right-2 top-1/2 -translate-y-1/2 h-10 w-10 backdrop-blur-sm shadow-lg opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                        onClick={() => handleNavigateImage("next")}
+                        aria-label="Ảnh sau"
+                      >
+                        <ChevronRight className="h-5 w-5" />
+                      </Button>
+                    )}
+                  </>
+                )}
+
+                {/* Primary badge */}
+                {displayImage.isPrimary && (
+                  <div className="absolute top-2 right-2 bg-primary text-primary-foreground rounded-full px-2 py-1 text-xs font-medium flex items-center gap-1">
+                    <Star className="h-3 w-3 fill-current" />
+                    Ảnh chính
+                  </div>
+                )}
+
+                {/* Set primary button (admin only) */}
+                {canManageProducts && !displayImage.isPrimary && (
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-sm shadow-lg"
+                    onClick={() => handleSetPrimary(displayImage.id)}
+                    disabled={isSettingPrimary}
+                    aria-label="Đặt làm ảnh chính"
+                  >
+                    {isSettingPrimary ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <>
+                        <Star className="h-4 w-4 mr-1" />
+                        Đặt làm ảnh chính
+                      </>
+                    )}
+                  </Button>
+                )}
+              </>
             ) : (
               <div className="w-full h-full bg-muted rounded-lg flex items-center justify-center">
                 <span className="text-muted-foreground">No Image</span>
@@ -345,7 +510,7 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
                 <Button
                   variant="outline"
                   size="icon"
-                  className="absolute left-2 top-1/2 -translate-y-1/2 z-10 h-8 w-8 bg-background/80 backdrop-blur-sm shadow-md"
+                  className="absolute left-2 top-1/2 -translate-y-1/2 z-10 h-8 w-8 backdrop-blur-sm shadow-md"
                   onClick={() => scrollImages("left")}
                   aria-label="Scroll left"
                 >
@@ -356,7 +521,7 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
                 <Button
                   variant="outline"
                   size="icon"
-                  className="absolute right-2 top-1/2 -translate-y-1/2 z-10 h-8 w-8 bg-background/80 backdrop-blur-sm shadow-md"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 z-10 h-8 w-8 backdrop-blur-sm shadow-md"
                   onClick={() => scrollImages("right")}
                   aria-label="Scroll right"
                 >
@@ -379,7 +544,10 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
                       index={index}
                       productName={product.name}
                       isSelected={selectedImageIndex === index}
+                      isPrimary={image.isPrimary}
+                      canSetPrimary={canManageProducts && !isSettingPrimary}
                       onClick={handleThumbnailClick}
+                      onSetPrimary={canManageProducts ? handleSetPrimary : undefined}
                     />
                   ))}
                 </div>
@@ -458,6 +626,18 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
               )}
             </div>
           )}
+
+          <Separator />
+
+          {/* Product Variants */}
+          <ProductVariantsSection
+            variantsByType={variantsByType}
+            selectedVariants={selectedVariants}
+            onVariantSelect={(type, variantId) => setSelectedVariants((prev) => ({ ...prev, [type]: variantId }))}
+          />
+
+          {/* Product Info Sections */}
+          <ProductInfoSections product={product} />
 
           <Separator />
 
@@ -541,65 +721,7 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
         <div className="mt-12 md:mt-16">
           <Separator className="mb-6 md:mb-8" />
           <h2 className="text-2xl md:text-3xl font-bold mb-6 md:mb-8">Sản phẩm liên quan</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
-            {relatedProducts.map((relatedProduct) => {
-              const primaryImage = relatedProduct.images?.find((img) => img.isPrimary) || relatedProduct.images?.[0]
-              const price = parseFloat(relatedProduct.price)
-              const comparePrice = relatedProduct.compareAtPrice ? parseFloat(relatedProduct.compareAtPrice) : null
-
-              return (
-                <Card key={relatedProduct.id} className="flex flex-col hover:shadow-lg transition-shadow">
-                  <Link href={`/san-pham/${relatedProduct.slug}`} className="flex flex-col flex-1">
-                    <CardHeader className="p-0">
-                      {primaryImage ? (
-                        <div className="relative w-full aspect-square overflow-hidden">
-                          <Image
-                            src={primaryImage.url}
-                            alt={primaryImage.alt || relatedProduct.name}
-                            fill
-                            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
-                            className="object-cover rounded-t-lg transition-transform hover:scale-105"
-                            quality={85}
-                            unoptimized={primaryImage.url.includes("cellphones.com.vn") || primaryImage.url.includes("cdn")}
-                          />
-                        </div>
-                      ) : (
-                        <div className="w-full aspect-square bg-muted rounded-t-lg flex items-center justify-center">
-                          <span className="text-muted-foreground text-xs">No Image</span>
-                        </div>
-                      )}
-                    </CardHeader>
-                    <CardContent className="flex-1 p-3">
-                      <CardTitle className="text-sm mb-2 line-clamp-2 min-h-[2.5rem]">
-                        {relatedProduct.name}
-                      </CardTitle>
-                      <div className="flex flex-col gap-1">
-                        <span className="text-sm font-bold">
-                          {new Intl.NumberFormat("vi-VN", {
-                            style: "currency",
-                            currency: "VND",
-                          }).format(price)}
-                        </span>
-                        {comparePrice && comparePrice > price && (
-                          <span className="text-xs text-muted-foreground line-through">
-                            {new Intl.NumberFormat("vi-VN", {
-                              style: "currency",
-                              currency: "VND",
-                            }).format(comparePrice)}
-                          </span>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Link>
-                  <CardFooter className="p-3 pt-0">
-                    <Button asChild variant="outline" size="sm" className="w-full text-xs">
-                      <Link href={`/san-pham/${relatedProduct.slug}`}>Xem chi tiết</Link>
-                    </Button>
-                  </CardFooter>
-                </Card>
-              )
-            })}
-          </div>
+          <RelatedProductsSection products={relatedProducts} />
         </div>
       )}
     </div>

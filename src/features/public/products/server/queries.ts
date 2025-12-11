@@ -158,6 +158,12 @@ export async function getProductBySlug(slug: string): Promise<ProductDetail | nu
             },
           },
         },
+        variants: {
+          orderBy: [
+            { type: "asc" },
+            { order: "asc" },
+          ],
+        },
       },
     })
 
@@ -189,14 +195,41 @@ export async function getProductBySlug(slug: string): Promise<ProductDetail | nu
         name: pc.category.name,
         slug: pc.category.slug,
       })),
+      variants: product.variants.map((v) => ({
+        id: v.id,
+        name: v.name,
+        value: v.value,
+        type: v.type,
+        price: v.price?.toString() || null,
+        sku: v.sku,
+        stock: v.stock,
+        imageUrl: v.imageUrl,
+        order: v.order,
+        isDefault: v.isDefault,
+      })),
+      shippingInfo: product.shippingInfo as unknown as ProductDetail["shippingInfo"],
+      promotionBanner: product.promotionBanner,
+      branchAvailability: product.branchAvailability as unknown as ProductDetail["branchAvailability"],
+      paymentPromotion: product.paymentPromotion as unknown as ProductDetail["paymentPromotion"],
       relatedProductIds: (product as { relatedProductIds?: string[] }).relatedProductIds || [],
     }
   } catch (error) {
-    console.error("Error fetching product by slug:", error)
-    // Re-throw database connection errors
-    if (error instanceof Error && error.message.includes("Can't reach database server")) {
-      throw new Error("Không thể kết nối đến database. Vui lòng kiểm tra kết nối mạng hoặc liên hệ quản trị viên.")
+    console.error("[getProductBySlug] Error fetching product:", error)
+    
+    // Check for database connection errors
+    const isConnectionError = error instanceof Error && (
+      error.message.includes("Can't reach database server") ||
+      error.message.includes("P1001") ||
+      error.message.includes("connection")
+    )
+    
+    if (isConnectionError) {
+      console.error("[getProductBySlug] Database connection error - returning null instead of throwing")
+      // Return null instead of throwing to allow graceful degradation
+      // The error.tsx will handle this if needed
+      return null
     }
+    
     // For other errors, return null to indicate product not found
     return null
   }
