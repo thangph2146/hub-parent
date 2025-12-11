@@ -146,6 +146,15 @@ function validateAuthConfig() {
     
     // Validate NEXTAUTH_URL
     if (process.env.NEXTAUTH_URL) {
+      // Normalize NEXTAUTH_URL - remove trailing slash
+      const normalizedUrl = process.env.NEXTAUTH_URL.replace(/\/$/, "")
+      if (normalizedUrl !== process.env.NEXTAUTH_URL) {
+        process.env.NEXTAUTH_URL = normalizedUrl
+        logger.info("✅ NEXTAUTH_URL normalized (removed trailing slash)", { 
+          original: process.env.NEXTAUTH_URL + "/",
+          normalized: normalizedUrl 
+        })
+      }
       logger.info("✅ NEXTAUTH_URL is set", { url: process.env.NEXTAUTH_URL })
     } else {
       logger.warn("⚠️  NEXTAUTH_URL is not set! NextAuth will use request headers (trustHost).")
@@ -236,13 +245,31 @@ export const authConfig: NextAuthConfig = {
     }),
   ],
   callbacks: {
-    async signIn({ user, account }) {
+    async signIn({ user, account, profile }) {
+      logger.debug("NextAuth signIn callback triggered", {
+        hasUser: !!user,
+        userEmail: user?.email,
+        provider: account?.provider,
+        accountType: account?.type,
+        hasProfile: !!profile,
+      })
+      
       if (!user?.email) {
+        logger.warn("NextAuth signIn callback: user email missing", {
+          hasUser: !!user,
+          provider: account?.provider,
+        })
         return false
       }
 
       try {
         const normalizedEmail = user.email.toLowerCase()
+        
+        logger.debug("NextAuth signIn: looking up user", {
+          email: normalizedEmail,
+          originalEmail: user.email,
+          provider: account?.provider,
+        })
         
         // Tìm user bao gồm cả user đã bị xóa để kiểm tra
         // Sử dụng findFirst với where rõ ràng để đảm bảo tìm được cả user bị xóa
@@ -522,7 +549,12 @@ export const authConfig: NextAuthConfig = {
 
         return true
       } catch (error) {
-        logger.error("Error in signIn callback", error instanceof Error ? error : new Error(String(error)))
+        logger.error("Error in signIn callback", {
+          error: error instanceof Error ? error.message : String(error),
+          errorStack: error instanceof Error ? error.stack : undefined,
+          userEmail: user?.email,
+          provider: account?.provider,
+        })
         return false
       }
     },
@@ -610,11 +642,94 @@ export const authConfig: NextAuthConfig = {
       }
       return session
     },
-  },
-  pages: {
-    signIn: "/auth/sign-in",
-    signOut: "/auth/sign-in",
-    error: "/auth/sign-in",
+    async redirect({ url, baseUrl }) {
+      // Force sử dụng NEXTAUTH_URL từ env
+      const nextAuthUrl = process.env.NEXTAUTH_URL?.replace(/\/$/, "") || baseUrl
+      
+      try {
+        const nextAuthBaseUrl = new URL(nextAuthUrl)
+        const baseUrlObj = new URL(baseUrl)
+        
+        logger.debug("NextAuth redirect callback", {
+          url,
+          baseUrl,
+          nextAuthUrl,
+          baseUrlHost: baseUrlObj.host,
+          nextAuthHost: nextAuthBaseUrl.host,
+          urlStartsWithSlash: url.startsWith("/"),
+        })
+        
+        // Nếu url là relative path, tạo absolute URL với NEXTAUTH_URL
+        if (url.startsWith("/")) {
+          const absoluteUrl = `${nextAuthUrl}${url}`
+          logger.info("NextAuth redirect: relative URL converted", {
+            relativeUrl: url,
+            absoluteUrl,
+            nextAuthUrl,
+          })
+          return absoluteUrl
+        }
+        
+        // Nếu url là absolute URL, kiểm tra domain
+        try {
+          const urlObj = new URL(url)
+          
+          logger.debug("NextAuth redirect: absolute URL analysis", {
+            urlHost: urlObj.host,
+            urlProtocol: urlObj.protocol,
+            urlPath: urlObj.pathname,
+            urlSearch: urlObj.search,
+            nextAuthHost: nextAuthBaseUrl.host,
+            hostsMatch: urlObj.host === nextAuthBaseUrl.host,
+          })
+          
+          // Nếu domain không khớp với NEXTAUTH_URL, fix nó
+          // Đặc biệt quan trọng cho error redirects (có thể có ?error=Configuration)
+          if (urlObj.host !== nextAuthBaseUrl.host) {
+            const fixedUrl = `${nextAuthUrl}${urlObj.pathname}${urlObj.search}${urlObj.hash}`
+            logger.warn("NextAuth redirect: domain mismatch, fixing", {
+              originalUrl: url,
+              fixedUrl,
+              originalHost: urlObj.host,
+              expectedHost: nextAuthBaseUrl.host,
+              hasError: urlObj.searchParams.has("error"),
+              error: urlObj.searchParams.get("error"),
+            })
+            return fixedUrl
+          }
+        } catch (urlError) {
+          logger.error("NextAuth redirect: failed to parse URL", {
+            error: urlError instanceof Error ? urlError.message : String(urlError),
+            errorStack: urlError instanceof Error ? urlError.stack : undefined,
+            url,
+          })
+          // Fallback: nếu không parse được, trả về relative path với NEXTAUTH_URL
+          if (url.startsWith("/")) {
+            return `${nextAuthUrl}${url}`
+          }
+        }
+        
+        // Nếu URL hợp lệ và domain đúng, trả về nguyên bản
+        logger.debug("NextAuth redirect: URL is correct", {
+          url,
+          host: new URL(url).host,
+        })
+        return url
+      } catch (error) {
+        logger.error("NextAuth redirect: error in redirect callback", {
+          error: error instanceof Error ? error.message : String(error),
+          errorStack: error instanceof Error ? error.stack : undefined,
+          url,
+          baseUrl,
+          nextAuthUrl,
+        })
+        // Fallback: trả về sign-in page với NEXTAUTH_URL nếu có lỗi
+        if (process.env.NEXTAUTH_URL) {
+          return `${process.env.NEXTAUTH_URL.replace(/\/$/, "")}/auth/sign-in`
+        }
+        return baseUrl
+      }
+    },
   },
   session: {
     strategy: "jwt",
