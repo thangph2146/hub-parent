@@ -16,7 +16,7 @@ import {
 } from "@/features/admin/resources/server"
 import type { BulkActionResult } from "@/features/admin/resources/types"
 import { emitProductUpsert, emitProductRemove, type ProductStatus } from "./events"
-import { createProductSchema, updateProductSchema, type CreateProductSchema, type UpdateProductSchema } from "./validation"
+import { createProductSchema, updateProductSchema, type CreateProductSchema, type UpdateProductSchema } from "./schemas"
 
 // Re-export for backward compatibility with API routes
 export { ApplicationError, ForbiddenError, NotFoundError, type AuthContext, type BulkActionResult }

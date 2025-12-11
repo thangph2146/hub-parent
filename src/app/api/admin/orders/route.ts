@@ -5,6 +5,7 @@ import { serializeOrdersList } from "@/features/admin/orders/server/helpers"
 import { getTablePermissionsAsync, getAuthInfo } from "@/features/admin/resources/server"
 import { createErrorResponse, createSuccessResponse } from "@/lib/config"
 import { PERMISSIONS } from "@/lib/permissions"
+import { handleListRequest } from "@/lib/api/crud-helpers"
 
 /**
  * GET /api/admin/orders
@@ -12,59 +13,19 @@ import { PERMISSIONS } from "@/lib/permissions"
  */
 export async function GET(request: NextRequest) {
   try {
-    const session = await auth()
-    if (!session?.user?.id) {
-      return createErrorResponse("Unauthorized", { status: 401 })
-    }
-
-    const permissions = await getTablePermissionsAsync({
-      delete: [PERMISSIONS.ORDERS_DELETE],
-      restore: [PERMISSIONS.ORDERS_UPDATE],
-      manage: PERMISSIONS.ORDERS_MANAGE,
-      create: PERMISSIONS.ORDERS_CREATE,
-    })
-    if (!permissions.canManage) {
-      return createErrorResponse("Forbidden", { status: 403 })
-    }
-
-    const searchParams = request.nextUrl.searchParams
-    const page = parseInt(searchParams.get("page") || "1", 10)
-    const limit = parseInt(searchParams.get("limit") || "10", 10)
-    const search = searchParams.get("search") || undefined
-    const status = (searchParams.get("status") || "active") as "active" | "deleted" | "all"
-
-    // Parse filters
-    const filters: Record<string, string> = {}
-    searchParams.forEach((value, key) => {
-      if (key.startsWith("filter[")) {
-        const filterKey = key.slice(7, -1) // Remove "filter[" and "]"
-        filters[filterKey] = value
-      }
-    })
-
-    const result = await listOrders({
-      page,
-      limit,
-      search,
-      status,
-      filters: Object.keys(filters).length > 0 ? filters : undefined,
-    })
-
-    const serialized = serializeOrdersList(result)
-
-    return createSuccessResponse({
-      data: serialized.rows,
-      pagination: {
-        page: result.pagination.page,
-        limit: result.pagination.limit,
-        total: result.pagination.total,
-        totalPages: result.pagination.totalPages,
+    return await handleListRequest(
+      request,
+      {
+        delete: [PERMISSIONS.ORDERS_DELETE],
+        restore: [PERMISSIONS.ORDERS_UPDATE],
+        manage: PERMISSIONS.ORDERS_MANAGE,
+        create: PERMISSIONS.ORDERS_CREATE,
       },
-    })
-  } catch (error) {
-    console.error("[GET /api/admin/orders] Error:", error)
-    const errorMessage = error instanceof Error ? error.message : "Không thể tải danh sách đơn hàng"
-    return createErrorResponse(errorMessage, { status: 500 })
+      listOrders,
+      serializeOrdersList
+    )
+  } catch {
+    return createErrorResponse("Không thể tải danh sách đơn hàng", { status: 500 })
   }
 }
 

@@ -279,7 +279,7 @@ export function ContactForm({ onSubmit, className, apiUrl = "/api/contact" }: Co
             </Field>
           </FieldGroup>
 
-          <Button type="submit" className="w-full" size="sm" disabled={isSubmitting}>
+          <Button type="submit" className="w-full" disabled={isSubmitting}>
             {isSubmitting ? (
               <>
                 <Loader2 className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4 animate-spin" />

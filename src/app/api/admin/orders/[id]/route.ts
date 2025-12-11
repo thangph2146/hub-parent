@@ -4,6 +4,7 @@ import { getOrderById } from "@/features/admin/orders/server/queries"
 import { getTablePermissionsAsync, getAuthInfo } from "@/features/admin/resources/server"
 import { createErrorResponse, createSuccessResponse } from "@/lib/config"
 import { PERMISSIONS } from "@/lib/permissions"
+import { handleDetailRequest } from "@/lib/api/crud-helpers"
 
 /**
  * GET /api/admin/orders/[id]
@@ -14,30 +15,20 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth()
-    if (!session?.user?.id) {
-      return createErrorResponse("Unauthorized", { status: 401 })
-    }
-
-    const permissions = await getTablePermissionsAsync({
-      delete: [PERMISSIONS.ORDERS_DELETE],
-      restore: [PERMISSIONS.ORDERS_UPDATE],
-      manage: PERMISSIONS.ORDERS_MANAGE,
-      create: PERMISSIONS.ORDERS_CREATE,
-    })
-    if (!permissions.canManage) {
-      return createErrorResponse("Forbidden", { status: 403 })
-    }
-
     const { id } = await params
-    const order = await getOrderById(id)
-    if (!order) {
-      return createErrorResponse("Đơn hàng không tồn tại", { status: 404 })
-    }
-
-    return createSuccessResponse(order)
+    return await handleDetailRequest(
+      request,
+      id,
+      {
+        delete: [PERMISSIONS.ORDERS_DELETE],
+        restore: [PERMISSIONS.ORDERS_UPDATE],
+        manage: PERMISSIONS.ORDERS_MANAGE,
+        create: PERMISSIONS.ORDERS_CREATE,
+      },
+      getOrderById,
+      "Đơn hàng không tồn tại"
+    )
   } catch (error) {
-    console.error("[GET /api/admin/orders/[id]] Error:", error)
     const errorMessage = error instanceof Error ? error.message : "Không thể tải đơn hàng"
     return createErrorResponse(errorMessage, { status: 500 })
   }

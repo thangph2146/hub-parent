@@ -14,4 +14,6 @@ export { useResourceDetailLogger } from "./use-resource-detail-logger"
 export { useResourceFormLogger } from "./use-resource-form-logger"
 export { useResourceActions } from "./use-resource-actions"
 export type { ResourceActionConfig, UseResourceActionsResult } from "./use-resource-actions"
+export { createResourceActionsHook, createApiRoutesConfig, createQueryKeysConfig } from "./create-resource-actions"
+export type { ResourceActionsConfig, UseResourceActionsOptions } from "./create-resource-actions"
 
