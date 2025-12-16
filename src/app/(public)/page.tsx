@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { getOpenGraphConfig, getTwitterConfig } from "@/lib/config";
+import { appConfig, getOpenGraphConfig, getTwitterConfig } from "@/lib/config";
 import { Home } from "@/features/public/home/components";
 
 /**
@@ -9,34 +9,22 @@ import { Home } from "@/features/public/home/components";
  * - Metadata được merge với public layout và root layout
  * - Title phù hợp với trang nội dung công khai
  * - Open Graph và Twitter Card cho social sharing
+ * - Sử dụng appConfig để đảm bảo tính nhất quán
  */
 export const metadata: Metadata = {
   title: {
-    absolute: "Trang chủ | Trường Đại học Ngân hàng TP.HCM",
+    absolute: `${appConfig.titleDefault}`,
   },
-  description:
-    "Trang chủ Trường Đại học Ngân hàng TP.Hồ Chí Minh",
+  description: appConfig.description,
   openGraph: {
     ...getOpenGraphConfig(),
-    title: "Trang chủ - Trường Đại học Ngân hàng TP.HCM",
-    description:
-      "Trang chủ Trường Đại học Ngân hàng TP.Hồ Chí Minh",
-    siteName: "Trường Đại học Ngân hàng TP.HCM",
-    images: [
-      {
-        url: "/favicon.ico",
-        width: 32,
-        height: 32,
-        alt: "Trường Đại học Ngân hàng TP.HCM",
-      },
-    ],
+    title: appConfig.titleDefault,
+    description: appConfig.description,
   },
   twitter: {
     ...getTwitterConfig(),
-    title: "Trang chủ - Trường Đại học Ngân hàng TP.HCM",
-    description:
-      "Trang chủ Trường Đại học Ngân hàng TP.Hồ Chí Minh",
-    images: ["/favicon.ico"],
+    title: appConfig.titleDefault,
+    description: appConfig.description,
   },
 };
 

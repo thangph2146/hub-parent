@@ -1,5 +1,5 @@
 import type { Metadata } from "next"
-import { getOpenGraphConfig, getTwitterConfig } from "@/lib/config"
+import { appConfig, getOpenGraphConfig, getTwitterConfig } from "@/lib/config"
 import { Contact } from "@/features/public/contact/components"
 
 /**
@@ -9,20 +9,22 @@ import { Contact } from "@/features/public/contact/components"
  * - Metadata được merge với public layout và root layout
  * - Title phù hợp với page phụ huynh
  * - Open Graph và Twitter Card cho social sharing
+ * - Sử dụng appConfig để đảm bảo tính nhất quán
  */
 export const metadata: Metadata = {
-  title: "Liên hệ",
-  description: "Liên hệ với Trường Đại học Ngân hàng TP.HCM. Gửi tin nhắn cho chúng tôi về bất kỳ vấn đề nào cần được giải quyết.",
+  title: {
+    absolute: `Liên hệ | ${appConfig.titleDefault}`,
+  },
+  description: `Liên hệ với ${appConfig.namePublic || appConfig.name}. Gửi tin nhắn cho chúng tôi về bất kỳ vấn đề nào cần được giải quyết.`,
   openGraph: {
     ...getOpenGraphConfig(),
-    title: "Liên hệ - Trường Đại học Ngân hàng TP.HCM",
-    description: "Liên hệ với Trường Đại học Ngân hàng TP.HCM. Gửi tin nhắn cho chúng tôi về bất kỳ vấn đề nào cần được giải quyết.",
-    siteName: "Trường Đại học Ngân hàng TP.HCM",
+    title: `Liên hệ - ${appConfig.name}`,
+    description: `Liên hệ với ${appConfig.namePublic || appConfig.name}. Gửi tin nhắn cho chúng tôi về bất kỳ vấn đề nào cần được giải quyết.`,
   },
   twitter: {
     ...getTwitterConfig(),
-    title: "Liên hệ - Trường Đại học Ngân hàng TP.HCM",
-    description: "Liên hệ với Trường Đại học Ngân hàng TP.HCM. Gửi tin nhắn cho chúng tôi về bất kỳ vấn đề nào cần được giải quyết.",
+    title: `Liên hệ - ${appConfig.name}`,
+    description: `Liên hệ với ${appConfig.namePublic || appConfig.name}. Gửi tin nhắn cho chúng tôi về bất kỳ vấn đề nào cần được giải quyết.`,
   },
 }
 

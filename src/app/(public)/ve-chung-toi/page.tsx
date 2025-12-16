@@ -1,5 +1,5 @@
 import type { Metadata } from "next"
-import { getOpenGraphConfig, getTwitterConfig } from "@/lib/config"
+import { appConfig, getOpenGraphConfig, getTwitterConfig } from "@/lib/config"
 import { About } from "@/features/public/about/components"
 
 /**
@@ -9,20 +9,22 @@ import { About } from "@/features/public/about/components"
  * - Metadata được merge với public layout và root layout
  * - Title phù hợp với page phụ huynh
  * - Open Graph và Twitter Card cho social sharing
+ * - Sử dụng appConfig để đảm bảo tính nhất quán
  */
 export const metadata: Metadata = {
-  title: "Về chúng tôi",
-  description: "Trường Đại học Ngân hàng Thành phố Hồ Chí Minh (HUB) - Trường đại học công lập trực thuộc Ngân hàng Nhà nước Việt Nam, đào tạo nguồn nhân lực chất lượng cao trong lĩnh vực ngân hàng, tài chính và kinh tế.",
+  title: {
+    absolute: `Về chúng tôi | ${appConfig.titleDefault}`,
+  },
+  description: `${appConfig.namePublic || appConfig.name} - ${appConfig.description}`,
   openGraph: {
     ...getOpenGraphConfig(),
-    title: "Về chúng tôi - Trường Đại học Ngân hàng TP.HCM",
-    description: "Trường Đại học Ngân hàng Thành phố Hồ Chí Minh (HUB) - Trường đại học công lập trực thuộc Ngân hàng Nhà nước Việt Nam",
-    siteName: "Trường Đại học Ngân hàng TP.HCM",
+    title: `Về chúng tôi - ${appConfig.name}`,
+    description: `${appConfig.namePublic || appConfig.name} - ${appConfig.description}`,
   },
   twitter: {
     ...getTwitterConfig(),
-    title: "Về chúng tôi - Trường Đại học Ngân hàng TP.HCM",
-    description: "Trường Đại học Ngân hàng Thành phố Hồ Chí Minh (HUB) - Trường đại học công lập trực thuộc Ngân hàng Nhà nước Việt Nam",
+    title: `Về chúng tôi - ${appConfig.name}`,
+    description: `${appConfig.namePublic || appConfig.name} - ${appConfig.description}`,
   },
 }
 

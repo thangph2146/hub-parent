@@ -10,13 +10,13 @@ import { DEFAULT_ROLES } from "@/lib/permissions"
 
 export const appConfig = {
   // Basic metadata
-  titleDefault: "CMS - Hệ thống quản trị nội dung",
-  titleTemplate: "%s | CMS",
-  description: "Hệ thống quản trị nội dung hiện đại, mạnh mẽ và dễ sử dụng",
+  titleDefault: "HUB - Kết nối phụ huynh và nhà trường",
+  titleTemplate: "%s | HUB",
+  description: "Hệ thống Quản lý Sinh viên của Trường Đại học Ngân hàng Thành phố Hồ Chí Minh được thiết kế để tạo cầu nối giữa phụ huynh, gia đình và nhà trường.",
   
   // Application info
-  name: "CMS",
-  namePublic: "Trường Đại học Ngân hàng TP.Hồ Chí Minh",
+  name: "HUB",
+  namePublic: "Kết nối phụ huynh và nhà trường ",
   company: "P.QLCNTT",
   url: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
   
@@ -30,7 +30,7 @@ export const appConfig = {
   },
   
   // SEO
-  keywords: ["CMS", "Content Management System", "Quản trị nội dung", "Admin Panel"] as string[],
+  keywords: ["HUB", "Kết nối phụ huynh và nhà trường", "Quản trị nội dung", "Admin Panel"] as string[],
   
   // Authors
   authors: [{ name: "PHGroup" }] as Array<{ name: string }>,
@@ -46,15 +46,15 @@ export const appConfig = {
     type: "website",
     locale: "vi_VN",
     url: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
-    siteName: "CMS",
-    title: "CMS - Hệ thống quản trị nội dung" as string,
+    siteName: "HUB",
+    title: "HUB - Kết nối phụ huynh và nhà trường" as string,
     description: "Hệ thống quản trị nội dung hiện đại, mạnh mẽ và dễ sử dụng",
     images: [
       {
         url: "https://hub.edu.vn/DATA/IMAGES/2025/06/06/20250606095355z6676952814172_23a84367b5e409bfcea8b8e95ac6ba4c.jpg",
         width: 1200,
         height: 630,
-        alt: "CMS - Hệ thống quản trị nội dung",
+        alt: "HUB - Kết nối phụ huynh và nhà trường",
       },
     ],
   },
@@ -62,7 +62,7 @@ export const appConfig = {
   // Twitter Card
   twitter: {
     card: "summary_large_image" as const,
-    title: "CMS - Hệ thống quản trị nội dung" as string,
+    title: "HUB - Kết nối phụ huynh và nhà trường" as string,
     description: "Hệ thống quản trị nội dung hiện đại, mạnh mẽ và dễ sử dụng",
     images: ["https://hub.edu.vn/DATA/IMAGES/2025/06/06/20250606095355z6676952814172_23a84367b5e409bfcea8b8e95ac6ba4c.jpg"],
   },
@@ -131,28 +131,28 @@ export interface AppBranding {
 
 const ROLE_BRANDING_MAP: Record<string, AppBranding> = {
   [DEFAULT_ROLES.SUPER_ADMIN.name]: {
-    name: "CMS Super Admin",
-    description: "Hệ thống quản trị tối cao - Toàn quyền hệ thống",
+    name: "HUB Super Admin",
+    description: "HUB - Kết nối phụ huynh và nhà trường tối cao - Toàn quyền hệ thống",
   },
   [DEFAULT_ROLES.ADMIN.name]: {
-    name: "CMS Admin",
-    description: "Hệ thống quản trị nội dung và người dùng",
+    name: "HUB Admin",
+    description: "HUB - Kết nối phụ huynh và nhà trường quản trị viên hệ thống",
   },
   [DEFAULT_ROLES.EDITOR.name]: {
-    name: "CMS Biên Tập",
-    description: "Hệ thống biên tập và xuất bản nội dung",
+    name: "HUB Biên Tập",
+    description: "HUB - Kết nối phụ huynh và nhà trường biên tập và xuất bản nội dung",
   },
   [DEFAULT_ROLES.AUTHOR.name]: {
-    name: "CMS Tác Giả",
-    description: "Hệ thống quản lý bài viết và nội dung",
+    name: "HUB Tác Giả",
+    description: "HUB - Kết nối phụ huynh và nhà trường tác giả bài viết",
   },
   [DEFAULT_ROLES.USER.name]: {
-    name: "CMS Người Dùng",
-    description: "Hệ thống dành cho người dùng",
+    name: "HUB Người Dùng",
+    description: "HUB - Kết nối phụ huynh và nhà trường người dùng",
   },
   [DEFAULT_ROLES.PARENT.name]: {
-    name: "CMS Phụ Huynh",
-    description: "Hệ thống quản lý cho phụ huynh",
+    name: "HUB Phụ Huynh",
+    description: "HUB - Kết nối phụ huynh và nhà trường quản lý cho phụ huynh",
   },
 }
 

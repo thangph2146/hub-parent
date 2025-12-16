@@ -5,22 +5,23 @@ import { PostCategoryNav } from "@/features/public/post/components/post-category
 import { PostTagNav } from "@/features/public/post/components/post-tag-nav"
 import { PostSort } from "@/features/public/post/components/post-sort"
 import { getPosts, getCategories, getTags } from "@/features/public/post/server/queries"
-import { getOpenGraphConfig, getTwitterConfig } from "@/lib/config"
+import { appConfig, getOpenGraphConfig, getTwitterConfig } from "@/lib/config"
 import { CollapsibleSection } from "@/features/public/post/components/collapsible-section"
 
 export const metadata: Metadata = {
-  title: "Bài viết",
-  description: "Đọc các bài viết mới nhất về tin tức, hoạt động và thông tin của Trường Đại học Ngân hàng TP.Hồ Chí Minh",
+  title: {
+    absolute: `Bài viết | ${appConfig.titleDefault}`,
+  },
+  description: `Đọc các bài viết mới nhất về tin tức, hoạt động và thông tin của ${appConfig.namePublic || appConfig.name}`,
   openGraph: {
     ...getOpenGraphConfig(),
-    title: "Bài viết - Trường Đại học Ngân hàng TP.HCM",
-    description: "Đọc các bài viết mới nhất về tin tức, hoạt động và thông tin của Trường Đại học Ngân hàng TP.Hồ Chí Minh",
-    siteName: "Trường Đại học Ngân hàng TP.HCM",
+    title: `Bài viết - ${appConfig.name}`,
+    description: `Đọc các bài viết mới nhất về tin tức, hoạt động và thông tin của ${appConfig.namePublic || appConfig.name}`,
   },
   twitter: {
     ...getTwitterConfig(),
-    title: "Bài viết - Trường Đại học Ngân hàng TP.HCM",
-    description: "Đọc các bài viết mới nhất về tin tức, hoạt động và thông tin của Trường Đại học Ngân hàng TP.Hồ Chí Minh",
+    title: `Bài viết - ${appConfig.name}`,
+    description: `Đọc các bài viết mới nhất về tin tức, hoạt động và thông tin của ${appConfig.namePublic || appConfig.name}`,
   },
 }
 
