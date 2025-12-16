@@ -82,9 +82,11 @@ export function PostDetailClient({
     invalidateQueryKey: queryKeys.adminPosts.all(),
   });
   const { hasAnyPermission } = usePermissions();
-  
-  // Check permission for edit
-  const canUpdate = hasAnyPermission([PERMISSIONS.POSTS_UPDATE, PERMISSIONS.POSTS_MANAGE]);
+
+  const canUpdate = hasAnyPermission([
+    PERMISSIONS.POSTS_UPDATE,
+    PERMISSIONS.POSTS_MANAGE,
+  ]);
 
   const {
     data: detailData,
@@ -119,52 +121,45 @@ export function PostDetailClient({
         const postData = data as PostDetailData;
 
         return (
-          <div className="space-y-6">
-            {/* Image, Title, Description Section */}
+          <div className="space-y-8">
             <div className="space-y-4">
-              {/* Image */}
               {postData.image && (
-                <div className="w-full relative" style={{ maxHeight: "400px" }}>
+                <div className="relative aspect-[16/9]  max-w-5xl mx-auto">
                   <Image
                     src={postData.image}
-                    alt={postData.title}
-                    width={800}
-                    height={400}
-                    className="w-full h-auto rounded-lg border border-border object-cover"
-                    style={{ maxHeight: "400px" }}
+                    alt={postData.title || "Ảnh bài viết"}
+                    width={1920}
+                    height={1080}
+                    className="object-cover"
+                    sizes="(min-width: 1280px) 1000px, 90vw"
+                    priority
                   />
                 </div>
               )}
 
-              {/* Title */}
-              <div>
-                <h2 className="text-2xl font-bold text-foreground leading-tight">
+              <div className="space-y-2">
+                <h2 className="text-3xl font-semibold text-foreground leading-tight">
                   {postData.title || "Chưa có tiêu đề"}
                 </h2>
+                {postData.excerpt && (
+                  <p className="text-base leading-relaxed text-muted-foreground whitespace-pre-wrap">
+                    {postData.excerpt}
+                  </p>
+                )}
               </div>
-
-              {/* Excerpt/Description */}
-              {postData.excerpt && (
-                <div className="text-base leading-relaxed text-muted-foreground whitespace-pre-wrap">
-                  {postData.excerpt}
-                </div>
-              )}
             </div>
 
-            {/* General Information Grid */}
             <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-              {/* Slug */}
               <FieldItem icon={Hash} label="Slug">
                 <div className="text-sm font-medium text-foreground font-mono break-all">
-                  {postData.slug || "—"}
+                  {postData.slug || "---"}
                 </div>
               </FieldItem>
 
-              {/* Author */}
               <FieldItem icon={User} label="Tác giả">
                 <div className="space-y-0.5">
                   <div className="text-sm font-medium text-foreground">
-                    {postData.author.name || "N/A"}
+                    {postData.author.name || "Không rõ tên"}
                   </div>
                   <div className="text-xs text-muted-foreground line-clamp-1">
                     {postData.author.email}
@@ -172,7 +167,6 @@ export function PostDetailClient({
                 </div>
               </FieldItem>
 
-              {/* Categories */}
               {postData.categories && postData.categories.length > 0 && (
                 <FieldItem icon={Tag} label="Danh mục">
                   <div className="flex flex-wrap gap-1.5">
@@ -188,14 +182,13 @@ export function PostDetailClient({
                 </FieldItem>
               )}
 
-              {/* Tags */}
               {postData.tags && postData.tags.length > 0 && (
                 <FieldItem icon={Tags} label="Thẻ tag">
                   <div className="flex flex-wrap gap-1.5">
                     {postData.tags.map((tag) => (
                       <span
                         key={tag.id}
-                        className="inline-flex items-center rounded-md bg-secondary/50 px-2 py-1 text-xs font-medium text-secondary-foreground"
+                        className="inline-flex items-center rounded-md bg-secondary/60 px-2 py-1 text-xs font-medium text-secondary-foreground"
                       >
                         {tag.name}
                       </span>
@@ -204,7 +197,6 @@ export function PostDetailClient({
                 </FieldItem>
               )}
 
-              {/* Published Status */}
               <FieldItem
                 icon={postData.published ? Eye : EyeOff}
                 label="Trạng thái"
@@ -228,7 +220,6 @@ export function PostDetailClient({
                 </div>
               </FieldItem>
 
-              {/* Published At */}
               {postData.publishedAt && (
                 <FieldItem icon={Calendar} label="Ngày xuất bản">
                   <div className="text-sm font-medium text-foreground">
@@ -238,8 +229,7 @@ export function PostDetailClient({
               )}
             </div>
 
-            {/* Timestamps */}
-            <div className="grid gap-6 grid-cols-1 sm:grid-cols-2">
+            <div className="grid gap-6 grid-cols-1 sm:grid-cols-3">
               <FieldItem icon={Clock} label="Ngày tạo">
                 <div className="text-sm font-medium text-foreground">
                   {formatDateVi(postData.createdAt)}
@@ -271,7 +261,6 @@ export function PostDetailClient({
       fieldsContent: (_fields, data) => {
         const postData = data as PostDetailData;
 
-        // Parse content as SerializedEditorState
         let editorState: SerializedEditorState | null = null;
         try {
           if (postData.content && typeof postData.content === "object") {
@@ -306,7 +295,8 @@ export function PostDetailClient({
     },
   ];
 
-  const isDeleted = detailData.deletedAt !== null && detailData.deletedAt !== undefined
+  const isDeleted =
+    detailData.deletedAt !== null && detailData.deletedAt !== undefined;
 
   return (
     <ResourceDetailClient<PostDetailData>
