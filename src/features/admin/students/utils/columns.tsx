@@ -1,7 +1,7 @@
 import { useMemo } from "react"
 import { Switch } from "@/components/ui/switch"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { AlertCircle } from "lucide-react"
+import { AlertCircle, CheckCircle2 } from "lucide-react"
 import type { DataTableColumn } from "@/components/tables"
 import { useDynamicFilterOptions } from "@/features/admin/resources/hooks/use-dynamic-filter-options"
 import { apiRoutes } from "@/lib/api/routes"
@@ -144,7 +144,7 @@ export function useStudentColumns({ togglingStudents, canToggleStatus, onToggleS
       },
     })
 
-    // Thêm cột thông báo cho parent khi student chưa active
+    // Thêm cột thông báo cho parent
     if (isParent) {
       columns.push({
         accessorKey: "id" as keyof StudentRow, // Sử dụng id làm accessorKey vì pendingApproval không có trong StudentRow
@@ -152,7 +152,21 @@ export function useStudentColumns({ togglingStudents, canToggleStatus, onToggleS
         className: "min-w-[300px] max-w-[500px]",
         headerClassName: "min-w-[300px] max-w-[500px]",
         cell: (row) => {
-          // Chỉ hiển thị thông báo nếu student chưa active và chưa bị xóa
+          // Hiển thị thông báo đã được duyệt nếu student đã active và chưa bị xóa
+          if (row.isActive && !row.deletedAt) {
+            return (
+              <Alert variant="default" className="border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-900/20">
+                <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400" />
+                <AlertTitle className="text-sm font-semibold text-green-800 dark:text-green-200">
+                  {STUDENT_LABELS.APPROVED_TITLE}
+                </AlertTitle>
+                <AlertDescription className="text-xs text-green-700 dark:text-green-300 mt-1">
+                  {STUDENT_LABELS.APPROVED_MESSAGE}
+                </AlertDescription>
+              </Alert>
+            )
+          }
+          // Hiển thị thông báo chờ xét duyệt nếu student chưa active và chưa bị xóa
           if (!row.isActive && !row.deletedAt) {
             return (
               <Alert variant="default" className="border-yellow-200 bg-yellow-50 dark:border-yellow-800 dark:bg-yellow-900/20">

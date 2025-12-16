@@ -89,6 +89,10 @@ export const STUDENT_LABELS = {
   // Pending approval messages
   PENDING_APPROVAL_TITLE: "Đang chờ xét duyệt",
   PENDING_APPROVAL_MESSAGE: "Hồ sơ học sinh đang được xem xét và sẽ được xét duyệt trong thời gian sớm nhất. Quý phụ huynh vui lòng chờ trong vòng 24 giờ. Nếu cần hỗ trợ gấp, vui lòng liên hệ với chúng tôi để được hỗ trợ nhanh chóng.",
+  
+  // Approved messages
+  APPROVED_TITLE: "Đã được xét duyệt",
+  APPROVED_MESSAGE: "Hồ sơ học sinh đã được xét duyệt và kích hoạt thành công. Học sinh có thể sử dụng đầy đủ các tính năng của hệ thống.",
 } as const
 
 export const STUDENT_CONFIRM_MESSAGES = {
