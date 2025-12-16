@@ -276,49 +276,64 @@ export function ContactRequestsTableClient({
 
 
   const createActiveSelectionActions = useCallback(
-    ({ selectedIds, clearSelection, refresh }: {
+    ({ selectedIds, selectedRows, clearSelection, refresh }: {
       selectedIds: string[]
+      selectedRows: ContactRequestRow[]
       clearSelection: () => void
       refresh: () => void
-    }) => (
-      <SelectionActionsWrapper
-        label={CONTACT_REQUEST_LABELS.SELECTED_CONTACT_REQUESTS(selectedIds.length)}
-        actions={
-          <>
-            {canManage && (
-              <>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  disabled={bulkState.isProcessing || selectedIds.length === 0}
-                  onClick={() => {
-                    // Thực hiện trực tiếp không cần confirm dialog
-                    handleBulkMarkRead(selectedIds, refresh, clearSelection)
-                  }}
-                  className="whitespace-nowrap"
-                >
-                  <CheckCircle2 className="mr-2 h-5 w-5 shrink-0" />
-                  <span className="hidden sm:inline">Đánh dấu đã đọc ({selectedIds.length})</span>
-                  <span className="sm:hidden">Đã đọc</span>
-                </Button>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  disabled={bulkState.isProcessing || selectedIds.length === 0}
-                  onClick={() => {
-                    // Thực hiện trực tiếp không cần confirm dialog
-                    handleBulkMarkUnread(selectedIds, refresh, clearSelection)
-                  }}
-                  className="whitespace-nowrap"
-                >
-                  <Circle className="mr-2 h-5 w-5 shrink-0" />
-                  <span className="hidden sm:inline">Đánh dấu chưa đọc ({selectedIds.length})</span>
-                  <span className="sm:hidden">Chưa đọc</span>
-                </Button>
-              </>
-            )}
+    }) => {
+      // Đếm số lượng yêu cầu chưa đọc và đã đọc
+      const unreadCount = selectedRows.filter((row) => !row.isRead && !row.deletedAt).length
+      const readCount = selectedRows.filter((row) => row.isRead && !row.deletedAt).length
+      
+      // Chỉ hiển thị button "Đánh dấu đã đọc" nếu có ít nhất một liên hệ chưa đọc
+      const hasUnreadRequests = unreadCount > 0
+      // Chỉ hiển thị button "Đánh dấu chưa đọc" nếu có ít nhất một liên hệ đã đọc
+      const hasReadRequests = readCount > 0
+      
+      return (
+        <SelectionActionsWrapper
+          label={CONTACT_REQUEST_LABELS.SELECTED_CONTACT_REQUESTS(selectedIds.length)}
+          actions={
+            <>
+              {canManage && (
+                <>
+                  {hasUnreadRequests && (
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      disabled={bulkState.isProcessing || selectedIds.length === 0}
+                      onClick={() => {
+                        // Thực hiện trực tiếp không cần confirm dialog
+                        handleBulkMarkRead(selectedIds, refresh, clearSelection)
+                      }}
+                      className="whitespace-nowrap"
+                    >
+                      <CheckCircle2 className="mr-2 h-5 w-5 shrink-0" />
+                      <span className="hidden sm:inline">Đánh dấu đã đọc ({unreadCount})</span>
+                      <span className="sm:hidden">Đã đọc ({unreadCount})</span>
+                    </Button>
+                  )}
+                  {hasReadRequests && (
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      disabled={bulkState.isProcessing || selectedIds.length === 0}
+                      onClick={() => {
+                        // Thực hiện trực tiếp không cần confirm dialog
+                        handleBulkMarkUnread(selectedIds, refresh, clearSelection)
+                      }}
+                      className="whitespace-nowrap"
+                    >
+                      <Circle className="mr-2 h-5 w-5 shrink-0" />
+                      <span className="hidden sm:inline">Đánh dấu chưa đọc ({readCount})</span>
+                      <span className="sm:hidden">Chưa đọc ({readCount})</span>
+                    </Button>
+                  )}
+                </>
+              )}
             {canManage && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -415,7 +430,8 @@ export function ContactRequestsTableClient({
           </>
         }
       />
-    ),
+    )
+    },
     [canDelete, canManage, bulkState.isProcessing, setDeleteConfirm, executeBulkAction, handleBulkMarkRead, handleBulkMarkUnread, handleBulkUpdateStatus],
   )
 
