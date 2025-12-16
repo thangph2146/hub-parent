@@ -39,7 +39,7 @@ export function HomeClient({ featuredPosts = [] }: HomeClientProps) {
         title="Hệ thống Kết nối Phụ huynh"
         description="Kết nối phụ huynh với Trường Đại học Ngân hàng Thành phố Hồ Chí Minh"
         backgroundImage={{
-          src: "https://s7ap1.scene7.com/is/image/rmit/fc-banner?wid=1440&hei=450&scl=1",
+          src: "/images/hero-section.jpg",
           alt: "Trường Đại học Ngân hàng TP.HCM",
           width: 1920,
           height: 1080,

@@ -5,7 +5,7 @@ import { ContentCard } from "./content-card";
 import type { ContentCardButton } from "./content-card";
 
 // Cấu hình mặc định
-const DEFAULT_MIN_HEIGHT = "min-h-[300px] sm:min-h-[350px] lg:min-h-[400px]";
+const DEFAULT_MIN_HEIGHT = "min-h-[300px] sm:min-h-[350px] lg:min-h-[400px] xxl:min-h-[500px]";
 const DEFAULT_TITLE_CLASSES = "text-md sm:text-lg md:text-xl lg:text-2xl font-bold text-slate-900";
 const DEFAULT_DESCRIPTION_CLASSES = "text-xs sm:text-sm md:text-base text-slate-700 leading-relaxed";
 
