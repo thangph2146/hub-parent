@@ -11,20 +11,28 @@ import { About } from "@/features/public/about/components"
  * - Open Graph và Twitter Card cho social sharing
  * - Sử dụng appConfig để đảm bảo tính nhất quán
  */
+const openGraphConfig = getOpenGraphConfig();
+const twitterConfig = getTwitterConfig();
+
 export const metadata: Metadata = {
   title: {
-    absolute: `Về chúng tôi | ${appConfig.titleDefault}`,
+    absolute: `Về chúng tôi | ${appConfig.name}`,
   },
   description: `${appConfig.namePublic || appConfig.name} - ${appConfig.description}`,
   openGraph: {
-    ...getOpenGraphConfig(),
+    ...openGraphConfig,
+    url: `${appConfig.url}/ve-chung-toi`,
     title: `Về chúng tôi - ${appConfig.name}`,
     description: `${appConfig.namePublic || appConfig.name} - ${appConfig.description}`,
+    // Giữ lại images từ appConfig
+    images: openGraphConfig.images,
   },
   twitter: {
-    ...getTwitterConfig(),
+    ...twitterConfig,
     title: `Về chúng tôi - ${appConfig.name}`,
     description: `${appConfig.namePublic || appConfig.name} - ${appConfig.description}`,
+    // Giữ lại images từ appConfig
+    images: twitterConfig.images,
   },
 }
 

@@ -8,20 +8,28 @@ import { getPosts, getCategories, getTags } from "@/features/public/post/server/
 import { appConfig, getOpenGraphConfig, getTwitterConfig } from "@/lib/config"
 import { CollapsibleSection } from "@/features/public/post/components/collapsible-section"
 
+const openGraphConfig = getOpenGraphConfig();
+const twitterConfig = getTwitterConfig();
+
 export const metadata: Metadata = {
   title: {
-    absolute: `Bài viết | ${appConfig.titleDefault}`,
+    absolute: `Bài viết | ${appConfig.name}`,
   },
   description: `Đọc các bài viết mới nhất về tin tức, hoạt động và thông tin của ${appConfig.namePublic || appConfig.name}`,
   openGraph: {
-    ...getOpenGraphConfig(),
+    ...openGraphConfig,
+    url: `${appConfig.url}/bai-viet`,
     title: `Bài viết - ${appConfig.name}`,
     description: `Đọc các bài viết mới nhất về tin tức, hoạt động và thông tin của ${appConfig.namePublic || appConfig.name}`,
+    // Giữ lại images từ appConfig
+    images: openGraphConfig.images,
   },
   twitter: {
-    ...getTwitterConfig(),
+    ...twitterConfig,
     title: `Bài viết - ${appConfig.name}`,
     description: `Đọc các bài viết mới nhất về tin tức, hoạt động và thông tin của ${appConfig.namePublic || appConfig.name}`,
+    // Giữ lại images từ appConfig
+    images: twitterConfig.images,
   },
 }
 

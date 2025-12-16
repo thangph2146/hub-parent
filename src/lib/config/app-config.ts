@@ -12,10 +12,10 @@ export const appConfig = {
   // Basic metadata
   titleDefault: "HUB - Kết nối phụ huynh và nhà trường",
   titleTemplate: "%s | HUB",
-  description: "Hệ thống Quản lý Sinh viên của Trường Đại học Ngân hàng Thành phố Hồ Chí Minh được thiết kế để tạo cầu nối giữa phụ huynh, gia đình và nhà trường.",
+  description: "HUB - Hệ thống kết nối phụ huynh và nhà trường của Trường Đại học Ngân hàng Thành phố Hồ Chí Minh. Được phát triển bởi P.QLCNTT để tạo cầu nối giữa phụ huynh, gia đình và nhà trường.",
   
   // Application info
-  name: "HUB",
+  name: "HUB - Phụ huynh",
   namePublic: "Kết nối phụ huynh và nhà trường ",
   company: "P.QLCNTT",
   url: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
@@ -33,13 +33,13 @@ export const appConfig = {
   keywords: ["HUB", "Kết nối phụ huynh và nhà trường", "Quản trị nội dung", "Admin Panel"] as string[],
   
   // Authors
-  authors: [{ name: "PHGroup" }] as Array<{ name: string }>,
+  authors: [{ name: "P.QLCNTT" }] as Array<{ name: string }>,
   
   // Creator
-  creator: "PHGroup",
+  creator: "P.QLCNTT",
   
   // Publisher
-  publisher: "PHGroup",
+  publisher: "P.QLCNTT",
   
   // Open Graph
   openGraph: {
@@ -48,7 +48,7 @@ export const appConfig = {
     url: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
     siteName: "HUB",
     title: "HUB - Kết nối phụ huynh và nhà trường" as string,
-    description: "Hệ thống quản trị nội dung hiện đại, mạnh mẽ và dễ sử dụng",
+    description: "HUB - Hệ thống kết nối phụ huynh và nhà trường của Trường Đại học Ngân hàng Thành phố Hồ Chí Minh. Được phát triển bởi P.QLCNTT để tạo cầu nối giữa phụ huynh, gia đình và nhà trường.",
     images: [
       {
         url: "https://hub.edu.vn/DATA/IMAGES/2025/06/06/20250606095355z6676952814172_23a84367b5e409bfcea8b8e95ac6ba4c.jpg",
@@ -63,7 +63,7 @@ export const appConfig = {
   twitter: {
     card: "summary_large_image" as const,
     title: "HUB - Kết nối phụ huynh và nhà trường" as string,
-    description: "Hệ thống quản trị nội dung hiện đại, mạnh mẽ và dễ sử dụng",
+    description: "HUB - Hệ thống kết nối phụ huynh và nhà trường của Trường Đại học Ngân hàng Thành phố Hồ Chí Minh. Được phát triển bởi P.QLCNTT để tạo cầu nối giữa phụ huynh, gia đình và nhà trường.",
     images: ["https://hub.edu.vn/DATA/IMAGES/2025/06/06/20250606095355z6676952814172_23a84367b5e409bfcea8b8e95ac6ba4c.jpg"],
   },
   

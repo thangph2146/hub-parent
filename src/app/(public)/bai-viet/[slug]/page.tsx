@@ -48,6 +48,10 @@ export async function generateMetadata({
   const postUrl = `${appConfig.url}/bai-viet/${slug}`
   const description = post.excerpt || `Đọc bài viết: ${post.title}`
   const imageUrl = post.image ? (post.image.startsWith('http') ? post.image : `${appConfig.url}${post.image}`) : undefined
+  
+  // Lấy base config từ appConfig
+  const openGraphConfig = getOpenGraphConfig();
+  const twitterConfig = getTwitterConfig();
 
   return {
     title: post.title,
@@ -62,11 +66,12 @@ export async function generateMetadata({
       canonical: postUrl,
     },
     openGraph: {
-      ...getOpenGraphConfig(),
+      ...openGraphConfig,
       type: "article",
       url: postUrl,
       title: post.title,
       description,
+      // Dynamic: Sử dụng hình ảnh từ bài viết nếu có, nếu không thì fallback về appConfig
       images: imageUrl ? [
         {
           url: imageUrl,
@@ -74,7 +79,7 @@ export async function generateMetadata({
           height: 630,
           alt: post.title,
         },
-      ] : undefined,
+      ] : openGraphConfig.images,
       publishedTime: toISOString(post.publishedAt),
       modifiedTime: toISOString(post.updatedAt),
       authors: post.author.name ? [post.author.name] : undefined,
@@ -82,10 +87,11 @@ export async function generateMetadata({
       tags: post.tags.map(tag => tag.name),
     },
     twitter: {
-      ...getTwitterConfig(),
+      ...twitterConfig,
       title: post.title,
       description,
-      images: imageUrl ? [imageUrl] : undefined,
+      // Dynamic: Sử dụng hình ảnh từ bài viết nếu có, nếu không thì fallback về appConfig
+      images: imageUrl ? [imageUrl] : twitterConfig.images,
     },
   }
 }

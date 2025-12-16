@@ -11,20 +11,28 @@ import { GuideClient } from "@/features/public/help/components/guide-client"
  * - Open Graph và Twitter Card cho social sharing
  * - Sử dụng appConfig để đảm bảo tính nhất quán
  */
+const openGraphConfig = getOpenGraphConfig();
+const twitterConfig = getTwitterConfig();
+
 export const metadata: Metadata = {
   title: {
-    absolute: `Hướng dẫn sử dụng | ${appConfig.titleDefault}`,
+    absolute: `Hướng dẫn sử dụng | ${appConfig.name}`,
   },
   description: `Hướng dẫn chi tiết cách sử dụng hệ thống và các dịch vụ của ${appConfig.namePublic || appConfig.name}`,
   openGraph: {
-    ...getOpenGraphConfig(),
+    ...openGraphConfig,
+    url: `${appConfig.url}/huong-dan-su-dung`,
     title: `Hướng dẫn sử dụng - ${appConfig.name}`,
     description: `Hướng dẫn chi tiết cách sử dụng hệ thống và các dịch vụ của ${appConfig.namePublic || appConfig.name}`,
+    // Giữ lại images từ appConfig
+    images: openGraphConfig.images,
   },
   twitter: {
-    ...getTwitterConfig(),
+    ...twitterConfig,
     title: `Hướng dẫn sử dụng - ${appConfig.name}`,
     description: `Hướng dẫn chi tiết cách sử dụng hệ thống và các dịch vụ của ${appConfig.namePublic || appConfig.name}`,
+    // Giữ lại images từ appConfig
+    images: twitterConfig.images,
   },
 }
 
