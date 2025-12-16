@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { usePathname } from "next/navigation"
 
 /**
@@ -57,3 +57,82 @@ export function useScrollToTop() {
   }, [pathname])
 }
 
+/**
+ * Hook để detect scroll position và show/hide scroll-to-top button
+ * @param threshold - Khoảng cách scroll (px) để hiển thị button, mặc định 300
+ */
+export function useScrollPosition(threshold = 300) {
+  const [isVisible, setIsVisible] = useState(false)
+
+  useEffect(() => {
+    const handleScroll = () => {
+      // Kiểm tra scroll position của window
+      const windowScroll = window.scrollY || window.pageYOffset
+      
+      // Kiểm tra scroll position của main content nếu có
+      const mainContent = document.querySelector("main")
+      const mainScroll = mainContent instanceof HTMLElement 
+        ? mainContent.scrollTop 
+        : 0
+
+      // Hiển thị button nếu scroll vượt quá threshold
+      setIsVisible(windowScroll > threshold || mainScroll > threshold)
+    }
+
+    // Lắng nghe scroll events trên window và main content
+    window.addEventListener("scroll", handleScroll, { passive: true })
+    
+    const mainContent = document.querySelector("main")
+    if (mainContent instanceof HTMLElement) {
+      mainContent.addEventListener("scroll", handleScroll, { passive: true })
+    }
+
+    // Kiểm tra ngay khi mount
+    handleScroll()
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll)
+      if (mainContent instanceof HTMLElement) {
+        mainContent.removeEventListener("scroll", handleScroll)
+      }
+    }
+  }, [threshold])
+
+  return isVisible
+}
+
+/**
+ * Function để scroll về đầu trang
+ */
+export function scrollToTop() {
+  // Scroll window về đầu trang
+  window.scrollTo({
+    top: 0,
+    left: 0,
+    behavior: "smooth",
+  })
+
+  // Scroll main content area nếu có
+  const mainContent = document.querySelector("main")
+  if (mainContent instanceof HTMLElement) {
+    mainContent.scrollTo({
+      top: 0,
+      left: 0,
+      behavior: "smooth",
+    })
+  }
+
+  // Scroll các scroll containers nếu có
+  const scrollContainers = document.querySelectorAll(
+    '[data-slot="scroll-area-viewport"]'
+  )
+  scrollContainers.forEach((container) => {
+    if (container instanceof HTMLElement) {
+      container.scrollTo({
+        top: 0,
+        left: 0,
+        behavior: "smooth",
+      })
+    }
+  })
+}

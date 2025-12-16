@@ -42,8 +42,8 @@ export function Providers({ children, initialSession }: ProvidersProps) {
     <ThemeProvider>
       <SessionProvider session={initialSession}>
         <QueryProvider>
-          <ScrollToTop />
           {children}
+          <ScrollToTop />
         </QueryProvider>
       </SessionProvider>
     </ThemeProvider>

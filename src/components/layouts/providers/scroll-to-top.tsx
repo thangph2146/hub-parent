@@ -1,14 +1,39 @@
 "use client"
 
-import { useScrollToTop } from "@/hooks/use-scroll-to-top"
+import { useScrollToTop, useScrollPosition, scrollToTop } from "@/hooks/use-scroll-to-top"
+import { Button } from "@/components/ui/button"
+import { ArrowUp } from "lucide-react"
+import { cn } from "@/lib/utils"
 
 /**
  * Component để tự động scroll về đầu trang khi pathname thay đổi
- * Sử dụng trong Providers để đảm bảo mỗi khi chuyển page,
- * màn hình sẽ tự động scroll về đầu trang
+ * và hiển thị button scroll-to-top floating ở góc dưới bên phải
  */
 export function ScrollToTop() {
+  // Tự động scroll khi pathname thay đổi
   useScrollToTop()
-  return null
-}
+  
+  // Detect scroll position để show/hide button
+  const isVisible = useScrollPosition(300)
 
+  return (
+    <>
+      {/* Scroll to Top Button */}
+      <Button
+        onClick={scrollToTop}
+        size="icon"
+        className={cn(
+          "fixed bottom-14 right-6 z-50 h-12 w-12 rounded-full shadow-lg transition-all duration-300",
+          "bg-primary text-primary-foreground hover:bg-primary/90",
+          "hover:scale-110 active:scale-95",
+          isVisible 
+            ? "opacity-100 translate-y-0 pointer-events-auto" 
+            : "opacity-0 translate-y-4 pointer-events-none"
+        )}
+        aria-label="Scroll to top"
+      >
+        <ArrowUp className="h-5 w-5" />
+      </Button>
+    </>
+  )
+}

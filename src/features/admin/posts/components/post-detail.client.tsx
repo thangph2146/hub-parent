@@ -300,8 +300,6 @@ export function PostDetailClient({
 
   return (
     <ResourceDetailClient<PostDetailData>
-      title={detailData.title}
-      description={`Chi tiết bài viết ${detailData.slug}`}
       data={detailData}
       fields={detailFields}
       detailSections={detailSections}
