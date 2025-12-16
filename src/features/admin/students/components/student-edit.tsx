@@ -28,24 +28,23 @@ export async function StudentEdit({
 }: StudentEditProps) {
   const { actorId, isSuperAdminUser, permissions, roles } = await getAuthInfo()
 
-  const [student, usersOptions] = await Promise.all([
-    getStudentById(studentId, actorId, isSuperAdminUser),
-    // Chỉ fetch users options nếu là super admin
-    isSuperAdminUser ? getActiveUsersForSelect(100) : Promise.resolve([]),
-  ])
+  const student = await getStudentById(studentId, actorId, isSuperAdminUser)
 
   if (!student) {
     return <NotFoundMessage resourceName="học sinh" />
   }
+
+  const usersOptions = isSuperAdminUser
+    ? await getActiveUsersForSelect(100) // Only fetch when needed to avoid extra load
+    : []
 
   const canActivate = canPerformAnyAction(permissions, roles, [
     PERMISSIONS.STUDENTS_ACTIVE,
     PERMISSIONS.STUDENTS_MANAGE,
   ])
 
-  const studentForEdit: StudentEditClientProps["student"] = {
-    ...serializeStudentDetail(student),
-  }
+  const studentForEdit: StudentEditClientProps["student"] =
+    serializeStudentDetail(student)
 
   return (
     <StudentEditClient
