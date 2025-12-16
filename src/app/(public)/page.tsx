@@ -19,12 +19,16 @@ export const metadata: Metadata = {
     absolute: appConfig.titleDefault,
   },
   description: appConfig.description,
+  alternates: {
+    canonical: "/",
+  },
   openGraph: {
     // Theo Next.js docs: Open Graph images must be absolute URLs
     // Đảm bảo tất cả các thuộc tính đều đúng format
     type: openGraphConfig.type,
     locale: openGraphConfig.locale,
-    url: new URL("/", appConfig.url).toString(), // Absolute URL đầy đủ
+    // Sử dụng relative URL, Next.js sẽ tự động resolve từ metadataBase
+    url: "/",
     siteName: openGraphConfig.siteName,
     title: appConfig.titleDefault,
     description: appConfig.description,

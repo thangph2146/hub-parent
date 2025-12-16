@@ -106,10 +106,15 @@ export const appConfig = {
 
 /**
  * Helper function để convert readonly OpenGraph config sang mutable cho Next.js Metadata
+ * 
+ * Lưu ý: Không include 'url' ở đây vì:
+ * - Next.js sẽ tự động resolve relative URLs từ metadataBase
+ * - Mỗi page sẽ set URL riêng của nó
  */
 export function getOpenGraphConfig() {
+  const { url: _unusedUrl, ...rest } = appConfig.openGraph;
   return {
-    ...appConfig.openGraph,
+    ...rest,
     images: appConfig.openGraph.images ? [...appConfig.openGraph.images] : undefined,
   }
 }
