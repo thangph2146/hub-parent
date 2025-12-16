@@ -1,6 +1,6 @@
 import type { Metadata } from "next"
 import { NotFoundClient } from "../features/public/not-found-client"
-import { appConfig } from "@/lib/config"
+import { getOpenGraphConfig, getTwitterConfig } from "@/lib/config"
 
 /**
  * Not Found Page
@@ -44,12 +44,12 @@ export const metadata: Metadata = {
     follow: false,
   },
   openGraph: {
-    ...appConfig.openGraph,
+    ...getOpenGraphConfig(),
     title: "Trang không tìm thấy - CMS",
     description: "Trang bạn đang tìm kiếm không tồn tại hoặc đã bị di chuyển",
   },
   twitter: {
-    ...appConfig.twitter,
+    ...getTwitterConfig(),
     title: "Trang không tìm thấy - CMS",
     description: "Trang bạn đang tìm kiếm không tồn tại hoặc đã bị di chuyển",
   },

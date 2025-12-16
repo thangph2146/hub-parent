@@ -1,5 +1,5 @@
 import type { Metadata } from "next"
-import { appConfig } from "@/lib/config"
+import { getOpenGraphConfig, getTwitterConfig } from "@/lib/config"
 import { GuideClient } from "@/features/public/help/components/guide-client"
 
 /**
@@ -14,13 +14,13 @@ export const metadata: Metadata = {
   title: "Hướng dẫn sử dụng",
   description: "Hướng dẫn chi tiết cách sử dụng hệ thống và các dịch vụ của Trường Đại học Ngân hàng TP.Hồ Chí Minh",
   openGraph: {
-    ...appConfig.openGraph,
+    ...getOpenGraphConfig(),
     title: "Hướng dẫn sử dụng - Trường Đại học Ngân hàng TP.HCM",
     description: "Hướng dẫn chi tiết cách sử dụng hệ thống và các dịch vụ của Trường Đại học Ngân hàng TP.Hồ Chí Minh",
     siteName: "Trường Đại học Ngân hàng TP.HCM",
   },
   twitter: {
-    ...appConfig.twitter,
+    ...getTwitterConfig(),
     title: "Hướng dẫn sử dụng - Trường Đại học Ngân hàng TP.HCM",
     description: "Hướng dẫn chi tiết cách sử dụng hệ thống và các dịch vụ của Trường Đại học Ngân hàng TP.Hồ Chí Minh",
   },

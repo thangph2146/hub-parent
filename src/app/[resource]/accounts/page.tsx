@@ -1,7 +1,7 @@
 import type { Metadata } from "next"
 import { AdminHeader } from "@/components/layouts/headers"
 import { AccountProfile } from "@/features/admin/accounts/components"
-import { appConfig } from "@/lib/config"
+import { getOpenGraphConfig, getTwitterConfig } from "@/lib/config"
 import { createListBreadcrumbs } from "@/features/admin/resources/utils"
 
 /**
@@ -16,12 +16,12 @@ export const metadata: Metadata = {
   title: "Tài khoản",
   description: "Quản lý thông tin cá nhân của bạn - cập nhật tên, số điện thoại, địa chỉ, mật khẩu và các thông tin khác",
   openGraph: {
-    ...appConfig.openGraph,
+    ...getOpenGraphConfig(),
     title: "Tài khoản - CMS",
     description: "Quản lý thông tin cá nhân của bạn - cập nhật tên, số điện thoại, địa chỉ, mật khẩu và các thông tin khác",
   },
   twitter: {
-    ...appConfig.twitter,
+    ...getTwitterConfig(),
     title: "Tài khoản - CMS",
     description: "Quản lý thông tin cá nhân của bạn - cập nhật tên, số điện thoại, địa chỉ, mật khẩu và các thông tin khác",
   },

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { appConfig } from "@/lib/config";
+import { getOpenGraphConfig, getTwitterConfig } from "@/lib/config";
 import { Home } from "@/features/public/home/components";
 
 /**
@@ -17,7 +17,7 @@ export const metadata: Metadata = {
   description:
     "Trang chủ Trường Đại học Ngân hàng TP.Hồ Chí Minh",
   openGraph: {
-    ...appConfig.openGraph,
+    ...getOpenGraphConfig(),
     title: "Trang chủ - Trường Đại học Ngân hàng TP.HCM",
     description:
       "Trang chủ Trường Đại học Ngân hàng TP.Hồ Chí Minh",
@@ -32,7 +32,7 @@ export const metadata: Metadata = {
     ],
   },
   twitter: {
-    ...appConfig.twitter,
+    ...getTwitterConfig(),
     title: "Trang chủ - Trường Đại học Ngân hàng TP.HCM",
     description:
       "Trang chủ Trường Đại học Ngân hàng TP.Hồ Chí Minh",

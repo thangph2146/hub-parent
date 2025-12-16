@@ -1,5 +1,5 @@
 import type { Metadata } from "next"
-import { appConfig } from "@/lib/config"
+import { getOpenGraphConfig, getTwitterConfig } from "@/lib/config"
 import { About } from "@/features/public/about/components"
 
 /**
@@ -14,13 +14,13 @@ export const metadata: Metadata = {
   title: "Về chúng tôi",
   description: "Trường Đại học Ngân hàng Thành phố Hồ Chí Minh (HUB) - Trường đại học công lập trực thuộc Ngân hàng Nhà nước Việt Nam, đào tạo nguồn nhân lực chất lượng cao trong lĩnh vực ngân hàng, tài chính và kinh tế.",
   openGraph: {
-    ...appConfig.openGraph,
+    ...getOpenGraphConfig(),
     title: "Về chúng tôi - Trường Đại học Ngân hàng TP.HCM",
     description: "Trường Đại học Ngân hàng Thành phố Hồ Chí Minh (HUB) - Trường đại học công lập trực thuộc Ngân hàng Nhà nước Việt Nam",
     siteName: "Trường Đại học Ngân hàng TP.HCM",
   },
   twitter: {
-    ...appConfig.twitter,
+    ...getTwitterConfig(),
     title: "Về chúng tôi - Trường Đại học Ngân hàng TP.HCM",
     description: "Trường Đại học Ngân hàng Thành phố Hồ Chí Minh (HUB) - Trường đại học công lập trực thuộc Ngân hàng Nhà nước Việt Nam",
   },

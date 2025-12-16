@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { PublicHeader } from "@/components/layouts/headers";
 import { PublicFooter } from "@/components/layouts/footers";
-import { appConfig } from "@/lib/config";
+import { getOpenGraphConfig, getTwitterConfig } from "@/lib/config";
 
 /**
  * Public Layout Metadata
@@ -35,7 +35,7 @@ export const metadata: Metadata = {
     apple: "/favicon.ico",
   },
   openGraph: {
-    ...appConfig.openGraph,
+    ...getOpenGraphConfig(),
     title: "Trường Đại học Ngân hàng TP.Hồ Chí Minh",
     description:
       "Trường Đại học Ngân hàng Thành phố Hồ Chí Minh (HUB) - Trường đại học công lập trực thuộc Ngân hàng Nhà nước Việt Nam",
@@ -50,7 +50,7 @@ export const metadata: Metadata = {
     ],
   },
   twitter: {
-    ...appConfig.twitter,
+    ...getTwitterConfig(),
     title: "Trường Đại học Ngân hàng TP.Hồ Chí Minh",
     description:
       "Trường Đại học Ngân hàng Thành phố Hồ Chí Minh (HUB) - Trường đại học công lập trực thuộc Ngân hàng Nhà nước Việt Nam",

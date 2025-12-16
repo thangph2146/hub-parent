@@ -74,6 +74,18 @@ export function StudentEditClient({
     [studentData, initialStudent],
   )
 
+  const isDeleted = student?.deletedAt !== null && student?.deletedAt !== undefined
+  const formDisabled = isDeleted && !isPageVariant
+
+  const editFields = useMemo(
+    () =>
+      getBaseStudentFields(usersFromServer, isSuperAdmin, canActivate).map(
+        (field) => ({ ...field, disabled: formDisabled || field.disabled }),
+      ),
+    [usersFromServer, isSuperAdmin, canActivate, formDisabled],
+  )
+  const formSections = useMemo(() => getStudentFormSections(), [])
+
   const { handleSubmit } = useResourceFormSubmit({
     apiRoute: (id) => apiRoutes.students.update(id),
     method: "PUT",
@@ -118,9 +130,6 @@ export function StudentEditClient({
     return null
   }
 
-  const isDeleted = student.deletedAt !== null && student.deletedAt !== undefined
-  const formDisabled = isDeleted && !isPageVariant
-
   const handleSubmitWrapper = async (data: Partial<StudentFormData>) => {
     if (isDeleted) {
       return { success: false, error: "Bản ghi đã bị xóa, không thể chỉnh sửa" }
@@ -128,15 +137,6 @@ export function StudentEditClient({
 
     return handleSubmit(data)
   }
-
-  const editFields = useMemo(
-    () =>
-      getBaseStudentFields(usersFromServer, isSuperAdmin, canActivate).map(
-        (field) => ({ ...field, disabled: formDisabled || field.disabled }),
-      ),
-    [usersFromServer, isSuperAdmin, canActivate, formDisabled],
-  )
-  const formSections = useMemo(() => getStudentFormSections(), [])
 
   return (
     <ResourceForm<StudentFormData>

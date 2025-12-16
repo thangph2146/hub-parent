@@ -104,6 +104,26 @@ export const appConfig = {
   },
 } as const
 
+/**
+ * Helper function để convert readonly OpenGraph config sang mutable cho Next.js Metadata
+ */
+export function getOpenGraphConfig() {
+  return {
+    ...appConfig.openGraph,
+    images: appConfig.openGraph.images ? [...appConfig.openGraph.images] : undefined,
+  }
+}
+
+/**
+ * Helper function để convert readonly Twitter config sang mutable cho Next.js Metadata
+ */
+export function getTwitterConfig() {
+  return {
+    ...appConfig.twitter,
+    images: appConfig.twitter.images ? [...appConfig.twitter.images] : undefined,
+  }
+}
+
 export interface AppBranding {
   name: string
   description: string

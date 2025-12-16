@@ -13,7 +13,7 @@
 import type { Metadata } from "next"
 import { getPostBySlug } from "@/features/public/post/server/queries"
 import { PostDetail } from "@/features/public/post/components/post-detail"
-import { appConfig } from "@/lib/config"
+import { appConfig, getOpenGraphConfig, getTwitterConfig } from "@/lib/config"
 import Script from "next/script"
 
 interface PostDetailPageProps {
@@ -62,7 +62,7 @@ export async function generateMetadata({
       canonical: postUrl,
     },
     openGraph: {
-      ...appConfig.openGraph,
+      ...getOpenGraphConfig(),
       type: "article",
       url: postUrl,
       title: post.title,
@@ -82,7 +82,7 @@ export async function generateMetadata({
       tags: post.tags.map(tag => tag.name),
     },
     twitter: {
-      ...appConfig.twitter,
+      ...getTwitterConfig(),
       title: post.title,
       description,
       images: imageUrl ? [imageUrl] : undefined,

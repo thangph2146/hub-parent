@@ -1,7 +1,7 @@
 import { Suspense } from "react"
 import type { Metadata } from "next"
 import { getSession } from "@/lib/auth/auth-server"
-import { getMenuData, appConfig } from "@/lib/config"
+import { getMenuData, getOpenGraphConfig, getTwitterConfig } from "@/lib/config"
 import { AppSidebar } from "@/components/layouts/navigation"
 import { NavMainWithBadges } from "@/components/layouts/navigation/nav-main-with-badges"
 import { NavMainSkeleton } from "@/components/layouts/skeletons"
@@ -29,13 +29,13 @@ export const metadata: Metadata = {
     follow: false,
   },
   openGraph: {
-    ...appConfig.openGraph,
+    ...getOpenGraphConfig(),
     title: "CMS - Hệ thống quản trị nội dung",
     description: "Hệ thống quản trị nội dung (CMS) - Quản lý người dùng, bài viết, học sinh và các tài nguyên khác",
     siteName: "CMS - Hệ thống quản trị",
   },
   twitter: {
-    ...appConfig.twitter,
+    ...getTwitterConfig(),
     title: "CMS - Hệ thống quản trị nội dung",
     description: "Hệ thống quản trị nội dung (CMS) - Quản lý người dùng, bài viết, học sinh và các tài nguyên khác",
   },

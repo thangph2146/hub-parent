@@ -7,7 +7,7 @@ export { logger } from "./logger"
 export { resourceLogger, type ResourceAction } from "./resource-logger"
 export { getMenuData } from "./menu-data"
 export type { MenuItem, MenuSubItem, MenuProject } from "./navigation-types"
-export { appConfig, getAppBranding, type AppBranding } from "./app-config"
+export { appConfig, getAppBranding, getOpenGraphConfig, getTwitterConfig, type AppBranding } from "./app-config"
 export {
   apiPathConfig,
   withApiBase,

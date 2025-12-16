@@ -5,20 +5,20 @@ import { PostCategoryNav } from "@/features/public/post/components/post-category
 import { PostTagNav } from "@/features/public/post/components/post-tag-nav"
 import { PostSort } from "@/features/public/post/components/post-sort"
 import { getPosts, getCategories, getTags } from "@/features/public/post/server/queries"
-import { appConfig } from "@/lib/config"
+import { getOpenGraphConfig, getTwitterConfig } from "@/lib/config"
 import { CollapsibleSection } from "@/features/public/post/components/collapsible-section"
 
 export const metadata: Metadata = {
   title: "Bài viết",
   description: "Đọc các bài viết mới nhất về tin tức, hoạt động và thông tin của Trường Đại học Ngân hàng TP.Hồ Chí Minh",
   openGraph: {
-    ...appConfig.openGraph,
+    ...getOpenGraphConfig(),
     title: "Bài viết - Trường Đại học Ngân hàng TP.HCM",
     description: "Đọc các bài viết mới nhất về tin tức, hoạt động và thông tin của Trường Đại học Ngân hàng TP.Hồ Chí Minh",
     siteName: "Trường Đại học Ngân hàng TP.HCM",
   },
   twitter: {
-    ...appConfig.twitter,
+    ...getTwitterConfig(),
     title: "Bài viết - Trường Đại học Ngân hàng TP.HCM",
     description: "Đọc các bài viết mới nhất về tin tức, hoạt động và thông tin của Trường Đại học Ngân hàng TP.Hồ Chí Minh",
   },

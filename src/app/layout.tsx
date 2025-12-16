@@ -3,7 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/layouts/providers";
 import { Toaster } from "@/components/ui/toaster";
-import { appConfig } from "@/lib/config";
+import { appConfig, getOpenGraphConfig, getTwitterConfig } from "@/lib/config";
 import { auth } from "@/lib/auth";
 
 const geistSans = Geist({
@@ -45,8 +45,8 @@ export const metadata: Metadata = {
   creator: appConfig.creator,
   publisher: appConfig.publisher,
   applicationName: appConfig.name,
-  openGraph: appConfig.openGraph,
-  twitter: appConfig.twitter,
+  openGraph: getOpenGraphConfig(),
+  twitter: getTwitterConfig(),
   robots: appConfig.robots,
   icons: appConfig.icons,
   manifest: appConfig.manifest,
