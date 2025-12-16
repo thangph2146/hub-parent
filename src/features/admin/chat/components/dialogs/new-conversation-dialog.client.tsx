@@ -22,6 +22,12 @@ import {
   CommandList,
 } from "@/components/ui/command"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 import { Loader2, User } from "lucide-react"
 import { logger } from "@/lib/config"
 import { requestJson } from "@/lib/api/client"
@@ -105,12 +111,24 @@ export function NewConversationDialog({ onSelectUser, existingContactIds = [] }:
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="ghost" size="icon" className="h-8 w-8">
-          <User className="h-4 w-4" />
-        </Button>
-      </DialogTrigger>
+    <TooltipProvider>
+      <Tooltip disableHoverableContent>
+        <Dialog open={open} onOpenChange={setOpen}>
+          <TooltipTrigger asChild>
+            <DialogTrigger asChild>
+              <Button 
+                variant="outline" 
+                size="default" 
+                className="h-9 px-3 gap-2 hover:bg-accent"
+              >
+                <User className="h-4 w-4" />
+                <span className="inline text-sm">Trò chuyện mới</span>
+              </Button>
+            </DialogTrigger>
+          </TooltipTrigger>
+          <TooltipContent side="bottom" className={open ? "hidden" : ""}>
+            <p>Bắt đầu cuộc trò chuyện mới</p>
+          </TooltipContent>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>Chọn người để trò chuyện</DialogTitle>
@@ -161,6 +179,8 @@ export function NewConversationDialog({ onSelectUser, existingContactIds = [] }:
           </CommandList>
         </Command>
       </DialogContent>
-    </Dialog>
+        </Dialog>
+      </Tooltip>
+    </TooltipProvider>
   )
 }
