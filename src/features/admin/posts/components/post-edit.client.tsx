@@ -282,7 +282,7 @@ export function PostEditClient({
             label: "",
             type: "editor",
             section: "content",
-            className: "max-w-5xl mx-auto",
+            className: "w-full max-w-5xl mx-auto",
         }
     ]
 

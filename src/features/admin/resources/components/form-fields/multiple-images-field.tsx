@@ -383,7 +383,7 @@ export function MultipleImagesField({ value, onChange, error, disabled = false }
 
         {/* Images grid */}
         {images.length > 0 ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 -4">
             {images.map((image, index) => (
               <ImageItem
                 key={image.id || image.url}

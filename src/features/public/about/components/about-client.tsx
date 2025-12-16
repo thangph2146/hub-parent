@@ -1165,7 +1165,7 @@ export function AboutClient() {
           </div>
 
           {/* Statistics */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 md:gap-6 mb-6 sm:mb-8">
+          <div className="grid grid-cols-2 -3 sm:gap-4 md:gap-6 mb-6 sm:mb-8">
             {facilities.map((facility, index) => (
               <div key={index} className="text-center">
                 <div className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-primary mb-1 sm:mb-2">
@@ -1347,7 +1347,7 @@ export function AboutClient() {
           </div>
 
           {/* Statistics */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 md:gap-6 mb-8 sm:mb-12 lg:mb-16">
+          <div className="grid grid-cols-2 -3 sm:gap-4 md:gap-6 mb-8 sm:mb-12 lg:mb-16">
             <div className="text-center">
               <div className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-primary mb-1 sm:mb-2">
                 38
