@@ -15,19 +15,28 @@ export const metadata: Metadata = {
     absolute: "Trang chủ | Trường Đại học Ngân hàng TP.HCM",
   },
   description:
-    "Trang chủ Trường Đại học Ngân hàng TP.Hồ Chí Minh - Trường đại học công lập trực thuộc Ngân hàng Nhà nước Việt Nam",
+    "Trang chủ Trường Đại học Ngân hàng TP.Hồ Chí Minh",
   openGraph: {
     ...appConfig.openGraph,
     title: "Trang chủ - Trường Đại học Ngân hàng TP.HCM",
     description:
-      "Trang chủ Trường Đại học Ngân hàng TP.Hồ Chí Minh - Trường đại học công lập trực thuộc Ngân hàng Nhà nước Việt Nam",
+      "Trang chủ Trường Đại học Ngân hàng TP.Hồ Chí Minh",
     siteName: "Trường Đại học Ngân hàng TP.HCM",
+    images: [
+      {
+        url: "/favicon.ico",
+        width: 32,
+        height: 32,
+        alt: "Trường Đại học Ngân hàng TP.HCM",
+      },
+    ],
   },
   twitter: {
     ...appConfig.twitter,
     title: "Trang chủ - Trường Đại học Ngân hàng TP.HCM",
     description:
-      "Trang chủ Trường Đại học Ngân hàng TP.Hồ Chí Minh - Trường đại học công lập trực thuộc Ngân hàng Nhà nước Việt Nam",
+      "Trang chủ Trường Đại học Ngân hàng TP.Hồ Chí Minh",
+    images: ["/favicon.ico"],
   },
 };
 
