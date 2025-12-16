@@ -29,7 +29,6 @@ import {
   Info,
   Mail,
 } from "lucide-react";
-import { CartButton } from "@/features/public/cart/components/cart-button";
 import { Logo } from "../../../../public/svg/Logo"
 import { appFeatures } from "@/lib/config/app-features";
 import { getResourceMainRoute } from "@/lib/permissions/route-helpers";
@@ -255,8 +254,7 @@ export function PublicHeader() {
           )}
         </div>
         {mounted ? (
-          <div className="flex items-center gap-2">
-            <CartButton />
+          <div className="flex items-center gap-2"> 
             <ModeToggle />
             {isAuthenticated ? (
               <div className="hidden md:flex">

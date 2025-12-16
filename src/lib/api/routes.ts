@@ -57,12 +57,6 @@ export const apiRoutes = {
   users: getResourceRoutesOrFallback("users", "users"),
   students: getResourceRoutesOrFallback("students", "students"),
   tags: getResourceRoutesOrFallback("tags", "tags"),
-  products: {
-    ...getResourceRoutesOrFallback("products", "products"),
-    setPrimaryImage: (productId: string, imageId: string) => 
-      `/admin/products/${productId}/images/${imageId}/set-primary`,
-  },
-  orders: getResourceRoutesOrFallback("orders", "orders"),
   
   // Accounts - Personal account management
   accounts: {
@@ -183,32 +177,7 @@ export const apiRoutes = {
     createFolder: "/admin/uploads",
   },
 
-  // Public Products
-  publicProducts: {
-    list: (params?: { page?: number; limit?: number; search?: string; category?: string; featured?: boolean; sortBy?: string }) =>
-      withQuery("/public/products", params),
-    detail: (slug: string) => `/public/products/${slug}`,
-  },
 
-  // Public Cart
-  publicCart: {
-    get: "/public/cart",
-    clear: "/public/cart",
-    addItem: "/public/cart/items",
-    updateItem: (id: string) => `/public/cart/items/${id}`,
-    removeItem: (id: string) => `/public/cart/items/${id}`,
-  },
-
-  // Public Checkout
-  publicCheckout: {
-    create: "/public/checkout",
-    userInfo: "/public/checkout/user-info",
-  },
-
-  // Public Gift Code
-  publicGiftCode: {
-    validate: "/public/gift-code/validate",
-  },
 } as const
 
 /**

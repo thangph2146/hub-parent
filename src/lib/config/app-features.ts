@@ -21,9 +21,6 @@ import {
   Mail,
   HelpCircle,
   Upload,
-  ShoppingBag,
-  Package,
-  Ticket,
 } from "lucide-react"
 
 import {
@@ -397,74 +394,6 @@ export const appFeatures: FeatureDefinition[] = [
       type: "resource",
       resourceName: "contact-requests",
       alias: "contactRequests",
-    },
-  },
-  {
-    key: "products",
-    title: "Sản phẩm",
-    description: "Quản lý sản phẩm và danh mục",
-    permissions: MENU_PERMISSIONS.products,
-    icon: createIcon(ShoppingBag),
-    navigation: {
-      group: "main",
-      order: 50,
-      resourceName: "products",
-      autoGenerateSubRoutes: true,
-    },
-    api: {
-      type: "resource",
-      resourceName: "products",
-    },
-  },
-  {
-    key: "orders",
-    title: "Đơn hàng",
-    description: "Quản lý đơn hàng và thanh toán",
-    permissions: MENU_PERMISSIONS.orders,
-    icon: createIcon(Package),
-    navigation: {
-      group: "main",
-      order: 60,
-      resourceName: "orders",
-      autoGenerateSubRoutes: true,
-      subItems: [
-        {
-          title: "Danh sách đơn hàng",
-          url: "/admin/orders",
-          permissions: [PERMISSIONS.ORDERS_VIEW],
-        },
-        {
-          title: "Thanh toán",
-          url: "/admin/orders/payments",
-          permissions: [PERMISSIONS.ORDERS_VIEW, PERMISSIONS.ORDERS_UPDATE],
-        },
-        {
-          title: "Xác nhận thanh toán",
-          url: "/admin/orders/payment-confirmations",
-          permissions: [PERMISSIONS.ORDERS_UPDATE, PERMISSIONS.ORDERS_MANAGE],
-        },
-      ],
-    },
-    api: {
-      type: "resource",
-      resourceName: "orders",
-    },
-  },
-  {
-    key: "gift_codes",
-    title: "Mã giảm giá",
-    description: "Quản lý mã giảm giá và khuyến mãi",
-    permissions: MENU_PERMISSIONS.gift_codes,
-    icon: createIcon(Ticket),
-    navigation: {
-      group: "main",
-      order: 70,
-      resourceName: "gift-codes",
-      autoGenerateSubRoutes: true,
-    },
-    api: {
-      type: "resource",
-      resourceName: "gift-codes",
     },
   },
   {

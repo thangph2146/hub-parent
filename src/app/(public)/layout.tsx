@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { PublicHeader } from "@/components/layouts/headers";
 import { PublicFooter } from "@/components/layouts/footers";
-import { FloatingCartButton } from "@/features/public/cart/components";
 import { appConfig } from "@/lib/config";
 
 /**
@@ -69,7 +68,6 @@ export default function PublicLayout({
       <PublicHeader />
       {children}
       <PublicFooter />
-      <FloatingCartButton />
     </>
   );
 }

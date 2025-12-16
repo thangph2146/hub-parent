@@ -54,8 +54,6 @@ export type AdminSessionsListParams = BaseListParams
 export type AdminCategoriesListParams = BaseListParams
 export type AdminPostsListParams = BaseListParams
 export type AdminUsersListParams = BaseListParams
-export type AdminProductsListParams = BaseListParams
-export type AdminOrdersListParams = BaseListParams
 
 /**
  * Create query key with optional params
@@ -214,8 +212,6 @@ export const queryKeys = {
   adminSessions: createAdminResourceKeys("adminSessions"),
   adminCategories: createAdminResourceKeys("adminCategories"),
   adminPosts: createAdminResourceKeys("adminPosts"),
-  adminProducts: createAdminResourceKeys("adminProducts"),
-  adminOrders: createAdminResourceKeys("adminOrders"),
 } as const
 
 /**
