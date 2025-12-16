@@ -319,7 +319,7 @@ export function ResourceDetailClient<T extends Record<string, unknown>>({
           <div className="space-y-1.5 flex-1 min-w-0">
             {resolvedBackUrl && (
               <Button
-                variant="ghost"
+                variant="outline"
                 size="sm"
                 onClick={handleBack}
                 className="-ml-2"

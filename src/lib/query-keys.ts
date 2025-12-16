@@ -47,7 +47,7 @@ interface BaseListParams {
 // Export all list params types (using BaseListParams with optional status)
 export type AdminCommentsListParams = BaseListParams & { status: "active" | "deleted" | "all" }
 export type AdminContactRequestsListParams = BaseListParams
-export type AdminStudentsListParams = BaseListParams
+export type AdminStudentsListParams = BaseListParams & { status?: "active" | "inactive" | "deleted" | "all" }
 export type AdminRolesListParams = BaseListParams
 export type AdminTagsListParams = BaseListParams
 export type AdminSessionsListParams = BaseListParams

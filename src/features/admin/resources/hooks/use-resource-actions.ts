@@ -33,6 +33,10 @@ export interface ResourceActionConfig<T extends { id: string }> {
     BULK_RESTORE_ERROR: string
     BULK_HARD_DELETE_SUCCESS: string
     BULK_HARD_DELETE_ERROR: string
+    BULK_ACTIVE_SUCCESS?: string
+    BULK_ACTIVE_ERROR?: string
+    BULK_UNACTIVE_SUCCESS?: string
+    BULK_UNACTIVE_ERROR?: string
     UNKNOWN_ERROR: string
   }
   getRecordName: (row: T) => string
@@ -53,7 +57,7 @@ export interface UseResourceActionsResult<T extends { id: string }> {
     refresh: ResourceRefreshHandler
   ) => Promise<void>
   executeBulkAction: (
-    action: "delete" | "restore" | "hard-delete",
+    action: "delete" | "restore" | "hard-delete" | "active" | "unactive",
     ids: string[],
     refresh: ResourceRefreshHandler,
     clearSelection: () => void
@@ -144,7 +148,7 @@ export function useResourceActions<T extends { id: string }>(
   
   const bulkActionMutation = useMutation({
     ...createAdminMutationOptions({
-      mutationFn: async ({ action, ids }: { action: "delete" | "restore" | "hard-delete"; ids: string[] }) => {
+      mutationFn: async ({ action, ids }: { action: "delete" | "restore" | "hard-delete" | "active" | "unactive"; ids: string[] }) => {
         return apiClient.post(config.apiRoutes.bulk, { action, ids })
       },
       onSuccess: async (response, variables) => {
@@ -164,6 +168,10 @@ export function useResourceActions<T extends { id: string }>(
           ? "bulk-delete" 
           : variables.action === "restore" 
           ? "bulk-restore" 
+          : variables.action === "active"
+          ? "bulk-active"
+          : variables.action === "unactive"
+          ? "bulk-unactive"
           : "bulk-hard-delete"
         
         resourceLogger.actionFlow({
@@ -181,6 +189,10 @@ export function useResourceActions<T extends { id: string }>(
           ? "bulk-delete" 
           : variables.action === "restore" 
           ? "bulk-restore" 
+          : variables.action === "active"
+          ? "bulk-active"
+          : variables.action === "unactive"
+          ? "bulk-unactive"
           : "bulk-hard-delete"
         
         const errorMessage = error instanceof Error 
@@ -289,7 +301,7 @@ export function useResourceActions<T extends { id: string }>(
   
   const executeBulkAction = useCallback(
     async (
-      action: "delete" | "restore" | "hard-delete",
+      action: "delete" | "restore" | "hard-delete" | "active" | "unactive",
       ids: string[],
       refresh: ResourceRefreshHandler,
       clearSelection: () => void
@@ -311,6 +323,14 @@ export function useResourceActions<T extends { id: string }>(
           permission: config.permissions.canManage,
           errorMessage: "Bạn không có quyền xóa vĩnh viễn hàng loạt",
         },
+        active: {
+          permission: true, // Permission check sẽ được thực hiện ở server side
+          errorMessage: "Bạn không có quyền kích hoạt hàng loạt",
+        },
+        unactive: {
+          permission: true, // Permission check sẽ được thực hiện ở server side
+          errorMessage: "Bạn không có quyền bỏ kích hoạt hàng loạt",
+        },
       }[action]
       
       if (!actionConfig.permission) {
@@ -321,7 +341,7 @@ export function useResourceActions<T extends { id: string }>(
       
       resourceLogger.actionFlow({
         resource: config.resourceName,
-        action: action === "delete" ? "bulk-delete" : action === "restore" ? "bulk-restore" : "bulk-hard-delete",
+        action: action === "delete" ? "bulk-delete" : action === "restore" ? "bulk-restore" : action === "active" ? "bulk-active" : action === "unactive" ? "bulk-unactive" : "bulk-hard-delete",
         step: "start",
         metadata: {
           count: ids.length,
@@ -337,14 +357,14 @@ export function useResourceActions<T extends { id: string }>(
         const affected = result?.affected ?? 0
         
         if (affected === 0) {
-          const actionText = action === "restore" ? "khôi phục" : action === "delete" ? "xóa" : "xóa vĩnh viễn"
+          const actionText = action === "restore" ? "khôi phục" : action === "delete" ? "xóa" : action === "active" ? "kích hoạt" : action === "unactive" ? "bỏ kích hoạt" : "xóa vĩnh viễn"
           const errorMessage = result?.message || `Không có ${config.resourceName} nào được ${actionText}`
           config.showFeedback("error", "Không có thay đổi", errorMessage)
           clearSelection()
           
           resourceLogger.actionFlow({
             resource: config.resourceName,
-            action: action === "delete" ? "bulk-delete" : action === "restore" ? "bulk-restore" : "bulk-hard-delete",
+            action: action === "delete" ? "bulk-delete" : action === "restore" ? "bulk-restore" : action === "active" ? "bulk-active" : action === "unactive" ? "bulk-unactive" : "bulk-hard-delete",
             step: "error",
             metadata: { 
               requestedCount: ids.length, 
@@ -366,43 +386,90 @@ export function useResourceActions<T extends { id: string }>(
             description: result?.message || `Đã xóa ${affected} ${config.resourceName}` 
           },
           "hard-delete": { 
-            title: config.messages.BULK_HARD_DELETE_SUCCESS, 
+            title: config.messages.BULK_HARD_DELETE_SUCCESS,
             description: result?.message || `Đã xóa vĩnh viễn ${affected} ${config.resourceName}` 
           },
+          active: { 
+            title: config.messages.BULK_ACTIVE_SUCCESS || "Kích hoạt hàng loạt thành công",
+            description: result?.message || `Đã kích hoạt ${affected} ${config.resourceName}` 
+          },
+          unactive: { 
+            title: config.messages.BULK_UNACTIVE_SUCCESS || "Bỏ kích hoạt hàng loạt thành công",
+            description: result?.message || `Đã bỏ kích hoạt ${affected} ${config.resourceName}` 
+          },
+        }[action]
+        
+        if (!messages) {
+          config.showFeedback("error", "Lỗi", "Action không được hỗ trợ")
+          stopBulkProcessing()
+          return
         }
         
-        const message = messages[action]
-        config.showFeedback("success", message.title, message.description)
+        config.showFeedback("success", messages.title, messages.description)
         clearSelection()
         
-        if (!config.isSocketConnected) {
-          await runResourceRefresh({ refresh, resource: config.resourceName })
-        }
+        resourceLogger.actionFlow({
+          resource: config.resourceName,
+          action: action === "delete" ? "bulk-delete" : action === "restore" ? "bulk-restore" : action === "active" ? "bulk-active" : action === "unactive" ? "bulk-unactive" : "bulk-hard-delete",
+          step: "success",
+          metadata: { 
+            requestedCount: ids.length, 
+            affectedCount: affected, 
+            requestedIds: ids 
+          },
+        })
+        
+        await refresh()
+        stopBulkProcessing()
       } catch (error: unknown) {
-        // Extract error message từ response nếu có
-        let errorMessage: string = config.messages.UNKNOWN_ERROR
-        if (error && typeof error === "object" && "response" in error) {
-          const axiosError = error as { response?: { data?: { message?: string; error?: string } } }
-          errorMessage = axiosError.response?.data?.message || axiosError.response?.data?.error || config.messages.UNKNOWN_ERROR
-        } else if (error instanceof Error) {
-          errorMessage = error.message
+        const errorMessage = error instanceof Error ? error.message : config.messages.UNKNOWN_ERROR
+        
+        const errorMessages = {
+          restore: { 
+            title: config.messages.BULK_RESTORE_ERROR, 
+            description: errorMessage 
+          },
+          delete: { 
+            title: config.messages.BULK_DELETE_ERROR, 
+            description: errorMessage 
+          },
+          "hard-delete": { 
+            title: config.messages.BULK_HARD_DELETE_ERROR,
+            description: errorMessage 
+          },
+          active: { 
+            title: config.messages.BULK_ACTIVE_ERROR || "Kích hoạt hàng loạt thất bại",
+            description: errorMessage 
+          },
+          unactive: { 
+            title: config.messages.BULK_UNACTIVE_ERROR || "Bỏ kích hoạt hàng loạt thất bại",
+            description: errorMessage 
+          },
+        }[action]
+        
+        if (!errorMessages) {
+          config.showFeedback("error", "Lỗi", errorMessage)
+          stopBulkProcessing()
+          return
         }
         
-        const errorTitles = {
-          restore: config.messages.BULK_RESTORE_ERROR,
-          delete: config.messages.BULK_DELETE_ERROR,
-          "hard-delete": config.messages.BULK_HARD_DELETE_ERROR,
-        }
-        config.showFeedback("error", errorTitles[action], `Không thể thực hiện thao tác cho ${ids.length} ${config.resourceName}`, errorMessage)
+        config.showFeedback("error", errorMessages.title, errorMessages.description)
         
-        if (action !== "restore") {
-          throw error
-        }
-      } finally {
+        resourceLogger.actionFlow({
+          resource: config.resourceName,
+          action: action === "delete" ? "bulk-delete" : action === "restore" ? "bulk-restore" : action === "active" ? "bulk-active" : action === "unactive" ? "bulk-unactive" : "bulk-hard-delete",
+          step: "error",
+          metadata: { 
+            requestedCount: ids.length, 
+            error: errorMessage, 
+            requestedIds: ids 
+          },
+        })
+        
         stopBulkProcessing()
       }
     },
-    [config, bulkActionMutation, startBulkProcessing, stopBulkProcessing]
+    [config, startBulkProcessing, stopBulkProcessing, bulkActionMutation],
   )
   
   return {

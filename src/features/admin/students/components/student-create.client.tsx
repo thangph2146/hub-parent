@@ -9,12 +9,14 @@ export interface StudentCreateClientProps {
   backUrl?: string
   users?: Array<{ label: string; value: string }>
   isSuperAdmin?: boolean
+  canActivate?: boolean
 }
 
 export function StudentCreateClient({ 
   backUrl = "/admin/students", 
   users: usersFromServer = [],
   isSuperAdmin = false,
+  canActivate = false,
 }: StudentCreateClientProps) {
   const { handleSubmit } = useResourceFormSubmit({
     apiRoute: apiRoutes.students.create,
@@ -34,11 +36,14 @@ export function StudentCreateClient({
       if (!isSuperAdmin) {
         delete submitData.userId
       }
+      if (!canActivate) {
+        delete submitData.isActive
+      }
       return submitData
     },
   })
 
-  const createFields = getBaseStudentFields(usersFromServer, isSuperAdmin)
+  const createFields = getBaseStudentFields(usersFromServer, isSuperAdmin, canActivate)
   const formSections = getStudentFormSections()
 
   return (
@@ -61,4 +66,3 @@ export function StudentCreateClient({
     />
   )
 }
-

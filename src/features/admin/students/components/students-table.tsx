@@ -7,8 +7,11 @@ export interface StudentsTableProps {
   canRestore?: boolean
   canManage?: boolean
   canCreate?: boolean
+  canUpdate?: boolean
+  canActivate?: boolean
   actorId?: string
   isSuperAdmin?: boolean
+  isParent?: boolean
 }
 
 export async function StudentsTable({ 
@@ -16,13 +19,20 @@ export async function StudentsTable({
   canRestore, 
   canManage, 
   canCreate,
+  canUpdate,
+  canActivate,
   actorId,
   isSuperAdmin: isSuperAdminUser = false,
+  isParent = false,
 }: StudentsTableProps) {
+  // Parent xem tất cả students (kể cả inactive), default status = "all"
+  // Admin/SuperAdmin xem active students, default status = "active"
+  const defaultStatus = isParent ? "all" : "active"
+  
   const studentsData = await listStudents({
     page: 1,
     limit: 10,
-    status: "active",
+    status: defaultStatus,
     actorId,
     isSuperAdmin: isSuperAdminUser,
   })
@@ -33,8 +43,10 @@ export async function StudentsTable({
       canRestore={canRestore}
       canManage={canManage}
       canCreate={canCreate}
+      canUpdate={canUpdate}
+      canActivate={canActivate}
+      isParent={isParent}
       initialData={serializeStudentsList(studentsData)}
     />
   )
 }
-

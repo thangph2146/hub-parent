@@ -11,7 +11,10 @@ export interface StudentRow {
   deletedAt: string | null
 }
 
-export type StudentsTableClientProps = BaseResourceTableClientProps<StudentRow>
+export interface StudentsTableClientProps extends BaseResourceTableClientProps<StudentRow> {
+  canActivate?: boolean
+  isParent?: boolean
+}
 
 export type StudentsResponse = ResourceResponse<StudentRow>
 
@@ -20,7 +23,7 @@ export interface ListStudentsInput {
   limit?: number
   search?: string
   filters?: Record<string, string>
-  status?: "active" | "deleted" | "all"
+  status?: "active" | "inactive" | "deleted" | "all"
   actorId?: string
   isSuperAdmin?: boolean
 }
@@ -67,4 +70,3 @@ export interface BulkActionResult {
 
 // Types are now exported from schemas.ts
 export type { CreateStudentInput, UpdateStudentInput, BulkStudentActionInput } from "./server/schemas"
-

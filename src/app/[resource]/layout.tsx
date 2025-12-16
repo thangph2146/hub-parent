@@ -1,7 +1,7 @@
 import { Suspense } from "react"
 import type { Metadata } from "next"
 import { getSession } from "@/lib/auth/auth-server"
-import { getMenuData } from "@/lib/config"
+import { getMenuData, appConfig } from "@/lib/config"
 import { AppSidebar } from "@/components/layouts/navigation"
 import { NavMainWithBadges } from "@/components/layouts/navigation/nav-main-with-badges"
 import { NavMainSkeleton } from "@/components/layouts/skeletons"
@@ -17,13 +17,27 @@ import { ResourceSegmentProvider } from "@/hooks/use-resource-segment"
  * Theo Next.js 16 best practices:
  * - Metadata được merge với root layout
  * - Title sử dụng template từ root để có format nhất quán
+ * - Metadata phù hợp với CMS/Admin panel
+ * - Admin pages không nên được index bởi search engines
  */
 export const metadata: Metadata = {
-  title: "Quản trị",
-  description: "Trang quản trị hệ thống CMS",
+  title: "CMS - Hệ thống quản trị",
+  description: "Hệ thống quản trị nội dung (CMS) - Quản lý người dùng, bài viết, học sinh và các tài nguyên khác",
+  keywords: ["CMS", "Content Management System", "Quản trị nội dung", "Admin Panel", "Hệ thống quản lý"],
   robots: {
     index: false, // Admin pages không nên được index
     follow: false,
+  },
+  openGraph: {
+    ...appConfig.openGraph,
+    title: "CMS - Hệ thống quản trị nội dung",
+    description: "Hệ thống quản trị nội dung (CMS) - Quản lý người dùng, bài viết, học sinh và các tài nguyên khác",
+    siteName: "CMS - Hệ thống quản trị",
+  },
+  twitter: {
+    ...appConfig.twitter,
+    title: "CMS - Hệ thống quản trị nội dung",
+    description: "Hệ thống quản trị nội dung (CMS) - Quản lý người dùng, bài viết, học sinh và các tài nguyên khác",
   },
 }
 

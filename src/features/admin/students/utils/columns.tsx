@@ -1,5 +1,7 @@
 import { useMemo } from "react"
 import { Switch } from "@/components/ui/switch"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { AlertCircle } from "lucide-react"
 import type { DataTableColumn } from "@/components/tables"
 import { useDynamicFilterOptions } from "@/features/admin/resources/hooks/use-dynamic-filter-options"
 import { apiRoutes } from "@/lib/api/routes"
@@ -8,11 +10,12 @@ import { STUDENT_LABELS } from "../constants/messages"
 
 interface UseStudentColumnsOptions {
   togglingStudents: Set<string>
-  canManage: boolean
+  canToggleStatus: boolean
   onToggleStatus: (row: StudentRow, checked: boolean) => void
+  isParent?: boolean
 }
 
-export function useStudentColumns({ togglingStudents, canManage, onToggleStatus }: UseStudentColumnsOptions) {
+export function useStudentColumns({ togglingStudents, canToggleStatus, onToggleStatus, isParent = false }: UseStudentColumnsOptions) {
   const studentCodeFilter = useDynamicFilterOptions({
     optionsEndpoint: apiRoutes.students.options({ column: "studentCode" }),
   })
@@ -34,8 +37,8 @@ export function useStudentColumns({ togglingStudents, canManage, onToggleStatus 
     [],
   )
 
-  const baseColumns = useMemo<DataTableColumn<StudentRow>[]>(
-    () => [
+  const baseColumns = useMemo<DataTableColumn<StudentRow>[]>(() => {
+    const columns: DataTableColumn<StudentRow>[] = [
       {
         accessorKey: "studentCode",
         header: STUDENT_LABELS.STUDENT_CODE,
@@ -83,7 +86,10 @@ export function useStudentColumns({ togglingStudents, canManage, onToggleStatus 
         headerClassName: "min-w-[180px] max-w-[250px]",
         cell: (row) => row.email ?? <span className="text-muted-foreground">-</span>,
       },
-      {
+    ]
+
+    if (canToggleStatus) {
+      columns.push({
         accessorKey: "isActive",
         header: STUDENT_LABELS.STATUS,
         filter: {
@@ -107,7 +113,7 @@ export function useStudentColumns({ togglingStudents, canManage, onToggleStatus 
             <div className="flex items-center gap-2">
               <Switch
                 checked={row.isActive}
-                disabled={togglingStudents.has(row.id) || !canManage}
+                disabled={togglingStudents.has(row.id) || !canToggleStatus}
                 onCheckedChange={(checked) => onToggleStatus(row, checked)}
                 aria-label={row.isActive ? "Vô hiệu hóa học sinh" : "Kích hoạt học sinh"}
               />
@@ -116,42 +122,72 @@ export function useStudentColumns({ togglingStudents, canManage, onToggleStatus 
               </span>
             </div>
           ),
+      })
+    }
+
+    columns.push({
+      accessorKey: "createdAt",
+      header: STUDENT_LABELS.CREATED_AT,
+      filter: {
+        type: "date",
+        placeholder: "Chọn ngày tạo",
+        dateFormat: "dd/MM/yyyy",
       },
-      {
-        accessorKey: "createdAt",
-        header: STUDENT_LABELS.CREATED_AT,
-        filter: {
-          type: "date",
-          placeholder: "Chọn ngày tạo",
-          dateFormat: "dd/MM/yyyy",
-        },
-        className: "min-w-[140px] max-w-[180px]",
-        headerClassName: "min-w-[140px] max-w-[180px]",
+      className: "min-w-[140px] max-w-[180px]",
+      headerClassName: "min-w-[140px] max-w-[180px]",
+      cell: (row) => {
+        try {
+          return dateFormatter.format(new Date(row.createdAt))
+        } catch {
+          return row.createdAt
+        }
+      },
+    })
+
+    // Thêm cột thông báo cho parent khi student chưa active
+    if (isParent) {
+      columns.push({
+        accessorKey: "id" as keyof StudentRow, // Sử dụng id làm accessorKey vì pendingApproval không có trong StudentRow
+        header: "Thông báo",
+        className: "min-w-[300px] max-w-[500px]",
+        headerClassName: "min-w-[300px] max-w-[500px]",
         cell: (row) => {
-          try {
-            return dateFormatter.format(new Date(row.createdAt))
-          } catch {
-            return row.createdAt
+          // Chỉ hiển thị thông báo nếu student chưa active và chưa bị xóa
+          if (!row.isActive && !row.deletedAt) {
+            return (
+              <Alert variant="default" className="border-yellow-200 bg-yellow-50 dark:border-yellow-800 dark:bg-yellow-900/20">
+                <AlertCircle className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
+                <AlertTitle className="text-sm font-semibold text-yellow-800 dark:text-yellow-200">
+                  {STUDENT_LABELS.PENDING_APPROVAL_TITLE}
+                </AlertTitle>
+                <AlertDescription className="text-xs text-yellow-700 dark:text-yellow-300 mt-1">
+                  {STUDENT_LABELS.PENDING_APPROVAL_MESSAGE}
+                </AlertDescription>
+              </Alert>
+            )
           }
+          return <span className="text-muted-foreground text-xs">-</span>
         },
-      },
-    ],
-    [
-      dateFormatter,
-      studentCodeFilter.options,
-      studentCodeFilter.onSearchChange,
-      studentCodeFilter.isLoading,
-      nameFilter.options,
-      nameFilter.onSearchChange,
-      nameFilter.isLoading,
-      emailFilter.options,
-      emailFilter.onSearchChange,
-      emailFilter.isLoading,
-      togglingStudents,
-      canManage,
-      onToggleStatus,
-    ],
-  )
+      })
+    }
+
+    return columns
+  }, [
+    isParent,
+    canToggleStatus,
+    dateFormatter,
+    emailFilter.isLoading,
+    emailFilter.onSearchChange,
+    emailFilter.options,
+    nameFilter.isLoading,
+    nameFilter.onSearchChange,
+    nameFilter.options,
+    onToggleStatus,
+    studentCodeFilter.isLoading,
+    studentCodeFilter.onSearchChange,
+    studentCodeFilter.options,
+    togglingStudents,
+  ])
 
   const deletedColumns = useMemo<DataTableColumn<StudentRow>[]>(
     () => [
@@ -184,4 +220,3 @@ export function useStudentColumns({ togglingStudents, canManage, onToggleStatus 
     deletedColumns,
   }
 }
-

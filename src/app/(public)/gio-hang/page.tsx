@@ -17,6 +17,9 @@ async function getCart() {
   return response.data
 }
 
+// Note: Metadata không thể export từ client component
+// Metadata sẽ được lấy từ layout.tsx hoặc có thể thêm vào layout riêng
+
 export default function CartPage() {
   const { data: cart, isLoading } = useQuery({
     queryKey: CART_QUERY_KEY,
@@ -210,4 +213,3 @@ export default function CartPage() {
     </div>
   )
 }
-

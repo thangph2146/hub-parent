@@ -38,6 +38,17 @@ async function StudentsTableContent() {
   ])
   const canManage = canPerformAction(permissions, roles, PERMISSIONS.STUDENTS_MANAGE)
   const canCreate = canPerformAction(permissions, roles, PERMISSIONS.STUDENTS_CREATE)
+  const canUpdate = canPerformAnyAction(permissions, roles, [
+    PERMISSIONS.STUDENTS_UPDATE,
+    PERMISSIONS.STUDENTS_MANAGE,
+  ])
+  const canActivate = canPerformAnyAction(permissions, roles, [
+    PERMISSIONS.STUDENTS_ACTIVE,
+    PERMISSIONS.STUDENTS_MANAGE,
+  ])
+
+  // Check if user is parent
+  const isParent = roles.some((role) => role.name?.toLowerCase() === "parent")
 
   return (
     <StudentsTable
@@ -45,8 +56,11 @@ async function StudentsTableContent() {
       canRestore={canRestore}
       canManage={canManage}
       canCreate={canCreate}
+      canUpdate={canUpdate}
+      canActivate={canActivate}
       actorId={actorId}
       isSuperAdmin={isSuperAdminUser}
+      isParent={isParent}
     />
   )
 }
@@ -63,4 +77,3 @@ export default async function StudentsPage() {
     </>
   )
 }
-

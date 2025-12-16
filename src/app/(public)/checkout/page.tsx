@@ -1,4 +1,22 @@
+import type { Metadata } from "next"
+import { appConfig } from "@/lib/config"
 import { CheckoutForm } from "@/features/public/checkout/components"
+
+export const metadata: Metadata = {
+  title: "Thanh toán",
+  description: "Thanh toán đơn hàng - Trường Đại học Ngân hàng TP.Hồ Chí Minh",
+  openGraph: {
+    ...appConfig.openGraph,
+    title: "Thanh toán - Trường Đại học Ngân hàng TP.HCM",
+    description: "Thanh toán đơn hàng - Trường Đại học Ngân hàng TP.Hồ Chí Minh",
+    siteName: "Trường Đại học Ngân hàng TP.HCM",
+  },
+  twitter: {
+    ...appConfig.twitter,
+    title: "Thanh toán - Trường Đại học Ngân hàng TP.HCM",
+    description: "Thanh toán đơn hàng - Trường Đại học Ngân hàng TP.Hồ Chí Minh",
+  },
+}
 
 export default function CheckoutPage() {
   return (

@@ -14,6 +14,7 @@ interface UseStudentActionsOptions {
   canDelete: boolean
   canRestore: boolean
   canManage: boolean
+  canActivate: boolean
   isSocketConnected?: boolean
   showFeedback: (variant: FeedbackVariant, title: string, description?: string, details?: string) => void
 }
@@ -22,6 +23,7 @@ export function useStudentActions({
   canDelete,
   canRestore,
   canManage,
+  canActivate,
   isSocketConnected,
   showFeedback,
 }: UseStudentActionsOptions) {
@@ -63,8 +65,8 @@ export function useStudentActions({
 
   const handleToggleStatus = useCallback(
     async (row: StudentRow, newStatus: boolean, _refresh: ResourceRefreshHandler) => {
-      if (!canManage) {
-        showFeedback("error", STUDENT_MESSAGES.NO_PERMISSION, STUDENT_MESSAGES.NO_MANAGE_PERMISSION)
+      if (!canActivate) {
+        showFeedback("error", STUDENT_MESSAGES.NO_PERMISSION, STUDENT_MESSAGES.NO_ACTIVE_PERMISSION)
         return
       }
 
@@ -106,7 +108,7 @@ export function useStudentActions({
         })
       }
     },
-    [canManage, showFeedback, queryClient],
+    [canActivate, showFeedback, queryClient],
   )
 
   return {

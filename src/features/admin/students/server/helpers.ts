@@ -41,8 +41,26 @@ export function mapStudentRecord(student: StudentWithRelations): ListedStudent {
 export function buildWhereClause(params: ListStudentsInput): Prisma.StudentWhereInput {
   const where: Prisma.StudentWhereInput = {}
 
-  // Apply status filter
-  applyStatusFilter(where, params.status)
+  // Xử lý status filter
+  // inactive được xử lý riêng vì applyStatusFilter không hỗ trợ "inactive"
+  if (params.status === "inactive") {
+    // inactive status: chỉ hiển thị students không bị xóa và isActive = false
+    where.deletedAt = null
+    where.isActive = false
+  } else {
+    // Apply status filter cho active/deleted/all
+    const statusForFilter = params.status === "active" || params.status === "deleted" || params.status === "all" 
+      ? params.status 
+      : undefined
+    applyStatusFilter(where, statusForFilter)
+    
+    // Xử lý filter theo isActive dựa trên status
+    // Nếu status = "active" và không có filter isActive cụ thể, chỉ hiển thị students active
+    // Nếu status = "all" hoặc "deleted", không filter theo isActive (trừ khi có filter cụ thể)
+    if (params.status === "active" && !params.filters?.isActive) {
+      where.isActive = true
+    }
+  }
 
   // Filter by userId if not super admin
   if (!params.isSuperAdmin && params.actorId) {
@@ -66,6 +84,7 @@ export function buildWhereClause(params: ListStudentsInput): Prisma.StudentWhere
           applyStringFilter(where, key, value)
           break
         case "isActive":
+          // Override status-based filter nếu có filter isActive cụ thể
           applyBooleanFilter(where, key, value)
           break
         case "status":

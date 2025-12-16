@@ -1,7 +1,7 @@
 import { PrismaClient, Prisma } from "@prisma/client"
 import bcrypt from "bcryptjs"
 
-import { DEFAULT_ROLES } from "../src/lib/permissions"
+import { DEFAULT_ROLES, PERMISSIONS } from "../src/lib/permissions"
 
 const prisma = new PrismaClient()
 
@@ -453,7 +453,15 @@ const defaultRoleConfigs: RoleConfig<DefaultRoleKey>[] = (
   permissions: [...role.permissions],
 }))
 
-const roleConfigs: RoleConfig[] = defaultRoleConfigs
+const roleConfigs: RoleConfig[] = defaultRoleConfigs.map((role) => {
+  if (role.name === DEFAULT_ROLES.PARENT.name) {
+    return {
+      ...role,
+      permissions: role.permissions.filter((permission) => permission !== PERMISSIONS.STUDENTS_ACTIVE),
+    }
+  }
+  return role
+})
 
 const resetDatabase = async () => {
   await prisma.$transaction(
@@ -2105,4 +2113,3 @@ main()
   .finally(async () => {
     await prisma.$disconnect()
   })
-

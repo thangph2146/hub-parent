@@ -10,16 +10,17 @@ import { CollapsibleSection } from "@/features/public/post/components/collapsibl
 
 export const metadata: Metadata = {
   title: "Bài viết",
-  description: "Đọc các bài viết mới nhất từ chúng tôi",
+  description: "Đọc các bài viết mới nhất về tin tức, hoạt động và thông tin của Trường Đại học Ngân hàng TP.Hồ Chí Minh",
   openGraph: {
     ...appConfig.openGraph,
-    title: "Bài viết - CMS",
-    description: "Đọc các bài viết mới nhất từ chúng tôi",
+    title: "Bài viết - Trường Đại học Ngân hàng TP.HCM",
+    description: "Đọc các bài viết mới nhất về tin tức, hoạt động và thông tin của Trường Đại học Ngân hàng TP.Hồ Chí Minh",
+    siteName: "Trường Đại học Ngân hàng TP.HCM",
   },
   twitter: {
     ...appConfig.twitter,
-    title: "Bài viết - CMS",
-    description: "Đọc các bài viết mới nhất từ chúng tôi",
+    title: "Bài viết - Trường Đại học Ngân hàng TP.HCM",
+    description: "Đọc các bài viết mới nhất về tin tức, hoạt động và thông tin của Trường Đại học Ngân hàng TP.Hồ Chí Minh",
   },
 }
 

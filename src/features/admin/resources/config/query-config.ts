@@ -1,9 +1,9 @@
 import type { UseQueryOptions, UseMutationOptions } from "@tanstack/react-query"
 
 export const ADMIN_QUERY_DEFAULTS = {
-  staleTime: 0 as const,
+  staleTime: 30 * 1000, // 30 seconds - giảm số lần refetch không cần thiết
   gcTime: 5 * 60 * 1000,
-  refetchOnMount: "always" as const,
+  refetchOnMount: false as const, // Chỉ refetch khi data thực sự stale
   refetchOnWindowFocus: false as const,
   refetchOnReconnect: false as const,
 } satisfies Partial<UseQueryOptions<unknown, Error>>
@@ -43,7 +43,7 @@ export function createAdminFetchOptions<TData = unknown>(
   queryFn: () => Promise<TData>
   staleTime: number
   gcTime: number
-  refetchOnMount: "always"
+  refetchOnMount: false
   refetchOnWindowFocus: false
   refetchOnReconnect: false
 } {

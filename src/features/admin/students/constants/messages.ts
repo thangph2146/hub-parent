@@ -15,14 +15,19 @@ export const STUDENT_MESSAGES = {
   BULK_DELETE_SUCCESS: "Xóa hàng loạt thành công",
   BULK_RESTORE_SUCCESS: "Khôi phục hàng loạt thành công",
   BULK_HARD_DELETE_SUCCESS: "Xóa vĩnh viễn hàng loạt thành công",
+  BULK_ACTIVE_SUCCESS: "Kích hoạt hàng loạt thành công",
+  BULK_UNACTIVE_SUCCESS: "Bỏ kích hoạt hàng loạt thành công",
   
   BULK_DELETE_ERROR: "Xóa hàng loạt thất bại",
   BULK_RESTORE_ERROR: "Khôi phục hàng loạt thất bại",
   BULK_HARD_DELETE_ERROR: "Xóa vĩnh viễn hàng loạt thất bại",
+  BULK_ACTIVE_ERROR: "Kích hoạt hàng loạt thất bại",
+  BULK_UNACTIVE_ERROR: "Bỏ kích hoạt hàng loạt thất bại",
   
   // Permission errors
   NO_PERMISSION: "Không có quyền",
   NO_MANAGE_PERMISSION: "Bạn không có quyền thay đổi trạng thái học sinh",
+  NO_ACTIVE_PERMISSION: "Bạn không có quyền kích hoạt học sinh",
   
   // Generic errors
   UNKNOWN_ERROR: "Đã xảy ra lỗi không xác định",
@@ -51,11 +56,13 @@ export const STUDENT_LABELS = {
   
   // View mode labels
   ACTIVE_VIEW: "Đang hoạt động",
+  INACTIVE_VIEW: "Tạm khóa",
   DELETED_VIEW: "Đã xóa",
   ALL_VIEW: "Tất cả",
   
   // Empty messages
   NO_STUDENTS: "Không tìm thấy học sinh nào phù hợp",
+  NO_INACTIVE_STUDENTS: "Không tìm thấy học sinh tạm khóa nào",
   NO_DELETED_STUDENTS: "Không tìm thấy học sinh đã xóa nào",
   
   // Selection messages
@@ -64,6 +71,8 @@ export const STUDENT_LABELS = {
   DELETE_SELECTED: (count: number) => `Xóa đã chọn (${count})`,
   RESTORE_SELECTED: (count: number) => `Khôi phục (${count})`,
   HARD_DELETE_SELECTED: (count: number) => `Xóa vĩnh viễn (${count})`,
+  ACTIVE_SELECTED: (count: number) => `Kích hoạt (${count})`,
+  UNACTIVE_SELECTED: (count: number) => `Bỏ kích hoạt (${count})`,
   
   // Titles
   MANAGE_STUDENTS: "Quản lý học sinh",
@@ -76,6 +85,10 @@ export const STUDENT_LABELS = {
   STATUS: "Trạng thái",
   CREATED_AT: "Ngày tạo",
   DELETED_AT: "Ngày xóa",
+  
+  // Pending approval messages
+  PENDING_APPROVAL_TITLE: "Đang chờ xét duyệt",
+  PENDING_APPROVAL_MESSAGE: "Hồ sơ học sinh đang được xem xét và sẽ được xét duyệt trong thời gian sớm nhất. Quý phụ huynh vui lòng chờ trong vòng 24 giờ. Nếu cần hỗ trợ gấp, vui lòng liên hệ với chúng tôi để được hỗ trợ nhanh chóng.",
 } as const
 
 export const STUDENT_CONFIRM_MESSAGES = {
@@ -105,4 +118,3 @@ export const STUDENT_CONFIRM_MESSAGES = {
   HARD_DELETE_LABEL: "Xóa vĩnh viễn",
   CANCEL_LABEL: "Hủy",
 } as const
-

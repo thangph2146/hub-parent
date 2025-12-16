@@ -33,7 +33,7 @@ async function getStudentsHandler(req: NextRequest, context: ApiRouteContext) {
 
   const searchValidation = sanitizeSearchQuery(searchParams.get("search") || "", 200)
   const statusParam = searchParams.get("status") || "active"
-  const status = statusParam === "deleted" || statusParam === "all" ? statusParam : "active"
+  const status = statusParam === "deleted" || statusParam === "all" || statusParam === "inactive" ? statusParam : "active"
 
   const columnFilters: Record<string, string> = {}
   searchParams.forEach((value, key) => {

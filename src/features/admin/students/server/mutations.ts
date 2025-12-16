@@ -70,7 +70,7 @@ export async function createStudent(ctx: AuthContext, input: CreateStudentInput)
       name: validatedInput.name?.trim() || null,
       email: validatedInput.email?.trim() || null,
       userId: finalUserId,
-      isActive: validatedInput.isActive ?? true,
+      isActive: validatedInput.isActive ?? false, // Mặc định false, cần xét duyệt
     },
     include: {
       user: {
@@ -198,6 +198,11 @@ export async function updateStudent(ctx: AuthContext, id: string, input: UpdateS
 
   if (validatedInput.isActive !== undefined) {
     if (validatedInput.isActive !== existing.isActive) {
+      // Chỉ cho phép active student nếu có permission STUDENTS_ACTIVE hoặc STUDENTS_MANAGE
+      if (validatedInput.isActive && !canPerformAnyAction(ctx.permissions, ctx.roles, [PERMISSIONS.STUDENTS_ACTIVE, PERMISSIONS.STUDENTS_MANAGE])) {
+        logActionFlow("students", "update", "error", { studentId: id, error: "Không có quyền kích hoạt học sinh" }, startTime)
+        throw new ForbiddenError("Bạn không có quyền kích hoạt học sinh")
+      }
       updateData.isActive = validatedInput.isActive
       changes.isActive = { old: existing.isActive, new: validatedInput.isActive }
     }
@@ -557,6 +562,208 @@ export async function bulkRestoreStudents(ctx: AuthContext, ids: string[]): Prom
   }
 
   return { success: true, message, affected: result.count }
+}
+
+export async function bulkActiveStudents(ctx: AuthContext, ids: string[]): Promise<BulkActionResult> {
+  const startTime = Date.now()
+  logActionFlow("students", "bulk-active", "start", { count: ids.length, studentIds: ids, actorId: ctx.actorId })
+
+  // Cần permission STUDENTS_ACTIVE hoặc STUDENTS_MANAGE để active students
+  if (!canPerformAnyAction(ctx.permissions, ctx.roles, [PERMISSIONS.STUDENTS_ACTIVE, PERMISSIONS.STUDENTS_MANAGE])) {
+    logActionFlow("students", "bulk-active", "error", { error: "Không có quyền kích hoạt học sinh" }, startTime)
+    throw new ForbiddenError("Bạn không có quyền kích hoạt học sinh")
+  }
+
+  if (!ids || ids.length === 0) {
+    logActionFlow("students", "bulk-active", "error", { error: "Danh sách học sinh trống" }, startTime)
+    throw new ApplicationError("Danh sách học sinh trống", 400)
+  }
+
+  const validationResult = BulkStudentActionSchema.safeParse({ action: "active", ids })
+  if (!validationResult.success) {
+    const firstError = validationResult.error.issues[0]
+    logActionFlow("students", "bulk-active", "error", { error: firstError?.message || "Dữ liệu không hợp lệ" }, startTime)
+    throw new ApplicationError(firstError?.message || "Dữ liệu không hợp lệ", 400)
+  }
+
+  const students = await prisma.student.findMany({
+    where: {
+      id: { in: ids },
+      deletedAt: null, // Chỉ active students chưa bị xóa
+    },
+    select: { id: true, studentCode: true, name: true, isActive: true },
+  })
+
+  const foundIds = students.map(s => s.id)
+  const notFoundIds = ids.filter(id => !foundIds.includes(id))
+
+  logActionFlow("students", "bulk-active", "start", {
+    requestedCount: ids.length,
+    foundCount: students.length,
+    notFoundCount: notFoundIds.length,
+    requestedIds: ids,
+    foundIds,
+    notFoundIds,
+  })
+
+  if (students.length === 0) {
+    const errorMessage = `Không tìm thấy học sinh nào để kích hoạt`
+    logActionFlow("students", "bulk-active", "error", {
+      requestedCount: ids.length,
+      foundCount: students.length,
+      notFoundCount: notFoundIds.length,
+      error: errorMessage,
+    }, startTime)
+    throw new ApplicationError(errorMessage, 400)
+  }
+
+  // Chỉ active những students chưa active
+  const studentsToActive = students.filter(s => !s.isActive)
+  const alreadyActiveIds = students.filter(s => s.isActive).map(s => s.id)
+
+  if (studentsToActive.length === 0) {
+    const message = `Tất cả ${students.length} học sinh đã được kích hoạt`
+    logActionFlow("students", "bulk-active", "success", { requestedCount: ids.length, alreadyActiveCount: students.length }, startTime)
+    return {
+      success: true,
+      message,
+      affected: 0,
+    }
+  }
+
+  const result = await prisma.student.updateMany({
+    where: {
+      id: { in: studentsToActive.map(s => s.id) },
+    },
+    data: {
+      isActive: true,
+      updatedAt: new Date(),
+    },
+  })
+
+  if (result.count > 0 && studentsToActive.length > 0) {
+    const updatedStudents = studentsToActive.map(s => ({
+      id: s.id,
+      studentCode: s.studentCode,
+      name: s.name,
+    }))
+
+    await emitStudentBatchUpsert(updatedStudents.map(s => s.id), "active")
+    await notifySuperAdminsOfBulkStudentAction("active", ctx.actorId, updatedStudents)
+  }
+
+  const affectedCount = result.count
+  const message = affectedCount > 0
+    ? `Đã kích hoạt ${affectedCount} học sinh${alreadyActiveIds.length > 0 ? ` (${alreadyActiveIds.length} học sinh đã được kích hoạt trước đó)` : ""}`
+    : "Không có học sinh nào được kích hoạt"
+
+  logActionFlow("students", "bulk-active", "success", { requestedCount: ids.length, affectedCount: result.count }, startTime)
+  return {
+    success: true,
+    message,
+    affected: result.count,
+  }
+}
+
+export async function bulkUnactiveStudents(ctx: AuthContext, ids: string[]): Promise<BulkActionResult> {
+  const startTime = Date.now()
+  logActionFlow("students", "bulk-unactive", "start", { count: ids.length, studentIds: ids, actorId: ctx.actorId })
+
+  // Cần permission STUDENTS_ACTIVE hoặc STUDENTS_MANAGE để unactive students
+  if (!canPerformAnyAction(ctx.permissions, ctx.roles, [PERMISSIONS.STUDENTS_ACTIVE, PERMISSIONS.STUDENTS_MANAGE])) {
+    logActionFlow("students", "bulk-unactive", "error", { error: "Không có quyền bỏ kích hoạt học sinh" }, startTime)
+    throw new ForbiddenError("Bạn không có quyền bỏ kích hoạt học sinh")
+  }
+
+  if (!ids || ids.length === 0) {
+    logActionFlow("students", "bulk-unactive", "error", { error: "Danh sách học sinh trống" }, startTime)
+    throw new ApplicationError("Danh sách học sinh trống", 400)
+  }
+
+  const validationResult = BulkStudentActionSchema.safeParse({ action: "unactive", ids })
+  if (!validationResult.success) {
+    const firstError = validationResult.error.issues[0]
+    logActionFlow("students", "bulk-unactive", "error", { error: firstError?.message || "Dữ liệu không hợp lệ" }, startTime)
+    throw new ApplicationError(firstError?.message || "Dữ liệu không hợp lệ", 400)
+  }
+
+  const students = await prisma.student.findMany({
+    where: {
+      id: { in: ids },
+      deletedAt: null, // Chỉ unactive students chưa bị xóa
+    },
+    select: { id: true, studentCode: true, name: true, isActive: true },
+  })
+
+  const foundIds = students.map(s => s.id)
+  const notFoundIds = ids.filter(id => !foundIds.includes(id))
+
+  logActionFlow("students", "bulk-unactive", "start", {
+    requestedCount: ids.length,
+    foundCount: students.length,
+    notFoundCount: notFoundIds.length,
+    requestedIds: ids,
+    foundIds,
+    notFoundIds,
+  })
+
+  if (students.length === 0) {
+    const errorMessage = `Không tìm thấy học sinh nào để bỏ kích hoạt`
+    logActionFlow("students", "bulk-unactive", "error", {
+      requestedCount: ids.length,
+      foundCount: students.length,
+      notFoundCount: notFoundIds.length,
+      error: errorMessage,
+    }, startTime)
+    throw new ApplicationError(errorMessage, 400)
+  }
+
+  // Chỉ unactive những students đang active
+  const studentsToUnactive = students.filter(s => s.isActive)
+  const alreadyInactiveIds = students.filter(s => !s.isActive).map(s => s.id)
+
+  if (studentsToUnactive.length === 0) {
+    const message = `Tất cả ${students.length} học sinh đã được bỏ kích hoạt`
+    logActionFlow("students", "bulk-unactive", "success", { requestedCount: ids.length, alreadyInactiveCount: students.length }, startTime)
+    return {
+      success: true,
+      message,
+      affected: 0,
+    }
+  }
+
+  const result = await prisma.student.updateMany({
+    where: {
+      id: { in: studentsToUnactive.map(s => s.id) },
+    },
+    data: {
+      isActive: false,
+      updatedAt: new Date(),
+    },
+  })
+
+  if (result.count > 0 && studentsToUnactive.length > 0) {
+    const updatedStudents = studentsToUnactive.map(s => ({
+      id: s.id,
+      studentCode: s.studentCode,
+      name: s.name,
+    }))
+
+    await emitStudentBatchUpsert(updatedStudents.map(s => s.id), "active")
+    await notifySuperAdminsOfBulkStudentAction("unactive", ctx.actorId, updatedStudents)
+  }
+
+  const affectedCount = result.count
+  const message = affectedCount > 0
+    ? `Đã bỏ kích hoạt ${affectedCount} học sinh${alreadyInactiveIds.length > 0 ? ` (${alreadyInactiveIds.length} học sinh đã được bỏ kích hoạt trước đó)` : ""}`
+    : "Không có học sinh nào được bỏ kích hoạt"
+
+  logActionFlow("students", "bulk-unactive", "success", { requestedCount: ids.length, affectedCount: result.count }, startTime)
+  return {
+    success: true,
+    message,
+    affected: result.count,
+  }
 }
 
 export async function hardDeleteStudent(ctx: AuthContext, id: string): Promise<void> {

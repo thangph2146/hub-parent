@@ -6,6 +6,8 @@ import {
   bulkSoftDeleteStudents,
   bulkRestoreStudents,
   bulkHardDeleteStudents,
+  bulkActiveStudents,
+  bulkUnactiveStudents,
   type AuthContext,
   ApplicationError,
 } from "@/features/admin/students/server/mutations"
@@ -44,6 +46,10 @@ async function bulkStudentsHandler(req: NextRequest, context: ApiRouteContext) {
       result = await bulkRestoreStudents(ctx, validatedBody.ids)
     } else if (validatedBody.action === "hard-delete") {
       result = await bulkHardDeleteStudents(ctx, validatedBody.ids)
+    } else if (validatedBody.action === "active") {
+      result = await bulkActiveStudents(ctx, validatedBody.ids)
+    } else if (validatedBody.action === "unactive") {
+      result = await bulkUnactiveStudents(ctx, validatedBody.ids)
     } else {
       return NextResponse.json({ error: "Action không hợp lệ" }, { status: 400 })
     }

@@ -29,7 +29,8 @@ export function getStudentFormSections(): ResourceFormSection[] {
 
 export function getBaseStudentFields(
   usersOptions?: Array<{ label: string; value: string }>,
-  isSuperAdmin: boolean = false
+  isSuperAdmin: boolean = false,
+  canActive: boolean = false
 ): ResourceFormField<StudentFormData>[] {
   const fields: ResourceFormField<StudentFormData>[] = [
     {
@@ -91,15 +92,18 @@ export function getBaseStudentFields(
     })
   }
 
-  fields.push({
-    name: "isActive",
-    label: "Trạng thái",
-    description: "Bật/tắt để kích hoạt hoặc vô hiệu hóa học sinh",
-    type: "switch",
-    defaultValue: true,
-    icon: React.createElement(ToggleLeft, { className: "h-4 w-4" }),
-    section: "status",
-  })
+  // Chỉ hiển thị field isActive nếu có permission STUDENTS_ACTIVE hoặc STUDENTS_MANAGE
+  if (canActive) {
+    fields.push({
+      name: "isActive",
+      label: "Trạng thái",
+      description: "Bật/tắt để kích hoạt hoặc vô hiệu hóa học sinh. Mặc định là tắt (cần xét duyệt)",
+      type: "switch",
+      defaultValue: false, // Mặc định false, cần xét duyệt
+      icon: React.createElement(ToggleLeft, { className: "h-4 w-4" }),
+      section: "status",
+    })
+  }
 
   return fields
 }

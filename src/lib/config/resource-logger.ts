@@ -26,6 +26,8 @@ export type ResourceAction =
   | "bulk-delete"
   | "bulk-restore"
   | "bulk-hard-delete"
+  | "bulk-active"
+  | "bulk-unactive"
   | "bulk-approve"
   | "bulk-unapprove"
   | "bulk-mark-read"

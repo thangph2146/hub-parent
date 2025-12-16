@@ -7,21 +7,22 @@ import { GuideClient } from "@/features/public/help/components/guide-client"
  * 
  * Theo Next.js 16 best practices:
  * - Metadata được merge với public layout và root layout
- * - Title sử dụng template từ root: "Hướng dẫn sử dụng | CMS"
+ * - Title phù hợp với page phụ huynh
  * - Open Graph và Twitter Card cho social sharing
  */
 export const metadata: Metadata = {
   title: "Hướng dẫn sử dụng",
-  description: "Hướng dẫn chi tiết cách đăng ký và đăng nhập vào hệ thống",
+  description: "Hướng dẫn chi tiết cách sử dụng hệ thống và các dịch vụ của Trường Đại học Ngân hàng TP.Hồ Chí Minh",
   openGraph: {
     ...appConfig.openGraph,
-    title: "Hướng dẫn sử dụng - CMS",
-    description: "Hướng dẫn chi tiết cách đăng ký và đăng nhập vào hệ thống",
+    title: "Hướng dẫn sử dụng - Trường Đại học Ngân hàng TP.HCM",
+    description: "Hướng dẫn chi tiết cách sử dụng hệ thống và các dịch vụ của Trường Đại học Ngân hàng TP.Hồ Chí Minh",
+    siteName: "Trường Đại học Ngân hàng TP.HCM",
   },
   twitter: {
     ...appConfig.twitter,
-    title: "Hướng dẫn sử dụng - CMS",
-    description: "Hướng dẫn chi tiết cách đăng ký và đăng nhập vào hệ thống",
+    title: "Hướng dẫn sử dụng - Trường Đại học Ngân hàng TP.HCM",
+    description: "Hướng dẫn chi tiết cách sử dụng hệ thống và các dịch vụ của Trường Đại học Ngân hàng TP.Hồ Chí Minh",
   },
 }
 

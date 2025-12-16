@@ -5,6 +5,7 @@ import type { StudentEditClientProps } from "./student-edit.client"
 import { getActiveUsersForSelect } from "@/features/admin/users/server/queries"
 import { getAuthInfo } from "@/features/admin/resources/server"
 import { NotFoundMessage } from "@/features/admin/resources/components"
+import { PERMISSIONS, canPerformAnyAction } from "@/lib/permissions"
 
 export interface StudentEditProps {
   studentId: string
@@ -25,7 +26,7 @@ export async function StudentEdit({
   backUrl,
   backLabel = "Quay lại",
 }: StudentEditProps) {
-  const { actorId, isSuperAdminUser } = await getAuthInfo()
+  const { actorId, isSuperAdminUser, permissions, roles } = await getAuthInfo()
 
   const [student, usersOptions] = await Promise.all([
     getStudentById(studentId, actorId, isSuperAdminUser),
@@ -36,6 +37,11 @@ export async function StudentEdit({
   if (!student) {
     return <NotFoundMessage resourceName="học sinh" />
   }
+
+  const canActivate = canPerformAnyAction(permissions, roles, [
+    PERMISSIONS.STUDENTS_ACTIVE,
+    PERMISSIONS.STUDENTS_MANAGE,
+  ])
 
   const studentForEdit: StudentEditClientProps["student"] = {
     ...serializeStudentDetail(student),
@@ -53,7 +59,7 @@ export async function StudentEdit({
       studentId={studentId}
       users={usersOptions}
       isSuperAdmin={isSuperAdminUser}
+      canActivate={canActivate}
     />
   )
 }
-

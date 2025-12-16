@@ -7,7 +7,7 @@ import { About } from "@/features/public/about/components"
  * 
  * Theo Next.js 16 best practices:
  * - Metadata được merge với public layout và root layout
- * - Title sử dụng template từ root: "Về chúng tôi | CMS"
+ * - Title phù hợp với page phụ huynh
  * - Open Graph và Twitter Card cho social sharing
  */
 export const metadata: Metadata = {
@@ -17,6 +17,7 @@ export const metadata: Metadata = {
     ...appConfig.openGraph,
     title: "Về chúng tôi - Trường Đại học Ngân hàng TP.HCM",
     description: "Trường Đại học Ngân hàng Thành phố Hồ Chí Minh (HUB) - Trường đại học công lập trực thuộc Ngân hàng Nhà nước Việt Nam",
+    siteName: "Trường Đại học Ngân hàng TP.HCM",
   },
   twitter: {
     ...appConfig.twitter,

@@ -138,7 +138,7 @@ export function formatStudentNames(
 }
 
 export async function notifySuperAdminsOfBulkStudentAction(
-  action: "delete" | "restore" | "hard-delete",
+  action: "delete" | "restore" | "hard-delete" | "active" | "unactive",
   actorId: string,
   students: Array<{ studentCode: string; name: string | null }>
 ): Promise<void> {
@@ -164,6 +164,14 @@ export async function notifySuperAdminsOfBulkStudentAction(
         break
       case "hard-delete":
         title = `Xóa vĩnh viễn ${count} học sinh`
+        description = namesText || `${count} học sinh`
+        break
+      case "active":
+        title = `Kích hoạt ${count} học sinh`
+        description = namesText || `${count} học sinh`
+        break
+      case "unactive":
+        title = `Bỏ kích hoạt ${count} học sinh`
         description = namesText || `${count} học sinh`
         break
     }

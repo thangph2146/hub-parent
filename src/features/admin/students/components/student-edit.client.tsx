@@ -26,6 +26,7 @@ export interface StudentEditClientProps {
   studentId?: string
   users?: Array<{ label: string; value: string }>
   isSuperAdmin?: boolean
+  canActivate?: boolean
 }
 
 export function StudentEditClient({
@@ -39,6 +40,7 @@ export function StudentEditClient({
   studentId,
   users: usersFromServer = [],
   isSuperAdmin = false,
+  canActivate = false,
 }: StudentEditClientProps) {
   const queryClient = useQueryClient()
   const { navigateBack } = useResourceNavigation({
@@ -83,6 +85,9 @@ export function StudentEditClient({
       if (!isSuperAdmin && student) {
         submitData.userId = student.userId
       }
+      if (!canActivate) {
+        delete submitData.isActive
+      }
       return submitData
     },
     onSuccess: createResourceEditOnSuccess({
@@ -110,7 +115,7 @@ export function StudentEditClient({
     return handleSubmit(data)
   }
 
-  const editFields = getBaseStudentFields(usersFromServer, isSuperAdmin)
+  const editFields = getBaseStudentFields(usersFromServer, isSuperAdmin, canActivate)
   const formSections = getStudentFormSections()
 
   return (
@@ -137,4 +142,3 @@ export function StudentEditClient({
     />
   )
 }
-

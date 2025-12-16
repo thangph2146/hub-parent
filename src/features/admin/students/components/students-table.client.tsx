@@ -1,7 +1,7 @@
 "use client"
 
 import { useCallback, useMemo, useState } from "react"
-import { RotateCcw, Trash2, AlertTriangle, Plus } from "lucide-react"
+import { RotateCcw, Trash2, AlertTriangle, Plus, CheckCircle2, XCircle } from "lucide-react"
 
 import { ConfirmDialog } from "@/components/dialogs"
 import type { DataTableQueryState, DataTableResult } from "@/components/tables"
@@ -38,6 +38,8 @@ export function StudentsTableClient({
   canManage = false,
   canCreate = false,
   canUpdate = false,
+  canActivate = false,
+  isParent = false,
   initialData,
 }: StudentsTableClientProps) {
   const router = useResourceRouter()
@@ -59,16 +61,28 @@ export function StudentsTableClient({
     canDelete,
     canRestore,
     canManage,
+    canActivate,
     isSocketConnected,
     showFeedback,
   })
 
-  const [currentViewId, setCurrentViewId] = useState<string>("active")
+  // Parent mặc định xem "all", Admin/SuperAdmin xem "active"
+  const [currentViewId, setCurrentViewId] = useState<string>(isParent ? "all" : "active")
+
+  const initialDataByView = useMemo(
+    () => {
+      if (!initialData) return undefined
+      // Parent có default view là "all", Admin/SuperAdmin có default view là "active"
+      const viewKey = isParent ? "all" : "active"
+      return { [viewKey]: initialData } as Record<string, DataTableResult<StudentRow>>
+    },
+    [initialData, isParent],
+  )
 
   useResourceTableLogger<StudentRow>({
     resourceName: "students",
     initialData,
-    initialDataByView: initialData ? { active: initialData } : undefined,
+    initialDataByView: initialDataByView,
     currentViewId,
     queryClient,
     buildQueryKey: (params) => queryKeys.adminStudents.list({
@@ -105,8 +119,9 @@ export function StudentsTableClient({
 
   const { baseColumns, deletedColumns } = useStudentColumns({
     togglingStudents,
-    canManage,
+    canToggleStatus: canActivate,
     onToggleStatus: handleToggleStatusWithRefresh,
+    isParent,
   })
 
   const handleDeleteSingle = useCallback(
@@ -172,7 +187,7 @@ export function StudentsTableClient({
       const baseUrl = apiRoutes.students.list({
         page: params.page,
         limit: params.limit,
-        status: params.status ?? "active",
+        status: (params.status ?? "active") as "active" | "inactive" | "deleted" | "all",
         search: params.search,
       })
 
@@ -262,7 +277,7 @@ export function StudentsTableClient({
 
 
   const executeBulk = useCallback(
-    (action: "delete" | "restore" | "hard-delete", ids: string[], refresh: () => void, clearSelection: () => void) => {
+    (action: "delete" | "restore" | "hard-delete" | "active" | "unactive", ids: string[], refresh: () => void, clearSelection: () => void) => {
       if (ids.length === 0) return
 
       if (action === "delete" || action === "restore" || action === "hard-delete") {
@@ -275,6 +290,7 @@ export function StudentsTableClient({
           },
         })
       } else {
+        // "active" action không cần confirm dialog, thực hiện trực tiếp
         executeBulkAction(action, ids, refresh, clearSelection)
       }
     },
@@ -284,17 +300,61 @@ export function StudentsTableClient({
   const createActiveSelectionActions = useCallback(
     ({
       selectedIds,
+      selectedRows,
       clearSelection,
       refresh,
     }: {
       selectedIds: string[]
+      selectedRows: StudentRow[]
       clearSelection: () => void
       refresh: () => void
-    }) => (
-      <SelectionActionsWrapper
-        label={STUDENT_LABELS.SELECTED_STUDENTS(selectedIds.length)}
-        actions={
-          <>
+    }) => {
+      // Chỉ hiển thị nút "Kích hoạt" nếu có ít nhất một student chưa active và chưa bị xóa
+      const hasInactiveStudents = selectedRows.some(
+        (row) => !row.isActive && !row.deletedAt
+      )
+      // Chỉ hiển thị nút "Bỏ kích hoạt" nếu có ít nhất một student đang active và chưa bị xóa
+      const hasActiveStudents = selectedRows.some(
+        (row) => row.isActive && !row.deletedAt
+      )
+      
+      return (
+        <SelectionActionsWrapper
+          label={STUDENT_LABELS.SELECTED_STUDENTS(selectedIds.length)}
+          actions={
+            <>
+              {canActivate && hasInactiveStudents && (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="default"
+                  disabled={bulkState.isProcessing || selectedIds.length === 0}
+                  onClick={() => executeBulk("active", selectedIds, refresh, clearSelection)}
+                  className="whitespace-nowrap"
+                >
+                  <CheckCircle2 className="mr-2 h-5 w-5 shrink-0" />
+                  <span className="hidden sm:inline">
+                    {STUDENT_LABELS.ACTIVE_SELECTED(selectedIds.length)}
+                  </span>
+                  <span className="sm:hidden">Kích hoạt</span>
+                </Button>
+              )}
+              {canActivate && hasActiveStudents && (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  disabled={bulkState.isProcessing || selectedIds.length === 0}
+                  onClick={() => executeBulk("unactive", selectedIds, refresh, clearSelection)}
+                  className="whitespace-nowrap"
+                >
+                  <XCircle className="mr-2 h-5 w-5 shrink-0" />
+                  <span className="hidden sm:inline">
+                    {STUDENT_LABELS.UNACTIVE_SELECTED(selectedIds.length)}
+                  </span>
+                  <span className="sm:hidden">Bỏ kích hoạt</span>
+                </Button>
+              )}
             <Button
               type="button"
               size="sm"
@@ -337,8 +397,9 @@ export function StudentsTableClient({
           </>
         }
       />
-    ),
-    [canManage, bulkState.isProcessing, executeBulk],
+    )
+    },
+    [canActivate, canManage, bulkState.isProcessing, executeBulk],
   )
 
   const createDeletedSelectionActions = useCallback(
@@ -404,8 +465,23 @@ export function StudentsTableClient({
   )
 
   const viewModes = useMemo<ResourceViewMode<StudentRow>[]>(() => {
-    const modes: ResourceViewMode<StudentRow>[] = [
-      {
+    const modes: ResourceViewMode<StudentRow>[] = []
+
+    // Parent xem tất cả students (kể cả inactive) với view mode "all"
+    if (isParent) {
+      modes.push({
+        id: "all",
+        label: STUDENT_LABELS.ALL_VIEW,
+        status: "all",
+        columns: baseColumns,
+        selectionEnabled: canDelete,
+        selectionActions: canDelete ? createActiveSelectionActions : undefined,
+        rowActions: (row) => renderActiveRowActions(row),
+        emptyMessage: STUDENT_LABELS.NO_STUDENTS,
+      })
+    } else {
+      // Admin/SuperAdmin xem active students
+      modes.push({
         id: "active",
         label: STUDENT_LABELS.ACTIVE_VIEW,
         status: "active",
@@ -414,24 +490,41 @@ export function StudentsTableClient({
         selectionActions: canDelete ? createActiveSelectionActions : undefined,
         rowActions: (row) => renderActiveRowActions(row),
         emptyMessage: STUDENT_LABELS.NO_STUDENTS,
-      },
-      {
-        id: "deleted",
-        label: STUDENT_LABELS.DELETED_VIEW,
-        status: "deleted",
-        columns: deletedColumns,
-        selectionEnabled: canRestore || canManage,
-        selectionActions: canRestore || canManage ? createDeletedSelectionActions : undefined,
-        rowActions: (row) => renderDeletedRowActions(row),
-        emptyMessage: STUDENT_LABELS.NO_DELETED_STUDENTS,
-      },
-    ]
+      })
+    }
+
+    // Chỉ thêm view inactive nếu có permission STUDENTS_ACTIVE
+    if (canActivate) {
+      modes.push({
+        id: "inactive",
+        label: STUDENT_LABELS.INACTIVE_VIEW,
+        status: "inactive",
+        columns: baseColumns,
+        selectionEnabled: canDelete,
+        selectionActions: canDelete ? createActiveSelectionActions : undefined,
+        rowActions: (row) => renderActiveRowActions(row),
+        emptyMessage: STUDENT_LABELS.NO_INACTIVE_STUDENTS,
+      })
+    }
+
+    modes.push({
+      id: "deleted",
+      label: STUDENT_LABELS.DELETED_VIEW,
+      status: "deleted",
+      columns: deletedColumns,
+      selectionEnabled: canRestore || canManage,
+      selectionActions: canRestore || canManage ? createDeletedSelectionActions : undefined,
+      rowActions: (row) => renderDeletedRowActions(row),
+      emptyMessage: STUDENT_LABELS.NO_DELETED_STUDENTS,
+    })
 
     return modes
   }, [
+    isParent,
     canDelete,
     canRestore,
     canManage,
+    canActivate,
     baseColumns,
     deletedColumns,
     createActiveSelectionActions,
@@ -439,11 +532,6 @@ export function StudentsTableClient({
     renderActiveRowActions,
     renderDeletedRowActions,
   ])
-
-  const initialDataByView = useMemo(
-    () => (initialData ? { active: initialData } : undefined),
-    [initialData],
-  )
 
   const getDeleteConfirmTitle = () => {
     if (!deleteConfirm) return ""
