@@ -19,9 +19,11 @@ export const metadata: Metadata = {
     default: appConfig.titleDefault,
     template: appConfig.titleTemplate,
   },
-  description: appConfig.namePublic || appConfig.description,
+  description: appConfig.description,
   keywords: appConfig.keywords,
   icons: appConfig.icons,
+  // Open Graph và Twitter sẽ được override bởi từng page cụ thể
+  // Chỉ set base config ở đây để các page có thể extend
   openGraph: getOpenGraphConfig(),
   twitter: getTwitterConfig(),
 };

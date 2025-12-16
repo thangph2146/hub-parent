@@ -20,18 +20,27 @@ export const metadata: Metadata = {
   },
   description: appConfig.description,
   openGraph: {
-    ...openGraphConfig,
-    url: appConfig.url,
+    // Theo Next.js docs: Open Graph images must be absolute URLs
+    // Đảm bảo tất cả các thuộc tính đều đúng format
+    type: openGraphConfig.type,
+    locale: openGraphConfig.locale,
+    url: new URL("/", appConfig.url).toString(), // Absolute URL đầy đủ
+    siteName: openGraphConfig.siteName,
     title: appConfig.titleDefault,
     description: appConfig.description,
-    // Giữ lại images từ appConfig để hiển thị khi chia sẻ
-    images: openGraphConfig.images,
+    // Images phải là absolute URLs với đầy đủ width, height, alt
+    images: openGraphConfig.images?.map((img) => ({
+      url: img.url, // Đã là absolute URL từ appConfig
+      width: img.width,
+      height: img.height,
+      alt: img.alt,
+    })),
   },
   twitter: {
     ...twitterConfig,
     title: appConfig.titleDefault,
     description: appConfig.description,
-    // Giữ lại images từ appConfig để hiển thị khi chia sẻ
+    // Twitter images cũng phải là absolute URLs
     images: twitterConfig.images,
   },
 };

@@ -46,8 +46,8 @@ export const appConfig = {
     type: "website",
     locale: "vi_VN",
     url: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
-    siteName: "HUB",
-    title: "HUB - Kết nối phụ huynh và nhà trường" as string,
+    siteName: "HUB - Phụ huynh",
+    title: "HUB - Phụ huynh" as string,
     description: "HUB - Hệ thống kết nối phụ huynh và nhà trường của Trường Đại học Ngân hàng Thành phố Hồ Chí Minh. Được phát triển bởi P.QLCNTT để tạo cầu nối giữa phụ huynh, gia đình và nhà trường.",
     images: [
       {
@@ -62,7 +62,7 @@ export const appConfig = {
   // Twitter Card
   twitter: {
     card: "summary_large_image" as const,
-    title: "HUB - Kết nối phụ huynh và nhà trường" as string,
+    title: "HUB - Phụ huynh" as string,
     description: "HUB - Hệ thống kết nối phụ huynh và nhà trường của Trường Đại học Ngân hàng Thành phố Hồ Chí Minh. Được phát triển bởi P.QLCNTT để tạo cầu nối giữa phụ huynh, gia đình và nhà trường.",
     images: ["https://hub.edu.vn/DATA/IMAGES/2025/06/06/20250606095355z6676952814172_23a84367b5e409bfcea8b8e95ac6ba4c.jpg"],
   },
