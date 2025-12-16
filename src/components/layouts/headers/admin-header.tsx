@@ -39,7 +39,8 @@ export function AdminHeader({ breadcrumbs = [] }: AdminHeaderProps) {
   const dashboardHref = applyResourceSegmentToPath("/admin/dashboard", resourceSegment)
   
   // Handle breadcrumb navigation với cache invalidation
-  // Sử dụng cache-busting parameter và router.refresh() để đảm bảo data mới nhất
+  // Sử dụng cache-busting parameter để force Server Component refetch
+  // Next.js sẽ tự động revalidate khi navigate, không cần gọi router.refresh()
   const handleBreadcrumbClick = React.useCallback((e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     e.preventDefault()
     const startTime = performance.now()
@@ -61,18 +62,16 @@ export function AdminHeader({ breadcrumbs = [] }: AdminHeaderProps) {
       targetUrl,
     })
     
+    // Chỉ gọi replace, Next.js sẽ tự động revalidate
     router.replace(targetUrl)
-    
-    // Refresh router để đảm bảo Server Components được re-render với data mới
-    // Next.js sẽ tự động revalidate khi navigate
-    router.refresh()
     
     const duration = performance.now() - startTime
     logger.success("✅ Breadcrumb navigation hoàn tất", {
       duration: `${duration.toFixed(2)}ms`,
       targetUrl,
     })
-  }, [router, resourceSegment])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [resourceSegment])
 
   return (
     <header
