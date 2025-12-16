@@ -6,13 +6,18 @@
  */
 
 import { HomeClient } from "./home-client"
+import { getPosts } from "@/features/public/post/server/queries"
 
 export type HomeProps = Record<string, never>
 
 export async function Home({}: HomeProps) {
-  // Nếu cần fetch data, thêm vào đây
-  // const data = await getHomeDataCached()
+  // Fetch bài viết nổi bật (6 bài mới nhất)
+  const featuredPostsResult = await getPosts({
+    page: 1,
+    limit: 6,
+    sort: "newest",
+  })
 
-  return <HomeClient />
+  return <HomeClient featuredPosts={featuredPostsResult.data} />
 }
 
