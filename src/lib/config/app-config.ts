@@ -49,14 +49,14 @@ export const appConfig = {
     siteName: "CMS",
     title: "CMS - Hệ thống quản trị nội dung" as string,
     description: "Hệ thống quản trị nội dung hiện đại, mạnh mẽ và dễ sử dụng",
-    // images: [
-    //   {
-    //     url: "/og-image.jpg",
-    //     width: 1200,
-    //     height: 630,
-    //     alt: "CMS",
-    //   },
-    // ],
+    images: [
+      {
+        url: "https://hub.edu.vn/DATA/IMAGES/2025/06/06/20250606095355z6676952814172_23a84367b5e409bfcea8b8e95ac6ba4c.jpg",
+        width: 1200,
+        height: 630,
+        alt: "CMS - Hệ thống quản trị nội dung",
+      },
+    ],
   },
   
   // Twitter Card
@@ -64,7 +64,7 @@ export const appConfig = {
     card: "summary_large_image" as const,
     title: "CMS - Hệ thống quản trị nội dung" as string,
     description: "Hệ thống quản trị nội dung hiện đại, mạnh mẽ và dễ sử dụng",
-    // images: ["/twitter-image.jpg"],
+    images: ["https://hub.edu.vn/DATA/IMAGES/2025/06/06/20250606095355z6676952814172_23a84367b5e409bfcea8b8e95ac6ba4c.jpg"],
   },
   
   // Robots
