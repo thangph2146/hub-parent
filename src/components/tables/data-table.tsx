@@ -178,11 +178,14 @@ export function DataTable<T extends object>({
         () => ({ ...defaultFilters }),
     )
     const [showFilters, setShowFilters] = useState<boolean>(true)
-    const hasConsumedInitialRef = useRef(!initialData)
 
-    const [dataPromise, setDataPromise] = useState<Promise<DataTableResult<T>>>(() =>
-        safeLoad(loader, defaultQuery),
-    )
+    const [dataPromise, setDataPromise] = useState<Promise<DataTableResult<T>>>(() => {
+        // Nếu có initialData, sử dụng nó thay vì gọi loader để tránh loading không cần thiết
+        if (initialData) {
+            return Promise.resolve(initialData)
+        }
+        return safeLoad(loader, defaultQuery)
+    })
     const [isPending, startTransition] = useTransition()
     const selectionEnabled = Boolean(selection?.enabled)
     const selectionDisabled = Boolean(selection?.disabled)
@@ -238,11 +241,9 @@ export function DataTable<T extends object>({
         prevQueryRef.current = query
 
         startTransition(() => {
+            // Luôn fetch dữ liệu mới khi query thay đổi hoặc refresh
+            // initialData chỉ được sử dụng trong useState initializer
             setDataPromise(safeLoad(loader, query))
-            
-            if (initialData && !hasConsumedInitialRef.current) {
-                hasConsumedInitialRef.current = true
-            }
         })
     }, [loader, query, refreshKey, initialData])
 

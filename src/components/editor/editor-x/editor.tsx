@@ -46,7 +46,7 @@ export function Editor({
     <div
       ref={editorRef}
       className={cn(
-        "bg-background rounded-lg border shadow w-full",
+        "bg-background rounded-lg shadow w-full",
         readOnly && "border-none shadow-none"
       )}
       id="editor-x"

@@ -23,9 +23,7 @@ import type { Session } from "next-auth"
 import { ThemeProvider } from "./theme-provider"
 import { SessionProvider } from "./session-provider"
 import { QueryProvider } from "./query-provider"
-import { LoadingFallback } from "./loading-fallback"
 import { ScrollToTop } from "./scroll-to-top"
-import { Suspense } from "react"
 
 export interface ProvidersProps {
   children: ReactNode
@@ -35,18 +33,19 @@ export interface ProvidersProps {
 /**
  * Main Providers component
  * Wrap toàn bộ app với các providers cần thiết
+ * 
+ * Lưu ý: Không cần Suspense ở đây vì tất cả providers đều là Client Components.
+ * Suspense boundaries nên được đặt ở layout hoặc page level cho các async Server Components.
  */
 export function Providers({ children, initialSession }: ProvidersProps) {
   return (
     <ThemeProvider>
-      <Suspense fallback={<LoadingFallback />}>
-        <SessionProvider session={initialSession}>
-          <QueryProvider>
-            <ScrollToTop />
-            {children}
-          </QueryProvider>
-        </SessionProvider>
-      </Suspense>
+      <SessionProvider session={initialSession}>
+        <QueryProvider>
+          <ScrollToTop />
+          {children}
+        </QueryProvider>
+      </SessionProvider>
     </ThemeProvider>
   )
 }

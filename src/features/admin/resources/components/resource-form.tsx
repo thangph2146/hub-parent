@@ -49,6 +49,7 @@ export interface ResourceFormField<T = unknown> {
   render?: (field: ResourceFormField<T>, value: unknown, onChange: (value: unknown) => void) => React.ReactNode
   validate?: (value: unknown) => { valid: boolean; error?: string }
   section?: string
+  className?: string
 }
 
 export interface ResourceFormSection {

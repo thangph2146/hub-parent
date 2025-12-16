@@ -149,6 +149,7 @@ export function renderFieldInput<T>({
           onChange={onChange}
           error={error}
           disabled={field.disabled || isPending}
+          className={field.className}
         />
       )
 
