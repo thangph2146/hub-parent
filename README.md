@@ -1,3 +1,10 @@
+Merge code từ core-cms/main vào branch hiện tại:
+git merge core-cms/main
+Tạo branch mới từ core-cms/main để xem code:
+git checkout -b core-cms-branch core-cms/main
+Pull trực tiếp từ core-cms (nếu muốn cập nhật):
+git pull core-cms main
+
 # Core CMS 16
 
 Hệ thống quản trị nội dung (CMS) được xây dựng với [Next.js 16](https://nextjs.org) sử dụng App Router, NextAuth v5, Prisma ORM, và Socket.IO cho real-time communication.
