@@ -30,7 +30,7 @@ interface MultipleSelectComboboxProps<T> {
   errorId?: string
 }
 
-export function MultipleSelectCombobox<T>({
+export const MultipleSelectCombobox = <T,>({
   field,
   fieldValue,
   error,
@@ -38,7 +38,7 @@ export function MultipleSelectCombobox<T>({
   isPending = false,
   fieldId,
   errorId,
-}: MultipleSelectComboboxProps<T>) {
+}: MultipleSelectComboboxProps<T>) => {
   const [selectOpen, setSelectOpen] = useState(false)
 
   const selectedValues = Array.isArray(fieldValue) 

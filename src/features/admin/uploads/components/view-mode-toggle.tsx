@@ -12,7 +12,7 @@ interface ViewModeToggleProps {
   onViewModeChange: (mode: "flat" | "tree") => void
 }
 
-export function ViewModeToggle({ viewMode, onViewModeChange }: ViewModeToggleProps) {
+export const ViewModeToggle = ({ viewMode, onViewModeChange }: ViewModeToggleProps) => {
   return (
     <div className="flex items-center gap-1 sm:gap-2">
       <Button

@@ -11,11 +11,11 @@ interface UseFilterOptionsParams {
   limit?: number
 }
 
-export function useFilterOptions({
+export const useFilterOptions = ({
   optionsEndpoint,
   searchQuery = "",
   limit = 50,
-}: UseFilterOptionsParams) {
+}: UseFilterOptionsParams) => {
   const debouncedQuery = useDebounce(searchQuery, 300)
 
   const { data: options = [], isLoading } = useQuery<ColumnFilterSelectOption[]>({
@@ -41,7 +41,7 @@ export function useFilterOptions({
   return { options, isLoading }
 }
 
-function useDebounce<T>(value: T, delay: number): T {
+const useDebounce = <T,>(value: T, delay: number): T => {
   const [debouncedValue, setDebouncedValue] = React.useState<T>(value)
 
   React.useEffect(() => {

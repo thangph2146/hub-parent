@@ -31,7 +31,7 @@ export interface ContactSectionProps {
   className?: string;
 }
 
-export function ContactSection({
+export const ContactSection = ({
   title,
   description,
   contactInfo,
@@ -39,7 +39,7 @@ export function ContactSection({
   titleClassName,
   descriptionClassName,
   className,
-}: ContactSectionProps) {
+}: ContactSectionProps) => {
   return (
     <div className={cn("flex flex-col lg:flex-row gap-8 lg:gap-16", className)}>
       {/* Left Side - Features & Contact Info - 1/3 */}

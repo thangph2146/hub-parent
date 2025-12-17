@@ -33,7 +33,7 @@ interface CreateFolderFormProps {
   isLoadingFolders: boolean
 }
 
-export function CreateFolderForm({ availableFolders, isLoadingFolders }: CreateFolderFormProps) {
+export const CreateFolderForm = ({ availableFolders, isLoadingFolders }: CreateFolderFormProps) => {
   const { toast } = useToast()
   const createFolderMutation = useCreateFolder()
 

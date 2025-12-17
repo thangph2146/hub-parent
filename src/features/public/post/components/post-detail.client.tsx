@@ -10,7 +10,7 @@ interface PostDetailClientProps {
   post: PostDetail
 }
 
-export function PostDetailClient({ post }: PostDetailClientProps) {
+export const PostDetailClient = ({ post }: PostDetailClientProps) => {
   // Helper function to convert publishedAt to ISO string
   // Handles both Date objects and string values (from serialization)
   const getPublishedAtISO = (): string => {

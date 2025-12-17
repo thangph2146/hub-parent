@@ -14,7 +14,7 @@ export interface UserCreateClientProps {
   roles?: Role[]
 }
 
-export function UserCreateClient({ backUrl = "/admin/users", roles: rolesFromServer }: UserCreateClientProps) {
+export const UserCreateClient = ({ backUrl = "/admin/users", roles: rolesFromServer }: UserCreateClientProps) => {
   const { toast } = useToast()
   const { roles } = useRoles({ initialRoles: rolesFromServer })
   

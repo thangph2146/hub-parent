@@ -35,13 +35,13 @@ import type { AdminTagsListParams } from "@/lib/query-keys"
 import type { TagRow, TagsResponse, TagsTableClientProps } from "../types"
 import { TAG_CONFIRM_MESSAGES, TAG_LABELS } from "../constants/messages"
 
-export function TagsTableClient({
+export const TagsTableClient = ({
   canDelete = false,
   canRestore = false,
   canManage = false,
   canCreate = false,
   initialData,
-}: TagsTableClientProps) {
+}: TagsTableClientProps) => {
   const queryClient = useQueryClient()
   const { cacheVersion, isSocketConnected } = useTagsSocketBridge()
   const { feedback, showFeedback, handleFeedbackOpenChange } = useTagFeedback()

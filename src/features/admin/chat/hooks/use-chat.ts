@@ -33,7 +33,7 @@ interface UseChatProps {
   role?: string | null
 }
 
-export function useChat({ contacts, currentUserId, role }: UseChatProps) {
+export const useChat = ({ contacts, currentUserId, role }: UseChatProps) => {
   const [contactsState, setContactsState] = useState<Contact[]>(contacts)
   const [currentChatState, setCurrentChatState] = useState<Contact | null>(contacts[0] || null)
   const queryClient = useQueryClient()

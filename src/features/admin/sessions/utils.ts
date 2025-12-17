@@ -3,7 +3,7 @@ import { formatDateVi } from "@/features/admin/resources/utils"
 // Re-export common utilities from resources
 export { formatDateVi }
 
-export function validateIpAddress(value: unknown): { valid: boolean; error?: string } {
+export const validateIpAddress = (value: unknown): { valid: boolean; error?: string } => {
   if (!value || value === "") {
     return { valid: true } // Optional
   }
@@ -17,7 +17,7 @@ export function validateIpAddress(value: unknown): { valid: boolean; error?: str
   return { valid: true }
 }
 
-export function validateUserAgent(value: unknown): { valid: boolean; error?: string } {
+export const validateUserAgent = (value: unknown): { valid: boolean; error?: string } => {
   if (!value || value === "") {
     return { valid: true } // Optional
   }

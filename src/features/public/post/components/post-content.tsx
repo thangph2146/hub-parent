@@ -8,7 +8,7 @@ interface PostContentProps {
   content: unknown
 }
 
-export function PostContent({ content }: PostContentProps) {
+export const PostContent = ({ content }: PostContentProps) => {
   // Parse content as SerializedEditorState
   let editorState: SerializedEditorState | null = null
   

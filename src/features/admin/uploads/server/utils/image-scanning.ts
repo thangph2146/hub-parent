@@ -18,11 +18,7 @@ export interface ScannedImage {
   createdAt: number
 }
 
-/**
- * Extract original name from filename
- * Format: originalName_timestamp_random.ext
- */
-export function extractOriginalName(fileName: string): string {
+export const extractOriginalName = (fileName: string): string => {
   const ext = path.extname(fileName)
   const nameWithoutExt = path.basename(fileName, ext)
   const parts = nameWithoutExt.split("_")
@@ -36,7 +32,7 @@ export function extractOriginalName(fileName: string): string {
 /**
  * Get mime type from file extension
  */
-export function getMimeTypeFromExtension(ext: string): string {
+export const getMimeTypeFromExtension = (ext: string): string => {
   const mimeTypeMap: Record<string, string> = {
     ".jpg": "image/jpeg",
     ".jpeg": "image/jpeg",
@@ -48,14 +44,11 @@ export function getMimeTypeFromExtension(ext: string): string {
   return mimeTypeMap[ext.toLowerCase()] || "image/jpeg"
 }
 
-/**
- * Generate URL path for image based on root folder
- */
-export function generateImageUrlPath(
+export const generateImageUrlPath = (
   fullPath: string,
   rootFolder: string,
   dirPath: string
-): { urlPath: string; relativePathForResponse: string } {
+): { urlPath: string; relativePathForResponse: string } => {
   if (rootFolder === "images" || dirPath.startsWith(IMAGES_DIR)) {
     const pathFromImagesDir = path.relative(IMAGES_DIR, fullPath)
     return {

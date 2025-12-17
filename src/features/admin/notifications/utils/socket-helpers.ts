@@ -1,6 +1,6 @@
 import type { NotificationRow } from "../types"
 
-export function matchesSearch(search: string | undefined, row: NotificationRow): boolean {
+export const matchesSearch = (search: string | undefined, row: NotificationRow): boolean => {
   if (!search) return true
   const term = search.trim().toLowerCase()
   if (!term) return true
@@ -14,10 +14,10 @@ export function matchesSearch(search: string | undefined, row: NotificationRow):
     .some((value) => value.toLowerCase().includes(term))
 }
 
-export function matchesFilters(
+export const matchesFilters = (
   filters: Record<string, string> | undefined,
   row: NotificationRow
-): boolean {
+): boolean => {
   if (!filters) return true
   for (const [key, value] of Object.entries(filters)) {
     if (value === undefined || value === "") continue
@@ -40,11 +40,11 @@ export function matchesFilters(
   return true
 }
 
-export function insertRowIntoPage(
+export const insertRowIntoPage = (
   rows: NotificationRow[],
   row: NotificationRow,
   limit: number
-): NotificationRow[] {
+): NotificationRow[] => {
   const existingIndex = rows.findIndex((item) => item.id === row.id)
   if (existingIndex >= 0) {
     const next = [...rows]
@@ -58,10 +58,10 @@ export function insertRowIntoPage(
   return next
 }
 
-export function removeRowFromPage(
+export const removeRowFromPage = (
   rows: NotificationRow[],
   id: string
-): { rows: NotificationRow[]; removed: boolean } {
+): { rows: NotificationRow[]; removed: boolean } => {
   const index = rows.findIndex((item) => item.id === id)
   if (index === -1) return { rows, removed: false }
   const next = [...rows]
@@ -69,7 +69,7 @@ export function removeRowFromPage(
   return { rows: next, removed: true }
 }
 
-export function convertSocketPayloadToRow(
+export const convertSocketPayloadToRow = (
   payload: {
     id: string
     kind: string
@@ -81,7 +81,7 @@ export function convertSocketPayloadToRow(
   },
   userEmail?: string | null,
   userName?: string | null
-): NotificationRow {
+): NotificationRow => {
   const timestamp = payload.timestamp ?? Date.now()
   return {
     id: payload.id,

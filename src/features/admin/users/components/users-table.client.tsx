@@ -36,14 +36,14 @@ import { resourceLogger } from "@/lib/config"
 import type { AdminUsersListParams } from "@/lib/query-keys"
 import type { UserRow, UsersResponse, UsersTableClientProps } from "../types"
 import { USER_CONFIRM_MESSAGES, USER_LABELS, PROTECTED_SUPER_ADMIN_EMAIL } from "../constants"
-export function UsersTableClient({
+export const UsersTableClient = ({
   canDelete = false,
   canRestore = false,
   canManage = false,
   canCreate = false,
   initialData,
   initialRolesOptions = [],
-}: UsersTableClientProps) {
+}: UsersTableClientProps) => {
   const queryClient = useQueryClient()
   const router = useResourceRouter()
   

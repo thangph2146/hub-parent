@@ -9,13 +9,13 @@ export interface AuthContext {
   roles: Array<{ name: string }>
 }
 
-export function ensurePermission(ctx: AuthContext, ...required: Permission[]): void {
+export const ensurePermission = (ctx: AuthContext, ...required: Permission[]): void => {
   if (!required.some((perm) => canPerformAction(ctx.permissions, ctx.roles, perm))) {
     throw new ForbiddenError()
   }
 }
 
-export async function logTableStatusAfterMutation(options: {
+export const logTableStatusAfterMutation = async (options: {
   resource: string
   action: "delete" | "restore" | "bulk-delete" | "bulk-restore"
   prismaModel: {
@@ -23,7 +23,7 @@ export async function logTableStatusAfterMutation(options: {
   }
   affectedIds: string | string[]
   affectedCount?: number
-}): Promise<void> {
+}): Promise<void> => {
   const { resource, action, prismaModel, affectedIds, affectedCount } = options
   
   resourceLogger.actionFlow({ resource, action, step: "start", metadata: { loggingTableStatus: true, affectedCount } })
@@ -53,22 +53,22 @@ export async function logTableStatusAfterMutation(options: {
   })
 }
 
-export function logActionFlow(
+export const logActionFlow = (
   resource: string,
   action: ResourceAction,
   step: "init" | "start" | "success" | "error" | "end",
   metadata?: Record<string, unknown>,
   startTime?: number
-): void {
+): void => {
   resourceLogger.actionFlow({ resource, action, step, duration: startTime ? Date.now() - startTime : undefined, metadata })
 }
 
-export function logDetailAction(
+export const logDetailAction = (
   resource: string,
   action: ResourceAction,
   resourceId: string,
   recordData?: Record<string, unknown>
-): void {
+): void => {
   resourceLogger.detailAction({ resource, action, resourceId, recordData, fields: recordData ? Object.keys(recordData) : undefined })
 }
 

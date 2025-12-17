@@ -23,7 +23,7 @@ interface UseChatSocketBridgeProps {
   onMessageReceived?: (messageId: string, contactId: string, message: Message) => void // Callback khi nhận tin nhắn mới
 }
 
-export function useChatSocketBridge({
+export const useChatSocketBridge = ({
   currentUserId,
   role,
   setContactsState,
@@ -31,7 +31,7 @@ export function useChatSocketBridge({
   currentChatId,
   setIsGroupDeleted,
   onMessageReceived,
-}: UseChatSocketBridgeProps) {
+}: UseChatSocketBridgeProps) => {
   const { socket, onMessageNew, onMessageUpdated } = useSocket({
     userId: currentUserId,
     role,

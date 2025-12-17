@@ -30,7 +30,7 @@ export interface TagDetailClientProps {
   backUrl?: string
 }
 
-export function TagDetailClient({ tagId, tag, backUrl = "/admin/tags" }: TagDetailClientProps) {
+export const TagDetailClient = ({ tagId, tag, backUrl = "/admin/tags" }: TagDetailClientProps) => {
   const { navigateBack, router } = useResourceNavigation({
     invalidateQueryKey: queryKeys.adminTags.all(),
   })

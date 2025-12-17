@@ -1,6 +1,6 @@
 import type { ContactRequestRow } from "../types"
 
-export function matchesSearch(search: string | undefined, row: ContactRequestRow): boolean {
+export const matchesSearch = (search: string | undefined, row: ContactRequestRow): boolean => {
   if (!search || typeof search !== "string") return true
   const term = search.trim().toLowerCase()
   if (!term) return true
@@ -14,10 +14,10 @@ export function matchesSearch(search: string | undefined, row: ContactRequestRow
     .some((value) => value.toLowerCase().includes(term))
 }
 
-export function matchesFilters(
+export const matchesFilters = (
   filters: Record<string, string> | undefined,
   row: ContactRequestRow
-): boolean {
+): boolean => {
   if (!filters) return true
   for (const [key, value] of Object.entries(filters)) {
     if (value === undefined || value === "") continue
@@ -52,20 +52,20 @@ export function matchesFilters(
   return true
 }
 
-export function shouldIncludeInStatus(
+export const shouldIncludeInStatus = (
   paramsStatus: "active" | "deleted" | "all" | undefined,
   rowStatus: "active" | "deleted"
-): boolean {
+): boolean => {
   if (paramsStatus === "all") return true
   if (!paramsStatus) return rowStatus === "active"
   return paramsStatus === rowStatus
 }
 
-export function insertRowIntoPage(
+export const insertRowIntoPage = (
   rows: ContactRequestRow[],
   row: ContactRequestRow,
   limit: number
-): ContactRequestRow[] {
+): ContactRequestRow[] => {
   const existingIndex = rows.findIndex((item) => item.id === row.id)
   if (existingIndex >= 0) {
     const next = [...rows]
@@ -79,10 +79,10 @@ export function insertRowIntoPage(
   return next
 }
 
-export function removeRowFromPage(
+export const removeRowFromPage = (
   rows: ContactRequestRow[],
   id: string
-): { rows: ContactRequestRow[]; removed: boolean } {
+): { rows: ContactRequestRow[]; removed: boolean } => {
   const index = rows.findIndex((item) => item.id === id)
   if (index === -1) return { rows, removed: false }
   const next = [...rows]
@@ -90,7 +90,7 @@ export function removeRowFromPage(
   return { rows: next, removed: true }
 }
 
-export function convertSocketPayloadToRow(
+export const convertSocketPayloadToRow = (
   payload: {
     id: string
     name: string
@@ -103,7 +103,7 @@ export function convertSocketPayloadToRow(
     assignedToId?: string | null
   },
   assignedToName?: string | null
-): ContactRequestRow {
+): ContactRequestRow => {
   return {
     id: payload.id,
     name: payload.name,

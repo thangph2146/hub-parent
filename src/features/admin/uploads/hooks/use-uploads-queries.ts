@@ -29,10 +29,7 @@ export interface FoldersListResponse {
   data: FolderItem[]
 }
 
-/**
- * Query: Fetch images list với pagination
- */
-export function useImagesList(page: number = 1, limit: number = 50) {
+export const useImagesList = (page: number = 1, limit: number = 50) => {
   return useQuery({
     queryKey: queryKeys.uploads.images.list(page, limit),
     queryFn: async () => {
@@ -53,10 +50,7 @@ export function useImagesList(page: number = 1, limit: number = 50) {
   })
 }
 
-/**
- * Query: Fetch folders list
- */
-export function useFoldersList() {
+export const useFoldersList = () => {
   return useQuery({
     queryKey: queryKeys.uploads.folders.list(),
     queryFn: async () => {
@@ -80,7 +74,7 @@ export function useFoldersList() {
 /**
  * Mutation: Create folder
  */
-export function useCreateFolder() {
+export const useCreateFolder = () => {
   const queryClient = useQueryClient()
   const { toast } = useToast()
 
@@ -136,7 +130,7 @@ export function useCreateFolder() {
 /**
  * Mutation: Delete folder
  */
-export function useDeleteFolder() {
+export const useDeleteFolder = () => {
   const queryClient = useQueryClient()
   const { toast } = useToast()
 
@@ -184,7 +178,7 @@ export function useDeleteFolder() {
 /**
  * Mutation: Delete image
  */
-export function useDeleteImage() {
+export const useDeleteImage = () => {
   const queryClient = useQueryClient()
   const { toast } = useToast()
 
@@ -232,7 +226,7 @@ export function useDeleteImage() {
 /**
  * Mutation: Bulk delete images
  */
-export function useBulkDeleteImages() {
+export const useBulkDeleteImages = () => {
   const queryClient = useQueryClient()
   const { toast } = useToast()
 

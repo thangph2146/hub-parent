@@ -4,10 +4,10 @@ export interface ColumnOptionsQueryOptions {
   limit?: number
 }
 
-export function applyColumnOptionsStatusFilter<T extends Record<string, unknown>>(
+export const applyColumnOptionsStatusFilter = <T extends Record<string, unknown>>(
   where: T,
   status: "active" | "deleted" | "all" = "active"
-): void {
+): void => {
   if (status === "active") {
     ;(where as Record<string, unknown>).deletedAt = null
   } else if (status === "deleted") {
@@ -15,20 +15,20 @@ export function applyColumnOptionsStatusFilter<T extends Record<string, unknown>
   }
 }
 
-export function applyColumnOptionsSearchFilter<T extends Record<string, unknown>>(
+export const applyColumnOptionsSearchFilter = <T extends Record<string, unknown>>(
   where: T,
   search: string | undefined,
   field: keyof T
-): void {
+): void => {
   if (!search?.trim()) return
   ;(where as Record<string, unknown>)[field as string] = { contains: search.trim(), mode: "insensitive" }
 }
 
-export function buildColumnOptionsWhereClause<T extends Record<string, unknown>>(
+export const buildColumnOptionsWhereClause = <T extends Record<string, unknown>>(
   options: ColumnOptionsQueryOptions,
   defaultField: keyof T,
   customFields?: Record<string, keyof T>
-): T {
+): T => {
   const where = {} as T
   applyColumnOptionsStatusFilter(where, options.status)
   if (options.search?.trim()) {
@@ -38,10 +38,10 @@ export function buildColumnOptionsWhereClause<T extends Record<string, unknown>>
   return where
 }
 
-export function mapToColumnOptions<T extends Record<string, unknown>>(
+export const mapToColumnOptions = <T extends Record<string, unknown>>(
   results: T[],
   column: string
-): Array<{ label: string; value: string }> {
+): Array<{ label: string; value: string }> => {
   const options: Array<{ label: string; value: string }> = []
   for (const item of results) {
     const value = item[column as keyof T]

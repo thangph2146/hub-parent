@@ -71,11 +71,11 @@ export interface PostDetailClientProps {
   backUrl?: string;
 }
 
-export function PostDetailClient({
+export const PostDetailClient = ({
   postId,
   post,
   backUrl = "/admin/posts",
-}: PostDetailClientProps) {
+}: PostDetailClientProps) => {
   const queryClient = useQueryClient();
   const { navigateBack, router } = useResourceNavigation({
     queryClient,

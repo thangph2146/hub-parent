@@ -59,10 +59,10 @@ function normalizeNotificationsDeletedPayload(payload: NotificationsDeletedSocke
   return []
 }
 
-function updateNotificationQueries(
+const updateNotificationQueries = (
   queryClient: ReturnType<typeof useQueryClient>,
   updater: (args: { key: unknown[]; data: DataTableResult<NotificationRow> }) => DataTableResult<NotificationRow> | null,
-): boolean {
+): boolean => {
   let updated = false
   const queries = queryClient.getQueriesData<DataTableResult<NotificationRow>>({
     queryKey: queryKeys.notifications.admin() as unknown[],
@@ -97,9 +97,9 @@ function updateNotificationQueries(
   return updated
 }
 
-function createNotificationUpsertUpdater(
+const createNotificationUpsertUpdater = (
   row: NotificationRow
-): (args: { key: unknown[]; data: DataTableResult<NotificationRow> }) => DataTableResult<NotificationRow> | null {
+): (args: { key: unknown[]; data: DataTableResult<NotificationRow> }) => DataTableResult<NotificationRow> | null => {
   return ({ data }) => {
     // Safety check: ensure data and rows exist
     if (!data || !Array.isArray(data.rows)) {
@@ -143,7 +143,7 @@ function createNotificationUpsertUpdater(
   }
 }
 
-export function useNotificationsSocketBridge() {
+export const useNotificationsSocketBridge = () => {
   const { data: session } = useSession()
   const queryClient = useQueryClient()
   const primaryRole = useMemo(() => session?.roles?.[0]?.name ?? null, [session?.roles])

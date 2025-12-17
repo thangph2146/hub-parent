@@ -28,7 +28,7 @@ type UserWithRoles = Prisma.UserGetPayload<{
   }
 }>
 
-export function mapUserRecord(user: UserWithRoles): ListedUser {
+export const mapUserRecord = (user: UserWithRoles): ListedUser => {
   return {
     id: user.id,
     email: user.email,
@@ -41,7 +41,7 @@ export function mapUserRecord(user: UserWithRoles): ListedUser {
   }
 }
 
-export function buildWhereClause(params: ListUsersInput): Prisma.UserWhereInput {
+export const buildWhereClause = (params: ListUsersInput): Prisma.UserWhereInput => {
   const where: Prisma.UserWhereInput = {}
 
   // Apply status filter
@@ -86,7 +86,7 @@ export function buildWhereClause(params: ListUsersInput): Prisma.UserWhereInput 
   return where
 }
 
-export function serializeUserForTable(user: ListedUser): UserRow {
+export const serializeUserForTable = (user: ListedUser): UserRow => {
   return {
     id: user.id,
     email: user.email,
@@ -102,7 +102,7 @@ export function serializeUserForTable(user: ListedUser): UserRow {
   }
 }
 
-export function serializeUsersList(data: ListUsersResult): DataTableResult<UserRow> {
+export const serializeUsersList = (data: ListUsersResult): DataTableResult<UserRow> => {
   return {
     page: data.pagination.page,
     limit: data.pagination.limit,
@@ -112,7 +112,7 @@ export function serializeUsersList(data: ListUsersResult): DataTableResult<UserR
   }
 }
 
-export function serializeUserDetail(user: UserDetail) {
+export const serializeUserDetail = (user: UserDetail) => {
   return {
     id: user.id,
     email: user.email,

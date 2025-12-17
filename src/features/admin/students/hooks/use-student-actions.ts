@@ -19,14 +19,14 @@ interface UseStudentActionsOptions {
   showFeedback: (variant: FeedbackVariant, title: string, description?: string, details?: string) => void
 }
 
-export function useStudentActions({
+export const useStudentActions = ({
   canDelete,
   canRestore,
   canManage,
   canActivate,
   isSocketConnected,
   showFeedback,
-}: UseStudentActionsOptions) {
+}: UseStudentActionsOptions) => {
   const queryClient = useQueryClient()
   const [togglingStudents, setTogglingStudents] = useState<Set<string>>(new Set())
 

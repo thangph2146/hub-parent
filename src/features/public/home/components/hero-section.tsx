@@ -29,7 +29,7 @@ export interface HeroSectionProps {
   children?: ReactNode;
 }
 
-export function HeroSection({
+export const HeroSection = ({
   title,
   description,
   backgroundImage,
@@ -40,7 +40,7 @@ export function HeroSection({
   overlayClassName,
   className,
   children,
-}: HeroSectionProps) {
+}: HeroSectionProps) => {
   return (
     <section
       className={cn(

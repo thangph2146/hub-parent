@@ -40,7 +40,7 @@ export interface ResourceTableClientProps<T extends object> {
   onViewChange?: (viewId: string) => void
 }
 
-export function ResourceTableClient<T extends object>({
+export const ResourceTableClient = <T extends object>({
   title,
   baseColumns,
   loader,
@@ -52,7 +52,7 @@ export function ResourceTableClient<T extends object>({
   headerActions,
   onRefreshReady,
   onViewChange,
-}: ResourceTableClientProps<T>) {
+}: ResourceTableClientProps<T>) => {
   if (viewModes.length === 0) {
     throw new Error("ResourceTableClient requires at least one view mode")
   }

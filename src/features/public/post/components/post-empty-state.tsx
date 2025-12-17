@@ -4,7 +4,7 @@
  */
 import { FileText, Search } from "lucide-react"
 
-export function PostEmptyState() {
+export const PostEmptyState = () => {
   return (
     <div className="flex flex-col items-center justify-center py-20 text-center">
       <div className="mb-6 relative">

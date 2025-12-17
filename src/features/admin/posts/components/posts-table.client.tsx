@@ -35,13 +35,13 @@ import { POST_CONFIRM_MESSAGES, POST_LABELS } from "../constants/messages"
 import { resourceLogger } from "@/lib/config"
 import { sanitizeSearchQuery } from "@/lib/api/validation"
 
-export function PostsTableClient({
+export const PostsTableClient = ({
   canDelete = false,
   canRestore = false,
   canManage = false,
   canCreate = false,
   initialData,
-}: PostsTableClientProps) {
+}: PostsTableClientProps) => {
   const router = useResourceRouter()
   const queryClient = useQueryClient()
   const { cacheVersion } = usePostsSocketBridge()

@@ -71,7 +71,7 @@ const StatusField = ({ approved, canApprove, onToggle, isToggling }: StatusField
   )
 }
 
-export function CommentDetailClient({ commentId, comment, backUrl = "/admin/comments", canApprove = false }: CommentDetailClientProps) {
+export const CommentDetailClient = ({ commentId, comment, backUrl = "/admin/comments", canApprove = false }: CommentDetailClientProps) => {
   const queryClient = useQueryClient()
   useResourceNavigation({
     queryClient,

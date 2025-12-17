@@ -12,11 +12,11 @@ interface UseSessionColumnsOptions {
   onToggleStatus: (row: SessionRow, checked: boolean) => void
 }
 
-export function useSessionColumns({
+export const useSessionColumns = ({
   togglingSessions,
   canManage,
   onToggleStatus,
-}: UseSessionColumnsOptions) {
+}: UseSessionColumnsOptions) => {
   const userAgentFilter = useDynamicFilterOptions({
     optionsEndpoint: apiRoutes.sessions.options({ column: "userAgent" }),
   })

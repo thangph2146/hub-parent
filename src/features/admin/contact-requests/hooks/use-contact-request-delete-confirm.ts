@@ -9,7 +9,7 @@ interface DeleteConfirmState {
   onConfirm: () => Promise<void>
 }
 
-export function useContactRequestDeleteConfirm() {
+export const useContactRequestDeleteConfirm = () => {
   const [deleteConfirm, setDeleteConfirm] = useState<DeleteConfirmState | null>(null)
 
   const handleDeleteConfirm = useCallback(async () => {

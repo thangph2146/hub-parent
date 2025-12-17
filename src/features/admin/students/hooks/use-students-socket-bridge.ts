@@ -150,7 +150,7 @@ function handleBatchUpsert(
 
 const CACHE_UPDATE_DEBOUNCE_MS = 150
 
-export function useStudentsSocketBridge() {
+export const useStudentsSocketBridge = () => {
   const { data: session } = useSession()
   const queryClient = useQueryClient()
   const primaryRole = useMemo(() => session?.roles?.[0]?.name ?? null, [session?.roles])

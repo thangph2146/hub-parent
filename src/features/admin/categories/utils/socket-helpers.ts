@@ -1,7 +1,7 @@
 import type { CategoryRow } from "../types"
 import type { AdminCategoriesListParams } from "@/lib/query-keys"
 
-export function matchesSearch(search: string | undefined, row: CategoryRow): boolean {
+export const matchesSearch = (search: string | undefined, row: CategoryRow): boolean => {
   if (!search || typeof search !== "string") return true
   const term = search.trim().toLowerCase()
   if (!term) return true
@@ -10,10 +10,10 @@ export function matchesSearch(search: string | undefined, row: CategoryRow): boo
   )
 }
 
-export function matchesFilters(
+export const matchesFilters = (
   filters: AdminCategoriesListParams["filters"],
   row: CategoryRow
-): boolean {
+): boolean => {
   if (!filters) return true
   for (const [key, value] of Object.entries(filters)) {
     if (value === undefined) continue
@@ -31,20 +31,20 @@ export function matchesFilters(
   return true
 }
 
-export function shouldIncludeInStatus(
+export const shouldIncludeInStatus = (
   paramsStatus: AdminCategoriesListParams["status"],
   rowStatus: "active" | "deleted"
-): boolean {
+): boolean => {
   if (paramsStatus === "all") return true
   if (!paramsStatus) return rowStatus === "active"
   return paramsStatus === rowStatus
 }
 
-export function insertRowIntoPage(
+export const insertRowIntoPage = (
   rows: CategoryRow[],
   row: CategoryRow,
   limit: number
-): CategoryRow[] {
+): CategoryRow[] => {
   const existingIndex = rows.findIndex((item) => item.id === row.id)
   if (existingIndex >= 0) {
     const next = [...rows]
@@ -58,10 +58,10 @@ export function insertRowIntoPage(
   return next
 }
 
-export function removeRowFromPage(
+export const removeRowFromPage = (
   rows: CategoryRow[],
   id: string
-): { rows: CategoryRow[]; removed: boolean } {
+): { rows: CategoryRow[]; removed: boolean } => {
   const index = rows.findIndex((item) => item.id === id)
   if (index === -1) return { rows, removed: false }
   const next = [...rows]

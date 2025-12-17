@@ -13,7 +13,7 @@ interface CollapsibleSectionProps {
   defaultOpen?: boolean
 }
 
-export function CollapsibleSection({ title, icon, children, defaultOpen = true }: CollapsibleSectionProps) {
+export const CollapsibleSection = ({ title, icon, children, defaultOpen = true }: CollapsibleSectionProps) => {
   const [isOpen, setIsOpen] = useState(defaultOpen)
 
   return (

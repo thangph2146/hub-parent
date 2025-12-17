@@ -10,14 +10,14 @@ interface UseResourceDetailLoggerOptions<T extends Record<string, unknown>> {
   fetchedData?: T
 }
 
-export function useResourceDetailLogger<T extends Record<string, unknown>>({
+export const useResourceDetailLogger = <T extends Record<string, unknown>>({
   resourceName,
   resourceId,
   data: _data,
   isFetched,
   isFromApi,
   fetchedData,
-}: UseResourceDetailLoggerOptions<T>) {
+}: UseResourceDetailLoggerOptions<T>) => {
   const loggedDataKeyRef = useRef<string | null>(null)
 
   useEffect(() => {

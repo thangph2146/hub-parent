@@ -4,7 +4,7 @@ import type { AdminStudentsListParams } from "@/lib/query-keys"
 
 const SEARCHABLE_FIELDS: Array<keyof StudentRow> = ["studentCode", "name", "email"]
 
-export function matchesSearch(search: string | undefined, row: StudentRow): boolean {
+export const matchesSearch = (search: string | undefined, row: StudentRow): boolean => {
   if (!search?.trim()) return true
   
   const term = search.trim().toLowerCase()
@@ -23,10 +23,10 @@ const FILTER_MATCHERS = {
 
 type FilterKey = keyof typeof FILTER_MATCHERS
 
-export function matchesFilters(
+export const matchesFilters = (
   filters: AdminStudentsListParams["filters"],
   row: StudentRow
-): boolean {
+): boolean => {
   if (!filters) return true
 
   return Object.entries(filters).every(([key, value]) => {
@@ -47,19 +47,19 @@ export function matchesFilters(
   })
 }
 
-export function shouldIncludeInStatus(
+export const shouldIncludeInStatus = (
   paramsStatus: AdminStudentsListParams["status"],
   rowStatus: "active" | "deleted"
-): boolean {
+): boolean => {
   if (paramsStatus === "all") return true
   return (paramsStatus ?? "active") === rowStatus
 }
 
-export function insertRowIntoPage(
+export const insertRowIntoPage = (
   rows: StudentRow[],
   row: StudentRow,
   limit: number
-): StudentRow[] {
+): StudentRow[] => {
   const existingIndex = rows.findIndex((item) => item.id === row.id)
   
   if (existingIndex >= 0) {
@@ -101,10 +101,10 @@ export function insertRowIntoPage(
   return result
 }
 
-export function removeRowFromPage(
+export const removeRowFromPage = (
   rows: StudentRow[],
   id: string
-): { rows: StudentRow[]; removed: boolean } {
+): { rows: StudentRow[]; removed: boolean } => {
   const index = rows.findIndex((item) => item.id === id)
   
   if (index === -1) {

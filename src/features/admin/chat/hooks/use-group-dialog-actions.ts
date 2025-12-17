@@ -17,14 +17,14 @@ interface UseGroupActionsOptions {
   onSuccess?: () => void
 }
 
-export function useGroupDialogActions({
+export const useGroupDialogActions = ({
   canDelete,
   canRestore,
   canManage,
   isSocketConnected,
   showFeedback,
   onSuccess,
-}: UseGroupActionsOptions) {
+}: UseGroupActionsOptions) => {
   const [deletingGroups, setDeletingGroups] = useState<Set<string>>(new Set())
   const [restoringGroups, setRestoringGroups] = useState<Set<string>>(new Set())
   const [hardDeletingGroups, setHardDeletingGroups] = useState<Set<string>>(new Set())

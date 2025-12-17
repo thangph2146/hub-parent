@@ -13,7 +13,7 @@ import type { TagRow } from "../types"
 
 type TagWithRelations = Prisma.TagGetPayload<Record<string, never>>
 
-export function mapTagRecord(tag: TagWithRelations): ListedTag {
+export const mapTagRecord = (tag: TagWithRelations): ListedTag => {
   return {
     id: tag.id,
     name: tag.name,
@@ -24,7 +24,7 @@ export function mapTagRecord(tag: TagWithRelations): ListedTag {
   }
 }
 
-export function buildWhereClause(params: ListTagsInput): Prisma.TagWhereInput {
+export const buildWhereClause = (params: ListTagsInput): Prisma.TagWhereInput => {
   const where: Prisma.TagWhereInput = {}
 
   // Apply status filter
@@ -59,7 +59,7 @@ export function buildWhereClause(params: ListTagsInput): Prisma.TagWhereInput {
   return where
 }
 
-export function serializeTagForTable(tag: ListedTag | { id: string; name: string; slug: string; createdAt: Date | string; updatedAt?: Date | string; deletedAt: Date | string | null }): TagRow {
+export const serializeTagForTable = (tag: ListedTag | { id: string; name: string; slug: string; createdAt: Date | string; updatedAt?: Date | string; deletedAt: Date | string | null }): TagRow => {
   return {
     id: tag.id,
     name: tag.name,
@@ -70,7 +70,7 @@ export function serializeTagForTable(tag: ListedTag | { id: string; name: string
   }
 }
 
-export function serializeTagsList(data: ListTagsResult): DataTableResult<TagRow> {
+export const serializeTagsList = (data: ListTagsResult): DataTableResult<TagRow> => {
   return {
     page: data.pagination.page,
     limit: data.pagination.limit,
@@ -80,7 +80,7 @@ export function serializeTagsList(data: ListTagsResult): DataTableResult<TagRow>
   }
 }
 
-export function serializeTagDetail(tag: TagDetail) {
+export const serializeTagDetail = (tag: TagDetail) => {
   return {
     id: tag.id,
     name: tag.name,

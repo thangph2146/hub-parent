@@ -3,7 +3,7 @@ import { getSocketServer, storeNotificationInCache, mapNotificationToPayload } f
 import { logger } from "@/lib/config"
 import type { Notification } from "@prisma/client"
 
-export async function emitNotificationNew(notification: Notification): Promise<void> {
+export const emitNotificationNew = async (notification: Notification): Promise<void> => {
   const io = getSocketServer()
   if (!io) return
 
@@ -20,9 +20,9 @@ export async function emitNotificationNew(notification: Notification): Promise<v
   }
 }
 
-export async function emitNotificationNewForSuperAdmins(
+export const emitNotificationNewForSuperAdmins = async (
   notifications: Notification[],
-): Promise<void> {
+): Promise<void> => {
   const io = getSocketServer()
   if (!io || notifications.length === 0) return
 
@@ -56,9 +56,9 @@ export async function emitNotificationNewForSuperAdmins(
   }
 }
 
-export async function emitNotificationNewForAllAdmins(
+export const emitNotificationNewForAllAdmins = async (
   notifications: Notification[],
-): Promise<void> {
+): Promise<void> => {
   const io = getSocketServer()
   if (!io || notifications.length === 0) return
 
@@ -93,7 +93,7 @@ export async function emitNotificationNewForAllAdmins(
   }
 }
 
-export function emitNotificationUpdated(notification: Notification): void {
+export const emitNotificationUpdated = (notification: Notification): void => {
   const io = getSocketServer()
   if (!io) return
 
@@ -109,7 +109,7 @@ export function emitNotificationUpdated(notification: Notification): void {
   }
 }
 
-export function emitNotificationDeleted(notificationId: string, userId: string): void {
+export const emitNotificationDeleted = (notificationId: string, userId: string): void => {
   const io = getSocketServer()
   if (!io) return
 
@@ -121,10 +121,10 @@ export function emitNotificationDeleted(notificationId: string, userId: string):
   }
 }
 
-export async function emitNotificationsSync(
+export const emitNotificationsSync = async (
   notificationIds: string[],
   userId: string,
-): Promise<void> {
+): Promise<void> => {
   const io = getSocketServer()
   if (!io || notificationIds.length === 0) return
 
@@ -147,7 +147,7 @@ export async function emitNotificationsSync(
   }
 }
 
-export function emitNotificationsDeleted(notificationIds: string[], userId: string): void {
+export const emitNotificationsDeleted = (notificationIds: string[], userId: string): void => {
   const io = getSocketServer()
   if (!io || notificationIds.length === 0) return
 

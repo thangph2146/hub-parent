@@ -35,7 +35,7 @@ interface UseStudentRowActionsOptions {
   hardDeletingStudents?: Set<string>
 }
 
-export function renderRowActions(actions: RowActionConfig[]) {
+export const renderRowActions = (actions: RowActionConfig[]) => {
   if (actions.length === 0) {
     return null
   }
@@ -99,7 +99,7 @@ export function renderRowActions(actions: RowActionConfig[]) {
   )
 }
 
-export function useStudentRowActions({
+export const useStudentRowActions = ({
   canDelete,
   canRestore,
   canManage,
@@ -110,7 +110,7 @@ export function useStudentRowActions({
   deletingStudents = new Set(),
   restoringStudents = new Set(),
   hardDeletingStudents = new Set(),
-}: UseStudentRowActionsOptions) {
+}: UseStudentRowActionsOptions) => {
   const router = useResourceRouter()
 
   const renderActiveRowActions = useCallback(

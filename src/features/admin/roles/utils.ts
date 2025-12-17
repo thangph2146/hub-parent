@@ -3,7 +3,7 @@ import { formatDateVi, validateDescription } from "@/features/admin/resources/ut
 // Re-export common utilities from resources
 export { formatDateVi, validateDescription }
 
-export function validateRoleName(value: unknown): { valid: boolean; error?: string } {
+export const validateRoleName = (value: unknown): { valid: boolean; error?: string } => {
   if (!value || typeof value !== "string" || value.trim() === "") {
     return { valid: false, error: "Tên vai trò là bắt buộc" }
   }
@@ -21,7 +21,7 @@ export function validateRoleName(value: unknown): { valid: boolean; error?: stri
   return { valid: true }
 }
 
-export function validateDisplayName(value: unknown): { valid: boolean; error?: string } {
+export const validateDisplayName = (value: unknown): { valid: boolean; error?: string } => {
   if (!value || typeof value !== "string" || value.trim() === "") {
     return { valid: false, error: "Tên hiển thị là bắt buộc" }
   }
@@ -31,7 +31,7 @@ export function validateDisplayName(value: unknown): { valid: boolean; error?: s
   return { valid: true }
 }
 
-export function validatePermissions(value: unknown): { valid: boolean; error?: string } {
+export const validatePermissions = (value: unknown): { valid: boolean; error?: string } => {
   if (value === undefined || value === null) {
     return { valid: true } // Optional field
   }

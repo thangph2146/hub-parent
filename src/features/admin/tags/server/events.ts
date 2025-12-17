@@ -8,11 +8,11 @@ const SUPER_ADMIN_ROOM = "role:super_admin"
 
 export type TagStatus = "active" | "deleted"
 
-function resolveStatusFromRow(row: TagRow): TagStatus {
+const resolveStatusFromRow = (row: TagRow): TagStatus => {
   return row.deletedAt ? "deleted" : "active"
 }
 
-async function fetchTagRow(tagId: string): Promise<TagRow | null> {
+const fetchTagRow = async (tagId: string): Promise<TagRow | null> => {
   const tag = await prisma.tag.findUnique({
     where: { id: tagId },
   })
@@ -25,10 +25,10 @@ async function fetchTagRow(tagId: string): Promise<TagRow | null> {
   return serializeTagForTable(listed)
 }
 
-export async function emitTagUpsert(
+export const emitTagUpsert = async (
   tagId: string,
   previousStatus: TagStatus | null,
-): Promise<void> {
+): Promise<void> => {
   const io = getSocketServer()
   if (!io) return
 
@@ -56,7 +56,7 @@ export async function emitTagUpsert(
   })
 }
 
-export function emitTagRemove(tagId: string, previousStatus: TagStatus): void {
+export const emitTagRemove = (tagId: string, previousStatus: TagStatus): void => {
   const io = getSocketServer()
   if (!io) return
 

@@ -3,7 +3,7 @@ import { formatDateVi, validateName, validateEmail } from "@/features/admin/reso
 // Re-export common utilities from resources
 export { formatDateVi, validateName, validateEmail }
 
-export function validateStudentCode(value: unknown): { valid: boolean; error?: string } {
+export const validateStudentCode = (value: unknown): { valid: boolean; error?: string } => {
   if (!value || typeof value !== "string" || value.trim() === "") {
     return { valid: false, error: "Mã học sinh là bắt buộc" }
   }

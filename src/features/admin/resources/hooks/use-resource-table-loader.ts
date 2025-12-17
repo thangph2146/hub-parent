@@ -11,12 +11,12 @@ interface UseResourceTableLoaderOptions<T extends object, P> {
   buildQueryKey: (params: P) => QueryKey
 }
 
-export function useResourceTableLoader<T extends object, P>({
+export const useResourceTableLoader = <T extends object, P>({
   queryClient,
   fetcher,
   buildParams,
   buildQueryKey,
-}: UseResourceTableLoaderOptions<T, P>): ResourceTableLoader<T> {
+}: UseResourceTableLoaderOptions<T, P>): ResourceTableLoader<T> => {
   return useCallback<ResourceTableLoader<T>>(
     async (query, view) => {
       const params = buildParams({ query, view })

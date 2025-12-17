@@ -20,7 +20,7 @@ type SessionWithRelations = Prisma.SessionGetPayload<{
   }
 }>
 
-export function mapSessionRecord(session: SessionWithRelations): ListedSession {
+export const mapSessionRecord = (session: SessionWithRelations): ListedSession => {
   return {
     id: session.id,
     userId: session.userId,
@@ -38,7 +38,7 @@ export function mapSessionRecord(session: SessionWithRelations): ListedSession {
   }
 }
 
-export function buildWhereClause(params: ListSessionsInput): Prisma.SessionWhereInput {
+export const buildWhereClause = (params: ListSessionsInput): Prisma.SessionWhereInput => {
   const where: Prisma.SessionWhereInput = {}
   const status = params.status ?? "active"
 
@@ -99,7 +99,7 @@ export function buildWhereClause(params: ListSessionsInput): Prisma.SessionWhere
   return where
 }
 
-export function serializeSessionForTable(session: ListedSession & { userName?: string | null; userEmail?: string }): SessionRow {
+export const serializeSessionForTable = (session: ListedSession & { userName?: string | null; userEmail?: string }): SessionRow => {
   return {
     id: session.id,
     userId: session.userId,
@@ -117,7 +117,7 @@ export function serializeSessionForTable(session: ListedSession & { userName?: s
   }
 }
 
-export function serializeSessionsList(data: ListSessionsResult & { rows: Array<ListedSession & { userName?: string | null; userEmail?: string }> }): DataTableResult<SessionRow> {
+export const serializeSessionsList = (data: ListSessionsResult & { rows: Array<ListedSession & { userName?: string | null; userEmail?: string }> }): DataTableResult<SessionRow> => {
   return {
     page: data.page,
     limit: data.limit,
@@ -127,7 +127,7 @@ export function serializeSessionsList(data: ListSessionsResult & { rows: Array<L
   }
 }
 
-export function serializeSessionDetail(session: SessionDetail) {
+export const serializeSessionDetail = (session: SessionDetail) => {
   return {
     id: session.id,
     userId: session.userId,

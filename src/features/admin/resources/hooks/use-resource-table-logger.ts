@@ -16,7 +16,7 @@ interface UseResourceTableLoggerOptions<T extends object> {
   cacheVersion?: number
 }
 
-export function useResourceTableLogger<T extends object>({
+export const useResourceTableLogger = <T extends object>({
   resourceName,
   initialData,
   initialDataByView,
@@ -26,7 +26,7 @@ export function useResourceTableLogger<T extends object>({
   columns,
   getRowData,
   cacheVersion: _cacheVersion,
-}: UseResourceTableLoggerOptions<T>) {
+}: UseResourceTableLoggerOptions<T>) => {
   const lastLoggedKeyRef = useRef<string | null>(null)
   const lastViewIdRef = useRef<string | undefined>(undefined)
   const retryTimeoutRef = useRef<NodeJS.Timeout | null>(null)

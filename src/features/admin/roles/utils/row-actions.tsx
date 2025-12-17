@@ -34,7 +34,7 @@ interface UseRowActionsOptions {
   hardDeletingRoles?: Set<string>
 }
 
-export function renderRowActions(actions: RowActionConfig[]) {
+export const renderRowActions = (actions: RowActionConfig[]) => {
   if (actions.length === 0) {
     return null
   }
@@ -98,7 +98,7 @@ export function renderRowActions(actions: RowActionConfig[]) {
   )
 }
 
-export function useRoleRowActions({
+export const useRoleRowActions = ({
   canDelete,
   canRestore,
   canManage,
@@ -108,7 +108,7 @@ export function useRoleRowActions({
   deletingRoles = new Set(),
   restoringRoles = new Set(),
   hardDeletingRoles = new Set(),
-}: UseRowActionsOptions) {
+}: UseRowActionsOptions) => {
   const router = useResourceRouter()
 
   const renderActiveRowActions = useCallback(

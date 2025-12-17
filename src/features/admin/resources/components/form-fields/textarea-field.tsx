@@ -12,13 +12,13 @@ interface TextareaFieldProps<T> {
   isPending?: boolean
 }
 
-export function TextareaField<T>({
+export const TextareaField = <T,>({
   field,
   value,
   error,
   onChange,
   isPending = false,
-}: TextareaFieldProps<T>) {
+}: TextareaFieldProps<T>) => {
   const fieldValue = value ?? ""
   const fieldId = field.name as string
   const errorId = error ? `${fieldId}-error` : undefined

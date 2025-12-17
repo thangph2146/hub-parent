@@ -11,7 +11,7 @@ interface FeedbackState {
   details?: string
 }
 
-export function useGroupFeedback() {
+export const useGroupFeedback = () => {
   const [feedback, setFeedback] = useState<FeedbackState | null>(null)
 
   const showFeedback = useCallback(

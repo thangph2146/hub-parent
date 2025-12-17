@@ -29,7 +29,7 @@ import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 /**
  * Helper function để highlight "HUB" trong text với màu secondary
  */
-function highlightHUB(text: string): React.ReactNode {
+const highlightHUB = (text: string): React.ReactNode => {
   const parts = text.split(/(HUB)/gi);
   return parts.map((part, index) =>
     part.toUpperCase() === "HUB" ? (
@@ -40,9 +40,9 @@ function highlightHUB(text: string): React.ReactNode {
       part
     )
   );
-}
+};
 
-export function AboutClient() {
+export const AboutClient = () => {
   const [showMoreDialog, setShowMoreDialog] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isMobile, setIsMobile] = useState(false);

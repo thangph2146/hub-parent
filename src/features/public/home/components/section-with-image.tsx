@@ -29,7 +29,7 @@ export interface SectionWithImageProps {
   children?: ReactNode;
 }
 
-export function SectionWithImage({
+export const SectionWithImage = ({
   title,
   description,
   image,
@@ -40,7 +40,7 @@ export function SectionWithImage({
   imageHeight = DEFAULT_IMAGE_HEIGHT,
   className,
   children,
-}: SectionWithImageProps) {
+}: SectionWithImageProps) => {
   return (
     <div
       className={cn(

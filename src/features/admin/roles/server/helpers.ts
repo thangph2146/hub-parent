@@ -14,7 +14,7 @@ import type { RoleRow } from "../types"
 
 type RoleWithRelations = Prisma.RoleGetPayload<Record<string, never>>
 
-export function mapRoleRecord(role: RoleWithRelations): ListedRole {
+export const mapRoleRecord = (role: RoleWithRelations): ListedRole => {
   return {
     id: role.id,
     name: role.name,
@@ -28,7 +28,7 @@ export function mapRoleRecord(role: RoleWithRelations): ListedRole {
   }
 }
 
-export function buildWhereClause(params: ListRolesInput): Prisma.RoleWhereInput {
+export const buildWhereClause = (params: ListRolesInput): Prisma.RoleWhereInput => {
   const where: Prisma.RoleWhereInput = {}
 
   // Apply status filter
@@ -66,7 +66,7 @@ export function buildWhereClause(params: ListRolesInput): Prisma.RoleWhereInput 
   return where
 }
 
-export function serializeRoleForTable(role: ListedRole | { id: string; name: string; displayName: string; description: string | null; permissions: string[]; isActive: boolean; createdAt: Date | string; updatedAt?: Date | string; deletedAt: Date | string | null }): RoleRow {
+export const serializeRoleForTable = (role: ListedRole | { id: string; name: string; displayName: string; description: string | null; permissions: string[]; isActive: boolean; createdAt: Date | string; updatedAt?: Date | string; deletedAt: Date | string | null }): RoleRow => {
   return {
     id: role.id,
     name: role.name,
@@ -80,7 +80,7 @@ export function serializeRoleForTable(role: ListedRole | { id: string; name: str
   }
 }
 
-export function serializeRolesList(data: ListRolesResult): DataTableResult<RoleRow> {
+export const serializeRolesList = (data: ListRolesResult): DataTableResult<RoleRow> => {
   return {
     page: data.pagination.page,
     limit: data.pagination.limit,
@@ -90,7 +90,7 @@ export function serializeRolesList(data: ListRolesResult): DataTableResult<RoleR
   }
 }
 
-export function serializeRoleDetail(role: RoleDetail) {
+export const serializeRoleDetail = (role: RoleDetail) => {
   return {
     id: role.id,
     name: role.name,

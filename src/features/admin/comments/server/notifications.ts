@@ -1,20 +1,11 @@
-import { prisma } from "@/lib/database"
-import { resourceLogger } from "@/lib/config"
 import { createNotificationForAllAdmins, emitNotificationToAllAdminsAfterCreate } from "@/features/admin/notifications/server/mutations"
+import { getActorInfo, logNotificationError } from "@/features/admin/notifications/server/notification-helpers"
 import { NotificationKind } from "@prisma/client"
 
-async function getActorInfo(actorId: string) {
-  const actor = await prisma.user.findUnique({
-    where: { id: actorId },
-    select: { id: true, email: true, name: true },
-  })
-  return actor
-}
-
-export function formatCommentNames(
+export const formatCommentNames = (
   comments: Array<{ authorName: string | null; authorEmail: string; content?: string }>,
   maxDisplay: number = 3
-): string {
+): string => {
   if (comments.length === 0) return ""
   
   const names = comments.slice(0, maxDisplay).map((c) => {
@@ -29,7 +20,7 @@ export function formatCommentNames(
   return `${names.join(", ")} và ${remaining} bình luận khác`
 }
 
-export async function notifySuperAdminsOfCommentAction(
+export const notifySuperAdminsOfCommentAction = async (
   action: "approve" | "unapprove" | "update" | "delete" | "restore" | "hard-delete",
   actorId: string,
   comment: { id: string; content: string; authorName: string | null; authorEmail: string; postTitle: string },
@@ -37,7 +28,7 @@ export async function notifySuperAdminsOfCommentAction(
     content?: { old: string; new: string }
     approved?: { old: boolean; new: boolean }
   }
-) {
+) => {
   try {
     const actor = await getActorInfo(actorId)
     const _actorName = actor?.name || actor?.email || "Hệ thống"
@@ -85,25 +76,28 @@ export async function notifySuperAdminsOfCommentAction(
         break
     }
 
+    // Tạo metadata một lần để tái sử dụng
+    const metadata = {
+      type: `comment_${action}`,
+      actorId,
+      actorName: actor?.name || actor?.email,
+      actorEmail: actor?.email,
+      commentId: comment.id,
+      commentContent: comment.content.length > 100 ? comment.content.substring(0, 100) + "..." : comment.content,
+      authorName: comment.authorName,
+      authorEmail: comment.authorEmail,
+      postTitle: comment.postTitle,
+      ...(changes && { changes }),
+      timestamp: new Date().toISOString(),
+    }
+
     // Tạo notifications trong DB cho tất cả admin
     const result = await createNotificationForAllAdmins(
       title,
       description,
       actionUrl,
       NotificationKind.SYSTEM,
-      {
-        type: `comment_${action}`,
-        actorId,
-        actorName: actor?.name || actor?.email,
-        actorEmail: actor?.email,
-        commentId: comment.id,
-        commentContent: comment.content.length > 100 ? comment.content.substring(0, 100) + "..." : comment.content,
-        authorName: comment.authorName,
-        authorEmail: comment.authorEmail,
-        postTitle: comment.postTitle,
-        ...(changes && { changes }),
-        timestamp: new Date().toISOString(),
-      }
+      metadata
     )
 
     // Emit socket event nếu có socket server
@@ -113,41 +107,19 @@ export async function notifySuperAdminsOfCommentAction(
         description,
         actionUrl,
         NotificationKind.SYSTEM,
-        {
-          type: `comment_${action}`,
-          actorId,
-          actorName: actor?.name || actor?.email,
-          actorEmail: actor?.email,
-          commentId: comment.id,
-          commentContent: comment.content.length > 100 ? comment.content.substring(0, 100) + "..." : comment.content,
-          authorName: comment.authorName,
-          authorEmail: comment.authorEmail,
-          postTitle: comment.postTitle,
-          ...(changes && { changes }),
-          timestamp: new Date().toISOString(),
-        }
+        metadata
       )
     }
   } catch (error) {
-    // Log error nhưng không throw để không ảnh hưởng đến main operation
-    resourceLogger.actionFlow({
-      resource: "comments",
-      action: "error",
-      step: "error",
-      metadata: { 
-        action: "notify-super-admins", 
-        commentId: comment.id,
-        error: error instanceof Error ? error.message : "Unknown error",
-      },
-    })
+    logNotificationError("comments", "notify-super-admins", { commentId: comment.id }, error)
   }
 }
 
-export async function notifySuperAdminsOfBulkCommentAction(
+export const notifySuperAdminsOfBulkCommentAction = async (
   action: "approve" | "unapprove" | "delete" | "restore" | "hard-delete",
   actorId: string,
   comments: Array<{ id: string; content: string; authorName: string | null; authorEmail: string; postTitle: string }>
-) {
+) => {
   if (comments.length === 0) return
 
   try {
@@ -183,20 +155,23 @@ export async function notifySuperAdminsOfBulkCommentAction(
         break
     }
 
+    // Tạo metadata một lần để tái sử dụng
+    const metadata = {
+      type: `comment_bulk_${action}`,
+      actorId,
+      actorName: actor?.name || actor?.email,
+      actorEmail: actor?.email,
+      count,
+      commentIds: comments.map((c) => c.id),
+      timestamp: new Date().toISOString(),
+    }
+
     const result = await createNotificationForAllAdmins(
       title,
       description,
       "/admin/comments",
       NotificationKind.SYSTEM,
-      {
-        type: `comment_bulk_${action}`,
-        actorId,
-        actorName: actor?.name || actor?.email,
-        actorEmail: actor?.email,
-        count,
-        commentIds: comments.map((c) => c.id),
-        timestamp: new Date().toISOString(),
-      }
+      metadata
     )
 
     // Emit socket event nếu có socket server
@@ -206,28 +181,11 @@ export async function notifySuperAdminsOfBulkCommentAction(
         description,
         "/admin/comments",
         NotificationKind.SYSTEM,
-        {
-          type: `comment_bulk_${action}`,
-          actorId,
-          actorName: actor?.name || actor?.email,
-          actorEmail: actor?.email,
-          count,
-          commentIds: comments.map((c) => c.id),
-          timestamp: new Date().toISOString(),
-        }
+        metadata
       )
     }
   } catch (error) {
-    resourceLogger.actionFlow({
-      resource: "comments",
-      action: "error",
-      step: "error",
-      metadata: { 
-        action: "notify-all-admins-bulk",
-        count: comments.length,
-        error: error instanceof Error ? error.message : "Unknown error",
-      },
-    })
+    logNotificationError("comments", "notify-all-admins-bulk", { count: comments.length }, error)
   }
 }
 

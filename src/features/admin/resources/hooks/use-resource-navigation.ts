@@ -17,10 +17,10 @@ export interface UseResourceNavigationResult {
 // Flag để prevent duplicate navigation calls
 let isNavigating = false
 
-export function useResourceNavigation({
+export const useResourceNavigation = ({
   queryClient,
   invalidateQueryKey,
-}: UseResourceNavigationOptions = {}): UseResourceNavigationResult {
+}: UseResourceNavigationOptions = {}): UseResourceNavigationResult => {
   const router = useResourceRouter()
   const resourceSegment = useResourceSegment()
 

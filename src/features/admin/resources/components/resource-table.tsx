@@ -8,7 +8,7 @@ export interface ResourceTableProps<T extends object> extends Omit<ResourceTable
   loader: ResourceTableClientProps<T>["loader"]
 }
 
-export async function ResourceTable<T extends object>({
+export const ResourceTable = async <T extends object>({
   initialDataByView,
   loader,
   title,
@@ -16,7 +16,7 @@ export async function ResourceTable<T extends object>({
   baseColumns,
   fallbackRowCount = 5,
   ...props
-}: ResourceTableProps<T>) {
+}: ResourceTableProps<T>) => {
   return (
     <ResourceTableClient
       initialDataByView={initialDataByView}
@@ -30,13 +30,13 @@ export async function ResourceTable<T extends object>({
   )
 }
 
-export function ResourceTableWithSuspense<T extends object>({
+export const ResourceTableWithSuspense = <T extends object>({
   title,
   viewModes,
   baseColumns,
   fallbackRowCount = 5,
   ...props
-}: ResourceTableProps<T>) {
+}: ResourceTableProps<T>) => {
   const columnCount = viewModes?.[0]?.columns?.length ?? baseColumns?.length ?? 4
   const viewModeCount = viewModes?.length ?? 1
 

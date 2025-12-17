@@ -8,7 +8,7 @@ export interface TablePermissions {
   canCreate: boolean
 }
 
-export function getTablePermissions(
+export const getTablePermissions = (
   authInfo: AuthInfo,
   resourcePermissions: {
     delete: Permission[]
@@ -16,7 +16,7 @@ export function getTablePermissions(
     manage: Permission | Permission[]
     create: Permission
   }
-): TablePermissions {
+): TablePermissions => {
   const { permissions, roles } = authInfo
   const managePermissions = Array.isArray(resourcePermissions.manage)
     ? resourcePermissions.manage
@@ -30,14 +30,14 @@ export function getTablePermissions(
   }
 }
 
-export async function getTablePermissionsAsync(
+export const getTablePermissionsAsync = async (
   resourcePermissions: {
     delete: Permission[]
     restore: Permission[]
     manage: Permission | Permission[]
     create: Permission
   }
-): Promise<TablePermissions> {
+): Promise<TablePermissions> => {
   return getTablePermissions(await getAuthInfo(), resourcePermissions)
 }
 

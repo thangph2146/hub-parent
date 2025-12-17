@@ -117,7 +117,7 @@ function getRoleInfo(roles: Array<{ name: string; displayName?: string }> = []) 
 
 
 
-export function DashboardWelcome() {
+export const DashboardWelcome = () => {
   const { data: session } = useSession()
   const { hasPermission } = usePermissions()
   const isMounted = useClientOnly()

@@ -5,12 +5,12 @@ import { ResourceDetailSkeleton } from "@/components/layouts/skeletons"
 
 export type ResourceDetailProps<T extends Record<string, unknown>> = ResourceDetailClientProps<T>
 
-export function ResourceDetail<T extends Record<string, unknown>>({
+export const ResourceDetail = <T extends Record<string, unknown>>({
   fields,
   sections,
   title,
   ...props
-}: ResourceDetailProps<T>) {
+}: ResourceDetailProps<T>) => {
   return (
     <ResourceDetailClient
       fields={fields}
@@ -29,13 +29,13 @@ export interface ResourceDetailAsyncProps<T extends Record<string, unknown>>
   title?: string
 }
 
-export async function ResourceDetailAsync<T extends Record<string, unknown>>({
+export const ResourceDetailAsync = <T extends Record<string, unknown>>({
   dataLoader,
   fields,
   sections,
   title,
   ...props
-}: ResourceDetailAsyncProps<T>) {
+}: ResourceDetailAsyncProps<T>) => {
   const defaultFields = Array.isArray(fields) ? fields : fields.fields
   const fieldCount = defaultFields.length
   const sectionCount = sections ? sections.length + 1 : 1
@@ -61,13 +61,13 @@ export async function ResourceDetailAsync<T extends Record<string, unknown>>({
   )
 }
 
-async function ResourceDetailAsyncContent<T extends Record<string, unknown>>({
+const ResourceDetailAsyncContent = async <T extends Record<string, unknown>>({
   dataLoader,
   fields,
   sections,
   title,
   ...props
-}: ResourceDetailAsyncProps<T>) {
+}: ResourceDetailAsyncProps<T>) => {
   const data = await dataLoader()
 
   return (
@@ -81,12 +81,12 @@ async function ResourceDetailAsyncContent<T extends Record<string, unknown>>({
   )
 }
 
-export function ResourceDetailWithSuspense<T extends Record<string, unknown>>({
+export const ResourceDetailWithSuspense = <T extends Record<string, unknown>>({
   fields,
   sections,
   title,
   ...props
-}: ResourceDetailProps<T>) {
+}: ResourceDetailProps<T>) => {
   const defaultFields = Array.isArray(fields) ? fields : fields.fields
   const fieldCount = defaultFields.length
   const sectionCount = sections ? sections.length + 1 : 1

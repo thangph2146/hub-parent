@@ -9,7 +9,7 @@ interface FeedbackState {
   details?: string
 }
 
-export function useStudentFeedback() {
+export const useStudentFeedback = () => {
   const [feedback, setFeedback] = useState<FeedbackState | null>(null)
 
   const showFeedback = useCallback(

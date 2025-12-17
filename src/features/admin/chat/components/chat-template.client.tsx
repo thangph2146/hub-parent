@@ -26,14 +26,14 @@ import type { ChatWindowProps } from "@/components/chat/components/chat-window"
 import { logger } from "@/lib/config"
 import { useElementSize } from "@/hooks/use-element-size"
 
-export function ChatTemplate({
+export const ChatTemplate = ({
   contacts,
   currentUserId,
   role,
   initialFilterType = "ACTIVE",
   onNewConversation,
   onNewGroup,
-}: ChatTemplateProps) {
+}: ChatTemplateProps) => {
   const isMobile = useIsMobile()
   const [filterType, setFilterType] = useState<ChatFilterType>(initialFilterType)
   const [contactSearch, setContactSearch] = useState("")

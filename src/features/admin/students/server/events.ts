@@ -7,11 +7,11 @@ const SUPER_ADMIN_ROOM = "role:super_admin"
 
 export type StudentStatus = "active" | "deleted"
 
-function resolveStatusFromRow(row: StudentRow): StudentStatus {
+const resolveStatusFromRow = (row: StudentRow): StudentStatus => {
   return row.deletedAt ? "deleted" : "active"
 }
 
-async function fetchStudentRow(studentId: string): Promise<StudentRow | null> {
+const fetchStudentRow = async (studentId: string): Promise<StudentRow | null> => {
   const student = await prisma.student.findUnique({
     where: { id: studentId },
     include: {
@@ -33,10 +33,10 @@ async function fetchStudentRow(studentId: string): Promise<StudentRow | null> {
   return serializeStudentForTable(listed)
 }
 
-export async function emitStudentUpsert(
+export const emitStudentUpsert = async (
   studentId: string,
   previousStatus: StudentStatus | null,
-): Promise<void> {
+): Promise<void> => {
   const io = getSocketServer()
   if (!io) return
 
@@ -57,7 +57,7 @@ export async function emitStudentUpsert(
   })
 }
 
-export function emitStudentRemove(studentId: string, previousStatus: StudentStatus): void {
+export const emitStudentRemove = (studentId: string, previousStatus: StudentStatus): void => {
   const io = getSocketServer()
   if (!io) return
 
@@ -67,10 +67,10 @@ export function emitStudentRemove(studentId: string, previousStatus: StudentStat
   })
 }
 
-export async function emitStudentBatchUpsert(
+export const emitStudentBatchUpsert = async (
   studentIds: string[],
   previousStatus: StudentStatus | null,
-): Promise<void> {
+): Promise<void> => {
   const io = getSocketServer()
   if (!io || studentIds.length === 0) return
 

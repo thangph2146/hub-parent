@@ -12,13 +12,13 @@ interface DateFieldProps<T> {
   isPending?: boolean
 }
 
-export function DateField<T>({
+export const DateField = <T,>({
   field,
   value,
   error,
   onChange,
   isPending = false,
-}: DateFieldProps<T>) {
+}: DateFieldProps<T>) => {
   const fieldValue = value ?? ""
   const fieldId = field.name as string
   const errorId = error ? `${fieldId}-error` : undefined
@@ -35,7 +35,7 @@ export function DateField<T>({
         disabled={field.disabled || isPending}
         aria-invalid={error ? "true" : "false"}
         aria-describedby={errorId || field.description ? `${fieldId}-description` : undefined}
-        className={error ? "border-destructive" : ""}
+        className={error ? "border-destructive" : undefined}
       />
       {error && <FieldError id={errorId}>{error}</FieldError>}
     </FieldContent>

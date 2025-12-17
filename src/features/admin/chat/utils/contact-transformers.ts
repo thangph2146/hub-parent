@@ -69,7 +69,7 @@ function parseDate(value: DateLike): Date | undefined {
   return undefined
 }
 
-export function ensureDate(value: DateLike, fallback?: DateLike): Date {
+export const ensureDate = (value: DateLike, fallback?: DateLike): Date => {
   const parsed = parseDate(value)
   if (parsed) return parsed
 
@@ -103,7 +103,7 @@ function castMessageType(type?: string | null): MessageType | undefined {
   return type as MessageType
 }
 
-export function mapMessageDetailToMessage(detail: MessageDetailLike): Message {
+export const mapMessageDetailToMessage = (detail: MessageDetailLike): Message => {
   return {
     id: detail.id,
     content: detail.content,
@@ -121,7 +121,7 @@ export function mapMessageDetailToMessage(detail: MessageDetailLike): Message {
   }
 }
 
-export function mapGroupListItemToContact({
+export const mapGroupListItemToContact = ({
   groupData,
   messages = [],
   currentUserId,
@@ -129,7 +129,7 @@ export function mapGroupListItemToContact({
   groupData: GroupListItemLike
   messages?: MessageDetailLike[]
   currentUserId: string
-}): Contact {
+}): Contact => {
   const mappedMessages = messages.map(mapMessageDetailToMessage)
 
   const groupMembers: GroupMember[] = (groupData.members || []).map(mapMember)

@@ -91,7 +91,7 @@ export interface ResourceFormProps<T extends Record<string, unknown>> {
   action?: "create" | "update"
 }
 
-export function ResourceForm<T extends Record<string, unknown>>({
+export const ResourceForm = <T extends Record<string, unknown>>({
   data,
   fields,
   sections,
@@ -115,15 +115,13 @@ export function ResourceForm<T extends Record<string, unknown>>({
   resourceName,
   resourceId,
   action,
-}: ResourceFormProps<T>) {
+}: ResourceFormProps<T>) => {
   const resourceSegment = useResourceSegment()
   const resolvedBackUrl = backUrl ? applyResourceSegmentToPath(backUrl, resourceSegment) : undefined
   const { navigateBack, router } = useResourceNavigation()
   
   const handleBack = async () => {
-    if (resolvedBackUrl) {
-      await navigateBack(resolvedBackUrl, onBack)
-    }
+    if (resolvedBackUrl) await navigateBack(resolvedBackUrl, onBack)
   }
   const [isPending, setIsPending] = useState(false)
   const [formData, setFormData] = useState<Partial<T>>(() => {
@@ -195,14 +193,11 @@ export function ResourceForm<T extends Record<string, unknown>>({
         } else {
           if (dataValue !== undefined) {
             const newValue = dataValue === null ? "" : dataValue
+            const arraysEqual = Array.isArray(newValue) && Array.isArray(currentValue)
+              ? JSON.stringify(newValue) !== JSON.stringify(currentValue)
+              : false
             
-            // So sánh để tránh update không cần thiết
-            if (Array.isArray(newValue) && Array.isArray(currentValue)) {
-              if (JSON.stringify(newValue) !== JSON.stringify(currentValue)) {
-                updated[key] = newValue as T[keyof T]
-                hasChanges = true
-              }
-            } else if (newValue !== currentValue) {
+            if (arraysEqual || (!Array.isArray(newValue) && newValue !== currentValue)) {
               updated[key] = newValue as T[keyof T]
               hasChanges = true
             }
@@ -228,10 +223,7 @@ export function ResourceForm<T extends Record<string, unknown>>({
   })
 
   const handleFieldChange = (fieldName: string, value: unknown) => {
-    setFormData((prev) => ({
-      ...prev,
-      [fieldName]: value,
-    } as Partial<T>))
+    setFormData((prev) => ({ ...prev, [fieldName]: value } as Partial<T>))
     if (errors[fieldName]) {
       setErrors((prev) => {
         const next = { ...prev }
@@ -290,12 +282,9 @@ export function ResourceForm<T extends Record<string, unknown>>({
     })
 
     setErrors(newErrors)
-    
     if (Object.keys(newErrors).length > 0) {
-      const firstErrorField = Object.keys(newErrors)[0]
-      scrollToField(firstErrorField)
+      scrollToField(Object.keys(newErrors)[0])
     }
-    
     return Object.keys(newErrors).length === 0
   }
 
@@ -428,9 +417,7 @@ export function ResourceForm<T extends Record<string, unknown>>({
 
     fields.forEach((field) => {
       if (field.section) {
-        if (!grouped[field.section]) {
-          grouped[field.section] = []
-        }
+        grouped[field.section] ??= []
         grouped[field.section].push(field)
       } else {
         ungrouped.push(field)
@@ -448,43 +435,15 @@ export function ResourceForm<T extends Record<string, unknown>>({
     const fullWidthTypes = ["textarea", "select", "image", "editor", "slug"]
     const isFullWidth = fullWidthTypes.includes(field.type || "") || !!field.render
     const isEditorField = field.type === "editor"
-
-    if (field.type === "checkbox") {
-      return (
-        <div
-          key={fieldName}
-          id={fieldName}
-          className={cn(
-            "min-w-0",
-            isEditorField ? "col-span-full" : (isFullWidth && "@md:col-span-full")
-          )}
-          style={isFullWidth ? undefined : {
-            minWidth: "200px"
-          }}
-        >
-          <Field>
-            {field.icon && (
-              <FieldLabel htmlFor={fieldName}>
-                {field.icon}
-                {field.label}
-                {field.required && <span className="text-destructive">*</span>}
-              </FieldLabel>
-            )}
-            {renderFieldInput({
-              field,
-              value,
-              error,
-              onChange: (newValue) => handleFieldChange(field.name as string, newValue),
-              isPending,
-              sourceValue,
-            })}
-            {field.description && (
-              <FieldDescription>{field.description}</FieldDescription>
-            )}
-          </Field>
-        </div>
-      )
-    }
+    const isCheckbox = field.type === "checkbox"
+    const fieldInput = renderFieldInput({
+      field,
+      value,
+      error,
+      onChange: (newValue) => handleFieldChange(field.name as string, newValue),
+      isPending,
+      sourceValue,
+    })
 
     return (
       <div
@@ -494,24 +453,24 @@ export function ResourceForm<T extends Record<string, unknown>>({
           "min-w-0",
           isEditorField ? "col-span-full" : (isFullWidth && "@md:col-span-full")
         )}
-        style={isFullWidth ? undefined : {
-          minWidth: "200px"
-        }}
+        style={isFullWidth ? undefined : { minWidth: "200px" }}
       >
-        <Field orientation="responsive">
-          <FieldLabel htmlFor={fieldName}>
-            {field.icon}
-            {field.label}
-            {field.required && <span className="text-destructive">*</span>}
-          </FieldLabel>
-          {renderFieldInput({
-            field,
-            value,
-            error,
-            onChange: (newValue) => handleFieldChange(field.name as string, newValue),
-            isPending,
-            sourceValue,
-          })}
+        <Field orientation={isCheckbox ? undefined : "responsive"}>
+          {!isCheckbox && (
+            <FieldLabel htmlFor={fieldName}>
+              {field.icon}
+              {field.label}
+              {field.required && <span className="text-destructive">*</span>}
+            </FieldLabel>
+          )}
+          {isCheckbox && field.icon && (
+            <FieldLabel htmlFor={fieldName}>
+              {field.icon}
+              {field.label}
+              {field.required && <span className="text-destructive">*</span>}
+            </FieldLabel>
+          )}
+          {fieldInput}
           {field.description && (
             <FieldDescription>{field.description}</FieldDescription>
           )}
@@ -523,11 +482,7 @@ export function ResourceForm<T extends Record<string, unknown>>({
   const renderSection = (sectionId: string, sectionFields: ResourceFormField<T>[]) => {
     const sectionInfo = sections?.find((s) => s.id === sectionId)
     const fieldCount = sectionFields.length
-    const gridClass = fieldCount === 1 
-      ? "grid-cols-1" 
-      : fieldCount === 2 
-        ? "grid-cols-1 @md:grid-cols-2" 
-        : "grid-cols-1"
+    const gridClass = fieldCount === 2 ? "grid-cols-1 @md:grid-cols-2" : "grid-cols-1"
     const gridResponsiveAttr = fieldCount > 2 ? "auto-fit" : "true"
 
     return (

@@ -2,13 +2,13 @@ import type { Contact, Message } from "@/components/chat/types"
 import { MAX_MESSAGES_IN_STATE } from "@/components/chat/constants"
 import { calculateUnreadCount } from "./use-chat-helpers"
 
-export function createOptimisticMessage(params: {
+export const createOptimisticMessage = (params: {
   content: string
   senderId: string
   receiverId: string | null
   groupId: string | null
   parentId?: string | null
-}): Message {
+}): Message => {
   const tempId = `temp-${Date.now()}-${Math.random().toString(36).slice(2)}`
   return {
     id: tempId,
@@ -37,32 +37,32 @@ function updateContactMessages(
   )
 }
 
-export function updateContactMessage(
+export const updateContactMessage = (
   contacts: Contact[],
   contactId: string,
   messageId: string,
   updater: (message: Message) => Message
-): Contact[] {
+): Contact[] => {
   return updateContactMessages(contacts, contactId, (messages) =>
     messages.map((msg) => (msg.id === messageId ? updater(msg) : msg))
   )
 }
 
-export function removeContactMessage(
+export const removeContactMessage = (
   contacts: Contact[],
   contactId: string,
   messageId: string
-): Contact[] {
+): Contact[] => {
   return updateContactMessages(contacts, contactId, (messages) =>
     messages.filter((msg) => msg.id !== messageId)
   )
 }
 
-export function addContactMessage(
+export const addContactMessage = (
   contacts: Contact[],
   contactId: string,
   message: Message
-): Contact[] {
+): Contact[] => {
   return contacts.map((contact) => {
     if (contact.id !== contactId) return contact
 
@@ -82,13 +82,13 @@ export function addContactMessage(
   })
 }
 
-export function updateMessageReadStatusOptimistic(
+export const updateMessageReadStatusOptimistic = (
   contacts: Contact[],
   contactId: string,
   messageId: string,
   isRead: boolean,
   currentUserId: string
-): Contact[] {
+): Contact[] => {
   return applyReadStatus(contacts, {
     contactId,
     messageId,
@@ -98,7 +98,7 @@ export function updateMessageReadStatusOptimistic(
   })
 }
 
-export function applyReadStatus(
+export const applyReadStatus = (
   contacts: Contact[],
   params: {
     contactId: string
@@ -108,7 +108,7 @@ export function applyReadStatus(
     readers?: { id: string; name: string | null; email: string; avatar: string | null }[]
     mode: "socket" | "optimistic"
   }
-): Contact[] {
+): Contact[] => {
   const { contactId, messageId, isRead, readers, currentUserId, mode } = params
   return contacts.map((contact) => {
     if (contact.id !== contactId) return contact

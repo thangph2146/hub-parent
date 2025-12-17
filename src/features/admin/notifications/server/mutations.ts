@@ -12,14 +12,14 @@ import {
   emitNotificationsDeleted,
 } from "./events"
 
-export async function createNotificationForUser(
+export const createNotificationForUser = async (
   userId: string,
   title: string,
   description?: string | null,
   actionUrl?: string | null,
   kind: NotificationKind = NotificationKind.SYSTEM,
   metadata?: Record<string, unknown> | null
-) {
+) => {
   // Kiểm tra user có tồn tại và active
   const user = await prisma.user.findUnique({
     where: { id: userId },
@@ -61,13 +61,13 @@ export async function createNotificationForUser(
   return notification
 }
 
-export async function createNotificationForSuperAdmins(
+export const createNotificationForSuperAdmins = async (
   title: string,
   description?: string | null,
   actionUrl?: string | null,
   kind: NotificationKind = NotificationKind.SYSTEM,
   metadata?: Record<string, unknown> | null
-) {
+) => {
   const superAdmins = await prisma.user.findMany({
     where: {
       isActive: true,
@@ -124,13 +124,13 @@ export async function createNotificationForSuperAdmins(
   return { count: notifications.count }
 }
 
-export async function createNotificationForAllAdmins(
+export const createNotificationForAllAdmins = async (
   title: string,
   description?: string | null,
   actionUrl?: string | null,
   kind: NotificationKind = NotificationKind.SYSTEM,
   metadata?: Record<string, unknown> | null
-) {
+) => {
   const allAdmins = await prisma.user.findMany({
     where: {
       isActive: true,
@@ -189,13 +189,13 @@ export async function createNotificationForAllAdmins(
   return { count: notifications.count }
 }
 
-export async function emitNotificationToSuperAdminsAfterCreate(
+export const emitNotificationToSuperAdminsAfterCreate = async (
   title: string,
   description?: string | null,
   actionUrl?: string | null,
   kind: NotificationKind = NotificationKind.SYSTEM,
   _metadata?: Record<string, unknown> | null
-) {
+) => {
   try {
     const superAdmins = await prisma.user.findMany({
       where: {
@@ -250,13 +250,13 @@ export async function emitNotificationToSuperAdminsAfterCreate(
   }
 }
 
-export async function emitNotificationToAllAdminsAfterCreate(
+export const emitNotificationToAllAdminsAfterCreate = async (
   title: string,
   description?: string | null,
   actionUrl?: string | null,
   kind: NotificationKind = NotificationKind.SYSTEM,
   _metadata?: Record<string, unknown> | null
-) {
+) => {
   try {
     const allAdmins = await prisma.user.findMany({
       where: {
@@ -313,7 +313,7 @@ export async function emitNotificationToAllAdminsAfterCreate(
   }
 }
 
-export async function markNotificationAsRead(notificationId: string, userId: string) {
+export const markNotificationAsRead = async (notificationId: string, userId: string) => {
   if (!notificationId || !userId) {
     throw new Error("Notification ID and User ID are required")
   }
@@ -363,7 +363,7 @@ export async function markNotificationAsRead(notificationId: string, userId: str
   return updated
 }
 
-export async function markNotificationAsUnread(notificationId: string, userId: string) {
+export const markNotificationAsUnread = async (notificationId: string, userId: string) => {
   if (!notificationId || !userId) {
     throw new Error("Notification ID and User ID are required")
   }
@@ -413,7 +413,7 @@ export async function markNotificationAsUnread(notificationId: string, userId: s
   return updated
 }
 
-export async function deleteNotification(notificationId: string, userId: string) {
+export const deleteNotification = async (notificationId: string, userId: string) => {
   if (!notificationId || !userId) {
     throw new Error("Notification ID and User ID are required")
   }
@@ -462,7 +462,7 @@ export async function deleteNotification(notificationId: string, userId: string)
   return deleted
 }
 
-export async function bulkMarkAsRead(notificationIds: string[], userId: string) {
+export const bulkMarkAsRead = async (notificationIds: string[], userId: string) => {
   if (!notificationIds || notificationIds.length === 0) {
     return { count: 0 }
   }
@@ -520,7 +520,7 @@ export async function bulkMarkAsRead(notificationIds: string[], userId: string) 
   return { count: result.count }
 }
 
-export async function bulkMarkAsUnread(notificationIds: string[], userId: string) {
+export const bulkMarkAsUnread = async (notificationIds: string[], userId: string) => {
   if (!notificationIds || notificationIds.length === 0) {
     return { count: 0 }
   }
@@ -577,7 +577,7 @@ export async function bulkMarkAsUnread(notificationIds: string[], userId: string
   return { count: result.count }
 }
 
-export async function bulkDelete(notificationIds: string[], userId: string) {
+export const bulkDelete = async (notificationIds: string[], userId: string) => {
   if (!notificationIds || notificationIds.length === 0) {
     return { count: 0 }
   }

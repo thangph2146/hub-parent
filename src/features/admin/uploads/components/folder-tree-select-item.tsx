@@ -20,7 +20,7 @@ interface FolderTreeSelectItemProps {
   onClose: () => void
 }
 
-export function FolderTreeSelectItem({
+export const FolderTreeSelectItem = ({
   node,
   level = 0,
   selectedValue,
@@ -28,7 +28,7 @@ export function FolderTreeSelectItem({
   openPaths,
   setOpenPaths,
   onClose,
-}: FolderTreeSelectItemProps) {
+}: FolderTreeSelectItemProps) => {
   const isSelected = selectedValue === node.path
   const hasChildren = node.children.length > 0
   const isOpen = openPaths.has(node.path)

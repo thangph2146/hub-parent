@@ -37,7 +37,7 @@ export interface StudentEditClientProps {
   canActivate?: boolean
 }
 
-export function StudentEditClient({
+export const StudentEditClient = ({
   student: initialStudent,
   open = true,
   onOpenChange,
@@ -49,7 +49,7 @@ export function StudentEditClient({
   users: usersFromServer = [],
   isSuperAdmin = false,
   canActivate = false,
-}: StudentEditClientProps) {
+}: StudentEditClientProps) => {
   const queryClient = useQueryClient()
   const isPageVariant = variant === "page"
 

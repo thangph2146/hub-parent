@@ -9,13 +9,13 @@ export interface SectionProps {
   containerClassName?: string;
 }
 
-export function Section({
+export const Section = ({
   children,
   className,
   padding = "py-6",
   background = "bg-card",
   containerClassName,
-}: SectionProps) {
+}: SectionProps) => {
   return (
     <section className={cn(padding, background, className)}>
       <div

@@ -5,11 +5,11 @@ export { formatDateVi, generateSlug, validateDescription }
 
 // Category-specific validations (extend or override base validations)
 
-export function validateCategoryName(value: unknown): { valid: boolean; error?: string } {
+export const validateCategoryName = (value: unknown): { valid: boolean; error?: string } => {
   return validateName(value)
 }
 
-export function validateCategorySlug(value: unknown): { valid: boolean; error?: string } {
+export const validateCategorySlug = (value: unknown): { valid: boolean; error?: string } => {
   return validateSlug(value)
 }
 

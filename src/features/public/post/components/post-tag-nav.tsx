@@ -17,7 +17,7 @@ interface PostTagNavProps {
   tags: Tag[]
 }
 
-export function PostTagNav({ tags }: PostTagNavProps) {
+export const PostTagNav = ({ tags }: PostTagNavProps) => {
   const searchParams = useSearchParams()
   const selectedTags = useMemo(() => {
     const tags = searchParams?.getAll("tag") || []

@@ -16,7 +16,7 @@ interface ApiError {
   }
 }
 
-function getErrorMessage(error: unknown, defaultMessage: string): string {
+const getErrorMessage = (error: unknown, defaultMessage: string): string => {
   return (error as ApiError)?.response?.data?.message || defaultMessage
 }
 
@@ -25,10 +25,10 @@ interface UseNotificationActionsOptions {
   triggerTableRefresh: () => void
 }
 
-export function useNotificationActions({
+export const useNotificationActions = ({
   showFeedback,
   triggerTableRefresh,
-}: UseNotificationActionsOptions) {
+}: UseNotificationActionsOptions) => {
   const { data: session } = useSession()
   const deleteNotificationMutation = useDeleteNotification()
   const [togglingNotifications, setTogglingNotifications] = useState<Set<string>>(new Set())

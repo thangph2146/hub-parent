@@ -11,7 +11,7 @@ interface UseRoleColumnsOptions {
   onToggleStatus: (row: RoleRow, checked: boolean) => void
 }
 
-export function useRoleColumns({ togglingRoles, canManage, onToggleStatus }: UseRoleColumnsOptions) {
+export const useRoleColumns = ({ togglingRoles, canManage, onToggleStatus }: UseRoleColumnsOptions) => {
   const nameFilter = useDynamicFilterOptions({
     optionsEndpoint: apiRoutes.roles.options({ column: "name" }),
   })

@@ -13,7 +13,7 @@ import type { CategoryRow } from "../types"
 
 type CategoryWithRelations = Prisma.CategoryGetPayload<Record<string, never>>
 
-export function mapCategoryRecord(category: CategoryWithRelations): ListedCategory {
+export const mapCategoryRecord = (category: CategoryWithRelations): ListedCategory => {
   return {
     id: category.id,
     name: category.name,
@@ -25,7 +25,7 @@ export function mapCategoryRecord(category: CategoryWithRelations): ListedCatego
   }
 }
 
-export function buildWhereClause(params: ListCategoriesInput): Prisma.CategoryWhereInput {
+export const buildWhereClause = (params: ListCategoriesInput): Prisma.CategoryWhereInput => {
   const where: Prisma.CategoryWhereInput = {}
 
   // Apply status filter
@@ -60,7 +60,7 @@ export function buildWhereClause(params: ListCategoriesInput): Prisma.CategoryWh
   return where
 }
 
-export function serializeCategoryForTable(category: ListedCategory): CategoryRow {
+export const serializeCategoryForTable = (category: ListedCategory): CategoryRow => {
   return {
     id: category.id,
     name: category.name,
@@ -72,7 +72,7 @@ export function serializeCategoryForTable(category: ListedCategory): CategoryRow
   }
 }
 
-export function serializeCategoriesList(data: ListCategoriesResult): DataTableResult<CategoryRow> {
+export const serializeCategoriesList = (data: ListCategoriesResult): DataTableResult<CategoryRow> => {
   return {
     page: data.pagination.page,
     limit: data.pagination.limit,
@@ -82,7 +82,7 @@ export function serializeCategoriesList(data: ListCategoriesResult): DataTableRe
   }
 }
 
-export function serializeCategoryDetail(category: CategoryDetail) {
+export const serializeCategoryDetail = (category: CategoryDetail) => {
   return {
     id: category.id,
     name: category.name,

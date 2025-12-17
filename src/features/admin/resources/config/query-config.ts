@@ -12,28 +12,28 @@ export const ADMIN_MUTATION_DEFAULTS = {
   retry: 1 as const,
 }
 
-export function createAdminQueryOptions<TData = unknown, TError = Error>(
+export const createAdminQueryOptions = <TData = unknown, TError = Error>(
   options: Omit<
     UseQueryOptions<TData, TError>,
     "staleTime" | "gcTime" | "refetchOnMount" | "refetchOnWindowFocus" | "refetchOnReconnect"
   >
-): UseQueryOptions<TData, TError> {
+): UseQueryOptions<TData, TError> => {
   return {
     ...ADMIN_QUERY_DEFAULTS,
     ...options,
   } as UseQueryOptions<TData, TError>
 }
 
-export function createAdminMutationOptions<TData = unknown, TError = Error, TVariables = void>(
+export const createAdminMutationOptions = <TData = unknown, TError = Error, TVariables = void>(
   options: Omit<UseMutationOptions<TData, TError, TVariables>, "retry">
-): UseMutationOptions<TData, TError, TVariables> {
+): UseMutationOptions<TData, TError, TVariables> => {
   return {
     ...ADMIN_MUTATION_DEFAULTS,
     ...options,
   } as UseMutationOptions<TData, TError, TVariables>
 }
 
-export function createAdminFetchOptions<TData = unknown>(
+export const createAdminFetchOptions = <TData = unknown>(
   options: {
     queryKey: readonly unknown[]
     queryFn: () => Promise<TData>
@@ -46,7 +46,7 @@ export function createAdminFetchOptions<TData = unknown>(
   refetchOnMount: false
   refetchOnWindowFocus: false
   refetchOnReconnect: false
-} {
+} => {
   return {
     ...ADMIN_QUERY_DEFAULTS,
     ...options,

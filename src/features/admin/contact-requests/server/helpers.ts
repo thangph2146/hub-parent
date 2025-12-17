@@ -24,7 +24,7 @@ type ContactRequestWithRelations = Prisma.ContactRequestGetPayload<{
   }
 }>
 
-export function mapContactRequestRecord(contactRequest: ContactRequestWithRelations): ListedContactRequest {
+export const mapContactRequestRecord = (contactRequest: ContactRequestWithRelations): ListedContactRequest => {
   return {
     id: contactRequest.id,
     name: contactRequest.name,
@@ -50,7 +50,7 @@ export function mapContactRequestRecord(contactRequest: ContactRequestWithRelati
   }
 }
 
-export function buildWhereClause(params: ListContactRequestsInput): Prisma.ContactRequestWhereInput {
+export const buildWhereClause = (params: ListContactRequestsInput): Prisma.ContactRequestWhereInput => {
   const where: Prisma.ContactRequestWhereInput = {}
   const status = params.status ?? "active"
 
@@ -112,7 +112,7 @@ export function buildWhereClause(params: ListContactRequestsInput): Prisma.Conta
   return where
 }
 
-export function serializeContactRequestForTable(contactRequest: ListedContactRequest): ContactRequestRow {
+export const serializeContactRequestForTable = (contactRequest: ListedContactRequest): ContactRequestRow => {
   return {
     id: contactRequest.id,
     name: contactRequest.name,
@@ -129,7 +129,7 @@ export function serializeContactRequestForTable(contactRequest: ListedContactReq
   }
 }
 
-export function serializeContactRequestsList(data: ListContactRequestsResult): DataTableResult<ContactRequestRow> {
+export const serializeContactRequestsList = (data: ListContactRequestsResult): DataTableResult<ContactRequestRow> => {
   return {
     page: data.pagination.page,
     limit: data.pagination.limit,
@@ -139,7 +139,7 @@ export function serializeContactRequestsList(data: ListContactRequestsResult): D
   }
 }
 
-export function serializeContactRequestDetail(contactRequest: ContactRequestDetail) {
+export const serializeContactRequestDetail = (contactRequest: ContactRequestDetail) => {
   return {
     id: contactRequest.id,
     name: contactRequest.name,

@@ -59,11 +59,11 @@ export interface NotificationDetailClientProps {
   backUrl?: string;
 }
 
-export function NotificationDetailClient({
+export const NotificationDetailClient = ({
   notificationId,
   notification,
   backUrl = "/admin/notifications",
-}: NotificationDetailClientProps) {
+}: NotificationDetailClientProps) => {
   const { data: session } = useSession();
   const { toast } = useToast();
   const queryClient = useQueryClient();

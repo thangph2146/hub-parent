@@ -57,7 +57,7 @@ export interface ContactRequestDetailClientProps {
   backUrl?: string
 }
 
-export function ContactRequestDetailClient({ contactRequestId, contactRequest, backUrl = "/admin/contact-requests" }: ContactRequestDetailClientProps) {
+export const ContactRequestDetailClient = ({ contactRequestId, contactRequest, backUrl = "/admin/contact-requests" }: ContactRequestDetailClientProps) => {
   const router = useResourceRouter()
   const { hasAnyPermission } = usePermissions()
   const { showFeedback } = useContactRequestFeedback()

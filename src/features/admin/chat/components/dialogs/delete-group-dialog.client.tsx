@@ -30,7 +30,7 @@ interface DeleteGroupDialogProps {
   setContactsState: React.Dispatch<React.SetStateAction<Contact[]>>
 }
 
-export function DeleteGroupDialog({ 
+export const DeleteGroupDialog = ({ 
   open, 
   onOpenChange, 
   group, 
@@ -38,7 +38,7 @@ export function DeleteGroupDialog({
   currentUserId,
   role,
   setContactsState,
-}: DeleteGroupDialogProps) {
+}: DeleteGroupDialogProps) => {
   const [hardDeleteDialogOpen, setHardDeleteDialogOpen] = useState(false)
   const { socket } = useChatSocketBridge({
     currentUserId,

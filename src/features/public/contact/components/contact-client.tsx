@@ -19,7 +19,7 @@ const _CONTACT_ROUTES = {
 
 export type ContactClientProps = Record<string, never>
 
-export function ContactClient({}: ContactClientProps) {
+export const ContactClient = ({}: ContactClientProps) => {
   return (
     <div className="relative isolate bg-background">
       {/* Main Content */}

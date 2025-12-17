@@ -12,13 +12,13 @@ interface SwitchFieldProps<T> {
   isPending?: boolean
 }
 
-export function SwitchField<T>({
+export const SwitchField = <T,>({
   field,
   value,
   error,
   onChange,
   isPending = false,
-}: SwitchFieldProps<T>) {
+}: SwitchFieldProps<T>) => {
   const fieldValue = value ?? false
   const fieldId = field.name as string
   const errorId = error ? `${fieldId}-error` : undefined

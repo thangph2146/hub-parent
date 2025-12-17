@@ -13,13 +13,13 @@ interface CheckboxFieldProps<T> {
   isPending?: boolean
 }
 
-export function CheckboxField<T>({
+export const CheckboxField = <T,>({
   field,
   value,
   error,
   onChange,
   isPending = false,
-}: CheckboxFieldProps<T>) {
+}: CheckboxFieldProps<T>) => {
   const fieldValue = value ?? false
   const fieldId = field.name as string
   const errorId = error ? `${fieldId}-error` : undefined

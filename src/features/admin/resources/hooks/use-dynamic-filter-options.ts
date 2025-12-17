@@ -9,10 +9,10 @@ interface UseDynamicFilterOptionsParams {
   limit?: number
 }
 
-export function useDynamicFilterOptions({
+export const useDynamicFilterOptions = ({
   optionsEndpoint,
   limit = 50,
-}: UseDynamicFilterOptionsParams) {
+}: UseDynamicFilterOptionsParams) => {
   const [searchQuery, setSearchQuery] = useState("")
   const { options, isLoading } = useFilterOptions({ optionsEndpoint, searchQuery, limit })
 

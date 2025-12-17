@@ -27,6 +27,37 @@ export interface PostEditData {
     [key: string]: unknown
 }
 
+type PostRecord = Record<string, unknown>
+
+const toIdString = (value: unknown): string => {
+    if (value === null || value === undefined) return ""
+    if (typeof value === "object" && "id" in (value as PostRecord)) {
+        const idValue = (value as PostRecord).id
+        return idValue === undefined || idValue === null ? "" : String(idValue)
+    }
+    return typeof value === "string" || typeof value === "number" ? String(value) : ""
+}
+
+const normalizeRelationIds = (value: unknown): string[] => {
+    if (Array.isArray(value)) {
+        return value.map(toIdString).filter(Boolean)
+    }
+    const singleId = toIdString(value)
+    return singleId ? [singleId] : []
+}
+
+const transformPostData = (data: unknown): PostEditData | null => {
+    if (!data || typeof data !== "object") return null
+
+    const post = data as PostRecord
+    return {
+        ...(post as PostEditData),
+        authorId: toIdString(post.author ?? post.authorId),
+        categoryIds: normalizeRelationIds(post.categories ?? post.categoryIds),
+        tagIds: normalizeRelationIds(post.tags ?? post.tagIds),
+    }
+}
+
 export interface PostEditClientProps {
     post: PostEditData | null
     open?: boolean
@@ -42,7 +73,7 @@ export interface PostEditClientProps {
     isSuperAdmin?: boolean
 }
 
-export function PostEditClient({
+export const PostEditClient = ({
     post: initialPost,
     open = true,
     onOpenChange,
@@ -55,7 +86,7 @@ export function PostEditClient({
     categories = [],
     tags = [],
     isSuperAdmin: isSuperAdminProp = false,
-}: PostEditClientProps) {
+}: PostEditClientProps) => {
     const { data: session } = useSession()
     const queryClient = useQueryClient()
     const userRoles = session?.roles || []
@@ -63,94 +94,21 @@ export function PostEditClient({
 
     const resourceId = postId || initialPost?.id
     const { data: postData } = useResourceDetailData({
-      initialData: initialPost || ({} as PostEditData),
-      resourceId: resourceId || "",
-      detailQueryKey: queryKeys.adminPosts.detail,
-      resourceName: "posts",
-      fetchOnMount: !!resourceId,
+        initialData: initialPost || ({} as PostEditData),
+        resourceId: resourceId || "",
+        detailQueryKey: queryKeys.adminPosts.detail,
+        resourceName: "posts",
+        fetchOnMount: !!resourceId,
     })
 
-    // Transform API response to form format
-    const transformPostData = (data: unknown): PostEditData | null => {
-      if (!data || typeof data !== "object") return null
-      
-      const post = data as Record<string, unknown>
-      const transformed: PostEditData = {
-        ...post,
-      } as PostEditData
-
-      // Transform author object thành authorId string
-      if (post.author && typeof post.author === "object" && post.author !== null && "id" in post.author) {
-        transformed.authorId = String(post.author.id)
-      } else if (post.authorId && post.authorId !== "") {
-        transformed.authorId = String(post.authorId)
-      } else {
-        transformed.authorId = ""
-      }
-
-      if (Array.isArray(post.categories)) {
-        if (post.categories.length > 0) {
-          transformed.categoryIds = post.categories
-            .map((c) => {
-              if (typeof c === "object" && c !== null && "id" in c) {
-                return String(c.id)
-              }
-              return String(c)
-            })
-            .filter(Boolean)
-        } else {
-          transformed.categoryIds = []
-        }
-      } else if (post.categoryIds !== undefined) {
-        if (Array.isArray(post.categoryIds)) {
-          transformed.categoryIds = post.categoryIds.length > 0 
-            ? post.categoryIds.map(String).filter(Boolean)
-            : []
-        } else if (typeof post.categoryIds === "string" && post.categoryIds !== "") {
-          transformed.categoryIds = post.categoryIds
-        } else {
-          transformed.categoryIds = []
-        }
-      } else {
-        transformed.categoryIds = []
-      }
-
-      if (Array.isArray(post.tags)) {
-        if (post.tags.length > 0) {
-          transformed.tagIds = post.tags
-            .map((t) => {
-              if (typeof t === "object" && t !== null && "id" in t) {
-                return String(t.id)
-              }
-              return String(t)
-            })
-            .filter(Boolean)
-        } else {
-          transformed.tagIds = []
-        }
-      } else if (post.tagIds !== undefined) {
-        if (Array.isArray(post.tagIds)) {
-          transformed.tagIds = post.tagIds.length > 0
-            ? post.tagIds.map(String).filter(Boolean)
-            : []
-        } else if (typeof post.tagIds === "string" && post.tagIds !== "") {
-          transformed.tagIds = post.tagIds
-        } else {
-          transformed.tagIds = []
-        }
-      } else {
-        transformed.tagIds = []
-      }
-
-      return transformed
-    }
-
     const post = useMemo(() => {
-      if (postData) {
-        return transformPostData(postData)
-      }
-      return initialPost || null
+        if (postData) {
+            return transformPostData(postData)
+        }
+        return initialPost || null
     }, [postData, initialPost])
+
+    const currentResourceId = postId || post?.id
 
     const handleBack = async () => {
         await queryClient.invalidateQueries({ queryKey: queryKeys.adminPosts.all(), refetchType: "all" })
@@ -160,14 +118,14 @@ export function PostEditClient({
     const { handleSubmit } = useResourceFormSubmit({
         apiRoute: (id) => apiRoutes.posts.update(id),
         method: "PUT",
-        resourceId: post?.id,
+        resourceId: currentResourceId,
         messages: {
             successTitle: "Cập nhật thành công",
             successDescription: "Bài viết đã được cập nhật.",
             errorTitle: "Lỗi cập nhật",
         },
         navigation: {
-            toDetail: variant === "page" ? (postId || post?.id ? `/admin/posts/${postId || post?.id}` : undefined) : undefined,
+            toDetail: variant === "page" && currentResourceId ? `/admin/posts/${currentResourceId}` : undefined,
             fallback: backUrl,
         },
         transformData: (data) => {
@@ -186,7 +144,7 @@ export function PostEditClient({
         },
         onSuccess: createResourceEditOnSuccess({
             queryClient,
-            resourceId: postId || post?.id,
+            resourceId: currentResourceId,
             allQueryKey: queryKeys.adminPosts.all(),
             detailQueryKey: queryKeys.adminPosts.detail,
             resourceName: "posts",
@@ -201,10 +159,11 @@ export function PostEditClient({
 
     const isDeleted = post.deletedAt !== null && post.deletedAt !== undefined
     const formDisabled = isDeleted && variant !== "page"
+    const deletedRecordMessage = "Bản ghi đã bị xóa, không thể chỉnh sửa"
     
     const handleSubmitWrapper = async (data: Partial<PostEditData>) => {
         if (isDeleted) {
-            return { success: false, error: "Bản ghi đã bị xóa, không thể chỉnh sửa" }
+            return { success: false, error: deletedRecordMessage }
         }
         return handleSubmit(data)
     }
@@ -314,7 +273,7 @@ export function PostEditClient({
             onOpenChange={onOpenChange}
             variant={variant}
             title="Chỉnh sửa bài viết"
-            description={isDeleted ? "Bản ghi đã bị xóa, không thể chỉnh sửa" : "Cập nhật thông tin bài viết"}
+            description={isDeleted ? deletedRecordMessage : "Cập nhật thông tin bài viết"}
             submitLabel="Lưu thay đổi"
             cancelLabel="Hủy"
             backUrl={backUrl}
@@ -324,9 +283,8 @@ export function PostEditClient({
             showCard={false}
             className="max-w-[100%]"
             resourceName="posts"
-            resourceId={post?.id}
+            resourceId={currentResourceId}
             action="update"
         />
     )
 }
-

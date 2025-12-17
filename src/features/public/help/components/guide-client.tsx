@@ -130,7 +130,7 @@ const guideImages = [
   },
 ]
 
-export function GuideClient() {
+export const GuideClient = () => {
   const handleDownload = (imagePath: string, title: string) => {
     const link = document.createElement("a")
     link.href = imagePath

@@ -1,26 +1,26 @@
-import { getCurrentUserProfile } from "../server/queries"
-import { AccountEditClient } from "./account-edit.client"
-import { getAuthInfo } from "@/features/admin/resources/server"
-import { NotFoundMessage } from "@/features/admin/resources/components"
+import { getCurrentUserProfile } from "../server/queries";
+import { AccountEditClient } from "./account-edit.client";
+import { getAuthInfo } from "@/features/admin/resources/server";
+import { NotFoundMessage } from "@/features/admin/resources/components";
 
 export interface AccountEditProps {
-  open?: boolean
-  onOpenChange?: (open: boolean) => void
-  onSuccess?: () => void
-  variant?: "dialog" | "sheet" | "page"
-  backUrl?: string
-  backLabel?: string
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  onSuccess?: () => void;
+  variant?: "dialog" | "sheet" | "page";
+  backUrl?: string;
+  backLabel?: string;
 }
 
-export async function AccountEdit({
+export const AccountEdit = async ({
   open = true,
   onOpenChange,
   onSuccess,
   variant = "dialog",
   backUrl,
   backLabel = "Quay lại",
-}: AccountEditProps) {
-  const authInfo = await getAuthInfo()
+}: AccountEditProps) => {
+  const authInfo = await getAuthInfo();
 
   if (!authInfo.actorId) {
     return (
@@ -28,13 +28,13 @@ export async function AccountEdit({
         resourceName="tài khoản"
         description="Bạn cần đăng nhập để chỉnh sửa thông tin tài khoản"
       />
-    )
+    );
   }
 
-  const account = await getCurrentUserProfile(authInfo.actorId)
+  const account = await getCurrentUserProfile(authInfo.actorId);
 
   if (!account) {
-    return <NotFoundMessage resourceName="tài khoản" />
+    return <NotFoundMessage resourceName="tài khoản" />;
   }
 
   return (
@@ -47,6 +47,5 @@ export async function AccountEdit({
       backUrl={backUrl}
       backLabel={backLabel}
     />
-  )
+  );
 }
-

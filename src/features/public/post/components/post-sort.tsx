@@ -25,7 +25,7 @@ const sortOptions = [
   },
 ] as const
 
-export function PostSort() {
+export const PostSort = () => {
   const router = useRouter()
   const searchParams = useSearchParams()
   const currentSort = (searchParams?.get("sort") || "newest") as "newest" | "oldest"

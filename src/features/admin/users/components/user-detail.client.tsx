@@ -48,7 +48,7 @@ export interface UserDetailClientProps {
   backUrl?: string
 }
 
-export function UserDetailClient({ userId, user, backUrl = "/admin/users" }: UserDetailClientProps) {
+export const UserDetailClient = ({ userId, user, backUrl = "/admin/users" }: UserDetailClientProps) => {
   const router = useResourceRouter()
   const { hasAnyPermission } = usePermissions()
   

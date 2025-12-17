@@ -1,7 +1,7 @@
 import type { SessionRow } from "../types"
 import type { AdminSessionsListParams } from "@/lib/query-keys"
 
-export function matchesSearch(search: string | undefined, row: SessionRow): boolean {
+export const matchesSearch = (search: string | undefined, row: SessionRow): boolean => {
   if (!search || typeof search !== "string") return true
   const term = search.trim().toLowerCase()
   if (!term) return true
@@ -13,10 +13,10 @@ export function matchesSearch(search: string | undefined, row: SessionRow): bool
   ].some((value) => value.toLowerCase().includes(term))
 }
 
-export function matchesFilters(
+export const matchesFilters = (
   filters: AdminSessionsListParams["filters"],
   row: SessionRow
-): boolean {
+): boolean => {
   if (!filters) return true
   for (const [key, value] of Object.entries(filters)) {
     if (value === undefined || value === "") continue
@@ -45,20 +45,20 @@ export function matchesFilters(
   return true
 }
 
-export function shouldIncludeInStatus(
+export const shouldIncludeInStatus = (
   paramsStatus: AdminSessionsListParams["status"],
   rowStatus: "active" | "deleted"
-): boolean {
+): boolean => {
   if (paramsStatus === "all") return true
   if (!paramsStatus) return rowStatus === "active"
   return paramsStatus === rowStatus
 }
 
-export function insertRowIntoPage(
+export const insertRowIntoPage = (
   rows: SessionRow[],
   row: SessionRow,
   limit: number
-): SessionRow[] {
+): SessionRow[] => {
   const existingIndex = rows.findIndex((item) => item.id === row.id)
   if (existingIndex >= 0) {
     const next = [...rows]
@@ -72,10 +72,10 @@ export function insertRowIntoPage(
   return next
 }
 
-export function removeRowFromPage(
+export const removeRowFromPage = (
   rows: SessionRow[],
   id: string
-): { rows: SessionRow[]; removed: boolean } {
+): { rows: SessionRow[]; removed: boolean } => {
   const index = rows.findIndex((item) => item.id === id)
   if (index === -1) return { rows, removed: false }
   const next = [...rows]
@@ -83,7 +83,7 @@ export function removeRowFromPage(
   return { rows: next, removed: true }
 }
 
-export function convertSocketPayloadToRow(
+export const convertSocketPayloadToRow = (
   payload: {
     id: string
     userId: string
@@ -98,7 +98,7 @@ export function convertSocketPayloadToRow(
     lastActivity: string
     createdAt: string
   }
-): SessionRow {
+): SessionRow => {
   return {
     id: payload.id,
     userId: payload.userId,

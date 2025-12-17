@@ -7,7 +7,7 @@ export interface AccountProfileProps {
   variant?: "page" | "dialog" | "sheet"
 }
 
-export async function AccountProfile({ variant = "page" }: AccountProfileProps) {
+export const AccountProfile = async ({ variant = "page" }: AccountProfileProps) => {
   const authInfo = await getAuthInfo()
 
   if (!authInfo.actorId) {

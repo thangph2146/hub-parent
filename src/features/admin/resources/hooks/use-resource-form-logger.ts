@@ -14,7 +14,7 @@ interface UseResourceFormLoggerOptions<T extends Record<string, unknown>> {
   submitError?: string | null
 }
 
-export function useResourceFormLogger<T extends Record<string, unknown>>({
+export const useResourceFormLogger = <T extends Record<string, unknown>>({
   resourceName,
   resourceId,
   action,
@@ -22,7 +22,7 @@ export function useResourceFormLogger<T extends Record<string, unknown>>({
   isSubmitting = false,
   submitSuccess = false,
   submitError = null,
-}: UseResourceFormLoggerOptions<T>) {
+}: UseResourceFormLoggerOptions<T>) => {
   const loggedFormDataKeyRef = useRef<string | null>(null)
   const loggedSubmitRef = useRef<boolean>(false)
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null)

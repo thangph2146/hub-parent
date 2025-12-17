@@ -24,7 +24,7 @@ type StudentWithRelations = Prisma.StudentGetPayload<{
   }
 }>
 
-export function mapStudentRecord(student: StudentWithRelations): ListedStudent {
+export const mapStudentRecord = (student: StudentWithRelations): ListedStudent => {
   return {
     id: student.id,
     userId: student.userId,
@@ -38,7 +38,7 @@ export function mapStudentRecord(student: StudentWithRelations): ListedStudent {
   }
 }
 
-export function buildWhereClause(params: ListStudentsInput): Prisma.StudentWhereInput {
+export const buildWhereClause = (params: ListStudentsInput): Prisma.StudentWhereInput => {
   const where: Prisma.StudentWhereInput = {}
 
   // Xử lý status filter
@@ -101,7 +101,7 @@ export function buildWhereClause(params: ListStudentsInput): Prisma.StudentWhere
   return where
 }
 
-export function serializeStudentForTable(student: ListedStudent | { id: string; userId: string | null; name: string | null; email: string | null; studentCode: string; isActive: boolean; createdAt: Date | string; deletedAt: Date | string | null }): StudentRow {
+export const serializeStudentForTable = (student: ListedStudent | { id: string; userId: string | null; name: string | null; email: string | null; studentCode: string; isActive: boolean; createdAt: Date | string; deletedAt: Date | string | null }): StudentRow => {
   return {
     id: student.id,
     userId: student.userId,
@@ -114,7 +114,7 @@ export function serializeStudentForTable(student: ListedStudent | { id: string; 
   }
 }
 
-export function serializeStudentsList(data: ListStudentsResult): DataTableResult<StudentRow> {
+export const serializeStudentsList = (data: ListStudentsResult): DataTableResult<StudentRow> => {
   return {
     page: data.page,
     limit: data.limit,
@@ -124,7 +124,7 @@ export function serializeStudentsList(data: ListStudentsResult): DataTableResult
   }
 }
 
-export function serializeStudentDetail(student: StudentDetail) {
+export const serializeStudentDetail = (student: StudentDetail) => {
   return {
     id: student.id,
     userId: student.userId,

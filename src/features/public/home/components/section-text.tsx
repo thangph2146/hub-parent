@@ -20,14 +20,14 @@ export interface SectionTextProps {
   className?: string;
 }
 
-export function SectionText({
+export const SectionText = ({
   title,
   children,
   paragraphs,
   titleClassName,
   contentClassName,
   className,
-}: SectionTextProps) {
+}: SectionTextProps) => {
   return (
     <div className={className}>
       <h2 className={cn("mb-2 sm:text-left", titleClassName || DEFAULT_TITLE_CLASSES)}>

@@ -15,14 +15,14 @@ interface SlugFieldProps<T> {
   sourceValue?: unknown 
 }
 
-export function SlugField<T>({
+export const SlugField = <T,>({
   field,
   value,
   error,
   onChange,
   isPending = false,
   sourceValue,
-}: SlugFieldProps<T>) {
+}: SlugFieldProps<T>) => {
   const fieldValue = typeof value === "string" ? value : ""
   const [slugValue, setSlugValue] = useState<string>(fieldValue)
   const slugManuallyEditedRef = useRef<boolean>(false)
@@ -110,7 +110,7 @@ export function SlugField<T>({
         disabled={field.disabled || isPending}
         aria-invalid={error ? "true" : "false"}
         aria-describedby={errorId || field.description ? `${fieldId}-description` : undefined}
-        className={error ? "border-destructive" : ""}
+        className={error ? "border-destructive" : undefined}
       />
       {error && <FieldError id={errorId}>{error}</FieldError>}
     </FieldContent>

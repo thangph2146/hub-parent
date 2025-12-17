@@ -13,15 +13,12 @@ interface UseFolderTreeInitializationProps {
   maxLevel?: number
 }
 
-/**
- * Hook để tự động mở các folder ở level đầu tiên khi tree được load
- */
-export function useFolderTreeInitialization({
+export const useFolderTreeInitialization = ({
   folderTree,
   openFolders,
   setOpenFolders,
   maxLevel = 2,
-}: UseFolderTreeInitializationProps) {
+}: UseFolderTreeInitializationProps) => {
   useEffect(() => {
     if (folderTree && openFolders.size === 0) {
       const initialOpenFolders = new Set<string>()

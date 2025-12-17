@@ -14,11 +14,11 @@ interface UseResourceTableRefreshResult {
   softRefresh: () => void
 }
 
-export function useResourceTableRefresh({
+export const useResourceTableRefresh = ({
   queryClient,
   getInvalidateQueryKey,
   cacheVersion,
-}: UseResourceTableRefreshOptions): UseResourceTableRefreshResult {
+}: UseResourceTableRefreshOptions): UseResourceTableRefreshResult => {
   const refreshRef = useRef<(() => void) | null>(null)
   const softRefreshRef = useRef<(() => void) | null>(null)
   const pendingRealtimeRefreshRef = useRef(false)

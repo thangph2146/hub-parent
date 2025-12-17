@@ -44,7 +44,7 @@ type PostWithAuthor = Prisma.PostGetPayload<{
   }
 }>
 
-export function mapPostRecord(post: PostWithAuthor): ListedPost {
+export const mapPostRecord = (post: PostWithAuthor): ListedPost => {
   return {
     id: post.id,
     title: post.title,
@@ -68,7 +68,7 @@ export function mapPostRecord(post: PostWithAuthor): ListedPost {
   }
 }
 
-export function buildWhereClause(params: ListPostsInput): Prisma.PostWhereInput {
+export const buildWhereClause = (params: ListPostsInput): Prisma.PostWhereInput => {
   const where: Prisma.PostWhereInput = {}
 
   // Apply status filter
@@ -110,7 +110,7 @@ export function buildWhereClause(params: ListPostsInput): Prisma.PostWhereInput 
   return where
 }
 
-export function serializePostForTable(post: ListedPost): PostRow {
+export const serializePostForTable = (post: ListedPost): PostRow => {
   return {
     id: post.id,
     title: post.title,
@@ -128,7 +128,7 @@ export function serializePostForTable(post: ListedPost): PostRow {
   }
 }
 
-export function serializePostsList(data: ListPostsResult): DataTableResult<PostRow> {
+export const serializePostsList = (data: ListPostsResult): DataTableResult<PostRow> => {
   return {
     page: data.pagination.page,
     limit: data.pagination.limit,
@@ -138,7 +138,7 @@ export function serializePostsList(data: ListPostsResult): DataTableResult<PostR
   }
 }
 
-export function serializePostDetail(post: PostDetail) {
+export const serializePostDetail = (post: PostDetail) => {
   return {
     id: post.id,
     title: post.title,

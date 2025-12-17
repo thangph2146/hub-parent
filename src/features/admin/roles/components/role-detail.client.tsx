@@ -52,7 +52,7 @@ export interface RoleDetailClientProps {
   backUrl?: string
 }
 
-export function RoleDetailClient({ roleId, role, backUrl = "/admin/roles" }: RoleDetailClientProps) {
+export const RoleDetailClient = ({ roleId, role, backUrl = "/admin/roles" }: RoleDetailClientProps) => {
   const queryClient = useQueryClient()
   const { navigateBack, router } = useResourceNavigation({
     queryClient,

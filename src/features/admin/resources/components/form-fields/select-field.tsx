@@ -11,13 +11,13 @@ interface SelectFieldProps<T> {
   onChange: (value: unknown) => void
   isPending?: boolean
 }
-export function SelectField<T>({
+export const SelectField = <T,>({
   field,
   fieldValue,
   error,
   onChange,
   isPending = false,
-}: SelectFieldProps<T>) {
+}: SelectFieldProps<T>) => {
   const fieldId = field.name as string
   const errorId = error ? `${fieldId}-error` : undefined
 

@@ -11,10 +11,7 @@ export interface FolderTreeSelectNode {
   children: FolderTreeSelectNode[]
 }
 
-/**
- * Build tree structure from flat folder list
- */
-export function buildFolderTree(folders: FolderItem[]): FolderTreeSelectNode[] {
+export const buildFolderTree = (folders: FolderItem[]): FolderTreeSelectNode[] => {
   const tree: FolderTreeSelectNode[] = []
   const pathMap = new Map<string, FolderTreeSelectNode>()
 
@@ -55,14 +52,11 @@ export function buildFolderTree(folders: FolderItem[]): FolderTreeSelectNode[] {
   return tree
 }
 
-/**
- * Auto-expand first N levels of folder tree
- */
-export function expandFolderTreeLevels(
+export const expandFolderTreeLevels = (
   nodes: FolderTreeSelectNode[],
   maxLevel: number = 2,
   level: number = 0
-): Set<string> {
+): Set<string> => {
   const openPaths = new Set<string>()
   
   const expand = (nodeList: FolderTreeSelectNode[], currentLevel: number) => {

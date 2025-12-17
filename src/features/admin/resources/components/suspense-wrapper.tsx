@@ -78,13 +78,13 @@ export interface SuspenseWrapperProps {
   tableConfig?: TableSkeletonConfig
 }
 
-export function SuspenseWrapper({
+export const SuspenseWrapper = ({
   children,
   fallback,
   preset = "detail",
   detailConfig,
   tableConfig,
-}: SuspenseWrapperProps) {
+}: SuspenseWrapperProps) => {
   const fallbackNode =
     fallback ?? resolveFallback(preset, { detail: detailConfig, table: tableConfig })
 
@@ -102,11 +102,11 @@ export interface FormPageSuspenseProps {
   sectionCount?: number
 }
 
-export function FormPageSuspense({
+export const FormPageSuspense = ({
   children,
   fieldCount = defaultDetailSkeleton.fieldCount,
   sectionCount = defaultDetailSkeleton.sectionCount,
-}: FormPageSuspenseProps) {
+}: FormPageSuspenseProps) => {
   return (
     <SuspenseWrapper
       preset="detail"
@@ -128,12 +128,12 @@ export interface TablePageSuspenseProps {
   showTitle?: boolean
 }
 
-export function TablePageSuspense({
+export const TablePageSuspense = ({
   children,
   columnCount = defaultTableSkeleton.columnCount,
   rowCount = defaultTableSkeleton.rowCount,
   showTitle = defaultTableSkeleton.withTitle,
-}: TablePageSuspenseProps) {
+}: TablePageSuspenseProps) => {
   return (
     <SuspenseWrapper
       preset="table"
@@ -152,7 +152,7 @@ export interface MessagesPageSuspenseProps {
   children: ReactNode
 }
 
-export function MessagesPageSuspense({ children }: MessagesPageSuspenseProps) {
+export const MessagesPageSuspense = ({ children }: MessagesPageSuspenseProps) => {
   return (
     <SuspenseWrapper preset="messages">{children}</SuspenseWrapper>
   )
@@ -163,7 +163,7 @@ export interface InlineSuspenseProps {
   fallback?: ReactNode
 }
 
-export function InlineSuspense({ children, fallback }: InlineSuspenseProps) {
+export const InlineSuspense = ({ children, fallback }: InlineSuspenseProps) => {
   return (
     <SuspenseWrapper preset="inline" fallback={fallback}>
       {children}

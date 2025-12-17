@@ -3,7 +3,7 @@ import { apiRoutes } from "@/lib/api/routes"
 import { withApiBase } from "@/lib/config/api-paths"
 import { requestJson } from "@/lib/api/client"
 
-export function getCurrentUserRole(contact: Contact | null, currentUserId: string): GroupRole | undefined {
+export const getCurrentUserRole = (contact: Contact | null, currentUserId: string): GroupRole | undefined => {
   if (!contact || contact.type !== "GROUP" || !contact.group) return undefined
   
   const member = contact.group.members.find(
@@ -13,7 +13,7 @@ export function getCurrentUserRole(contact: Contact | null, currentUserId: strin
   return member?.role
 }
 
-export function createGroupContact(group: Group): Contact {
+export const createGroupContact = (group: Group): Contact => {
   return {
     id: group.id,
     name: group.name,
@@ -29,7 +29,7 @@ export function createGroupContact(group: Group): Contact {
   }
 }
 
-export async function refreshGroupData(groupId: string): Promise<Group | null> {
+export const refreshGroupData = async (groupId: string): Promise<Group | null> => {
   try {
     const response = await requestJson<Group>(withApiBase(apiRoutes.adminGroups.detail(groupId)))
     if (response.status === 404 || !response.ok) {
@@ -46,11 +46,11 @@ export async function refreshGroupData(groupId: string): Promise<Group | null> {
   }
 }
 
-export function updateContactWithGroupData(
+export const updateContactWithGroupData = (
   contacts: Contact[],
   contactId: string,
   groupData: Group
-): Contact[] {
+): Contact[] => {
   return contacts.map((contact) => {
     if (contact.id !== contactId || contact.type !== "GROUP") return contact
     

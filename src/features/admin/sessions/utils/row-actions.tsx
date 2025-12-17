@@ -36,7 +36,7 @@ interface UseSessionRowActionsOptions {
   hardDeletingSessions?: Set<string>
 }
 
-export function renderRowActions(actions: RowActionConfig[]) {
+export const renderRowActions = (actions: RowActionConfig[]) => {
   if (actions.length === 0) {
     return null
   }
@@ -100,7 +100,7 @@ export function renderRowActions(actions: RowActionConfig[]) {
   )
 }
 
-export function useSessionRowActions({
+export const useSessionRowActions = ({
   canDelete,
   canRestore,
   canManage,
@@ -112,7 +112,7 @@ export function useSessionRowActions({
   deletingSessions = new Set(),
   restoringSessions = new Set(),
   hardDeletingSessions = new Set(),
-}: UseSessionRowActionsOptions) {
+}: UseSessionRowActionsOptions) => {
   const router = useResourceRouter()
 
   const renderActiveRowActions = useCallback(

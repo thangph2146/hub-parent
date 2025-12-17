@@ -3,7 +3,7 @@ import { formatDateVi, validateName, validateEmail, validatePhone } from "@/feat
 // Re-export common utilities from resources
 export { formatDateVi, validateName, validateEmail, validatePhone }
 
-export function validateSubject(value: unknown): { valid: boolean; error?: string } {
+export const validateSubject = (value: unknown): { valid: boolean; error?: string } => {
   if (!value || typeof value !== "string") {
     return { valid: false, error: "Tiêu đề là bắt buộc" }
   }
@@ -17,7 +17,7 @@ export function validateSubject(value: unknown): { valid: boolean; error?: strin
   return { valid: true }
 }
 
-export function validateContent(value: unknown): { valid: boolean; error?: string } {
+export const validateContent = (value: unknown): { valid: boolean; error?: string } => {
   if (!value || typeof value !== "string") {
     return { valid: false, error: "Nội dung là bắt buộc" }
   }

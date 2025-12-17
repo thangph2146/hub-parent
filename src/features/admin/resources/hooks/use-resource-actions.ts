@@ -68,9 +68,9 @@ export interface UseResourceActionsResult<T extends { id: string }> {
   bulkState: ReturnType<typeof useResourceBulkProcessing>["bulkState"]
 }
 
-export function useResourceActions<T extends { id: string }>(
+export const useResourceActions = <T extends { id: string }>(
   config: ResourceActionConfig<T>
-): UseResourceActionsResult<T> {
+): UseResourceActionsResult<T> => {
   const queryClient = useQueryClient()
   const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set())
   const [restoringIds, setRestoringIds] = useState<Set<string>>(new Set())

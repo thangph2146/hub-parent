@@ -15,7 +15,7 @@ interface UseStudentColumnsOptions {
   isParent?: boolean
 }
 
-export function useStudentColumns({ togglingStudents, canToggleStatus, onToggleStatus, isParent = false }: UseStudentColumnsOptions) {
+export const useStudentColumns = ({ togglingStudents, canToggleStatus, onToggleStatus, isParent = false }: UseStudentColumnsOptions) => {
   const studentCodeFilter = useDynamicFilterOptions({
     optionsEndpoint: apiRoutes.students.options({ column: "studentCode" }),
   })

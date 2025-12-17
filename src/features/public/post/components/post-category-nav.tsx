@@ -17,7 +17,7 @@ interface PostCategoryNavProps {
   categories: Category[]
 }
 
-export function PostCategoryNav({ categories }: PostCategoryNavProps) {
+export const PostCategoryNav = ({ categories }: PostCategoryNavProps) => {
   const searchParams = useSearchParams()
   const selectedCategories = useMemo(() => {
     const categories = searchParams?.getAll("category") || []

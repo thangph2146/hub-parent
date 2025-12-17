@@ -12,12 +12,12 @@ export interface StudentCreateClientProps {
   canActivate?: boolean
 }
 
-export function StudentCreateClient({ 
+export const StudentCreateClient = ({ 
   backUrl = "/admin/students", 
   users: usersFromServer = [],
   isSuperAdmin = false,
   canActivate = false,
-}: StudentCreateClientProps) {
+}: StudentCreateClientProps) => {  
   const { handleSubmit } = useResourceFormSubmit({
     apiRoute: apiRoutes.students.create,
     method: "POST",

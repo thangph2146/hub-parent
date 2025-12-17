@@ -52,7 +52,7 @@ function updateContactRequestQueries(
   return updated
 }
 
-export function useContactRequestsSocketBridge() {
+export const useContactRequestsSocketBridge = () => {
   const { data: session } = useSession()
   const queryClient = useQueryClient()
   const primaryRole = useMemo(() => session?.roles?.[0]?.name ?? null, [session?.roles])

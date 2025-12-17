@@ -44,13 +44,13 @@ interface ManageMembersDialogProps {
   onSuccess?: () => void
 }
 
-export function ManageMembersDialog({
+export const ManageMembersDialog = ({
   open,
   onOpenChange,
   group,
   currentUserRole,
   onSuccess,
-}: ManageMembersDialogProps) {
+}: ManageMembersDialogProps) => {
   const [searchValue, setSearchValue] = useState("")
   const [users, setUsers] = useState<UserOption[]>([])
   const [isLoading, setIsLoading] = useState(false)

@@ -14,13 +14,13 @@ interface UseUserColumnsOptions {
   showFeedback: (variant: "error" | "success", title: string, description?: string) => void
 }
 
-export function useUserColumns({
+export const useUserColumns = ({
   rolesOptions,
   canManage,
   togglingUsers,
   onToggleStatus,
   showFeedback,
-}: UseUserColumnsOptions) {
+}: UseUserColumnsOptions) => {
   const emailFilter = useDynamicFilterOptions({
     optionsEndpoint: apiRoutes.users.options({ column: "email" }),
   })

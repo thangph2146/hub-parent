@@ -45,7 +45,7 @@ type PostWithRelations = Prisma.PostGetPayload<{
 /**
  * Map Prisma post record to Post format
  */
-export function mapPostRecord(post: PostWithRelations): Post {
+export const mapPostRecord = (post: PostWithRelations): Post => {
   return {
     id: post.id,
     title: post.title,
@@ -68,7 +68,7 @@ export function mapPostRecord(post: PostWithRelations): Post {
 /**
  * Map Prisma post record to PostDetail format
  */
-export function mapPostDetailRecord(post: PostWithRelations & { content: Prisma.JsonValue }): PostDetail {
+export const mapPostDetailRecord = (post: PostWithRelations & { content: Prisma.JsonValue }): PostDetail => {
   return {
     ...mapPostRecord(post),
     content: post.content,
@@ -79,11 +79,11 @@ export function mapPostDetailRecord(post: PostWithRelations & { content: Prisma.
  * Build Prisma where clause for public posts
  * Chỉ lấy posts đã published và không bị xóa
  */
-export function buildPublicPostWhereClause(params: {
+export const buildPublicPostWhereClause = (params: {
   search?: string
   categories?: string[]
   tags?: string[]
-}): Prisma.PostWhereInput {
+}): Prisma.PostWhereInput => {
   const where: Prisma.PostWhereInput = {
     published: true,
     deletedAt: null,
@@ -133,7 +133,7 @@ export function buildPublicPostWhereClause(params: {
 /**
  * Build Prisma orderBy clause for public posts
  */
-export function buildPublicPostOrderBy(sort?: "newest" | "oldest"): Prisma.PostOrderByWithRelationInput {
+export const buildPublicPostOrderBy = (sort?: "newest" | "oldest"): Prisma.PostOrderByWithRelationInput => {
   return sort === "oldest"
     ? { publishedAt: "asc" }
     : { publishedAt: "desc" }

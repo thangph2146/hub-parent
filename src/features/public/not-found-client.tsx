@@ -31,8 +31,7 @@ function createParticles(seed: number = 0) {
   }))
 }
 
-// Floating particles component
-function FloatingParticles() {
+const FloatingParticles = () => {
   // Chỉ render particles sau khi component mount trên client để tránh hydration mismatch
   const isMounted = useClientOnly()
   // Sử dụng useState với lazy initializer để tạo particles một lần duy nhất
@@ -80,7 +79,7 @@ function FloatingParticles() {
   )
 }
 
-function Animated404() {
+const Animated404 = () => {
   return (
     <div className="relative">
       <motion.div
@@ -111,7 +110,7 @@ function Animated404() {
   )
 }
 
-export function NotFoundClient() {
+export const NotFoundClient = () => {
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {

@@ -207,7 +207,7 @@ export interface DashboardStatsClientProps {
   stats: DashboardStatsData;
 }
 
-export function DashboardStatsClient({ stats }: DashboardStatsClientProps) {
+export const DashboardStatsClient = ({ stats }: DashboardStatsClientProps) => {
   const isMounted = useClientOnly();
   const { data: session } = useSession();
   const { hasPermission } = usePermissions();

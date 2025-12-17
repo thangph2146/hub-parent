@@ -11,7 +11,7 @@ interface UseCommentColumnsOptions {
   onToggleApprove: (row: CommentRow, checked: boolean) => void
 }
 
-export function useCommentColumns({ togglingComments, canApprove, onToggleApprove }: UseCommentColumnsOptions) {
+export const useCommentColumns = ({ togglingComments, canApprove, onToggleApprove }: UseCommentColumnsOptions) => {
   const contentFilter = useDynamicFilterOptions({
     optionsEndpoint: apiRoutes.comments.options({ column: "content" }),
   })

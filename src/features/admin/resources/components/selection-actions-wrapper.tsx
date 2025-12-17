@@ -6,11 +6,11 @@ interface SelectionActionsWrapperProps {
   actions: ReactNode
 }
 
-export function SelectionActionsWrapper({
+export const SelectionActionsWrapper = ({
   label,
   labelSuffix,
   actions,
-}: SelectionActionsWrapperProps) {
+}: SelectionActionsWrapperProps) => {
   return (
     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-sm">
       <div className="flex-shrink-0">

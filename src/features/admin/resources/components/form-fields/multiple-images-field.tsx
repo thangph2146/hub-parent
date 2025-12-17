@@ -27,7 +27,7 @@ export interface MultipleImagesFieldProps {
   disabled?: boolean
 }
 
-function ImageItem({
+const ImageItem = ({
   image,
   index,
   total,
@@ -47,7 +47,7 @@ function ImageItem({
   onMoveUp: () => void
   onMoveDown: () => void
   disabled?: boolean
-}) {
+}) => {
   return (
     <div
       className={cn(
@@ -130,7 +130,7 @@ function ImageItem({
   )
 }
 
-export function MultipleImagesField({ value, onChange, error, disabled = false }: MultipleImagesFieldProps) {
+export const MultipleImagesField = ({ value, onChange, error, disabled = false }: MultipleImagesFieldProps) => {
   const { toast } = useToast()
   
   // Use ref to store latest value to avoid stale closure

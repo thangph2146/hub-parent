@@ -46,11 +46,11 @@ interface NotificationsTableClientProps {
   isSuperAdmin?: boolean
 }
 
-export function NotificationsTableClient({
+export const NotificationsTableClient = ({
   canManage = false,
   initialData,
   isSuperAdmin: _isSuperAdminProp = false,
-}: NotificationsTableClientProps) {
+}: NotificationsTableClientProps) => {
   const { data: session } = useSession()
   const queryClient = useQueryClient()
   const { cacheVersion } = useNotificationsSocketBridge()

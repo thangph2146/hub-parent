@@ -31,7 +31,7 @@ export interface HomeClientProps {
   featuredPosts?: Post[];
 }
 
-export function HomeClient({ featuredPosts = [] }: HomeClientProps) {
+export const HomeClient = ({ featuredPosts = [] }: HomeClientProps) => {
   return (
     <div className="relative isolate bg-background">
       {/* Hero Section */}

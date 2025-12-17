@@ -44,7 +44,7 @@ export interface ContentCardProps {
   children?: ReactNode;
 }
 
-export function ContentCard({
+export const ContentCard = ({
   title,
   description,
   button,
@@ -57,8 +57,7 @@ export function ContentCard({
   titleDefaultClasses = DEFAULT_TITLE_CLASSES,
   descriptionDefaultClasses = DEFAULT_DESCRIPTION_CLASSES,
   children,
-}: ContentCardProps) {
-  // Xác định buttons để render
+}: ContentCardProps) => {
   const buttonsToRender = buttons || (button ? [button] : []);
 
   return (

@@ -38,7 +38,7 @@ interface UseContactRequestRowActionsOptions {
   hardDeletingRequests?: Set<string>
 }
 
-export function renderRowActions(actions: RowActionConfig[]) {
+export const renderRowActions = (actions: RowActionConfig[]) => {
   if (actions.length === 0) {
     return null
   }
@@ -102,7 +102,7 @@ export function renderRowActions(actions: RowActionConfig[]) {
   )
 }
 
-export function useContactRequestRowActions({
+export const useContactRequestRowActions = ({
   canDelete,
   canRestore,
   canManage,
@@ -116,7 +116,7 @@ export function useContactRequestRowActions({
   deletingRequests = new Set(),
   restoringRequests = new Set(),
   hardDeletingRequests = new Set(),
-}: UseContactRequestRowActionsOptions) {
+}: UseContactRequestRowActionsOptions) => {
   const router = useResourceRouter()
 
   const renderActiveRowActions = useCallback(

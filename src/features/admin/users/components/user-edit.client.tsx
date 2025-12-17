@@ -38,7 +38,7 @@ export interface UserEditClientProps {
   roles?: Role[]
 }
 
-export function UserEditClient({
+export const UserEditClient = ({
   user: initialUser,
   open = true,
   onOpenChange,
@@ -48,7 +48,7 @@ export function UserEditClient({
   backLabel = "Quay lại",
   userId,
   roles: rolesFromServer,
-}: UserEditClientProps) {
+}: UserEditClientProps) => {
   // Log page load (chỉ khi variant là "page")
   usePageLoadLogger(variant === "page" ? "edit" : undefined)
   const { data: session } = useSession()

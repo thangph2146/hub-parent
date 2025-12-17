@@ -1,14 +1,14 @@
 import type { Contact } from "@/components/chat/types"
 import { applyReadStatus } from "./use-chat-message-helpers"
 
-export function updateMessageReadStatus(
+export const updateMessageReadStatus = (
   contacts: Contact[],
   contactId: string,
   messageId: string | undefined,
   isRead: boolean,
   readers: { id: string; name: string | null; email: string; avatar: string | null }[] | undefined,
   currentUserId: string | undefined
-): Contact[] {
+): Contact[] => {
   if (!messageId || !currentUserId) return contacts
   return applyReadStatus(contacts, {
     contactId,
@@ -20,17 +20,17 @@ export function updateMessageReadStatus(
   })
 }
 
-export function updateContactInState(
+export const updateContactInState = (
   contacts: Contact[],
   contactId: string,
   updater: (contact: Contact) => Contact
-): Contact[] {
+): Contact[] => {
   return contacts.map((contact) => (contact.id === contactId ? updater(contact) : contact))
 }
 
-export function filterContactInState(
+export const filterContactInState = (
   contacts: Contact[],
   predicate: (contact: Contact) => boolean
-): Contact[] {
+): Contact[] => {
   return contacts.filter(predicate)
 }

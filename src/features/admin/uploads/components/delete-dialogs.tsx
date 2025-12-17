@@ -26,7 +26,7 @@ interface DeleteDialogsProps {
   onCloseFolderDelete: () => void
 }
 
-export function DeleteDialogs({
+export const DeleteDialogs = ({
   bulkDeleteConfirm,
   singleDeleteConfirm,
   folderDeleteConfirm,
@@ -39,7 +39,7 @@ export function DeleteDialogs({
   onCloseBulkDelete,
   onCloseSingleDelete,
   onCloseFolderDelete,
-}: DeleteDialogsProps) {
+}: DeleteDialogsProps) => {
   return (
     <>
       {/* Bulk Delete Confirmation Dialog */}

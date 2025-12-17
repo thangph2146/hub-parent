@@ -21,14 +21,14 @@ export interface ImageFieldProps {
   fieldId?: string
 }
 
-export function ImageField({
+export const ImageField = ({
   value,
   onChange,
   placeholder = "https://example.com/image.jpg",
   error,
   disabled = false,
   fieldId = "image",
-}: ImageFieldProps) {
+}: ImageFieldProps) => {
   const imageUrl = typeof value === "string" ? value : ""
   const hasImage = imageUrl && imageUrl.trim() !== ""
   const [imageError, setImageError] = useState(false)

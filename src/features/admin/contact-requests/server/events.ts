@@ -8,11 +8,11 @@ const SUPER_ADMIN_ROOM = "role:super_admin"
 
 export type ContactRequestStatus = "active" | "deleted"
 
-function resolveStatusFromRow(row: ContactRequestRow): ContactRequestStatus {
+const resolveStatusFromRow = (row: ContactRequestRow): ContactRequestStatus => {
   return row.deletedAt ? "deleted" : "active"
 }
 
-async function fetchContactRequestRow(contactRequestId: string): Promise<ContactRequestRow | null> {
+const fetchContactRequestRow = async (contactRequestId: string): Promise<ContactRequestRow | null> => {
   const contactRequest = await prisma.contactRequest.findUnique({
     where: { id: contactRequestId },
     include: {
@@ -34,10 +34,10 @@ async function fetchContactRequestRow(contactRequestId: string): Promise<Contact
   return serializeContactRequestForTable(listed)
 }
 
-export async function emitContactRequestUpsert(
+export const emitContactRequestUpsert = async (
   contactRequestId: string,
   previousStatus: ContactRequestStatus | null,
-): Promise<void> {
+): Promise<void> => {
   const io = getSocketServer()
   if (!io) return
 
@@ -62,7 +62,7 @@ export async function emitContactRequestUpsert(
   io.to(SUPER_ADMIN_ROOM).emit("contact-request:upsert", upsertPayload)
 }
 
-export function emitContactRequestRemove(contactRequestId: string, previousStatus: ContactRequestStatus): void {
+export const emitContactRequestRemove = (contactRequestId: string, previousStatus: ContactRequestStatus): void => {
   const io = getSocketServer()
   if (!io) return
 
@@ -72,11 +72,11 @@ export function emitContactRequestRemove(contactRequestId: string, previousStatu
   })
 }
 
-export async function emitContactRequestAssigned(
+export const emitContactRequestAssigned = async (
   contactRequestId: string,
   assignedToId: string | null,
   assignedToName: string | null,
-): Promise<void> {
+): Promise<void> => {
   const io = getSocketServer()
   if (!io) return
 
@@ -95,7 +95,7 @@ export async function emitContactRequestAssigned(
   }
 }
 
-export async function emitContactRequestNew(contactRequest: ListedContactRequest): Promise<void> {
+export const emitContactRequestNew = async (contactRequest: ListedContactRequest): Promise<void> => {
   const io = getSocketServer()
   if (!io) return
 
@@ -119,10 +119,10 @@ export async function emitContactRequestNew(contactRequest: ListedContactRequest
   io.to(SUPER_ADMIN_ROOM).emit("contact-request:new", payload)
 }
 
-export async function emitContactRequestBatchUpsert(
+export const emitContactRequestBatchUpsert = async (
   contactRequestIds: string[],
   previousStatus: ContactRequestStatus | null,
-): Promise<void> {
+): Promise<void> => {
   const io = getSocketServer()
   if (!io || contactRequestIds.length === 0) return
 

@@ -11,12 +11,12 @@ interface UseGroupActionsProps {
   onHardDeleteSuccess?: () => void // Callback after hard delete success
 }
 
-export function useGroupActions({
+export const useGroupActions = ({
   currentChat,
   setCurrentChat,
   setContactsState,
   onHardDeleteSuccess,
-}: UseGroupActionsProps) {
+}: UseGroupActionsProps) => {
   const { toast } = useToast()
 
   const handleGroupUpdated = useCallback(async () => {

@@ -12,15 +12,12 @@ export interface FolderTreeData {
   subfolders: Map<string, FolderTreeData>
 }
 
-/**
- * Build folder tree from flat image list
- */
-export function buildFolderTreeFromImages(images: ScannedImage[]): {
+export const buildFolderTreeFromImages = (images: ScannedImage[]): {
   name: string
   path: string
   images: ScannedImage[]
   subfolders: Array<ReturnType<typeof folderToObject>>
-} {
+} => {
   const rootFolders = new Map<string, FolderTreeData>()
 
   for (const image of images) {

@@ -14,7 +14,7 @@ interface RelatedPostsProps {
   title?: string
 }
 
-export function RelatedPosts({ posts, title = "Bài viết liên quan" }: RelatedPostsProps) {
+export const RelatedPosts = ({ posts, title = "Bài viết liên quan" }: RelatedPostsProps) => {
   if (posts.length === 0) {
     return null
   }

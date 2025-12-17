@@ -4,11 +4,11 @@ interface NotFoundMessageProps {
   resourceName?: string
 }
 
-export function NotFoundMessage({
+export const NotFoundMessage = ({
   title,
   description,
   resourceName = "dữ liệu",
-}: NotFoundMessageProps) {
+}: NotFoundMessageProps) => {
   return (
     <div className="flex flex-1 flex-col items-center justify-center gap-4 p-4 md:p-6 lg:p-8">
       <div className="text-center">

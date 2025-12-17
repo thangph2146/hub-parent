@@ -18,7 +18,7 @@ export interface AccountFormData {
   [key: string]: unknown
 }
 
-export function getAccountFormSections(): ResourceFormSection[] {
+export const getAccountFormSections = (): ResourceFormSection[] => {
   return [
     {
       id: "avatar",
@@ -48,7 +48,7 @@ export function getAccountFormSections(): ResourceFormSection[] {
   ]
 }
 
-export function getAccountFields(): ResourceFormField<AccountFormData>[] {
+export const getAccountFields = (): ResourceFormField<AccountFormData>[] => {
   return [
     {
       name: "avatar",

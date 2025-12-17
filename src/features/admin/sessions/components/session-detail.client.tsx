@@ -41,7 +41,7 @@ export interface SessionDetailClientProps {
   backUrl?: string
 }
 
-export function SessionDetailClient({ sessionId, session, backUrl = "/admin/sessions" }: SessionDetailClientProps) {
+export const SessionDetailClient = ({ sessionId, session, backUrl = "/admin/sessions" }: SessionDetailClientProps) => {
   const router = useResourceRouter()
   const { hasAnyPermission } = usePermissions()
   

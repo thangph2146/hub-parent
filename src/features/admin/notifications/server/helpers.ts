@@ -4,7 +4,7 @@ import { serializeDate } from "@/features/admin/resources/server"
 import type { ListNotificationsResult, ListedNotification } from "./queries"
 import type { NotificationRow } from "../types"
 
-export function serializeNotificationForTable(notification: ListedNotification): NotificationRow {
+export const serializeNotificationForTable = (notification: ListedNotification): NotificationRow => {
   // Ensure createdAt is always a valid string (required field)
   const createdAt = notification.createdAt
     ? serializeDate(notification.createdAt) ?? new Date().toISOString()
@@ -26,7 +26,7 @@ export function serializeNotificationForTable(notification: ListedNotification):
   }
 }
 
-export function serializeNotificationsList(data: ListNotificationsResult): DataTableResult<NotificationRow> {
+export const serializeNotificationsList = (data: ListNotificationsResult): DataTableResult<NotificationRow> => {
   try {
     return {
       page: data.pagination.page,
@@ -69,7 +69,7 @@ export function serializeNotificationsList(data: ListNotificationsResult): DataT
   }
 }
 
-export function serializeNotificationDetail(notification: ListedNotification) {
+export const serializeNotificationDetail = (notification: ListedNotification) => {
   return {
     id: notification.id,
     userId: notification.userId,

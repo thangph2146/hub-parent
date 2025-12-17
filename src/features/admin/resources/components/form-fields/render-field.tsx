@@ -20,18 +20,17 @@ interface RenderFieldProps<T> {
   error?: string
   onChange: (value: unknown) => void
   isPending?: boolean
-  sourceValue?: unknown // Giá trị của source field để auto-generate slug
+  sourceValue?: unknown
 }
 
-export function renderFieldInput<T>({
+export const renderFieldInput = <T,>({
   field,
   value,
   error,
   onChange,
   isPending = false,
   sourceValue,
-}: RenderFieldProps<T>) {
-  // Default value for multiple-select should be array
+}: RenderFieldProps<T>) => {
   const defaultValue = field.type === "multiple-select" 
     ? (field.defaultValue ?? [])
     : (field.defaultValue ?? "")
@@ -40,7 +39,6 @@ export function renderFieldInput<T>({
     ? value 
     : defaultValue
 
-  // Custom render - wrap in FieldContent to ensure consistency
   if (field.render) {
     const customContent = field.render(field, fieldValue, onChange)
     return (
@@ -51,7 +49,6 @@ export function renderFieldInput<T>({
     )
   }
 
-  // Render based on field type
   switch (field.type) {
     case "textarea":
       return (
@@ -166,7 +163,6 @@ export function renderFieldInput<T>({
       )
 
     default:
-      // text, email, password
       return (
         <TextField
           field={field}

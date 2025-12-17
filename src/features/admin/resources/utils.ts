@@ -2,17 +2,16 @@ import type { AdminBreadcrumbItem } from "@/components/layouts/headers/admin-hea
 import { applyResourceSegmentToPath, DEFAULT_RESOURCE_SEGMENT } from "@/lib/permissions"
 import { logActionFlow } from "./server/mutation-helpers"
 
-export function formatDateVi(date: string | Date): string {
-  return new Date(date).toLocaleDateString("vi-VN", {
+export const formatDateVi = (date: string | Date): string =>
+  new Date(date).toLocaleDateString("vi-VN", {
     year: "numeric",
     month: "long",
     day: "numeric",
     hour: "2-digit",
     minute: "2-digit",
   })
-}
 
-export function generateSlug(name: string): string {
+export const generateSlug = (name: string): string => {
   return name
     .toLowerCase()
     .normalize("NFD")
@@ -21,7 +20,7 @@ export function generateSlug(name: string): string {
     .replace(/^-+|-+$/g, "")
 }
 
-export function validateName(value: unknown): { valid: boolean; error?: string } {
+export const validateName = (value: unknown): { valid: boolean; error?: string } => {
   if (!value || typeof value !== "string") {
     return { valid: false, error: "Tên là bắt buộc" }
   }
@@ -35,7 +34,7 @@ export function validateName(value: unknown): { valid: boolean; error?: string }
   return { valid: true }
 }
 
-export function validateSlug(value: unknown): { valid: boolean; error?: string } {
+export const validateSlug = (value: unknown): { valid: boolean; error?: string } => {
   if (!value || typeof value !== "string") {
     return { valid: false, error: "Slug là bắt buộc" }
   }
@@ -49,7 +48,7 @@ export function validateSlug(value: unknown): { valid: boolean; error?: string }
   return { valid: true }
 }
 
-export function validateEmail(value: unknown): { valid: boolean; error?: string } {
+export const validateEmail = (value: unknown): { valid: boolean; error?: string } => {
   if (!value || typeof value !== "string") {
     return { valid: false, error: "Email là bắt buộc" }
   }
@@ -60,7 +59,7 @@ export function validateEmail(value: unknown): { valid: boolean; error?: string 
   return { valid: true }
 }
 
-export function validatePhone(value: unknown): { valid: boolean; error?: string } {
+export const validatePhone = (value: unknown): { valid: boolean; error?: string } => {
   if (!value || value === "") {
     return { valid: true }
   }
@@ -74,7 +73,7 @@ export function validatePhone(value: unknown): { valid: boolean; error?: string 
   return { valid: true }
 }
 
-export function validateDescription(value: unknown): { valid: boolean; error?: string } {
+export const validateDescription = (value: unknown): { valid: boolean; error?: string } => {
   if (!value || value === "") {
     return { valid: true }
   }
@@ -87,15 +86,15 @@ export function validateDescription(value: unknown): { valid: boolean; error?: s
   return { valid: true }
 }
 
-export function normalizeSearch(value: string | undefined | null): string | undefined {
+export const normalizeSearch = (value: string | undefined | null): string | undefined => {
   if (!value) return undefined
   const trimmed = value.trim()
   return trimmed.length > 0 ? trimmed : undefined
 }
 
-export function sanitizeFilters(
+export const sanitizeFilters = (
   filters?: Record<string, string | null | undefined>,
-): Record<string, string> {
+): Record<string, string> => {
   if (!filters) return {}
 
   return Object.entries(filters).reduce<Record<string, string>>((acc, [key, rawValue]) => {
@@ -112,17 +111,17 @@ export function sanitizeFilters(
   }, {})
 }
 
-export function truncateBreadcrumbLabel(text: string, maxLength: number = 30): string {
+export const truncateBreadcrumbLabel = (text: string, maxLength: number = 30): string => {
   if (!text || text.length <= maxLength) {
     return text
   }
   return text.substring(0, maxLength).trim() + "..."
 }
 
-export function getResourceSegmentFromParams(
+export const getResourceSegmentFromParams = (
   resource?: string,
   defaultSegment: string = DEFAULT_RESOURCE_SEGMENT
-): string {
+): string => {
   return resource && resource.length > 0 ? resource.toLowerCase() : defaultSegment
 }
 
@@ -138,20 +137,20 @@ export interface CreateBreadcrumbsOptions {
   createPath?: string
 }
 
-export function createListBreadcrumbs({
+export const createListBreadcrumbs = ({
   resourceSegment: _resourceSegment = DEFAULT_RESOURCE_SEGMENT,
   listLabel,
-}: Pick<CreateBreadcrumbsOptions, "resourceSegment" | "listLabel">): AdminBreadcrumbItem[] {
+}: Pick<CreateBreadcrumbsOptions, "resourceSegment" | "listLabel">): AdminBreadcrumbItem[] => {
   return [{ label: listLabel, isActive: true }]
 }
 
-export function createDetailBreadcrumbs({
+export const createDetailBreadcrumbs = ({
   resourceSegment = DEFAULT_RESOURCE_SEGMENT,
   listLabel,
   listPath,
   detailLabel,
   detailPath,
-}: Pick<CreateBreadcrumbsOptions, "resourceSegment" | "listLabel" | "listPath" | "detailLabel" | "detailPath">): AdminBreadcrumbItem[] {
+}: Pick<CreateBreadcrumbsOptions, "resourceSegment" | "listLabel" | "listPath" | "detailLabel" | "detailPath">): AdminBreadcrumbItem[] => {
   if (!detailLabel || !detailPath) {
     return createListBreadcrumbs({ resourceSegment, listLabel })
   }
@@ -162,14 +161,14 @@ export function createDetailBreadcrumbs({
   ]
 }
 
-export function createEditBreadcrumbs({
+export const createEditBreadcrumbs = ({
   resourceSegment = DEFAULT_RESOURCE_SEGMENT,
   listLabel,
   listPath,
   detailLabel,
   detailPath,
   editLabel = "Chỉnh sửa",
-}: Pick<CreateBreadcrumbsOptions, "resourceSegment" | "listLabel" | "listPath" | "detailLabel" | "detailPath" | "editLabel">): AdminBreadcrumbItem[] {
+}: Pick<CreateBreadcrumbsOptions, "resourceSegment" | "listLabel" | "listPath" | "detailLabel" | "detailPath" | "editLabel">): AdminBreadcrumbItem[] => {
   const items: AdminBreadcrumbItem[] = [
     { label: listLabel, href: applyResourceSegmentToPath(listPath, resourceSegment) },
   ]
@@ -182,19 +181,19 @@ export function createEditBreadcrumbs({
   return items
 }
 
-export function createCreateBreadcrumbs({
+export const createCreateBreadcrumbs = ({
   resourceSegment = DEFAULT_RESOURCE_SEGMENT,
   listLabel,
   listPath,
   createLabel = "Tạo mới",
-}: Pick<CreateBreadcrumbsOptions, "resourceSegment" | "listLabel" | "listPath" | "createLabel">): AdminBreadcrumbItem[] {
+}: Pick<CreateBreadcrumbsOptions, "resourceSegment" | "listLabel" | "listPath" | "createLabel">): AdminBreadcrumbItem[] => {
   return [
     { label: listLabel, href: applyResourceSegmentToPath(listPath, resourceSegment) },
     { label: createLabel, isActive: true },
   ]
 }
 
-export function createNestedBreadcrumbs({
+export const createNestedBreadcrumbs = ({
   resourceSegment = DEFAULT_RESOURCE_SEGMENT,
   parentLabel,
   parentPath,
@@ -204,14 +203,14 @@ export function createNestedBreadcrumbs({
   parentLabel: string
   parentPath: string
   currentLabel: string
-}): AdminBreadcrumbItem[] {
+}): AdminBreadcrumbItem[] => {
   return [
     { label: parentLabel, href: applyResourceSegmentToPath(parentPath, resourceSegment) },
     { label: currentLabel, isActive: true },
   ]
 }
 
-function getResourceSingularName(resourceName: string): string {
+const getResourceSingularName = (resourceName: string): string => {
   const specialCases: Record<string, string> = {
     categories: "category",
     tags: "tag",
@@ -236,7 +235,7 @@ function getResourceSingularName(resourceName: string): string {
   return resourceName
 }
 
-export function createResourceEditOnSuccess({
+export const createResourceEditOnSuccess = ({
   queryClient,
   resourceId,
   allQueryKey,
@@ -252,7 +251,7 @@ export function createResourceEditOnSuccess({
   resourceName: string
   getRecordName?: (responseData: Record<string, unknown>) => string | undefined
   onSuccess?: () => void
-}) {
+}) => {
   return async (response: import("axios").AxiosResponse) => {
     const responseData = response?.data?.data
 

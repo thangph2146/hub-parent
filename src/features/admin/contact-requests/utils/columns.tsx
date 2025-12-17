@@ -18,12 +18,12 @@ interface UseContactRequestColumnsOptions {
   onToggleRead: (row: ContactRequestRow, checked: boolean) => void
 }
 
-export function useContactRequestColumns({
+export const useContactRequestColumns = ({
   togglingRequests,
   canUpdate,
   initialUsersOptions = [],
   onToggleRead,
-}: UseContactRequestColumnsOptions) {
+}: UseContactRequestColumnsOptions) => {
   const nameFilter = useDynamicFilterOptions({
     optionsEndpoint: apiRoutes.contactRequests.options({ column: "name" }),
   })

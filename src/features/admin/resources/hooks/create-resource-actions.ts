@@ -43,12 +43,9 @@ export interface UseResourceActionsOptions {
   showFeedback: (variant: FeedbackVariant, title: string, description?: string, details?: string) => void
 }
 
-/**
- * Tạo resource actions hook từ config
- */
-export function createResourceActionsHook<TRow extends { id: string }>(
+export const createResourceActionsHook = <TRow extends { id: string }>(
   config: ResourceActionsConfig<TRow>
-) {
+) => {
   return function useActions(options: UseResourceActionsOptions) {
     return useResourceActions<TRow>({
       resourceName: config.resourceName,
@@ -90,11 +87,7 @@ function isResourceRoutes(
   )
 }
 
-/**
- * Helper để tạo API routes config từ resource name
- * Type-safe với runtime validation
- */
-export function createApiRoutesConfig(resourceName: string) {
+export const createApiRoutesConfig = (resourceName: string) => {
   const routes = apiRoutes[resourceName as keyof typeof apiRoutes]
 
   if (!isResourceRoutes(routes)) {
@@ -112,20 +105,13 @@ export function createApiRoutesConfig(resourceName: string) {
   }
 }
 
-/**
- * Type guard để kiểm tra query keys có method all không
- */
-function isQueryKeysWithAll(keys: unknown): keys is { all: () => readonly unknown[] } {
+const isQueryKeysWithAll = (keys: unknown): keys is { all: () => readonly unknown[] } => {
   if (!keys || typeof keys !== "object") return false
   const k = keys as Record<string, unknown>
   return typeof k.all === "function"
 }
 
-/**
- * Helper để tạo query keys config từ resource name
- * Type-safe với runtime validation
- */
-export function createQueryKeysConfig(resourceName: string) {
+export const createQueryKeysConfig = (resourceName: string) => {
   // Convert "products" -> "adminProducts", "orders" -> "adminOrders"
   const keyName = `admin${resourceName.charAt(0).toUpperCase() + resourceName.slice(1)}` as keyof typeof queryKeys
   const keys = queryKeys[keyName]

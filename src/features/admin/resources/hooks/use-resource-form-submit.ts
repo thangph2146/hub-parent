@@ -28,7 +28,7 @@ export interface UseResourceFormSubmitResult {
   handleSubmit: (data: Record<string, unknown>) => Promise<{ success: boolean; error?: string }>
 }
 
-export function useResourceFormSubmit({
+export const useResourceFormSubmit = ({
   apiRoute,
   method = "POST",
   resourceId,
@@ -36,7 +36,7 @@ export function useResourceFormSubmit({
   navigation,
   transformData,
   onSuccess,
-}: UseResourceFormSubmitOptions): UseResourceFormSubmitResult {
+}: UseResourceFormSubmitOptions): UseResourceFormSubmitResult => {
   const router = useResourceRouter()
   const { toast } = useToast()
 

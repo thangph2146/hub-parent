@@ -35,7 +35,7 @@ import { Pagination } from "./pagination"
 import { ViewModeToggle } from "./view-mode-toggle"
 import { DeleteDialogs } from "./delete-dialogs"
 
-export function UploadsPageClient() {
+export const UploadsPageClient = () => {
   const queryClient = useQueryClient()
 
   // Zustand Store - UI State

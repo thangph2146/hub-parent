@@ -21,7 +21,7 @@ type CommentWithRelations = Prisma.CommentGetPayload<{
   }
 }>
 
-export function mapCommentRecord(comment: CommentWithRelations): ListedComment {
+export const mapCommentRecord = (comment: CommentWithRelations): ListedComment => {
   return {
     id: comment.id,
     content: comment.content,
@@ -42,7 +42,7 @@ const RELATION_CONFIGS = {
   post: { idField: "postId", fieldMap: { postTitle: "title" }, operators: { title: "contains" } },
 } as const
 
-export function buildWhereClause(params: ListCommentsInput): Prisma.CommentWhereInput {
+export const buildWhereClause = (params: ListCommentsInput): Prisma.CommentWhereInput => {
   const where: Prisma.CommentWhereInput = {}
   const filters = params.filters || {}
 
@@ -68,7 +68,7 @@ export function buildWhereClause(params: ListCommentsInput): Prisma.CommentWhere
   return where
 }
 
-export function serializeCommentForTable(comment: ListedComment): CommentRow {
+export const serializeCommentForTable = (comment: ListedComment): CommentRow => {
   return {
     id: comment.id,
     content: comment.content,
@@ -83,7 +83,7 @@ export function serializeCommentForTable(comment: ListedComment): CommentRow {
   }
 }
 
-export function serializeCommentsList(data: ListCommentsResult): DataTableResult<CommentRow> {
+export const serializeCommentsList = (data: ListCommentsResult): DataTableResult<CommentRow> => {
   return {
     page: data.pagination.page,
     limit: data.pagination.limit,
@@ -93,7 +93,7 @@ export function serializeCommentsList(data: ListCommentsResult): DataTableResult
   }
 }
 
-export function serializeCommentDetail(comment: CommentDetail): CommentDetail {
+export const serializeCommentDetail = (comment: CommentDetail): CommentDetail => {
   return comment
 }
 

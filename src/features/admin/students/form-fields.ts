@@ -12,7 +12,7 @@ export interface StudentFormData {
   [key: string]: unknown
 }
 
-export function getStudentFormSections(): ResourceFormSection[] {
+export const getStudentFormSections = (): ResourceFormSection[] => {
   return [
     {
       id: "basic",
@@ -27,11 +27,11 @@ export function getStudentFormSections(): ResourceFormSection[] {
   ]
 }
 
-export function getBaseStudentFields(
+export const getBaseStudentFields = (
   usersOptions?: Array<{ label: string; value: string }>,
   isSuperAdmin: boolean = false,
   canActive: boolean = false
-): ResourceFormField<StudentFormData>[] {
+): ResourceFormField<StudentFormData>[] => {
   const fields: ResourceFormField<StudentFormData>[] = [
     {
       name: "studentCode",
@@ -51,12 +51,7 @@ export function getBaseStudentFields(
       placeholder: "vd: Nguyễn Văn A",
       required: false,
       description: "Tên đầy đủ của học sinh",
-      validate: (value) => {
-        if (!value || value === "") {
-          return { valid: true } // Optional
-        }
-        return validateName(value)
-      },
+      validate: (value) => (!value || value === "" ? { valid: true } : validateName(value)),
       icon: React.createElement(User, { className: "h-4 w-4" }),
       section: "basic",
     },
@@ -67,12 +62,7 @@ export function getBaseStudentFields(
       placeholder: "vd: student@example.com",
       required: false,
       description: "Email của học sinh",
-      validate: (value) => {
-        if (!value || value === "") {
-          return { valid: true } // Optional
-        }
-        return validateEmail(value)
-      },
+      validate: (value) => (!value || value === "" ? { valid: true } : validateEmail(value)),
       icon: React.createElement(Mail, { className: "h-4 w-4" }),
       section: "basic",
     },

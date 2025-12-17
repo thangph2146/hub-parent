@@ -29,11 +29,11 @@ interface FolderSelectorProps {
   onDeleteFolder?: (folderPath: string, folderName: string) => void
 }
 
-export function FolderSelector({
+export const FolderSelector = ({
   availableFolders,
   isLoadingFolders,
   onDeleteFolder,
-}: FolderSelectorProps) {
+}: FolderSelectorProps) => {
   const deleteFolderMutation = useDeleteFolder()
 
   const {

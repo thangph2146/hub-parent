@@ -32,7 +32,7 @@ import type { StudentRow, StudentsResponse, StudentsTableClientProps } from "../
 import { STUDENT_CONFIRM_MESSAGES, STUDENT_LABELS } from "../constants/messages"
 import { resourceLogger } from "@/lib/config"
 
-export function StudentsTableClient({
+export const StudentsTableClient = ({
   canDelete = false,
   canRestore = false,
   canManage = false,
@@ -41,7 +41,7 @@ export function StudentsTableClient({
   canActivate = false,
   isParent = false,
   initialData,
-}: StudentsTableClientProps) {
+}: StudentsTableClientProps) => {
   const router = useResourceRouter()
   const queryClient = useQueryClient()
   const { isSocketConnected, cacheVersion } = useStudentsSocketBridge()

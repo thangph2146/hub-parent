@@ -16,13 +16,13 @@ interface TextFieldProps<T> {
   isPending?: boolean
 }
 
-export function TextField<T>({
+export const TextField = <T,>({
   field,
   value,
   error,
   onChange,
   isPending = false,
-}: TextFieldProps<T>) {
+}: TextFieldProps<T>) => {
   const fieldValue = value ?? ""
   const isPassword = field.type === "password"
   const [showPassword, setShowPassword] = React.useState(false)

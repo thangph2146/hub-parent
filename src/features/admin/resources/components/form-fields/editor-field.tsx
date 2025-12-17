@@ -14,14 +14,14 @@ export interface EditorFieldProps {
   className?: string
 }
 
-export function EditorField({
+export const EditorField = ({
   value,
   onChange,
   error,
   disabled = false,
   readOnly = false,
   className,
-}: EditorFieldProps) {
+}: EditorFieldProps) => {
   // Parse initial value as SerializedEditorState
   const [editorState, setEditorState] = useState<SerializedEditorState | null>(() => {
     if (value && typeof value === "object" && value !== null) {

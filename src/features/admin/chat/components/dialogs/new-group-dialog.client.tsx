@@ -41,7 +41,7 @@ interface NewGroupDialogProps {
   onSelectGroup: (group: Group) => void
 }
 
-export function NewGroupDialog({ onSelectGroup }: NewGroupDialogProps) {
+export const NewGroupDialog = ({ onSelectGroup }: NewGroupDialogProps) => {
   const [open, setOpen] = useState(false)
   const [groupName, setGroupName] = useState("")
   const [groupDescription, setGroupDescription] = useState("")

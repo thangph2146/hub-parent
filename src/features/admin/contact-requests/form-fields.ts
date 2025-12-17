@@ -31,7 +31,7 @@ const priorityOptions: Array<{ label: string; value: ContactPriority }> = [
   { label: "Khẩn cấp", value: "URGENT" },
 ]
 
-export function getBaseContactRequestFields(usersOptions: Array<{ label: string; value: string }> = []): ResourceFormField<ContactRequestFormData>[] {
+export const getBaseContactRequestFields = (usersOptions: Array<{ label: string; value: string }> = []): ResourceFormField<ContactRequestFormData>[] => {
   return [
     {
       name: "name",

@@ -46,7 +46,7 @@ interface NewConversationDialogProps {
   existingContactIds?: string[]
 }
 
-export function NewConversationDialog({ onSelectUser, existingContactIds = [] }: NewConversationDialogProps) {
+export const NewConversationDialog = ({ onSelectUser, existingContactIds = [] }: NewConversationDialogProps) => {
   const [open, setOpen] = useState(false)
   const [searchValue, setSearchValue] = useState("")
   const [users, setUsers] = useState<UserOption[]>([])

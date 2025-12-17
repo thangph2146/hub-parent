@@ -1,52 +1,56 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { 
-  User, 
-  Mail, 
-  Phone, 
-  MapPin, 
-  Calendar, 
-  Clock, 
+import * as React from "react";
+import {
+  User,
+  Mail,
+  Phone,
+  MapPin,
+  Calendar,
+  Clock,
   Shield,
   FileText,
   Edit,
-  CheckCircle2
-} from "lucide-react"
-import { 
-  ResourceDetailClient, 
+  CheckCircle2,
+} from "lucide-react";
+import {
+  ResourceDetailClient,
   FieldItem,
-  type ResourceDetailField, 
-  type ResourceDetailSection 
-} from "@/features/admin/resources/components"
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
-import { useResourceRouter } from "@/hooks/use-resource-segment"
-import { formatDateVi } from "@/features/admin/resources/utils"
-import { getUserInitials } from "@/features/admin/accounts/utils"
-import { AccountEditClient } from "./account-edit.client"
-import type { AccountProfile } from "../types"
-import { useResourceDetailLogger } from "@/features/admin/resources/hooks"
-import { usePermissions } from "@/hooks/use-permissions"
-import { PERMISSIONS } from "@/lib/permissions"
+  type ResourceDetailField,
+  type ResourceDetailSection,
+} from "@/features/admin/resources/components";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { useResourceRouter } from "@/hooks/use-resource-segment";
+import { formatDateVi } from "@/features/admin/resources/utils";
+import {
+  getUserInitials,
+  parseAddressToStructured,
+  formatAddressForDisplay,
+} from "@/features/admin/accounts/utils";
+import { AccountEditClient } from "./account-edit.client";
+import type { AccountProfile } from "../types";
+import { useResourceDetailLogger } from "@/features/admin/resources/hooks";
+import { usePermissions } from "@/hooks/use-permissions";
+import { PERMISSIONS } from "@/lib/permissions";
 
 export interface AccountProfileClientProps {
-  account: AccountProfile
-  variant?: "page" | "dialog" | "sheet"
+  account: AccountProfile;
+  variant?: "page" | "dialog" | "sheet";
 }
 
-export function AccountProfileClient({
+export const AccountProfileClient = ({
   account,
   variant = "page",
-}: AccountProfileClientProps) {
-  const router = useResourceRouter()
-  const [isEditing, setIsEditing] = React.useState(false)
-  const { hasPermission } = usePermissions()
-  
+}: AccountProfileClientProps) => {
+  const router = useResourceRouter();
+  const [isEditing, setIsEditing] = React.useState(false);
+  const { hasPermission } = usePermissions();
+
   // Check permission for edit (user can always edit their own profile)
-  const canUpdate = hasPermission(PERMISSIONS.ACCOUNTS_UPDATE)
+  const canUpdate = hasPermission(PERMISSIONS.ACCOUNTS_UPDATE);
 
   useResourceDetailLogger({
     resourceName: "accounts",
@@ -55,7 +59,7 @@ export function AccountProfileClient({
     isFetched: true,
     isFromApi: false,
     fetchedData: account,
-  })
+  });
 
   if (isEditing) {
     return (
@@ -65,21 +69,21 @@ export function AccountProfileClient({
         open={true}
         onOpenChange={(open) => {
           if (!open) {
-            setIsEditing(false)
+            setIsEditing(false);
           }
         }}
         onSuccess={() => {
-          setIsEditing(false)
-          router.refresh()
+          setIsEditing(false);
+          router.refresh();
         }}
         onCancel={() => {
-          setIsEditing(false)
+          setIsEditing(false);
         }}
       />
-    )
+    );
   }
 
-  const detailFields: ResourceDetailField<AccountProfile>[] = []
+  const detailFields: ResourceDetailField<AccountProfile>[] = [];
 
   const detailSections: ResourceDetailSection<AccountProfile>[] = [
     {
@@ -92,8 +96,8 @@ export function AccountProfileClient({
             <div className="relative group">
               <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 via-primary/10 to-transparent rounded-full blur opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               <Avatar className="relative h-28 w-28 border-4 border-background shadow-lg ring-2 ring-primary/10">
-                <AvatarImage 
-                  src={account.avatar || undefined} 
+                <AvatarImage
+                  src={account.avatar || undefined}
                   alt={account.name || account.email}
                   referrerPolicy="no-referrer"
                   crossOrigin="anonymous"
@@ -136,15 +140,19 @@ export function AccountProfileClient({
         </Card>
       ),
       fieldsContent: (_fields, data) => {
-        const accountData = data as AccountProfile
-        
+        const accountData = data as AccountProfile;
+
         return (
           <div className="space-y-6">
             <div className="grid gap-4 sm:grid-cols-2">
               <Card className="p-4 border-border/50 bg-card/50 hover:bg-card transition-colors">
                 <FieldItem icon={User} label="Tên">
                   <div className="text-base font-semibold text-foreground mt-1">
-                    {accountData.name || <span className="text-muted-foreground italic">Chưa cập nhật</span>}
+                    {accountData.name || (
+                      <span className="text-muted-foreground italic">
+                        Chưa cập nhật
+                      </span>
+                    )}
                   </div>
                 </FieldItem>
               </Card>
@@ -152,7 +160,11 @@ export function AccountProfileClient({
               <Card className="p-4 border-border/50 bg-card/50 hover:bg-card transition-colors">
                 <FieldItem icon={Phone} label="Số điện thoại">
                   <div className="text-base font-semibold text-foreground mt-1">
-                    {accountData.phone || <span className="text-muted-foreground italic">Chưa cập nhật</span>}
+                    {accountData.phone || (
+                      <span className="text-muted-foreground italic">
+                        Chưa cập nhật
+                      </span>
+                    )}
                   </div>
                 </FieldItem>
               </Card>
@@ -165,7 +177,9 @@ export function AccountProfileClient({
                     <FileText className="h-5 w-5 text-primary" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-sm font-semibold text-foreground mb-3 uppercase tracking-wide">Giới thiệu</h3>
+                    <h3 className="text-sm font-semibold text-foreground mb-3 uppercase tracking-wide">
+                      Giới thiệu
+                    </h3>
                     <div className="text-sm leading-relaxed whitespace-pre-wrap text-foreground/90 break-words">
                       {accountData.bio}
                     </div>
@@ -174,93 +188,77 @@ export function AccountProfileClient({
               </Card>
             )}
 
-            {accountData.address && (() => {
-              // Parse address if it's a JSON string
-              let addressDisplay: string | React.ReactNode = accountData.address
-              let structuredAddress: {
-                address?: string
-                city?: string
-                district?: string
-                ward?: string
-                postalCode?: string
-              } | null = null
-
-              try {
-                const parsed = typeof accountData.address === "string" 
-                  ? JSON.parse(accountData.address) 
+            {accountData.address &&
+              (() => {
+                const structuredAddress = parseAddressToStructured(accountData.address)
+                const addressDisplay = structuredAddress
+                  ? formatAddressForDisplay(accountData.address)
                   : accountData.address
-                
-                if (parsed && typeof parsed === "object" && parsed !== null) {
-                  structuredAddress = parsed
-                  // Format: "Số nhà, Phường/Xã, Quận/Huyện, Thành phố, Mã bưu điện"
-                  const parts = [
-                    parsed.address,
-                    parsed.ward,
-                    parsed.district,
-                    parsed.city,
-                    parsed.postalCode,
-                  ].filter(Boolean)
-                  addressDisplay = parts.join(", ")
-                }
-              } catch {
-                // If not JSON, use as-is
-                addressDisplay = accountData.address
-              }
 
-              return (
-                <Card className="p-5 border-2 border-border/50 bg-gradient-to-br from-card to-muted/10 shadow-sm">
-                  <FieldItem icon={MapPin} label="Địa chỉ">
-                    <div className="space-y-3 mt-2">
-                      {structuredAddress ? (
-                        <div className="space-y-2">
+                return (
+                  <Card className="p-5 border-2 border-border/50 bg-gradient-to-br from-card to-muted/10 shadow-sm">
+                    <FieldItem icon={MapPin} label="Địa chỉ">
+                      <div className="space-y-3 mt-2">
+                        {structuredAddress ? (
+                          <div className="space-y-2">
+                            <div className="text-base font-semibold text-foreground">
+                              {addressDisplay}
+                            </div>
+                            <div className="grid gap-2 sm:grid-cols-2 text-sm text-muted-foreground">
+                              {structuredAddress.address && (
+                                <div className="flex items-start gap-2">
+                                  <span className="font-medium min-w-[80px]">
+                                    Số nhà:
+                                  </span>
+                                  <span>{structuredAddress.address}</span>
+                                </div>
+                              )}
+                              {structuredAddress.ward && (
+                                <div className="flex items-start gap-2">
+                                  <span className="font-medium min-w-[80px]">
+                                    Phường/Xã:
+                                  </span>
+                                  <span>{structuredAddress.ward}</span>
+                                </div>
+                              )}
+                              {structuredAddress.district && (
+                                <div className="flex items-start gap-2">
+                                  <span className="font-medium min-w-[80px]">
+                                    Quận/Huyện:
+                                  </span>
+                                  <span>{structuredAddress.district}</span>
+                                </div>
+                              )}
+                              {structuredAddress.city && (
+                                <div className="flex items-start gap-2">
+                                  <span className="font-medium min-w-[80px]">
+                                    Thành phố:
+                                  </span>
+                                  <span>{structuredAddress.city}</span>
+                                </div>
+                              )}
+                              {structuredAddress.postalCode && (
+                                <div className="flex items-start gap-2">
+                                  <span className="font-medium min-w-[80px]">
+                                    Mã bưu điện:
+                                  </span>
+                                  <span>{structuredAddress.postalCode}</span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        ) : (
                           <div className="text-base font-semibold text-foreground">
                             {addressDisplay}
                           </div>
-                          <div className="grid gap-2 sm:grid-cols-2 text-sm text-muted-foreground">
-                            {structuredAddress.address && (
-                              <div className="flex items-start gap-2">
-                                <span className="font-medium min-w-[80px]">Số nhà:</span>
-                                <span>{structuredAddress.address}</span>
-                              </div>
-                            )}
-                            {structuredAddress.ward && (
-                              <div className="flex items-start gap-2">
-                                <span className="font-medium min-w-[80px]">Phường/Xã:</span>
-                                <span>{structuredAddress.ward}</span>
-                              </div>
-                            )}
-                            {structuredAddress.district && (
-                              <div className="flex items-start gap-2">
-                                <span className="font-medium min-w-[80px]">Quận/Huyện:</span>
-                                <span>{structuredAddress.district}</span>
-                              </div>
-                            )}
-                            {structuredAddress.city && (
-                              <div className="flex items-start gap-2">
-                                <span className="font-medium min-w-[80px]">Thành phố:</span>
-                                <span>{structuredAddress.city}</span>
-                              </div>
-                            )}
-                            {structuredAddress.postalCode && (
-                              <div className="flex items-start gap-2">
-                                <span className="font-medium min-w-[80px]">Mã bưu điện:</span>
-                                <span>{structuredAddress.postalCode}</span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="text-base font-semibold text-foreground">
-                          {addressDisplay}
-                        </div>
-                      )}
-                    </div>
-                  </FieldItem>
-                </Card>
-              )
-            })()}
+                        )}
+                      </div>
+                    </FieldItem>
+                  </Card>
+                );
+              })()}
           </div>
-        )
+        );
       },
     },
     {
@@ -268,8 +266,8 @@ export function AccountProfileClient({
       title: "Bảo mật",
       description: "Thông tin bảo mật và xác thực",
       fieldsContent: (_fields, data) => {
-        const accountData = data as AccountProfile
-        
+        const accountData = data as AccountProfile;
+
         return (
           <div className="space-y-6">
             <Card className="p-5 border-2 border-border/50 bg-gradient-to-br from-card to-muted/10 shadow-sm">
@@ -309,7 +307,7 @@ export function AccountProfileClient({
               </Card>
             )}
           </div>
-        )
+        );
       },
     },
     {
@@ -317,15 +315,19 @@ export function AccountProfileClient({
       title: "Thông tin thời gian",
       description: "Ngày tạo và cập nhật tài khoản",
       fieldsContent: (_fields, data) => {
-        const accountData = data as AccountProfile
-        
+        const accountData = data as AccountProfile;
+
         return (
           <div className="space-y-6">
             <div className="grid gap-4 sm:grid-cols-2">
               <Card className="p-4 border-border/50 bg-card/50 hover:bg-card transition-colors">
                 <FieldItem icon={Calendar} label="Ngày tạo tài khoản">
                   <div className="text-base font-semibold text-foreground mt-1">
-                    {accountData.createdAt ? formatDateVi(accountData.createdAt) : <span className="text-muted-foreground italic">—</span>}
+                    {accountData.createdAt ? (
+                      formatDateVi(accountData.createdAt)
+                    ) : (
+                      <span className="text-muted-foreground italic">—</span>
+                    )}
                   </div>
                 </FieldItem>
               </Card>
@@ -333,23 +335,31 @@ export function AccountProfileClient({
               <Card className="p-4 border-border/50 bg-card/50 hover:bg-card transition-colors">
                 <FieldItem icon={Clock} label="Cập nhật lần cuối">
                   <div className="text-base font-semibold text-foreground mt-1">
-                    {accountData.updatedAt ? formatDateVi(accountData.updatedAt) : <span className="text-muted-foreground italic">—</span>}
+                    {accountData.updatedAt ? (
+                      formatDateVi(accountData.updatedAt)
+                    ) : (
+                      <span className="text-muted-foreground italic">—</span>
+                    )}
                   </div>
                 </FieldItem>
               </Card>
             </div>
           </div>
-        )
+        );
       },
     },
-  ]
+  ];
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Thông tin tài khoản</h1>
-          <p className="text-muted-foreground mt-1.5">Quản lý thông tin cá nhân và cài đặt tài khoản của bạn</p>
+          <h1 className="text-3xl font-bold tracking-tight">
+            Thông tin tài khoản
+          </h1>
+          <p className="text-muted-foreground mt-1.5">
+            Quản lý thông tin cá nhân và cài đặt tài khoản của bạn
+          </p>
         </div>
         {canUpdate && (
           <Button
@@ -373,5 +383,5 @@ export function AccountProfileClient({
         actions={null}
       />
     </div>
-  )
-}
+  );
+};

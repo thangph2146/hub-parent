@@ -28,7 +28,7 @@ interface UseRowActionsOptions {
   deletingNotifications?: Set<string>
 }
 
-export function renderRowActions(actions: RowActionConfig[]) {
+export const renderRowActions = (actions: RowActionConfig[]) => {
   if (actions.length === 0) {
     return null
   }
@@ -100,11 +100,11 @@ export function renderRowActions(actions: RowActionConfig[]) {
   )
 }
 
-export function useNotificationRowActions({
+export const useNotificationRowActions = ({
   sessionUserId,
   onDelete,
   deletingNotifications = new Set(),
-}: UseRowActionsOptions) {
+}: UseRowActionsOptions) => {
   const router = useResourceRouter()
 
   const renderRowActionsForNotifications = useCallback(

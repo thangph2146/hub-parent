@@ -3,7 +3,7 @@ import { logger } from "@/lib/config"
 import type { ResourcePagination, ResourceResponse } from "../types"
 import { validateCUID } from "@/lib/api/validation"
 
-export function serializeDate(date: Date | string | null | undefined): string | null {
+export const serializeDate = (date: Date | string | null | undefined): string | null => {
   if (!date) return null
   
   try {
@@ -29,10 +29,10 @@ export function serializeDate(date: Date | string | null | undefined): string | 
   }
 }
 
-export function serializeDates<T extends Record<string, unknown>>(
+export const serializeDates = <T extends Record<string, unknown>>(
   data: T,
   dateFields: (keyof T)[]
-): Record<string, unknown> {
+): Record<string, unknown> => {
   const serialized: Record<string, unknown> = { ...data }
   for (const field of dateFields) {
     if (field in data && data[field] instanceof Date) {
@@ -42,11 +42,11 @@ export function serializeDates<T extends Record<string, unknown>>(
   return serialized
 }
 
-export function buildPagination(
+export const buildPagination = (
   page: number,
   limit: number,
   total: number
-): ResourcePagination {
+): ResourcePagination => {
   return {
     page,
     limit,
@@ -55,28 +55,28 @@ export function buildPagination(
   }
 }
 
-export function validatePagination(
+export const validatePagination = (
   page?: number,
   limit?: number,
   maxLimit = 100
-): { page: number; limit: number } {
+): { page: number; limit: number } => {
   return {
     page: Math.max(1, page ?? 1),
     limit: Math.max(1, Math.min(limit ?? 10, maxLimit)),
   }
 }
 
-export function serializeResourceForTable<T extends Record<string, unknown>>(
+export const serializeResourceForTable = <T extends Record<string, unknown>>(
   item: T,
   dateFields: (keyof T)[] = []
-): T {
+): T => {
   return serializeDates(item, dateFields) as T
 }
 
-export function serializeResourceList<T extends Record<string, unknown>>(
+export const serializeResourceList = <T extends Record<string, unknown>>(
   data: ResourceResponse<T>,
   dateFields: (keyof T)[] = []
-): DataTableResult<T> {
+): DataTableResult<T> => {
   return {
     page: data.pagination.page,
     limit: data.pagination.limit,
@@ -86,10 +86,10 @@ export function serializeResourceList<T extends Record<string, unknown>>(
   }
 }
 
-export function applyStatusFilter<T extends Record<string, unknown>>(
+export const applyStatusFilter = <T extends Record<string, unknown>>(
   where: T,
   status?: "active" | "deleted" | "all"
-): void {
+): void => {
   const filterStatus = status ?? "active"
   if (filterStatus === "active") {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -101,11 +101,11 @@ export function applyStatusFilter<T extends Record<string, unknown>>(
   // "all" means no filter applied
 }
 
-export function applySearchFilter<T extends Record<string, unknown>>(
+export const applySearchFilter = <T extends Record<string, unknown>>(
   where: T,
   search: string | undefined,
   fields: Array<keyof T | string>
-): void {
+): void => {
   if (!search) return
   
   const searchValue = search.trim()
@@ -119,11 +119,11 @@ export function applySearchFilter<T extends Record<string, unknown>>(
   ;(where as any).OR = orConditions
 }
 
-export function applyDateFilter<T extends Record<string, unknown>>(
+export const applyDateFilter = <T extends Record<string, unknown>>(
   where: T,
   dateField: keyof T,
   dateValue: string | undefined
-): void {
+): void => {
   if (!dateValue) return
 
   try {
@@ -145,11 +145,11 @@ export function applyDateFilter<T extends Record<string, unknown>>(
   }
 }
 
-export function applyBooleanFilter<T extends Record<string, unknown>>(
+export const applyBooleanFilter = <T extends Record<string, unknown>>(
   where: T,
   field: keyof T,
   value: string | undefined
-): void {
+): void => {
   if (!value) return
 
   const normalizedValue = value.trim().toLowerCase()
@@ -162,11 +162,11 @@ export function applyBooleanFilter<T extends Record<string, unknown>>(
   }
 }
 
-export function applyStringFilter<T extends Record<string, unknown>>(
+export const applyStringFilter = <T extends Record<string, unknown>>(
   where: T,
   field: keyof T,
   value: string | undefined
-): void {
+): void => {
   if (!value) return
 
   const trimmedValue = value.trim()
@@ -176,13 +176,13 @@ export function applyStringFilter<T extends Record<string, unknown>>(
   where[field] = { contains: trimmedValue, mode: "insensitive" } as any
 }
 
-export function applyRelationFilter<T extends Record<string, unknown>>(
+export const applyRelationFilter = <T extends Record<string, unknown>>(
   where: T,
   relationField: string,
   idField: string,
   value: string | undefined,
   relationFilters: Record<string, "contains" | "equals"> = { name: "contains" }
-): void {
+): void => {
   if (!value) return
 
   const trimmedValue = value.trim()
@@ -212,11 +212,11 @@ export interface RelationFilterConfig {
   operators?: Record<string, "contains" | "equals">
 }
 
-export function applyRelationFilters<T extends Record<string, unknown>>(
+export const applyRelationFilters = <T extends Record<string, unknown>>(
   where: T,
   filters: Record<string, string | boolean | undefined> | undefined,
   relationConfigs: Record<string, RelationFilterConfig>
-): void {
+): void => {
   if (!filters) return
 
   for (const [relationField, config] of Object.entries(relationConfigs)) {
@@ -254,10 +254,10 @@ export function applyRelationFilters<T extends Record<string, unknown>>(
   }
 }
 
-export function applyStatusFilterFromFilters<T extends Record<string, unknown>>(
+export const applyStatusFilterFromFilters = <T extends Record<string, unknown>>(
   where: T,
   statusValue: string | undefined
-): void {
+): void => {
   if (!statusValue) return
 
   const value = statusValue.trim()

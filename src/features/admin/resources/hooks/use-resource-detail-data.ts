@@ -22,14 +22,14 @@ interface UseResourceDetailDataResult<T> {
   fetchedData?: T
 }
 
-export function useResourceDetailData<T extends Record<string, unknown>>({
+export const useResourceDetailData = <T extends Record<string, unknown>>({
   initialData,
   resourceId,
   detailQueryKey,
   resourceName = "resource",
   apiRoute,
   fetchOnMount = true,
-}: UseResourceDetailDataOptions<T>): UseResourceDetailDataResult<T> {
+}: UseResourceDetailDataOptions<T>): UseResourceDetailDataResult<T> => {
   const queryClient = useQueryClient()
   const queryKey = detailQueryKey(resourceId)
 

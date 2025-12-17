@@ -19,13 +19,13 @@ interface ImageItemProps {
   onDelete: (image: ImageItemType) => void
 }
 
-export function ImageItem({
+export const ImageItem = ({
   image,
   isSelected,
   isDeleting,
   onToggleSelect,
   onDelete,
-}: ImageItemProps) {
+}: ImageItemProps) => {
   const { toast } = useToast()
 
   return (

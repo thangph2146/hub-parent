@@ -40,7 +40,7 @@ export interface StudentDetailClientProps {
   backUrl?: string
 }
 
-export function StudentDetailClient({ studentId, student, backUrl = "/admin/students" }: StudentDetailClientProps) {
+export const StudentDetailClient = ({ studentId, student, backUrl = "/admin/students" }: StudentDetailClientProps) => {
   const queryClient = useQueryClient()
   const router = useResourceRouter()
   const { navigateBack } = useResourceNavigation({

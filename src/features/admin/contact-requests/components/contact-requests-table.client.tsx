@@ -39,7 +39,7 @@ import { useContactRequestRowActions } from "../utils/row-actions"
 import type { AdminContactRequestsListParams } from "@/lib/query-keys"
 import type { ContactRequestRow, ContactRequestsResponse, ContactRequestsTableClientProps } from "../types"
 import { CONTACT_REQUEST_CONFIRM_MESSAGES, CONTACT_REQUEST_LABELS } from "../constants"
-export function ContactRequestsTableClient({
+export const ContactRequestsTableClient = ({
   canDelete = false,
   canRestore = false,
   canManage = false,
@@ -47,7 +47,7 @@ export function ContactRequestsTableClient({
   canAssign: _canAssign = false,
   initialData,
   initialUsersOptions = [],
-}: ContactRequestsTableClientProps) {
+}: ContactRequestsTableClientProps) => { 
   const queryClient = useQueryClient()
   const { isSocketConnected, cacheVersion } = useContactRequestsSocketBridge()
   const { feedback, showFeedback, handleFeedbackOpenChange } = useContactRequestFeedback()

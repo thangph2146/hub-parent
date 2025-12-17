@@ -24,14 +24,14 @@ interface GroupManagementMenuProps {
   setContactsState: React.Dispatch<React.SetStateAction<Contact[]>>
 }
 
-export function GroupManagementMenu({
+export const GroupManagementMenu = ({
   group,
   currentUserRole,
   onGroupUpdated,
   currentUserId,
   role,
   setContactsState,
-}: GroupManagementMenuProps) {
+}: GroupManagementMenuProps) => {
   const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [membersDialogOpen, setMembersDialogOpen] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)

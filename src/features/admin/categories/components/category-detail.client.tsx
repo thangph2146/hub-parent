@@ -32,7 +32,7 @@ export interface CategoryDetailClientProps {
   backUrl?: string
 }
 
-export function CategoryDetailClient({ categoryId, category, backUrl = "/admin/categories" }: CategoryDetailClientProps) {
+export const CategoryDetailClient = ({ categoryId, category, backUrl = "/admin/categories" }: CategoryDetailClientProps) => {
   const { navigateBack, router } = useResourceNavigation({
     invalidateQueryKey: queryKeys.adminCategories.all(),
   })

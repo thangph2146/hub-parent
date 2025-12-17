@@ -78,7 +78,7 @@ export interface ResourceDetailClientProps<T extends Record<string, unknown>> {
   onBack?: () => void | Promise<void>;
 }
 
-export function ResourceDetailClient<T extends Record<string, unknown>>({
+export const ResourceDetailClient = <T extends Record<string, unknown>>({
   data,
   isLoading = false,
   fields,
@@ -91,7 +91,7 @@ export function ResourceDetailClient<T extends Record<string, unknown>>({
   detailSections,
   afterSections,
   onBack,
-}: ResourceDetailClientProps<T>) {
+}: ResourceDetailClientProps<T>) => {
   const resourceSegment = useResourceSegment();
   const resolvedBackUrl = React.useMemo(
     () =>

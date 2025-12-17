@@ -22,7 +22,7 @@ export interface FolderDeleteConfirmState {
   folderName: string
 }
 
-export function useDialogs() {
+export const useDialogs = () => {
   const [bulkDeleteConfirm, setBulkDeleteConfirm] = useState<BulkDeleteConfirmState | null>(null)
   const [singleDeleteConfirm, setSingleDeleteConfirm] = useState<SingleDeleteConfirmState | null>(null)
   const [folderDeleteConfirm, setFolderDeleteConfirm] = useState<FolderDeleteConfirmState | null>(null)

@@ -1,89 +1,108 @@
-import { prisma } from "@/lib/database"
-import { resourceLogger } from "@/lib/config"
-import { createNotificationForAllAdmins, emitNotificationToAllAdminsAfterCreate } from "@/features/admin/notifications/server/mutations"
-import { NotificationKind } from "@prisma/client"
+import {
+  createNotificationForAllAdmins,
+  emitNotificationToAllAdminsAfterCreate,
+} from "@/features/admin/notifications/server/mutations";
+import {
+  getActorInfo,
+  logNotificationError,
+  formatItemNames,
+} from "@/features/admin/notifications/server/notification-helpers";
+import { NotificationKind } from "@prisma/client";
 
-async function getActorInfo(actorId: string) {
-  const actor = await prisma.user.findUnique({
-    where: { id: actorId },
-    select: { id: true, email: true, name: true },
-  })
-  return actor
-}
-
-export async function notifySuperAdminsOfStudentAction(
+export const notifySuperAdminsOfStudentAction = async (
   action: "create" | "update" | "delete" | "restore" | "hard-delete",
   actorId: string,
   student: { id: string; studentCode: string; name: string | null },
   changes?: {
-    studentCode?: { old: string; new: string }
-    name?: { old: string | null; new: string | null }
-    email?: { old: string | null; new: string | null }
-    isActive?: { old: boolean; new: boolean }
+    studentCode?: { old: string; new: string };
+    name?: { old: string | null; new: string | null };
+    email?: { old: string | null; new: string | null };
+    isActive?: { old: boolean; new: boolean };
   }
-) {
+) => {
   try {
-    const actor = await getActorInfo(actorId)
+    const actor = await getActorInfo(actorId);
 
-    let title = ""
-    let description = ""
-    const actionUrl = `/admin/students/${student.id}`
+    let title = "";
+    let description = "";
+    const actionUrl = `/admin/students/${student.id}`;
 
-    const studentDisplay = student.name || student.studentCode
+    const studentDisplay = student.name || student.studentCode;
 
     switch (action) {
       case "create":
-        title = "Tạo học sinh"
-        description = studentDisplay
-        break
+        title = "Tạo học sinh";
+        description = studentDisplay;
+        break;
       case "update":
-        const changeDescriptions: string[] = []
+        const changeDescriptions: string[] = [];
         if (changes?.studentCode) {
-          changeDescriptions.push(`Mã học sinh: ${changes.studentCode.old} → ${changes.studentCode.new}`)
+          changeDescriptions.push(
+            `Mã học sinh: ${changes.studentCode.old} → ${changes.studentCode.new}`
+          );
         }
         if (changes?.name) {
-          changeDescriptions.push(`Tên: ${changes.name.old || "trống"} → ${changes.name.new || "trống"}`)
+          changeDescriptions.push(
+            `Tên: ${changes.name.old || "trống"} → ${
+              changes.name.new || "trống"
+            }`
+          );
         }
         if (changes?.email) {
-          changeDescriptions.push(`Email: ${changes.email.old || "trống"} → ${changes.email.new || "trống"}`)
+          changeDescriptions.push(
+            `Email: ${changes.email.old || "trống"} → ${
+              changes.email.new || "trống"
+            }`
+          );
         }
         if (changes?.isActive) {
-          changeDescriptions.push(`Trạng thái: ${changes.isActive.old ? "Hoạt động" : "Vô hiệu hóa"} → ${changes.isActive.new ? "Hoạt động" : "Vô hiệu hóa"}`)
+          changeDescriptions.push(
+            `Trạng thái: ${
+              changes.isActive.old ? "Hoạt động" : "Vô hiệu hóa"
+            } → ${changes.isActive.new ? "Hoạt động" : "Vô hiệu hóa"}`
+          );
         }
-        title = "Cập nhật học sinh"
-        description = `${studentDisplay}${changeDescriptions.length > 0 ? `\n${changeDescriptions.join(", ")}` : ""}`
-        break
+        title = "Cập nhật học sinh";
+        description = `${studentDisplay}${
+          changeDescriptions.length > 0
+            ? `\n${changeDescriptions.join(", ")}`
+            : ""
+        }`;
+        break;
       case "delete":
-        title = "Xóa học sinh"
-        description = studentDisplay
-        break
+        title = "Xóa học sinh";
+        description = studentDisplay;
+        break;
       case "restore":
-        title = "Khôi phục học sinh"
-        description = studentDisplay
-        break
+        title = "Khôi phục học sinh";
+        description = studentDisplay;
+        break;
       case "hard-delete":
-        title = "Xóa vĩnh viễn học sinh"
-        description = studentDisplay
-        break
+        title = "Xóa vĩnh viễn học sinh";
+        description = studentDisplay;
+        break;
     }
+
+    // Tạo metadata một lần để tái sử dụng
+    const metadata = {
+      type: `student_${action}`,
+      actorId,
+      actorName: actor?.name || actor?.email,
+      actorEmail: actor?.email,
+      studentId: student.id,
+      studentCode: student.studentCode,
+      studentName: student.name,
+      ...(changes && { changes }),
+      timestamp: new Date().toISOString(),
+    };
 
     const result = await createNotificationForAllAdmins(
       title,
       description,
       actionUrl,
       NotificationKind.SYSTEM,
-      {
-        type: `student_${action}`,
-        actorId,
-        actorName: actor?.name || actor?.email,
-        actorEmail: actor?.email,
-        studentId: student.id,
-        studentCode: student.studentCode,
-        studentName: student.name,
-        ...(changes && { changes }),
-        timestamp: new Date().toISOString(),
-      }
-    )
+      metadata
+    );
 
     // Emit socket event nếu có socket server
     if (result.count > 0) {
@@ -92,107 +111,90 @@ export async function notifySuperAdminsOfStudentAction(
         description,
         actionUrl,
         NotificationKind.SYSTEM,
-        {
-          type: `student_${action}`,
-          actorId,
-          actorName: actor?.name || actor?.email,
-          actorEmail: actor?.email,
-          studentId: student.id,
-          studentCode: student.studentCode,
-          studentName: student.name,
-          ...(changes && { changes }),
-          timestamp: new Date().toISOString(),
-        }
-      )
+        metadata
+      );
     }
   } catch (error) {
-    resourceLogger.actionFlow({
-      resource: "students",
-      action: "error",
-      step: "error",
-      metadata: { 
-        action: "notify-all-admins", 
-        studentId: student.id,
-        error: error instanceof Error ? error.message : "Unknown error",
-      },
-    })
+    logNotificationError(
+      "students",
+      "notify-all-admins",
+      { studentId: student.id },
+      error
+    );
   }
-}
+};
 
-export function formatStudentNames(
+export const formatStudentNames = (
   students: Array<{ studentCode: string; name: string | null }>,
   maxDisplay: number = 3
-): string {
-  if (students.length === 0) return ""
-  
-  const names = students.slice(0, maxDisplay).map((s) => {
-    return s.name || s.studentCode || "Không xác định"
-  })
-  
-  if (students.length <= maxDisplay) {
-    return names.join(", ")
-  }
-  
-  const remaining = students.length - maxDisplay
-  return `${names.join(", ")} và ${remaining} học sinh khác`
+): string => {
+  return formatItemNames(
+    students,
+    (s: { studentCode: string; name: string | null }) => s.name || s.studentCode || "Không xác định",
+    maxDisplay,
+    "học sinh"
+  )
 }
 
-export async function notifySuperAdminsOfBulkStudentAction(
+export const notifySuperAdminsOfBulkStudentAction = async (
   action: "delete" | "restore" | "hard-delete" | "active" | "unactive",
   actorId: string,
   students: Array<{ studentCode: string; name: string | null }>
-): Promise<void> {
-  if (students.length === 0) return
+): Promise<void> => {
+  if (students.length === 0) return;
 
   try {
-    const actor = await getActorInfo(actorId)
+    const actor = await getActorInfo(actorId);
 
-    const namesText = formatStudentNames(students, 3)
-    const count = students.length
+    const namesText = formatStudentNames(students, 3);
+    const count = students.length;
 
-    let title = ""
-    let description = ""
+    let title = "";
+    let description = "";
 
     switch (action) {
       case "delete":
-        title = `Xóa ${count} học sinh`
-        description = namesText || `${count} học sinh`
-        break
+        title = `Xóa ${count} học sinh`;
+        description = namesText || `${count} học sinh`;
+        break;
       case "restore":
-        title = `Khôi phục ${count} học sinh`
-        description = namesText || `${count} học sinh`
-        break
+        title = `Khôi phục ${count} học sinh`;
+        description = namesText || `${count} học sinh`;
+        break;
       case "hard-delete":
-        title = `Xóa vĩnh viễn ${count} học sinh`
-        description = namesText || `${count} học sinh`
-        break
+        title = `Xóa vĩnh viễn ${count} học sinh`;
+        description = namesText || `${count} học sinh`;
+        break;
       case "active":
-        title = `Kích hoạt ${count} học sinh`
-        description = namesText || `${count} học sinh`
-        break
+        title = `Kích hoạt ${count} học sinh`;
+        description = namesText || `${count} học sinh`;
+        break;
       case "unactive":
-        title = `Bỏ kích hoạt ${count} học sinh`
-        description = namesText || `${count} học sinh`
-        break
+        title = `Bỏ kích hoạt ${count} học sinh`;
+        description = namesText || `${count} học sinh`;
+        break;
     }
 
-    const actionUrl = `/admin/students`
+    const actionUrl = `/admin/students`;
+
+    // Tạo metadata một lần để tái sử dụng
+    const metadata = {
+      type: `student_bulk_${action}`,
+      actorId,
+      actorName: actor?.name || actor?.email,
+      actorEmail: actor?.email,
+      studentCount: count,
+      studentNames: students.map((s) => s.name || s.studentCode),
+      timestamp: new Date().toISOString(),
+    };
 
     const result = await createNotificationForAllAdmins(
       title,
       description,
       actionUrl,
       NotificationKind.SYSTEM,
-      {
-        type: `student_bulk_${action}`,
-        actorId,
-        actorName: actor?.name || actor?.email,
-        actorEmail: actor?.email,
-        studentCount: count,
-        studentNames: students.map(s => s.name || s.studentCode),
-        timestamp: new Date().toISOString(),
-      }
-    )
+      metadata
+    );
 
     // Emit socket event nếu có socket server
     if (result.count > 0) {
@@ -201,28 +203,15 @@ export async function notifySuperAdminsOfBulkStudentAction(
         description,
         actionUrl,
         NotificationKind.SYSTEM,
-        {
-          type: `student_bulk_${action}`,
-          actorId,
-          actorName: actor?.name || actor?.email,
-          actorEmail: actor?.email,
-          studentCount: count,
-          studentNames: students.map(s => s.name || s.studentCode),
-          timestamp: new Date().toISOString(),
-        }
-      )
+        metadata
+      );
     }
   } catch (error) {
-    resourceLogger.actionFlow({
-      resource: "students",
-      action: "error",
-      step: "error",
-      metadata: { 
-        action: "notify-all-admins-bulk",
-        count: students.length,
-        error: error instanceof Error ? error.message : "Unknown error",
-      },
-    })
+    logNotificationError(
+      "students",
+      "notify-all-admins-bulk",
+      { count: students.length },
+      error
+    );
   }
-}
-
+};

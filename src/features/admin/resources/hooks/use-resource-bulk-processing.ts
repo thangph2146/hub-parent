@@ -11,7 +11,7 @@ interface UseResourceBulkProcessingResult {
   stopBulkProcessing: () => void
 }
 
-export function useResourceBulkProcessing(): UseResourceBulkProcessingResult {
+export const useResourceBulkProcessing = (): UseResourceBulkProcessingResult => {
   const [isProcessing, setIsProcessing] = useState(false)
   const processingRef = useRef(false)
 

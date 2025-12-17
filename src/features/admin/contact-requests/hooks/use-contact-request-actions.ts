@@ -18,14 +18,14 @@ interface UseContactRequestActionsOptions {
   showFeedback: (variant: FeedbackVariant, title: string, description?: string, details?: string) => void
 }
 
-export function useContactRequestActions({
+export const useContactRequestActions = ({
   canDelete,
   canRestore,
   canManage,
   canUpdate,
   isSocketConnected,
   showFeedback,
-}: UseContactRequestActionsOptions) {
+}: UseContactRequestActionsOptions) => {
   const queryClient = useQueryClient()
   const [markingReadRequests, setMarkingReadRequests] = useState<Set<string>>(new Set())
   const [markingUnreadRequests, setMarkingUnreadRequests] = useState<Set<string>>(new Set())

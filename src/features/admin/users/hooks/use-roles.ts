@@ -13,7 +13,7 @@ export interface UseRolesOptions {
   enabled?: boolean
 }
 
-export function useRoles(options: UseRolesOptions = {}) {
+export const useRoles = (options: UseRolesOptions = {}) => {
   const { initialRoles = [], enabled = true } = options
   const initialRolesProvided = initialRoles.length > 0
 

@@ -29,7 +29,7 @@ interface SelectComboboxProps<T> {
   errorId?: string
 }
 
-export function SelectCombobox<T>({
+export const SelectCombobox = <T,>({
   field,
   fieldValue,
   error,
@@ -37,7 +37,7 @@ export function SelectCombobox<T>({
   isPending = false,
   fieldId,
   errorId,
-}: SelectComboboxProps<T>) {
+}: SelectComboboxProps<T>) => {
   const [selectOpen, setSelectOpen] = useState(false)
 
   if (!field.options || field.options.length === 0) {

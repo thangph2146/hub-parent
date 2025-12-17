@@ -28,7 +28,7 @@ interface EditGroupDialogProps {
   onSuccess?: () => void
 }
 
-export function EditGroupDialog({ open, onOpenChange, group, onSuccess }: EditGroupDialogProps) {
+export const EditGroupDialog = ({ open, onOpenChange, group, onSuccess }: EditGroupDialogProps) => {
   const [groupName, setGroupName] = useState("")
   const [groupDescription, setGroupDescription] = useState("")
   const [isSaving, setIsSaving] = useState(false)

@@ -2,7 +2,7 @@ import { resourceLogger } from "@/lib/config/resource-logger"
 import type { CommentRow } from "../types"
 import type { AdminCommentsListParams } from "@/lib/query-keys"
 
-export function matchesSearch(search: string | undefined, row: CommentRow): boolean {
+export const matchesSearch = (search: string | undefined, row: CommentRow): boolean => {
   if (!search || typeof search !== "string") return true
   const term = search.trim().toLowerCase()
   if (!term) return true
@@ -10,10 +10,10 @@ export function matchesSearch(search: string | undefined, row: CommentRow): bool
     .some((value) => value.toLowerCase().includes(term))
 }
 
-export function matchesFilters(
+export const matchesFilters = (
   filters: AdminCommentsListParams["filters"],
   row: CommentRow
-): boolean {
+): boolean => {
   if (!filters) return true
   for (const [key, value] of Object.entries(filters)) {
     if (value === undefined) continue
@@ -45,20 +45,20 @@ export function matchesFilters(
   return true
 }
 
-export function shouldIncludeInStatus(
+export const shouldIncludeInStatus = (
   paramsStatus: AdminCommentsListParams["status"],
   rowStatus: "active" | "deleted"
-): boolean {
+): boolean => {
   if (paramsStatus === "all") return true
   if (!paramsStatus) return rowStatus === "active"
   return paramsStatus === rowStatus
 }
 
-export function insertRowIntoPage(
+export const insertRowIntoPage = (
   rows: CommentRow[],
   row: CommentRow,
   limit: number
-): CommentRow[] {
+): CommentRow[] => {
   const existingIndex = rows.findIndex((item) => item.id === row.id)
   if (existingIndex >= 0) {
     const next = [...rows]
@@ -92,10 +92,10 @@ export function insertRowIntoPage(
   return result
 }
 
-export function removeRowFromPage(
+export const removeRowFromPage = (
   rows: CommentRow[],
   id: string
-): { rows: CommentRow[]; removed: boolean } {
+): { rows: CommentRow[]; removed: boolean } => {
   const index = rows.findIndex((item) => item.id === id)
   if (index === -1) {
     resourceLogger.socket({

@@ -46,7 +46,7 @@ export type MessageWithRelations = Prisma.MessageGetPayload<{
   }
 }>
 
-export function mapMessageRecord(message: MessageWithRelations): MessageDetail {
+export const mapMessageRecord = (message: MessageWithRelations): MessageDetail => {
   return {
     id: message.id,
     content: message.content,
@@ -111,12 +111,12 @@ export function mapMessageRecord(message: MessageWithRelations): MessageDetail {
   }
 }
 
-export function mapConversationRecord(data: unknown) {
+export const mapConversationRecord = (data: unknown) => {
   // Placeholder for future use
   return data
 }
 
-export function buildConversationWhereClause(params: ListConversationsInput): Prisma.MessageWhereInput {
+export const buildConversationWhereClause = (params: ListConversationsInput): Prisma.MessageWhereInput => {
   const where: Prisma.MessageWhereInput = {
     deletedAt: null,
   }

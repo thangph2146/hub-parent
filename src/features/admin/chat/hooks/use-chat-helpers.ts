@@ -9,16 +9,16 @@ const ADJUSTMENT_PX = 5
 const MARK_AS_READ_DEBOUNCE_MS = 300
 const MOBILE_BREAKPOINT = 768
 
-function isMobileViewport(): boolean {
+const isMobileViewport = (): boolean => {
   if (typeof window === "undefined") return false
   return window.innerWidth < MOBILE_BREAKPOINT
 }
 
-function calculateBaseHeight(): number {
+const calculateBaseHeight = (): number => {
   return window.innerHeight - (BASE_OFFSET_REM * REM_TO_PX)
 }
 
-export function calculateMessagesHeight(params: {
+export const calculateMessagesHeight = (params: {
   textareaHeight: number
   replyingTo: Message | null
   replyBannerRef?: React.RefObject<HTMLDivElement | null>
@@ -31,7 +31,7 @@ export function calculateMessagesHeight(params: {
     deletedBanner?: number
     chatInput?: number
   }
-}): { maxHeight: number; minHeight: number } {
+}): { maxHeight: number; minHeight: number } => {
   const { 
     textareaHeight, 
     replyingTo, 
@@ -85,7 +85,7 @@ export function calculateMessagesHeight(params: {
   return { maxHeight: height, minHeight: height }
 }
 
-async function markConversationAsReadAPI(contactId: string, contactType?: "PERSONAL" | "GROUP"): Promise<void> {
+const markConversationAsReadAPI = async (contactId: string, contactType?: "PERSONAL" | "GROUP"): Promise<void> => {
   try {
     const { apiRoutes } = await import("@/lib/api/routes")
     // For groups: use group mark-read endpoint; personal uses conversations
@@ -109,11 +109,11 @@ async function markConversationAsReadAPI(contactId: string, contactType?: "PERSO
   }
 }
 
-export function debouncedMarkAsRead(contactId: string, contactType?: "PERSONAL" | "GROUP"): void {
+export const debouncedMarkAsRead = (contactId: string, contactType?: "PERSONAL" | "GROUP"): void => {
   setTimeout(() => markConversationAsReadAPI(contactId, contactType), MARK_AS_READ_DEBOUNCE_MS)
 }
 
-export function getUnreadMessages(contact: Contact, currentUserId: string): Message[] {
+export const getUnreadMessages = (contact: Contact, currentUserId: string): Message[] => {
   return contact.messages.filter((msg) => {
     // For personal messages: also check receiverId
     if (!msg.groupId && msg.receiverId !== currentUserId) return false
@@ -121,11 +121,11 @@ export function getUnreadMessages(contact: Contact, currentUserId: string): Mess
   })
 }
 
-export function calculateUnreadCount(contact: Contact, currentUserId: string): number {
+export const calculateUnreadCount = (contact: Contact, currentUserId: string): number => {
   return getUnreadMessages(contact, currentUserId).length
 }
 
-export function hasMessagesChanged(oldMessages: Message[], newMessages: Message[], currentUserId?: string): boolean {
+export const hasMessagesChanged = (oldMessages: Message[], newMessages: Message[], currentUserId?: string): boolean => {
   if (oldMessages.length !== newMessages.length) return true
   if (oldMessages[oldMessages.length - 1]?.id !== newMessages[newMessages.length - 1]?.id) return true
   

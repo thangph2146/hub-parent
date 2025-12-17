@@ -10,7 +10,7 @@ interface PostListProps {
   totalPages: number
 }
 
-export function PostList({ posts, currentPage, totalPages }: PostListProps) {
+export const PostList = ({ posts, currentPage, totalPages }: PostListProps) => {
   if (posts.length === 0) {
     return <PostEmptyState />
   }
@@ -36,7 +36,7 @@ export function PostList({ posts, currentPage, totalPages }: PostListProps) {
   )
 }
 
-export function PostListSkeleton() {
+export const PostListSkeleton = () => {
   return (
     <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
       {Array.from({ length: 6 }).map((_, i) => (

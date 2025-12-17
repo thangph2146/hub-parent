@@ -12,13 +12,13 @@ interface MultipleSelectFieldProps<T> {
   isPending?: boolean
 }
 
-export function MultipleSelectField<T>({
+export const MultipleSelectField = <T,>({
   field,
   fieldValue,
   error,
   onChange,
   isPending = false,
-}: MultipleSelectFieldProps<T>) {
+}: MultipleSelectFieldProps<T>) => {
   const fieldId = field.name as string
   const errorId = error ? `${fieldId}-error` : undefined
 

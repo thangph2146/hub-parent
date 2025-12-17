@@ -3,10 +3,7 @@
  * Helper functions cho date operations
  */
 
-/**
- * Get today's date as YYYY/MM/DD path
- */
-export function getTodayDatePath(): string {
+export const getTodayDatePath = (): string => {
   const now = new Date()
   const year = now.getFullYear()
   const month = String(now.getMonth() + 1).padStart(2, "0")
