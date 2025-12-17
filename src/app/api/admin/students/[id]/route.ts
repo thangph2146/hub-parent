@@ -75,13 +75,13 @@ async function putStudentHandler(req: NextRequest, context: ApiRouteContext, ...
     return NextResponse.json({ data: student })
   } catch (error) {
     if (error instanceof ApplicationError) {
-      return NextResponse.json({ error: error.message || "Không thể cập nhật học sinh" }, { status: error.status || 400 })
+      return NextResponse.json({ error: error.message || "Không thể cập nhật sinh viên" }, { status: error.status || 400 })
     }
     if (error instanceof NotFoundError) {
       return NextResponse.json({ error: error.message || "Không tìm thấy" }, { status: 404 })
     }
     console.error("Error updating student:", error)
-    return NextResponse.json({ error: "Đã xảy ra lỗi khi cập nhật học sinh" }, { status: 500 })
+    return NextResponse.json({ error: "Đã xảy ra lỗi khi cập nhật sinh viên" }, { status: 500 })
   }
 }
 
@@ -104,13 +104,13 @@ async function deleteStudentHandler(_req: NextRequest, context: ApiRouteContext,
     return NextResponse.json({ message: "Student deleted successfully" })
   } catch (error) {
     if (error instanceof ApplicationError) {
-      return NextResponse.json({ error: error.message || "Không thể xóa học sinh" }, { status: error.status || 400 })
+      return NextResponse.json({ error: error.message || "Không thể xóa sinh viên" }, { status: error.status || 400 })
     }
     if (error instanceof NotFoundError) {
       return NextResponse.json({ error: error.message || "Không tìm thấy" }, { status: 404 })
     }
     console.error("Error deleting student:", error)
-    return NextResponse.json({ error: "Đã xảy ra lỗi khi xóa học sinh" }, { status: 500 })
+    return NextResponse.json({ error: "Đã xảy ra lỗi khi xóa sinh viên" }, { status: 500 })
   }
 }
 

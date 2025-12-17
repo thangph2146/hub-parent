@@ -11,11 +11,11 @@ import { createListBreadcrumbs } from "@/features/admin/resources/utils"
  * 
  * Theo Next.js 16 best practices:
  * - Metadata được merge với admin layout và root layout
- * - Title sử dụng template từ root: "Học sinh | CMS"
+ * - Title sử dụng template từ root: "sinh viên | CMS"
  */
 export const metadata: Metadata = {
-  title: "Học sinh",
-  description: "Quản lý học sinh",
+  title: "sinh viên",
+  description: "Quản lý sinh viên",
 }
 
 /**
@@ -68,7 +68,7 @@ async function StudentsTableContent() {
 export default async function StudentsPage() {
   return (
     <>
-      <AdminHeader breadcrumbs={createListBreadcrumbs({ listLabel: "Học sinh" })} />
+      <AdminHeader breadcrumbs={createListBreadcrumbs({ listLabel: "sinh viên" })} />
       <div className="flex flex-1 flex-col gap-4 p-4">
         <TablePageSuspense columnCount={5} rowCount={10}>
           <StudentsTableContent />

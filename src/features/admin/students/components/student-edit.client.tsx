@@ -76,13 +76,25 @@ export const StudentEditClient = ({
 
   const isDeleted = student?.deletedAt !== null && student?.deletedAt !== undefined
   const formDisabled = isDeleted && !isPageVariant
+  const isActive = student?.isActive === true
 
   const editFields = useMemo(
     () =>
       getBaseStudentFields(usersFromServer, isSuperAdmin, canActivate).map(
-        (field) => ({ ...field, disabled: formDisabled || field.disabled }),
+        (field) => {
+          // Disable studentCode nếu student đã active
+          const shouldDisableStudentCode = field.name === "studentCode" && isActive
+          return {
+            ...field,
+            disabled: formDisabled || field.disabled || shouldDisableStudentCode,
+            description:
+              shouldDisableStudentCode
+                ? "Mã sinh viên không thể thay đổi khi sinh viên đã được kích hoạt"
+                : field.description,
+          }
+        },
       ),
-    [usersFromServer, isSuperAdmin, canActivate, formDisabled],
+    [usersFromServer, isSuperAdmin, canActivate, formDisabled, isActive],
   )
   const formSections = useMemo(() => getStudentFormSections(), [])
 
@@ -91,9 +103,9 @@ export const StudentEditClient = ({
     method: "PUT",
     resourceId: student?.id,
     messages: {
-      successTitle: "Cập nhật học sinh thành công",
-      successDescription: "Học sinh đã được cập nhật thành công.",
-      errorTitle: "Lỗi cập nhật học sinh",
+      successTitle: "Cập nhật sinh viên thành công",
+      successDescription: "sinh viên đã được cập nhật thành công.",
+      errorTitle: "Lỗi cập nhật sinh viên",
     },
     navigation: {
       toDetail: isPageVariant
@@ -110,6 +122,11 @@ export const StudentEditClient = ({
 
       if (!canActivate) {
         delete submitData.isActive
+      }
+
+      // Không cho phép thay đổi studentCode nếu student đã active
+      if (isActive && student) {
+        delete submitData.studentCode
       }
 
       return submitData
@@ -144,11 +161,11 @@ export const StudentEditClient = ({
       fields={editFields}
       sections={formSections}
       onSubmit={handleSubmitWrapper}
-      title="Chỉnh sửa học sinh"
+      title="Chỉnh sửa sinh viên"
       description={
         isDeleted
           ? "Bản ghi đã bị xóa, không thể chỉnh sửa"
-          : "Cập nhật thông tin học sinh"
+          : "Cập nhật thông tin sinh viên"
       }
       submitLabel="Lưu thay đổi"
       cancelLabel="Hủy"

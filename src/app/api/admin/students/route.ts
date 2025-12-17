@@ -112,13 +112,13 @@ async function postStudentsHandler(req: NextRequest, context: ApiRouteContext) {
     return createSuccessResponse(serialized, { status: 201 })
   } catch (error) {
     if (error instanceof ApplicationError) {
-      return createErrorResponse(error.message || "Không thể tạo học sinh", { status: error.status || 400 })
+      return createErrorResponse(error.message || "Không thể tạo sinh viên", { status: error.status || 400 })
     }
     if (error instanceof NotFoundError) {
       return createErrorResponse(error.message || "Không tìm thấy", { status: 404 })
     }
     console.error("Error creating student:", error)
-    return createErrorResponse("Đã xảy ra lỗi khi tạo học sinh", { status: 500 })
+    return createErrorResponse("Đã xảy ra lỗi khi tạo sinh viên", { status: 500 })
   }
 }
 

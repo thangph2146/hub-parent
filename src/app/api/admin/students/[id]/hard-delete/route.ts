@@ -30,13 +30,13 @@ async function hardDeleteStudentHandler(_req: NextRequest, context: ApiRouteCont
     return NextResponse.json({ message: "Student permanently deleted" })
   } catch (error) {
     if (error instanceof ApplicationError) {
-      return NextResponse.json({ error: error.message || "Không thể xóa vĩnh viễn học sinh" }, { status: error.status || 400 })
+      return NextResponse.json({ error: error.message || "Không thể xóa vĩnh viễn sinh viên" }, { status: error.status || 400 })
     }
     if (error instanceof NotFoundError) {
       return NextResponse.json({ error: error.message || "Không tìm thấy" }, { status: 404 })
     }
     console.error("Error hard deleting student:", error)
-    return NextResponse.json({ error: "Đã xảy ra lỗi khi xóa vĩnh viễn học sinh" }, { status: 500 })
+    return NextResponse.json({ error: "Đã xảy ra lỗi khi xóa vĩnh viễn sinh viên" }, { status: 500 })
   }
 }
 

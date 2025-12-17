@@ -26,12 +26,12 @@ export const STUDENT_MESSAGES = {
   
   // Permission errors
   NO_PERMISSION: "Không có quyền",
-  NO_MANAGE_PERMISSION: "Bạn không có quyền thay đổi trạng thái học sinh",
-  NO_ACTIVE_PERMISSION: "Bạn không có quyền kích hoạt học sinh",
+  NO_MANAGE_PERMISSION: "Bạn không có quyền thay đổi trạng thái sinh viên",
+  NO_ACTIVE_PERMISSION: "Bạn không có quyền kích hoạt sinh viên",
   
   // Generic errors
   UNKNOWN_ERROR: "Đã xảy ra lỗi không xác định",
-  LOAD_ERROR: "Không thể tải danh sách học sinh",
+  LOAD_ERROR: "Không thể tải danh sách sinh viên",
 } as const
 
 export const STUDENT_LABELS = {
@@ -61,13 +61,13 @@ export const STUDENT_LABELS = {
   ALL_VIEW: "Tất cả",
   
   // Empty messages
-  NO_STUDENTS: "Không tìm thấy học sinh nào phù hợp",
-  NO_INACTIVE_STUDENTS: "Không tìm thấy học sinh tạm khóa nào",
-  NO_DELETED_STUDENTS: "Không tìm thấy học sinh đã xóa nào",
+  NO_STUDENTS: "Không tìm thấy sinh viên nào phù hợp",
+  NO_INACTIVE_STUDENTS: "Không tìm thấy sinh viên tạm khóa nào",
+  NO_DELETED_STUDENTS: "Không tìm thấy sinh viên đã xóa nào",
   
   // Selection messages
-  SELECTED_STUDENTS: (count: number) => `Đã chọn ${count} học sinh`,
-  SELECTED_DELETED_STUDENTS: (count: number) => `Đã chọn ${count} học sinh (đã xóa)`,
+  SELECTED_STUDENTS: (count: number) => `Đã chọn ${count} sinh viên`,
+  SELECTED_DELETED_STUDENTS: (count: number) => `Đã chọn ${count} sinh viên (đã xóa)`,
   DELETE_SELECTED: (count: number) => `Xóa đã chọn (${count})`,
   RESTORE_SELECTED: (count: number) => `Khôi phục (${count})`,
   HARD_DELETE_SELECTED: (count: number) => `Xóa vĩnh viễn (${count})`,
@@ -75,12 +75,12 @@ export const STUDENT_LABELS = {
   UNACTIVE_SELECTED: (count: number) => `Bỏ kích hoạt (${count})`,
   
   // Titles
-  MANAGE_STUDENTS: "Quản lý học sinh",
+  MANAGE_STUDENTS: "Quản lý sinh viên",
   ADD_NEW: "Thêm mới",
   
   // Table headers
-  STUDENT_CODE: "Mã học sinh",
-  STUDENT_NAME: "Tên học sinh",
+  STUDENT_CODE: "Mã sinh viên",
+  STUDENT_NAME: "Tên sinh viên",
   EMAIL: "Email",
   STATUS: "Trạng thái",
   CREATED_AT: "Ngày tạo",
@@ -88,34 +88,34 @@ export const STUDENT_LABELS = {
   
   // Pending approval messages
   PENDING_APPROVAL_TITLE: "Đang chờ xét duyệt",
-  PENDING_APPROVAL_MESSAGE: "Hồ sơ học sinh đang được xem xét và sẽ được xét duyệt trong thời gian sớm nhất. Quý phụ huynh vui lòng chờ trong vòng 24 giờ. Nếu cần hỗ trợ gấp, vui lòng liên hệ với chúng tôi để được hỗ trợ nhanh chóng.",
+  PENDING_APPROVAL_MESSAGE: "Hồ sơ sinh viên đang được xem xét và sẽ được xét duyệt trong thời gian sớm nhất. Quý phụ huynh vui lòng chờ trong vòng 24 giờ. Nếu cần hỗ trợ gấp, vui lòng liên hệ với chúng tôi để được hỗ trợ nhanh chóng.",
   
   // Approved messages
   APPROVED_TITLE: "Đã được xét duyệt",
-  APPROVED_MESSAGE: "Hồ sơ học sinh đã được xét duyệt và kích hoạt thành công. Học sinh có thể sử dụng đầy đủ các tính năng của hệ thống.",
+  APPROVED_MESSAGE: "Hồ sơ sinh viên đã được xét duyệt và kích hoạt thành công. sinh viên có thể sử dụng đầy đủ các tính năng của hệ thống.",
 } as const
 
 export const STUDENT_CONFIRM_MESSAGES = {
   DELETE_TITLE: (count?: number, studentCode?: string) => 
-    count ? `Xóa ${count} học sinh?` : `Xóa học sinh ${studentCode}?`,
+    count ? `Xóa ${count} sinh viên?` : `Xóa sinh viên ${studentCode}?`,
   DELETE_DESCRIPTION: (count?: number, studentCode?: string) =>
     count
-      ? `Bạn có chắc chắn muốn xóa ${count} học sinh? Họ sẽ được chuyển vào thùng rác và có thể khôi phục sau.`
-      : `Bạn có chắc chắn muốn xóa học sinh "${studentCode || ""}"? Học sinh sẽ được chuyển vào thùng rác và có thể khôi phục sau.`,
+      ? `Bạn có chắc chắn muốn xóa ${count} sinh viên? Họ sẽ được chuyển vào thùng rác và có thể khôi phục sau.`
+      : `Bạn có chắc chắn muốn xóa sinh viên "${studentCode || ""}"? sinh viên sẽ được chuyển vào thùng rác và có thể khôi phục sau.`,
   
   RESTORE_TITLE: (count?: number, studentCode?: string) => 
-    count ? `Khôi phục ${count} học sinh?` : `Khôi phục học sinh ${studentCode}?`,
+    count ? `Khôi phục ${count} sinh viên?` : `Khôi phục sinh viên ${studentCode}?`,
   RESTORE_DESCRIPTION: (count?: number, studentCode?: string) =>
     count
-      ? `Bạn có chắc chắn muốn khôi phục ${count} học sinh? Họ sẽ được chuyển về trạng thái hoạt động.`
-      : `Bạn có chắc chắn muốn khôi phục học sinh "${studentCode || ""}"? Học sinh sẽ được chuyển về trạng thái hoạt động.`,
+      ? `Bạn có chắc chắn muốn khôi phục ${count} sinh viên? Họ sẽ được chuyển về trạng thái hoạt động.`
+      : `Bạn có chắc chắn muốn khôi phục sinh viên "${studentCode || ""}"? sinh viên sẽ được chuyển về trạng thái hoạt động.`,
   
   HARD_DELETE_TITLE: (count?: number, studentCode?: string) =>
-    count ? `Xóa vĩnh viễn ${count} học sinh?` : `Xóa vĩnh viễn học sinh ${studentCode}?`,
+    count ? `Xóa vĩnh viễn ${count} sinh viên?` : `Xóa vĩnh viễn sinh viên ${studentCode}?`,
   HARD_DELETE_DESCRIPTION: (count?: number, studentCode?: string) =>
     count
-      ? `Hành động này sẽ xóa vĩnh viễn ${count} học sinh khỏi hệ thống. Dữ liệu sẽ không thể khôi phục. Bạn có chắc chắn muốn tiếp tục?`
-      : `Hành động này sẽ xóa vĩnh viễn học sinh "${studentCode || ""}" khỏi hệ thống. Dữ liệu sẽ không thể khôi phục. Bạn có chắc chắn muốn tiếp tục?`,
+      ? `Hành động này sẽ xóa vĩnh viễn ${count} sinh viên khỏi hệ thống. Dữ liệu sẽ không thể khôi phục. Bạn có chắc chắn muốn tiếp tục?`
+      : `Hành động này sẽ xóa vĩnh viễn sinh viên "${studentCode || ""}" khỏi hệ thống. Dữ liệu sẽ không thể khôi phục. Bạn có chắc chắn muốn tiếp tục?`,
   
   CONFIRM_LABEL: "Xóa",
   RESTORE_LABEL: "Khôi phục",

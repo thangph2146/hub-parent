@@ -16,7 +16,7 @@ export async function StudentDetail({ studentId, backUrl = "/admin/students" }: 
   const student = await getStudentById(studentId, actorId, isSuperAdminUser)
 
   if (!student) {
-    return <NotFoundMessage resourceName="học sinh" />
+    return <NotFoundMessage resourceName="sinh viên" />
   }
 
   return (

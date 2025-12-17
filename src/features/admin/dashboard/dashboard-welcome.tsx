@@ -153,7 +153,7 @@ export const DashboardWelcome = () => {
     { label: "Xem và gửi tin nhắn", permission: canViewMessages },
     { label: "Xem thông báo", permission: canViewNotifications },
     { label: "Xem và xử lý yêu cầu liên hệ", permission: canViewContactRequests },
-    { label: "Xem và quản lý học sinh", permission: canViewStudents },
+    { label: "Xem và quản lý sinh viên", permission: canViewStudents },
     { label: "Xem phiên đăng nhập", permission: canViewSessions },
     { label: "Xem và quản lý vai trò", permission: canViewRoles },
     { label: "Xem dashboard tổng quan", permission: hasPermission(PERMISSIONS.DASHBOARD_VIEW) },

@@ -87,7 +87,7 @@ export const useStudentActions = ({
         showFeedback(
           "success",
           STUDENT_MESSAGES.TOGGLE_ACTIVE_SUCCESS,
-          `Đã ${newStatus ? "kích hoạt" : "vô hiệu hóa"} học sinh ${row.studentCode}`
+          `Đã ${newStatus ? "kích hoạt" : "vô hiệu hóa"} sinh viên ${row.studentCode}`
         )
         
         await queryClient.invalidateQueries({ queryKey: queryKeys.adminStudents.all(), refetchType: "active" })
@@ -97,7 +97,7 @@ export const useStudentActions = ({
         showFeedback(
           "error",
           STUDENT_MESSAGES.TOGGLE_ACTIVE_ERROR,
-          `Không thể ${newStatus ? "kích hoạt" : "vô hiệu hóa"} học sinh`,
+          `Không thể ${newStatus ? "kích hoạt" : "vô hiệu hóa"} sinh viên`,
           errorMessage
         )
       } finally {

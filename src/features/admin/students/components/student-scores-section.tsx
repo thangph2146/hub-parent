@@ -1,6 +1,6 @@
 /**
  * Student Scores Section Component
- * Hiển thị điểm số và điểm trung bình của học sinh
+ * Hiển thị điểm số và điểm trung bình của sinh viên
  * Chỉ hiển thị và call API khi student isActive = true
  */
 
@@ -913,7 +913,7 @@ export const StudentScoresSection = ({ studentId, isActive }: StudentScoresSecti
           <Alert>
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
-              Học sinh này chưa được kích hoạt. Vui lòng kích hoạt học sinh để xem điểm số.
+              sinh viên này chưa được kích hoạt. Vui lòng kích hoạt sinh viên để xem điểm số.
             </AlertDescription>
           </Alert>
         </CardContent>

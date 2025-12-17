@@ -17,7 +17,7 @@ export const getStudentFormSections = (): ResourceFormSection[] => {
     {
       id: "basic",
       title: "Thông tin cơ bản",
-      description: "Thông tin chính về học sinh",
+      description: "Thông tin chính về sinh viên",
     },
     {
       id: "status",
@@ -35,22 +35,22 @@ export const getBaseStudentFields = (
   const fields: ResourceFormField<StudentFormData>[] = [
     {
       name: "studentCode",
-      label: "Mã học sinh",
+      label: "Mã sinh viên",
       type: "text",
       placeholder: "vd: HS001, STU2024",
       required: true,
-      description: "Mã học sinh (chữ cái, số, dấu gạch dưới và dấu gạch ngang)",
+      description: "Mã sinh viên (chữ cái, số, dấu gạch dưới và dấu gạch ngang)",
       validate: validateStudentCode,
       icon: React.createElement(Hash, { className: "h-4 w-4" }),
       section: "basic",
     },
     {
       name: "name",
-      label: "Tên học sinh",
+      label: "Tên sinh viên",
       type: "text",
       placeholder: "vd: Nguyễn Văn A",
       required: false,
-      description: "Tên đầy đủ của học sinh",
+      description: "Tên đầy đủ của sinh viên",
       validate: (value) => (!value || value === "" ? { valid: true } : validateName(value)),
       icon: React.createElement(User, { className: "h-4 w-4" }),
       section: "basic",
@@ -61,7 +61,7 @@ export const getBaseStudentFields = (
       type: "email",
       placeholder: "vd: student@example.com",
       required: false,
-      description: "Email của học sinh",
+      description: "Email của sinh viên",
       validate: (value) => (!value || value === "" ? { valid: true } : validateEmail(value)),
       icon: React.createElement(Mail, { className: "h-4 w-4" }),
       section: "basic",
@@ -76,7 +76,7 @@ export const getBaseStudentFields = (
       required: false,
       placeholder: "Chọn tài khoản người dùng",
       options: usersOptions || [],
-      description: "Liên kết học sinh với tài khoản người dùng (tùy chọn)",
+      description: "Liên kết sinh viên với tài khoản người dùng (tùy chọn)",
       icon: React.createElement(User, { className: "h-4 w-4" }),
       section: "basic",
     })
@@ -87,7 +87,7 @@ export const getBaseStudentFields = (
     fields.push({
       name: "isActive",
       label: "Trạng thái",
-      description: "Bật/tắt để kích hoạt hoặc vô hiệu hóa học sinh. Mặc định là tắt (cần xét duyệt)",
+      description: "Bật/tắt để kích hoạt hoặc vô hiệu hóa sinh viên. Mặc định là tắt (cần xét duyệt)",
       type: "switch",
       defaultValue: false, // Mặc định false, cần xét duyệt
       icon: React.createElement(ToggleLeft, { className: "h-4 w-4" }),

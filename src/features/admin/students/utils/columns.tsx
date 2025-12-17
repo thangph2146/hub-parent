@@ -44,7 +44,7 @@ export const useStudentColumns = ({ togglingStudents, canToggleStatus, onToggleS
         header: STUDENT_LABELS.STUDENT_CODE,
         filter: {
           type: "select",
-          placeholder: "Chọn mã học sinh...",
+          placeholder: "Chọn mã sinh viên...",
           searchPlaceholder: "Tìm kiếm...",
           emptyMessage: "Không tìm thấy.",
           options: studentCodeFilter.options,
@@ -59,7 +59,7 @@ export const useStudentColumns = ({ togglingStudents, canToggleStatus, onToggleS
         header: STUDENT_LABELS.STUDENT_NAME,
         filter: {
           type: "select",
-          placeholder: "Chọn tên học sinh...",
+          placeholder: "Chọn tên sinh viên...",
           searchPlaceholder: "Tìm kiếm...",
           emptyMessage: "Không tìm thấy.",
           options: nameFilter.options,
@@ -115,7 +115,7 @@ export const useStudentColumns = ({ togglingStudents, canToggleStatus, onToggleS
                 checked={row.isActive}
                 disabled={togglingStudents.has(row.id) || !canToggleStatus}
                 onCheckedChange={(checked) => onToggleStatus(row, checked)}
-                aria-label={row.isActive ? "Vô hiệu hóa học sinh" : "Kích hoạt học sinh"}
+                aria-label={row.isActive ? "Vô hiệu hóa sinh viên" : "Kích hoạt sinh viên"}
               />
               <span className="text-xs text-muted-foreground">
                 {row.isActive ? STUDENT_LABELS.ACTIVE : STUDENT_LABELS.INACTIVE}

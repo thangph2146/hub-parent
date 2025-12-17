@@ -48,8 +48,8 @@ export async function createStudent(ctx: AuthContext, input: CreateStudentInput)
   })
 
   if (existing) {
-    logActionFlow("students", "create", "error", { error: "Mã học sinh đã tồn tại", studentCode: trimmedStudentCode }, startTime)
-    throw new ApplicationError("Mã học sinh đã tồn tại", 400)
+    logActionFlow("students", "create", "error", { error: "Mã sinh viên đã tồn tại", studentCode: trimmedStudentCode }, startTime)
+    throw new ApplicationError("Mã sinh viên đã tồn tại", 400)
   }
 
   const isSuperAdminUser = isSuperAdmin(ctx.roles)
@@ -60,8 +60,8 @@ export async function createStudent(ctx: AuthContext, input: CreateStudentInput)
   }
 
   if (!isSuperAdminUser && validatedInput.userId && validatedInput.userId !== ctx.actorId) {
-    logActionFlow("students", "create", "error", { error: "Không có quyền liên kết học sinh với tài khoản khác" }, startTime)
-    throw new ForbiddenError("Bạn không có quyền liên kết học sinh với tài khoản khác")
+    logActionFlow("students", "create", "error", { error: "Không có quyền liên kết sinh viên với tài khoản khác" }, startTime)
+    throw new ForbiddenError("Bạn không có quyền liên kết sinh viên với tài khoản khác")
   }
 
   const student = await prisma.student.create({
@@ -109,7 +109,7 @@ export async function updateStudent(ctx: AuthContext, id: string, input: UpdateS
   ensurePermission(ctx, PERMISSIONS.STUDENTS_UPDATE, PERMISSIONS.STUDENTS_MANAGE)
 
   if (!id || typeof id !== "string" || id.trim() === "") {
-    throw new ApplicationError("ID học sinh không hợp lệ", 400)
+    throw new ApplicationError("ID sinh viên không hợp lệ", 400)
   }
 
   const validatedInput = UpdateStudentSchema.parse(input)
@@ -129,14 +129,14 @@ export async function updateStudent(ctx: AuthContext, id: string, input: UpdateS
   })
 
   if (!existing || existing.deletedAt) {
-    logActionFlow("students", "update", "error", { studentId: id, error: "Học sinh không tồn tại" }, startTime)
-    throw new NotFoundError("Học sinh không tồn tại")
+    logActionFlow("students", "update", "error", { studentId: id, error: "sinh viên không tồn tại" }, startTime)
+    throw new NotFoundError("sinh viên không tồn tại")
   }
 
   const isSuperAdminUser = isSuperAdmin(ctx.roles)
   if (!isSuperAdminUser && existing.userId !== ctx.actorId) {
-    logActionFlow("students", "update", "error", { studentId: id, error: "Bạn chỉ có thể cập nhật học sinh của chính mình" }, startTime)
-    throw new ForbiddenError("Bạn chỉ có thể cập nhật học sinh của chính mình")
+    logActionFlow("students", "update", "error", { studentId: id, error: "Bạn chỉ có thể cập nhật sinh viên của chính mình" }, startTime)
+    throw new ForbiddenError("Bạn chỉ có thể cập nhật sinh viên của chính mình")
   }
 
   if (!isSuperAdminUser && validatedInput.userId !== undefined && validatedInput.userId !== existing.userId) {
@@ -164,8 +164,8 @@ export async function updateStudent(ctx: AuthContext, id: string, input: UpdateS
         },
       })
       if (codeExists) {
-        logActionFlow("students", "update", "error", { studentId: id, error: "Mã học sinh đã được sử dụng", newCode: trimmedStudentCode }, startTime)
-        throw new ApplicationError("Mã học sinh đã được sử dụng", 400)
+        logActionFlow("students", "update", "error", { studentId: id, error: "Mã sinh viên đã được sử dụng", newCode: trimmedStudentCode }, startTime)
+        throw new ApplicationError("Mã sinh viên đã được sử dụng", 400)
       }
       updateData.studentCode = trimmedStudentCode
       changes.studentCode = { old: existing.studentCode, new: trimmedStudentCode }
@@ -200,8 +200,8 @@ export async function updateStudent(ctx: AuthContext, id: string, input: UpdateS
     if (validatedInput.isActive !== existing.isActive) {
       // Chỉ cho phép active student nếu có permission STUDENTS_ACTIVE hoặc STUDENTS_MANAGE
       if (validatedInput.isActive && !canPerformAnyAction(ctx.permissions, ctx.roles, [PERMISSIONS.STUDENTS_ACTIVE, PERMISSIONS.STUDENTS_MANAGE])) {
-        logActionFlow("students", "update", "error", { studentId: id, error: "Không có quyền kích hoạt học sinh" }, startTime)
-        throw new ForbiddenError("Bạn không có quyền kích hoạt học sinh")
+        logActionFlow("students", "update", "error", { studentId: id, error: "Không có quyền kích hoạt sinh viên" }, startTime)
+        throw new ForbiddenError("Bạn không có quyền kích hoạt sinh viên")
       }
       updateData.isActive = validatedInput.isActive
       changes.isActive = { old: existing.isActive, new: validatedInput.isActive }
@@ -259,14 +259,14 @@ export async function softDeleteStudent(ctx: AuthContext, id: string): Promise<v
 
   const student = await prisma.student.findUnique({ where: { id } })
   if (!student || student.deletedAt) {
-    logActionFlow("students", "delete", "error", { studentId: id, error: "Học sinh không tồn tại" }, startTime)
-    throw new NotFoundError("Học sinh không tồn tại")
+    logActionFlow("students", "delete", "error", { studentId: id, error: "sinh viên không tồn tại" }, startTime)
+    throw new NotFoundError("sinh viên không tồn tại")
   }
 
   const isSuperAdminUser = isSuperAdmin(ctx.roles)
   if (!isSuperAdminUser && student.userId !== ctx.actorId) {
-    logActionFlow("students", "delete", "error", { studentId: id, error: "Bạn chỉ có thể xóa học sinh của chính mình" }, startTime)
-    throw new ForbiddenError("Bạn chỉ có thể xóa học sinh của chính mình")
+    logActionFlow("students", "delete", "error", { studentId: id, error: "Bạn chỉ có thể xóa sinh viên của chính mình" }, startTime)
+    throw new ForbiddenError("Bạn chỉ có thể xóa sinh viên của chính mình")
   }
 
   const previousStatus: "active" | "deleted" = student.deletedAt ? "deleted" : "active"
@@ -307,8 +307,8 @@ export async function bulkSoftDeleteStudents(ctx: AuthContext, ids: string[]): P
   ensurePermission(ctx, PERMISSIONS.STUDENTS_DELETE, PERMISSIONS.STUDENTS_MANAGE)
 
   if (!ids || ids.length === 0) {
-    logActionFlow("students", "bulk-delete", "error", { error: "Danh sách học sinh trống" }, startTime)
-    throw new ApplicationError("Danh sách học sinh trống", 400)
+    logActionFlow("students", "bulk-delete", "error", { error: "Danh sách sinh viên trống" }, startTime)
+    throw new ApplicationError("Danh sách sinh viên trống", 400)
   }
 
   const students = await prisma.student.findMany({
@@ -336,18 +336,18 @@ export async function bulkSoftDeleteStudents(ctx: AuthContext, ids: string[]): P
       foundCount: students.length,
       alreadyDeletedCount,
       notFoundCount,
-      error: "Không có học sinh nào có thể xóa",
+      error: "Không có sinh viên nào có thể xóa",
     }, startTime)
 
-    let errorMessage = "Không có học sinh nào có thể xóa"
+    let errorMessage = "Không có sinh viên nào có thể xóa"
     const parts: string[] = []
     if (alreadyDeletedCount > 0) {
       const studentNames = alreadyDeletedStudents.slice(0, 3).map(s => `"${s.name || s.studentCode}"`).join(", ")
-      const moreCount = alreadyDeletedCount > 3 ? ` và ${alreadyDeletedCount - 3} học sinh khác` : ""
-      parts.push(`${alreadyDeletedCount} học sinh đã bị xóa trước đó: ${studentNames}${moreCount}`)
+      const moreCount = alreadyDeletedCount > 3 ? ` và ${alreadyDeletedCount - 3} sinh viên khác` : ""
+      parts.push(`${alreadyDeletedCount} sinh viên đã bị xóa trước đó: ${studentNames}${moreCount}`)
     }
     if (notFoundCount > 0) {
-      parts.push(`${notFoundCount} học sinh không tồn tại`)
+      parts.push(`${notFoundCount} sinh viên không tồn tại`)
     }
 
     if (parts.length > 0) {
@@ -398,11 +398,11 @@ export async function bulkSoftDeleteStudents(ctx: AuthContext, ids: string[]): P
     logActionFlow("students", "bulk-delete", "success", { requestedCount: ids.length, affectedCount: result.count }, startTime)
   }
 
-  // Format message với tên học sinh
+  // Format message với tên sinh viên
   const namesText = students.length > 0 ? formatStudentNames(students, 3) : ""
   const message = namesText
-    ? `Đã xóa ${result.count} học sinh: ${namesText}`
-    : `Đã xóa ${result.count} học sinh`
+    ? `Đã xóa ${result.count} sinh viên: ${namesText}`
+    : `Đã xóa ${result.count} sinh viên`
   
   return { success: true, message, affected: result.count }
 }
@@ -415,8 +415,8 @@ export async function restoreStudent(ctx: AuthContext, id: string): Promise<void
 
   const student = await prisma.student.findUnique({ where: { id } })
   if (!student || !student.deletedAt) {
-    logActionFlow("students", "restore", "error", { studentId: id, error: "Học sinh không tồn tại hoặc chưa bị xóa" }, startTime)
-    throw new NotFoundError("Học sinh không tồn tại hoặc chưa bị xóa")
+    logActionFlow("students", "restore", "error", { studentId: id, error: "sinh viên không tồn tại hoặc chưa bị xóa" }, startTime)
+    throw new NotFoundError("sinh viên không tồn tại hoặc chưa bị xóa")
   }
 
   await prisma.student.update({
@@ -456,8 +456,8 @@ export async function bulkRestoreStudents(ctx: AuthContext, ids: string[]): Prom
   ensurePermission(ctx, PERMISSIONS.STUDENTS_UPDATE, PERMISSIONS.STUDENTS_MANAGE)
 
   if (!ids || ids.length === 0) {
-    logActionFlow("students", "bulk-restore", "error", { error: "Danh sách học sinh trống" }, startTime)
-    throw new ApplicationError("Danh sách học sinh trống", 400)
+    logActionFlow("students", "bulk-restore", "error", { error: "Danh sách sinh viên trống" }, startTime)
+    throw new ApplicationError("Danh sách sinh viên trống", 400)
   }
 
   const allRequestedStudents = await prisma.student.findMany({
@@ -480,15 +480,15 @@ export async function bulkRestoreStudents(ctx: AuthContext, ids: string[]): Prom
   if (softDeletedStudents.length === 0) {
     const parts: string[] = []
     if (activeStudents.length > 0) {
-      parts.push(`${activeStudents.length} học sinh đang hoạt động`)
+      parts.push(`${activeStudents.length} sinh viên đang hoạt động`)
     }
     if (notFoundCount > 0) {
-      parts.push(`${notFoundCount} học sinh không tồn tại (đã bị xóa vĩnh viễn)`)
+      parts.push(`${notFoundCount} sinh viên không tồn tại (đã bị xóa vĩnh viễn)`)
     }
 
     const errorMessage = parts.length > 0
-      ? `Không có học sinh nào để khôi phục (${parts.join(", ")})`
-      : `Không tìm thấy học sinh nào để khôi phục`
+      ? `Không có sinh viên nào để khôi phục (${parts.join(", ")})`
+      : `Không tìm thấy sinh viên nào để khôi phục`
 
     logActionFlow("students", "bulk-restore", "error", {
       requestedCount: ids.length,
@@ -544,21 +544,21 @@ export async function bulkRestoreStudents(ctx: AuthContext, ids: string[]): Prom
     logActionFlow("students", "bulk-restore", "success", { requestedCount: ids.length, affectedCount: result.count }, startTime)
   }
 
-  // Format message với tên học sinh
+  // Format message với tên sinh viên
   const namesText = studentsToRestore.length > 0 ? formatStudentNames(studentsToRestore, 3) : ""
   let message = namesText
-    ? `Đã khôi phục ${result.count} học sinh: ${namesText}`
-    : `Đã khôi phục ${result.count} học sinh`
+    ? `Đã khôi phục ${result.count} sinh viên: ${namesText}`
+    : `Đã khôi phục ${result.count} sinh viên`
   const skippedCount = ids.length - result.count
   const skippedParts: string[] = []
   if (activeStudents.length > 0) {
-    skippedParts.push(`${activeStudents.length} học sinh đang hoạt động`)
+    skippedParts.push(`${activeStudents.length} sinh viên đang hoạt động`)
   }
   if (notFoundCount > 0) {
-    skippedParts.push(`${notFoundCount} học sinh đã bị xóa vĩnh viễn`)
+    skippedParts.push(`${notFoundCount} sinh viên đã bị xóa vĩnh viễn`)
   }
   if (skippedParts.length > 0) {
-    message += ` (${skippedCount} học sinh không thể khôi phục: ${skippedParts.join(", ")})`
+    message += ` (${skippedCount} sinh viên không thể khôi phục: ${skippedParts.join(", ")})`
   }
 
   return { success: true, message, affected: result.count }
@@ -570,13 +570,13 @@ export async function bulkActiveStudents(ctx: AuthContext, ids: string[]): Promi
 
   // Cần permission STUDENTS_ACTIVE hoặc STUDENTS_MANAGE để active students
   if (!canPerformAnyAction(ctx.permissions, ctx.roles, [PERMISSIONS.STUDENTS_ACTIVE, PERMISSIONS.STUDENTS_MANAGE])) {
-    logActionFlow("students", "bulk-active", "error", { error: "Không có quyền kích hoạt học sinh" }, startTime)
-    throw new ForbiddenError("Bạn không có quyền kích hoạt học sinh")
+    logActionFlow("students", "bulk-active", "error", { error: "Không có quyền kích hoạt sinh viên" }, startTime)
+    throw new ForbiddenError("Bạn không có quyền kích hoạt sinh viên")
   }
 
   if (!ids || ids.length === 0) {
-    logActionFlow("students", "bulk-active", "error", { error: "Danh sách học sinh trống" }, startTime)
-    throw new ApplicationError("Danh sách học sinh trống", 400)
+    logActionFlow("students", "bulk-active", "error", { error: "Danh sách sinh viên trống" }, startTime)
+    throw new ApplicationError("Danh sách sinh viên trống", 400)
   }
 
   const validationResult = BulkStudentActionSchema.safeParse({ action: "active", ids })
@@ -607,7 +607,7 @@ export async function bulkActiveStudents(ctx: AuthContext, ids: string[]): Promi
   })
 
   if (students.length === 0) {
-    const errorMessage = `Không tìm thấy học sinh nào để kích hoạt`
+    const errorMessage = `Không tìm thấy sinh viên nào để kích hoạt`
     logActionFlow("students", "bulk-active", "error", {
       requestedCount: ids.length,
       foundCount: students.length,
@@ -622,7 +622,7 @@ export async function bulkActiveStudents(ctx: AuthContext, ids: string[]): Promi
   const alreadyActiveIds = students.filter(s => s.isActive).map(s => s.id)
 
   if (studentsToActive.length === 0) {
-    const message = `Tất cả ${students.length} học sinh đã được kích hoạt`
+    const message = `Tất cả ${students.length} sinh viên đã được kích hoạt`
     logActionFlow("students", "bulk-active", "success", { requestedCount: ids.length, alreadyActiveCount: students.length }, startTime)
     return {
       success: true,
@@ -654,8 +654,8 @@ export async function bulkActiveStudents(ctx: AuthContext, ids: string[]): Promi
 
   const affectedCount = result.count
   const message = affectedCount > 0
-    ? `Đã kích hoạt ${affectedCount} học sinh${alreadyActiveIds.length > 0 ? ` (${alreadyActiveIds.length} học sinh đã được kích hoạt trước đó)` : ""}`
-    : "Không có học sinh nào được kích hoạt"
+    ? `Đã kích hoạt ${affectedCount} sinh viên${alreadyActiveIds.length > 0 ? ` (${alreadyActiveIds.length} sinh viên đã được kích hoạt trước đó)` : ""}`
+    : "Không có sinh viên nào được kích hoạt"
 
   logActionFlow("students", "bulk-active", "success", { requestedCount: ids.length, affectedCount: result.count }, startTime)
   return {
@@ -671,13 +671,13 @@ export async function bulkUnactiveStudents(ctx: AuthContext, ids: string[]): Pro
 
   // Cần permission STUDENTS_ACTIVE hoặc STUDENTS_MANAGE để unactive students
   if (!canPerformAnyAction(ctx.permissions, ctx.roles, [PERMISSIONS.STUDENTS_ACTIVE, PERMISSIONS.STUDENTS_MANAGE])) {
-    logActionFlow("students", "bulk-unactive", "error", { error: "Không có quyền bỏ kích hoạt học sinh" }, startTime)
-    throw new ForbiddenError("Bạn không có quyền bỏ kích hoạt học sinh")
+    logActionFlow("students", "bulk-unactive", "error", { error: "Không có quyền bỏ kích hoạt sinh viên" }, startTime)
+    throw new ForbiddenError("Bạn không có quyền bỏ kích hoạt sinh viên")
   }
 
   if (!ids || ids.length === 0) {
-    logActionFlow("students", "bulk-unactive", "error", { error: "Danh sách học sinh trống" }, startTime)
-    throw new ApplicationError("Danh sách học sinh trống", 400)
+    logActionFlow("students", "bulk-unactive", "error", { error: "Danh sách sinh viên trống" }, startTime)
+    throw new ApplicationError("Danh sách sinh viên trống", 400)
   }
 
   const validationResult = BulkStudentActionSchema.safeParse({ action: "unactive", ids })
@@ -708,7 +708,7 @@ export async function bulkUnactiveStudents(ctx: AuthContext, ids: string[]): Pro
   })
 
   if (students.length === 0) {
-    const errorMessage = `Không tìm thấy học sinh nào để bỏ kích hoạt`
+    const errorMessage = `Không tìm thấy sinh viên nào để bỏ kích hoạt`
     logActionFlow("students", "bulk-unactive", "error", {
       requestedCount: ids.length,
       foundCount: students.length,
@@ -723,7 +723,7 @@ export async function bulkUnactiveStudents(ctx: AuthContext, ids: string[]): Pro
   const alreadyInactiveIds = students.filter(s => !s.isActive).map(s => s.id)
 
   if (studentsToUnactive.length === 0) {
-    const message = `Tất cả ${students.length} học sinh đã được bỏ kích hoạt`
+    const message = `Tất cả ${students.length} sinh viên đã được bỏ kích hoạt`
     logActionFlow("students", "bulk-unactive", "success", { requestedCount: ids.length, alreadyInactiveCount: students.length }, startTime)
     return {
       success: true,
@@ -755,8 +755,8 @@ export async function bulkUnactiveStudents(ctx: AuthContext, ids: string[]): Pro
 
   const affectedCount = result.count
   const message = affectedCount > 0
-    ? `Đã bỏ kích hoạt ${affectedCount} học sinh${alreadyInactiveIds.length > 0 ? ` (${alreadyInactiveIds.length} học sinh đã được bỏ kích hoạt trước đó)` : ""}`
-    : "Không có học sinh nào được bỏ kích hoạt"
+    ? `Đã bỏ kích hoạt ${affectedCount} sinh viên${alreadyInactiveIds.length > 0 ? ` (${alreadyInactiveIds.length} sinh viên đã được bỏ kích hoạt trước đó)` : ""}`
+    : "Không có sinh viên nào được bỏ kích hoạt"
 
   logActionFlow("students", "bulk-unactive", "success", { requestedCount: ids.length, affectedCount: result.count }, startTime)
   return {
@@ -780,8 +780,8 @@ export async function hardDeleteStudent(ctx: AuthContext, id: string): Promise<v
   })
 
   if (!student) {
-    logActionFlow("students", "hard-delete", "error", { studentId: id, error: "Học sinh không tồn tại" }, startTime)
-    throw new NotFoundError("Học sinh không tồn tại")
+    logActionFlow("students", "hard-delete", "error", { studentId: id, error: "sinh viên không tồn tại" }, startTime)
+    throw new NotFoundError("sinh viên không tồn tại")
   }
 
   const previousStatus: "active" | "deleted" = student.deletedAt ? "deleted" : "active"
@@ -809,7 +809,7 @@ export async function bulkHardDeleteStudents(ctx: AuthContext, ids: string[]): P
   }
 
   if (!ids || ids.length === 0) {
-    throw new ApplicationError("Danh sách học sinh trống", 400)
+    throw new ApplicationError("Danh sách sinh viên trống", 400)
   }
 
   const students = await prisma.student.findMany({
@@ -832,7 +832,7 @@ export async function bulkHardDeleteStudents(ctx: AuthContext, ids: string[]): P
   })
 
   if (students.length === 0) {
-    const errorMessage = `Không tìm thấy học sinh nào để xóa vĩnh viễn`
+    const errorMessage = `Không tìm thấy sinh viên nào để xóa vĩnh viễn`
     logActionFlow("students", "bulk-hard-delete", "error", {
       requestedCount: ids.length,
       foundCount: students.length,
@@ -873,11 +873,11 @@ export async function bulkHardDeleteStudents(ctx: AuthContext, ids: string[]): P
     logActionFlow("students", "bulk-hard-delete", "success", { requestedCount: ids.length, affectedCount: result.count }, startTime)
   }
 
-  // Format message với tên học sinh
+  // Format message với tên sinh viên
   const namesText = students.length > 0 ? formatStudentNames(students, 3) : ""
   const message = namesText
-    ? `Đã xóa vĩnh viễn ${result.count} học sinh: ${namesText}`
-    : `Đã xóa vĩnh viễn ${result.count} học sinh`
+    ? `Đã xóa vĩnh viễn ${result.count} sinh viên: ${namesText}`
+    : `Đã xóa vĩnh viễn ${result.count} sinh viên`
   
   return { success: true, message, affected: result.count }
 }

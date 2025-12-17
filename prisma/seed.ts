@@ -132,7 +132,7 @@ const notificationTitles = [
   "Thông báo quan trọng",
   "Bài viết đã được duyệt",
   "Cảnh báo bảo mật",
-  "Thông tin học sinh",
+  "Thông tin sinh viên",
   "Yêu cầu liên hệ mới",
   "Cập nhật hệ thống",
   "Bảo trì hệ thống",
@@ -432,7 +432,7 @@ const ROLE_DESCRIPTIONS: Record<RoleKey, string> = {
   EDITOR: "Biên tập viên, tạo và chỉnh sửa nội dung.",
   AUTHOR: "Tác giả, quản lý nội dung của riêng mình.",
   USER: "Người dùng thông thường với quyền hạn cơ bản, có thể quản lý tài khoản cá nhân.",
-  PARENT: "Phụ huynh học sinh, truy cập thông tin liên quan học sinh, có thể quản lý tài khoản cá nhân.",
+  PARENT: "Phụ huynh sinh viên, truy cập thông tin liên quan sinh viên, có thể quản lý tài khoản cá nhân.",
 }
 
 type RoleConfig<T extends RoleKey = RoleKey> = {

@@ -5,20 +5,20 @@ export { formatDateVi, validateName, validateEmail }
 
 export const validateStudentCode = (value: unknown): { valid: boolean; error?: string } => {
   if (!value || typeof value !== "string" || value.trim() === "") {
-    return { valid: false, error: "Mã học sinh là bắt buộc" }
+    return { valid: false, error: "Mã sinh viên là bắt buộc" }
   }
   const trimmed = value.trim()
   if (trimmed.length < 2) {
-    return { valid: false, error: "Mã học sinh phải có ít nhất 2 ký tự" }
+    return { valid: false, error: "Mã sinh viên phải có ít nhất 2 ký tự" }
   }
   if (trimmed.length > 50) {
-    return { valid: false, error: "Mã học sinh không được vượt quá 50 ký tự" }
+    return { valid: false, error: "Mã sinh viên không được vượt quá 50 ký tự" }
   }
   const codeRegex = /^[a-zA-Z0-9_-]+$/
   if (!codeRegex.test(trimmed)) {
     return {
       valid: false,
-      error: "Mã học sinh chỉ được chứa chữ cái, số, dấu gạch dưới và dấu gạch ngang",
+      error: "Mã sinh viên chỉ được chứa chữ cái, số, dấu gạch dưới và dấu gạch ngang",
     }
   }
   return { valid: true }

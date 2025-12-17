@@ -302,7 +302,7 @@ export const appFeatures: FeatureDefinition[] = [
   },
   {
     key: "students",
-    title: "Học sinh",
+    title: "sinh viên",
     permissions: MENU_PERMISSIONS.students,
     icon: createIcon(GraduationCap),
     navigation: {

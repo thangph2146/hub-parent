@@ -31,14 +31,14 @@ export const notifySuperAdminsOfStudentAction = async (
 
     switch (action) {
       case "create":
-        title = "Tạo học sinh";
+        title = "Tạo sinh viên";
         description = studentDisplay;
         break;
       case "update":
         const changeDescriptions: string[] = [];
         if (changes?.studentCode) {
           changeDescriptions.push(
-            `Mã học sinh: ${changes.studentCode.old} → ${changes.studentCode.new}`
+            `Mã sinh viên: ${changes.studentCode.old} → ${changes.studentCode.new}`
           );
         }
         if (changes?.name) {
@@ -62,7 +62,7 @@ export const notifySuperAdminsOfStudentAction = async (
             } → ${changes.isActive.new ? "Hoạt động" : "Vô hiệu hóa"}`
           );
         }
-        title = "Cập nhật học sinh";
+        title = "Cập nhật sinh viên";
         description = `${studentDisplay}${
           changeDescriptions.length > 0
             ? `\n${changeDescriptions.join(", ")}`
@@ -70,15 +70,15 @@ export const notifySuperAdminsOfStudentAction = async (
         }`;
         break;
       case "delete":
-        title = "Xóa học sinh";
+        title = "Xóa sinh viên";
         description = studentDisplay;
         break;
       case "restore":
-        title = "Khôi phục học sinh";
+        title = "Khôi phục sinh viên";
         description = studentDisplay;
         break;
       case "hard-delete":
-        title = "Xóa vĩnh viễn học sinh";
+        title = "Xóa vĩnh viễn sinh viên";
         description = studentDisplay;
         break;
     }
@@ -132,7 +132,7 @@ export const formatStudentNames = (
     students,
     (s: { studentCode: string; name: string | null }) => s.name || s.studentCode || "Không xác định",
     maxDisplay,
-    "học sinh"
+    "sinh viên"
   )
 }
 
@@ -154,24 +154,24 @@ export const notifySuperAdminsOfBulkStudentAction = async (
 
     switch (action) {
       case "delete":
-        title = `Xóa ${count} học sinh`;
-        description = namesText || `${count} học sinh`;
+        title = `Xóa ${count} sinh viên`;
+        description = namesText || `${count} sinh viên`;
         break;
       case "restore":
-        title = `Khôi phục ${count} học sinh`;
-        description = namesText || `${count} học sinh`;
+        title = `Khôi phục ${count} sinh viên`;
+        description = namesText || `${count} sinh viên`;
         break;
       case "hard-delete":
-        title = `Xóa vĩnh viễn ${count} học sinh`;
-        description = namesText || `${count} học sinh`;
+        title = `Xóa vĩnh viễn ${count} sinh viên`;
+        description = namesText || `${count} sinh viên`;
         break;
       case "active":
-        title = `Kích hoạt ${count} học sinh`;
-        description = namesText || `${count} học sinh`;
+        title = `Kích hoạt ${count} sinh viên`;
+        description = namesText || `${count} sinh viên`;
         break;
       case "unactive":
-        title = `Bỏ kích hoạt ${count} học sinh`;
-        description = namesText || `${count} học sinh`;
+        title = `Bỏ kích hoạt ${count} sinh viên`;
+        description = namesText || `${count} sinh viên`;
         break;
     }
 

@@ -31,7 +31,7 @@ export async function StudentEdit({
   const student = await getStudentById(studentId, actorId, isSuperAdminUser)
 
   if (!student) {
-    return <NotFoundMessage resourceName="học sinh" />
+    return <NotFoundMessage resourceName="sinh viên" />
   }
 
   const usersOptions = isSuperAdminUser

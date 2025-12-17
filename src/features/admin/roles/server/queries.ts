@@ -120,7 +120,7 @@ export async function getAllPermissionsOptions(): Promise<Array<{ label: string;
     messages: "Tin nhắn",
     notifications: "Thông báo",
     contact_requests: "Liên hệ",
-    students: "Học sinh",
+    students: "sinh viên",
     settings: "Cài đặt",
   }
 

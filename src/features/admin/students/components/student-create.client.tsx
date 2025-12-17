@@ -22,9 +22,9 @@ export const StudentCreateClient = ({
     apiRoute: apiRoutes.students.create,
     method: "POST",
     messages: {
-      successTitle: "Tạo học sinh thành công",
-      successDescription: "Học sinh mới đã được tạo thành công.",
-      errorTitle: "Lỗi tạo học sinh",
+      successTitle: "Tạo sinh viên thành công",
+      successDescription: "sinh viên mới đã được tạo thành công.",
+      errorTitle: "Lỗi tạo sinh viên",
     },
     navigation: {
       toDetail: (response) =>
@@ -52,9 +52,9 @@ export const StudentCreateClient = ({
       fields={createFields}
       sections={formSections}
       onSubmit={handleSubmit}
-      title="Tạo học sinh mới"
-      description="Nhập thông tin để tạo học sinh mới"
-      submitLabel="Tạo học sinh"
+      title="Tạo sinh viên mới"
+      description="Nhập thông tin để tạo sinh viên mới"
+      submitLabel="Tạo sinh viên"
       cancelLabel="Hủy"
       backUrl={backUrl}
       backLabel="Quay lại danh sách"

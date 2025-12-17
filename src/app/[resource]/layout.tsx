@@ -22,7 +22,7 @@ import { ResourceSegmentProvider } from "@/hooks/use-resource-segment"
  */
 export const metadata: Metadata = {
   title: "CMS - Hệ thống quản trị",
-  description: "Hệ thống quản trị nội dung (CMS) - Quản lý người dùng, bài viết, học sinh và các tài nguyên khác",
+  description: "Hệ thống quản trị nội dung (CMS) - Quản lý người dùng, bài viết, sinh viên và các tài nguyên khác",
   keywords: ["CMS", "Content Management System", "Quản trị nội dung", "Admin Panel", "Hệ thống quản lý"],
   robots: {
     index: false, // Admin pages không nên được index
@@ -31,13 +31,13 @@ export const metadata: Metadata = {
   openGraph: {
     ...getOpenGraphConfig(),
     title: "CMS - Hệ thống quản trị nội dung",
-    description: "Hệ thống quản trị nội dung (CMS) - Quản lý người dùng, bài viết, học sinh và các tài nguyên khác",
+    description: "Hệ thống quản trị nội dung (CMS) - Quản lý người dùng, bài viết, sinh viên và các tài nguyên khác",
     siteName: "CMS - Hệ thống quản trị",
   },
   twitter: {
     ...getTwitterConfig(),
     title: "CMS - Hệ thống quản trị nội dung",
-    description: "Hệ thống quản trị nội dung (CMS) - Quản lý người dùng, bài viết, học sinh và các tài nguyên khác",
+    description: "Hệ thống quản trị nội dung (CMS) - Quản lý người dùng, bài viết, sinh viên và các tài nguyên khác",
   },
 }
 

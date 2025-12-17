@@ -27,13 +27,13 @@ export async function generateMetadata({
   if (!student) {
     return {
       title: "Không tìm thấy",
-      description: "Học sinh không tồn tại",
+      description: "sinh viên không tồn tại",
     }
   }
 
   return {
-    title: `Chỉnh sửa ${student.name || student.studentCode || "học sinh"}`,
-    description: `Chỉnh sửa thông tin học sinh: ${student.name || student.studentCode}`,
+    title: `Chỉnh sửa ${student.name || student.studentCode || "sinh viên"}`,
+    description: `Chỉnh sửa thông tin sinh viên: ${student.name || student.studentCode}`,
   }
 }
 
@@ -62,13 +62,13 @@ export default async function StudentEditPage({ params }: StudentEditPageProps) 
   const studentName = truncateBreadcrumbLabel(student?.name || student?.studentCode || "Chi tiết")
   
   // Validate route ID
-  const validatedId = validateRouteId(id, "Học sinh")
+  const validatedId = validateRouteId(id, "sinh viên")
   if (!validatedId) {
     return (
       <>
         <AdminHeader
           breadcrumbs={createEditBreadcrumbs({
-            listLabel: "Học sinh",
+            listLabel: "sinh viên",
             listPath: "/admin/students",
             detailLabel: studentName,
             detailPath: `/admin/students/${id}`,
@@ -79,7 +79,7 @@ export default async function StudentEditPage({ params }: StudentEditPageProps) 
             <div className="text-center">
               <h2 className="mb-2 text-2xl font-bold">ID không hợp lệ</h2>
               <p className="text-muted-foreground">
-                ID học sinh không hợp lệ.
+                ID sinh viên không hợp lệ.
               </p>
             </div>
           </div>
@@ -92,7 +92,7 @@ export default async function StudentEditPage({ params }: StudentEditPageProps) 
     <>
       <AdminHeader
         breadcrumbs={createEditBreadcrumbs({
-          listLabel: "Học sinh",
+          listLabel: "sinh viên",
           listPath: "/admin/students",
           detailLabel: studentName,
           detailPath: `/admin/students/${id}`,

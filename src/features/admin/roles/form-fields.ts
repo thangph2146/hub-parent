@@ -27,7 +27,7 @@ export function getAllPermissionsOptionGroups(): Array<{ label: string; options:
     messages: "Tin nhắn",
     notifications: "Thông báo",
     contact_requests: "Liên hệ",
-    students: "Học sinh",
+    students: "sinh viên",
     settings: "Cài đặt",
   }
 

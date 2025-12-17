@@ -73,20 +73,20 @@ export const StudentDetailClient = ({ studentId, student, backUrl = "/admin/stud
     {
       id: "basic",
       title: "Thông tin cơ bản",
-      description: "Thông tin chính về học sinh",
+      description: "Thông tin chính về sinh viên",
       fieldsContent: (_fields, data) => {
         const studentData = (data || detailData) as StudentDetailData
         
         return (
           <div className="grid gap-6 grid-cols-1 sm:grid-cols-2">
             {/* Student Code & Name */}
-            <FieldItem icon={Hash} label="Mã học sinh">
+            <FieldItem icon={Hash} label="Mã sinh viên">
               <div className="text-sm font-medium text-foreground font-mono">
                 {studentData.studentCode || "—"}
               </div>
             </FieldItem>
 
-            <FieldItem icon={User} label="Tên học sinh">
+            <FieldItem icon={User} label="Tên sinh viên">
               <div className="text-sm font-medium text-foreground">
                 {studentData.name || "—"}
               </div>

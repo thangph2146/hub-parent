@@ -72,7 +72,7 @@ const CHART_COLORS = [
   "hsl(217, 91%, 60%)",          // Tin nhắn - Bright blue (#3b82f6)
   "hsl(45, 93%, 47%)",           // Thông báo - Yellow (#eab308)
   "hsl(270, 91%, 65%)",          // Yêu cầu liên hệ - Purple (#a855f7)
-  "hsl(142, 71%, 45%)",          // Học sinh - Green (#22c55e)
+  "hsl(142, 71%, 45%)",          // sinh viên - Green (#22c55e)
   "hsl(25, 95%, 53%)",           // Phiên đăng nhập - Orange (#f97316)
   "hsl(0, 84%, 60%)",            // Vai trò - Red (#ef4444)
   "hsl(199, 89%, 48%)",          // Cyan - #06b6d4
@@ -319,7 +319,7 @@ export const DashboardStatsClient = ({ stats }: DashboardStatsClientProps) => {
         },
         {
           key: "students",
-          label: "Học sinh",
+          label: "sinh viên",
           permission: canViewStudents,
           color: CHART_COLORS[8],
           isImportant: false,

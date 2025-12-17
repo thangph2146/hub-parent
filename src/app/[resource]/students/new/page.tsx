@@ -9,11 +9,11 @@ import { createCreateBreadcrumbs } from "@/features/admin/resources/utils"
  * 
  * Theo Next.js 16 best practices:
  * - Metadata được merge với admin layout và root layout
- * - Title sử dụng template từ root: "Tạo học sinh | CMS"
+ * - Title sử dụng template từ root: "Tạo sinh viên | CMS"
  */
 export const metadata: Metadata = {
-  title: "Tạo học sinh",
-  description: "Tạo học sinh mới",
+  title: "Tạo sinh viên",
+  description: "Tạo sinh viên mới",
 }
 
 /**
@@ -31,7 +31,7 @@ export default async function StudentCreatePage() {
     <>
       <AdminHeader
         breadcrumbs={createCreateBreadcrumbs({
-          listLabel: "Học sinh",
+          listLabel: "sinh viên",
           listPath: "/admin/students",
         })}
       />

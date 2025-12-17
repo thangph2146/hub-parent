@@ -210,7 +210,7 @@ export const StudentsTableClient = ({
 
       const payload = response.data.data
       if (!payload) {
-        throw new Error(response.data.error || response.data.message || "Không thể tải danh sách học sinh")
+        throw new Error(response.data.error || response.data.message || "Không thể tải danh sách sinh viên")
       }
 
       const rows = Array.isArray(payload.data) ? payload.data : []
