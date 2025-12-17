@@ -1,11 +1,14 @@
-"use server"
+"use server";
 
-import bcrypt from "bcryptjs"
-import type { Prisma } from "@prisma/client"
-import { PERMISSIONS, canPerformAnyAction } from "@/lib/permissions"
-import { prisma } from "@/lib/database"
-import { mapUserRecord, type ListedUser, type UserWithRoles } from "./queries"
-import { notifySuperAdminsOfUserAction, notifySuperAdminsOfBulkUserAction } from "./notifications"
+import bcrypt from "bcryptjs";
+import type { Prisma } from "@prisma/client";
+import { PERMISSIONS, canPerformAnyAction } from "@/lib/permissions";
+import { prisma } from "@/lib/database";
+import { mapUserRecord, type ListedUser, type UserWithRoles } from "./queries";
+import {
+  notifySuperAdminsOfUserAction,
+  notifySuperAdminsOfBulkUserAction,
+} from "./notifications";
 import {
   ApplicationError,
   ForbiddenError,
@@ -15,32 +18,47 @@ import {
   logActionFlow,
   logDetailAction,
   type AuthContext,
-} from "@/features/admin/resources/server"
-import type { BulkActionResult } from "@/features/admin/resources/types"
-import { emitUserUpsert, emitUserRemove, emitBatchUserUpsert, type UserStatus } from "./events"
-import { createUserSchema, updateUserSchema, type CreateUserSchema, type UpdateUserSchema } from "./validation"
-import { PROTECTED_SUPER_ADMIN_EMAIL } from "../constants"
+} from "@/features/admin/resources/server";
+import type { BulkActionResult } from "@/features/admin/resources/types";
+import {
+  emitUserUpsert,
+  emitUserRemove,
+  emitBatchUserUpsert,
+  type UserStatus,
+} from "./events";
+import {
+  createUserSchema,
+  updateUserSchema,
+  type CreateUserSchema,
+  type UpdateUserSchema,
+} from "./validation";
+import { PROTECTED_SUPER_ADMIN_EMAIL } from "../constants";
 
 // Re-export for backward compatibility with API routes
-export { ApplicationError, ForbiddenError, NotFoundError, type AuthContext }
-export type { BulkActionResult }
+export { ApplicationError, ForbiddenError, NotFoundError, type AuthContext };
+export type { BulkActionResult };
 
-function sanitizeUser(user: UserWithRoles): ListedUser {
-  return mapUserRecord(user)
-}
+const sanitizeUser = (user: UserWithRoles): ListedUser => {
+  return mapUserRecord(user);
+};
 
-export async function createUser(ctx: AuthContext, input: CreateUserSchema): Promise<ListedUser> {
-  ensurePermission(ctx, PERMISSIONS.USERS_CREATE, PERMISSIONS.USERS_MANAGE)
+export const createUser = async (
+  ctx: AuthContext,
+  input: CreateUserSchema
+): Promise<ListedUser> => {
+  ensurePermission(ctx, PERMISSIONS.USERS_CREATE, PERMISSIONS.USERS_MANAGE);
 
   // Validate input với zod
-  const validatedInput = createUserSchema.parse(input)
+  const validatedInput = createUserSchema.parse(input);
 
-  const existing = await prisma.user.findUnique({ where: { email: validatedInput.email } })
+  const existing = await prisma.user.findUnique({
+    where: { email: validatedInput.email },
+  });
   if (existing) {
-    throw new ApplicationError("Email đã tồn tại", 400)
+    throw new ApplicationError("Email đã tồn tại", 400);
   }
 
-  const passwordHash = await bcrypt.hash(validatedInput.password, 10)
+  const passwordHash = await bcrypt.hash(validatedInput.password, 10);
 
   const user = await prisma.user.create({
     data: {
@@ -51,13 +69,14 @@ export async function createUser(ctx: AuthContext, input: CreateUserSchema): Pro
       bio: validatedInput.bio,
       phone: validatedInput.phone,
       address: validatedInput.address,
-      userRoles: validatedInput.roleIds && validatedInput.roleIds.length > 0
-        ? {
-            create: validatedInput.roleIds.map((roleId) => ({
-              roleId,
-            })),
-          }
-        : undefined,
+      userRoles:
+        validatedInput.roleIds && validatedInput.roleIds.length > 0
+          ? {
+              create: validatedInput.roleIds.map((roleId) => ({
+                roleId,
+              })),
+            }
+          : undefined,
     },
     include: {
       userRoles: {
@@ -72,41 +91,58 @@ export async function createUser(ctx: AuthContext, input: CreateUserSchema): Pro
         },
       },
     },
-  })
+  });
 
   // Tạo system notification cho super admin
-  await notifySuperAdminsOfUserAction(
+  await notifySuperAdminsOfUserAction("create", ctx.actorId, {
+    id: user.id,
+    email: user.email,
+    name: user.name,
+  });
+
+  await emitUserUpsert(user.id, null);
+
+  const sanitized = sanitizeUser(user);
+  const startTime = Date.now();
+  logActionFlow(
+    "users",
     "create",
-    ctx.actorId,
-    {
-      id: user.id,
-      email: user.email,
-      name: user.name,
-    }
-  )
+    "success",
+    { userId: user.id, userEmail: user.email, userName: user.name },
+    startTime
+  );
+  logDetailAction(
+    "users",
+    "create",
+    user.id,
+    sanitized as unknown as Record<string, unknown>
+  );
 
-  await emitUserUpsert(user.id, null)
+  return sanitized;
+};
 
-  const sanitized = sanitizeUser(user)
-  const startTime = Date.now()
-  logActionFlow("users", "create", "success", { userId: user.id, userEmail: user.email, userName: user.name }, startTime)
-  logDetailAction("users", "create", user.id, sanitized as unknown as Record<string, unknown>)
+export const updateUser = async (
+  ctx: AuthContext,
+  id: string,
+  input: UpdateUserSchema
+): Promise<ListedUser> => {
+  ensurePermission(ctx, PERMISSIONS.USERS_UPDATE, PERMISSIONS.USERS_MANAGE);
 
-  return sanitized
-}
-
-export async function updateUser(ctx: AuthContext, id: string, input: UpdateUserSchema): Promise<ListedUser> {
-  ensurePermission(ctx, PERMISSIONS.USERS_UPDATE, PERMISSIONS.USERS_MANAGE)
-
-  const startTime = Date.now()
-  logActionFlow("users", "update", "init", { userId: id })
+  const startTime = Date.now();
+  logActionFlow("users", "update", "init", { userId: id });
 
   if (!id || typeof id !== "string" || id.trim() === "") {
-    throw new ApplicationError("ID người dùng không hợp lệ", 400)
+    throw new ApplicationError("ID người dùng không hợp lệ", 400);
   }
 
-  const validatedInput = updateUserSchema.parse(input)
-  logActionFlow("users", "update", "start", { userId: id, changes: Object.keys(validatedInput) }, startTime)
+  const validatedInput = updateUserSchema.parse(input);
+  logActionFlow(
+    "users",
+    "update",
+    "start",
+    { userId: id, changes: Object.keys(validatedInput) },
+    startTime
+  );
 
   const existing = await prisma.user.findUnique({
     where: { id },
@@ -117,82 +153,100 @@ export async function updateUser(ctx: AuthContext, id: string, input: UpdateUser
         },
       },
     },
-  })
+  });
 
   if (!existing || existing.deletedAt) {
-    throw new NotFoundError("User không tồn tại")
+    throw new NotFoundError("User không tồn tại");
   }
 
   // Check if email is already used by another user
-  if (validatedInput.email !== undefined && validatedInput.email !== existing.email) {
-    const emailExists = await prisma.user.findUnique({ where: { email: validatedInput.email } })
+  if (
+    validatedInput.email !== undefined &&
+    validatedInput.email !== existing.email
+  ) {
+    const emailExists = await prisma.user.findUnique({
+      where: { email: validatedInput.email },
+    });
     if (emailExists) {
-      throw new ApplicationError("Email đã được sử dụng", 400)
+      throw new ApplicationError("Email đã được sử dụng", 400);
     }
   }
 
   // Validate roleIds if provided - check if roles exist
-  if (validatedInput.roleIds !== undefined && validatedInput.roleIds.length > 0) {
+  if (
+    validatedInput.roleIds !== undefined &&
+    validatedInput.roleIds.length > 0
+  ) {
     const roles = await prisma.role.findMany({
       where: { id: { in: validatedInput.roleIds } },
       select: { id: true },
-    })
+    });
     if (roles.length !== validatedInput.roleIds.length) {
-      throw new ApplicationError("Một số vai trò không tồn tại", 400)
+      throw new ApplicationError("Một số vai trò không tồn tại", 400);
     }
   }
 
-  const updateData: Prisma.UserUpdateInput = {}
+  const updateData: Prisma.UserUpdateInput = {};
 
   // Track changes để tạo notification
   const changes: {
-    email?: { old: string; new: string }
-    isActive?: { old: boolean; new: boolean }
-    roles?: { old: string[]; new: string[] }
-  } = {}
+    email?: { old: string; new: string };
+    isActive?: { old: boolean; new: boolean };
+    roles?: { old: string[]; new: string[] };
+  } = {};
 
   if (validatedInput.email !== undefined) {
-    const newEmail = validatedInput.email.trim()
+    const newEmail = validatedInput.email.trim();
     if (newEmail !== existing.email) {
-      changes.email = { old: existing.email, new: newEmail }
-      updateData.email = newEmail
+      changes.email = { old: existing.email, new: newEmail };
+      updateData.email = newEmail;
     }
   }
-  if (validatedInput.name !== undefined) updateData.name = validatedInput.name?.trim() || null
+  if (validatedInput.name !== undefined)
+    updateData.name = validatedInput.name?.trim() || null;
   if (validatedInput.isActive !== undefined) {
     // Không cho phép vô hiệu hóa super admin
-    if (existing.email === PROTECTED_SUPER_ADMIN_EMAIL && validatedInput.isActive === false) {
-      throw new ForbiddenError("Không thể vô hiệu hóa tài khoản super admin")
+    if (
+      existing.email === PROTECTED_SUPER_ADMIN_EMAIL &&
+      validatedInput.isActive === false
+    ) {
+      throw new ForbiddenError("Không thể vô hiệu hóa tài khoản super admin");
     }
-    
+
     // Track isActive changes
     if (validatedInput.isActive !== existing.isActive) {
-      changes.isActive = { old: existing.isActive, new: validatedInput.isActive }
+      changes.isActive = {
+        old: existing.isActive,
+        new: validatedInput.isActive,
+      };
     }
-    updateData.isActive = validatedInput.isActive
+    updateData.isActive = validatedInput.isActive;
   }
-  if (validatedInput.bio !== undefined) updateData.bio = validatedInput.bio?.trim() || null
-  if (validatedInput.phone !== undefined) updateData.phone = validatedInput.phone?.trim() || null
-  if (validatedInput.address !== undefined) updateData.address = validatedInput.address?.trim() || null
+  if (validatedInput.bio !== undefined)
+    updateData.bio = validatedInput.bio?.trim() || null;
+  if (validatedInput.phone !== undefined)
+    updateData.phone = validatedInput.phone?.trim() || null;
+  if (validatedInput.address !== undefined)
+    updateData.address = validatedInput.address?.trim() || null;
   if (validatedInput.password && validatedInput.password.trim() !== "") {
-    updateData.password = await bcrypt.hash(validatedInput.password, 10)
+    updateData.password = await bcrypt.hash(validatedInput.password, 10);
   }
 
-  const shouldUpdateRoles = Array.isArray(validatedInput.roleIds)
-  
+  const shouldUpdateRoles = Array.isArray(validatedInput.roleIds);
+
   // Track role changes
   if (shouldUpdateRoles) {
-    const oldRoleNames = existing.userRoles.map((ur) => ur.role.name).sort()
+    const oldRoleNames = existing.userRoles.map((ur) => ur.role.name).sort();
     // Get new role names
-    const newRoleIds = validatedInput.roleIds || []
+    const newRoleIds = validatedInput.roleIds || [];
     const newRoles = await prisma.role.findMany({
       where: { id: { in: newRoleIds } },
       select: { name: true },
-    })
-    const newRoleNames = newRoles.map((r) => r.name).sort()
-    
+    });
+    const newRoleNames = newRoles.map((r) => r.name).sort();
+
     if (JSON.stringify(oldRoleNames) !== JSON.stringify(newRoleNames)) {
-      changes.roles = { old: oldRoleNames, new: newRoleNames }
+      changes.roles = { old: oldRoleNames, new: newRoleNames };
     }
   }
 
@@ -201,13 +255,13 @@ export async function updateUser(ctx: AuthContext, id: string, input: UpdateUser
       await tx.user.update({
         where: { id },
         data: updateData,
-      })
+      });
     }
 
     if (shouldUpdateRoles) {
       await tx.userRole.deleteMany({
         where: { userId: id },
-      })
+      });
 
       if (validatedInput.roleIds && validatedInput.roleIds.length > 0) {
         await tx.userRole.createMany({
@@ -215,7 +269,7 @@ export async function updateUser(ctx: AuthContext, id: string, input: UpdateUser
             userId: id,
             roleId,
           })),
-        })
+        });
       }
     }
 
@@ -234,14 +288,14 @@ export async function updateUser(ctx: AuthContext, id: string, input: UpdateUser
           },
         },
       },
-    })
+    });
 
     if (!updated) {
-      throw new NotFoundError("User không tồn tại")
+      throw new NotFoundError("User không tồn tại");
     }
 
-    return updated
-  })
+    return updated;
+  });
 
   // Tạo system notification cho super admin nếu có thay đổi quan trọng
   if (Object.keys(changes).length > 0) {
@@ -254,32 +308,46 @@ export async function updateUser(ctx: AuthContext, id: string, input: UpdateUser
         name: user.name,
       },
       changes
-    )
+    );
   }
 
-  const previousStatus: "active" | "deleted" = existing.deletedAt ? "deleted" : "active"
-  await emitUserUpsert(user.id, previousStatus)
+  const previousStatus: "active" | "deleted" = existing.deletedAt
+    ? "deleted"
+    : "active";
+  await emitUserUpsert(user.id, previousStatus);
 
-  const sanitized = sanitizeUser(user)
-  logActionFlow("users", "update", "success", { userId: user.id, userEmail: user.email, changes: Object.keys(changes) }, startTime)
-  logDetailAction("users", "update", user.id, { ...sanitized, changes } as unknown as Record<string, unknown>)
+  const sanitized = sanitizeUser(user);
+  logActionFlow(
+    "users",
+    "update",
+    "success",
+    { userId: user.id, userEmail: user.email, changes: Object.keys(changes) },
+    startTime
+  );
+  logDetailAction("users", "update", user.id, {
+    ...sanitized,
+    changes,
+  } as unknown as Record<string, unknown>);
 
-  return sanitized
-}
+  return sanitized;
+};
 
-export async function softDeleteUser(ctx: AuthContext, id: string): Promise<void> {
-  ensurePermission(ctx, PERMISSIONS.USERS_DELETE, PERMISSIONS.USERS_MANAGE)
+export const softDeleteUser = async (
+  ctx: AuthContext,
+  id: string
+): Promise<void> => {
+  ensurePermission(ctx, PERMISSIONS.USERS_DELETE, PERMISSIONS.USERS_MANAGE);
 
-  const startTime = Date.now()
-  logActionFlow("users", "delete", "init", { userId: id })
+  const startTime = Date.now();
+  logActionFlow("users", "delete", "init", { userId: id });
 
-  const user = await prisma.user.findUnique({ where: { id } })
+  const user = await prisma.user.findUnique({ where: { id } });
   if (!user || user.deletedAt) {
-    throw new NotFoundError("User không tồn tại")
+    throw new NotFoundError("User không tồn tại");
   }
 
   if (user.email === PROTECTED_SUPER_ADMIN_EMAIL) {
-    throw new ForbiddenError("Không thể xóa tài khoản super admin")
+    throw new ForbiddenError("Không thể xóa tài khoản super admin");
   }
 
   await prisma.user.update({
@@ -288,27 +356,44 @@ export async function softDeleteUser(ctx: AuthContext, id: string): Promise<void
       deletedAt: new Date(),
       isActive: false,
     },
-  })
+  });
 
   await logTableStatusAfterMutation({
     resource: "users",
     action: "delete",
     prismaModel: prisma.user,
     affectedIds: id,
-  })
+  });
 
-  await notifySuperAdminsOfUserAction("delete", ctx.actorId, { id: user.id, email: user.email, name: user.name })
-  await emitUserUpsert(id, "active")
+  await notifySuperAdminsOfUserAction("delete", ctx.actorId, {
+    id: user.id,
+    email: user.email,
+    name: user.name,
+  });
+  await emitUserUpsert(id, "active");
 
-  logActionFlow("users", "delete", "success", { userId: id, userEmail: user.email }, startTime)
-  logDetailAction("users", "delete", id, { id: user.id, email: user.email, name: user.name } as unknown as Record<string, unknown>)
-}
+  logActionFlow(
+    "users",
+    "delete",
+    "success",
+    { userId: id, userEmail: user.email },
+    startTime
+  );
+  logDetailAction("users", "delete", id, {
+    id: user.id,
+    email: user.email,
+    name: user.name,
+  } as unknown as Record<string, unknown>);
+};
 
-export async function bulkSoftDeleteUsers(ctx: AuthContext, ids: string[]): Promise<BulkActionResult> {
-  ensurePermission(ctx, PERMISSIONS.USERS_DELETE, PERMISSIONS.USERS_MANAGE)
+export const bulkSoftDeleteUsers = async (
+  ctx: AuthContext,
+  ids: string[]
+): Promise<BulkActionResult> => {
+  ensurePermission(ctx, PERMISSIONS.USERS_DELETE, PERMISSIONS.USERS_MANAGE);
 
   if (!ids || ids.length === 0) {
-    throw new ApplicationError("Danh sách người dùng trống", 400)
+    throw new ApplicationError("Danh sách người dùng trống", 400);
   }
 
   // Lấy thông tin users trước khi delete để kiểm tra và tạo notifications
@@ -318,12 +403,12 @@ export async function bulkSoftDeleteUsers(ctx: AuthContext, ids: string[]): Prom
       deletedAt: null,
     },
     select: { id: true, email: true, name: true },
-  })
+  });
 
-  const foundIds = users.map(u => u.id)
-  const notFoundIds = ids.filter(id => !foundIds.includes(id))
-  
-  const startTime = Date.now()
+  const foundIds = users.map((u) => u.id);
+  const notFoundIds = ids.filter((id) => !foundIds.includes(id));
+
+  const startTime = Date.now();
   logActionFlow("users", "bulk-delete", "start", {
     requestedCount: ids.length,
     foundCount: users.length,
@@ -331,44 +416,54 @@ export async function bulkSoftDeleteUsers(ctx: AuthContext, ids: string[]): Prom
     requestedIds: ids,
     foundIds,
     notFoundIds,
-  })
+  });
 
   // Kiểm tra xem có super admin trong danh sách không
-  const superAdminUser = users.find((u) => u.email === PROTECTED_SUPER_ADMIN_EMAIL)
+  const superAdminUser = users.find(
+    (u) => u.email === PROTECTED_SUPER_ADMIN_EMAIL
+  );
   if (superAdminUser) {
-    throw new ForbiddenError("Không thể xóa tài khoản super admin")
+    throw new ForbiddenError("Không thể xóa tài khoản super admin");
   }
 
   // Filter ra super admin từ danh sách IDs (nếu có)
   const filteredIds = users
     .filter((u) => u.email !== PROTECTED_SUPER_ADMIN_EMAIL)
-    .map((u) => u.id)
+    .map((u) => u.id);
 
   if (filteredIds.length === 0) {
     // Tạo error message rõ ràng hơn
-    const alreadyDeletedCount = ids.length - users.length
-    const superAdminCount = users.filter((u) => u.email === PROTECTED_SUPER_ADMIN_EMAIL).length
-    
-    let errorMessage = "Không có người dùng nào có thể xóa"
+    const alreadyDeletedCount = ids.length - users.length;
+    const superAdminCount = users.filter(
+      (u) => u.email === PROTECTED_SUPER_ADMIN_EMAIL
+    ).length;
+
+    let errorMessage = "Không có người dùng nào có thể xóa";
     if (alreadyDeletedCount > 0) {
-      errorMessage += `. ${alreadyDeletedCount} người dùng đã bị xóa trước đó`
+      errorMessage += `. ${alreadyDeletedCount} người dùng đã bị xóa trước đó`;
     }
     if (superAdminCount > 0) {
-      errorMessage += `. ${superAdminCount} người dùng là super admin và không thể xóa`
+      errorMessage += `. ${superAdminCount} người dùng là super admin và không thể xóa`;
     }
     if (users.length === 0 && ids.length > 0) {
-      errorMessage = `Không tìm thấy người dùng nào trong danh sách (có thể đã bị xóa hoặc không tồn tại)`
+      errorMessage = `Không tìm thấy người dùng nào trong danh sách (có thể đã bị xóa hoặc không tồn tại)`;
     }
-    
-    logActionFlow("users", "bulk-delete", "error", {
-      requestedCount: ids.length,
-      foundCount: users.length,
-      alreadyDeletedCount,
-      superAdminCount,
-      error: errorMessage,
-    }, startTime)
-    
-    throw new ApplicationError(errorMessage, 400)
+
+    logActionFlow(
+      "users",
+      "bulk-delete",
+      "error",
+      {
+        requestedCount: ids.length,
+        foundCount: users.length,
+        alreadyDeletedCount,
+        superAdminCount,
+        error: errorMessage,
+      },
+      startTime
+    );
+
+    throw new ApplicationError(errorMessage, 400);
   }
 
   const result = await prisma.user.updateMany({
@@ -380,7 +475,7 @@ export async function bulkSoftDeleteUsers(ctx: AuthContext, ids: string[]): Prom
       deletedAt: new Date(),
       isActive: false,
     },
-  })
+  });
 
   if (result.count > 0) {
     await logTableStatusAfterMutation({
@@ -389,41 +484,64 @@ export async function bulkSoftDeleteUsers(ctx: AuthContext, ids: string[]): Prom
       prismaModel: prisma.user,
       affectedIds: filteredIds,
       affectedCount: result.count,
-    })
+    });
   }
 
-  const deletableUsers = users.filter((u) => u.email !== PROTECTED_SUPER_ADMIN_EMAIL)
+  const deletableUsers = users.filter(
+    (u) => u.email !== PROTECTED_SUPER_ADMIN_EMAIL
+  );
   if (result.count > 0 && deletableUsers.length > 0) {
     try {
-      await emitBatchUserUpsert(deletableUsers.map(u => u.id), "active")
+      await emitBatchUserUpsert(
+        deletableUsers.map((u) => u.id),
+        "active"
+      );
     } catch (error) {
       logActionFlow("users", "bulk-delete", "error", {
         error: error instanceof Error ? error.message : String(error),
         count: result.count,
-      })
+      });
     }
 
     try {
-      await notifySuperAdminsOfBulkUserAction("delete", ctx.actorId, result.count, deletableUsers)
+      await notifySuperAdminsOfBulkUserAction(
+        "delete",
+        ctx.actorId,
+        result.count,
+        deletableUsers
+      );
     } catch (error) {
       logActionFlow("users", "bulk-delete", "error", {
         error: error instanceof Error ? error.message : String(error),
         notificationError: true,
-      })
+      });
     }
 
-    logActionFlow("users", "bulk-delete", "success", { requestedCount: ids.length, affectedCount: result.count }, startTime)
+    logActionFlow(
+      "users",
+      "bulk-delete",
+      "success",
+      { requestedCount: ids.length, affectedCount: result.count },
+      startTime
+    );
   }
 
-  return { success: true, message: `Đã xóa ${result.count} người dùng`, affected: result.count }
-}
+  return {
+    success: true,
+    message: `Đã xóa ${result.count} người dùng`,
+    affected: result.count,
+  };
+};
 
-export async function restoreUser(ctx: AuthContext, id: string): Promise<void> {
-  ensurePermission(ctx, PERMISSIONS.USERS_UPDATE, PERMISSIONS.USERS_MANAGE)
+export const restoreUser = async (
+  ctx: AuthContext,
+  id: string
+): Promise<void> => {
+  ensurePermission(ctx, PERMISSIONS.USERS_UPDATE, PERMISSIONS.USERS_MANAGE);
 
-  const user = await prisma.user.findUnique({ where: { id } })
+  const user = await prisma.user.findUnique({ where: { id } });
   if (!user || !user.deletedAt) {
-    throw new NotFoundError("User không tồn tại hoặc chưa bị xóa")
+    throw new NotFoundError("User không tồn tại hoặc chưa bị xóa");
   }
 
   await prisma.user.update({
@@ -432,30 +550,47 @@ export async function restoreUser(ctx: AuthContext, id: string): Promise<void> {
       deletedAt: null,
       isActive: true,
     },
-  })
+  });
 
-  const startTime = Date.now()
-  logActionFlow("users", "restore", "init", { userId: id })
+  const startTime = Date.now();
+  logActionFlow("users", "restore", "init", { userId: id });
 
   await logTableStatusAfterMutation({
     resource: "users",
     action: "restore",
     prismaModel: prisma.user,
     affectedIds: id,
-  })
+  });
 
-  await notifySuperAdminsOfUserAction("restore", ctx.actorId, { id: user.id, email: user.email, name: user.name })
-  await emitUserUpsert(id, "deleted")
+  await notifySuperAdminsOfUserAction("restore", ctx.actorId, {
+    id: user.id,
+    email: user.email,
+    name: user.name,
+  });
+  await emitUserUpsert(id, "deleted");
 
-  logActionFlow("users", "restore", "success", { userId: user.id, userEmail: user.email }, startTime)
-  logDetailAction("users", "restore", id, { id: user.id, email: user.email, name: user.name } as unknown as Record<string, unknown>)
-}
+  logActionFlow(
+    "users",
+    "restore",
+    "success",
+    { userId: user.id, userEmail: user.email },
+    startTime
+  );
+  logDetailAction("users", "restore", id, {
+    id: user.id,
+    email: user.email,
+    name: user.name,
+  } as unknown as Record<string, unknown>);
+};
 
-export async function bulkRestoreUsers(ctx: AuthContext, ids: string[]): Promise<BulkActionResult> {
-  ensurePermission(ctx, PERMISSIONS.USERS_UPDATE, PERMISSIONS.USERS_MANAGE)
+export const bulkRestoreUsers = async (
+  ctx: AuthContext,
+  ids: string[]
+): Promise<BulkActionResult> => {
+  ensurePermission(ctx, PERMISSIONS.USERS_UPDATE, PERMISSIONS.USERS_MANAGE);
 
   if (!ids || ids.length === 0) {
-    throw new ApplicationError("Danh sách người dùng trống", 400)
+    throw new ApplicationError("Danh sách người dùng trống", 400);
   }
 
   // Lấy thông tin users trước khi restore để tạo notifications
@@ -465,12 +600,12 @@ export async function bulkRestoreUsers(ctx: AuthContext, ids: string[]): Promise
       deletedAt: { not: null },
     },
     select: { id: true, email: true, name: true },
-  })
+  });
 
-  const foundIds = users.map(u => u.id)
-  const notFoundIds = ids.filter(id => !foundIds.includes(id))
-  
-  const startTime = Date.now()
+  const foundIds = users.map((u) => u.id);
+  const notFoundIds = ids.filter((id) => !foundIds.includes(id));
+
+  const startTime = Date.now();
   logActionFlow("users", "bulk-restore", "start", {
     requestedCount: ids.length,
     foundCount: users.length,
@@ -478,38 +613,46 @@ export async function bulkRestoreUsers(ctx: AuthContext, ids: string[]): Promise
     requestedIds: ids,
     foundIds,
     notFoundIds,
-  })
+  });
 
   // Kiểm tra nếu không có user nào để restore
   if (users.length === 0) {
     const allUsers = await prisma.user.findMany({
       where: { id: { in: ids } },
       select: { id: true, email: true, deletedAt: true },
-    })
-    const alreadyActiveCount = allUsers.filter(u => u.deletedAt === null).length
-    const notFoundCount = ids.length - allUsers.length
-    const notFoundIds = ids.filter(id => !allUsers.some(u => u.id === id))
-    
-    let errorMessage = "Không có người dùng nào có thể khôi phục"
+    });
+    const alreadyActiveCount = allUsers.filter(
+      (u) => u.deletedAt === null
+    ).length;
+    const notFoundCount = ids.length - allUsers.length;
+    const notFoundIds = ids.filter((id) => !allUsers.some((u) => u.id === id));
+
+    let errorMessage = "Không có người dùng nào có thể khôi phục";
     if (alreadyActiveCount > 0) {
-      errorMessage += `. ${alreadyActiveCount} người dùng đang ở trạng thái hoạt động`
+      errorMessage += `. ${alreadyActiveCount} người dùng đang ở trạng thái hoạt động`;
     }
     if (notFoundCount > 0) {
-      errorMessage += `. ${notFoundCount} người dùng không tồn tại`
+      errorMessage += `. ${notFoundCount} người dùng không tồn tại`;
     }
-    
-    logActionFlow("users", "bulk-restore", "error", {
-      requestedCount: ids.length,
-      foundCount: users.length,
-      notFoundCount,
-      alreadyActiveCount,
-      requestedIds: ids,
-      foundIds,
-      notFoundIds,
-      error: errorMessage,
-    }, startTime)
-    
-    throw new ApplicationError(errorMessage, 400)
+
+    logActionFlow(
+      "users",
+      "bulk-restore",
+      "error",
+      {
+        requestedCount: ids.length,
+        foundCount: users.length,
+        notFoundCount,
+        alreadyActiveCount,
+        requestedIds: ids,
+        foundIds,
+        notFoundIds,
+        error: errorMessage,
+      },
+      startTime
+    );
+
+    throw new ApplicationError(errorMessage, 400);
   }
 
   const result = await prisma.user.updateMany({
@@ -521,7 +664,7 @@ export async function bulkRestoreUsers(ctx: AuthContext, ids: string[]): Promise
       deletedAt: null,
       isActive: true,
     },
-  })
+  });
 
   if (result.count > 0) {
     await logTableStatusAfterMutation({
@@ -530,83 +673,109 @@ export async function bulkRestoreUsers(ctx: AuthContext, ids: string[]): Promise
       prismaModel: prisma.user,
       affectedIds: ids,
       affectedCount: result.count,
-    })
+    });
   }
 
   if (result.count > 0 && users.length > 0) {
     try {
-      await emitBatchUserUpsert(users.map(u => u.id), "deleted")
+      await emitBatchUserUpsert(
+        users.map((u) => u.id),
+        "deleted"
+      );
     } catch (error) {
       logActionFlow("users", "bulk-restore", "error", {
         error: error instanceof Error ? error.message : String(error),
         count: result.count,
-      })
+      });
     }
 
     try {
-      await notifySuperAdminsOfBulkUserAction("restore", ctx.actorId, result.count, users)
+      await notifySuperAdminsOfBulkUserAction(
+        "restore",
+        ctx.actorId,
+        result.count,
+        users
+      );
     } catch (error) {
       logActionFlow("users", "bulk-restore", "error", {
         error: error instanceof Error ? error.message : String(error),
         notificationError: true,
-      })
+      });
     }
 
-    logActionFlow("users", "bulk-restore", "success", { requestedCount: ids.length, affectedCount: result.count }, startTime)
+    logActionFlow(
+      "users",
+      "bulk-restore",
+      "success",
+      { requestedCount: ids.length, affectedCount: result.count },
+      startTime
+    );
   }
 
-  return { success: true, message: `Đã khôi phục ${result.count} người dùng`, affected: result.count }
+  return {
+    success: true,
+    message: `Đã khôi phục ${result.count} người dùng`,
+    affected: result.count,
+  };
 }
 
-export async function hardDeleteUser(ctx: AuthContext, id: string): Promise<void> {
-  if (!canPerformAnyAction(ctx.permissions, ctx.roles, [PERMISSIONS.USERS_MANAGE])) {
-    throw new ForbiddenError()
+export const hardDeleteUser = async (
+  ctx: AuthContext,
+  id: string
+): Promise<void> => {
+  if (
+    !canPerformAnyAction(ctx.permissions, ctx.roles, [PERMISSIONS.USERS_MANAGE])
+  ) {
+    throw new ForbiddenError();
   }
 
   // Lấy thông tin user trước khi delete để kiểm tra và tạo notification
   const user = await prisma.user.findUnique({
     where: { id },
     select: { id: true, email: true, name: true, deletedAt: true },
-  })
+  });
 
   if (!user) {
-    throw new NotFoundError("User không tồn tại")
+    throw new NotFoundError("User không tồn tại");
   }
 
   // Không cho phép xóa super admin
   if (user.email === PROTECTED_SUPER_ADMIN_EMAIL) {
-    throw new ForbiddenError("Không thể xóa vĩnh viễn tài khoản super admin")
+    throw new ForbiddenError("Không thể xóa vĩnh viễn tài khoản super admin");
   }
 
   await prisma.user.delete({
     where: { id },
-  })
+  });
 
   // Tạo system notification cho super admin
-  await notifySuperAdminsOfUserAction(
-    "hard-delete",
-    ctx.actorId,
-    {
-      id: user.id,
-      email: user.email,
-      name: user.name,
-    }
-  )
+  await notifySuperAdminsOfUserAction("hard-delete", ctx.actorId, {
+    id: user.id,
+    email: user.email,
+    name: user.name,
+  });
 
   // Emit socket event - cần lấy previousStatus trước khi delete
-  const previousStatus: "active" | "deleted" = user.deletedAt ? "deleted" : "active"
-  emitUserRemove(id, previousStatus)
+  const previousStatus: "active" | "deleted" = user.deletedAt
+    ? "deleted"
+    : "active";
+  emitUserRemove(id, previousStatus);
 
   // Invalidate cache
 }
 
-export async function bulkHardDeleteUsers(ctx: AuthContext, ids: string[]): Promise<BulkActionResult> {
-  if (!canPerformAnyAction(ctx.permissions, ctx.roles, [PERMISSIONS.USERS_MANAGE])) {
-    throw new ForbiddenError()
+export const bulkHardDeleteUsers = async (
+  ctx: AuthContext,
+  ids: string[]
+): Promise<BulkActionResult> => {
+  if (
+    !canPerformAnyAction(ctx.permissions, ctx.roles, [PERMISSIONS.USERS_MANAGE])
+  ) {
+    throw new ForbiddenError();
   }
 
   if (!ids || ids.length === 0) {
-    throw new ApplicationError("Danh sách người dùng trống", 400)
+    throw new ApplicationError("Danh sách người dùng trống", 400);
   }
 
   // Lấy thông tin users trước khi delete để kiểm tra và tạo notifications
@@ -615,12 +784,12 @@ export async function bulkHardDeleteUsers(ctx: AuthContext, ids: string[]): Prom
       id: { in: ids },
     },
     select: { id: true, email: true, name: true, deletedAt: true },
-  })
+  });
 
-  const foundIds = users.map(u => u.id)
-  const notFoundIds = ids.filter(id => !foundIds.includes(id))
-  
-  const startTime = Date.now()
+  const foundIds = users.map((u) => u.id);
+  const notFoundIds = ids.filter((id) => !foundIds.includes(id));
+
+  const startTime = Date.now();
   logActionFlow("users", "bulk-hard-delete", "start", {
     requestedCount: ids.length,
     foundCount: users.length,
@@ -628,67 +797,81 @@ export async function bulkHardDeleteUsers(ctx: AuthContext, ids: string[]): Prom
     requestedIds: ids,
     foundIds,
     notFoundIds,
-  })
+  });
 
   // Kiểm tra xem có super admin trong danh sách không
-  const superAdminUser = users.find((u) => u.email === PROTECTED_SUPER_ADMIN_EMAIL)
+  const superAdminUser = users.find(
+    (u) => u.email === PROTECTED_SUPER_ADMIN_EMAIL
+  );
   if (superAdminUser) {
-    throw new ForbiddenError("Không thể xóa vĩnh viễn tài khoản super admin")
+    throw new ForbiddenError("Không thể xóa vĩnh viễn tài khoản super admin");
   }
 
   // Filter ra super admin từ danh sách IDs (nếu có)
   const filteredIds = users
     .filter((u) => u.email !== PROTECTED_SUPER_ADMIN_EMAIL)
-    .map((u) => u.id)
+    .map((u) => u.id);
 
   if (filteredIds.length === 0) {
     // Tạo error message rõ ràng hơn
-    const notFoundCount = notFoundIds.length
-    const superAdminCount = users.filter((u) => u.email === PROTECTED_SUPER_ADMIN_EMAIL).length
-    
-    let errorMessage = "Không có người dùng nào có thể xóa vĩnh viễn"
+    const notFoundCount = notFoundIds.length;
+    const superAdminCount = users.filter(
+      (u) => u.email === PROTECTED_SUPER_ADMIN_EMAIL
+    ).length;
+
+    let errorMessage = "Không có người dùng nào có thể xóa vĩnh viễn";
     if (notFoundCount > 0) {
-      errorMessage += `. ${notFoundCount} người dùng không tồn tại`
+      errorMessage += `. ${notFoundCount} người dùng không tồn tại`;
     }
     if (superAdminCount > 0) {
-      errorMessage += `. ${superAdminCount} người dùng là super admin và không thể xóa`
+      errorMessage += `. ${superAdminCount} người dùng là super admin và không thể xóa`;
     }
     if (users.length === 0 && ids.length > 0) {
-      errorMessage = `Không tìm thấy người dùng nào trong danh sách`
+      errorMessage = `Không tìm thấy người dùng nào trong danh sách`;
     }
-    
-    logActionFlow("users", "bulk-hard-delete", "error", {
-      requestedCount: ids.length,
-      foundCount: users.length,
-      notFoundCount,
-      superAdminCount,
-      requestedIds: ids,
-      foundIds,
-      notFoundIds,
-      error: errorMessage,
-    }, startTime)
-    
-    throw new ApplicationError(errorMessage, 400)
+
+    logActionFlow(
+      "users",
+      "bulk-hard-delete",
+      "error",
+      {
+        requestedCount: ids.length,
+        foundCount: users.length,
+        notFoundCount,
+        superAdminCount,
+        requestedIds: ids,
+        foundIds,
+        notFoundIds,
+        error: errorMessage,
+      },
+      startTime
+    );
+
+    throw new ApplicationError(errorMessage, 400);
   }
 
   const result = await prisma.user.deleteMany({
     where: {
       id: { in: filteredIds },
     },
-  })
+  });
 
   // Emit socket events và tạo bulk notification
-  const deletableUsers = users.filter((u) => u.email !== PROTECTED_SUPER_ADMIN_EMAIL)
+  const deletableUsers = users.filter(
+    (u) => u.email !== PROTECTED_SUPER_ADMIN_EMAIL
+  );
   if (result.count > 0) {
     // Emit batch remove events
-    const { getSocketServer } = await import("@/lib/socket/state")
-    const io = getSocketServer()
+    const { getSocketServer } = await import("@/lib/socket/state");
+    const io = getSocketServer();
     if (io && deletableUsers.length > 0) {
       const removeEvents = deletableUsers.map((user) => ({
         id: user.id,
         previousStatus: (user.deletedAt ? "deleted" : "active") as UserStatus,
-      }))
-      io.to("role:super_admin").emit("user:batch-remove", { users: removeEvents })
+      }));
+      io.to("role:super_admin").emit("user:batch-remove", {
+        users: removeEvents,
+      });
     }
 
     // Tạo bulk notification với tên records
@@ -697,10 +880,20 @@ export async function bulkHardDeleteUsers(ctx: AuthContext, ids: string[]): Prom
       ctx.actorId,
       result.count,
       deletableUsers
-    )
+    );
 
-    logActionFlow("users", "bulk-hard-delete", "success", { requestedCount: ids.length, affectedCount: result.count }, startTime)
+    logActionFlow(
+      "users",
+      "bulk-hard-delete",
+      "success",
+      { requestedCount: ids.length, affectedCount: result.count },
+      startTime
+    );
   }
 
-  return { success: true, message: `Đã xóa vĩnh viễn ${result.count} người dùng`, affected: result.count }
+  return {
+    success: true,
+    message: `Đã xóa vĩnh viễn ${result.count} người dùng`,
+    affected: result.count,
+  };
 }

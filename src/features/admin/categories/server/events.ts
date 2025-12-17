@@ -8,11 +8,11 @@ const SUPER_ADMIN_ROOM = "role:super_admin"
 
 export type CategoryStatus = "active" | "deleted"
 
-function resolveStatusFromRow(row: CategoryRow): CategoryStatus {
+const resolveStatusFromRow = (row: CategoryRow): CategoryStatus => {
   return row.deletedAt ? "deleted" : "active"
 }
 
-async function fetchCategoryRow(categoryId: string): Promise<CategoryRow | null> {
+const fetchCategoryRow = async (categoryId: string): Promise<CategoryRow | null> => {
   const category = await prisma.category.findUnique({
     where: { id: categoryId },
   })
@@ -25,10 +25,10 @@ async function fetchCategoryRow(categoryId: string): Promise<CategoryRow | null>
   return serializeCategoryForTable(listed)
 }
 
-export async function emitCategoryUpsert(
+export const emitCategoryUpsert = async (
   categoryId: string,
   previousStatus: CategoryStatus | null,
-): Promise<void> {
+): Promise<void> => {
   const io = getSocketServer()
   if (!io) return
 

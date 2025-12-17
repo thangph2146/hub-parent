@@ -7,11 +7,11 @@ const SUPER_ADMIN_ROOM = "role:super_admin"
 
 export type SessionStatus = "active" | "deleted"
 
-function resolveStatusFromRow(row: SessionRow): SessionStatus {
+const resolveStatusFromRow = (row: SessionRow): SessionStatus => {
   return row.isActive ? "active" : "deleted"
 }
 
-async function fetchSessionRow(sessionId: string): Promise<SessionRow | null> {
+const fetchSessionRow = async (sessionId: string): Promise<SessionRow | null> => {
   const session = await prisma.session.findUnique({
     where: { id: sessionId },
     include: {
@@ -37,10 +37,10 @@ async function fetchSessionRow(sessionId: string): Promise<SessionRow | null> {
   })
 }
 
-export async function emitSessionUpsert(
+export const emitSessionUpsert = async (
   sessionId: string,
   previousStatus: SessionStatus | null,
-): Promise<void> {
+): Promise<void> => {
   const io = getSocketServer()
   if (!io) return
 
@@ -71,10 +71,10 @@ export const emitSessionRemove = (sessionId: string, previousStatus: SessionStat
   })
 }
 
-export async function emitSessionBatchUpsert(
+export const emitSessionBatchUpsert = async (
   sessionIds: string[],
   previousStatus: SessionStatus | null,
-): Promise<void> {
+): Promise<void> => {
   const io = getSocketServer()
   if (!io || sessionIds.length === 0) return
 

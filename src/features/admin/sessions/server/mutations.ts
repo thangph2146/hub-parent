@@ -28,15 +28,15 @@ import {
 // Re-export for backward compatibility with API routes
 export { ApplicationError, ForbiddenError, NotFoundError, type AuthContext }
 
-function sanitizeSession(session: SessionWithRelations): ListedSession {
+const sanitizeSession = (session: SessionWithRelations): ListedSession => {
   return mapSessionRecord(session)
 }
 
-async function logSessionTableStatus(
+const logSessionTableStatus = async (
   action: "delete" | "restore" | "bulk-delete" | "bulk-restore",
   affectedIds: string | string[],
   affectedCount?: number
-): Promise<void> {
+): Promise<void> => {
   logActionFlow("sessions", action, "start", { 
     loggingTableStatus: true, 
     affectedCount,
@@ -75,7 +75,7 @@ async function logSessionTableStatus(
   })
 }
 
-export async function createSession(ctx: AuthContext, input: CreateSessionInput): Promise<ListedSession> {
+export const createSession = async (ctx: AuthContext, input: CreateSessionInput): Promise<ListedSession> => {
   ensurePermission(ctx, PERMISSIONS.SESSIONS_CREATE, PERMISSIONS.SESSIONS_MANAGE)
 
   // Validate input với zod
@@ -139,7 +139,7 @@ export async function createSession(ctx: AuthContext, input: CreateSessionInput)
   return sanitized
 }
 
-export async function updateSession(ctx: AuthContext, id: string, input: UpdateSessionInput): Promise<ListedSession> {
+export const updateSession = async (ctx: AuthContext, id: string, input: UpdateSessionInput): Promise<ListedSession> => {
   ensurePermission(ctx, PERMISSIONS.SESSIONS_UPDATE, PERMISSIONS.SESSIONS_MANAGE)
 
   if (!id || typeof id !== "string" || id.trim() === "") {
@@ -293,7 +293,7 @@ export async function updateSession(ctx: AuthContext, id: string, input: UpdateS
   return sanitized
 }
 
-export async function softDeleteSession(ctx: AuthContext, id: string): Promise<void> {
+export const softDeleteSession = async (ctx: AuthContext, id: string): Promise<void> => {
   ensurePermission(ctx, PERMISSIONS.SESSIONS_DELETE, PERMISSIONS.SESSIONS_MANAGE)
 
   const startTime = Date.now()
@@ -327,7 +327,7 @@ export async function softDeleteSession(ctx: AuthContext, id: string): Promise<v
   logDetailAction("sessions", "delete", id, { id: session.id, userId: session.userId, accessToken: session.accessToken } as unknown as Record<string, unknown>)
 }
 
-export async function bulkSoftDeleteSessions(ctx: AuthContext, ids: string[]): Promise<BulkActionResult> {
+export const bulkSoftDeleteSessions = async (ctx: AuthContext, ids: string[]): Promise<BulkActionResult> => {
   ensurePermission(ctx, PERMISSIONS.SESSIONS_DELETE, PERMISSIONS.SESSIONS_MANAGE)
 
   const startTime = Date.now()
@@ -398,7 +398,7 @@ export async function bulkSoftDeleteSessions(ctx: AuthContext, ids: string[]): P
   return { success: true, message: `Đã xóa ${result.count} session`, affectedCount: result.count }
 }
 
-export async function restoreSession(ctx: AuthContext, id: string): Promise<void> {
+export const restoreSession = async (ctx: AuthContext, id: string): Promise<void> => {
   ensurePermission(ctx, PERMISSIONS.SESSIONS_UPDATE, PERMISSIONS.SESSIONS_MANAGE)
 
   const startTime = Date.now()
@@ -432,7 +432,7 @@ export async function restoreSession(ctx: AuthContext, id: string): Promise<void
   logDetailAction("sessions", "restore", id, { id: session.id, userId: session.userId, accessToken: session.accessToken } as unknown as Record<string, unknown>)
 }
 
-export async function bulkRestoreSessions(ctx: AuthContext, ids: string[]): Promise<BulkActionResult> {
+export const bulkRestoreSessions = async (ctx: AuthContext, ids: string[]): Promise<BulkActionResult> => {
   ensurePermission(ctx, PERMISSIONS.SESSIONS_UPDATE, PERMISSIONS.SESSIONS_MANAGE)
 
   if (!ids || ids.length === 0) {
@@ -501,7 +501,7 @@ export async function bulkRestoreSessions(ctx: AuthContext, ids: string[]): Prom
   return { success: true, message: `Đã khôi phục ${result.count} session`, affectedCount: result.count }
 }
 
-export async function hardDeleteSession(ctx: AuthContext, id: string): Promise<void> {
+export const hardDeleteSession = async (ctx: AuthContext, id: string): Promise<void> => {
   if (!canPerformAnyAction(ctx.permissions, ctx.roles, [PERMISSIONS.SESSIONS_MANAGE])) {
     throw new ForbiddenError()
   }
@@ -532,7 +532,7 @@ export async function hardDeleteSession(ctx: AuthContext, id: string): Promise<v
   logDetailAction("sessions", "hard-delete", id, session as unknown as Record<string, unknown>)
 }
 
-export async function bulkHardDeleteSessions(ctx: AuthContext, ids: string[]): Promise<BulkActionResult> {
+export const bulkHardDeleteSessions = async (ctx: AuthContext, ids: string[]): Promise<BulkActionResult> => {
   if (!canPerformAnyAction(ctx.permissions, ctx.roles, [PERMISSIONS.SESSIONS_MANAGE])) {
     throw new ForbiddenError()
   }

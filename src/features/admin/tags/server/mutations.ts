@@ -29,11 +29,11 @@ import { emitTagUpsert, emitTagRemove } from "./events"
 // Re-export for backward compatibility with API routes
 export { ApplicationError, ForbiddenError, NotFoundError, type AuthContext }
 
-function sanitizeTag(tag: TagWithRelations): ListedTag {
+const sanitizeTag = (tag: TagWithRelations): ListedTag => {
   return mapTagRecord(tag)
 }
 
-export async function createTag(ctx: AuthContext, input: CreateTagInput): Promise<ListedTag> {
+export const createTag = async (ctx: AuthContext, input: CreateTagInput): Promise<ListedTag> => {
   const startTime = Date.now()
   
   logActionFlow("tags", "create", "start", { actorId: ctx.actorId, input: { name: input.name, slug: input.slug } })
@@ -79,7 +79,7 @@ export async function createTag(ctx: AuthContext, input: CreateTagInput): Promis
   return sanitized
 }
 
-export async function updateTag(ctx: AuthContext, id: string, input: UpdateTagInput): Promise<ListedTag> {
+export const updateTag = async (ctx: AuthContext, id: string, input: UpdateTagInput): Promise<ListedTag> => {
   const startTime = Date.now()
   
   logActionFlow("tags", "update", "start", { tagId: id, actorId: ctx.actorId, input })
@@ -154,7 +154,7 @@ export async function updateTag(ctx: AuthContext, id: string, input: UpdateTagIn
   return sanitized
 }
 
-export async function softDeleteTag(ctx: AuthContext, id: string): Promise<void> {
+export const softDeleteTag = async (ctx: AuthContext, id: string): Promise<void> => {
   const startTime = Date.now()
   
   logActionFlow("tags", "delete", "start", { tagId: id, actorId: ctx.actorId })
@@ -185,7 +185,7 @@ export async function softDeleteTag(ctx: AuthContext, id: string): Promise<void>
   logActionFlow("tags", "delete", "success", { tagId: id, tagName: tag.name }, startTime)
 }
 
-export async function bulkSoftDeleteTags(ctx: AuthContext, ids: string[]): Promise<BulkActionResult> {
+export const bulkSoftDeleteTags = async (ctx: AuthContext, ids: string[]): Promise<BulkActionResult> => {
   const startTime = Date.now()
   
   logActionFlow("tags", "bulk-delete", "start", { count: ids.length, tagIds: ids, actorId: ctx.actorId })
@@ -268,7 +268,7 @@ export async function bulkSoftDeleteTags(ctx: AuthContext, ids: string[]): Promi
   return { success: true, message: `Đã xóa ${result.count} thẻ tag`, affected: result.count }
 }
 
-export async function restoreTag(ctx: AuthContext, id: string): Promise<void> {
+export const restoreTag = async (ctx: AuthContext, id: string): Promise<void> => {
   const startTime = Date.now()
   
   logActionFlow("tags", "restore", "start", { tagId: id, actorId: ctx.actorId })
@@ -299,7 +299,7 @@ export async function restoreTag(ctx: AuthContext, id: string): Promise<void> {
   logActionFlow("tags", "restore", "success", { tagId: id, tagName: tag.name }, startTime)
 }
 
-export async function bulkRestoreTags(ctx: AuthContext, ids: string[]): Promise<BulkActionResult> {
+export const bulkRestoreTags = async (ctx: AuthContext, ids: string[]): Promise<BulkActionResult> => {
   const startTime = Date.now()
   
   logActionFlow("tags", "bulk-restore", "start", { count: ids.length, tagIds: ids, actorId: ctx.actorId })
@@ -400,7 +400,7 @@ export async function bulkRestoreTags(ctx: AuthContext, ids: string[]): Promise<
   return { success: true, message, affected: result.count }
 }
 
-export async function hardDeleteTag(ctx: AuthContext, id: string): Promise<void> {
+export const hardDeleteTag = async (ctx: AuthContext, id: string): Promise<void> => {
   const startTime = Date.now()
   
   logActionFlow("tags", "hard-delete", "start", { tagId: id, actorId: ctx.actorId })
@@ -429,7 +429,7 @@ export async function hardDeleteTag(ctx: AuthContext, id: string): Promise<void>
   logActionFlow("tags", "hard-delete", "success", { tagId: id, tagName: tag.name }, startTime)
 }
 
-export async function bulkHardDeleteTags(ctx: AuthContext, ids: string[]): Promise<BulkActionResult> {
+export const bulkHardDeleteTags = async (ctx: AuthContext, ids: string[]): Promise<BulkActionResult> => {
   const startTime = Date.now()
   
   logActionFlow("tags", "bulk-hard-delete", "start", { count: ids.length, tagIds: ids, actorId: ctx.actorId })

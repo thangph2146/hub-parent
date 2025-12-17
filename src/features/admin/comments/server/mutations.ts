@@ -25,14 +25,14 @@ import { emitCommentUpsert, emitCommentRemove, emitCommentBatchUpsert } from "./
 export { ApplicationError, ForbiddenError, NotFoundError, type AuthContext }
 export type { BulkActionResult }
 
-async function handleBulkOperationAfterUpdate(
+const handleBulkOperationAfterUpdate = async (
   action: "bulk-delete" | "bulk-restore",
   commentIds: string[],
   comments: Array<{ id: string; content: string; author: { name: string | null; email: string }; post: { title: string } }>,
   resultCount: number,
   previousStatus: "active" | "deleted",
   ctx: AuthContext
-): Promise<string> {
+): Promise<string> => {
   await logTableStatusAfterMutation({
     resource: "comments",
     action: action === "bulk-delete" ? "bulk-delete" : "bulk-restore",
@@ -78,7 +78,7 @@ async function handleBulkOperationAfterUpdate(
   return namesText ? `Đã ${actionText} ${resultCount} bình luận: ${namesText}` : `Đã ${actionText} ${resultCount} bình luận`
 }
 
-export async function updateComment(ctx: AuthContext, id: string, input: UpdateCommentInput): Promise<ListedComment> {
+export const updateComment = async (ctx: AuthContext, id: string, input: UpdateCommentInput): Promise<ListedComment> => {
   const startTime = Date.now()
   logActionFlow("comments", "update", "init", { commentId: id, actorId: ctx.actorId })
 
@@ -189,11 +189,11 @@ export async function updateComment(ctx: AuthContext, id: string, input: UpdateC
   return sanitized
 }
 
-async function toggleCommentApproval(
+const toggleCommentApproval = async (
   ctx: AuthContext,
   id: string,
   action: "approve" | "unapprove"
-): Promise<void> {
+): Promise<void> => {    
   const startTime = Date.now()
   const targetApproved = action === "approve"
   logActionFlow("comments", action, "start", { commentId: id, actorId: ctx.actorId })
@@ -264,15 +264,15 @@ async function toggleCommentApproval(
   } as unknown as Record<string, unknown>)
 }
 
-export async function approveComment(ctx: AuthContext, id: string): Promise<void> {
+export const approveComment = async (ctx: AuthContext, id: string): Promise<void> => {
   await toggleCommentApproval(ctx, id, "approve")
 }
 
-export async function unapproveComment(ctx: AuthContext, id: string): Promise<void> {
+export const unapproveComment = async (ctx: AuthContext, id: string): Promise<void> => {
   await toggleCommentApproval(ctx, id, "unapprove")
 }
 
-export async function softDeleteComment(ctx: AuthContext, id: string): Promise<void> {
+export const softDeleteComment = async (ctx: AuthContext, id: string): Promise<void> => {
   const startTime = Date.now()
   logActionFlow("comments", "delete", "init", { commentId: id, actorId: ctx.actorId })
 
@@ -338,7 +338,7 @@ export async function softDeleteComment(ctx: AuthContext, id: string): Promise<v
   } as unknown as Record<string, unknown>)
 }
 
-export async function bulkSoftDeleteComments(ctx: AuthContext, ids: string[]): Promise<BulkActionResult> {
+export const bulkSoftDeleteComments = async (ctx: AuthContext, ids: string[]): Promise<BulkActionResult> => {
   const startTime = Date.now()
   logActionFlow("comments", "bulk-delete", "start", { count: ids.length, commentIds: ids, actorId: ctx.actorId })
 
@@ -431,7 +431,7 @@ export async function bulkSoftDeleteComments(ctx: AuthContext, ids: string[]): P
   return { success: true, message, affected: result.count }
 }
 
-export async function restoreComment(ctx: AuthContext, id: string): Promise<void> {
+export const restoreComment = async (ctx: AuthContext, id: string): Promise<void> => {
   const startTime = Date.now()
   logActionFlow("comments", "restore", "init", { commentId: id, actorId: ctx.actorId })
 
@@ -497,7 +497,7 @@ export async function restoreComment(ctx: AuthContext, id: string): Promise<void
   } as unknown as Record<string, unknown>)
 }
 
-export async function bulkRestoreComments(ctx: AuthContext, ids: string[]): Promise<BulkActionResult> {
+export const bulkRestoreComments = async (ctx: AuthContext, ids: string[]): Promise<BulkActionResult> => {
   const startTime = Date.now()
 
   ensurePermission(ctx, PERMISSIONS.COMMENTS_MANAGE)
@@ -612,7 +612,7 @@ export async function bulkRestoreComments(ctx: AuthContext, ids: string[]): Prom
   return { success: true, message, affected: result.count }
 }
 
-export async function hardDeleteComment(ctx: AuthContext, id: string): Promise<void> {
+export const hardDeleteComment = async (ctx: AuthContext, id: string): Promise<void> => {
   const startTime = Date.now()
   logActionFlow("comments", "hard-delete", "init", { commentId: id, actorId: ctx.actorId })
 
@@ -676,7 +676,7 @@ export async function hardDeleteComment(ctx: AuthContext, id: string): Promise<v
   } as unknown as Record<string, unknown>)
 }
 
-export async function bulkHardDeleteComments(ctx: AuthContext, ids: string[]): Promise<BulkActionResult> {
+export const bulkHardDeleteComments = async (ctx: AuthContext, ids: string[]): Promise<BulkActionResult> => {
   const startTime = Date.now()
   logActionFlow("comments", "bulk-hard-delete", "start", { count: ids.length, commentIds: ids, actorId: ctx.actorId })
 
@@ -770,7 +770,7 @@ export async function bulkHardDeleteComments(ctx: AuthContext, ids: string[]): P
   return { success: true, message, affected: result.count }
 }
 
-export async function bulkApproveComments(ctx: AuthContext, ids: string[]): Promise<BulkActionResult> {
+export const bulkApproveComments = async (ctx: AuthContext, ids: string[]): Promise<BulkActionResult> => {
   const startTime = Date.now()
   logActionFlow("comments", "bulk-approve", "start", { count: ids.length, commentIds: ids, actorId: ctx.actorId })
 
@@ -870,7 +870,7 @@ export async function bulkApproveComments(ctx: AuthContext, ids: string[]): Prom
   return { success: true, message, affected: result.count }
 }
 
-export async function bulkUnapproveComments(ctx: AuthContext, ids: string[]): Promise<BulkActionResult> {
+export const bulkUnapproveComments = async (ctx: AuthContext, ids: string[]): Promise<BulkActionResult> => {
   const startTime = Date.now()
   logActionFlow("comments", "bulk-unapprove", "start", { count: ids.length, commentIds: ids, actorId: ctx.actorId })
 

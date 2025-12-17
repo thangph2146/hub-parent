@@ -43,14 +43,14 @@ const itemVariants = {
   },
 }
 
-function getGreeting() {
+const getGreeting = () => {
   const hour = new Date().getHours()
   if (hour < 12) return "Chào buổi sáng"
   if (hour < 18) return "Chào buổi chiều"
   return "Chào buổi tối"
 }
 
-function getCurrentDate() {
+const getCurrentDate = () => {
   const date = new Date()
   const options: Intl.DateTimeFormatOptions = {
     weekday: "long",
@@ -61,7 +61,7 @@ function getCurrentDate() {
   return date.toLocaleDateString("vi-VN", options)
 }
 
-function getRoleInfo(roles: Array<{ name: string; displayName?: string }> = []) {
+const getRoleInfo = (roles: Array<{ name: string; displayName?: string }> = []) => {
   const roleNames = roles.map(r => r.name)
   const displayNames = roles.map(r => r.displayName || r.name).join(", ")
 

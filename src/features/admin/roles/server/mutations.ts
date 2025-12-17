@@ -1,16 +1,19 @@
-"use server"
+"use server";
 
-import type { Prisma } from "@prisma/client"
-import { PERMISSIONS, canPerformAnyAction } from "@/lib/permissions"
-import { prisma } from "@/lib/database"
-import { mapRoleRecord, type ListedRole } from "./queries"
+import type { Prisma } from "@prisma/client";
+import { PERMISSIONS, canPerformAnyAction } from "@/lib/permissions";
+import { prisma } from "@/lib/database";
+import { mapRoleRecord, type ListedRole } from "./queries";
 import {
   CreateRoleSchema,
   UpdateRoleSchema,
   type CreateRoleInput,
   type UpdateRoleInput,
-} from "./schemas"
-import { notifySuperAdminsOfRoleAction, notifySuperAdminsOfBulkRoleAction } from "./notifications"
+} from "./schemas";
+import {
+  notifySuperAdminsOfRoleAction,
+  notifySuperAdminsOfBulkRoleAction,
+} from "./notifications";
 import {
   ApplicationError,
   ForbiddenError,
@@ -20,26 +23,37 @@ import {
   logActionFlow,
   logDetailAction,
   type AuthContext,
-} from "@/features/admin/resources/server"
-import type { BulkActionResult } from "@/features/admin/resources/types"
-import { emitRoleUpsert, emitRoleRemove } from "./events"
+} from "@/features/admin/resources/server";
+import type { BulkActionResult } from "@/features/admin/resources/types";
+import { emitRoleUpsert, emitRoleRemove } from "./events";
 
 // Re-export for backward compatibility with API routes
-export { ApplicationError, ForbiddenError, NotFoundError, type AuthContext }
-export type { BulkActionResult }
+export { ApplicationError, ForbiddenError, NotFoundError, type AuthContext };
+export type { BulkActionResult };
 
-export async function createRole(ctx: AuthContext, input: CreateRoleInput): Promise<ListedRole> {
-  const startTime = Date.now()
-  
-  logActionFlow("roles", "create", "start", { actorId: ctx.actorId, input: { name: input.name, displayName: input.displayName } })
-  ensurePermission(ctx, PERMISSIONS.ROLES_CREATE, PERMISSIONS.ROLES_MANAGE)
+export const createRole = async (
+  ctx: AuthContext,
+  input: CreateRoleInput
+): Promise<ListedRole> => {
+  const startTime = Date.now();
 
-  const validatedInput = CreateRoleSchema.parse(input)
+  logActionFlow("roles", "create", "start", {
+    actorId: ctx.actorId,
+    input: { name: input.name, displayName: input.displayName },
+  });
+  ensurePermission(ctx, PERMISSIONS.ROLES_CREATE, PERMISSIONS.ROLES_MANAGE);
 
-  const existing = await prisma.role.findUnique({ where: { name: validatedInput.name.trim() } })
+  const validatedInput = CreateRoleSchema.parse(input);
+
+  const existing = await prisma.role.findUnique({
+    where: { name: validatedInput.name.trim() },
+  });
   if (existing) {
-    logActionFlow("roles", "create", "error", { error: "Tên vai trò đã tồn tại", name: validatedInput.name.trim() })
-    throw new ApplicationError("Tên vai trò đã tồn tại", 400)
+    logActionFlow("roles", "create", "error", {
+      error: "Tên vai trò đã tồn tại",
+      name: validatedInput.name.trim(),
+    });
+    throw new ApplicationError("Tên vai trò đã tồn tại", 400);
   }
 
   const role = await prisma.role.create({
@@ -50,176 +64,278 @@ export async function createRole(ctx: AuthContext, input: CreateRoleInput): Prom
       permissions: validatedInput.permissions || [],
       isActive: validatedInput.isActive ?? true,
     },
-  })
+  });
 
-  const sanitized = mapRoleRecord(role)
+  const sanitized = mapRoleRecord(role);
 
-  await emitRoleUpsert(sanitized.id, null)
+  await emitRoleUpsert(sanitized.id, null);
 
   await notifySuperAdminsOfRoleAction("create", ctx.actorId, {
     id: sanitized.id,
     name: sanitized.name,
     displayName: sanitized.displayName,
-  })
+  });
 
-  logActionFlow("roles", "create", "success", { roleId: sanitized.id, roleName: sanitized.name, roleDisplayName: sanitized.displayName }, startTime)
-  logDetailAction("roles", "create", sanitized.id, sanitized as unknown as Record<string, unknown>)
+  logActionFlow(
+    "roles",
+    "create",
+    "success",
+    {
+      roleId: sanitized.id,
+      roleName: sanitized.name,
+      roleDisplayName: sanitized.displayName,
+    },
+    startTime
+  );
+  logDetailAction(
+    "roles",
+    "create",
+    sanitized.id,
+    sanitized as unknown as Record<string, unknown>
+  );
 
-  return sanitized
-}
+  return sanitized;
+};
 
-export async function updateRole(ctx: AuthContext, id: string, input: UpdateRoleInput): Promise<ListedRole> {
-  const startTime = Date.now()
-  
-  logActionFlow("roles", "update", "start", { roleId: id, actorId: ctx.actorId, input })
-  ensurePermission(ctx, PERMISSIONS.ROLES_UPDATE, PERMISSIONS.ROLES_MANAGE)
+export const updateRole = async (
+  ctx: AuthContext,
+  id: string,
+  input: UpdateRoleInput
+): Promise<ListedRole> => {
+  const startTime = Date.now();
+
+  logActionFlow("roles", "update", "start", {
+    roleId: id,
+    actorId: ctx.actorId,
+    input,
+  });
+  ensurePermission(ctx, PERMISSIONS.ROLES_UPDATE, PERMISSIONS.ROLES_MANAGE);
 
   if (!id || typeof id !== "string" || id.trim() === "") {
-    throw new ApplicationError("ID vai trò không hợp lệ", 400)
+    throw new ApplicationError("ID vai trò không hợp lệ", 400);
   }
 
-  const validatedInput = UpdateRoleSchema.parse(input)
-  const existing = await prisma.role.findUnique({ where: { id } })
+  const validatedInput = UpdateRoleSchema.parse(input);
+  const existing = await prisma.role.findUnique({ where: { id } });
 
   if (!existing || existing.deletedAt) {
-    throw new NotFoundError("Vai trò không tồn tại")
+    throw new NotFoundError("Vai trò không tồn tại");
   }
 
   const changes: {
-    name?: { old: string; new: string }
-    displayName?: { old: string; new: string }
-    description?: { old: string | null; new: string | null }
-    permissions?: { old: string[]; new: string[] }
-    isActive?: { old: boolean; new: boolean }
-  } = {}
-  const updateData: Prisma.RoleUpdateInput = {}
+    name?: { old: string; new: string };
+    displayName?: { old: string; new: string };
+    description?: { old: string | null; new: string | null };
+    permissions?: { old: string[]; new: string[] };
+    isActive?: { old: boolean; new: boolean };
+  } = {};
+  const updateData: Prisma.RoleUpdateInput = {};
 
   if (validatedInput.name !== undefined) {
-    const trimmedName = validatedInput.name.trim()
+    const trimmedName = validatedInput.name.trim();
     if (trimmedName !== existing.name) {
       if (existing.name === "super_admin") {
-        logActionFlow("roles", "update", "error", { roleId: id, error: "Không thể đổi tên vai trò super_admin" })
-        throw new ApplicationError("Không thể đổi tên vai trò super_admin", 400)
+        logActionFlow("roles", "update", "error", {
+          roleId: id,
+          error: "Không thể đổi tên vai trò super_admin",
+        });
+        throw new ApplicationError(
+          "Không thể đổi tên vai trò super_admin",
+          400
+        );
       }
-      const nameExists = await prisma.role.findFirst({ where: { name: trimmedName, id: { not: id } } })
+      const nameExists = await prisma.role.findFirst({
+        where: { name: trimmedName, id: { not: id } },
+      });
       if (nameExists) {
-        logActionFlow("roles", "update", "error", { roleId: id, error: "Tên vai trò đã tồn tại", newName: trimmedName })
-        throw new ApplicationError("Tên vai trò đã tồn tại", 400)
+        logActionFlow("roles", "update", "error", {
+          roleId: id,
+          error: "Tên vai trò đã tồn tại",
+          newName: trimmedName,
+        });
+        throw new ApplicationError("Tên vai trò đã tồn tại", 400);
       }
-      updateData.name = trimmedName
-      changes.name = { old: existing.name, new: trimmedName }
+      updateData.name = trimmedName;
+      changes.name = { old: existing.name, new: trimmedName };
     }
   }
 
   if (validatedInput.displayName !== undefined) {
-    const trimmedDisplayName = validatedInput.displayName.trim()
+    const trimmedDisplayName = validatedInput.displayName.trim();
     if (trimmedDisplayName !== existing.displayName) {
-      updateData.displayName = trimmedDisplayName
-      changes.displayName = { old: existing.displayName, new: trimmedDisplayName }
+      updateData.displayName = trimmedDisplayName;
+      changes.displayName = {
+        old: existing.displayName,
+        new: trimmedDisplayName,
+      };
     }
   }
 
   if (validatedInput.description !== undefined) {
-    const trimmedDescription = validatedInput.description?.trim() || null
+    const trimmedDescription = validatedInput.description?.trim() || null;
     if (trimmedDescription !== existing.description) {
-      updateData.description = trimmedDescription
-      changes.description = { old: existing.description, new: trimmedDescription }
+      updateData.description = trimmedDescription;
+      changes.description = {
+        old: existing.description,
+        new: trimmedDescription,
+      };
     }
   }
 
   if (validatedInput.permissions !== undefined) {
-    const oldPerms = existing.permissions.sort()
-    const newPerms = validatedInput.permissions.sort()
+    const oldPerms = existing.permissions.sort();
+    const newPerms = validatedInput.permissions.sort();
     if (JSON.stringify(oldPerms) !== JSON.stringify(newPerms)) {
-      updateData.permissions = validatedInput.permissions
-      changes.permissions = { old: existing.permissions, new: validatedInput.permissions }
+      updateData.permissions = validatedInput.permissions;
+      changes.permissions = {
+        old: existing.permissions,
+        new: validatedInput.permissions,
+      };
     }
   }
 
-  if (validatedInput.isActive !== undefined && validatedInput.isActive !== existing.isActive) {
-    updateData.isActive = validatedInput.isActive
-    changes.isActive = { old: existing.isActive, new: validatedInput.isActive }
+  if (
+    validatedInput.isActive !== undefined &&
+    validatedInput.isActive !== existing.isActive
+  ) {
+    updateData.isActive = validatedInput.isActive;
+    changes.isActive = { old: existing.isActive, new: validatedInput.isActive };
   }
 
   if (Object.keys(updateData).length === 0) {
-    const sanitized = mapRoleRecord(existing)
-    logActionFlow("roles", "update", "success", { roleId: sanitized.id, roleName: sanitized.name, changes: {}, noChanges: true }, startTime)
-    return sanitized
+    const sanitized = mapRoleRecord(existing);
+    logActionFlow(
+      "roles",
+      "update",
+      "success",
+      {
+        roleId: sanitized.id,
+        roleName: sanitized.name,
+        changes: {},
+        noChanges: true,
+      },
+      startTime
+    );
+    return sanitized;
   }
 
   const updated = await prisma.role.update({
     where: { id },
     data: { ...updateData, updatedAt: new Date() },
-  })
+  });
 
-  const sanitized = mapRoleRecord(updated)
-  const previousStatus: "active" | "deleted" | null = existing.deletedAt ? "deleted" : "active"
+  const sanitized = mapRoleRecord(updated);
+  const previousStatus: "active" | "deleted" | null = existing.deletedAt
+    ? "deleted"
+    : "active";
 
-  await emitRoleUpsert(sanitized.id, previousStatus)
+  await emitRoleUpsert(sanitized.id, previousStatus);
 
-  await notifySuperAdminsOfRoleAction("update", ctx.actorId, {
-    id: sanitized.id,
-    name: sanitized.name,
-    displayName: sanitized.displayName,
-  }, Object.keys(changes).length > 0 ? changes : undefined)
+  await notifySuperAdminsOfRoleAction(
+    "update",
+    ctx.actorId,
+    {
+      id: sanitized.id,
+      name: sanitized.name,
+      displayName: sanitized.displayName,
+    },
+    Object.keys(changes).length > 0 ? changes : undefined
+  );
 
-  logActionFlow("roles", "update", "success", { roleId: sanitized.id, roleName: sanitized.name, changes }, startTime)
-  logDetailAction("roles", "update", sanitized.id, { ...sanitized, changes } as unknown as Record<string, unknown>)
+  logActionFlow(
+    "roles",
+    "update",
+    "success",
+    { roleId: sanitized.id, roleName: sanitized.name, changes },
+    startTime
+  );
+  logDetailAction("roles", "update", sanitized.id, {
+    ...sanitized,
+    changes,
+  } as unknown as Record<string, unknown>);
 
-  return sanitized
-}
+  return sanitized;
+};
 
-export async function softDeleteRole(ctx: AuthContext, id: string): Promise<void> {
-  const startTime = Date.now()
-  
-  logActionFlow("roles", "delete", "start", { roleId: id, actorId: ctx.actorId })
-  ensurePermission(ctx, PERMISSIONS.ROLES_DELETE, PERMISSIONS.ROLES_MANAGE)
+export const softDeleteRole = async (
+  ctx: AuthContext,
+  id: string
+): Promise<void> => {
+  const startTime = Date.now();
 
-  const role = await prisma.role.findUnique({ where: { id } })
+  logActionFlow("roles", "delete", "start", {
+    roleId: id,
+    actorId: ctx.actorId,
+  });
+  ensurePermission(ctx, PERMISSIONS.ROLES_DELETE, PERMISSIONS.ROLES_MANAGE);
+
+  const role = await prisma.role.findUnique({ where: { id } });
   if (!role || role.deletedAt) {
-    logActionFlow("roles", "delete", "error", { roleId: id, error: "Vai trò không tồn tại" })
-    throw new NotFoundError("Vai trò không tồn tại")
+    logActionFlow("roles", "delete", "error", {
+      roleId: id,
+      error: "Vai trò không tồn tại",
+    });
+    throw new NotFoundError("Vai trò không tồn tại");
   }
 
   if (role.name === "super_admin") {
-    logActionFlow("roles", "delete", "error", { roleId: id, roleName: role.name, error: "Không thể xóa vai trò super_admin" })
-    throw new ApplicationError("Không thể xóa vai trò super_admin", 400)
+    logActionFlow("roles", "delete", "error", {
+      roleId: id,
+      roleName: role.name,
+      error: "Không thể xóa vai trò super_admin",
+    });
+    throw new ApplicationError("Không thể xóa vai trò super_admin", 400);
   }
 
-  const previousStatus: "active" | "deleted" = role.deletedAt ? "deleted" : "active"
+  const previousStatus: "active" | "deleted" = role.deletedAt
+    ? "deleted"
+    : "active";
 
   await prisma.role.update({
     where: { id },
     data: { deletedAt: new Date(), isActive: false },
-  })
+  });
 
   await logTableStatusAfterMutation({
     resource: "roles",
     action: "delete",
     prismaModel: prisma.role,
     affectedIds: id,
-  })
+  });
 
-  await emitRoleUpsert(id, previousStatus)
+  await emitRoleUpsert(id, previousStatus);
 
   await notifySuperAdminsOfRoleAction("delete", ctx.actorId, {
     id: role.id,
     name: role.name,
     displayName: role.displayName,
-  })
+  });
 
-  logActionFlow("roles", "delete", "success", { roleId: id, roleName: role.name, roleDisplayName: role.displayName }, startTime)
-}
+  logActionFlow(
+    "roles",
+    "delete",
+    "success",
+    { roleId: id, roleName: role.name, roleDisplayName: role.displayName },
+    startTime
+  );
+};
 
-export async function bulkSoftDeleteRoles(ctx: AuthContext, ids: string[]): Promise<BulkActionResult> {
-  const startTime = Date.now()
-  
-  logActionFlow("roles", "bulk-delete", "start", { count: ids.length, roleIds: ids, actorId: ctx.actorId })
+export const bulkSoftDeleteRoles = async (
+  ctx: AuthContext,
+  ids: string[]
+): Promise<BulkActionResult> => {
+  const startTime = Date.now();
 
-  ensurePermission(ctx, PERMISSIONS.ROLES_DELETE, PERMISSIONS.ROLES_MANAGE)
+  logActionFlow("roles", "bulk-delete", "start", {
+    count: ids.length,
+    roleIds: ids,
+    actorId: ctx.actorId,
+  });
+
+  ensurePermission(ctx, PERMISSIONS.ROLES_DELETE, PERMISSIONS.ROLES_MANAGE);
 
   if (!ids || ids.length === 0) {
-    throw new ApplicationError("Danh sách vai trò trống", 400)
+    throw new ApplicationError("Danh sách vai trò trống", 400);
   }
 
   // Lấy thông tin roles trước khi delete để tạo notifications
@@ -230,22 +346,22 @@ export async function bulkSoftDeleteRoles(ctx: AuthContext, ids: string[]): Prom
       deletedAt: null,
     },
     select: { id: true, name: true, displayName: true },
-  })
+  });
 
-  const foundIds = roles.map(r => r.id)
-  const _notFoundIds = ids.filter(id => !foundIds.includes(id))
+  const foundIds = roles.map((r) => r.id);
+  const _notFoundIds = ids.filter((id) => !foundIds.includes(id));
 
   // Check if any role is super_admin
-  const superAdminRole = roles.find((r) => r.name === "super_admin")
+  const superAdminRole = roles.find((r) => r.name === "super_admin");
   if (superAdminRole) {
-    const errorMessage = "Không thể xóa vai trò super_admin"
+    const errorMessage = "Không thể xóa vai trò super_admin";
     logActionFlow("roles", "bulk-delete", "error", {
       requestedCount: ids.length,
       foundCount: roles.length,
       error: errorMessage,
       superAdminRoleId: superAdminRole.id,
-    })
-    throw new ApplicationError(errorMessage, 400)
+    });
+    throw new ApplicationError(errorMessage, 400);
   }
 
   // Nếu không tìm thấy role nào, kiểm tra lý do và trả về error message chi tiết
@@ -253,46 +369,56 @@ export async function bulkSoftDeleteRoles(ctx: AuthContext, ids: string[]): Prom
     const allRoles = await prisma.role.findMany({
       where: { id: { in: ids } },
       select: { id: true, name: true, displayName: true, deletedAt: true },
-    })
-    const alreadyDeletedRoles = allRoles.filter(r => r.deletedAt !== null && r.deletedAt !== undefined)
-    const alreadyDeletedCount = alreadyDeletedRoles.length
-    const notFoundCount = ids.length - allRoles.length
-    
+    });
+    const alreadyDeletedRoles = allRoles.filter(
+      (r) => r.deletedAt !== null && r.deletedAt !== undefined
+    );
+    const alreadyDeletedCount = alreadyDeletedRoles.length;
+    const notFoundCount = ids.length - allRoles.length;
+
     logActionFlow("roles", "bulk-delete", "start", {
       requestedCount: ids.length,
       foundCount: roles.length,
       allRolesCount: allRoles.length,
       alreadyDeletedCount,
       notFoundCount,
-      alreadyDeletedRoleIds: alreadyDeletedRoles.map(r => r.id),
-      alreadyDeletedRoleNames: alreadyDeletedRoles.map(r => r.displayName),
-      notFoundIds: ids.filter(id => !allRoles.some(r => r.id === id)),
-    })
-    
-    let errorMessage = "Không có vai trò nào có thể xóa"
-    const parts: string[] = []
+      alreadyDeletedRoleIds: alreadyDeletedRoles.map((r) => r.id),
+      alreadyDeletedRoleNames: alreadyDeletedRoles.map((r) => r.displayName),
+      notFoundIds: ids.filter((id) => !allRoles.some((r) => r.id === id)),
+    });
+
+    let errorMessage = "Không có vai trò nào có thể xóa";
+    const parts: string[] = [];
     if (alreadyDeletedCount > 0) {
-      const roleNames = alreadyDeletedRoles.slice(0, 3).map(r => `"${r.displayName}"`).join(", ")
-      const moreCount = alreadyDeletedCount > 3 ? ` và ${alreadyDeletedCount - 3} vai trò khác` : ""
-      parts.push(`${alreadyDeletedCount} vai trò đã bị xóa trước đó: ${roleNames}${moreCount}`)
+      const roleNames = alreadyDeletedRoles
+        .slice(0, 3)
+        .map((r) => `"${r.displayName}"`)
+        .join(", ");
+      const moreCount =
+        alreadyDeletedCount > 3
+          ? ` và ${alreadyDeletedCount - 3} vai trò khác`
+          : "";
+      parts.push(
+        `${alreadyDeletedCount} vai trò đã bị xóa trước đó: ${roleNames}${moreCount}`
+      );
     }
     if (notFoundCount > 0) {
-      parts.push(`${notFoundCount} vai trò không tồn tại`)
+      parts.push(`${notFoundCount} vai trò không tồn tại`);
     }
-    
+
     if (parts.length > 0) {
-      errorMessage += ` (${parts.join(", ")})`
+      errorMessage += ` (${parts.join(", ")})`;
     }
-    
+
     logActionFlow("roles", "bulk-delete", "error", {
       requestedCount: ids.length,
       foundCount: roles.length,
       alreadyDeletedCount,
       notFoundCount,
       error: errorMessage,
-    })
-    
-    throw new ApplicationError(errorMessage, 400)
+    });
+
+    throw new ApplicationError(errorMessage, 400);
   }
 
   const result = await prisma.role.updateMany({
@@ -304,7 +430,7 @@ export async function bulkSoftDeleteRoles(ctx: AuthContext, ids: string[]): Prom
       deletedAt: new Date(),
       isActive: false,
     },
-  })
+  });
 
   if (result.count > 0) {
     await logTableStatusAfterMutation({
@@ -313,18 +439,18 @@ export async function bulkSoftDeleteRoles(ctx: AuthContext, ids: string[]): Prom
       prismaModel: prisma.role,
       affectedIds: roles.map((role) => role.id),
       affectedCount: result.count,
-    })
+    });
   }
 
   // Emit socket events và tạo bulk notification
   if (result.count > 0 && roles.length > 0) {
     // Emit events song song
-    const emitPromises = roles.map((role) => 
+    const emitPromises = roles.map((role) =>
       emitRoleUpsert(role.id, "active").catch((_error) => {
-        return null
+        return null;
       })
-    )
-    await Promise.allSettled(emitPromises)
+    );
+    await Promise.allSettled(emitPromises);
 
     // Tạo bulk notification với tên records
     await notifySuperAdminsOfBulkRoleAction(
@@ -332,60 +458,94 @@ export async function bulkSoftDeleteRoles(ctx: AuthContext, ids: string[]): Prom
       ctx.actorId,
       result.count,
       roles
-    )
+    );
 
-    logActionFlow("roles", "bulk-delete", "success", { requestedCount: ids.length, affectedCount: result.count }, startTime)
+    logActionFlow(
+      "roles",
+      "bulk-delete",
+      "success",
+      { requestedCount: ids.length, affectedCount: result.count },
+      startTime
+    );
   }
 
-  return { success: true, message: `Đã xóa ${result.count} vai trò`, affected: result.count }
-}
+  return {
+    success: true,
+    message: `Đã xóa ${result.count} vai trò`,
+    affected: result.count,
+  };
+};
 
-export async function restoreRole(ctx: AuthContext, id: string): Promise<void> {
-  const startTime = Date.now()
-  
-  logActionFlow("roles", "restore", "start", { roleId: id, actorId: ctx.actorId })
-  ensurePermission(ctx, PERMISSIONS.ROLES_UPDATE, PERMISSIONS.ROLES_MANAGE)
+export const restoreRole = async (
+  ctx: AuthContext,
+  id: string
+): Promise<void> => {
+  const startTime = Date.now();
 
-  const role = await prisma.role.findUnique({ where: { id } })
+  logActionFlow("roles", "restore", "start", {
+    roleId: id,
+    actorId: ctx.actorId,
+  });
+  ensurePermission(ctx, PERMISSIONS.ROLES_UPDATE, PERMISSIONS.ROLES_MANAGE);
+
+  const role = await prisma.role.findUnique({ where: { id } });
   if (!role || !role.deletedAt) {
-    logActionFlow("roles", "restore", "error", { roleId: id, error: "Vai trò không tồn tại hoặc chưa bị xóa" })
-    throw new NotFoundError("Vai trò không tồn tại hoặc chưa bị xóa")
+    logActionFlow("roles", "restore", "error", {
+      roleId: id,
+      error: "Vai trò không tồn tại hoặc chưa bị xóa",
+    });
+    throw new NotFoundError("Vai trò không tồn tại hoặc chưa bị xóa");
   }
 
-  const previousStatus: "active" | "deleted" = role.deletedAt ? "deleted" : "active"
+  const previousStatus: "active" | "deleted" = role.deletedAt
+    ? "deleted"
+    : "active";
 
   await prisma.role.update({
     where: { id },
     data: { deletedAt: null, isActive: true },
-  })
+  });
 
   await logTableStatusAfterMutation({
     resource: "roles",
     action: "restore",
     prismaModel: prisma.role,
     affectedIds: id,
-  })
+  });
 
-  await emitRoleUpsert(id, previousStatus)
+  await emitRoleUpsert(id, previousStatus);
 
   await notifySuperAdminsOfRoleAction("restore", ctx.actorId, {
     id: role.id,
     name: role.name,
     displayName: role.displayName,
-  })
+  });
 
-  logActionFlow("roles", "restore", "success", { roleId: id, roleName: role.name, roleDisplayName: role.displayName }, startTime)
-}
+  logActionFlow(
+    "roles",
+    "restore",
+    "success",
+    { roleId: id, roleName: role.name, roleDisplayName: role.displayName },
+    startTime
+  );
+};
 
-export async function bulkRestoreRoles(ctx: AuthContext, ids: string[]): Promise<BulkActionResult> {
-  const startTime = Date.now()
-  
-  logActionFlow("roles", "bulk-restore", "start", { count: ids.length, roleIds: ids, actorId: ctx.actorId })
+export const bulkRestoreRoles = async (
+  ctx: AuthContext,
+  ids: string[]
+): Promise<BulkActionResult> => {
+  const startTime = Date.now();
 
-  ensurePermission(ctx, PERMISSIONS.ROLES_UPDATE, PERMISSIONS.ROLES_MANAGE)
+  logActionFlow("roles", "bulk-restore", "start", {
+    count: ids.length,
+    roleIds: ids,
+    actorId: ctx.actorId,
+  });
+
+  ensurePermission(ctx, PERMISSIONS.ROLES_UPDATE, PERMISSIONS.ROLES_MANAGE);
 
   if (!ids || ids.length === 0) {
-    throw new ApplicationError("Danh sách vai trò trống", 400)
+    throw new ApplicationError("Danh sách vai trò trống", 400);
   }
 
   // Tìm tất cả roles được request để phân loại trạng thái
@@ -397,24 +557,30 @@ export async function bulkRestoreRoles(ctx: AuthContext, ids: string[]): Promise
       id: { in: ids },
       // KHÔNG filter theo deletedAt ở đây để tìm được cả soft-deleted và active roles
     },
-    select: { id: true, deletedAt: true, name: true, displayName: true, createdAt: true },
-  })
+    select: {
+      id: true,
+      deletedAt: true,
+      name: true,
+      displayName: true,
+      createdAt: true,
+    },
+  });
 
   // Phân loại roles - sử dụng cách so sánh chính xác hơn
   // deletedAt có thể là Date object hoặc null, cần check cả undefined
   const softDeletedRoles = allRequestedRoles.filter((role) => {
-    const isDeleted = role.deletedAt !== null && role.deletedAt !== undefined
-    return isDeleted
-  })
+    const isDeleted = role.deletedAt !== null && role.deletedAt !== undefined;
+    return isDeleted;
+  });
   const activeRoles = allRequestedRoles.filter((role) => {
-    const isActive = role.deletedAt === null || role.deletedAt === undefined
-    return isActive
-  })
-  const notFoundCount = ids.length - allRequestedRoles.length
-  const foundIds = allRequestedRoles.map(r => r.id)
-  const notFoundIds = ids.filter(id => !foundIds.includes(id))
-  const softDeletedIds = softDeletedRoles.map(r => r.id)
-  const activeIds = activeRoles.map(r => r.id)
+    const isActive = role.deletedAt === null || role.deletedAt === undefined;
+    return isActive;
+  });
+  const notFoundCount = ids.length - allRequestedRoles.length;
+  const foundIds = allRequestedRoles.map((r) => r.id);
+  const notFoundIds = ids.filter((id) => !foundIds.includes(id));
+  const softDeletedIds = softDeletedRoles.map((r) => r.id);
+  const activeIds = activeRoles.map((r) => r.id);
 
   // Log chi tiết để debug - bao gồm deletedAt values
   logActionFlow("roles", "bulk-restore", "start", {
@@ -429,7 +595,7 @@ export async function bulkRestoreRoles(ctx: AuthContext, ids: string[]): Promise
     activeIds,
     notFoundIds,
     // Log chi tiết deletedAt values để debug
-    allRequestedRolesDetails: allRequestedRoles.map(r => ({
+    allRequestedRolesDetails: allRequestedRoles.map((r) => ({
       id: r.id,
       name: r.name,
       deletedAt: r.deletedAt,
@@ -437,21 +603,24 @@ export async function bulkRestoreRoles(ctx: AuthContext, ids: string[]): Promise
       deletedAtIsNull: r.deletedAt === null,
       deletedAtIsNotNull: r.deletedAt !== null,
     })),
-  })
+  });
 
   // Nếu không có role nào đã bị soft delete, throw error với message chi tiết
   if (softDeletedRoles.length === 0) {
-    const parts: string[] = []
+    const parts: string[] = [];
     if (activeRoles.length > 0) {
-      parts.push(`${activeRoles.length} vai trò đang hoạt động`)
+      parts.push(`${activeRoles.length} vai trò đang hoạt động`);
     }
     if (notFoundCount > 0) {
-      parts.push(`${notFoundCount} vai trò không tồn tại (đã bị xóa vĩnh viễn)`)
+      parts.push(
+        `${notFoundCount} vai trò không tồn tại (đã bị xóa vĩnh viễn)`
+      );
     }
 
-    const errorMessage = parts.length > 0
-      ? `Không có vai trò nào để khôi phục (${parts.join(", ")})`
-      : `Không tìm thấy vai trò nào để khôi phục`
+    const errorMessage =
+      parts.length > 0
+        ? `Không có vai trò nào để khôi phục (${parts.join(", ")})`
+        : `Không tìm thấy vai trò nào để khôi phục`;
 
     logActionFlow("roles", "bulk-restore", "error", {
       requestedCount: ids.length,
@@ -460,15 +629,15 @@ export async function bulkRestoreRoles(ctx: AuthContext, ids: string[]): Promise
       activeCount: activeRoles.length,
       notFoundCount,
       error: errorMessage,
-    })
+    });
 
-    throw new ApplicationError(errorMessage, 400)
+    throw new ApplicationError(errorMessage, 400);
   }
 
   // Chỉ restore các roles đã bị soft delete
-  const rolesToRestore = softDeletedRoles
+  const rolesToRestore = softDeletedRoles;
   const result = await prisma.role.updateMany({
-    where: { 
+    where: {
       id: { in: softDeletedRoles.map((r) => r.id) },
       deletedAt: { not: null },
     },
@@ -476,7 +645,7 @@ export async function bulkRestoreRoles(ctx: AuthContext, ids: string[]): Promise
       deletedAt: null,
       isActive: true,
     },
-  })
+  });
 
   if (result.count > 0) {
     await logTableStatusAfterMutation({
@@ -485,18 +654,18 @@ export async function bulkRestoreRoles(ctx: AuthContext, ids: string[]): Promise
       prismaModel: prisma.role,
       affectedIds: rolesToRestore.map((r) => r.id),
       affectedCount: result.count,
-    })
+    });
   }
 
   // Emit socket events và tạo bulk notification
   if (result.count > 0 && rolesToRestore.length > 0) {
     // Emit events song song
-    const emitPromises = rolesToRestore.map((role) => 
+    const emitPromises = rolesToRestore.map((role) =>
       emitRoleUpsert(role.id, "deleted").catch((_error) => {
-        return null
+        return null;
       })
-    )
-    await Promise.allSettled(emitPromises)
+    );
+    await Promise.allSettled(emitPromises);
 
     // Tạo bulk notification với tên records
     await notifySuperAdminsOfBulkRoleAction(
@@ -504,84 +673,123 @@ export async function bulkRestoreRoles(ctx: AuthContext, ids: string[]): Promise
       ctx.actorId,
       result.count,
       rolesToRestore
-    )
+    );
 
-    logActionFlow("roles", "bulk-restore", "success", { requestedCount: ids.length, affectedCount: result.count }, startTime)
+    logActionFlow(
+      "roles",
+      "bulk-restore",
+      "success",
+      { requestedCount: ids.length, affectedCount: result.count },
+      startTime
+    );
   }
 
   // Tạo message chi tiết nếu có roles không thể restore
-  let message = `Đã khôi phục ${result.count} vai trò`
+  let message = `Đã khôi phục ${result.count} vai trò`;
   if (result.count < ids.length) {
-    const skippedCount = ids.length - result.count
-    const skippedParts: string[] = []
+    const skippedCount = ids.length - result.count;
+    const skippedParts: string[] = [];
     if (activeRoles.length > 0) {
-      skippedParts.push(`${activeRoles.length} vai trò đang hoạt động`)
+      skippedParts.push(`${activeRoles.length} vai trò đang hoạt động`);
     }
     if (notFoundCount > 0) {
-      skippedParts.push(`${notFoundCount} vai trò đã bị xóa vĩnh viễn`)
+      skippedParts.push(`${notFoundCount} vai trò đã bị xóa vĩnh viễn`);
     }
     if (skippedParts.length > 0) {
-      message += ` (${skippedCount} vai trò không thể khôi phục: ${skippedParts.join(", ")})`
+      message += ` (${skippedCount} vai trò không thể khôi phục: ${skippedParts.join(
+        ", "
+      )})`;
     }
   }
 
-  return { success: true, message, affected: result.count }
-}
+  return { success: true, message, affected: result.count };
+};
 
-export async function hardDeleteRole(ctx: AuthContext, id: string): Promise<void> {
-  const startTime = Date.now()
-  
-  logActionFlow("roles", "hard-delete", "start", { roleId: id, actorId: ctx.actorId })
+export const hardDeleteRole = async (
+  ctx: AuthContext,
+  id: string
+): Promise<void> => {
+  const startTime = Date.now();
 
-  if (!canPerformAnyAction(ctx.permissions, ctx.roles, [PERMISSIONS.ROLES_MANAGE])) {
-    throw new ForbiddenError()
+  logActionFlow("roles", "hard-delete", "start", {
+    roleId: id,
+    actorId: ctx.actorId,
+  });
+
+  if (
+    !canPerformAnyAction(ctx.permissions, ctx.roles, [PERMISSIONS.ROLES_MANAGE])
+  ) {
+    throw new ForbiddenError();
   }
 
   const role = await prisma.role.findUnique({
     where: { id },
     select: { id: true, name: true, displayName: true, deletedAt: true },
-  })
+  });
 
   if (!role) {
-    logActionFlow("roles", "hard-delete", "error", { roleId: id, error: "Vai trò không tồn tại" })
-    throw new NotFoundError("Vai trò không tồn tại")
+    logActionFlow("roles", "hard-delete", "error", {
+      roleId: id,
+      error: "Vai trò không tồn tại",
+    });
+    throw new NotFoundError("Vai trò không tồn tại");
   }
 
   if (role.name === "super_admin") {
-    logActionFlow("roles", "hard-delete", "error", { roleId: id, roleName: role.name, error: "Không thể xóa vĩnh viễn vai trò super_admin" })
-    throw new ApplicationError("Không thể xóa vĩnh viễn vai trò super_admin", 400)
+    logActionFlow("roles", "hard-delete", "error", {
+      roleId: id,
+      roleName: role.name,
+      error: "Không thể xóa vĩnh viễn vai trò super_admin",
+    });
+    throw new ApplicationError(
+      "Không thể xóa vĩnh viễn vai trò super_admin",
+      400
+    );
   }
 
-  const previousStatus: "active" | "deleted" = role.deletedAt ? "deleted" : "active"
+  const previousStatus: "active" | "deleted" = role.deletedAt
+    ? "deleted"
+    : "active";
 
   await prisma.role.delete({
     where: { id },
-  })
+  });
 
   // Emit socket event for real-time updates
-  emitRoleRemove(id, previousStatus)
+  emitRoleRemove(id, previousStatus);
 
   // Emit notification realtime
-  await notifySuperAdminsOfRoleAction(
+  await notifySuperAdminsOfRoleAction("hard-delete", ctx.actorId, role);
+
+  logActionFlow(
+    "roles",
     "hard-delete",
-    ctx.actorId,
-    role
-  )
+    "success",
+    { roleId: id, roleName: role.name, roleDisplayName: role.displayName },
+    startTime
+  );
+};
 
-  logActionFlow("roles", "hard-delete", "success", { roleId: id, roleName: role.name, roleDisplayName: role.displayName }, startTime)
-}
+export const bulkHardDeleteRoles = async (
+  ctx: AuthContext,
+  ids: string[]
+): Promise<BulkActionResult> => {
+  const startTime = Date.now();
 
-export async function bulkHardDeleteRoles(ctx: AuthContext, ids: string[]): Promise<BulkActionResult> {
-  const startTime = Date.now()
-  
-  logActionFlow("roles", "bulk-hard-delete", "start", { count: ids.length, roleIds: ids, actorId: ctx.actorId })
+  logActionFlow("roles", "bulk-hard-delete", "start", {
+    count: ids.length,
+    roleIds: ids,
+    actorId: ctx.actorId,
+  });
 
-  if (!canPerformAnyAction(ctx.permissions, ctx.roles, [PERMISSIONS.ROLES_MANAGE])) {
-    throw new ForbiddenError()
+  if (
+    !canPerformAnyAction(ctx.permissions, ctx.roles, [PERMISSIONS.ROLES_MANAGE])
+  ) {
+    throw new ForbiddenError();
   }
 
   if (!ids || ids.length === 0) {
-    throw new ApplicationError("Danh sách vai trò trống", 400)
+    throw new ApplicationError("Danh sách vai trò trống", 400);
   }
 
   // Lấy thông tin roles trước khi delete để tạo notifications
@@ -590,11 +798,11 @@ export async function bulkHardDeleteRoles(ctx: AuthContext, ids: string[]): Prom
       id: { in: ids },
     },
     select: { id: true, name: true, displayName: true, deletedAt: true },
-  })
+  });
 
-  const foundIds = roles.map(r => r.id)
-  const _notFoundIds = ids.filter(id => !foundIds.includes(id))
-  
+  const foundIds = roles.map((r) => r.id);
+  const _notFoundIds = ids.filter((id) => !foundIds.includes(id));
+
   // Log để debug với đầy đủ thông tin
   logActionFlow("roles", "bulk-hard-delete", "start", {
     requestedCount: ids.length,
@@ -603,48 +811,49 @@ export async function bulkHardDeleteRoles(ctx: AuthContext, ids: string[]): Prom
     requestedIds: ids,
     foundIds,
     _notFoundIds,
-  })
+  });
 
   // Check if any role is super_admin
-  const superAdminRole = roles.find((r) => r.name === "super_admin")
+  const superAdminRole = roles.find((r) => r.name === "super_admin");
   if (superAdminRole) {
-    const errorMessage = "Không thể xóa vĩnh viễn vai trò super_admin"
+    const errorMessage = "Không thể xóa vĩnh viễn vai trò super_admin";
     logActionFlow("roles", "bulk-hard-delete", "error", {
       requestedCount: ids.length,
       foundCount: roles.length,
       error: errorMessage,
       superAdminRoleId: superAdminRole.id,
-    })
-    throw new ApplicationError(errorMessage, 400)
+    });
+    throw new ApplicationError(errorMessage, 400);
   }
 
   if (roles.length === 0) {
-    const errorMessage = `Không tìm thấy vai trò nào để xóa vĩnh viễn`
+    const errorMessage = `Không tìm thấy vai trò nào để xóa vĩnh viễn`;
     logActionFlow("roles", "bulk-hard-delete", "error", {
       requestedCount: ids.length,
       foundCount: roles.length,
       notFoundCount: _notFoundIds.length,
       error: errorMessage,
-    })
-    throw new ApplicationError(errorMessage, 400)
+    });
+    throw new ApplicationError(errorMessage, 400);
   }
 
   const result = await prisma.role.deleteMany({
     where: {
       id: { in: roles.map((role) => role.id) },
     },
-  })
+  });
 
   // Emit socket events và tạo bulk notification
   if (result.count > 0 && roles.length > 0) {
     // Emit events (emitRoleRemove trả về void, không phải Promise)
     roles.forEach((role) => {
-      const previousStatus: "active" | "deleted" = role.deletedAt ? "deleted" : "active"
+      const previousStatus: "active" | "deleted" = role.deletedAt
+        ? "deleted"
+        : "active";
       try {
-        emitRoleRemove(role.id, previousStatus)
-      } catch {
-      }
-    })
+        emitRoleRemove(role.id, previousStatus);
+      } catch {}
+    });
 
     // Tạo bulk notification với tên records
     await notifySuperAdminsOfBulkRoleAction(
@@ -652,11 +861,20 @@ export async function bulkHardDeleteRoles(ctx: AuthContext, ids: string[]): Prom
       ctx.actorId,
       result.count,
       roles
-    )
+    );
 
-    logActionFlow("roles", "bulk-hard-delete", "success", { requestedCount: ids.length, affectedCount: result.count }, startTime)
+    logActionFlow(
+      "roles",
+      "bulk-hard-delete",
+      "success",
+      { requestedCount: ids.length, affectedCount: result.count },
+      startTime
+    );
   }
 
-  return { success: true, message: `Đã xóa vĩnh viễn ${result.count} vai trò`, affected: result.count }
-}
-
+  return {
+    success: true,
+    message: `Đã xóa vĩnh viễn ${result.count} vai trò`,
+    affected: result.count,
+  };
+};

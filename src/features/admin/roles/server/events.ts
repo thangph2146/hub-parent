@@ -8,11 +8,11 @@ const SUPER_ADMIN_ROOM = "role:super_admin"
 
 export type RoleStatus = "active" | "deleted"
 
-function resolveStatusFromRow(row: RoleRow): RoleStatus {
+const resolveStatusFromRow = (row: RoleRow): RoleStatus => {
   return row.deletedAt ? "deleted" : "active"
 }
 
-async function fetchRoleRow(roleId: string): Promise<RoleRow | null> {
+const fetchRoleRow = async (roleId: string): Promise<RoleRow | null> => {
   const role = await prisma.role.findUnique({
     where: { id: roleId },
   })
@@ -25,10 +25,10 @@ async function fetchRoleRow(roleId: string): Promise<RoleRow | null> {
   return serializeRoleForTable(listed)
 }
 
-export async function emitRoleUpsert(
+export const emitRoleUpsert = async (
   roleId: string,
   previousStatus: RoleStatus | null,
-): Promise<void> {
+): Promise<void> => {
   const io = getSocketServer()
   if (!io) return
 

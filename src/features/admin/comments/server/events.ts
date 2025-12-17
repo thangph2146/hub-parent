@@ -7,11 +7,11 @@ const SUPER_ADMIN_ROOM = "role:super_admin"
 
 export type CommentStatus = "active" | "deleted"
 
-function resolveStatusFromRow(row: CommentRow): CommentStatus {
+const resolveStatusFromRow = (row: CommentRow): CommentStatus => {
   return row.deletedAt ? "deleted" : "active"
 }
 
-async function fetchCommentRow(commentId: string): Promise<CommentRow | null> {
+const fetchCommentRow = async (commentId: string): Promise<CommentRow | null> => {
   const comment = await prisma.comment.findUnique({
     where: { id: commentId },
     include: {
@@ -39,10 +39,10 @@ async function fetchCommentRow(commentId: string): Promise<CommentRow | null> {
   return serializeCommentForTable(listed)
 }
 
-export async function emitCommentUpsert(
+export const emitCommentUpsert = async (
   commentId: string,
   previousStatus: CommentStatus | null,
-): Promise<void> {
+): Promise<void> => {
   const io = getSocketServer()
   if (!io) return
 
@@ -73,10 +73,10 @@ export const emitCommentRemove = (commentId: string, previousStatus: CommentStat
   })
 }
 
-export async function emitCommentBatchUpsert(
+export const emitCommentBatchUpsert = async (
   commentIds: string[],
   previousStatus: CommentStatus | null,
-): Promise<void> {
+): Promise<void> => {
   const io = getSocketServer()
   if (!io || commentIds.length === 0) return
 

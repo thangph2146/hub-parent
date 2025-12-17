@@ -28,11 +28,11 @@ import { z } from "zod"
 // Re-export for backward compatibility with API routes
 export { ApplicationError, ForbiddenError, NotFoundError, type AuthContext }
 
-function sanitizeCategory(category: CategoryWithRelations): ListedCategory {
+const sanitizeCategory = (category: CategoryWithRelations): ListedCategory => {
   return mapCategoryRecord(category)
 }
 
-export async function createCategory(ctx: AuthContext, input: z.infer<typeof CreateCategorySchema>): Promise<ListedCategory> {
+export const createCategory = async (ctx: AuthContext, input: z.infer<typeof CreateCategorySchema>): Promise<ListedCategory> => {
   const startTime = Date.now()
   
   logActionFlow("categories", "create", "start", { actorId: ctx.actorId, input: { name: input.name, slug: input.slug } })
@@ -82,7 +82,7 @@ export async function createCategory(ctx: AuthContext, input: z.infer<typeof Cre
   return sanitized
 }
 
-export async function updateCategory(ctx: AuthContext, id: string, input: z.infer<typeof UpdateCategorySchema>): Promise<ListedCategory> {
+export const updateCategory = async (ctx: AuthContext, id: string, input: z.infer<typeof UpdateCategorySchema>): Promise<ListedCategory> => {
   const startTime = Date.now()
   
   logActionFlow("categories", "update", "start", { categoryId: id, actorId: ctx.actorId })
@@ -166,7 +166,7 @@ export async function updateCategory(ctx: AuthContext, id: string, input: z.infe
   return sanitized
 }
 
-export async function softDeleteCategory(ctx: AuthContext, id: string): Promise<void> {
+export const softDeleteCategory = async (ctx: AuthContext, id: string): Promise<void> => {
   const startTime = Date.now()
   
   logActionFlow("categories", "delete", "start", { categoryId: id, actorId: ctx.actorId })
@@ -197,7 +197,7 @@ export async function softDeleteCategory(ctx: AuthContext, id: string): Promise<
   logActionFlow("categories", "delete", "success", { categoryId: id, categoryName: category.name }, startTime)
 }
 
-export async function bulkSoftDeleteCategories(ctx: AuthContext, ids: string[]): Promise<BulkActionResult> {
+export const bulkSoftDeleteCategories = async (ctx: AuthContext, ids: string[]): Promise<BulkActionResult> => {
   const startTime = Date.now()
   logActionFlow("categories", "bulk-delete", "start", { count: ids.length, categoryIds: ids, actorId: ctx.actorId })
 
@@ -300,7 +300,7 @@ export async function bulkSoftDeleteCategories(ctx: AuthContext, ids: string[]):
   return { success: true, message: `Đã xóa ${result.count} danh mục`, affected: result.count }
 }
 
-export async function restoreCategory(ctx: AuthContext, id: string): Promise<void> {
+export const restoreCategory = async (ctx: AuthContext, id: string): Promise<void> => {
   const startTime = Date.now()
   
   logActionFlow("categories", "restore", "start", { categoryId: id, actorId: ctx.actorId })
@@ -331,7 +331,7 @@ export async function restoreCategory(ctx: AuthContext, id: string): Promise<voi
   logActionFlow("categories", "restore", "success", { categoryId: id, categoryName: category.name }, startTime)
 }
 
-export async function bulkRestoreCategories(ctx: AuthContext, ids: string[]): Promise<BulkActionResult> {
+export const bulkRestoreCategories = async (ctx: AuthContext, ids: string[]): Promise<BulkActionResult> => {
   const startTime = Date.now()
   logActionFlow("categories", "bulk-restore", "start", { count: ids.length, categoryIds: ids, actorId: ctx.actorId })
 
@@ -452,7 +452,7 @@ export async function bulkRestoreCategories(ctx: AuthContext, ids: string[]): Pr
   return { success: true, message, affected: result.count }
 }
 
-export async function hardDeleteCategory(ctx: AuthContext, id: string): Promise<void> {
+export const hardDeleteCategory = async (ctx: AuthContext, id: string): Promise<void> => {
   if (!canPerformAnyAction(ctx.permissions, ctx.roles, [PERMISSIONS.CATEGORIES_MANAGE])) {
     throw new ForbiddenError()
   }
@@ -484,7 +484,7 @@ export async function hardDeleteCategory(ctx: AuthContext, id: string): Promise<
 
 }
 
-export async function bulkHardDeleteCategories(ctx: AuthContext, ids: string[]): Promise<BulkActionResult> {
+export const bulkHardDeleteCategories = async (ctx: AuthContext, ids: string[]): Promise<BulkActionResult> => {
   const startTime = Date.now()
   logActionFlow("categories", "bulk-hard-delete", "start", { count: ids.length, categoryIds: ids, actorId: ctx.actorId })
 
