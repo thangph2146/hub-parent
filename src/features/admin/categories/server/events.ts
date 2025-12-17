@@ -56,7 +56,7 @@ export async function emitCategoryUpsert(
   })
 }
 
-export function emitCategoryRemove(categoryId: string, previousStatus: CategoryStatus): void {
+export const emitCategoryRemove = (categoryId: string, previousStatus: CategoryStatus): void => {
   const io = getSocketServer()
   if (!io) return
 

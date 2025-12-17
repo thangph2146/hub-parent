@@ -27,7 +27,7 @@ export interface SessionEditClientProps {
   users?: Array<{ label: string; value: string }>
 }
 
-export function SessionEditClient({
+export const SessionEditClient = ({
   session: initialSession,
   open = true,
   onOpenChange,
@@ -37,7 +37,7 @@ export function SessionEditClient({
   backLabel = "Quay lại",
   sessionId,
   users: usersFromServer = [],
-}: SessionEditClientProps) {
+}: SessionEditClientProps) => {
   const queryClient = useQueryClient()
 
   const resourceId = sessionId || initialSession?.id

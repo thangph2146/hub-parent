@@ -12,12 +12,12 @@ interface UsePostColumnsOptions {
   refreshTable: () => void
 }
 
-export function usePostColumns({
+export const usePostColumns = ({
   togglingPosts,
   canToggleStatus,
   onTogglePublished,
   refreshTable,
-}: UsePostColumnsOptions) {
+}: UsePostColumnsOptions) => {
   const titleFilter = useDynamicFilterOptions({
     optionsEndpoint: apiRoutes.posts.options({ column: "title" }),
   })

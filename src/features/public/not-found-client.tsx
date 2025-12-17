@@ -14,7 +14,7 @@ import { useClientOnly } from "@/hooks/use-client-only"
  */
 
 // Helper function để tạo particles với seed để tránh impure function
-function createParticles(seed: number = 0) {
+const createParticles = (seed: number = 0) => {
   // Sử dụng seed để tạo pseudo-random values
   const random = (offset: number) => {
     const x = Math.sin((seed + offset) * 12.9898) * 43758.5453

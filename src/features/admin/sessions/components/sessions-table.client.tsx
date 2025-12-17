@@ -30,14 +30,14 @@ import { useSessionRowActions } from "../utils/row-actions"
 import type { SessionRow, SessionsResponse, SessionsTableClientProps } from "../types"
 import { SESSION_CONFIRM_MESSAGES, SESSION_LABELS } from "../constants"
 
-export function SessionsTableClient({
+export const SessionsTableClient = ({
   canDelete = false,
   canRestore = false,
   canManage = false,
   canCreate = false,
   initialData,
   initialUsersOptions: _initialUsersOptions = [],
-}: SessionsTableClientProps) {
+}: SessionsTableClientProps) => {
   const router = useResourceRouter()
   const queryClient = useQueryClient()
   const { cacheVersion } = useSessionsSocketBridge()

@@ -1,6 +1,7 @@
 import type { ResourceFormField, ResourceFormSection } from "@/features/admin/resources/components"
 import React from "react"
 import { User, AlignLeft, Phone, MapPin, Lock, UserCircle, Building2, Navigation } from "lucide-react"
+import { AccountAvatarField } from "./components/account-avatar-field"
 
 export interface AccountFormData {
   name?: string | null
@@ -58,6 +59,13 @@ export const getAccountFields = (): ResourceFormField<AccountFormData>[] => {
       description: "URL của ảnh đại diện",
       icon: React.createElement(UserCircle, { className: "h-4 w-4" }),
       section: "avatar",
+      render: (field, value, onChange) => {
+        return React.createElement(AccountAvatarField, {
+          value,
+          onChange,
+          placeholder: field.placeholder,
+        })
+      },
     },
     {
       name: "name",

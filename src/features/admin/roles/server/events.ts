@@ -50,7 +50,7 @@ export async function emitRoleUpsert(
   logger.debug("Socket role:upsert emitted", { roleId, previousStatus, newStatus })
 }
 
-export function emitRoleRemove(roleId: string, previousStatus: RoleStatus): void {
+export const emitRoleRemove = (roleId: string, previousStatus: RoleStatus): void => {
   const io = getSocketServer()
   if (!io) return
 

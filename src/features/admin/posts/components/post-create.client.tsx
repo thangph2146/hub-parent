@@ -31,13 +31,13 @@ export interface PostCreateClientProps {
   isSuperAdmin?: boolean
 }
 
-export function PostCreateClient({
+export const PostCreateClient = ({
   backUrl = "/admin/posts",
   users = [],
   categories = [],
   tags = [],
   isSuperAdmin: isSuperAdminProp = false,
-}: PostCreateClientProps) {
+}: PostCreateClientProps) => {
   const { data: session } = useSession()
   const queryClient = useQueryClient()
   const userRoles = session?.roles || []

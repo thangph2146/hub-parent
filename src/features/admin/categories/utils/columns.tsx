@@ -4,7 +4,7 @@ import { useDynamicFilterOptions } from "@/features/admin/resources/hooks/use-dy
 import { apiRoutes } from "@/lib/api/routes"
 import type { CategoryRow } from "../types"
 
-export function useCategoryColumns() {
+export const useCategoryColumns = () => {
   const nameFilter = useDynamicFilterOptions({
     optionsEndpoint: apiRoutes.categories.options({ column: "name" }),
   })

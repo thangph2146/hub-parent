@@ -16,12 +16,12 @@ interface UseSessionActionsOptions {
   showFeedback: (variant: FeedbackVariant, title: string, description?: string, details?: string) => void
 }
 
-export function useSessionActions({
+export const useSessionActions = ({
   canDelete,
   canRestore,
   canManage,
   showFeedback,
-}: UseSessionActionsOptions) {
+}: UseSessionActionsOptions) => {
   const queryClient = useQueryClient()
   const [togglingSessions, setTogglingSessions] = useState<Set<string>>(new Set())
 

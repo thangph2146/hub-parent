@@ -1,12 +1,12 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
-import { useSession } from "next-auth/react"
+import { useEffect } from "react"
 import { useQueryClient } from "@tanstack/react-query"
-import { useSocket } from "@/hooks/use-socket"
 import type { PostRow } from "../types"
 import type { DataTableResult } from "@/components/tables"
 import { queryKeys, type AdminPostsListParams } from "@/lib/query-keys"
+import { updateResourceQueries } from "@/features/admin/resources/utils/update-resource-queries"
+import { useSocketConnection } from "@/features/admin/resources/hooks/use-socket-connection"
 import {
   matchesSearch,
   matchesFilters,
@@ -26,51 +26,21 @@ interface PostRemovePayload {
   previousStatus: "active" | "deleted"
 }
 
-function updatePostQueries(
-  queryClient: ReturnType<typeof useQueryClient>,
-  updater: (args: { key: unknown[]; params: AdminPostsListParams; data: DataTableResult<PostRow> }) => DataTableResult<PostRow> | null,
-  _logUpdates = true,
-): boolean {
-  let updated = false
-  const queries = queryClient.getQueriesData<DataTableResult<PostRow>>({
-    queryKey: queryKeys.adminPosts.all() as unknown[],
-  })
-
-  for (const [key, data] of queries) {
-    if (!Array.isArray(key) || key.length < 2) continue
-    const params = key[1] as AdminPostsListParams | undefined
-    if (!params || !data) continue
-    const next = updater({ key, params, data })
-    if (next) {
-      queryClient.setQueryData(key, next)
-      updated = true
-    }
-  }
-
-  return updated
-}
-
-export function usePostsSocketBridge() {
-  const { data: session } = useSession()
+export const usePostsSocketBridge = () => {
   const queryClient = useQueryClient()
-  const primaryRole = useMemo(() => session?.roles?.[0]?.name ?? null, [session?.roles])
-  const [cacheVersion, setCacheVersion] = useState(0)
-
-  const { socket, on } = useSocket({
-    userId: session?.user?.id,
-    role: primaryRole,
-  })
-
-  const [isConnected, setIsConnected] = useState<boolean>(() => Boolean(socket?.connected))
+  const { socket, on, isConnected, cacheVersion, setCacheVersion, sessionUserId } = useSocketConnection()
 
   useEffect(() => {
-    if (!session?.user?.id) return
+    if (!sessionUserId) return
 
     const detachUpsert = on<[PostUpsertPayload]>("post:upsert", (payload) => {
       const { post } = payload as PostUpsertPayload
       const rowStatus: "active" | "deleted" = post.deletedAt ? "deleted" : "active"
 
-      const updated = updatePostQueries(queryClient, ({ params, data }) => {
+      const updated = updateResourceQueries<PostRow, AdminPostsListParams>(
+        queryClient,
+        queryKeys.adminPosts.all() as unknown[],
+        ({ params, data }: { params: AdminPostsListParams; data: DataTableResult<PostRow> }) => {
         const matches = matchesFilters(params.filters, post) && matchesSearch(params.search, post)
         const includesByStatus = shouldIncludeInStatus(params.status, rowStatus)
         const existingIndex = data.rows.findIndex((r) => r.id === post.id)
@@ -105,7 +75,8 @@ export function usePostsSocketBridge() {
         const totalPages = total === 0 ? 0 : Math.ceil(total / next.limit)
 
         return { ...next, rows, total, totalPages }
-      })
+        },
+      )
 
       if (updated) {
         setCacheVersion((prev) => prev + 1)
@@ -119,9 +90,10 @@ export function usePostsSocketBridge() {
       let anyUpdated = false
       for (const { post } of posts) {
         const rowStatus: "active" | "deleted" = post.deletedAt ? "deleted" : "active"
-        const updated = updatePostQueries(
+        const updated = updateResourceQueries<PostRow, AdminPostsListParams>(
           queryClient,
-          ({ params, data }) => {
+          queryKeys.adminPosts.all() as unknown[],
+          ({ params, data }: { params: AdminPostsListParams; data: DataTableResult<PostRow> }) => {
             const matches = matchesFilters(params.filters, post) && matchesSearch(params.search, post)
             const includesByStatus = shouldIncludeInStatus(params.status, rowStatus)
             const existingIndex = data.rows.findIndex((r) => r.id === post.id)
@@ -156,7 +128,6 @@ export function usePostsSocketBridge() {
             const totalPages = total === 0 ? 0 : Math.ceil(total / next.limit)
             return { ...next, rows, total, totalPages }
           },
-          false, // Không log từng query update trong batch
         )
         if (updated) anyUpdated = true
       }
@@ -169,7 +140,10 @@ export function usePostsSocketBridge() {
     const detachRemove = on<[PostRemovePayload]>("post:remove", (payload) => {
       const { id } = payload as PostRemovePayload
 
-      const updated = updatePostQueries(queryClient, ({ data }) => {
+      const updated = updateResourceQueries<PostRow, AdminPostsListParams>(
+        queryClient,
+        queryKeys.adminPosts.all() as unknown[],
+        ({ data }: { data: DataTableResult<PostRow> }) => {
         const result = removeRowFromPage(data.rows, id)
         if (!result.removed) {
           return null
@@ -184,7 +158,8 @@ export function usePostsSocketBridge() {
           total,
           totalPages,
         }
-      })
+        },
+      )
 
       if (updated) {
         setCacheVersion((prev) => prev + 1)
@@ -197,9 +172,10 @@ export function usePostsSocketBridge() {
 
       let anyUpdated = false
       for (const { id } of posts) {
-        const updated = updatePostQueries(
+        const updated = updateResourceQueries<PostRow, AdminPostsListParams>(
           queryClient,
-          ({ data }) => {
+          queryKeys.adminPosts.all() as unknown[],
+          ({ data }: { data: DataTableResult<PostRow> }) => {
             const result = removeRowFromPage(data.rows, id)
             if (!result.removed) {
               return null
@@ -215,7 +191,6 @@ export function usePostsSocketBridge() {
               totalPages,
             }
           },
-          false, // Không log từng query update trong batch
         )
         if (updated) anyUpdated = true
       }
@@ -231,24 +206,7 @@ export function usePostsSocketBridge() {
       detachRemove?.()
       detachBatchRemove?.()
     }
-  }, [session?.user?.id, on, queryClient])
-
-  useEffect(() => {
-    if (!socket) {
-      return
-    }
-
-    const handleConnect = () => setIsConnected(true)
-    const handleDisconnect = () => setIsConnected(false)
-
-    socket.on("connect", handleConnect)
-    socket.on("disconnect", handleDisconnect)
-
-    return () => {
-      socket.off("connect", handleConnect)
-      socket.off("disconnect", handleDisconnect)
-    }
-  }, [socket])
+  }, [sessionUserId, on, queryClient, setCacheVersion])
 
   return { socket, isSocketConnected: isConnected, cacheVersion }
 }

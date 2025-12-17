@@ -33,20 +33,46 @@ export const createMatchesSearch = <TRow extends { id: string }>(
 }
 
 export const createMatchesFilters = <TRow extends { id: string }>(
-  filterFields: Array<keyof TRow>
+  config: Array<
+    | keyof TRow
+    | { field: string; getValue: (row: TRow) => unknown }
+    | ((row: TRow, filterValue: string) => boolean)
+  >
 ) => {
   return (filters: Record<string, string> | undefined, row: TRow): boolean => {
     if (!filters) return true
 
-    return filterFields.every((field) => {
-      const filterValue = filters[String(field)]
-      if (filterValue === undefined) return true
-
-      const rowValue = row[field]
-      if (typeof rowValue === "boolean") {
-        return rowValue === (filterValue === "true")
+    return config.every((item) => {
+      if (typeof item === "function") {
+        // Custom matcher function: (row, filterValue) => boolean
+        // Note: This requires the filter key to match the function name or be passed differently
+        // For now, we'll skip this pattern and use object config instead
+        return true
+      } else if (typeof item === "object" && "field" in item && "getValue" in item) {
+        // Object config with custom getValue
+        const filterValue = filters[item.field]
+        if (filterValue === undefined || filterValue === "") return true
+        const rowValue = item.getValue(row)
+        if (typeof rowValue === "boolean") {
+          return rowValue === (filterValue === "true")
+        }
+        if (rowValue === null || rowValue === undefined) {
+          return String(rowValue ?? "") === filterValue
+        }
+        return String(rowValue) === filterValue
+      } else {
+        // Simple field key
+        const filterValue = filters[String(item)]
+        if (filterValue === undefined || filterValue === "") return true
+        const rowValue = row[item]
+        if (typeof rowValue === "boolean") {
+          return rowValue === (filterValue === "true")
+        }
+        if (rowValue === null || rowValue === undefined) {
+          return String(rowValue ?? "") === filterValue
+        }
+        return String(rowValue) === filterValue
       }
-      return String(rowValue) === filterValue
     })
   }
 }
@@ -64,10 +90,17 @@ export const insertRowIntoPage = <TRow extends { id: string }>(
   newRow: TRow,
   limit: number
 ): TRow[] => {
-  if (rows.length >= limit) {
-    return rows
+  const existingIndex = rows.findIndex((item) => item.id === newRow.id)
+  if (existingIndex >= 0) {
+    const next = [...rows]
+    next[existingIndex] = newRow
+    return next
   }
-  return [newRow, ...rows]
+  const next = [newRow, ...rows]
+  if (next.length > limit) {
+    next.pop()
+  }
+  return next
 }
 
 export const removeRowFromPage = <TRow extends { id: string }>(
@@ -86,4 +119,3 @@ export const removeRowFromPage = <TRow extends { id: string }>(
     removed: true,
   }
 }
-

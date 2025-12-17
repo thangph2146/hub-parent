@@ -12,7 +12,7 @@ export interface RoleCreateClientProps {
   permissions?: Array<{ label: string; value: string }>
 }
 
-export function RoleCreateClient({ backUrl = "/admin/roles", permissions: permissionsFromServer = [] }: RoleCreateClientProps) {
+export const RoleCreateClient = ({ backUrl = "/admin/roles", permissions: permissionsFromServer = [] }: RoleCreateClientProps) => {
   const queryClient = useQueryClient()
 
   const handleBack = async () => {

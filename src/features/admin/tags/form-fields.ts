@@ -9,18 +9,15 @@ export interface TagFormData {
   [key: string]: unknown
 }
 
-export function getTagFormSections(): ResourceFormSection[] {
-  return [
-    {
-      id: "basic",
-      title: "Thông tin cơ bản",
-      description: "Thông tin chính về thẻ tag",
-    },
-  ]
-}
+export const getTagFormSections = (): ResourceFormSection[] => [
+  {
+    id: "basic",
+    title: "Thông tin cơ bản",
+    description: "Thông tin chính về thẻ tag",
+  },
+]
 
-export function getBaseTagFields(): ResourceFormField<TagFormData>[] {
-  return [
+export const getBaseTagFields = (): ResourceFormField<TagFormData>[] => [
     {
       name: "name",
       label: "Tên thẻ tag",
@@ -44,6 +41,5 @@ export function getBaseTagFields(): ResourceFormField<TagFormData>[] {
       icon: React.createElement(Hash, { className: "h-4 w-4" }),
       section: "basic",
     },
-  ]
-}
+]
 

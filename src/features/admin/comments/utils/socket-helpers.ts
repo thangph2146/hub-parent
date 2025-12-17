@@ -1,58 +1,29 @@
 import { resourceLogger } from "@/lib/config/resource-logger"
 import type { CommentRow } from "../types"
-import type { AdminCommentsListParams } from "@/lib/query-keys"
+import {
+  shouldIncludeInStatus,
+  createMatchesSearch,
+  createMatchesFilters,
+} from "@/features/admin/resources/utils/socket-helpers"
 
-export const matchesSearch = (search: string | undefined, row: CommentRow): boolean => {
-  if (!search || typeof search !== "string") return true
-  const term = search.trim().toLowerCase()
-  if (!term) return true
-  return [row.content, row.authorName ?? "", row.authorEmail, row.postTitle]
-    .some((value) => value.toLowerCase().includes(term))
-}
+export const matchesSearch = createMatchesSearch<CommentRow>([
+  "content",
+  (row) => row.authorName ?? "",
+  "authorEmail",
+  "postTitle",
+])
 
-export const matchesFilters = (
-  filters: AdminCommentsListParams["filters"],
-  row: CommentRow
-): boolean => {
-  if (!filters) return true
-  for (const [key, value] of Object.entries(filters)) {
-    if (value === undefined) continue
-    switch (key) {
-      case "approved": {
-        const expected = value === "true"
-        if (row.approved !== expected) return false
-        break
-      }
-      case "content":
-        if (row.content !== value) return false
-        break
-      case "authorName":
-        if ((row.authorName ?? "") !== value) return false
-        break
-      case "authorEmail":
-        if (row.authorEmail !== value) return false
-        break
-      case "postTitle":
-        if (row.postTitle !== value) return false
-        break
-      case "postId":
-        if (row.postId !== value) return false
-        break
-      default:
-        break
-    }
-  }
-  return true
-}
+// Re-export generic helper
+export { shouldIncludeInStatus }
 
-export const shouldIncludeInStatus = (
-  paramsStatus: AdminCommentsListParams["status"],
-  rowStatus: "active" | "deleted"
-): boolean => {
-  if (paramsStatus === "all") return true
-  if (!paramsStatus) return rowStatus === "active"
-  return paramsStatus === rowStatus
-}
+export const matchesFilters = createMatchesFilters<CommentRow>([
+  "approved",
+  "content",
+  { field: "authorName", getValue: (row) => row.authorName ?? "" },
+  "authorEmail",
+  "postTitle",
+  "postId",
+])
 
 export const insertRowIntoPage = (
   rows: CommentRow[],

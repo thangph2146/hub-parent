@@ -12,13 +12,13 @@ interface UsePostActionsOptions {
   showFeedback: (variant: FeedbackVariant, title: string, description?: string, details?: string) => void
 }
 
-export function usePostActions({
+export const usePostActions = ({
   canDelete,
   canRestore,
   canManage,
   showFeedback,
-}: UsePostActionsOptions) {
-  return useResourceActions<PostRow>({
+}: UsePostActionsOptions) =>
+  useResourceActions<PostRow>({
     resourceName: "posts",
     queryKeys: {
       all: () => queryKeys.adminPosts.all(),
@@ -42,5 +42,4 @@ export function usePostActions({
       postTitle: row.title,
     }),
   })
-}
 

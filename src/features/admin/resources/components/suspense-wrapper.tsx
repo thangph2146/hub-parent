@@ -91,7 +91,7 @@ export const SuspenseWrapper = ({
   return <Suspense fallback={fallbackNode}>{children}</Suspense>
 }
 
-function resolveFallback(preset: SuspensePreset, config?: FallbackConfig) {
+const resolveFallback = (preset: SuspensePreset, config?: FallbackConfig) => {
   const builder = fallbackBuilders[preset] ?? fallbackBuilders.detail
   return builder(config)
 }

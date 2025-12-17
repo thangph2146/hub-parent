@@ -1,13 +1,12 @@
 "use client"
 
-import { useEffect, useMemo, useState, useRef } from "react"
-import { useSession } from "next-auth/react"
+import { useEffect, useRef, useMemo } from "react"
 import { useQueryClient } from "@tanstack/react-query"
-import { useSocket } from "@/hooks/use-socket"
 import { resourceLogger } from "@/lib/config"
 import type { UserRow } from "../types"
 import type { DataTableResult } from "@/components/tables"
 import { queryKeys, type AdminUsersListParams } from "@/lib/query-keys"
+import { useSocketConnection } from "@/features/admin/resources/hooks/use-socket-connection"
 import {
   matchesSearch,
   matchesFilters,
@@ -27,11 +26,11 @@ interface UserRemovePayload {
   previousStatus: "active" | "deleted"
 }
 
-function updateUserQueries(
+const updateUserQueriesWithLogging = (
   queryClient: ReturnType<typeof useQueryClient>,
   updater: (args: { key: unknown[]; params: AdminUsersListParams; data: DataTableResult<UserRow> }) => DataTableResult<UserRow> | null,
   logUpdates = true,
-): boolean {
+): boolean => {
   let updated = false
   const queries = queryClient.getQueriesData<DataTableResult<UserRow>>({
     queryKey: queryKeys.adminUsers.all() as unknown[],
@@ -44,18 +43,18 @@ function updateUserQueries(
     const next = updater({ key, params, data })
     if (next) {
       if (logUpdates) {
-      resourceLogger.socket({
-        resource: "users",
-        event: "user:query-updated",
-        action: "socket-update",
-        payload: {
-          queryKey: key.slice(0, 2),
-          oldRowsCount: data.rows.length,
-          newRowsCount: next.rows.length,
-          oldTotal: data.total,
-          newTotal: next.total,
-        },
-      })
+        resourceLogger.socket({
+          resource: "users",
+          event: "user:query-updated",
+          action: "socket-update",
+          payload: {
+            queryKey: key.slice(0, 2),
+            oldRowsCount: data.rows.length,
+            newRowsCount: next.rows.length,
+            oldTotal: data.total,
+            newTotal: next.total,
+          },
+        })
       }
       queryClient.setQueryData(key, next)
       updated = true
@@ -65,11 +64,9 @@ function updateUserQueries(
   return updated
 }
 
-export function useUsersSocketBridge() {
-  const { data: session } = useSession()
+export const useUsersSocketBridge = () => {
   const queryClient = useQueryClient()
-  const primaryRole = useMemo(() => session?.roles?.[0]?.name ?? null, [session?.roles])
-  const [cacheVersion, setCacheVersion] = useState(0)
+  const { socket, on, isConnected, cacheVersion, setCacheVersion, sessionUserId } = useSocketConnection()
   const cacheVersionTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   // Debounced cacheVersion update để tránh duplicate refreshes khi có nhiều socket events
@@ -83,23 +80,18 @@ export function useUsersSocketBridge() {
         cacheVersionTimeoutRef.current = null
       }, 150) // Debounce 150ms để batch nhiều socket events
     }
-  }, [])
-
-  const { socket, on } = useSocket({
-    userId: session?.user?.id,
-    role: primaryRole,
-  })
-
-  const [isConnected, setIsConnected] = useState<boolean>(() => Boolean(socket?.connected))
+  }, [setCacheVersion])
 
   useEffect(() => {
-    if (!session?.user?.id) return
+    if (!sessionUserId) return
 
     const detachUpsert = on<[UserUpsertPayload]>("user:upsert", (payload) => {
       const { user } = payload as UserUpsertPayload
       const rowStatus: "active" | "deleted" = user.deletedAt ? "deleted" : "active"
 
-      const updated = updateUserQueries(queryClient, ({ params, data }) => {
+      const updated = updateUserQueriesWithLogging(
+        queryClient,
+        ({ params, data }: { params: AdminUsersListParams; data: DataTableResult<UserRow> }) => {
         const matches = matchesFilters(params.filters, user) && matchesSearch(params.search, user)
         const includesByStatus = shouldIncludeInStatus(params.status, rowStatus)
         const existingIndex = data.rows.findIndex((r) => r.id === user.id)
@@ -152,7 +144,8 @@ export function useUsersSocketBridge() {
         }
 
         return result
-      })
+        },
+      )
 
       if (updated) {
         // Cache đã được update qua setQueryData, debounce cacheVersion update
@@ -167,9 +160,9 @@ export function useUsersSocketBridge() {
       let anyUpdated = false
       for (const { user } of users) {
         const rowStatus: "active" | "deleted" = user.deletedAt ? "deleted" : "active"
-        const updated = updateUserQueries(
+        const updated = updateUserQueriesWithLogging(
           queryClient,
-          ({ params, data }) => {
+          ({ params, data }: { params: AdminUsersListParams; data: DataTableResult<UserRow> }) => {
             const matches = matchesFilters(params.filters, user) && matchesSearch(params.search, user)
             const includesByStatus = shouldIncludeInStatus(params.status, rowStatus)
             const existingIndex = data.rows.findIndex((r) => r.id === user.id)
@@ -218,7 +211,9 @@ export function useUsersSocketBridge() {
     const detachRemove = on<[UserRemovePayload]>("user:remove", (payload) => {
       const { id } = payload as UserRemovePayload
 
-      const updated = updateUserQueries(queryClient, ({ data }) => {
+      const updated = updateUserQueriesWithLogging(
+        queryClient,
+        ({ data }: { data: DataTableResult<UserRow> }) => {
         const result = removeRowFromPage(data.rows, id)
         if (!result.removed) {
           return null
@@ -233,7 +228,8 @@ export function useUsersSocketBridge() {
           total,
           totalPages,
         }
-      })
+        },
+      )
 
       if (updated) {
         // Cache đã được update qua setQueryData, debounce cacheVersion update
@@ -247,9 +243,9 @@ export function useUsersSocketBridge() {
 
       let anyUpdated = false
       for (const { id } of users) {
-        const updated = updateUserQueries(
+        const updated = updateUserQueriesWithLogging(
           queryClient,
-          ({ data }) => {
+          ({ data }: { data: DataTableResult<UserRow> }) => {
             const result = removeRowFromPage(data.rows, id)
             if (!result.removed) {
               return null
@@ -286,24 +282,7 @@ export function useUsersSocketBridge() {
       detachRemove?.()
       detachBatchRemove?.()
     }
-  }, [session?.user?.id, on, queryClient, updateCacheVersionDebounced])
-
-  useEffect(() => {
-    if (!socket) {
-      return
-    }
-
-    const handleConnect = () => setIsConnected(true)
-    const handleDisconnect = () => setIsConnected(false)
-
-    socket.on("connect", handleConnect)
-    socket.on("disconnect", handleDisconnect)
-
-    return () => {
-      socket.off("connect", handleConnect)
-      socket.off("disconnect", handleDisconnect)
-    }
-  }, [socket])
+  }, [sessionUserId, on, queryClient, updateCacheVersionDebounced])
 
   return { socket, isSocketConnected: isConnected, cacheVersion }
 }

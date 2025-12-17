@@ -13,14 +13,14 @@ interface UseCategoryActionsOptions {
   showFeedback: (variant: FeedbackVariant, title: string, description?: string, details?: string) => void
 }
 
-export function useCategoryActions({
+export const useCategoryActions = ({
   canDelete,
   canRestore,
   canManage,
   isSocketConnected,
   showFeedback,
-}: UseCategoryActionsOptions) {
-  return useResourceActions<CategoryRow>({
+}: UseCategoryActionsOptions) =>
+  useResourceActions<CategoryRow>({
     resourceName: "categories",
     queryKeys: {
       all: () => queryKeys.adminCategories.all(),
@@ -45,5 +45,4 @@ export function useCategoryActions({
       categoryName: row.name,
     }),
   })
-}
 

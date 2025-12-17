@@ -8,7 +8,7 @@ export interface AuthContext {
   roles: Array<{ name: string }>
 }
 
-export function ensurePermission(ctx: AuthContext, ...required: Permission[]): void {
+export const ensurePermission = (ctx: AuthContext, ...required: Permission[]): void => {
   if (!required.some((perm) => canPerformAction(ctx.permissions, ctx.roles, perm))) {
     throw new ForbiddenError()
   }

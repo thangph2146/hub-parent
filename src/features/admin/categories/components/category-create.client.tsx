@@ -12,7 +12,7 @@ export interface CategoryCreateClientProps {
   backUrl?: string
 }
 
-export function CategoryCreateClient({ backUrl = "/admin/categories" }: CategoryCreateClientProps) {
+export const CategoryCreateClient = ({ backUrl = "/admin/categories" }: CategoryCreateClientProps) => {
   const queryClient = useQueryClient()
 
   const handleBack = async () => {

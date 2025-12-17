@@ -1,94 +1,32 @@
 import type { ContactRequestRow } from "../types"
+import {
+  shouldIncludeInStatus,
+  insertRowIntoPage,
+  removeRowFromPage,
+  createMatchesSearch,
+  createMatchesFilters,
+} from "@/features/admin/resources/utils/socket-helpers"
 
-export const matchesSearch = (search: string | undefined, row: ContactRequestRow): boolean => {
-  if (!search || typeof search !== "string") return true
-  const term = search.trim().toLowerCase()
-  if (!term) return true
-  return [
-    row.name,
-    row.email,
-    row.phone ?? "",
-    row.subject,
-    row.assignedToName ?? "",
-  ]
-    .some((value) => value.toLowerCase().includes(term))
-}
+export const matchesSearch = createMatchesSearch<ContactRequestRow>([
+  "name",
+  "email",
+  (row) => row.phone ?? "",
+  "subject",
+  (row) => row.assignedToName ?? "",
+])
 
-export const matchesFilters = (
-  filters: Record<string, string> | undefined,
-  row: ContactRequestRow
-): boolean => {
-  if (!filters) return true
-  for (const [key, value] of Object.entries(filters)) {
-    if (value === undefined || value === "") continue
-    switch (key) {
-      case "status":
-        if (row.status !== value) return false
-        break
-      case "priority":
-        if (row.priority !== value) return false
-        break
-      case "isRead": {
-        const expected = value === "true"
-        if (row.isRead !== expected) return false
-        break
-      }
-      case "name":
-        if (row.name !== value) return false
-        break
-      case "email":
-        if (row.email !== value) return false
-        break
-      case "phone":
-        if ((row.phone ?? "") !== value) return false
-        break
-      case "subject":
-        if (row.subject !== value) return false
-        break
-      default:
-        break
-    }
-  }
-  return true
-}
+// Re-export generic helpers
+export { shouldIncludeInStatus, insertRowIntoPage, removeRowFromPage }
 
-export const shouldIncludeInStatus = (
-  paramsStatus: "active" | "deleted" | "all" | undefined,
-  rowStatus: "active" | "deleted"
-): boolean => {
-  if (paramsStatus === "all") return true
-  if (!paramsStatus) return rowStatus === "active"
-  return paramsStatus === rowStatus
-}
-
-export const insertRowIntoPage = (
-  rows: ContactRequestRow[],
-  row: ContactRequestRow,
-  limit: number
-): ContactRequestRow[] => {
-  const existingIndex = rows.findIndex((item) => item.id === row.id)
-  if (existingIndex >= 0) {
-    const next = [...rows]
-    next[existingIndex] = row
-    return next
-  }
-  const next = [row, ...rows]
-  if (next.length > limit) {
-    next.pop()
-  }
-  return next
-}
-
-export const removeRowFromPage = (
-  rows: ContactRequestRow[],
-  id: string
-): { rows: ContactRequestRow[]; removed: boolean } => {
-  const index = rows.findIndex((item) => item.id === id)
-  if (index === -1) return { rows, removed: false }
-  const next = [...rows]
-  next.splice(index, 1)
-  return { rows: next, removed: true }
-}
+export const matchesFilters = createMatchesFilters<ContactRequestRow>([
+  "status",
+  "priority",
+  "isRead",
+  "name",
+  "email",
+  { field: "phone", getValue: (row) => row.phone ?? "" },
+  "subject",
+])
 
 export const convertSocketPayloadToRow = (
   payload: {

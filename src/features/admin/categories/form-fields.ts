@@ -10,18 +10,15 @@ export interface CategoryFormData {
   [key: string]: unknown
 }
 
-export function getCategoryFormSections(): ResourceFormSection[] {
-  return [
-    {
-      id: "basic",
-      title: "Thông tin cơ bản",
-      description: "Thông tin chính về danh mục",
-    },
-  ]
-}
+export const getCategoryFormSections = (): ResourceFormSection[] => [
+  {
+    id: "basic",
+    title: "Thông tin cơ bản",
+    description: "Thông tin chính về danh mục",
+  },
+]
 
-export function getBaseCategoryFields(): ResourceFormField<CategoryFormData>[] {
-  return [
+export const getBaseCategoryFields = (): ResourceFormField<CategoryFormData>[] => [
     {
       name: "name",
       label: "Tên danh mục",
@@ -54,6 +51,5 @@ export function getBaseCategoryFields(): ResourceFormField<CategoryFormData>[] {
       icon: React.createElement(AlignLeft, { className: "h-4 w-4" }),
       section: "basic",
     },
-  ]
-}
+]
 

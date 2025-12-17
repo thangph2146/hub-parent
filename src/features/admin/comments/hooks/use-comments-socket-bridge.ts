@@ -1,13 +1,13 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
-import { useSession } from "next-auth/react"
+import { useEffect } from "react"
 import { useQueryClient } from "@tanstack/react-query"
-import { useSocket } from "@/hooks/use-socket"
 import type { CommentRow } from "../types"
 import type { DataTableResult } from "@/components/tables"
 import { queryKeys, type AdminCommentsListParams } from "@/lib/query-keys"
 import type { CommentDetailData } from "../components/comment-detail.client"
+import { updateResourceQueries } from "@/features/admin/resources/utils/update-resource-queries"
+import { useSocketConnection } from "@/features/admin/resources/hooks/use-socket-connection"
 import {
   matchesSearch,
   matchesFilters,
@@ -27,45 +27,12 @@ interface CommentRemovePayload {
   previousStatus: "active" | "deleted"
 }
 
-function updateCommentQueries(
-  queryClient: ReturnType<typeof useQueryClient>,
-  updater: (args: { key: unknown[]; params: AdminCommentsListParams; data: DataTableResult<CommentRow> }) => DataTableResult<CommentRow> | null,
-): boolean {
-  let updated = false
-  const queries = queryClient.getQueriesData<DataTableResult<CommentRow>>({
-    queryKey: queryKeys.adminComments.all() as unknown[],
-  })
-  
-  for (const [key, data] of queries) {
-    if (!Array.isArray(key) || key.length < 2) continue
-    const params = key[1] as AdminCommentsListParams | undefined
-    if (!params || !data) continue
-    const next = updater({ key, params, data })
-    if (next) {
-      queryClient.setQueryData(key, next)
-      updated = true
-    }
-  }
-  
-  return updated
-}
-
-
-export function useCommentsSocketBridge() {
-  const { data: session } = useSession()
+export const useCommentsSocketBridge = () => {
   const queryClient = useQueryClient()
-  const primaryRole = useMemo(() => session?.roles?.[0]?.name ?? null, [session?.roles])
-  const [cacheVersion, setCacheVersion] = useState(0)
-
-  const { socket, on } = useSocket({
-    userId: session?.user?.id,
-    role: primaryRole,
-  })
-
-  const [isConnected, setIsConnected] = useState<boolean>(() => Boolean(socket?.connected))
+  const { socket, on, isConnected, cacheVersion, setCacheVersion, sessionUserId } = useSocketConnection()
 
   useEffect(() => {
-    if (!session?.user?.id) return
+    if (!sessionUserId) return
 
     const detachUpsert = on<[CommentUpsertPayload]>("comment:upsert", (payload) => {
       const { comment } = payload as CommentUpsertPayload
@@ -89,7 +56,10 @@ export function useCommentsSocketBridge() {
         })
       }
 
-      const updated = updateCommentQueries(queryClient, ({ params, data }) => {
+      const updated = updateResourceQueries<CommentRow, AdminCommentsListParams>(
+        queryClient,
+        queryKeys.adminComments.all() as unknown[],
+        ({ params, data }: { params: AdminCommentsListParams; data: DataTableResult<CommentRow> }) => {
         const matches = matchesFilters(params.filters, comment) && matchesSearch(params.search, comment)
         const includesByStatus = shouldIncludeInStatus(params.status, rowStatus)
         const existingIndex = data.rows.findIndex((row) => row.id === comment.id)
@@ -138,7 +108,8 @@ export function useCommentsSocketBridge() {
           total,
           totalPages,
         }
-      })
+        },
+      )
       
       if (updated) {
         setCacheVersion((prev) => prev + 1)
@@ -171,7 +142,10 @@ export function useCommentsSocketBridge() {
           })
         }
 
-        const updated = updateCommentQueries(queryClient, ({ params, data }) => {
+        const updated = updateResourceQueries<CommentRow, AdminCommentsListParams>(
+          queryClient,
+          queryKeys.adminComments.all() as unknown[],
+          ({ params, data }: { params: AdminCommentsListParams; data: DataTableResult<CommentRow> }) => {
           const matches = matchesFilters(params.filters, comment) && matchesSearch(params.search, comment)
           const includesByStatus = shouldIncludeInStatus(params.status, rowStatus)
           const existingIndex = data.rows.findIndex((row) => row.id === comment.id)
@@ -206,7 +180,8 @@ export function useCommentsSocketBridge() {
 
           const totalPages = total === 0 ? 0 : Math.ceil(total / next.limit)
           return { ...next, rows, total, totalPages }
-        })
+          },
+        )
         
         if (updated) anyUpdated = true
       }
@@ -222,7 +197,10 @@ export function useCommentsSocketBridge() {
       // Invalidate detail query cache
       queryClient.invalidateQueries({ queryKey: queryKeys.adminComments.detail(id) })
       
-      const updated = updateCommentQueries(queryClient, ({ data }) => {
+      const updated = updateResourceQueries<CommentRow, AdminCommentsListParams>(
+        queryClient,
+        queryKeys.adminComments.all() as unknown[],
+        ({ data }: { data: DataTableResult<CommentRow> }) => {
         const result = removeRowFromPage(data.rows, id)
         if (!result.removed) {
           return null
@@ -237,7 +215,8 @@ export function useCommentsSocketBridge() {
           total,
           totalPages,
         }
-      })
+        },
+      )
       
       if (updated) {
         setCacheVersion((prev) => prev + 1)
@@ -249,24 +228,7 @@ export function useCommentsSocketBridge() {
       detachBatchUpsert?.()
       detachRemove?.()
     }
-  }, [session?.user?.id, on, queryClient])
-
-  useEffect(() => {
-    if (!socket) {
-      return
-    }
-
-    const handleConnect = () => setIsConnected(true)
-    const handleDisconnect = () => setIsConnected(false)
-
-    socket.on("connect", handleConnect)
-    socket.on("disconnect", handleDisconnect)
-
-    return () => {
-      socket.off("connect", handleConnect)
-      socket.off("disconnect", handleDisconnect)
-    }
-  }, [socket])
+  }, [sessionUserId, on, queryClient, setCacheVersion])
 
   return { socket, isSocketConnected: isConnected, cacheVersion }
 }

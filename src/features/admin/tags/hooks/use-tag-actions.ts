@@ -13,14 +13,14 @@ interface UseTagActionsOptions {
   showFeedback: (variant: FeedbackVariant, title: string, description?: string, details?: string) => void
 }
 
-export function useTagActions({
+export const useTagActions = ({
   canDelete,
   canRestore,
   canManage,
   isSocketConnected,
   showFeedback,
-}: UseTagActionsOptions) {
-  return useResourceActions<TagRow>({
+}: UseTagActionsOptions) =>
+  useResourceActions<TagRow>({
     resourceName: "tags",
     queryKeys: {
       all: () => queryKeys.adminTags.all(),
@@ -45,4 +45,3 @@ export function useTagActions({
       tagName: row.name,
     }),
   })
-}

@@ -14,30 +14,27 @@ export interface SessionFormData {
   [key: string]: unknown
 }
 
-export function getSessionFormSections(): ResourceFormSection[] {
-  return [
-    {
-      id: "basic",
-      title: "Thông tin cơ bản",
-      description: "Thông tin chính về session",
-    },
-    {
-      id: "security",
-      title: "Bảo mật",
-      description: "Thông tin bảo mật và mạng",
-    },
-    {
-      id: "status",
-      title: "Trạng thái",
-      description: "Cấu hình trạng thái và thời gian",
-    },
-  ]
-}
+export const getSessionFormSections = (): ResourceFormSection[] => [
+  {
+    id: "basic",
+    title: "Thông tin cơ bản",
+    description: "Thông tin chính về session",
+  },
+  {
+    id: "security",
+    title: "Bảo mật",
+    description: "Thông tin bảo mật và mạng",
+  },
+  {
+    id: "status",
+    title: "Trạng thái",
+    description: "Cấu hình trạng thái và thời gian",
+  },
+]
 
-export function getBaseSessionFields(
+export const getBaseSessionFields = (
   usersOptions?: Array<{ label: string; value: string }>
-): ResourceFormField<SessionFormData>[] {
-  return [
+): ResourceFormField<SessionFormData>[] => [
     {
       name: "userId",
       label: "Người dùng",
@@ -90,6 +87,5 @@ export function getBaseSessionFields(
       icon: React.createElement(ToggleLeft, { className: "h-4 w-4" }),
       section: "status",
     },
-  ]
-}
+]
 

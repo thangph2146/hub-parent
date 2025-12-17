@@ -20,7 +20,7 @@ interface UseCommentActionsOptions {
   refreshTable?: () => Promise<void>
 }
 
-export function useCommentActions({
+export const useCommentActions = ({
   canApprove,
   canDelete,
   canRestore,
@@ -28,7 +28,7 @@ export function useCommentActions({
   isSocketConnected,
   showFeedback,
   refreshTable,
-}: UseCommentActionsOptions) {
+}: UseCommentActionsOptions) => {
   const queryClient = useQueryClient()
   const [approvingComments, setApprovingComments] = useState<Set<string>>(new Set())
   const [unapprovingComments, setUnapprovingComments] = useState<Set<string>>(new Set())

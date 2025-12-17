@@ -28,7 +28,7 @@ export interface CategoryEditClientProps {
   categoryId?: string
 }
 
-export function CategoryEditClient({
+export const CategoryEditClient = ({
   category: initialCategory,
   open = true,
   onOpenChange,
@@ -37,7 +37,7 @@ export function CategoryEditClient({
   backUrl,
   backLabel = "Quay lại",
   categoryId,
-}: CategoryEditClientProps) {
+}: CategoryEditClientProps) => {
   const queryClient = useQueryClient()
   const { navigateBack } = useResourceNavigation({
     queryClient,

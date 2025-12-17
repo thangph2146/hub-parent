@@ -12,7 +12,7 @@ export interface TagCreateClientProps {
   backUrl?: string
 }
 
-export function TagCreateClient({ backUrl = "/admin/tags" }: TagCreateClientProps) {
+export const TagCreateClient = ({ backUrl = "/admin/tags" }: TagCreateClientProps) => {
   const queryClient = useQueryClient()
   
   const handleBack = async () => {

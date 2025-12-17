@@ -165,7 +165,7 @@ export async function emitBatchUserUpsert(
   }
 }
 
-export function emitUserRemove(userId: string, previousStatus: UserStatus): void {
+export const emitUserRemove = (userId: string, previousStatus: UserStatus): void => {
   const io = getSocketServer()
   if (!io) return
 

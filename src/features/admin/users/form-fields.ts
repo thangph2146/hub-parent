@@ -16,32 +16,30 @@ export interface UserFormData {
   [key: string]: unknown
 }
 
-export function getUserFormSections(): ResourceFormSection[] {
-  return [
-    {
-      id: "login",
-      title: "Thông tin đăng nhập",
-      description: "Thông tin dùng để đăng nhập vào hệ thống",
-    },
-    {
-      id: "personal",
-      title: "Thông tin cá nhân",
-      description: "Thông tin cá nhân của người dùng",
-    },
-    {
-      id: "additional",
-      title: "Thông tin bổ sung",
-      description: "Các thông tin bổ sung về người dùng",
-    },
-    {
-      id: "access",
-      title: "Vai trò & Trạng thái",
-      description: "Cấu hình quyền truy cập và trạng thái hoạt động",
-    },
-  ]
-}
+export const getUserFormSections = (): ResourceFormSection[] => [
+  {
+    id: "login",
+    title: "Thông tin đăng nhập",
+    description: "Thông tin dùng để đăng nhập vào hệ thống",
+  },
+  {
+    id: "personal",
+    title: "Thông tin cá nhân",
+    description: "Thông tin cá nhân của người dùng",
+  },
+  {
+    id: "additional",
+    title: "Thông tin bổ sung",
+    description: "Các thông tin bổ sung về người dùng",
+  },
+  {
+    id: "access",
+    title: "Vai trò & Trạng thái",
+    description: "Cấu hình quyền truy cập và trạng thái hoạt động",
+  },
+]
 
-export function getBaseUserFields(roles: Role[], roleDefaultValue = ""): ResourceFormField<UserFormData>[] {
+export const getBaseUserFields = (roles: Role[], roleDefaultValue = ""): ResourceFormField<UserFormData>[] => {
   return [
     {
       name: "email",
@@ -112,31 +110,27 @@ export function getBaseUserFields(roles: Role[], roleDefaultValue = ""): Resourc
   ]
 }
 
-export function getPasswordField(): ResourceFormField<UserFormData> {
-  return {
-    name: "password",
-    label: "Mật khẩu",
-    type: "password",
-    placeholder: "Nhập mật khẩu",
-    required: true,
-    description: "Mật khẩu phải có ít nhất 6 ký tự",
-    validate: (value) => validatePassword(value, false),
-    icon: React.createElement(Lock, { className: "h-4 w-4" }),
-    section: "login",
-  }
-}
+export const getPasswordField = (): ResourceFormField<UserFormData> => ({
+  name: "password",
+  label: "Mật khẩu",
+  type: "password",
+  placeholder: "Nhập mật khẩu",
+  required: true,
+  description: "Mật khẩu phải có ít nhất 6 ký tự",
+  validate: (value) => validatePassword(value, false),
+  icon: React.createElement(Lock, { className: "h-4 w-4" }),
+  section: "login",
+})
 
-export function getPasswordEditField(): ResourceFormField<UserFormData> {
-  return {
-    name: "password",
-    label: "Mật khẩu mới",
-    type: "password",
-    placeholder: "Để trống nếu không muốn thay đổi",
-    description: "Chỉ nhập nếu muốn thay đổi mật khẩu. Để trống để giữ nguyên mật khẩu hiện tại.",
-    required: false,
-    validate: (value) => validatePassword(value, true),
-    icon: React.createElement(Lock, { className: "h-4 w-4" }),
-    section: "login",
-  }
-}
+export const getPasswordEditField = (): ResourceFormField<UserFormData> => ({
+  name: "password",
+  label: "Mật khẩu mới",
+  type: "password",
+  placeholder: "Để trống nếu không muốn thay đổi",
+  description: "Chỉ nhập nếu muốn thay đổi mật khẩu. Để trống để giữ nguyên mật khẩu hiện tại.",
+  required: false,
+  validate: (value) => validatePassword(value, true),
+  icon: React.createElement(Lock, { className: "h-4 w-4" }),
+  section: "login",
+})
 

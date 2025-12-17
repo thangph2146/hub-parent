@@ -35,14 +35,14 @@ import { resourceLogger } from "@/lib/config"
 import type { AdminRolesListParams } from "@/lib/query-keys"
 import type { RoleRow, RolesResponse, RolesTableClientProps } from "../types"
 import { ROLE_CONFIRM_MESSAGES, ROLE_LABELS } from "../constants/messages"
-export function RolesTableClient({
+export const RolesTableClient = ({
   canDelete = false,
   canRestore = false,
   canManage = false,
   canCreate = false,
   initialData,
   initialPermissionsOptions: _initialPermissionsOptions = [],
-}: RolesTableClientProps) {
+}: RolesTableClientProps) => {
   const queryClient = useQueryClient()
   const { isSocketConnected, cacheVersion } = useRolesSocketBridge()
   const { feedback, showFeedback, handleFeedbackOpenChange } = useRoleFeedback()

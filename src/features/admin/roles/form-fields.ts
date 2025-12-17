@@ -13,98 +13,78 @@ export interface RoleFormData {
   [key: string]: unknown
 }
 
-export function getAllPermissionsOptionGroups(): Array<{ label: string; options: Array<{ label: string; value: string }> }> {
-  
-  // Map resource names to Vietnamese labels
-  const resourceLabels: Record<string, string> = {
-    dashboard: "Dashboard",
-    users: "Người dùng",
-    posts: "Bài viết",
-    categories: "Danh mục",
-    tags: "Thẻ",
-    comments: "Bình luận",
-    roles: "Vai trò",
-    messages: "Tin nhắn",
-    notifications: "Thông báo",
-    contact_requests: "Liên hệ",
-    students: "sinh viên",
-    settings: "Cài đặt",
-  }
+const resourceLabels: Record<string, string> = {
+  dashboard: "Dashboard",
+  users: "Người dùng",
+  posts: "Bài viết",
+  categories: "Danh mục",
+  tags: "Thẻ",
+  comments: "Bình luận",
+  roles: "Vai trò",
+  messages: "Tin nhắn",
+  notifications: "Thông báo",
+  contact_requests: "Liên hệ",
+  students: "sinh viên",
+  settings: "Cài đặt",
+}
 
-  // Map action names to Vietnamese labels
-  const actionLabels: Record<string, string> = {
-    view: "Xem",
-    create: "Tạo",
-    update: "Cập nhật",
-    delete: "Xóa",
-    publish: "Xuất bản",
-    approve: "Duyệt",
-    assign: "Gán",
-    manage: "Quản lý",
-  }
+const actionLabels: Record<string, string> = {
+  view: "Xem",
+  create: "Tạo",
+  update: "Cập nhật",
+  delete: "Xóa",
+  publish: "Xuất bản",
+  approve: "Duyệt",
+  assign: "Gán",
+  manage: "Quản lý",
+}
 
+export const getAllPermissionsOptionGroups = (): Array<{ label: string; options: Array<{ label: string; value: string }> }> => {
   const grouped: Record<string, Array<{ label: string; value: string }>> = {}
   const seenValues = new Set<string>()
 
   Object.entries(PERMISSIONS).forEach(([_key, value]) => {
     const permissionValue = String(value)
-    
-    if (seenValues.has(permissionValue)) {
-      return
-    }
+    if (seenValues.has(permissionValue)) return
     
     const [resource, action] = permissionValue.split(":")
-    if (!grouped[resource]) {
-      grouped[resource] = []
-    }
-    
-    const resourceLabel = resourceLabels[resource] || resource
-    const actionLabel = actionLabels[action] || action
-    const label = `${actionLabel} - ${resourceLabel}`
+    if (!grouped[resource]) grouped[resource] = []
     
     grouped[resource].push({
-      label,
+      label: `${actionLabels[action] || action} - ${resourceLabels[resource] || resource}`,
       value: permissionValue,
     })
     seenValues.add(permissionValue)
   })
 
-  // Sort options within each group and sort groups
-  const sortedGroups = Object.entries(grouped)
+  return Object.entries(grouped)
     .map(([resource, options]) => ({
       label: resourceLabels[resource] || resource,
       options: options.sort((a, b) => a.label.localeCompare(b.label)),
     }))
     .sort((a, b) => a.label.localeCompare(b.label))
-
-  return sortedGroups
 }
 
-function getAllPermissionsOptions(): Array<{ label: string; value: string }> {
-  return getAllPermissionsOptionGroups().flatMap((group) => group.options)
-}
+const getAllPermissionsOptions = (): Array<{ label: string; value: string }> => 
+  getAllPermissionsOptionGroups().flatMap((group) => group.options)
 
-export function getRoleFormSections(): ResourceFormSection[] {
-  return [
-    {
-      id: "basic",
-      title: "Thông tin cơ bản",
-      description: "Thông tin chính về vai trò",
-    },
-    {
-      id: "permissions",
-      title: "Quyền truy cập",
-      description: "Cấu hình các quyền cho vai trò này",
-    },
-  
-  ]
-}
+export const getRoleFormSections = (): ResourceFormSection[] => [
+  {
+    id: "basic",
+    title: "Thông tin cơ bản",
+    description: "Thông tin chính về vai trò",
+  },
+  {
+    id: "permissions",
+    title: "Quyền truy cập",
+    description: "Cấu hình các quyền cho vai trò này",
+  },
+]
 
-export function getBaseRoleFields(
+export const getBaseRoleFields = (
   permissionsOptions?: Array<{ label: string; value: string }>,
   useGroups = true
-): ResourceFormField<RoleFormData>[] {
-  // Use grouped permissions by default, fallback to flat if needed
+): ResourceFormField<RoleFormData>[] => {
   const permissionsOptionGroups = useGroups ? getAllPermissionsOptionGroups() : undefined
   const flatPermissionsOptions = permissionsOptions || getAllPermissionsOptions()
 

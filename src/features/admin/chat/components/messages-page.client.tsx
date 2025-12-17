@@ -13,12 +13,12 @@ interface MessagesPageClientProps {
   initialFilterType?: ChatFilterType
 }
 
-function MessagesPageClient({
+const MessagesPageClient = ({
   initialContacts,
   currentUserId,
   currentUserRole,
   initialFilterType = "ACTIVE",
-}: MessagesPageClientProps) {
+}: MessagesPageClientProps) => {
   const handleNewConversation = async (contact: Contact) => {
     // Optionally fetch messages for new conversation
     try {

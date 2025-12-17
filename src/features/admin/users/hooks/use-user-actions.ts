@@ -16,12 +16,12 @@ interface UseUserActionsOptions {
   showFeedback: (variant: FeedbackVariant, title: string, description?: string, details?: string) => void
 }
 
-export function useUserActions({
+export const useUserActions = ({
   canDelete,
   canRestore,
   canManage,
   showFeedback,
-}: UseUserActionsOptions) {
+}: UseUserActionsOptions) => {
   const queryClient = useQueryClient()
   const [togglingUsers, setTogglingUsers] = useState<Set<string>>(new Set())
 

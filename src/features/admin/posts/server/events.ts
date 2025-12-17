@@ -120,7 +120,7 @@ export async function emitBatchPostUpsert(
   }
 }
 
-export function emitPostRemove(postId: string, previousStatus: PostStatus): void {
+export const emitPostRemove = (postId: string, previousStatus: PostStatus): void => {
   const io = getSocketServer()
   if (!io) return
 

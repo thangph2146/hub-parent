@@ -37,7 +37,7 @@ export interface ContactRequestEditClientProps {
   usersOptions?: Array<{ label: string; value: string }>
 }
 
-export function ContactRequestEditClient({
+export const ContactRequestEditClient = ({
   contactRequest: initialContactRequest,
   open = true,
   onOpenChange,
@@ -47,7 +47,7 @@ export function ContactRequestEditClient({
   backLabel = "Quay lại",
   contactRequestId,
   usersOptions = [],
-}: ContactRequestEditClientProps) {
+}: ContactRequestEditClientProps) => {
   const queryClient = useQueryClient()
 
   const resourceId = contactRequestId || initialContactRequest?.id

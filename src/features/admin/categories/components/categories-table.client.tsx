@@ -33,13 +33,13 @@ import { useCategoryRowActions } from "../utils/row-actions"
 
 import type { CategoryRow, CategoriesResponse, CategoriesTableClientProps } from "../types"
 import { CATEGORY_CONFIRM_MESSAGES, CATEGORY_LABELS } from "../constants/messages"
-export function CategoriesTableClient({
+export const CategoriesTableClient = ({
   canDelete = false,
   canRestore = false,
   canManage = false,
   canCreate = false,
   initialData,
-}: CategoriesTableClientProps) {
+}: CategoriesTableClientProps) => {
   const router = useResourceRouter()
   const queryClient = useQueryClient()
   const { feedback, showFeedback, handleFeedbackOpenChange } = useCategoryFeedback()

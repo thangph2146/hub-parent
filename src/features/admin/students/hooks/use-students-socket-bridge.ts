@@ -1,12 +1,13 @@
 "use client"
 
-import { useEffect, useMemo, useState, useRef, useCallback } from "react"
+import { useEffect, useRef, useCallback, useMemo } from "react"
 import { useSession } from "next-auth/react"
 import { useQueryClient } from "@tanstack/react-query"
-import { useSocket } from "@/hooks/use-socket"
 import type { StudentRow } from "../types"
 import type { DataTableResult } from "@/components/tables"
 import { queryKeys, type AdminStudentsListParams } from "@/lib/query-keys"
+import { updateResourceQueries } from "@/features/admin/resources/utils/update-resource-queries"
+import { useSocketConnection } from "@/features/admin/resources/hooks/use-socket-connection"
 import {
   matchesSearch,
   matchesFilters,
@@ -34,39 +35,16 @@ interface StudentBatchUpsertPayload {
   }>
 }
 
-function updateStudentQueries(
-  queryClient: ReturnType<typeof useQueryClient>,
-  updater: (args: { key: unknown[]; params: AdminStudentsListParams; data: DataTableResult<StudentRow> }) => DataTableResult<StudentRow> | null,
-): boolean {
-  let updated = false
-  const queries = queryClient.getQueriesData<DataTableResult<StudentRow>>({
-    queryKey: queryKeys.adminStudents.all() as unknown[],
-  })
-  
-  for (const [key, data] of queries) {
-    if (!Array.isArray(key) || key.length < 2) continue
-    const params = key[1] as AdminStudentsListParams | undefined
-    if (!params || !data) continue
-    
-    const next = updater({ key, params, data })
-    if (next) {
-      queryClient.setQueryData(key, next)
-      updated = true
-    }
-  }
-  
-  return updated
-}
 
-function calculateTotalPages(total: number, limit: number): number {
+const calculateTotalPages = (total: number, limit: number): number => {
   return total === 0 ? 0 : Math.ceil(total / limit)
 }
 
-function handleStudentUpsert(
+const handleStudentUpsert = (
   student: StudentRow,
   params: AdminStudentsListParams,
   data: DataTableResult<StudentRow>
-): DataTableResult<StudentRow> | null {
+): DataTableResult<StudentRow> | null => {
   const rowStatus: "active" | "deleted" = student.deletedAt ? "deleted" : "active"
   const matches = matchesFilters(params.filters, student) && matchesSearch(params.search, student)
   const includesByStatus = shouldIncludeInStatus(params.status, rowStatus)
@@ -105,11 +83,11 @@ function handleStudentUpsert(
   }
 }
 
-function handleBatchUpsert(
+const handleBatchUpsert = (
   students: StudentRow[],
   params: AdminStudentsListParams,
   data: DataTableResult<StudentRow>
-): DataTableResult<StudentRow> | null {
+): DataTableResult<StudentRow> | null => {
   let total = data.total
   let rows = data.rows
   const actions = { inserted: 0, updated: 0, removed: 0 }
@@ -154,16 +132,9 @@ export const useStudentsSocketBridge = () => {
   const { data: session } = useSession()
   const queryClient = useQueryClient()
   const primaryRole = useMemo(() => session?.roles?.[0]?.name ?? null, [session?.roles])
-  const [cacheVersion, setCacheVersion] = useState(0)
+  const { socket, on, isConnected, cacheVersion, setCacheVersion, sessionUserId } = useSocketConnection()
   const cacheVersionTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const setupKeyRef = useRef<string | null>(null)
-
-  const { socket, on } = useSocket({
-    userId: session?.user?.id,
-    role: primaryRole,
-  })
-
-  const [isConnected, setIsConnected] = useState<boolean>(() => Boolean(socket?.connected))
 
   const updateCacheVersion = useCallback(() => {
     if (cacheVersionTimeoutRef.current) {
@@ -174,13 +145,13 @@ export const useStudentsSocketBridge = () => {
       setCacheVersion((prev) => prev + 1)
       cacheVersionTimeoutRef.current = null
     }, CACHE_UPDATE_DEBOUNCE_MS)
-  }, [])
+  }, [setCacheVersion])
 
   useEffect(() => {
-    if (!session?.user?.id) return
+    if (!sessionUserId) return
 
     // Tạo unique key để tránh duplicate setup trong React strict mode
-    const currentSetupKey = `${session.user.id}-${primaryRole ?? "null"}`
+    const currentSetupKey = `${sessionUserId}-${primaryRole ?? "null"}`
     if (setupKeyRef.current === currentSetupKey) return
     
     setupKeyRef.current = currentSetupKey
@@ -188,9 +159,13 @@ export const useStudentsSocketBridge = () => {
     const detachUpsert = on<[StudentUpsertPayload]>("student:upsert", (payload) => {
       const { student } = payload as StudentUpsertPayload
 
-      const updated = updateStudentQueries(queryClient, ({ params, data }) => {
+      const updated = updateResourceQueries<StudentRow, AdminStudentsListParams>(
+        queryClient,
+        queryKeys.adminStudents.all() as unknown[],
+        ({ params, data }: { params: AdminStudentsListParams; data: DataTableResult<StudentRow> }) => {
         return handleStudentUpsert(student, params, data)
-      })
+        },
+      )
 
       // Update detail query
       queryClient.setQueryData<{ data: StudentRow } | undefined>(
@@ -210,13 +185,17 @@ export const useStudentsSocketBridge = () => {
     const detachBatchUpsert = on<[StudentBatchUpsertPayload]>("student:batch-upsert", (payload) => {
       const { students } = payload as StudentBatchUpsertPayload
 
-      const updated = updateStudentQueries(queryClient, ({ params, data }) => {
+      const updated = updateResourceQueries<StudentRow, AdminStudentsListParams>(
+        queryClient,
+        queryKeys.adminStudents.all() as unknown[],
+        ({ params, data }: { params: AdminStudentsListParams; data: DataTableResult<StudentRow> }) => {
         return handleBatchUpsert(
           students.map((s) => s.student),
           params,
           data
         )
-      })
+        },
+      )
 
       if (updated) {
         updateCacheVersion()
@@ -226,7 +205,10 @@ export const useStudentsSocketBridge = () => {
     const detachRemove = on<[StudentRemovePayload]>("student:remove", (payload) => {
       const { id } = payload as StudentRemovePayload
       
-      const updated = updateStudentQueries(queryClient, ({ data }) => {
+      const updated = updateResourceQueries<StudentRow, AdminStudentsListParams>(
+        queryClient,
+        queryKeys.adminStudents.all() as unknown[],
+        ({ data }: { data: DataTableResult<StudentRow> }) => {
         const result = removeRowFromPage(data.rows, id)
         if (!result.removed) {
           return null
@@ -240,7 +222,8 @@ export const useStudentsSocketBridge = () => {
           total,
           totalPages: calculateTotalPages(total, data.limit),
         }
-      })
+        },
+      )
 
       // Invalidate detail query for the removed student
       queryClient.setQueryData(queryKeys.adminStudents.detail(id), undefined)
@@ -263,22 +246,7 @@ export const useStudentsSocketBridge = () => {
         detachRemove?.()
       }
     }
-  }, [session?.user?.id, on, queryClient, primaryRole, updateCacheVersion])
-
-  useEffect(() => {
-    if (!socket) return
-
-    const handleConnect = () => setIsConnected(true)
-    const handleDisconnect = () => setIsConnected(false)
-
-    socket.on("connect", handleConnect)
-    socket.on("disconnect", handleDisconnect)
-
-    return () => {
-      socket.off("connect", handleConnect)
-      socket.off("disconnect", handleDisconnect)
-    }
-  }, [socket])
+  }, [sessionUserId, on, queryClient, primaryRole, updateCacheVersion])
 
   return { socket, isSocketConnected: isConnected, cacheVersion }
 }

@@ -1,73 +1,29 @@
 import type { NotificationRow } from "../types"
+import {
+  shouldIncludeInStatus,
+  insertRowIntoPage,
+  removeRowFromPage,
+  createMatchesSearch,
+  createMatchesFilters,
+} from "@/features/admin/resources/utils/socket-helpers"
 
-export const matchesSearch = (search: string | undefined, row: NotificationRow): boolean => {
-  if (!search) return true
-  const term = search.trim().toLowerCase()
-  if (!term) return true
-  return [
-    row.title,
-    row.description ?? "",
-    row.userEmail ?? "",
-    row.userName ?? "",
-    row.kind,
-  ]
-    .some((value) => value.toLowerCase().includes(term))
-}
+export const matchesSearch = createMatchesSearch<NotificationRow>([
+  "title",
+  (row) => row.description ?? "",
+  (row) => row.userEmail ?? "",
+  (row) => row.userName ?? "",
+  "kind",
+])
 
-export const matchesFilters = (
-  filters: Record<string, string> | undefined,
-  row: NotificationRow
-): boolean => {
-  if (!filters) return true
-  for (const [key, value] of Object.entries(filters)) {
-    if (value === undefined || value === "") continue
-    switch (key) {
-      case "isRead": {
-        const expected = value === "true"
-        if (row.isRead !== expected) return false
-        break
-      }
-      case "kind":
-        if (row.kind !== value) return false
-        break
-      case "userEmail":
-        if ((row.userEmail ?? "") !== value) return false
-        break
-      default:
-        break
-    }
-  }
-  return true
-}
+// Re-export generic helpers
+export { shouldIncludeInStatus, insertRowIntoPage, removeRowFromPage }
 
-export const insertRowIntoPage = (
-  rows: NotificationRow[],
-  row: NotificationRow,
-  limit: number
-): NotificationRow[] => {
-  const existingIndex = rows.findIndex((item) => item.id === row.id)
-  if (existingIndex >= 0) {
-    const next = [...rows]
-    next[existingIndex] = row
-    return next
-  }
-  const next = [row, ...rows]
-  if (next.length > limit) {
-    next.pop()
-  }
-  return next
-}
+export const matchesFilters = createMatchesFilters<NotificationRow>([
+  "isRead",
+  "kind",
+  { field: "userEmail", getValue: (row) => row.userEmail ?? "" },
+])
 
-export const removeRowFromPage = (
-  rows: NotificationRow[],
-  id: string
-): { rows: NotificationRow[]; removed: boolean } => {
-  const index = rows.findIndex((item) => item.id === id)
-  if (index === -1) return { rows, removed: false }
-  const next = [...rows]
-  next.splice(index, 1)
-  return { rows: next, removed: true }
-}
 
 export const convertSocketPayloadToRow = (
   payload: {

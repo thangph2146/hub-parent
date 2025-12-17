@@ -27,7 +27,7 @@ export interface RoleEditClientProps {
   permissions?: Array<{ label: string; value: string }>
 }
 
-export function RoleEditClient({
+export const RoleEditClient = ({
   role: initialRole,
   open = true,
   onOpenChange,
@@ -37,7 +37,7 @@ export function RoleEditClient({
   backLabel = "Quay lại",
   roleId,
   permissions: permissionsFromServer = [],
-}: RoleEditClientProps) {
+}: RoleEditClientProps) => {
   const queryClient = useQueryClient()
   const { navigateBack } = useResourceNavigation({
     queryClient,

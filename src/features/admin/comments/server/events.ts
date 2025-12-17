@@ -63,7 +63,7 @@ export async function emitCommentUpsert(
   })
 }
 
-export function emitCommentRemove(commentId: string, previousStatus: CommentStatus): void {
+export const emitCommentRemove = (commentId: string, previousStatus: CommentStatus): void => {
   const io = getSocketServer()
   if (!io) return
 

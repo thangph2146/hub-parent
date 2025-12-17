@@ -16,4 +16,7 @@ export { useResourceActions } from "./use-resource-actions"
 export type { ResourceActionConfig, UseResourceActionsResult } from "./use-resource-actions"
 export { createResourceActionsHook, createApiRoutesConfig, createQueryKeysConfig } from "./create-resource-actions"
 export type { ResourceActionsConfig, UseResourceActionsOptions } from "./create-resource-actions"
+export { useFeedback } from "./use-feedback"
+export { useDeleteConfirm } from "./use-delete-confirm"
+export { useSocketConnection } from "./use-socket-connection"
 

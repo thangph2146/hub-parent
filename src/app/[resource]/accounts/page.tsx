@@ -37,7 +37,7 @@ export default async function AccountsPage() {
   return (
     <>
       <AdminHeader breadcrumbs={createListBreadcrumbs({ listLabel: "Tài khoản" })} />
-      <div className="flex flex-1 flex-col gap-6 p-6 max-w-6xl mx-auto w-full">
+      <div className="flex flex-1 flex-col gap-6 p-6 mx-auto w-full">
         <AccountProfile variant="page" />
       </div>
     </>

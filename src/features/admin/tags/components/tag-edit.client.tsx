@@ -27,7 +27,7 @@ export interface TagEditClientProps {
   tagId?: string
 }
 
-export function TagEditClient({
+export const TagEditClient = ({
   tag: initialTag,
   open = true,
   onOpenChange,
@@ -36,7 +36,7 @@ export function TagEditClient({
   backUrl,
   backLabel = "Quay lại",
   tagId,
-}: TagEditClientProps) {
+}: TagEditClientProps) => {
   const queryClient = useQueryClient()
   const { navigateBack } = useResourceNavigation({
     queryClient,

@@ -4,5 +4,6 @@
  */
 
 export * from "./socket-helpers"
+export * from "./update-resource-queries"
 export * from "../utils"
 

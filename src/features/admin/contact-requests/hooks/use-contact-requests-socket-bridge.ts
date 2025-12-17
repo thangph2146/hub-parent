@@ -1,14 +1,15 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useEffect } from "react"
 import { useSession } from "next-auth/react"
 import { useQueryClient } from "@tanstack/react-query"
-import { useSocket } from "@/hooks/use-socket"
 import { resourceLogger } from "@/lib/config"
 import type { ContactRequestRow } from "../types"
 import type { DataTableResult } from "@/components/tables"
 import { queryKeys, type AdminContactRequestsListParams, invalidateQueries } from "@/lib/query-keys"
 import type { ContactRequestDetailData } from "../components/contact-request-detail.client"
+import { updateResourceQueries } from "@/features/admin/resources/utils/update-resource-queries"
+import { useSocketConnection } from "@/features/admin/resources/hooks/use-socket-connection"
 import {
   matchesSearch,
   matchesFilters,
@@ -29,44 +30,13 @@ interface ContactRequestRemovePayload {
   previousStatus: "active" | "deleted"
 }
 
-function updateContactRequestQueries(
-  queryClient: ReturnType<typeof useQueryClient>,
-  updater: (args: { key: unknown[]; params: AdminContactRequestsListParams; data: DataTableResult<ContactRequestRow> }) => DataTableResult<ContactRequestRow> | null,
-): boolean {
-  let updated = false
-  const queries = queryClient.getQueriesData<DataTableResult<ContactRequestRow>>({
-    queryKey: queryKeys.adminContactRequests.all() as unknown[],
-  })
-  
-      for (const [key, data] of queries) {
-        if (!Array.isArray(key) || key.length < 2) continue
-        const params = key[1] as AdminContactRequestsListParams | undefined
-        if (!params || !data) continue
-        const next = updater({ key, params, data })
-        if (next) {
-          queryClient.setQueryData(key, next)
-          updated = true
-        }
-      }
-  
-  return updated
-}
-
 export const useContactRequestsSocketBridge = () => {
   const { data: session } = useSession()
   const queryClient = useQueryClient()
-  const primaryRole = useMemo(() => session?.roles?.[0]?.name ?? null, [session?.roles])
-  const [cacheVersion, setCacheVersion] = useState(0)
-
-  const { socket, on } = useSocket({
-    userId: session?.user?.id,
-    role: primaryRole,
-  })
-
-  const [isConnected, setIsConnected] = useState<boolean>(() => Boolean(socket?.connected))
+  const { socket, on, isConnected, cacheVersion, setCacheVersion, sessionUserId } = useSocketConnection()
 
   useEffect(() => {
-    if (!session?.user?.id) return
+    if (!sessionUserId) return
 
     // Handle contact-request:new event
     const detachNew = on<[{ id: string; name: string; email: string; phone?: string | null; subject: string; status: string; priority: string; createdAt: string; assignedToId?: string | null; assignedToName?: string | null }]>("contact-request:new", (payload) => {
@@ -74,7 +44,10 @@ export const useContactRequestsSocketBridge = () => {
       const row = convertSocketPayloadToRow(payload, payload.assignedToName ?? null)
       const rowStatus: "active" | "deleted" = "active"
 
-      const updated = updateContactRequestQueries(queryClient, ({ params, data }) => {
+      const updated = updateResourceQueries<ContactRequestRow, AdminContactRequestsListParams>(
+        queryClient,
+        queryKeys.adminContactRequests.all() as unknown[],
+        ({ params, data }: { params: AdminContactRequestsListParams; data: DataTableResult<ContactRequestRow> }) => {
         const matches = matchesFilters(params.filters, row) && matchesSearch(params.search, row)
         const includesByStatus = shouldIncludeInStatus(params.status, rowStatus)
         const existingIndex = data.rows.findIndex((r) => r.id === row.id)
@@ -118,7 +91,8 @@ export const useContactRequestsSocketBridge = () => {
 
 
         return result
-      })
+        },
+      )
 
       if (updated) {
         setCacheVersion((prev) => prev + 1)
@@ -168,7 +142,10 @@ export const useContactRequestsSocketBridge = () => {
         })
       }
 
-      const updated = updateContactRequestQueries(queryClient, ({ params, data }) => {
+      const updated = updateResourceQueries<ContactRequestRow, AdminContactRequestsListParams>(
+        queryClient,
+        queryKeys.adminContactRequests.all() as unknown[],
+        ({ params, data }: { params: AdminContactRequestsListParams; data: DataTableResult<ContactRequestRow> }) => {
         const matches = matchesFilters(params.filters, contactRequest) && matchesSearch(params.search, contactRequest)
         const includesByStatus = shouldIncludeInStatus(params.status, rowStatus)
         const existingIndex = data.rows.findIndex((row) => row.id === contactRequest.id)
@@ -216,7 +193,8 @@ export const useContactRequestsSocketBridge = () => {
 
 
         return result
-      })
+        },
+      )
 
       if (updated) {
         setCacheVersion((prev) => prev + 1)
@@ -228,7 +206,10 @@ export const useContactRequestsSocketBridge = () => {
     // Handle contact-request:assigned event
     const detachAssigned = on<[{ id: string; assignedToId?: string | null; assignedToName?: string | null }]>("contact-request:assigned", (payload) => {
 
-      const updated = updateContactRequestQueries(queryClient, ({ data }) => {
+      const updated = updateResourceQueries<ContactRequestRow, AdminContactRequestsListParams>(
+        queryClient,
+        queryKeys.adminContactRequests.all() as unknown[],
+        ({ data }: { data: DataTableResult<ContactRequestRow> }) => {
         const existingIndex = data.rows.findIndex((r) => r.id === payload.id)
         if (existingIndex === -1) {
           return null
@@ -245,7 +226,8 @@ export const useContactRequestsSocketBridge = () => {
           ...next,
           rows,
         }
-      })
+        },
+      )
 
       if (updated) {
         setCacheVersion((prev) => prev + 1)
@@ -258,7 +240,10 @@ export const useContactRequestsSocketBridge = () => {
     const detachRemove = on<[ContactRequestRemovePayload]>("contact-request:remove", (payload) => {
       const { id } = payload as ContactRequestRemovePayload
       
-      const updated = updateContactRequestQueries(queryClient, ({ params: _params, data }) => {
+      const updated = updateResourceQueries<ContactRequestRow, AdminContactRequestsListParams>(
+        queryClient,
+        queryKeys.adminContactRequests.all() as unknown[],
+        ({ data }: { data: DataTableResult<ContactRequestRow> }) => {
         const result = removeRowFromPage(data.rows, id)
         if (!result.removed) {
           return null
@@ -318,7 +303,10 @@ export const useContactRequestsSocketBridge = () => {
           })
         }
 
-        const updated = updateContactRequestQueries(queryClient, ({ params, data }) => {
+        const updated = updateResourceQueries<ContactRequestRow, AdminContactRequestsListParams>(
+        queryClient,
+        queryKeys.adminContactRequests.all() as unknown[],
+        ({ params, data }: { params: AdminContactRequestsListParams; data: DataTableResult<ContactRequestRow> }) => {
           const matches = matchesFilters(params.filters, contactRequest) && matchesSearch(params.search, contactRequest)
           const includesByStatus = shouldIncludeInStatus(params.status, rowStatus)
           const existingIndex = data.rows.findIndex((row) => row.id === contactRequest.id)
@@ -379,24 +367,7 @@ export const useContactRequestsSocketBridge = () => {
       detachRemove?.()
       detachBatchUpsert?.()
     }
-  }, [session?.user?.id, on, queryClient])
-
-  useEffect(() => {
-    if (!socket) {
-      return
-    }
-
-    const handleConnect = () => setIsConnected(true)
-    const handleDisconnect = () => setIsConnected(false)
-
-    socket.on("connect", handleConnect)
-    socket.on("disconnect", handleDisconnect)
-
-    return () => {
-      socket.off("connect", handleConnect)
-      socket.off("disconnect", handleDisconnect)
-    }
-  }, [socket])
+  }, [sessionUserId, on, queryClient, setCacheVersion, session?.user?.id])
 
   return { socket, isSocketConnected: isConnected, cacheVersion }
 }

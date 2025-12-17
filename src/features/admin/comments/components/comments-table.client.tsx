@@ -33,13 +33,13 @@ import type { AdminCommentsListParams } from "@/lib/query-keys"
 import type { CommentRow, CommentsResponse, CommentsTableClientProps } from "../types"
 import { COMMENT_CONFIRM_MESSAGES, COMMENT_LABELS } from "../constants"
 
-export function CommentsTableClient({
+export const CommentsTableClient = ({
   canDelete = false,
   canRestore = false,
   canManage = false,
   canApprove = false,
   initialData,
-}: CommentsTableClientProps) {
+}: CommentsTableClientProps) => {
   const queryClient = useQueryClient()
   const { isSocketConnected, cacheVersion } = useCommentsSocketBridge()
   const { feedback, showFeedback, handleFeedbackOpenChange } = useCommentFeedback()

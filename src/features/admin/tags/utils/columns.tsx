@@ -4,7 +4,7 @@ import { useDynamicFilterOptions } from "@/features/admin/resources/hooks/use-dy
 import { apiRoutes } from "@/lib/api/routes"
 import type { TagRow } from "../types"
 
-export function useTagColumns() {
+export const useTagColumns = () => {
   const nameFilter = useDynamicFilterOptions({
     optionsEndpoint: apiRoutes.tags.options({ column: "name" }),
   })

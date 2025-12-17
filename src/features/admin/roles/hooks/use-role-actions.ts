@@ -18,13 +18,13 @@ interface UseRoleActionsOptions {
   showFeedback: (variant: FeedbackVariant, title: string, description?: string, details?: string) => void
 }
 
-export function useRoleActions({
+export const useRoleActions = ({
   canDelete,
   canRestore,
   canManage,
   isSocketConnected,
   showFeedback,
-}: UseRoleActionsOptions) {
+}: UseRoleActionsOptions) => {
   const queryClient = useQueryClient()
   const [togglingRoles, setTogglingRoles] = useState<Set<string>>(new Set())
 

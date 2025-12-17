@@ -1,18 +1,11 @@
 import { resourceLogger } from "@/lib/config"
 import type { StudentRow } from "../types"
 import type { AdminStudentsListParams } from "@/lib/query-keys"
+import {
+  createMatchesSearch,
+} from "@/features/admin/resources/utils/socket-helpers"
 
-const SEARCHABLE_FIELDS: Array<keyof StudentRow> = ["studentCode", "name", "email"]
-
-export const matchesSearch = (search: string | undefined, row: StudentRow): boolean => {
-  if (!search?.trim()) return true
-  
-  const term = search.trim().toLowerCase()
-  return SEARCHABLE_FIELDS.some((field) => {
-    const value = row[field]
-    return typeof value === "string" ? value.toLowerCase().includes(term) : false
-  })
-}
+export const matchesSearch = createMatchesSearch<StudentRow>(["studentCode", "name", "email"])
 
 const FILTER_MATCHERS = {
   isActive: (row: StudentRow, value: string) => row.isActive === (value === "true"),

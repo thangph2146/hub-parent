@@ -69,14 +69,14 @@ export const createResourceActionsHook = <TRow extends { id: string }>(
 /**
  * Type guard để kiểm tra resource routes có đầy đủ methods không
  */
-function isResourceRoutes(
+const isResourceRoutes = (
   routes: unknown
 ): routes is {
   delete: (id: string) => string
   restore: (id: string) => string
   hardDelete: (id: string) => string
   bulk: string
-} {
+} => {
   if (!routes || typeof routes !== "object") return false
   const r = routes as Record<string, unknown>
   return (

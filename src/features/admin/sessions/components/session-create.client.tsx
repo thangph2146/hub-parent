@@ -10,7 +10,7 @@ export interface SessionCreateClientProps {
   users?: Array<{ label: string; value: string }>
 }
 
-export function SessionCreateClient({ backUrl = "/admin/sessions", users: usersFromServer = [] }: SessionCreateClientProps) {
+export const SessionCreateClient = ({ backUrl = "/admin/sessions", users: usersFromServer = [] }: SessionCreateClientProps) => {
   const { handleSubmit } = useResourceFormSubmit({
     apiRoute: apiRoutes.sessions.create,
     method: "POST",

@@ -1,87 +1,29 @@
 import type { SessionRow } from "../types"
-import type { AdminSessionsListParams } from "@/lib/query-keys"
+import {
+  shouldIncludeInStatus,
+  insertRowIntoPage,
+  removeRowFromPage,
+  createMatchesSearch,
+  createMatchesFilters,
+} from "@/features/admin/resources/utils/socket-helpers"
 
-export const matchesSearch = (search: string | undefined, row: SessionRow): boolean => {
-  if (!search || typeof search !== "string") return true
-  const term = search.trim().toLowerCase()
-  if (!term) return true
-  return [
-    row.userName ?? "",
-    row.userEmail,
-    row.ipAddress ?? "",
-    row.userAgent ?? "",
-  ].some((value) => value.toLowerCase().includes(term))
-}
+export const matchesSearch = createMatchesSearch<SessionRow>([
+  (row) => row.userName ?? "",
+  "userEmail",
+  (row) => row.ipAddress ?? "",
+  (row) => row.userAgent ?? "",
+])
 
-export const matchesFilters = (
-  filters: AdminSessionsListParams["filters"],
-  row: SessionRow
-): boolean => {
-  if (!filters) return true
-  for (const [key, value] of Object.entries(filters)) {
-    if (value === undefined || value === "") continue
-    switch (key) {
-      case "isActive": {
-        const expected = value === "true"
-        if (row.isActive !== expected) return false
-        break
-      }
-      case "ipAddress":
-        if ((row.ipAddress ?? "") !== value) return false
-        break
-      case "userAgent":
-        if ((row.userAgent ?? "") !== value) return false
-        break
-      case "userName":
-        if ((row.userName ?? "") !== value) return false
-        break
-      case "userEmail":
-        if (row.userEmail !== value) return false
-        break
-      default:
-        break
-    }
-  }
-  return true
-}
+export const matchesFilters = createMatchesFilters<SessionRow>([
+  "isActive",
+  { field: "ipAddress", getValue: (row) => row.ipAddress ?? "" },
+  { field: "userAgent", getValue: (row) => row.userAgent ?? "" },
+  { field: "userName", getValue: (row) => row.userName ?? "" },
+  "userEmail",
+])
 
-export const shouldIncludeInStatus = (
-  paramsStatus: AdminSessionsListParams["status"],
-  rowStatus: "active" | "deleted"
-): boolean => {
-  if (paramsStatus === "all") return true
-  if (!paramsStatus) return rowStatus === "active"
-  return paramsStatus === rowStatus
-}
-
-export const insertRowIntoPage = (
-  rows: SessionRow[],
-  row: SessionRow,
-  limit: number
-): SessionRow[] => {
-  const existingIndex = rows.findIndex((item) => item.id === row.id)
-  if (existingIndex >= 0) {
-    const next = [...rows]
-    next[existingIndex] = row
-    return next
-  }
-  const next = [row, ...rows]
-  if (next.length > limit) {
-    next.pop()
-  }
-  return next
-}
-
-export const removeRowFromPage = (
-  rows: SessionRow[],
-  id: string
-): { rows: SessionRow[]; removed: boolean } => {
-  const index = rows.findIndex((item) => item.id === id)
-  if (index === -1) return { rows, removed: false }
-  const next = [...rows]
-  next.splice(index, 1)
-  return { rows: next, removed: true }
-}
+// Re-export generic helpers
+export { shouldIncludeInStatus, insertRowIntoPage, removeRowFromPage }
 
 export const convertSocketPayloadToRow = (
   payload: {

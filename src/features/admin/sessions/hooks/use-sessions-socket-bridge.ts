@@ -1,12 +1,12 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
-import { useSession } from "next-auth/react"
+import { useEffect } from "react"
 import { useQueryClient } from "@tanstack/react-query"
-import { useSocket } from "@/hooks/use-socket"
 import type { SessionRow } from "../types"
 import type { DataTableResult } from "@/components/tables"
 import { queryKeys, type AdminSessionsListParams } from "@/lib/query-keys"
+import { updateResourceQueries } from "@/features/admin/resources/utils/update-resource-queries"
+import { useSocketConnection } from "@/features/admin/resources/hooks/use-socket-connection"
 import {
   matchesSearch,
   matchesFilters,
@@ -26,53 +26,22 @@ interface SessionRemovePayload {
   previousStatus: "active" | "deleted"
 }
 
-function updateSessionQueries(
-  queryClient: ReturnType<typeof useQueryClient>,
-  updater: (args: { key: unknown[]; params: AdminSessionsListParams; data: DataTableResult<SessionRow> }) => DataTableResult<SessionRow> | null,
-): boolean {
-  let updated = false
-  const queries = queryClient.getQueriesData<DataTableResult<SessionRow>>({
-    queryKey: queryKeys.adminSessions.all() as unknown[],
-  })
-  
-  for (const [key, data] of queries) {
-    if (!Array.isArray(key) || key.length < 2) continue
-    const params = key[1] as AdminSessionsListParams | undefined
-    if (!params || !data) {
-      continue
-    }
-    const next = updater({ key, params, data })
-    if (next) {
-      queryClient.setQueryData(key, next)
-      updated = true
-    }
-  }
-  
-  return updated
-}
-
-export function useSessionsSocketBridge() {
-  const { data: session } = useSession()
+export const useSessionsSocketBridge = () => {
   const queryClient = useQueryClient()
-  const primaryRole = useMemo(() => session?.roles?.[0]?.name ?? null, [session?.roles])
-  const [cacheVersion, setCacheVersion] = useState(0)
-
-  const { socket, on } = useSocket({
-    userId: session?.user?.id,
-    role: primaryRole,
-  })
-
-  const [isConnected, setIsConnected] = useState<boolean>(() => Boolean(socket?.connected))
+  const { socket, on, isConnected, cacheVersion, setCacheVersion, sessionUserId } = useSocketConnection()
 
   useEffect(() => {
-    if (!session?.user?.id) return
+    if (!sessionUserId) return
 
     // Handle session:upsert event (for updates, creates, restores)
     const detachUpsert = on<[SessionUpsertPayload]>("session:upsert", (payload) => {
       const { session: sessionRow, previousStatus } = payload as SessionUpsertPayload
       const rowStatus: "active" | "deleted" = sessionRow.isActive ? "active" : "deleted"
 
-      const updated = updateSessionQueries(queryClient, ({ params, data }) => {
+      const updated = updateResourceQueries<SessionRow, AdminSessionsListParams>(
+        queryClient,
+        queryKeys.adminSessions.all() as unknown[],
+        ({ params, data }: { params: AdminSessionsListParams; data: DataTableResult<SessionRow> }) => {
         const matches = matchesFilters(params.filters, sessionRow) && matchesSearch(params.search, sessionRow)
         const includesByStatus = shouldIncludeInStatus(params.status, rowStatus)
         const existingIndex = data.rows.findIndex((row) => row.id === sessionRow.id)
@@ -120,7 +89,8 @@ export function useSessionsSocketBridge() {
         }
 
         return result
-      })
+        },
+      )
 
       if (updated) {
         setCacheVersion((prev) => prev + 1)
@@ -131,7 +101,10 @@ export function useSessionsSocketBridge() {
     const detachRemove = on<[SessionRemovePayload]>("session:remove", (payload) => {
       const { id } = payload as SessionRemovePayload
 
-      const updated = updateSessionQueries(queryClient, ({ data }) => {
+      const updated = updateResourceQueries<SessionRow, AdminSessionsListParams>(
+        queryClient,
+        queryKeys.adminSessions.all() as unknown[],
+        ({ data }: { data: DataTableResult<SessionRow> }) => {
         const result = removeRowFromPage(data.rows, id)
         if (!result.removed) {
           return null
@@ -146,7 +119,8 @@ export function useSessionsSocketBridge() {
           total,
           totalPages,
         }
-      })
+        },
+      )
 
       if (updated) {
         setCacheVersion((prev) => prev + 1)
@@ -157,24 +131,7 @@ export function useSessionsSocketBridge() {
       detachUpsert?.()
       detachRemove?.()
     }
-  }, [session?.user?.id, on, queryClient])
-
-  useEffect(() => {
-    if (!socket) {
-      return
-    }
-
-    const handleConnect = () => setIsConnected(true)
-    const handleDisconnect = () => setIsConnected(false)
-
-    socket.on("connect", handleConnect)
-    socket.on("disconnect", handleDisconnect)
-
-    return () => {
-      socket.off("connect", handleConnect)
-      socket.off("disconnect", handleDisconnect)
-    }
-  }, [socket])
+  }, [sessionUserId, on, queryClient, setCacheVersion])
 
   return { socket, isSocketConnected: isConnected, cacheVersion }
 }

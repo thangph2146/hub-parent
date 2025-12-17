@@ -13,11 +13,11 @@ interface UseNotificationColumnsOptions {
   onToggleRead: (row: NotificationRow, checked: boolean) => void
 }
 
-export function useNotificationColumns({
+export const useNotificationColumns = ({
   togglingNotifications,
   sessionUserId,
   onToggleRead,
-}: UseNotificationColumnsOptions) {
+}: UseNotificationColumnsOptions) => {
   const userEmailFilter = useDynamicFilterOptions({
     optionsEndpoint: apiRoutes.adminNotifications.options({ column: "userEmail" }),
   })

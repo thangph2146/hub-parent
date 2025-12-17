@@ -61,7 +61,7 @@ export async function emitSessionUpsert(
   })
 }
 
-export function emitSessionRemove(sessionId: string, previousStatus: SessionStatus): void {
+export const emitSessionRemove = (sessionId: string, previousStatus: SessionStatus): void => {
   const io = getSocketServer()
   if (!io) return
 
