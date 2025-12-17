@@ -725,6 +725,70 @@ export const authConfig: NextAuthConfig = {
     maxAge: 7 * 24 * 60 * 60, // 7 days
     updateAge: 24 * 60 * 60, // Update session every 24 hours
   },
+  // Cookie Configuration
+  // Đảm bảo cookies có các thuộc tính bảo mật đúng
+  cookies: {
+    sessionToken: {
+      name: "authjs.session-token",
+      options: {
+        httpOnly: true, // Không cho JavaScript access - bảo vệ khỏi XSS
+        sameSite: "lax", // CSRF protection - cho phép cross-site requests từ same-site navigation
+        path: "/", // Available cho toàn bộ site
+        secure: process.env.NODE_ENV === "production", // Chỉ gửi qua HTTPS trong production
+        maxAge: 7 * 24 * 60 * 60, // 7 days - khớp với session.maxAge
+      },
+    },
+    callbackUrl: {
+      name: "authjs.callback-url",
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: process.env.NODE_ENV === "production",
+        maxAge: 60 * 60, // 1 hour - đủ cho OAuth flow
+      },
+    },
+    csrfToken: {
+      name: "authjs.csrf-token",
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: process.env.NODE_ENV === "production",
+        maxAge: 60 * 60, // 1 hour - đủ cho CSRF protection
+      },
+    },
+    pkceCodeVerifier: {
+      name: "authjs.pkce.code_verifier",
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: process.env.NODE_ENV === "production",
+        maxAge: 60 * 10, // 10 minutes - đủ cho PKCE flow
+      },
+    },
+    state: {
+      name: "authjs.state",
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: process.env.NODE_ENV === "production",
+        maxAge: 60 * 15, // 15 minutes - đủ cho OAuth state verification
+      },
+    },
+    nonce: {
+      name: "authjs.nonce",
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: process.env.NODE_ENV === "production",
+        maxAge: 60 * 15, // 15 minutes - đủ cho OAuth nonce verification
+      },
+    },
+  },
   // JWT Configuration
   // Trong NextAuth v5, JWT options được đặt ở top-level
   // JWT secret được set qua 'secret' option ở bottom

@@ -6,6 +6,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
 import { disconnectSocket } from "@/hooks/use-socket";
+import { cleanupSessionCreatedFlag } from "@/hooks/use-create-login-session";
 import {
   BadgeCheck,
   ChevronsUpDown,
@@ -476,6 +477,10 @@ export function NavUser({ className }: { className?: string }) {
       <DropdownMenuSeparator />
       <DropdownMenuItem
         onClick={() => {
+          // Cleanup session created flag trước khi đăng xuất
+          if (session?.user?.id) {
+            cleanupSessionCreatedFlag(session.user.id);
+          }
           // Disconnect socket trước khi đăng xuất
           disconnectSocket();
           signOut({
