@@ -12,26 +12,22 @@ export interface ResourceSegmentProviderProps {
   children: React.ReactNode
 }
 
-export function ResourceSegmentProvider({ value, children }: ResourceSegmentProviderProps) {
-  return (
-    <ResourceSegmentContext.Provider value={value}>
-      {children}
-    </ResourceSegmentContext.Provider>
-  )
-}
+export const ResourceSegmentProvider = ({ value, children }: ResourceSegmentProviderProps) => (
+  <ResourceSegmentContext.Provider value={value}>
+    {children}
+  </ResourceSegmentContext.Provider>
+)
 
-export function useResourceSegment(): string {
-  return React.useContext(ResourceSegmentContext)
-}
+export const useResourceSegment = (): string => React.useContext(ResourceSegmentContext)
 
-export function useResourcePath(path: string): string {
+export const useResourcePath = (path: string): string => {
   const segment = useResourceSegment()
   return applyResourceSegmentToPath(path, segment)
 }
 
 type RouterUrl = string
 
-export function useResourceRouter() {
+export const useResourceRouter = () => {
   const router = useRouter()
   const segment = useResourceSegment()
 

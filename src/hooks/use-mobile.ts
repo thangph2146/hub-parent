@@ -4,7 +4,7 @@ import { startTransition, useEffect, useRef, useState } from "react"
 
 const MOBILE_BREAKPOINT = 768
 
-export function useIsMobile() {
+export const useIsMobile = () => {
   // Always start with false to match server render
   const [isMobile, setIsMobile] = useState<boolean>(false)
   const hasInitialized = useRef(false)

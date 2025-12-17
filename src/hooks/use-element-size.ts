@@ -19,7 +19,7 @@ type Size = {
  * Observe an element size via ResizeObserver and expose width/height.
  * Returns a stable callback ref that should be attached to the target node.
  */
-export function useElementSize<T extends HTMLElement>() {
+export const useElementSize = <T extends HTMLElement>() => {
   const [node, setNode] = useState<T | null>(null)
   const [size, setSize] = useState<Size>({ width: 0, height: 0 })
 

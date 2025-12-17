@@ -8,7 +8,7 @@ import { logger } from "@/lib/config/logger"
  * Hook để log khi page load hoàn thành
  * Sử dụng trong client components để track page load performance
  */
-export function usePageLoadLogger(pageType?: "detail" | "edit" | "new" | "list" | "unknown") {
+export const usePageLoadLogger = (pageType?: "detail" | "edit" | "new" | "list" | "unknown") => {
   const pathname = usePathname()
   const hasLogged = useRef(false)
   const loadStartTime = useRef<number>(0)
@@ -64,7 +64,7 @@ export function usePageLoadLogger(pageType?: "detail" | "edit" | "new" | "list" 
 /**
  * Detect page type từ pathname
  */
-function detectPageType(pathname: string): "detail" | "edit" | "new" | "list" | "unknown" {
+const detectPageType = (pathname: string): "detail" | "edit" | "new" | "list" | "unknown" => {
   if (pathname.includes("/new")) return "new"
   if (pathname.includes("/edit")) return "edit"
   if (pathname.match(/\/\[id\]$/) || pathname.match(/\/([^\/]+)$/) && !pathname.includes("/new") && !pathname.includes("/edit")) {

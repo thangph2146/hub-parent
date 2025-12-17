@@ -26,7 +26,7 @@
 
 import { useLayoutEffect, useState } from "react"
 
-export function useClientOnly(): boolean {
+export const useClientOnly = (): boolean => {
   const [mounted, setMounted] = useState(false)
 
   // Use useLayoutEffect để set mounted synchronously before browser paint
@@ -35,6 +35,7 @@ export function useClientOnly(): boolean {
   // This is a recommended pattern by Next.js and React team for hydration issues
   useLayoutEffect(() => {
     setMounted(true)
+    return () => setMounted(false)
   }, [])
 
   return mounted

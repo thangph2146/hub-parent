@@ -7,6 +7,26 @@ import { useSession } from "next-auth/react"
 import { apiClient } from "@/lib/api/axios"
 import { apiRoutes } from "@/lib/api/routes"
 import { queryKeys } from "@/lib/query-keys"
+import { logger } from "@/lib/config"
+
+/**
+ * Helper to extract payload from API response or throw error
+ */
+const getPayloadOrThrow = <T>(
+  response: { data: { data?: T; error?: string; message?: string } },
+  errorMessage: string,
+  context?: Record<string, unknown>
+): T => {
+  const payload = response.data.data
+  if (!payload) {
+    const error = response.data.error || response.data.message || errorMessage
+    if (context) {
+      logger.error(errorMessage, { ...context, error })
+    }
+    throw new Error(error)
+  }
+  return payload
+}
 
 export interface UnreadCountsResponse {
   unreadMessages: number
@@ -14,12 +34,12 @@ export interface UnreadCountsResponse {
   contactRequests: number
 }
 
-export function useUnreadCounts(options?: {
+export const useUnreadCounts = (options?: {
   refetchInterval?: number
   enabled?: boolean
   // Tắt polling khi có socket connection (socket sẽ handle real-time updates)
   disablePolling?: boolean
-}) {
+}) => {
   const { data: session } = useSession()
   const { refetchInterval = 60000, enabled = true, disablePolling = false } = options || {}
 
@@ -42,14 +62,11 @@ export function useUnreadCounts(options?: {
         message?: string
       }>(apiRoutes.unreadCounts.get)
 
-      const payload = response.data.data
-      if (!payload) {
-        logger.error("useUnreadCounts: Failed to fetch unread counts", {
-          error: response.data.error || response.data.message,
-          userId: session?.user?.id,
-        })
-        throw new Error(response.data.error || response.data.message || "Không thể tải số lượng chưa đọc")
-      }
+      const payload = getPayloadOrThrow<UnreadCountsResponse>(
+        response,
+        "Không thể tải số lượng chưa đọc",
+        { userId: session?.user?.id, source: "useUnreadCounts" }
+      )
 
       logger.debug("useUnreadCounts: Unread counts fetched successfully", {
         userId: session?.user?.id,

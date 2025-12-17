@@ -508,11 +508,11 @@ const socketManager = new SocketManager()
  * Disconnect socket - chỉ gọi khi đăng xuất
  * Export để có thể gọi từ bất kỳ đâu khi cần disconnect
  */
-export function disconnectSocket(): void {
+export const disconnectSocket = (): void => {
   socketManager.disconnect()
 }
 
-export function useSocket({ userId, role }: UseSocketOptions) {
+export const useSocket = ({ userId, role }: UseSocketOptions) => {
   const lastConversationRef = useRef<SocketConversationPair | null>(null)
   const [currentSocket, setCurrentSocket] = useState<Socket | null>(() => socketManager.getSocket())
 

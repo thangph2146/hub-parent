@@ -13,7 +13,7 @@ import { logger } from "@/lib/config"
 // Module-level cache to ensure single log per user/permissions change
 const loggedPermissionsCache = new Map<string, string>()
 
-export function usePermissions() {
+export const usePermissions = () => {
   const { data: session, status } = useSession()
 
   // Deduplicate and sort permissions

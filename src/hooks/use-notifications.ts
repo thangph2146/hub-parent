@@ -13,6 +13,52 @@ import { apiRoutes } from "@/lib/api/routes"
 import { logger } from "@/lib/config"
 import type { UnreadCountsResponse } from "@/hooks/use-unread-counts"
 
+/**
+ * Helper to extract payload from API response or throw error
+ */
+const getPayloadOrThrow = <T>(
+  response: { data: { data?: T; error?: string; message?: string } },
+  errorMessage: string,
+  context?: Record<string, unknown>
+): T => {
+  const payload = response.data.data
+  if (!payload) {
+    const error = response.data.error || response.data.message || errorMessage
+    if (context) {
+      logger.error(errorMessage, { ...context, error })
+    }
+    throw new Error(error)
+  }
+  return payload
+}
+
+/**
+ * Helper to create default UnreadCountsResponse
+ */
+const createDefaultUnreadCounts = (notifications: number = 0): UnreadCountsResponse => ({
+  unreadMessages: 0,
+  unreadNotifications: notifications,
+  contactRequests: 0,
+})
+
+/**
+ * Helper to get unread counts query key
+ */
+const getUnreadCountsKey = (userId: string | undefined) =>
+  queryKeys.unreadCounts.user(userId) as unknown[]
+
+/**
+ * Helper to get all user notifications query key
+ */
+const getAllUserNotificationsKey = (userId: string | undefined) =>
+  queryKeys.notifications.allUser(userId) as unknown[]
+
+/**
+ * Check if user is protected super admin
+ */
+const isProtectedSuperAdmin = (email: string | undefined | null): boolean =>
+  email === "superadmin@hub.edu.vn"
+
 export interface Notification {
   id: string
   userId: string
@@ -38,7 +84,7 @@ export interface NotificationsResponse {
 /**
  * Helper function để parse notification dates từ API response
  */
-function parseNotificationDates(notification: {
+const parseNotificationDates = (notification: {
   createdAt: string | Date
   updatedAt: string | Date
   expiresAt?: string | Date | null
@@ -48,14 +94,12 @@ function parseNotificationDates(notification: {
   updatedAt: Date
   expiresAt: Date | null
   readAt: Date | null
-} {
-  return {
-    createdAt: notification.createdAt instanceof Date ? notification.createdAt : new Date(notification.createdAt),
-    updatedAt: notification.updatedAt instanceof Date ? notification.updatedAt : new Date(notification.updatedAt),
-    expiresAt: notification.expiresAt ? (notification.expiresAt instanceof Date ? notification.expiresAt : new Date(notification.expiresAt)) : null,
-    readAt: notification.readAt ? (notification.readAt instanceof Date ? notification.readAt : new Date(notification.readAt)) : null,
-  }
-}
+} => ({
+  createdAt: notification.createdAt instanceof Date ? notification.createdAt : new Date(notification.createdAt),
+  updatedAt: notification.updatedAt instanceof Date ? notification.updatedAt : new Date(notification.updatedAt),
+  expiresAt: notification.expiresAt ? (notification.expiresAt instanceof Date ? notification.expiresAt : new Date(notification.expiresAt)) : null,
+  readAt: notification.readAt ? (notification.readAt instanceof Date ? notification.readAt : new Date(notification.readAt)) : null,
+})
 
 /**
  * Hook để fetch notifications với pagination và filters
@@ -66,13 +110,13 @@ function parseNotificationDates(notification: {
  * @param options.refetchInterval - Interval để refetch (default: 30000ms)
  * @param options.disablePolling - Tắt polling khi có socket connection (default: false)
  */
-export function useNotifications(options?: {
+export const useNotifications = (options?: {
   limit?: number
   offset?: number
   unreadOnly?: boolean
   refetchInterval?: number
   disablePolling?: boolean
-}) {
+}) => {
   const { data: session } = useSession()
   const { limit = 20, offset = 0, unreadOnly = false, refetchInterval = 30000, disablePolling = false } = options || {}
 
@@ -86,14 +130,11 @@ export function useNotifications(options?: {
         message?: string
       }>(apiRoutes.notifications.list({ limit, offset, unreadOnly }))
 
-      const payload = response.data.data
-      if (!payload) {
-        logger.error("useNotifications: Failed to fetch notifications", {
-          error: response.data.error || response.data.message,
-          userId: session?.user?.id,
-        })
-        throw new Error(response.data.error || response.data.message || "Không thể tải thông báo")
-      }
+      const payload = getPayloadOrThrow<NotificationsResponse>(
+        response,
+        "Không thể tải thông báo",
+        { userId: session?.user?.id, source: "useNotifications" }
+      )
 
       return {
         ...payload,
@@ -124,7 +165,7 @@ export function useNotifications(options?: {
  * Hook để đánh dấu notification là đã đọc/chưa đọc
  * Tự động invalidate queries sau khi thành công
  */
-export function useMarkNotificationRead() {
+export const useMarkNotificationRead = () => {
   const queryClient = useQueryClient()
   const { data: session } = useSession()
 
@@ -143,15 +184,11 @@ export function useMarkNotificationRead() {
         message?: string
       }>(apiRoutes.notifications.markRead(id), { isRead })
 
-      const payload = response.data.data
-      if (!payload) {
-        logger.error("useMarkNotificationRead: Failed to mark notification", {
-          notificationId: id,
-          error: response.data.error || response.data.message,
-          userId: session?.user?.id,
-        })
-        throw new Error(response.data.error || response.data.message || "Không thể cập nhật thông báo")
-      }
+      const payload = getPayloadOrThrow<Notification>(
+        response,
+        "Không thể cập nhật thông báo",
+        { notificationId: id, userId: session?.user?.id, source: "useMarkNotificationRead" }
+      )
 
       logger.success("useMarkNotificationRead: Notification marked successfully", {
         notificationId: id,
@@ -177,7 +214,7 @@ export function useMarkNotificationRead() {
  * Hook để xóa một notification
  * Tự động invalidate queries sau khi thành công
  */
-export function useDeleteNotification() {
+export const useDeleteNotification = () => {
   const queryClient = useQueryClient()
   const { data: session } = useSession()
 
@@ -191,8 +228,7 @@ export function useDeleteNotification() {
       invalidateQueries.allNotifications(queryClient, session?.user?.id)
     },
     onError: (error: unknown) => {
-      // Error message sẽ được hiển thị bởi component sử dụng hook này
-      console.error("Error deleting notification:", error)
+      logger.error("Error deleting notification", { error, userId: session?.user?.id })
     },
   })
 }
@@ -201,7 +237,7 @@ export function useDeleteNotification() {
  * Hook để đánh dấu tất cả notifications là đã đọc
  * Tự động invalidate queries sau khi thành công
  */
-export function useMarkAllAsRead() {
+export const useMarkAllAsRead = () => {
   const queryClient = useQueryClient()
   const { data: session } = useSession()
 
@@ -218,14 +254,11 @@ export function useMarkAllAsRead() {
         message?: string
       }>(apiRoutes.notifications.markAllRead)
 
-      const payload = response.data.data
-      if (!payload) {
-        logger.error("useMarkAllAsRead: Failed to mark all as read", {
-          error: response.data.error || response.data.message,
-          userId: session?.user?.id,
-        })
-        throw new Error(response.data.error || response.data.message || "Không thể đánh dấu tất cả đã đọc")
-      }
+      const payload = getPayloadOrThrow<{ count: number }>(
+        response,
+        "Không thể đánh dấu tất cả đã đọc",
+        { userId: session?.user?.id, source: "useMarkAllAsRead" }
+      )
       
       logger.success("useMarkAllAsRead: All notifications marked as read", {
         count: payload.count,
@@ -247,7 +280,7 @@ export function useMarkAllAsRead() {
  * Hook để xóa tất cả notifications
  * Tự động invalidate queries sau khi thành công
  */
-export function useDeleteAllNotifications() {
+export const useDeleteAllNotifications = () => {
   const queryClient = useQueryClient()
   const { data: session } = useSession()
 
@@ -260,25 +293,22 @@ export function useDeleteAllNotifications() {
         message?: string
       }>(apiRoutes.notifications.deleteAll)
 
-      const payload = response.data.data
-      if (!payload) {
-        throw new Error(response.data.error || response.data.message || "Không thể xóa tất cả thông báo")
-      }
-      return payload
+      return getPayloadOrThrow<{ count: number }>(
+        response,
+        "Không thể xóa tất cả thông báo",
+        { source: "useDeleteAllNotifications" }
+      )
     },
     onSuccess: () => {
       // Invalidate cả user và admin notifications vì xóa tất cả ảnh hưởng đến cả 2
       invalidateQueries.allNotifications(queryClient, session?.user?.id)
     },
     onError: (error: unknown) => {
-      console.error("Error deleting all notifications:", error)
+      logger.error("Error deleting all notifications", { error, userId: session?.user?.id })
     },
   })
 }
 
-/**
- * Module-level tracking để đảm bảo chỉ đăng ký listener một lần cho mỗi userId
- */
 const registeredUsers = new Set<string>()
 
 /**
@@ -288,7 +318,7 @@ const registeredUsers = new Set<string>()
  * - notification:updated: Khi notification được cập nhật
  * - notifications:sync: Khi có sync request từ server
  */
-export function useNotificationsSocketBridge() {
+export const useNotificationsSocketBridge = () => {
   const queryClient = useQueryClient()
   const { data: session } = useSession()
   const primaryRole = session?.roles?.[0]?.name ?? null
@@ -308,10 +338,14 @@ export function useNotificationsSocketBridge() {
     }
     registeredUsers.add(userId)
 
+    // Helper to check if notification belongs to user
+    const isNotificationForUser = (payload: SocketNotificationPayload): boolean =>
+      payload.toUserId === userId
+
     // Helper để convert SocketNotificationPayload sang Notification format
     // QUAN TRỌNG: Sử dụng payload.toUserId để đảm bảo đúng owner
     // vì notification có thể thuộc về user khác (superadmin@hub.edu.vn thấy tất cả)
-      const convertSocketToNotification = (payload: SocketNotificationPayload): Notification => {
+    const convertSocketToNotification = (payload: SocketNotificationPayload): Notification => {
       const timestamp = payload.timestamp ?? Date.now()
       const kind = typeof payload.kind === "string" ? payload.kind.toUpperCase() : "SYSTEM"
       // Sử dụng payload.toUserId để đảm bảo đúng owner (fallback về userId nếu không có)
@@ -334,7 +368,7 @@ export function useNotificationsSocketBridge() {
 
     const getExistingNotificationState = (notificationId: string): { isRead?: boolean } => {
       const existingQueries = queryClient.getQueriesData<NotificationsResponse>({
-        queryKey: queryKeys.notifications.allUser(userId) as unknown[],
+        queryKey: getAllUserNotificationsKey(userId),
       })
 
       for (const [, data] of existingQueries) {
@@ -351,52 +385,28 @@ export function useNotificationsSocketBridge() {
       if (delta === 0) return
 
       queryClient.setQueryData<UnreadCountsResponse>(
-        queryKeys.unreadCounts.user(userId) as unknown[],
+        getUnreadCountsKey(userId),
         (current) => {
           if (!current) {
-            // Nếu chưa có data và delta < 0, không làm gì (không thể có unread count âm)
-            if (delta < 0) {
-              return undefined
-            }
-            // Nếu delta > 0, tạo data mới
-            return {
-              unreadMessages: 0,
-              unreadNotifications: Math.max(0, delta),
-              contactRequests: 0,
-            }
+            if (delta < 0) return undefined
+            return createDefaultUnreadCounts(Math.max(0, delta))
           }
 
           const next = Math.max(0, current.unreadNotifications + delta)
           if (next === current.unreadNotifications) return current
 
-          return {
-            ...current,
-            unreadNotifications: next,
-          }
+          return { ...current, unreadNotifications: next }
         },
       )
     }
 
     const setUnreadCountsValue = (value: number) => {
       queryClient.setQueryData<UnreadCountsResponse>(
-        queryKeys.unreadCounts.user(userId) as unknown[],
+        getUnreadCountsKey(userId),
         (current) => {
-          if (!current) {
-            return {
-              unreadMessages: 0,
-              unreadNotifications: value,
-              contactRequests: 0,
-            }
-          }
-
-          if (current.unreadNotifications === value) {
-            return current
-          }
-
-          return {
-            ...current,
-            unreadNotifications: value,
-          }
+          if (!current) return createDefaultUnreadCounts(value)
+          if (current.unreadNotifications === value) return current
+          return { ...current, unreadNotifications: value }
         },
       )
     }
@@ -410,12 +420,9 @@ export function useNotificationsSocketBridge() {
       // QUAN TRỌNG: Chỉ tính unreadDelta nếu notification thuộc về user này
       // superadmin@hub.edu.vn có thể thấy tất cả nhưng chỉ đếm của chính mình
       const userEmail = session?.user?.email
-      const PROTECTED_SUPER_ADMIN_EMAIL = "superadmin@hub.edu.vn"
-      const isProtectedSuperAdmin = userEmail === PROTECTED_SUPER_ADMIN_EMAIL
+      const isSuperAdmin = isProtectedSuperAdmin(userEmail)
       const isOwner = notification.userId === userId
-      
-      // Chỉ tính delta nếu là owner hoặc là superadmin@hub.edu.vn
-      const shouldCount = isProtectedSuperAdmin || isOwner
+      const shouldCount = isSuperAdmin || isOwner
       
       let unreadDelta = 0
       if (shouldCount) {
@@ -432,7 +439,7 @@ export function useNotificationsSocketBridge() {
         userEmail,
         notificationUserId: notification.userId,
         isOwner,
-        isProtectedSuperAdmin,
+        isProtectedSuperAdmin: isSuperAdmin,
         shouldCount,
         previousIsRead,
         currentIsRead,
@@ -440,7 +447,7 @@ export function useNotificationsSocketBridge() {
       })
 
       queryClient.setQueriesData<NotificationsResponse>(
-        { queryKey: queryKeys.notifications.allUser(userId) as unknown[] },
+        { queryKey: getAllUserNotificationsKey(userId) },
         (oldData) => {
           if (!oldData) {
             return oldData
@@ -486,7 +493,7 @@ export function useNotificationsSocketBridge() {
     const stopNew = onNotification((payload: SocketNotificationPayload) => {
       // Chỉ update cache nếu notification dành cho user này
       // Không log ở đây để tránh duplicate logs (useAdminNotificationsSocketBridge cũng log)
-      if (payload.toUserId === userId) {
+      if (isNotificationForUser(payload)) {
         applyNotificationUpdate(payload)
       }
     })
@@ -494,7 +501,7 @@ export function useNotificationsSocketBridge() {
     const stopUpdated = onNotificationUpdated((payload: SocketNotificationPayload) => {
       // Chỉ update cache nếu notification dành cho user này
       // Không log ở đây để tránh duplicate logs (useAdminNotificationsSocketBridge cũng log)
-      if (payload.toUserId === userId) {
+      if (isNotificationForUser(payload)) {
         applyNotificationUpdate(payload)
       }
     })
@@ -502,7 +509,7 @@ export function useNotificationsSocketBridge() {
     const stopSync = onNotificationsSync((payloads: SocketNotificationPayload[]) => {
       // Lọc và convert notifications cho user này
       const userNotifications = payloads
-        .filter((p) => p.toUserId === userId)
+        .filter(isNotificationForUser)
         .map(convertSocketToNotification)
         .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
       
@@ -534,13 +541,12 @@ export function useNotificationsSocketBridge() {
       // QUAN TRỌNG: Chỉ superadmin@hub.edu.vn mới đếm tất cả notifications
       // Các user khác chỉ đếm notifications của chính họ (owner)
       const userEmail = session?.user?.email
-      const PROTECTED_SUPER_ADMIN_EMAIL = "superadmin@hub.edu.vn"
-      const isProtectedSuperAdmin = userEmail === PROTECTED_SUPER_ADMIN_EMAIL
+      const isSuperAdmin = isProtectedSuperAdmin(userEmail)
       
       // Filter notifications để đếm unread:
       // - superadmin@hub.edu.vn: đếm tất cả notifications
       // - Các user khác: chỉ đếm notifications của chính họ
-      const notificationsForCount = isProtectedSuperAdmin
+      const notificationsForCount = isSuperAdmin
         ? uniqueNotifications
         : uniqueNotifications.filter(n => n.userId === userId)
       
@@ -551,21 +557,21 @@ export function useNotificationsSocketBridge() {
       logger.debug("useNotificationsSocketBridge: Processing notifications:sync", {
         userId,
         userEmail,
-        isProtectedSuperAdmin,
+        isProtectedSuperAdmin: isSuperAdmin,
         totalPayloads: payloads.length,
         userNotificationsCount: userNotifications.length,
         uniqueCount: uniqueNotifications.length,
         ownedNotificationsCount,
         ownedUnreadCount,
         unreadCount,
-        note: isProtectedSuperAdmin 
+        note: isSuperAdmin 
           ? "superadmin@hub.edu.vn: đếm tất cả notifications" 
           : "Chỉ đếm notifications của chính user (owner)",
       })
       
       // Update cache với toàn bộ notifications mới (đã filter duplicates)
       queryClient.setQueriesData<NotificationsResponse>(
-        { queryKey: queryKeys.notifications.allUser(userId) as unknown[] },
+        { queryKey: getAllUserNotificationsKey(userId) },
         (oldData) => {
           if (!oldData) {
             return {
@@ -603,7 +609,7 @@ export function useNotificationsSocketBridge() {
       let deletedNotification: Notification | undefined
 
       queryClient.setQueriesData<NotificationsResponse>(
-        { queryKey: queryKeys.notifications.allUser(userId) as unknown[] },
+        { queryKey: getAllUserNotificationsKey(userId) },
         (oldData) => {
           if (!oldData) return oldData
 
@@ -640,7 +646,7 @@ export function useNotificationsSocketBridge() {
       let unreadDeletedCount = 0
 
       queryClient.setQueriesData<NotificationsResponse>(
-        { queryKey: queryKeys.notifications.allUser(userId) as unknown[] },
+        { queryKey: getAllUserNotificationsKey(userId) },
         (oldData) => {
           if (!oldData) return oldData
 
@@ -692,7 +698,7 @@ export function useNotificationsSocketBridge() {
  * - notifications:sync: Khi có sync request từ server
  * - notification:admin: Khi có notification admin-specific
  */
-export function useAdminNotificationsSocketBridge() {
+export const useAdminNotificationsSocketBridge = () => {
   const queryClient = useQueryClient()
   const { data: session } = useSession()
   const primaryRole = session?.roles?.[0]?.name ?? null

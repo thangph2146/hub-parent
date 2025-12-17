@@ -15,15 +15,11 @@ import { useSession } from "next-auth/react"
 import { apiClient } from "@/lib/api/axios"
 import { apiRoutes } from "@/lib/api/routes"
 import { logger } from "@/lib/config"
+import { extractAxiosErrorMessage } from "@/lib/utils"
 
-// Global set để track sessions đã tạo (persist across component remounts)
 const createdSessions = new Set<string>()
 
-/**
- * Hook để tự động tạo Session record sau khi đăng nhập thành công
- * Chỉ tạo một lần khi user đăng nhập (track bằng userId)
- */
-export function useCreateLoginSession() {
+export const useCreateLoginSession = () => {
   const { data: session, status } = useSession()
   const isCreatingRef = useRef(false)
 
@@ -57,27 +53,9 @@ export function useCreateLoginSession() {
         logger.debug("Login session created successfully via hook", { userId })
       } catch (error) {
         // Log error nhưng không block app
-        // Extract error message từ axios response nếu có
-        let errorMessage = "Unknown error"
-        if (error instanceof Error) {
-          errorMessage = error.message
-        } else if (typeof error === "object" && error !== null && "response" in error) {
-          // Axios error response
-          const axiosError = error as { response?: { status?: number; data?: { error?: string; message?: string } } }
-          if (axiosError.response?.data?.error) {
-            errorMessage = axiosError.response.data.error
-          } else if (axiosError.response?.data?.message) {
-            errorMessage = axiosError.response.data.message
-          } else if (axiosError.response?.status) {
-            errorMessage = `Request failed with status code ${axiosError.response.status}`
-          }
-        } else {
-          errorMessage = String(error)
-        }
-        
         logger.error("Failed to create login session via hook", {
           userId,
-          error: errorMessage,
+          error: extractAxiosErrorMessage(error),
         })
       } finally {
         isCreatingRef.current = false

@@ -11,10 +11,10 @@ type DebouncedFn<T extends (...args: never[]) => void> = ((...args: Parameters<T
   cancel: () => void
 }
 
-export function useDebouncedCallback<T extends (...args: never[]) => void>(
+export const useDebouncedCallback = <T extends (...args: never[]) => void>(
   callback: T,
   delay: number
-): DebouncedFn<T> {
+): DebouncedFn<T> => {
   const callbackRef = useRef(callback)
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 

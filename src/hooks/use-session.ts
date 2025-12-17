@@ -7,7 +7,7 @@
 import { useMemo } from "react"
 import { useSession } from "next-auth/react"
 
-export function useAuth() {
+export const useAuth = () => {
   const { data: session, status } = useSession()
 
   return useMemo(
