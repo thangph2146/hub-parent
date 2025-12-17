@@ -1,29 +1,13 @@
-import { prisma } from "@/lib/database"
 import { resourceLogger } from "@/lib/config"
 import { createNotificationForAllAdmins, emitNotificationToAllAdminsAfterCreate } from "@/features/admin/notifications/server/mutations"
+import { getActorInfo, formatItemNames, logNotificationError } from "@/features/admin/notifications/server/notification-helpers"
 import { NotificationKind } from "@prisma/client"
 
-async function getActorInfo(actorId: string) {
-  const actor = await prisma.user.findUnique({
-    where: { id: actorId },
-    select: { id: true, email: true, name: true },
-  })
-  return actor
+const formatCategoryNames = (categories: Array<{ name: string }>, maxNames = 3): string => {
+  return formatItemNames(categories, (c) => `"${c.name}"`, maxNames, "danh mục")
 }
 
-function formatCategoryNames(categories: Array<{ name: string }>, maxNames = 3): string {
-  if (!categories || categories.length === 0) return ""
-  
-  const displayNames = categories.slice(0, maxNames).map(c => `"${c.name}"`)
-  const remainingCount = categories.length > maxNames ? categories.length - maxNames : 0
-  
-  if (remainingCount > 0) {
-    return `${displayNames.join(", ")} và ${remainingCount} danh mục khác`
-  }
-  return displayNames.join(", ")
-}
-
-export async function notifySuperAdminsOfCategoryAction(
+export const notifySuperAdminsOfCategoryAction = async (
   action: "create" | "update" | "delete" | "restore" | "hard-delete",
   actorId: string,
   category: { id: string; name: string; slug: string },
@@ -32,7 +16,7 @@ export async function notifySuperAdminsOfCategoryAction(
     slug?: { old: string; new: string }
     description?: { old: string | null; new: string | null }
   }
-) {
+) => {
   try {
     const actor = await getActorInfo(actorId)
     const actorName = actor?.name || actor?.email || "Hệ thống"
@@ -126,12 +110,12 @@ export async function notifySuperAdminsOfCategoryAction(
   }
 }
 
-export async function notifySuperAdminsOfBulkCategoryAction(
+export const notifySuperAdminsOfBulkCategoryAction = async (
   action: "delete" | "restore" | "hard-delete",
   actorId: string,
   count: number,
   categories?: Array<{ name: string }>
-) {
+) => {
   const startTime = Date.now()
   
   resourceLogger.actionFlow({
@@ -217,12 +201,7 @@ export async function notifySuperAdminsOfBulkCategoryAction(
       metadata: { count, categoryCount: categories?.length || 0 },
     })
   } catch (error) {
-    resourceLogger.actionFlow({
-      resource: "categories",
-      action: action === "delete" ? "bulk-delete" : action === "restore" ? "bulk-restore" : "bulk-hard-delete",
-      step: "error",
-      metadata: { count, error: error instanceof Error ? error.message : String(error) },
-    })
+    logNotificationError("categories", action === "delete" ? "bulk-delete" : action === "restore" ? "bulk-restore" : "bulk-hard-delete", error as Record<string, unknown>, { count })
   }
 }
 

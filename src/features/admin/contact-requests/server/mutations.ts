@@ -36,11 +36,11 @@ import { emitContactRequestUpsert, emitContactRequestRemove, emitContactRequestA
 export { ApplicationError, ForbiddenError, NotFoundError, type AuthContext }
 export type { BulkActionResult }
 
-function sanitizeContactRequest(contactRequest: ContactRequestWithRelations): ListedContactRequest {
+const sanitizeContactRequest = (contactRequest: ContactRequestWithRelations): ListedContactRequest => {
   return mapContactRequestRecord(contactRequest)
 }
 
-export async function createContactRequest(ctx: AuthContext, input: CreateContactRequestInput): Promise<ListedContactRequest> {
+export const createContactRequest = async (ctx: AuthContext, input: CreateContactRequestInput): Promise<ListedContactRequest> => {
   ensurePermission(ctx, PERMISSIONS.CONTACT_REQUESTS_UPDATE, PERMISSIONS.CONTACT_REQUESTS_MANAGE)
 
   const startTime = Date.now()
@@ -87,7 +87,7 @@ export async function createContactRequest(ctx: AuthContext, input: CreateContac
   return sanitized
 }
 
-export async function updateContactRequest(ctx: AuthContext, id: string, input: UpdateContactRequestInput): Promise<ListedContactRequest> {
+export const updateContactRequest = async (ctx: AuthContext, id: string, input: UpdateContactRequestInput): Promise<ListedContactRequest> => {
   ensurePermission(ctx, PERMISSIONS.CONTACT_REQUESTS_UPDATE, PERMISSIONS.CONTACT_REQUESTS_MANAGE)
 
   const startTime = Date.now()
@@ -239,7 +239,7 @@ export async function updateContactRequest(ctx: AuthContext, id: string, input: 
   return sanitized
 }
 
-export async function assignContactRequest(ctx: AuthContext, id: string, input: AssignContactRequestInput): Promise<ListedContactRequest> {
+export const assignContactRequest = async (ctx: AuthContext, id: string, input: AssignContactRequestInput): Promise<ListedContactRequest> => {
   ensurePermission(ctx, PERMISSIONS.CONTACT_REQUESTS_ASSIGN, PERMISSIONS.CONTACT_REQUESTS_MANAGE)
 
   if (!id || typeof id !== "string" || id.trim() === "") {
@@ -347,7 +347,7 @@ export async function assignContactRequest(ctx: AuthContext, id: string, input: 
   return sanitized
 }
 
-export async function softDeleteContactRequest(ctx: AuthContext, id: string): Promise<void> {
+export const softDeleteContactRequest = async (ctx: AuthContext, id: string): Promise<void> => {
   ensurePermission(ctx, PERMISSIONS.CONTACT_REQUESTS_MANAGE)
 
   const startTime = Date.now()
@@ -391,7 +391,7 @@ export async function softDeleteContactRequest(ctx: AuthContext, id: string): Pr
   logDetailAction("contact-requests", "delete", id, { id: contactRequest.id, subject: contactRequest.subject, name: contactRequest.name } as unknown as Record<string, unknown>)
 }
 
-export async function bulkSoftDeleteContactRequests(ctx: AuthContext, ids: string[]): Promise<BulkActionResult> {
+export const bulkSoftDeleteContactRequests = async (ctx: AuthContext, ids: string[]): Promise<BulkActionResult> => {
   ensurePermission(ctx, PERMISSIONS.CONTACT_REQUESTS_MANAGE)
 
   const startTime = Date.now()
@@ -460,7 +460,7 @@ export async function bulkSoftDeleteContactRequests(ctx: AuthContext, ids: strin
   return { success: true, message, affected: result.count }
 }
 
-export async function restoreContactRequest(ctx: AuthContext, id: string): Promise<void> {
+export const restoreContactRequest = async (ctx: AuthContext, id: string): Promise<void> => {
   ensurePermission(ctx, PERMISSIONS.CONTACT_REQUESTS_UPDATE, PERMISSIONS.CONTACT_REQUESTS_MANAGE)
 
   const startTime = Date.now()
@@ -504,7 +504,7 @@ export async function restoreContactRequest(ctx: AuthContext, id: string): Promi
   logDetailAction("contact-requests", "restore", id, { id: contactRequest.id, subject: contactRequest.subject, name: contactRequest.name } as unknown as Record<string, unknown>)
 }
 
-export async function bulkRestoreContactRequests(ctx: AuthContext, ids: string[]): Promise<BulkActionResult> {
+export const bulkRestoreContactRequests = async (ctx: AuthContext, ids: string[]): Promise<BulkActionResult> => {
   ensurePermission(ctx, PERMISSIONS.CONTACT_REQUESTS_UPDATE, PERMISSIONS.CONTACT_REQUESTS_MANAGE)
 
   const startTime = Date.now()
@@ -573,7 +573,7 @@ export async function bulkRestoreContactRequests(ctx: AuthContext, ids: string[]
   return { success: true, message, affected: result.count }
 }
 
-export async function hardDeleteContactRequest(ctx: AuthContext, id: string): Promise<void> {
+export const hardDeleteContactRequest = async (ctx: AuthContext, id: string): Promise<void> => {
   if (!canPerformAnyAction(ctx.permissions, ctx.roles, [PERMISSIONS.CONTACT_REQUESTS_MANAGE])) {
     throw new ForbiddenError()
   }
@@ -601,7 +601,7 @@ export async function hardDeleteContactRequest(ctx: AuthContext, id: string): Pr
   logDetailAction("contact-requests", "hard-delete", id, contactRequest as unknown as Record<string, unknown>)
 }
 
-export async function bulkHardDeleteContactRequests(ctx: AuthContext, ids: string[]): Promise<BulkActionResult> {
+export const bulkHardDeleteContactRequests = async (ctx: AuthContext, ids: string[]): Promise<BulkActionResult> => {
   if (!canPerformAnyAction(ctx.permissions, ctx.roles, [PERMISSIONS.CONTACT_REQUESTS_MANAGE])) {
     throw new ForbiddenError()
   }
@@ -665,7 +665,7 @@ export async function bulkHardDeleteContactRequests(ctx: AuthContext, ids: strin
   return { success: true, message, affected: result.count }
 }
 
-export async function bulkMarkAsReadContactRequests(ctx: AuthContext, ids: string[]): Promise<BulkActionResult> {
+export const bulkMarkAsReadContactRequests = async (ctx: AuthContext, ids: string[]): Promise<BulkActionResult> => {
   ensurePermission(ctx, PERMISSIONS.CONTACT_REQUESTS_UPDATE, PERMISSIONS.CONTACT_REQUESTS_MANAGE)
 
   const startTime = Date.now()
@@ -727,7 +727,7 @@ export async function bulkMarkAsReadContactRequests(ctx: AuthContext, ids: strin
   return { success: true, message, affected: result.count }
 }
 
-export async function bulkMarkAsUnreadContactRequests(ctx: AuthContext, ids: string[]): Promise<BulkActionResult> {
+export const bulkMarkAsUnreadContactRequests = async (ctx: AuthContext, ids: string[]): Promise<BulkActionResult> => {
   ensurePermission(ctx, PERMISSIONS.CONTACT_REQUESTS_UPDATE, PERMISSIONS.CONTACT_REQUESTS_MANAGE)
 
   const startTime = Date.now()
@@ -789,7 +789,7 @@ export async function bulkMarkAsUnreadContactRequests(ctx: AuthContext, ids: str
   return { success: true, message, affected: result.count }
 }
 
-export async function bulkUpdateStatusContactRequests(ctx: AuthContext, ids: string[], status: "NEW" | "IN_PROGRESS" | "RESOLVED" | "CLOSED"): Promise<BulkActionResult> {
+export const bulkUpdateStatusContactRequests = async (ctx: AuthContext, ids: string[], status: "NEW" | "IN_PROGRESS" | "RESOLVED" | "CLOSED"): Promise<BulkActionResult> => {
   ensurePermission(ctx, PERMISSIONS.CONTACT_REQUESTS_UPDATE, PERMISSIONS.CONTACT_REQUESTS_MANAGE)
 
   const startTime = Date.now()

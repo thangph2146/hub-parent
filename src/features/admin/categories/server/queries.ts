@@ -4,7 +4,7 @@ import { validatePagination, buildPagination, applyColumnOptionsStatusFilter, ap
 import { mapCategoryRecord, buildWhereClause } from "./helpers"
 import type { ListCategoriesInput, CategoryDetail, ListCategoriesResult } from "../types"
 
-export async function listCategories(params: ListCategoriesInput = {}): Promise<ListCategoriesResult> {
+export const listCategories = async (params: ListCategoriesInput = {}): Promise<ListCategoriesResult> => {
   const { page, limit } = validatePagination(params.page, params.limit, 100)
   const where = buildWhereClause(params)
 
@@ -24,11 +24,11 @@ export async function listCategories(params: ListCategoriesInput = {}): Promise<
   }
 }
 
-export async function getCategoryColumnOptions(
+export const getCategoryColumnOptions = async (
   column: string,
   search?: string,
   limit: number = 50
-): Promise<Array<{ label: string; value: string }>> {
+): Promise<Array<{ label: string; value: string }>> => {
   const where: Prisma.CategoryWhereInput = {}
 
   // Apply status filter (default: active - column options thường chỉ cần active items)
@@ -73,7 +73,7 @@ export async function getCategoryColumnOptions(
   return mapToColumnOptions(results, column)
 }
 
-export async function getCategoryById(id: string): Promise<CategoryDetail | null> {
+export const getCategoryById = async (id: string): Promise<CategoryDetail | null> => {
   const category = await prisma.category.findUnique({
     where: { id },
   })
@@ -86,7 +86,7 @@ export async function getCategoryById(id: string): Promise<CategoryDetail | null
   return mapCategoryRecord(category)
 }
 
-export async function getActiveCategoriesForSelect(limit: number = 100): Promise<Array<{ label: string; value: string }>> {
+export const getActiveCategoriesForSelect = async (limit: number = 100): Promise<Array<{ label: string; value: string }>> => {
   const categories = await prisma.category.findMany({
     where: {
       deletedAt: null,

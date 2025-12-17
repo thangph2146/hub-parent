@@ -56,7 +56,7 @@ export interface GroupListItemLike {
   unreadCount?: number
 }
 
-function parseDate(value: DateLike): Date | undefined {
+const parseDate = (value: DateLike): Date | undefined => {
   if (value instanceof Date) return value
   if (typeof value === "number") {
     const date = new Date(value)
@@ -79,7 +79,7 @@ export const ensureDate = (value: DateLike, fallback?: DateLike): Date => {
   return new Date()
 }
 
-function mapMember(member: GroupMemberLike): GroupMember {
+const mapMember = (member: GroupMemberLike): GroupMember => {
   return {
     id: member.id,
     groupId: member.groupId,
@@ -98,7 +98,7 @@ function mapMember(member: GroupMemberLike): GroupMember {
   }
 }
 
-function castMessageType(type?: string | null): MessageType | undefined {
+const castMessageType = (type?: string | null): MessageType | undefined => {
   if (!type) return undefined
   return type as MessageType
 }

@@ -25,11 +25,11 @@ export const createOptimisticMessage = (params: {
   }
 }
 
-function updateContactMessages(
+const updateContactMessages = (
   contacts: Contact[],
   contactId: string,
   updater: (messages: Message[]) => Message[]
-): Contact[] {
+): Contact[] => {
   return contacts.map((contact) =>
     contact.id === contactId
       ? { ...contact, messages: updater(contact.messages) }

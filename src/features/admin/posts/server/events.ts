@@ -8,11 +8,11 @@ const SUPER_ADMIN_ROOM = "role:super_admin"
 
 export type PostStatus = "active" | "deleted"
 
-function resolveStatusFromRow(row: PostRow): PostStatus {
+const resolveStatusFromRow = (row: PostRow): PostStatus => {
   return row.deletedAt ? "deleted" : "active"
 }
 
-async function fetchPostRow(postId: string): Promise<PostRow | null> {
+const fetchPostRow = async (postId: string): Promise<PostRow | null> => {
   const post = await prisma.post.findUnique({
     where: { id: postId },
     include: {
@@ -54,10 +54,10 @@ async function fetchPostRow(postId: string): Promise<PostRow | null> {
   return serializePostForTable(listed)
 }
 
-export async function emitPostUpsert(
+export const emitPostUpsert = async (
   postId: string,
   previousStatus: PostStatus | null,
-): Promise<void> {
+): Promise<void> => {
   const io = getSocketServer()
   if (!io) return
 
@@ -78,10 +78,10 @@ export async function emitPostUpsert(
   })
 }
 
-export async function emitBatchPostUpsert(
+export const emitBatchPostUpsert = async (
   postIds: string[],
   previousStatus: PostStatus | null,
-): Promise<void> {
+): Promise<void> => {
   const io = getSocketServer()
   if (!io || postIds.length === 0) return
 

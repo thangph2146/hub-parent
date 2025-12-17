@@ -1,29 +1,13 @@
-import { prisma } from "@/lib/database"
 import { resourceLogger } from "@/lib/config"
 import { createNotificationForAllAdmins, emitNotificationToAllAdminsAfterCreate } from "@/features/admin/notifications/server/mutations"
+import { getActorInfo, formatItemNames, logNotificationError } from "@/features/admin/notifications/server/notification-helpers"
 import { NotificationKind } from "@prisma/client"
 
-async function getActorInfo(actorId: string) {
-  const actor = await prisma.user.findUnique({
-    where: { id: actorId },
-    select: { id: true, email: true, name: true },
-  })
-  return actor
+const formatTagNames = (tags: Array<{ name: string }>, maxNames = 3): string => {
+  return formatItemNames(tags, (t) => `"${t.name}"`, maxNames, "thẻ tag")
 }
 
-function formatTagNames(tags: Array<{ name: string }>, maxNames = 3): string {
-  if (!tags || tags.length === 0) return ""
-  
-  const displayNames = tags.slice(0, maxNames).map(t => `"${t.name}"`)
-  const remainingCount = tags.length > maxNames ? tags.length - maxNames : 0
-  
-  if (remainingCount > 0) {
-    return `${displayNames.join(", ")} và ${remainingCount} thẻ tag khác`
-  }
-  return displayNames.join(", ")
-}
-
-export async function notifySuperAdminsOfTagAction(
+export const notifySuperAdminsOfTagAction = async (
   action: "create" | "update" | "delete" | "restore" | "hard-delete",
   actorId: string,
   tag: { id: string; name: string; slug: string },
@@ -31,7 +15,7 @@ export async function notifySuperAdminsOfTagAction(
     name?: { old: string; new: string }
     slug?: { old: string; new: string }
   }
-) {
+) => {
   const startTime = Date.now()
   
   resourceLogger.actionFlow({
@@ -128,28 +112,16 @@ export async function notifySuperAdminsOfTagAction(
       metadata: { tagId: tag.id, tagName: tag.name },
     })
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error)
-    resourceLogger.actionFlow({
-      resource: "tags",
-      action: action,
-      step: "error",
-      duration: Date.now() - startTime,
-      metadata: { 
-        tagId: tag.id, 
-        tagName: tag.name,
-        error: errorMessage,
-        errorStack: error instanceof Error ? error.stack : undefined,
-      },
-    })
+    logNotificationError("tags", action, error as Record<string, unknown>, { tagId: tag.id, tagName: tag.name })
   }
 }
 
-export async function notifySuperAdminsOfBulkTagAction(
+export const notifySuperAdminsOfBulkTagAction = async (
   action: "delete" | "restore" | "hard-delete",
   actorId: string,
   count: number,
   tags?: Array<{ name: string }>
-) {
+) => {
   const startTime = Date.now()
   
   resourceLogger.actionFlow({
@@ -235,19 +207,7 @@ export async function notifySuperAdminsOfBulkTagAction(
       metadata: { count, tagCount: tags?.length || 0 },
     })
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error)
-    resourceLogger.actionFlow({
-      resource: "tags",
-      action: action === "delete" ? "bulk-delete" : action === "restore" ? "bulk-restore" : "bulk-hard-delete",
-      step: "error",
-      duration: Date.now() - startTime,
-      metadata: { 
-        count, 
-        tagCount: tags?.length || 0,
-        error: errorMessage,
-        errorStack: error instanceof Error ? error.stack : undefined,
-      },
-    })
+    logNotificationError("tags", action === "delete" ? "bulk-delete" : action === "restore" ? "bulk-restore" : "bulk-hard-delete", error as Record<string, unknown>, { count, tagCount: tags?.length || 0 })
   }
 }
 

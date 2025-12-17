@@ -37,7 +37,7 @@ type NotificationsDeletedSocketPayload =
   | null
   | undefined
 
-function normalizeNotificationsDeletedPayload(payload: NotificationsDeletedSocketPayload): string[] {
+const normalizeNotificationsDeletedPayload = (payload: NotificationsDeletedSocketPayload): string[] => {
   if (!payload) return []
 
   if (Array.isArray(payload)) {
