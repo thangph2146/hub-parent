@@ -205,5 +205,15 @@ export const apiRoutes = {
     createFolder: "/admin/uploads",
   },
 
+  // Student Scores & Averages - External API proxies
+  studentScores: {
+    detailed: (studentId: string) => `/students/${studentId}/scores/detailed`,
+  },
+  studentAverages: {
+    year: (studentId: string) => `/students/${studentId}/averages/year`,
+    terms: (studentId: string) => `/students/${studentId}/averages/terms`,
+    overall: (studentId: string) => `/students/${studentId}/averages/overall`,
+  },
+
 
 } as const

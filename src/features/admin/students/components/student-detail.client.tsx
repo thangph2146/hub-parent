@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { useQueryClient } from "@tanstack/react-query"
-import { User, Mail, Hash, Calendar, Clock, CheckCircle2, XCircle, Edit } from "lucide-react"
+import { User, Mail, Hash, Edit } from "lucide-react"
 import { 
   ResourceDetailClient, 
   FieldItem,
@@ -10,14 +10,12 @@ import {
   type ResourceDetailSection 
 } from "@/features/admin/resources/components"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import { useResourceNavigation, useResourceDetailData, useResourceDetailLogger } from "@/features/admin/resources/hooks"
 import { useResourceRouter } from "@/hooks/use-resource-segment"
 import { queryKeys } from "@/lib/query-keys"
-import { formatDateVi } from "../utils"
-import { cn } from "@/lib/utils"
 import { usePermissions } from "@/hooks/use-permissions"
 import { PERMISSIONS } from "@/lib/permissions"
+import { StudentScoresSection } from "./student-scores-section"
 
 export interface StudentDetailData {
   id: string
@@ -125,86 +123,39 @@ export const StudentDetailClient = ({ studentId, student, backUrl = "/admin/stud
         )
       },
     },
-    {
-      id: "status",
-      title: "Trạng thái và thời gian",
-      description: "Trạng thái hoạt động và thông tin thời gian",
-      fieldsContent: (_fields, data) => {
-        const studentData = (data || detailData) as StudentDetailData
-        
-        return (
-          <div className="space-y-6">
-            {/* Status */}
-            <FieldItem 
-              icon={studentData.isActive ? CheckCircle2 : XCircle} 
-              label="Trạng thái"
-            >
-              <Badge
-                className={cn(
-                  "text-sm font-medium px-2.5 py-1",
-                  studentData.isActive
-                    ? "bg-green-500/10 hover:bg-green-500/20 text-green-700 dark:text-green-400 border-green-500/20"
-                    : "bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 dark:text-amber-400 border-amber-500/20"
-                )}
-                variant={studentData.isActive ? "default" : "secondary"}
-              >
-                {studentData.isActive ? (
-                  <>
-                    <CheckCircle2 className="mr-1.5 h-3.5 w-3.5" />
-                    Hoạt động
-                  </>
-                ) : (
-                  <>
-                    <XCircle className="mr-1.5 h-3.5 w-3.5" />
-                    Tạm khóa
-                  </>
-                )}
-              </Badge>
-            </FieldItem>
-
-            {/* Timestamps */}
-            <div className="grid gap-6 grid-cols-1 sm:grid-cols-2">
-              <FieldItem icon={Calendar} label="Ngày tạo">
-                <div className="text-sm font-medium text-foreground">
-                  {studentData.createdAt ? formatDateVi(studentData.createdAt) : "—"}
-                </div>
-              </FieldItem>
-
-              <FieldItem icon={Clock} label="Cập nhật lần cuối">
-                <div className="text-sm font-medium text-foreground">
-                  {studentData.updatedAt ? formatDateVi(studentData.updatedAt) : "—"}
-                </div>
-              </FieldItem>
-            </div>
-          </div>
-        )
-      },
-    },
+    
   ]
 
   const isDeleted = detailData.deletedAt !== null && detailData.deletedAt !== undefined
 
   return (
-    <ResourceDetailClient<StudentDetailData>
-      data={detailData}
-      fields={detailFields}
-      detailSections={detailSections}
-      title={detailData.name || detailData.studentCode}
-      description={`Chi tiết học sinh ${detailData.studentCode}`}
-      backUrl={backUrl}
-      onBack={() => navigateBack(backUrl)}
-      actions={
-        !isDeleted && canUpdate ? (
-          <Button
-            variant="outline"
-            onClick={() => router.push(`/admin/students/${studentId}/edit`)}
-            className="gap-2"
-          >
-            <Edit className="h-4 w-4" />
-            Chỉnh sửa
-          </Button>
-        ) : null
-      }
-    />
+    <div className="space-y-6">
+      <ResourceDetailClient<StudentDetailData>
+        data={detailData}
+        fields={detailFields}
+        detailSections={detailSections}
+        backUrl={backUrl}
+        onBack={() => navigateBack(backUrl)}
+        actions={
+          !isDeleted && canUpdate ? (
+            <Button
+              variant="outline"
+              onClick={() => router.push(`/admin/students/${studentId}/edit`)}
+              className="gap-2"
+            >
+              <Edit className="h-4 w-4" />
+              Chỉnh sửa
+            </Button>
+          ) : null
+        }
+      />
+      
+      {/* Student Scores Section - chỉ hiển thị khi student isActive */}
+      <StudentScoresSection
+        studentId={studentId}
+        isActive={detailData.isActive}
+        studentName={detailData.name}
+      />
+    </div>
   )
 }

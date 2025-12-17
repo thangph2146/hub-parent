@@ -142,3 +142,26 @@ export const serializeStudentDetail = (student: StudentDetail) => {
 
 export type { StudentWithRelations }
 
+/**
+ * Validate và lấy studentCode từ studentId
+ * Sử dụng trong các API routes để đảm bảo student tồn tại và có studentCode
+ */
+export const validateStudentAndGetCode = async (
+  studentId: string,
+  actorId: string | undefined,
+  isSuperAdminUser: boolean
+) => {
+  const { getStudentById } = await import("./queries")
+  const student = await getStudentById(studentId, actorId, isSuperAdminUser)
+
+  if (!student) {
+    return { error: { status: 404, message: "Student not found" } } as const
+  }
+
+  if (!student.studentCode) {
+    return { error: { status: 404, message: "Student code not found" } } as const
+  }
+
+  return { student, studentCode: student.studentCode } as const
+}
+

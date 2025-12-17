@@ -199,6 +199,20 @@ export const queryKeys = {
   adminSessions: createAdminResourceKeys("adminSessions"),
   adminCategories: createAdminResourceKeys("adminCategories"),
   adminPosts: createAdminResourceKeys("adminPosts"),
+
+  /**
+   * Student Scores & Averages query keys
+   */
+  studentScores: {
+    all: (studentId: string): readonly unknown[] => ["studentScores", studentId],
+    detailed: (studentId: string): readonly unknown[] => ["studentScores", studentId, "detailed"],
+  },
+  studentAverages: {
+    all: (studentId: string): readonly unknown[] => ["studentAverages", studentId],
+    year: (studentId: string): readonly unknown[] => ["studentAverages", studentId, "year"],
+    terms: (studentId: string): readonly unknown[] => ["studentAverages", studentId, "terms"],
+    overall: (studentId: string): readonly unknown[] => ["studentAverages", studentId, "overall"],
+  },
 } as const
 
 /**
