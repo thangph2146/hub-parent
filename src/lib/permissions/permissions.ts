@@ -302,30 +302,24 @@ export const DEFAULT_ROLES = {
 /**
  * Check if user has permission
  */
-export function hasPermission(
+export const hasPermission = (
   userPermissions: Permission[],
   requiredPermission: Permission
-): boolean {
-  return userPermissions.includes(requiredPermission)
-}
+): boolean => userPermissions.includes(requiredPermission)
 
 /**
  * Check if user has any of the required permissions
  */
-export function hasAnyPermission(
+export const hasAnyPermission = (
   userPermissions: Permission[],
   requiredPermissions: Permission[]
-): boolean {
-  return requiredPermissions.some((perm) => userPermissions.includes(perm))
-}
+): boolean => requiredPermissions.some((perm) => userPermissions.includes(perm))
 
 /**
  * Check if user has all required permissions
  */
-export function hasAllPermissions(
+export const hasAllPermissions = (
   userPermissions: Permission[],
   requiredPermissions: Permission[]
-): boolean {
-  return requiredPermissions.every((perm) => userPermissions.includes(perm))
-}
+): boolean => requiredPermissions.every((perm) => userPermissions.includes(perm))
 

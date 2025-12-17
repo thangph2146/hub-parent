@@ -12,7 +12,7 @@ import type { Permission } from "@/lib/permissions"
 /**
  * Parse query parameters từ request
  */
-export function parseListParams(request: NextRequest) {
+export const parseListParams = (request: NextRequest) => {
   const searchParams = request.nextUrl.searchParams
   const page = parseInt(searchParams.get("page") || "1", 10)
   const limit = parseInt(searchParams.get("limit") || "10", 10)
@@ -20,13 +20,11 @@ export function parseListParams(request: NextRequest) {
   const status = (searchParams.get("status") || "active") as "active" | "deleted" | "all"
 
   // Parse filters
-  const filters: Record<string, string> = {}
-  searchParams.forEach((value, key) => {
-    if (key.startsWith("filter[")) {
-      const filterKey = key.slice(7, -1) // Remove "filter[" and "]"
-      filters[filterKey] = value
-    }
-  })
+  const filters = Object.fromEntries(
+    Array.from(searchParams.entries())
+      .filter(([key]) => key.startsWith("filter["))
+      .map(([key, value]) => [key.slice(7, -1), value])
+  )
 
   return {
     page,
@@ -40,12 +38,12 @@ export function parseListParams(request: NextRequest) {
 /**
  * Check authentication và permissions
  */
-export async function requireAuthAndPermissions(permissions: {
+export const requireAuthAndPermissions = async (permissions: {
   delete?: Permission[]
   restore?: Permission[]
   manage: Permission
   create?: Permission
-}) {
+}) => {
   const session = await auth()
   if (!session?.user?.id) {
     return { error: createErrorResponse("Unauthorized", { status: 401 }) }
@@ -55,7 +53,7 @@ export async function requireAuthAndPermissions(permissions: {
     delete: permissions.delete || [],
     restore: permissions.restore || [],
     manage: permissions.manage,
-    create: permissions.create || permissions.manage, // Fallback to manage if create not provided
+    create: permissions.create || permissions.manage,
   })
   if (!tablePermissions.canManage) {
     return { error: createErrorResponse("Forbidden", { status: 403 }) }
@@ -67,7 +65,7 @@ export async function requireAuthAndPermissions(permissions: {
 /**
  * Create auth context for mutations
  */
-export async function createMutationContext(session: { user: { id: string } }) {
+export const createMutationContext = async (session: { user: { id: string } }) => {
   const authInfo = await getAuthInfo()
   return {
     actorId: authInfo.actorId || session.user.id,
@@ -79,7 +77,7 @@ export async function createMutationContext(session: { user: { id: string } }) {
 /**
  * Generic list handler wrapper
  */
-export async function handleListRequest<T>(
+export const handleListRequest = async <T>(
   request: NextRequest,
   permissions: {
     delete?: Permission[]
@@ -92,7 +90,7 @@ export async function handleListRequest<T>(
     pagination: { page: number; limit: number; total: number; totalPages: number }
   }>,
   serializeFn: (result: Awaited<ReturnType<typeof listFn>>) => { rows: unknown[] }
-) {
+) => {
   const authResult = await requireAuthAndPermissions(permissions)
   if (authResult.error) return authResult.error
 
@@ -109,7 +107,7 @@ export async function handleListRequest<T>(
 /**
  * Generic detail handler wrapper
  */
-export async function handleDetailRequest<T>(
+export const handleDetailRequest = async <T>(
   request: NextRequest,
   id: string,
   permissions: {
@@ -120,7 +118,7 @@ export async function handleDetailRequest<T>(
   },
   getFn: (id: string) => Promise<T | null>,
   notFoundMessage = "Không tìm thấy"
-) {
+) => {
   const authResult = await requireAuthAndPermissions(permissions)
   if (authResult.error) return authResult.error
 
@@ -135,7 +133,7 @@ export async function handleDetailRequest<T>(
 /**
  * Generic mutation handler wrapper (POST/PUT/DELETE)
  */
-export async function handleMutationRequest<TInput, TOutput>(
+export const handleMutationRequest = async <TInput, TOutput>(
   request: NextRequest,
   permissions: {
     delete?: Permission[]
@@ -151,7 +149,7 @@ export async function handleMutationRequest<TInput, TOutput>(
     parseBody?: (body: unknown) => TInput
     successStatus?: number
   }
-) {
+) => {
   const { requireCreate = false, requireManage = false, requireDelete = false, parseBody, successStatus = 200 } = options || {}
   
   const authResult = await requireAuthAndPermissions(permissions)
@@ -160,13 +158,9 @@ export async function handleMutationRequest<TInput, TOutput>(
   const { session, permissions: tablePermissions } = authResult
 
   // Check specific permission requirements
-  if (requireCreate && !tablePermissions.canCreate) {
-    return createErrorResponse("Forbidden", { status: 403 })
-  }
-  if (requireManage && !tablePermissions.canManage) {
-    return createErrorResponse("Forbidden", { status: 403 })
-  }
-  if (requireDelete && !tablePermissions.canDelete) {
+  if ((requireCreate && !tablePermissions.canCreate) ||
+      (requireManage && !tablePermissions.canManage) ||
+      (requireDelete && !tablePermissions.canDelete)) {
     return createErrorResponse("Forbidden", { status: 403 })
   }
 
@@ -178,10 +172,7 @@ export async function handleMutationRequest<TInput, TOutput>(
   }
 
   const ctx = await createMutationContext(session)
-  
-  // Type-safe body parsing
   const input: TInput = parseBody ? parseBody(body) : (body as TInput)
-  
   const result = await mutationFn(ctx, input)
 
   return createSuccessResponse(result, { status: successStatus })

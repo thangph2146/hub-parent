@@ -7,39 +7,34 @@ import { DEFAULT_ROLES } from "./permissions"
 /**
  * Check if user is super admin based on roles
  */
-export function isSuperAdmin(roles: Array<{ name: string }>): boolean {
-  return roles.some((role) => role.name === DEFAULT_ROLES.SUPER_ADMIN.name)
-}
+export const isSuperAdmin = (roles: Array<{ name: string }>): boolean =>
+  roles.some((role) => role.name === DEFAULT_ROLES.SUPER_ADMIN.name)
 
 /**
  * Check if user can perform action (super admin has all permissions)
  */
-export function canPerformAction(
+export const canPerformAction = (
   userPermissions: Permission[],
   userRoles: Array<{ name: string }>,
   requiredPermission: Permission
-): boolean {
-  // Super admin can do everything
+): boolean => {
   if (isSuperAdmin(userRoles)) {
     return true
   }
-  // Check specific permission
   return userPermissions.includes(requiredPermission)
 }
 
 /**
  * Check if user can perform any of the actions
  */
-export function canPerformAnyAction(
+export const canPerformAnyAction = (
   userPermissions: Permission[],
   userRoles: Array<{ name: string }>,
   requiredPermissions: Permission[]
-): boolean {
-  // Super admin can do everything
+): boolean => {
   if (isSuperAdmin(userRoles)) {
     return true
   }
-  // Check if user has any of the required permissions
   return requiredPermissions.some((perm) => userPermissions.includes(perm))
 }
 

@@ -5,6 +5,9 @@
 
 import { NextRequest, NextResponse } from "next/server"
 import { logger } from "@/lib/config"
+import { getClientIP } from "@/lib/utils/request-utils"
+import { applyBasicSecurityHeaders, applyCSPHeader, applyHSTSHeader } from "@/lib/utils/response-utils"
+import { normalizeError } from "@/lib/utils/api-utils"
 
 // Rate limiting configuration
 interface RateLimitConfig {
@@ -40,24 +43,18 @@ const REQUEST_TIMEOUT = 30000
 /**
  * Get client identifier for rate limiting
  */
-function getClientIdentifier(request: NextRequest): string {
-  // Use IP address or user ID if authenticated
-  const forwarded = request.headers.get("x-forwarded-for")
-  const realIP = request.headers.get("x-real-ip")
-  const ip = forwarded?.split(",")[0].trim() || realIP || "unknown"
-  
-  // If user is authenticated, use user ID for more accurate rate limiting
-  // This would require parsing session, but for now use IP
+const getClientIdentifier = (request: NextRequest): string => {
+  const ip = getClientIP(request)
   return `ip:${ip}`
 }
 
 /**
  * Check rate limit
  */
-function checkRateLimit(
+const checkRateLimit = (
   identifier: string,
   config: RateLimitConfig
-): { allowed: boolean; remaining: number; resetTime: number } {
+): { allowed: boolean; remaining: number; resetTime: number } => {
   const now = Date.now()
   const record = rateLimitStore[identifier]
 
@@ -93,7 +90,7 @@ function checkRateLimit(
 /**
  * Clean up expired rate limit records (run periodically)
  */
-export function cleanupRateLimitStore() {
+export const cleanupRateLimitStore = () => {
   const now = Date.now()
   Object.keys(rateLimitStore).forEach((key) => {
     if (rateLimitStore[key].resetTime < now) {
@@ -110,23 +107,19 @@ if (typeof setInterval !== "undefined") {
 /**
  * Get rate limit config based on route path
  */
-function getRateLimitConfig(pathname: string, method: string): RateLimitConfig {
-  // Auth routes - stricter limits
+const getRateLimitConfig = (pathname: string, method: string): RateLimitConfig => {
   if (pathname.includes("/auth/") || pathname.includes("/signup") || pathname.includes("/sign-in")) {
     return RATE_LIMITS.auth
   }
 
-  // Bulk operations - higher limits vì có thể cần xử lý nhiều items cùng lúc
   if (pathname.includes("/bulk")) {
     return RATE_LIMITS.bulk
   }
 
-  // Write operations - moderate limits
   if (method === "POST" || method === "PUT" || method === "PATCH" || method === "DELETE") {
     return RATE_LIMITS.write
   }
 
-  // Read operations - higher limits
   if (method === "GET") {
     return RATE_LIMITS.read
   }
@@ -137,33 +130,17 @@ function getRateLimitConfig(pathname: string, method: string): RateLimitConfig {
 /**
  * Add security headers to response
  */
-function addSecurityHeaders(response: NextResponse): NextResponse {
-  // Prevent XSS attacks
-  response.headers.set("X-Content-Type-Options", "nosniff")
-  response.headers.set("X-Frame-Options", "DENY")
-  response.headers.set("X-XSS-Protection", "1; mode=block")
-
-  // Prevent clickjacking
-  response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin")
-
-  // Content Security Policy (adjust based on your needs)
-  response.headers.set(
-    "Content-Security-Policy",
-    "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:;"
-  )
-
-  // HSTS (if using HTTPS)
-  if (process.env.NODE_ENV === "production") {
-    response.headers.set("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
-  }
-
+const addSecurityHeaders = (response: NextResponse): NextResponse => {
+  applyBasicSecurityHeaders(response)
+  applyCSPHeader(response)
+  applyHSTSHeader(response)
   return response
 }
 
 /**
  * Validate request body size
  */
-function validateBodySize(request: NextRequest): { valid: boolean; error?: string } {
+const validateBodySize = (request: NextRequest): { valid: boolean; error?: string } => {
   const contentLength = request.headers.get("content-length")
   if (contentLength) {
     const size = parseInt(contentLength, 10)
@@ -180,13 +157,13 @@ function validateBodySize(request: NextRequest): { valid: boolean; error?: strin
 /**
  * Rate limiting middleware
  */
-export function withRateLimit(
+export const withRateLimit = (
   handler: (req: NextRequest, ...args: unknown[]) => Promise<NextResponse>,
   options?: {
     config?: RateLimitConfig
     endpointType?: "auth" | "write" | "read" | "default" | "bulk"
   }
-) {
+) => {
   return async (req: NextRequest, ...args: unknown[]): Promise<NextResponse> => {
     try {
       const config =
@@ -259,7 +236,7 @@ export function withRateLimit(
         )
       }
 
-      logger.error("Security middleware error", error instanceof Error ? error : new Error(String(error)))
+      logger.error("Security middleware error", normalizeError(error))
       return addSecurityHeaders(
         NextResponse.json({ error: "Internal server error" }, { status: 500 })
       )
@@ -271,14 +248,12 @@ export function withRateLimit(
  * Security wrapper for API routes
  * Combines rate limiting, security headers, and validation
  */
-export function withSecurity(
+export const withSecurity = (
   handler: (req: NextRequest, ...args: unknown[]) => Promise<NextResponse>,
   options?: {
     rateLimit?: RateLimitConfig
     endpointType?: "auth" | "write" | "read" | "default" | "bulk"
     requireAuth?: boolean
   }
-) {
-  return withRateLimit(handler, options)
-}
+) => withRateLimit(handler, options)
 

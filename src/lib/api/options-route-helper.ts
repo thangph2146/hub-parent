@@ -9,7 +9,8 @@
  */
 import { NextRequest, NextResponse } from "next/server"
 import { sanitizeSearchQuery } from "./validation"
-import { logger } from "@/lib/config"
+import { createErrorResponse, logger } from "@/lib/config"
+import { normalizeError } from "../utils/api-utils"
 
 export interface OptionsRouteConfig {
   allowedColumns: string[]
@@ -23,10 +24,10 @@ export interface OptionsRouteConfig {
  * @param config - Configuration cho options route
  * @returns NextResponse với options data hoặc error
  */
-export async function createOptionsHandler(
+export const createOptionsHandler = async (
   req: NextRequest,
   config: OptionsRouteConfig
-): Promise<NextResponse> {
+): Promise<NextResponse> => {
   const searchParams = req.nextUrl.searchParams
   const column = searchParams.get("column")
   const search = searchParams.get("search") || ""
@@ -34,18 +35,13 @@ export async function createOptionsHandler(
 
   // Validate column parameter
   if (!column) {
-    return NextResponse.json(
-      { error: "Column parameter is required" },
-      { status: 400 }
-    )
+    return createErrorResponse("Column parameter is required", { status: 400 })
   }
 
   // Validate column (whitelist allowed columns)
   if (!config.allowedColumns.includes(column)) {
-    return NextResponse.json(
-      {
-        error: `Column '${column}' is not allowed. Allowed columns: ${config.allowedColumns.join(", ")}`,
-      },
+    return createErrorResponse(
+      `Column '${column}' is not allowed. Allowed columns: ${config.allowedColumns.join(", ")}`,
       { status: 400 }
     )
   }
@@ -57,10 +53,7 @@ export async function createOptionsHandler(
   // Validate limit
   const limit = limitParam ? parseInt(limitParam, 10) : 50
   if (isNaN(limit) || limit < 1 || limit > 100) {
-    return NextResponse.json(
-      { error: "Limit must be between 1 and 100" },
-      { status: 400 }
-    )
+    return createErrorResponse("Limit must be between 1 and 100", { status: 400 })
   }
 
   try {
@@ -83,15 +76,11 @@ export async function createOptionsHandler(
     
     return response
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error)
     logger.error(
       `Error fetching filter options for column '${column}'`,
-      error instanceof Error ? error : new Error(errorMessage)
+      normalizeError(error)
     )
     
-    return NextResponse.json(
-      { error: "Đã xảy ra lỗi khi lấy danh sách tùy chọn" },
-      { status: 500 }
-    )
+    return createErrorResponse("Đã xảy ra lỗi khi lấy danh sách tùy chọn", { status: 500 })
   }
 }

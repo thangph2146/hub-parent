@@ -6,7 +6,7 @@
 /**
  * Safely parses JSON from a Response object
  */
-export async function parseJsonSafe<T>(response: Response): Promise<T | null> {
+export const parseJsonSafe = async <T>(response: Response): Promise<T | null> => {
   try {
     const textBody = await response.clone().text()
     return textBody ? (JSON.parse(textBody) as T) : null
@@ -18,7 +18,7 @@ export async function parseJsonSafe<T>(response: Response): Promise<T | null> {
 /**
  * Extracts error message from a Response object
  */
-export async function extractErrorMessage(response: Response): Promise<string> {
+export const extractErrorMessage = async (response: Response): Promise<string> => {
   const data = await parseJsonSafe<{ error?: string; message?: string }>(response)
   if (data) {
     if (typeof data.error === "string") return data.error
@@ -45,10 +45,10 @@ const STATUS_MESSAGES: Record<number, string> = {
 /**
  * Extracts error message from axios error object
  */
-export function extractAxiosErrorMessage(
+export const extractAxiosErrorMessage = (
   error: unknown,
   defaultMessage = "Đã xảy ra lỗi"
-): string {
+): string => {
   if (error && typeof error === "object" && "response" in error) {
     const axiosError = error as { response?: { data?: { error?: string }; status?: number } }
     if (axiosError.response?.data?.error) {
@@ -60,4 +60,16 @@ export function extractAxiosErrorMessage(
   }
   return error instanceof Error ? error.message : defaultMessage
 }
+
+/**
+ * Normalize error to Error instance
+ */
+export const normalizeError = (error: unknown): Error =>
+  error instanceof Error ? error : new Error(String(error))
+
+/**
+ * Get error message from unknown error
+ */
+export const getErrorMessage = (error: unknown): string =>
+  error instanceof Error ? error.message : String(error)
 

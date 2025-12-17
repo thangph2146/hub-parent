@@ -22,16 +22,14 @@ export const API_ROUTE_PERMISSIONS: Record<string, Permission[]> = Object.fromEn
 /**
  * Get required permissions for an API route
  */
-export function getApiRoutePermissions(pathname: string, method: HttpMethod): Permission[] {
+export const getApiRoutePermissions = (pathname: string, method: HttpMethod): Permission[] => {
   const normalized = normalizePathname(pathname)
   const exactKey = `${method} ${normalized}`
 
-  // Exact match
   if (API_ROUTE_PERMISSIONS[exactKey]) {
     return API_ROUTE_PERMISSIONS[exactKey]
   }
 
-  // Pattern matching với dynamic segments
   for (const [key, permissions] of Object.entries(API_ROUTE_PERMISSIONS)) {
     const [patternMethod, patternPath] = key.split(" ", 2)
     if (patternMethod === method && matchPattern(patternPath, normalized)) {
@@ -45,6 +43,5 @@ export function getApiRoutePermissions(pathname: string, method: HttpMethod): Pe
 /**
  * Check if an API route requires any permissions
  */
-export function requiresApiPermission(pathname: string, method: HttpMethod): boolean {
-  return getApiRoutePermissions(pathname, method).length > 0
-}
+export const requiresApiPermission = (pathname: string, method: HttpMethod): boolean =>
+  getApiRoutePermissions(pathname, method).length > 0

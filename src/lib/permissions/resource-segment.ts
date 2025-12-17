@@ -25,10 +25,10 @@ const SEGMENT_PATTERN = /^\/([^/]+)(.*)$/
 
 const normalizeRoleName = (name?: string | null) => (name ?? "").toLowerCase()
 
-export function getResourceSegmentForRoles(
+export const getResourceSegmentForRoles = (
   roles: Array<{ name?: string | null }> = [],
   fallback: string = DEFAULT_RESOURCE_SEGMENT
-): string {
+): string => {
   for (const role of roles) {
     const normalized = normalizeRoleName(role?.name ?? "")
     const segment = ROLE_RESOURCE_SEGMENTS[normalized]
@@ -39,17 +39,14 @@ export function getResourceSegmentForRoles(
   return fallback
 }
 
-export function applyResourceSegmentToPath(path: string, segment: string): string {
-  if (!path.startsWith(`/${DEFAULT_RESOURCE_SEGMENT}`)) {
-    return path
-  }
-  if (segment === DEFAULT_RESOURCE_SEGMENT) {
+export const applyResourceSegmentToPath = (path: string, segment: string): string => {
+  if (!path.startsWith(`/${DEFAULT_RESOURCE_SEGMENT}`) || segment === DEFAULT_RESOURCE_SEGMENT) {
     return path
   }
   return path.replace(`/${DEFAULT_RESOURCE_SEGMENT}`, `/${segment}`)
 }
 
-export function toCanonicalResourcePath(path: string, segment: string): string {
+export const toCanonicalResourcePath = (path: string, segment: string): string => {
   if (segment === DEFAULT_RESOURCE_SEGMENT) {
     return path
   }
@@ -64,10 +61,6 @@ export function toCanonicalResourcePath(path: string, segment: string): string {
   return `/${DEFAULT_RESOURCE_SEGMENT}${rest || ""}`
 }
 
-export function replaceResourceSegment(path: string, fromSegment: string, toSegment: string): string {
-  if (!path.startsWith(`/${fromSegment}`)) {
-    return path
-  }
-  return path.replace(`/${fromSegment}`, `/${toSegment}`)
-}
+export const replaceResourceSegment = (path: string, fromSegment: string, toSegment: string): string =>
+  path.startsWith(`/${fromSegment}`) ? path.replace(`/${fromSegment}`, `/${toSegment}`) : path
 

@@ -111,7 +111,7 @@ export const appConfig = {
  * - Next.js sẽ tự động resolve relative URLs từ metadataBase
  * - Mỗi page sẽ set URL riêng của nó
  */
-export function getOpenGraphConfig() {
+export const getOpenGraphConfig = () => {
   const { url: _unusedUrl, ...rest } = appConfig.openGraph;
   return {
     ...rest,
@@ -122,12 +122,10 @@ export function getOpenGraphConfig() {
 /**
  * Helper function để convert readonly Twitter config sang mutable cho Next.js Metadata
  */
-export function getTwitterConfig() {
-  return {
-    ...appConfig.twitter,
-    images: appConfig.twitter.images ? [...appConfig.twitter.images] : undefined,
-  }
-}
+export const getTwitterConfig = () => ({
+  ...appConfig.twitter,
+  images: appConfig.twitter.images ? [...appConfig.twitter.images] : undefined,
+})
 
 export interface AppBranding {
   name: string
@@ -161,19 +159,18 @@ const ROLE_BRANDING_MAP: Record<string, AppBranding> = {
   },
 }
 
-export function getAppBranding({
+export const getAppBranding = ({
   roles,
   resourceSegment,
 }: {
   roles?: Array<{ name?: string | null }>
   resourceSegment?: string | null
-} = {}): AppBranding {
+} = {}): AppBranding => {
   const fallback: AppBranding = {
     name: appConfig.name,
     description: appConfig.description,
   }
 
-  // Ưu tiên check roles trước (chính xác hơn)
   if (roles && roles.length > 0) {
     for (const role of roles) {
       if (role?.name) {
@@ -186,7 +183,6 @@ export function getAppBranding({
     }
   }
 
-  // Nếu không tìm thấy từ roles, thử resourceSegment như fallback
   if (resourceSegment) {
     const key = resourceSegment.toLowerCase()
     const branding = ROLE_BRANDING_MAP[key]

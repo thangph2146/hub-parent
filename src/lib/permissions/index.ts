@@ -57,13 +57,13 @@ export {
   getResourceSubRoutes,
 } from "./route-helpers"
 
-// API route helper functions
+// API route generator functions
 export {
   getApiRoutes,
   getResourceAdminApiRoutes,
   getResourceApiRoute,
   generateResourceApiRoutes,
-} from "./api-route-helpers"
+} from "./api-route-generators"
 
 // Resource segment helpers
 export {

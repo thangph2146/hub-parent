@@ -12,25 +12,19 @@ type FilterRecord = Record<string, string | undefined>
 /**
  * Normalize filters by removing undefined/empty values and sorting keys
  */
-function normalizeFilters(filters?: FilterRecord): Record<string, string> | undefined {
+const normalizeFilters = (filters?: FilterRecord): Record<string, string> | undefined => {
   if (!filters) return undefined
   
-  const normalized: Record<string, string> = {}
-  for (const [key, value] of Object.entries(filters)) {
-    if (value !== undefined && value !== "") {
-      normalized[key] = value
-    }
-  }
+  const entries = Object.entries(filters)
+    .filter((entry): entry is [string, string] => {
+      const [, value] = entry
+      return value !== undefined && value !== ""
+    })
+    .sort(([a], [b]) => a.localeCompare(b))
   
-  if (Object.keys(normalized).length === 0) return undefined
+  const normalized = Object.fromEntries(entries) as Record<string, string>
   
-  // Sort keys for query key consistency
-  return Object.keys(normalized)
-    .sort()
-    .reduce<Record<string, string>>((acc, key) => {
-      acc[key] = normalized[key]!
-      return acc
-    }, {})
+  return Object.keys(normalized).length > 0 ? normalized : undefined
 }
 
 /**
@@ -58,27 +52,25 @@ export type AdminUsersListParams = BaseListParams
 /**
  * Create query key with optional params
  */
-function createQueryKey(base: readonly string[], ...params: unknown[]): readonly unknown[] {
-  return [...base, ...params.filter((p) => p !== undefined)]
-}
+const createQueryKey = (base: readonly string[], ...params: unknown[]): readonly unknown[] =>
+  [...base, ...params.filter((p) => p !== undefined)]
 
 /**
  * Normalize list params for query key consistency
  */
-function normalizeListParams<T extends BaseListParams>(params: T): T {
-  return { ...params, filters: normalizeFilters(params.filters) }
-}
+const normalizeListParams = <T extends BaseListParams>(params: T): T => ({
+  ...params,
+  filters: normalizeFilters(params.filters),
+})
 
 /**
  * Factory to create admin resource query keys
  */
-function createAdminResourceKeys(resource: string) {
-  return {
-    all: (): readonly unknown[] => [resource],
-    list: (params: BaseListParams): readonly unknown[] => [resource, normalizeListParams(params)],
-    detail: (id: string): readonly unknown[] => [resource, "detail", id],
-  }
-}
+const createAdminResourceKeys = (resource: string) => ({
+  all: (): readonly unknown[] => [resource],
+  list: (params: BaseListParams): readonly unknown[] => [resource, normalizeListParams(params)],
+  detail: (id: string): readonly unknown[] => [resource, "detail", id],
+})
 
 /**
  * Query Keys Factory Pattern
@@ -89,23 +81,23 @@ export const queryKeys = {
    * Notification query keys
    */
   notifications: {
-    /**
-     * User notifications với optional pagination và filters
-     * @param userId - User ID
-     * @param options - Optional pagination và filter options
-     */
+  /**
+   * User notifications với optional pagination và filters
+   * @param userId - User ID
+   * @param options - Optional pagination và filter options
+   */
     user: (
       userId: string | undefined,
       options?: { limit?: number; offset?: number; unreadOnly?: boolean }
-    ): readonly unknown[] => {
-      if (!userId) return ["notifications", "user", null]
-      return createQueryKey(
-        ["notifications", "user", userId],
-        options?.limit,
-        options?.offset,
-        options?.unreadOnly
-      )
-    },
+    ): readonly unknown[] =>
+      !userId
+        ? ["notifications", "user", null]
+        : createQueryKey(
+            ["notifications", "user", userId],
+            options?.limit,
+            options?.offset,
+            options?.unreadOnly
+          ),
     /**
      * Admin notifications (Admin Table)
      */
@@ -114,10 +106,8 @@ export const queryKeys = {
      * Tất cả user notifications (không phân biệt params)
      * Dùng để invalidate tất cả queries của user
      */
-    allUser: (userId: string | undefined): readonly unknown[] => {
-      if (!userId) return ["notifications", "user"]
-      return ["notifications", "user", userId]
-    },
+    allUser: (userId: string | undefined): readonly unknown[] =>
+      !userId ? ["notifications", "user"] : ["notifications", "user", userId],
     /**
      * Tất cả admin notifications
      */
@@ -136,16 +126,16 @@ export const queryKeys = {
       limit?: number
       search?: string
       status?: string
-    }): readonly unknown[] => {
-      if (!params) return ["users", "list"]
-      return createQueryKey(
-        ["users", "list"],
-        params.page,
-        params.limit,
-        params.search,
-        params.status
-      )
-    },
+    }): readonly unknown[] =>
+      !params
+        ? ["users", "list"]
+        : createQueryKey(
+            ["users", "list"],
+            params.page,
+            params.limit,
+            params.search,
+            params.status
+          ),
     /**
      * User detail by ID
      */
@@ -167,9 +157,8 @@ export const queryKeys = {
     /**
      * Admin users list với normalized params
      */
-    list: (params: AdminUsersListParams): readonly unknown[] => {
-      return ["adminUsers", normalizeListParams(params)]
-    },
+    list: (params: AdminUsersListParams): readonly unknown[] =>
+      ["adminUsers", normalizeListParams(params)],
     /**
      * User detail by ID
      */
@@ -194,10 +183,8 @@ export const queryKeys = {
     /**
      * Unread counts cho user cụ thể
      */
-    user: (userId: string | undefined): readonly unknown[] => {
-      if (!userId) return ["unreadCounts", "user", null]
-      return ["unreadCounts", "user", userId]
-    },
+    user: (userId: string | undefined): readonly unknown[] =>
+      !userId ? ["unreadCounts", "user", null] : ["unreadCounts", "user", userId],
     /**
      * Tất cả unread counts queries
      */

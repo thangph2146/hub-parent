@@ -10,44 +10,28 @@
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 import type { ProxyConfig } from "./config"
+import { getClientIP as getClientIPUtil } from "@/lib/utils/request-utils"
+import { applyBasicSecurityHeaders } from "@/lib/utils/response-utils"
 
 /**
  * Get client IP address from request headers
+ * Re-export for backward compatibility
  */
-export function getClientIP(request: NextRequest): string {
-  const forwarded = request.headers.get("x-forwarded-for")
-  const realIP = request.headers.get("x-real-ip")
-  const cfConnectingIP = request.headers.get("cf-connecting-ip")
-
-  if (forwarded) {
-    return forwarded.split(",")[0].trim()
-  }
-  if (realIP) {
-    return realIP
-  }
-  if (cfConnectingIP) {
-    return cfConnectingIP
-  }
-  return "unknown"
-}
+export const getClientIP = getClientIPUtil
 
 /**
  * Check if IP is in whitelist
  */
-export function checkIPWhitelist(ip: string, allowedIPs: string[]): boolean {
-  if (allowedIPs.length === 0) {
-    return true
-  }
-  return allowedIPs.includes(ip)
-}
+export const checkIPWhitelist = (ip: string, allowedIPs: string[]): boolean =>
+  allowedIPs.length === 0 || allowedIPs.includes(ip)
 
 /**
  * Check if request has maintenance bypass key
  */
-export function checkMaintenanceMode(
+export const checkMaintenanceMode = (
   request: NextRequest,
   config: Pick<ProxyConfig, "maintenanceMode" | "maintenanceBypassKey">
-): boolean {
+): boolean => {
   if (!config.maintenanceMode) {
     return false
   }
@@ -62,10 +46,10 @@ export function checkMaintenanceMode(
 /**
  * Handle CORS validation
  */
-export function handleCORS(
+export const handleCORS = (
   request: NextRequest,
   allowedOrigins: string[]
-): NextResponse | null {
+): NextResponse | null => {
   const origin = request.headers.get("origin")
   
   if (origin && !allowedOrigins.includes(origin)) {
@@ -81,11 +65,11 @@ export function handleCORS(
 /**
  * Handle maintenance mode check
  */
-export function handleMaintenanceMode(
+export const handleMaintenanceMode = (
   request: NextRequest,
   pathname: string,
   config: Pick<ProxyConfig, "maintenanceMode" | "maintenanceBypassKey">
-): NextResponse | null {
+): NextResponse | null => {
   if (config.maintenanceMode && !checkMaintenanceMode(request, config)) {
     const isApiRoute = pathname.startsWith("/api")
     if (isApiRoute) {
@@ -106,11 +90,11 @@ export function handleMaintenanceMode(
 /**
  * Handle IP whitelist check for admin routes
  */
-export function handleIPWhitelist(
+export const handleIPWhitelist = (
   request: NextRequest,
   pathname: string,
   allowedIPs: string[]
-): NextResponse | null {
+): NextResponse | null => {
   if (pathname.startsWith("/admin") || pathname.startsWith("/api/admin")) {
     const clientIP = getClientIP(request)
     if (!checkIPWhitelist(clientIP, allowedIPs)) {
@@ -127,22 +111,17 @@ export function handleIPWhitelist(
 /**
  * Handle NextAuth routes (skip proxy)
  */
-export function handleNextAuthRoutes(pathname: string): NextResponse | null {
-  if (pathname.startsWith("/api/auth")) {
-    return NextResponse.next()
-  }
-  
-  return null
-}
+export const handleNextAuthRoutes = (pathname: string): NextResponse | null =>
+  pathname.startsWith("/api/auth") ? NextResponse.next() : null
 
 /**
  * Handle proxy API requests
  */
-export function handleProxyRequests(
+export const handleProxyRequests = (
   request: NextRequest,
   pathname: string,
   externalApiBaseUrl: string
-): NextResponse | null {
+): NextResponse | null => {
   if (pathname.startsWith("/api/proxy/")) {
     const proxyPath = pathname.replace("/api/proxy/", "")
     const queryString = request.nextUrl.search
@@ -157,18 +136,17 @@ export function handleProxyRequests(
 /**
  * Apply security headers to response
  */
-export function applySecurityHeaders(
+export const applySecurityHeaders = (
   response: NextResponse,
   pathname: string,
   origin: string | null,
   allowedOrigins: string[]
-): void {
+): void => {
   // Set pathname header for server components
   response.headers.set("x-pathname", pathname)
   
   // Security headers
-  response.headers.set("X-Frame-Options", "DENY")
-  response.headers.set("X-Content-Type-Options", "nosniff")
+  applyBasicSecurityHeaders(response)
   response.headers.set("Referrer-Policy", "origin-when-cross-origin")
   response.headers.set("X-DNS-Prefetch-Control", "on")
 
@@ -202,14 +180,11 @@ export function applySecurityHeaders(
 /**
  * Handle preflight OPTIONS requests
  */
-export function handlePreflightRequest(
+export const handlePreflightRequest = (
   request: NextRequest,
   response: NextResponse
-): NextResponse | null {
-  if (request.method === "OPTIONS") {
-    return NextResponse.json(null, { status: 200, headers: response.headers })
-  }
-  
-  return null
-}
+): NextResponse | null =>
+  request.method === "OPTIONS"
+    ? NextResponse.json(null, { status: 200, headers: response.headers })
+    : null
 

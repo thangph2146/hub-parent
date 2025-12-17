@@ -6,6 +6,7 @@
 import { promises as fs } from "fs"
 import path from "path"
 import { logger } from "@/lib/config"
+import { normalizeError } from "./api-utils"
 
 /**
  * Storage directory - sử dụng /data volume trên Railway hoặc ./data trong development
@@ -19,7 +20,7 @@ export const IMAGES_DIR = path.join(UPLOADS_DIR, "images")
 /**
  * Đảm bảo thư mục tồn tại
  */
-export async function ensureDirectoryExists(dirPath: string): Promise<void> {
+export const ensureDirectoryExists = async (dirPath: string): Promise<void> => {
   try {
     await fs.access(dirPath)
     logger.debug("Directory already exists", { dirPath })
@@ -34,7 +35,7 @@ export async function ensureDirectoryExists(dirPath: string): Promise<void> {
  * Khởi tạo storage directories - đảm bảo tất cả thư mục cần thiết được tạo
  * Nên gọi function này khi app start hoặc trước khi upload
  */
-export async function initializeStorageDirectories(): Promise<void> {
+export const initializeStorageDirectories = async (): Promise<void> => {
   try {
     logger.info("Initializing storage directories", {
       storageDir: STORAGE_DIR,
@@ -59,7 +60,7 @@ export async function initializeStorageDirectories(): Promise<void> {
     })
   } catch (error) {
     logger.error("Error initializing storage directories", {
-      error: error instanceof Error ? error : new Error(String(error)),
+      error: normalizeError(error),
       storageDir: STORAGE_DIR,
       uploadsDir: UPLOADS_DIR,
       imagesDir: IMAGES_DIR,
@@ -71,7 +72,7 @@ export async function initializeStorageDirectories(): Promise<void> {
 /**
  * Tạo tên file unique với timestamp
  */
-export function generateUniqueFileName(originalName: string): string {
+export const generateUniqueFileName = (originalName: string): string => {
   const timestamp = Date.now()
   const random = Math.random().toString(36).substring(2, 9)
   const ext = path.extname(originalName)
@@ -83,20 +84,12 @@ export function generateUniqueFileName(originalName: string): string {
 /**
  * Kiểm tra xem path đã có định dạng năm/tháng/ngày chưa (ví dụ: 2025/12/04)
  */
-function hasDateStructure(folderPath: string): boolean {
+const hasDateStructure = (folderPath: string): boolean => {
   const parts = folderPath.split("/").filter(Boolean)
   if (parts.length < 3) return false
   
-  // Kiểm tra 3 phần cuối có phải là năm/tháng/ngày không
-  const lastThree = parts.slice(-3)
-  const [year, month, day] = lastThree
-  
-  // Kiểm tra năm (4 chữ số), tháng (01-12), ngày (01-31)
-  const yearMatch = /^\d{4}$/.test(year)
-  const monthMatch = /^(0[1-9]|1[0-2])$/.test(month)
-  const dayMatch = /^(0[1-9]|[12][0-9]|3[01])$/.test(day)
-  
-  return yearMatch && monthMatch && dayMatch
+  const [year, month, day] = parts.slice(-3)
+  return /^\d{4}$/.test(year) && /^(0[1-9]|1[0-2])$/.test(month) && /^(0[1-9]|[12][0-9]|3[01])$/.test(day)
 }
 
 /**
@@ -108,11 +101,11 @@ function hasDateStructure(folderPath: string): boolean {
  *                          - Nếu isExistingFolder = false: thêm năm/tháng/ngày vào sau folder
  *                          - Nếu không có customFolderPath: tạo theo năm/tháng/ngày mặc định
  */
-export function generateFilePath(fileName: string, customFolderPath?: string, isExistingFolder: boolean = false): {
+export const generateFilePath = (fileName: string, customFolderPath?: string, isExistingFolder: boolean = false): {
   relativePath: string
   fullPath: string
   urlPath: string
-} {
+} => {
   // Tạo folder theo ngày (chỉ dùng khi cần)
   const now = new Date()
   const year = now.getFullYear()
@@ -166,7 +159,7 @@ export function generateFilePath(fileName: string, customFolderPath?: string, is
 /**
  * Validate file type (chỉ cho phép hình ảnh)
  */
-export function isValidImageFile(fileName: string, mimeType?: string): boolean {
+export const isValidImageFile = (fileName: string, mimeType?: string): boolean => {
   const allowedExtensions = [".jpg", ".jpeg", ".png", ".gif", ".webp", ".svg"]
   const allowedMimeTypes = [
     "image/jpeg",
@@ -192,7 +185,7 @@ export function isValidImageFile(fileName: string, mimeType?: string): boolean {
 /**
  * Xóa folder và tất cả nội dung bên trong (recursive)
  */
-export async function deleteDirectory(dirPath: string): Promise<void> {
+export const deleteDirectory = async (dirPath: string): Promise<void> => {
   try {
     const entries = await fs.readdir(dirPath, { withFileTypes: true })
     
@@ -214,7 +207,7 @@ export async function deleteDirectory(dirPath: string): Promise<void> {
   } catch (error) {
     logger.error("Error deleting directory", {
       dirPath,
-      error: error instanceof Error ? error : new Error(String(error)),
+      error: normalizeError(error),
     })
     throw error
   }
@@ -223,7 +216,7 @@ export async function deleteDirectory(dirPath: string): Promise<void> {
 /**
  * Validate file size (max 10MB)
  */
-export function isValidFileSize(size: number, maxSizeMB = 10): boolean {
+export const isValidFileSize = (size: number, maxSizeMB = 10): boolean => {
   const maxSizeBytes = maxSizeMB * 1024 * 1024
   return size <= maxSizeBytes
 }
@@ -233,29 +226,24 @@ export function isValidFileSize(size: number, maxSizeMB = 10): boolean {
  * Client-side đã resize hình ảnh trước khi upload, nên server-side chỉ validate đơn giản
  * Nếu cần validate chính xác, có thể cài đặt sharp: npm install sharp
  */
-export async function validateImageDimensions(
+export const validateImageDimensions = async (
   file: File,
   _maxDimension: number
-): Promise<{ valid: boolean; width?: number; height?: number; error?: string }> {
-  // SVG không thể validate dimensions dễ dàng, và client đã xử lý
+): Promise<{ valid: boolean; width?: number; height?: number; error?: string }> => {
   if (file.type === "image/svg+xml") {
     return { valid: true }
   }
 
-  // Client-side đã resize hình ảnh trước khi upload
-  // Server-side validation là optional - nếu cần có thể cài sharp để validate chính xác
-  // Hiện tại skip validation vì client đã xử lý
   return { valid: true }
 }
 
 /**
  * Xóa file
  */
-export async function deleteFile(filePath: string): Promise<void> {
+export const deleteFile = async (filePath: string): Promise<void> => {
   try {
     await fs.unlink(filePath)
   } catch (error) {
-    // File không tồn tại hoặc đã bị xóa
     if ((error as NodeJS.ErrnoException).code !== "ENOENT") {
       throw error
     }

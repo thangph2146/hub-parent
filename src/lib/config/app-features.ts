@@ -673,11 +673,11 @@ const buildMenuItemFromFeature = (
   return menuItem
 }
 
-export function buildNavigationMenu(
+export const buildNavigationMenu = (
   group: FeatureGroup,
   userPermissions: Permission[],
   resourceSegment: string,
-): MenuItem[] {
+): MenuItem[] => {
   const features = appFeatures.filter((feature) => feature.navigation?.group === group)
 
   const sortedFeatures = features.sort((a, b) => {
@@ -686,17 +686,13 @@ export function buildNavigationMenu(
     return orderA - orderB
   })
 
-  const menuItems = sortedFeatures
+  return sortedFeatures
     .map((feature) => buildMenuItemFromFeature(feature, userPermissions, resourceSegment))
     .filter((item): item is MenuItem => Boolean(item))
-
-  return menuItems
 }
 
-export function getFeatureComponentStrategies(key: FeatureKey): FeatureComponentStrategy[] {
-  return appFeatures.find((feature) => feature.key === key)?.components ?? []
-}
+export const getFeatureComponentStrategies = (key: FeatureKey): FeatureComponentStrategy[] =>
+  appFeatures.find((feature) => feature.key === key)?.components ?? []
 
-export function getFeatureApiConfig(key: FeatureKey): FeatureApiConfig | undefined {
-  return appFeatures.find((feature) => feature.key === key)?.api
-}
+export const getFeatureApiConfig = (key: FeatureKey): FeatureApiConfig | undefined =>
+  appFeatures.find((feature) => feature.key === key)?.api

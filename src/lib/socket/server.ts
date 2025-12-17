@@ -2,6 +2,7 @@ import { Server as IOServer, type Socket } from "socket.io"
 import { NotificationKind, type Prisma } from "@prisma/client"
 import { prisma } from "@/lib/database"
 import { logger } from "@/lib/config"
+import { normalizeError } from "@/lib/utils/api-utils"
 import {
   getNotificationCache,
   mapNotificationToPayload,
@@ -45,7 +46,7 @@ const normalizeKind = (kind?: string | NotificationKind | null): NotificationKin
 const mapKindToClient = (kind: NotificationKind): SocketNotificationKind =>
   kind.toLowerCase() as SocketNotificationKind
 
-async function persistNotificationForUser({
+const persistNotificationForUser = async ({
   userId,
   title,
   description,
@@ -59,8 +60,8 @@ async function persistNotificationForUser({
   actionUrl?: string
   kind?: string | NotificationKind
   metadata?: JsonValue | null
-}) {
-  return prisma.notification.create({
+}) =>
+  prisma.notification.create({
     data: {
       userId,
       title,
@@ -70,9 +71,8 @@ async function persistNotificationForUser({
       metadata: metadata ?? undefined,
     },
   })
-}
 
-async function createNotificationsForRole(
+const createNotificationsForRole = async (
   roleName: string,
   notification: {
     title: string
@@ -81,7 +81,7 @@ async function createNotificationsForRole(
     kind?: string | NotificationKind
     metadata?: JsonValue | null
   },
-) {
+) => {
   const users = await prisma.user.findMany({
     where: {
       isActive: true,
@@ -130,7 +130,7 @@ async function createNotificationsForRole(
   return users.length
 }
 
-async function ensureUserNotificationsCached(userId: string) {
+const ensureUserNotificationsCached = async (userId: string) => {
   if (notificationCache.has(userId)) {
     logger.debug("Cache hit for user notifications", { userId })
     return
@@ -155,14 +155,26 @@ async function ensureUserNotificationsCached(userId: string) {
       logger.debug("No notifications found for user", { userId })
     }
   } catch (error) {
-    logger.error("Failed to load notifications for user", error instanceof Error ? error : new Error(String(error)))
+    logger.error("Failed to load notifications for user", normalizeError(error))
     notificationCache.set(userId, [])
   }
 }
 
-export async function setupSocketHandlers(
+/**
+ * Helper to acknowledge socket callback with error
+ */
+const ackError = (
+  ack: ((response: { success?: boolean; error?: string; messageId?: string; notificationId?: string }) => void) | undefined,
+  error: string
+): void => {
+  if (ack && typeof ack === "function") {
+    ack({ error })
+  }
+}
+
+export const setupSocketHandlers = async (
   io: IOServer<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>
-) {
+) => {
   logger.info("Setting up Socket.IO handlers", {
     action: "socket_handlers_setup",
   })
@@ -310,22 +322,9 @@ export async function setupSocketHandlers(
             hasFromUserId: !!fromUserId,
             hasToUserId: !!toUserId,
           })
-          // Acknowledge với error nếu có ack callback
-          if (ack && typeof ack === "function") {
-            ack({ error: "Invalid payload" })
-          }
+          ackError(ack, "Invalid payload")
           return
         }
-        const room = conversationRoom(fromUserId, toUserId)
-
-        logger.info("Received message", {
-          socketId,
-          fromUserId,
-          toUserId,
-          room,
-          contentLength: content.length,
-          hasParent: !!parentMessageId,
-        })
 
         // Validate content length
         if (content.length > 10000) {
@@ -335,25 +334,27 @@ export async function setupSocketHandlers(
             contentLength: content.length,
             maxLength: 10000,
           })
-          // Acknowledge với error nếu có ack callback
-          if (ack && typeof ack === "function") {
-            ack({ error: "Message content too long" })
-          }
+          ackError(ack, "Message content too long")
           return
         }
 
-        const getActionUrl = (recipientId: string, messageId: string, senderId: string) => {
-          const isFromAdmin = senderId.includes("admin") || senderId.startsWith("cmh8leuua")
+        const room = conversationRoom(fromUserId, toUserId)
+        logger.info("Received message", {
+          socketId,
+          fromUserId,
+          toUserId,
+          room,
+          contentLength: content.length,
+          hasParent: !!parentMessageId,
+        })
 
-          if (isFromAdmin) {
-            return `/parents/messages/${messageId}`
-          }
-          return `/admin/messages/${messageId}`
-        }
+        const isFromAdmin = fromUserId.includes("admin") || fromUserId.startsWith("cmh8leuua")
+        const getActionUrl = (messageId: string) =>
+          isFromAdmin ? `/parents/messages/${messageId}` : `/admin/messages/${messageId}`
 
         let persistedId: string | null = null
         let persistedPayload: SocketNotificationPayload | null = null
-        let actionUrl = getActionUrl(toUserId, parentMessageId ?? "", fromUserId)
+        let actionUrl = getActionUrl(parentMessageId ?? "")
         const messageMetadata: JsonObject = parentMessageId
           ? { fromUserId, parentMessageId }
           : { fromUserId }
@@ -375,7 +376,7 @@ export async function setupSocketHandlers(
             toUserId,
           })
         } catch (error) {
-          logger.error("Failed to persist notification", error instanceof Error ? error : new Error(String(error)))
+          logger.error("Failed to persist notification", normalizeError(error))
         }
 
         const notification: SocketNotificationPayload =
@@ -429,8 +430,8 @@ export async function setupSocketHandlers(
         // Acknowledge success sau khi đã hoàn thành tất cả operations
         // Socket.IO v4 retry mechanism - client sẽ retry nếu không nhận được ack
         if (ack && typeof ack === "function") {
-          ack({ 
-            success: true, 
+          ack({
+            success: true,
             messageId: persistedId ?? undefined,
             notificationId: notification.id,
           })
@@ -571,7 +572,7 @@ export async function setupSocketHandlers(
               targetUserId,
             })
           } catch (error) {
-            logger.error("Failed to persist system notification", error instanceof Error ? error : new Error(String(error)))
+            logger.error("Failed to persist system notification", normalizeError(error))
           }
         }
 
@@ -597,7 +598,7 @@ export async function setupSocketHandlers(
               userCount: count,
             })
           } catch (error) {
-            logger.error("Failed to persist notifications for role", error instanceof Error ? error : new Error(String(error)))
+            logger.error("Failed to persist notifications for role", normalizeError(error))
           }
         }
       },

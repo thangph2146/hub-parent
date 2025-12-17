@@ -34,32 +34,28 @@ type GlobalSocketState = typeof globalThis & {
 
 const globalState = globalThis as GlobalSocketState
 
-export function getSocketServer(): IOServer | undefined {
-  return globalState.ioServer
-}
+export const getSocketServer = (): IOServer | undefined => globalState.ioServer
 
-export function setSocketServer(io: IOServer) {
+export const setSocketServer = (io: IOServer) => {
   globalState.ioServer = io
 }
 
-export function getSocketInitPromise(): Promise<IOServer> | undefined {
-  return globalState.ioInitPromise
-}
+export const getSocketInitPromise = (): Promise<IOServer> | undefined => globalState.ioInitPromise
 
-export function setSocketInitPromise(promise: Promise<IOServer> | undefined) {
+export const setSocketInitPromise = (promise: Promise<IOServer> | undefined) => {
   globalState.ioInitPromise = promise
 }
 
-export function getNotificationCache(): Map<string, SocketNotificationPayload[]> {
+export const getNotificationCache = (): Map<string, SocketNotificationPayload[]> => {
   if (!globalState.notificationCache) {
     globalState.notificationCache = new Map()
   }
   return globalState.notificationCache
 }
 
-export function extractNotificationMetadata(
+export const extractNotificationMetadata = (
   metadata: Notification["metadata"],
-): Record<string, unknown> | null {
+): Record<string, unknown> | null => {
   if (!metadata) return null
   if (typeof metadata === "object") return metadata as Record<string, unknown>
   try {
@@ -69,9 +65,9 @@ export function extractNotificationMetadata(
   }
 }
 
-export function mapNotificationToPayload(
+export const mapNotificationToPayload = (
   notification: Notification,
-): SocketNotificationPayload {
+): SocketNotificationPayload => {
   const metadata = extractNotificationMetadata(notification.metadata)
   return {
     id: notification.id,
@@ -89,10 +85,10 @@ export function mapNotificationToPayload(
   }
 }
 
-export function storeNotificationInCache(
+export const storeNotificationInCache = (
   userId: string,
   notification: SocketNotificationPayload,
-) {
+) => {
   const cache = getNotificationCache()
   const items = cache.get(userId) ?? []
   items.unshift(notification)
@@ -102,11 +98,11 @@ export function storeNotificationInCache(
   cache.set(userId, items)
 }
 
-export function updateNotificationInCache(
+export const updateNotificationInCache = (
   userId: string,
   notificationId: string,
   updater: (notification: SocketNotificationPayload) => void,
-): SocketNotificationPayload | undefined {
+): SocketNotificationPayload | undefined => {
   const cache = getNotificationCache()
   const items = cache.get(userId)
   if (!items) return undefined
@@ -116,10 +112,10 @@ export function updateNotificationInCache(
   return target
 }
 
-export function removeNotificationFromCache(
+export const removeNotificationFromCache = (
   userId: string,
   notificationId: string,
-): boolean {
+): boolean => {
   const cache = getNotificationCache()
   const items = cache.get(userId)
   if (!items) return false

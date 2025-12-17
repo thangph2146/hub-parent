@@ -18,7 +18,7 @@ const LOG_ENABLED = isDevelopment ||
 /**
  * Lấy vị trí file từ stack trace
  */
-function getCallerInfo(): string {
+const getCallerInfo = (): string => {
   const stack = new Error().stack
   if (!stack) return "unknown"
 
@@ -70,18 +70,16 @@ function getCallerInfo(): string {
 /**
  * Format timestamp
  */
-function formatTimestamp(): string {
-  return new Date().toISOString()
-}
+const formatTimestamp = (): string => new Date().toISOString()
 
 /**
  * Format log message
  */
-function formatLog(
+const formatLog = (
   level: LogLevel,
   message: string,
   data?: Record<string, unknown> | Error | unknown,
-): void {
+): void => {
   const timestamp = formatTimestamp()
   const location = getCallerInfo()
   const levelEmoji = {
@@ -114,23 +112,14 @@ function formatLog(
   const fullMessage = `${prefix} ${locationStr} ${message}${dataStr}`
 
   // Log theo level
-  switch (level) {
-    case "info":
-      console.log(fullMessage)
-      break
-    case "success":
-      console.log(fullMessage)
-      break
-    case "warn":
-      console.warn(fullMessage)
-      break
-    case "error":
-      console.error(fullMessage)
-      break
-    case "debug":
-      console.debug(fullMessage)
-      break
+  const logMethods: Record<LogLevel, (message: string) => void> = {
+    info: console.log,
+    success: console.log,
+    warn: console.warn,
+    error: console.error,
+    debug: console.debug,
   }
+  logMethods[level](fullMessage)
 }
 
 /**

@@ -22,7 +22,7 @@ const isAbsoluteUrl = (path: string): boolean => ABSOLUTE_URL_PATTERN.test(path)
 /**
  * Thêm `/api` prefix cho relative path. Nếu path đã có prefix hoặc là absolute URL thì trả nguyên vẹn.
  */
-export function withApiBase(path: string): string {
+export const withApiBase = (path: string): string => {
   if (!path) {
     return apiPathConfig.basePath
   }
@@ -39,7 +39,7 @@ export function withApiBase(path: string): string {
 /**
  * Thêm `/api/admin` prefix cho các admin relative path.
  */
-export function withAdminApiBase(path: string): string {
+export const withAdminApiBase = (path: string): string => {
   if (!path) {
     return apiPathConfig.adminBasePath
   }
@@ -59,7 +59,7 @@ export function withAdminApiBase(path: string): string {
 /**
  * Bỏ `/api` prefix để tận dụng chung cho page routes.
  */
-export function stripApiBase(path: string): string {
+export const stripApiBase = (path: string): string => {
   if (!path || isAbsoluteUrl(path)) {
     return path
   }
@@ -73,7 +73,7 @@ export function stripApiBase(path: string): string {
 /**
  * Bỏ `/api/admin` prefix nhưng fallback sang stripApiBase nếu chỉ có `/api`.
  */
-export function stripAdminApiBase(path: string): string {
+export const stripAdminApiBase = (path: string): string => {
   if (!path || isAbsoluteUrl(path)) {
     return path
   }

@@ -9,7 +9,7 @@ import { buildNavigationMenu } from "./app-features"
 import { getResourceSegmentForRoles } from "@/lib/permissions"
 import type { MenuItem, MenuProject } from "./navigation-types"
 
-export function getMenuData(
+export const getMenuData = (
   userPermissions: Permission[],
   roles: Array<{ name: string }> = [],
   resourceSegmentOverride?: string,
@@ -17,7 +17,7 @@ export function getMenuData(
   navMain: MenuItem[]
   navSecondary: MenuItem[]
   projects: MenuProject[]
-} {
+} => {
   const resourceSegment = resourceSegmentOverride ?? getResourceSegmentForRoles(roles)
 
   const navMain = buildNavigationMenu("main", userPermissions, resourceSegment)

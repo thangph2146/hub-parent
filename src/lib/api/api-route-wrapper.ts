@@ -11,6 +11,7 @@ import { getApiRoutePermissions, type HttpMethod } from "@/lib/permissions"
 import { withSecurity } from "./security"
 import { logger, createErrorResponse } from "@/lib/config"
 import type { ApiRouteContext } from "./types"
+import { normalizeError, getErrorMessage } from "@/lib/utils/api-utils"
 
 export interface ApiRouteOptions {
   /** Required permissions (nếu không truyền, sẽ auto-detect từ config) */
@@ -25,10 +26,10 @@ export interface ApiRouteOptions {
   allowSuperAdmin?: boolean
 }
 
-export function createApiRoute(
+export const createApiRoute = (
   handler: (req: NextRequest, context: ApiRouteContext, ...args: unknown[]) => Promise<NextResponse>,
   options: ApiRouteOptions = {}
-) {
+) => {
   const {
     permissions,
     rateLimit = "default",
@@ -55,7 +56,7 @@ export function createApiRoute(
           logger.warn("Unauthorized API access attempt", {
             path: req.nextUrl.pathname,
             method: req.method,
-            error: error instanceof Error ? error.message : String(error),
+            error: getErrorMessage(error),
           })
           return createErrorResponse("Unauthorized", { status: 401 })
         }
@@ -144,7 +145,7 @@ export function createApiRoute(
       logger.error("API route error", {
         path: req.nextUrl.pathname,
         method: req.method,
-        error: error instanceof Error ? error : new Error(String(error)),
+        error: normalizeError(error),
       })
 
       const isProduction = process.env.NODE_ENV === "production"

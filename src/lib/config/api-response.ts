@@ -14,11 +14,11 @@ export interface ApiResponsePayload<T = unknown> {
 const DEFAULT_SUCCESS_MESSAGE = "Thao tác thành công"
 const DEFAULT_ERROR_MESSAGE = "Đã xảy ra lỗi"
 
-export function createSuccessResponse<T>(
+export const createSuccessResponse = <T>(
   data?: T,
   options?: { message?: string; status?: number }
-): NextResponse<ApiResponsePayload<T>> {
-  return NextResponse.json(
+): NextResponse<ApiResponsePayload<T>> =>
+  NextResponse.json(
     {
       success: true,
       message: options?.message || DEFAULT_SUCCESS_MESSAGE,
@@ -29,13 +29,12 @@ export function createSuccessResponse<T>(
       status: options?.status ?? 200,
     }
   )
-}
 
-export function createErrorResponse(
+export const createErrorResponse = (
   message?: string,
   options?: { status?: number; error?: string; data?: unknown }
-): NextResponse<ApiResponsePayload> {
-  return NextResponse.json(
+): NextResponse<ApiResponsePayload> =>
+  NextResponse.json(
     {
       success: false,
       message: message || DEFAULT_ERROR_MESSAGE,
@@ -46,4 +45,3 @@ export function createErrorResponse(
       status: options?.status ?? 400,
     }
   )
-}

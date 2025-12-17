@@ -11,11 +11,11 @@ import { getResourceMainRoute } from "@/lib/permissions/route-helpers"
  * @param key - Feature key
  * @returns Route path or null
  */
-export function getRouteFromFeature(key: string): string | null {
+export const getRouteFromFeature = (key: string): string | null => {
   const feature = appFeatures.find((f) => f.key === key)
   if (!feature?.navigation) return null
 
-  const nav = feature.navigation
+  const { navigation: nav } = feature
   if (nav.href) return nav.href
 
   if (nav.resourceName) {

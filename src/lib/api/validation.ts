@@ -6,32 +6,24 @@
 /**
  * Sanitize string input - loại bỏ các ký tự nguy hiểm
  */
-export function sanitizeString(input: string): string {
-  if (typeof input !== "string") {
-    return ""
-  }
-
+export const sanitizeString = (input: string): string => {
+  if (typeof input !== "string") return ""
   return input
     .trim()
-    // Loại bỏ các ký tự điều khiển
-    .replace(/[\x00-\x1F\x7F]/g, "")
-    // Loại bỏ các ký tự Unicode không hợp lệ
-    .replace(/[\uFFFE-\uFFFF]/g, "")
-    // Normalize whitespace
-    .replace(/\s+/g, " ")
+    .replace(/[\x00-\x1F\x7F]/g, "") // Loại bỏ các ký tự điều khiển
+    .replace(/[\uFFFE-\uFFFF]/g, "") // Loại bỏ các ký tự Unicode không hợp lệ
+    .replace(/\s+/g, " ") // Normalize whitespace
 }
 
 /**
  * Sanitize email input
  */
-export function sanitizeEmail(email: string): string {
-  return sanitizeString(email).toLowerCase()
-}
+export const sanitizeEmail = (email: string): string => sanitizeString(email).toLowerCase()
 
 /**
  * Validate email format
  */
-export function validateEmail(email: string): { valid: boolean; error?: string } {
+export const validateEmail = (email: string): { valid: boolean; error?: string } => {
   if (!email || typeof email !== "string") {
     return { valid: false, error: "Email là bắt buộc" }
   }
@@ -43,7 +35,6 @@ export function validateEmail(email: string): { valid: boolean; error?: string }
     return { valid: false, error: "Email không hợp lệ" }
   }
 
-  // Check length
   if (sanitized.length > 255) {
     return { valid: false, error: "Email quá dài (tối đa 255 ký tự)" }
   }
@@ -54,7 +45,7 @@ export function validateEmail(email: string): { valid: boolean; error?: string }
 /**
  * Validate password strength
  */
-export function validatePassword(password: string): { valid: boolean; error?: string } {
+export const validatePassword = (password: string): { valid: boolean; error?: string } => {
   if (!password || typeof password !== "string") {
     return { valid: false, error: "Mật khẩu là bắt buộc" }
   }
@@ -67,7 +58,6 @@ export function validatePassword(password: string): { valid: boolean; error?: st
     return { valid: false, error: "Mật khẩu quá dài (tối đa 128 ký tự)" }
   }
 
-  // Check for at least one letter and one number
   const hasLetter = /[a-zA-Z]/.test(password)
   const hasNumber = /\d/.test(password)
 
@@ -84,12 +74,12 @@ export function validatePassword(password: string): { valid: boolean; error?: st
 /**
  * Validate string length
  */
-export function validateStringLength(
+export const validateStringLength = (
   input: string,
   min?: number,
   max?: number,
   fieldName = "Trường này"
-): { valid: boolean; error?: string } {
+): { valid: boolean; error?: string } => {
   if (typeof input !== "string") {
     return { valid: false, error: `${fieldName} phải là chuỗi` }
   }
@@ -110,12 +100,12 @@ export function validateStringLength(
 /**
  * Validate integer
  */
-export function validateInteger(
+export const validateInteger = (
   input: unknown,
   min?: number,
   max?: number,
   fieldName = "Trường này"
-): { valid: boolean; error?: string; value?: number } {
+): { valid: boolean; error?: string; value?: number } => {
   if (typeof input === "string") {
     const parsed = parseInt(input, 10)
     if (isNaN(parsed)) {
@@ -142,13 +132,12 @@ export function validateInteger(
 /**
  * Validate UUID
  */
-export function validateUUID(uuid: string): { valid: boolean; error?: string } {
+export const validateUUID = (uuid: string): { valid: boolean; error?: string } => {
   if (!uuid || typeof uuid !== "string") {
     return { valid: false, error: "UUID là bắt buộc" }
   }
 
-  const uuidRegex =
-    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
   if (!uuidRegex.test(uuid)) {
     return { valid: false, error: "UUID không hợp lệ" }
@@ -163,24 +152,17 @@ export function validateUUID(uuid: string): { valid: boolean; error?: string } {
  * Format: thường bắt đầu với 'c' và có khoảng 25 ký tự
  * CUID có thể có format: c[base36]{24} hoặc tương tự
  */
-export function validateCUID(cuid: string): { valid: boolean; error?: string } {
+export const validateCUID = (cuid: string): { valid: boolean; error?: string } => {
   if (!cuid || typeof cuid !== "string") {
     return { valid: false, error: "CUID là bắt buộc" }
   }
 
-  // CUID format: 
-  // - Thường bắt đầu với 'c'
-  // - Độ dài từ 20-30 ký tự
-  // - Chỉ chứa chữ thường, số (base36: 0-9, a-z)
-  // - Không có ký tự đặc biệt nguy hiểm
   const trimmed = cuid.trim()
   
   if (trimmed.length < 20 || trimmed.length > 30) {
     return { valid: false, error: "CUID phải có độ dài từ 20-30 ký tự" }
   }
 
-  // Cho phép chữ thường, số, và một số ký tự an toàn
-  // CUID thường chỉ chứa base36 (0-9, a-z)
   const cuidRegex = /^[a-z0-9]{20,30}$/i
 
   if (!cuidRegex.test(trimmed)) {
@@ -194,25 +176,15 @@ export function validateCUID(cuid: string): { valid: boolean; error?: string } {
  * Validate ID - hỗ trợ cả UUID và CUID
  * Đây là function chính nên sử dụng cho Prisma IDs
  */
-export function validateID(id: string): { valid: boolean; error?: string } {
+export const validateID = (id: string): { valid: boolean; error?: string } => {
   if (!id || typeof id !== "string") {
     return { valid: false, error: "ID là bắt buộc" }
   }
 
-  // Kiểm tra UUID format
-  const uuidValidation = validateUUID(id)
-  if (uuidValidation.valid) {
+  if (validateUUID(id).valid || validateCUID(id).valid) {
     return { valid: true }
   }
 
-  // Kiểm tra CUID format
-  const cuidValidation = validateCUID(id)
-  if (cuidValidation.valid) {
-    return { valid: true }
-  }
-
-  // Nếu không phải UUID hay CUID, nhưng là string hợp lệ và có độ dài hợp lý
-  // Cho phép để tương thích với các ID format khác
   if (id.trim().length >= 10 && id.trim().length <= 50 && /^[a-zA-Z0-9_-]+$/.test(id)) {
     return { valid: true }
   }
@@ -223,12 +195,12 @@ export function validateID(id: string): { valid: boolean; error?: string } {
 /**
  * Validate array
  */
-export function validateArray<T>(
+export const validateArray = <T>(
   input: unknown,
   minLength?: number,
   maxLength?: number,
   fieldName = "Mảng"
-): { valid: boolean; error?: string; value?: T[] } {
+): { valid: boolean; error?: string; value?: T[] } => {
   if (!Array.isArray(input)) {
     return { valid: false, error: `${fieldName} phải là một mảng` }
   }
@@ -247,7 +219,7 @@ export function validateArray<T>(
 /**
  * Sanitize object - recursively sanitize all string values
  */
-export function sanitizeObject<T extends Record<string, unknown>>(obj: T): T {
+export const sanitizeObject = <T extends Record<string, unknown>>(obj: T): T => {
   const sanitized = { ...obj } as Record<string, unknown>
 
   for (const key in sanitized) {
@@ -269,10 +241,10 @@ export function sanitizeObject<T extends Record<string, unknown>>(obj: T): T {
 /**
  * Validate pagination parameters
  */
-export function validatePagination(params: {
+export const validatePagination = (params: {
   page?: unknown
   limit?: unknown
-}): { valid: boolean; error?: string; page?: number; limit?: number } {
+}): { valid: boolean; error?: string; page?: number; limit?: number } => {
   const pageValidation = validateInteger(params.page, 1, 1000, "Trang")
   if (!pageValidation.valid) {
     return pageValidation
@@ -293,11 +265,11 @@ export function validatePagination(params: {
 /**
  * Validate enum value
  */
-export function validateEnum<T extends string>(
+export const validateEnum = <T extends string>(
   value: unknown,
   allowedValues: readonly T[],
   fieldName = "Giá trị"
-): { valid: boolean; error?: string; value?: T } {
+): { valid: boolean; error?: string; value?: T } => {
   if (typeof value !== "string") {
     return { valid: false, error: `${fieldName} phải là chuỗi` }
   }
@@ -317,7 +289,7 @@ export function validateEnum<T extends string>(
  * Note: This is a basic check. Prisma already protects against SQL injection,
  * but this adds an extra layer of validation
  */
-export function containsSQLInjection(input: string): boolean {
+export const containsSQLInjection = (input: string): boolean => {
   if (typeof input !== "string") {
     return false
   }
@@ -336,12 +308,11 @@ export function containsSQLInjection(input: string): boolean {
 /**
  * Validate và sanitize search query
  */
-export function sanitizeSearchQuery(query: string, maxLength = 100): { valid: boolean; error?: string; value?: string } {
+export const sanitizeSearchQuery = (query: string, maxLength = 100): { valid: boolean; error?: string; value?: string } => {
   if (typeof query !== "string") {
     return { valid: false, error: "Truy vấn tìm kiếm phải là chuỗi" }
   }
 
-  // Check length
   if (query.length > maxLength) {
     return {
       valid: false,
@@ -349,21 +320,17 @@ export function sanitizeSearchQuery(query: string, maxLength = 100): { valid: bo
     }
   }
 
-  // Check for SQL injection patterns
   if (containsSQLInjection(query)) {
     return { valid: false, error: "Truy vấn tìm kiếm chứa ký tự không hợp lệ" }
   }
 
-  // Sanitize
-  const sanitized = sanitizeString(query)
-
-  return { valid: true, value: sanitized }
+  return { valid: true, value: sanitizeString(query) }
 }
 
 /**
  * Parse column filters from URL search params
  */
-export function parseColumnFilters(searchParams: URLSearchParams, maxLength = 100): Record<string, string> {
+export const parseColumnFilters = (searchParams: URLSearchParams, maxLength = 100): Record<string, string> => {
   const filters: Record<string, string> = {}
   searchParams.forEach((value, key) => {
     if (key.startsWith("filter[")) {
@@ -378,11 +345,11 @@ export function parseColumnFilters(searchParams: URLSearchParams, maxLength = 10
 /**
  * Build filters object from columnFilters with automatic mapping
  */
-export function buildFilters<T extends Record<string, unknown>>(
+export const buildFilters = <T extends Record<string, unknown>>(
   columnFilters: Record<string, string>,
   status: "active" | "deleted" | "all",
   filterKeys: (keyof T)[]
-): Partial<T> & { deleted?: boolean } {
+): Partial<T> & { deleted?: boolean } => {
   const filters = {} as Partial<T> & { deleted?: boolean }
   
   if (status === "deleted") filters.deleted = true
@@ -392,11 +359,7 @@ export function buildFilters<T extends Record<string, unknown>>(
     const value = columnFilters[key as string]
     if (value) {
       const keyStr = key as string
-      if (key === "approved") {
-        ;(filters as Record<string, unknown>)[keyStr] = value === "true"
-      } else {
-        ;(filters as Record<string, unknown>)[keyStr] = value
-      }
+      ;(filters as Record<string, unknown>)[keyStr] = key === "approved" ? value === "true" : value
     }
   }
   

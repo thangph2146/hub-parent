@@ -13,31 +13,59 @@
 import { appFeatures } from "@/lib/config/app-features"
 import { prismaResourceMap } from "@/lib/config/resource-map"
 import { stripApiBase } from "@/lib/config/api-paths"
-import { generateResourceApiRoutes, getResourceApiRoute, getResourceAdminApiRoutes } from "@/lib/permissions/api-route-helpers"
+import { generateResourceApiRoutes, getResourceApiRoute, getResourceAdminApiRoutes } from "@/lib/permissions/api-route-generators"
+import { withQuery } from "@/lib/utils"
 
 type ResourceRouteBuilder = ReturnType<typeof generateResourceApiRoutes>
 
-const featureResourceRoutes = appFeatures.reduce<Record<string, ResourceRouteBuilder>>((acc, feature) => {
-  if (feature.api?.type !== "resource") {
-    return acc
-  }
-  const resourceName = feature.api.resourceName ?? feature.key
-  const alias = feature.api.alias ?? feature.key
-  acc[alias] = generateResourceApiRoutes(resourceName)
-  return acc
-}, {})
+/**
+ * Helper to build resource action route with fallback
+ */
+const buildResourceActionRoute = (
+  resourceName: string,
+  method: "POST" | "GET" | "PUT" | "DELETE",
+  action: string,
+  id: string,
+  fallback: string
+): string => getResourceApiRoute(resourceName, method, action as never)?.replace("[id]", id) || fallback
 
-const getResourceRoutesOrFallback = (key: string, resourceName: string): ResourceRouteBuilder => {
-  return featureResourceRoutes[key] ?? generateResourceApiRoutes(resourceName)
+/**
+ * Helper to get admin route with fallback
+ */
+const getAdminRoute = (
+  resourceName: string,
+  finder: (routes: ReturnType<typeof getResourceAdminApiRoutes>) => string | undefined,
+  fallback: string
+): string => {
+  const routes = getResourceAdminApiRoutes(resourceName)
+  const route = finder(routes)
+  return route ? stripApiBase(route) : fallback
 }
 
-const prismaResourceRoutes = prismaResourceMap.reduce<Record<string, ResourceRouteBuilder>>((acc, resource) => {
-  if (resource.enabled === false) {
+const featureResourceRoutes = appFeatures.reduce<Record<string, ResourceRouteBuilder>>(
+  (acc, feature) => {
+    if (feature.api?.type === "resource") {
+      const resourceName = feature.api.resourceName ?? feature.key
+      const alias = feature.api.alias ?? feature.key
+      acc[alias] = generateResourceApiRoutes(resourceName)
+    }
     return acc
-  }
-  acc[resource.key] = getResourceRoutesOrFallback(resource.key, resource.resourceName)
-  return acc
-}, {})
+  },
+  {}
+)
+
+const getResourceRoutesOrFallback = (key: string, resourceName: string): ResourceRouteBuilder =>
+  featureResourceRoutes[key] ?? generateResourceApiRoutes(resourceName)
+
+const prismaResourceRoutes = prismaResourceMap.reduce<Record<string, ResourceRouteBuilder>>(
+  (acc, resource) => {
+    if (resource.enabled !== false) {
+      acc[resource.key] = getResourceRoutesOrFallback(resource.key, resource.resourceName)
+    }
+    return acc
+  },
+  {}
+)
 
 /**
  * API Routes cho từng feature
@@ -106,14 +134,17 @@ export const apiRoutes = {
   // Contact Requests - thêm custom actions
   contactRequests: {
     ...getResourceRoutesOrFallback("contactRequests", "contact-requests"),
-    assign: (id: string) => getResourceApiRoute("contact-requests", "POST", "assign")?.replace("[id]", id) || `/admin/contact-requests/${id}/assign`,
+    assign: (id: string) =>
+      buildResourceActionRoute("contact-requests", "POST", "assign", id, `/admin/contact-requests/${id}/assign`),
   },
 
   // Comments - thêm approve/unapprove
   comments: {
     ...getResourceRoutesOrFallback("comments", "comments"),
-    approve: (id: string) => getResourceApiRoute("comments", "POST", "approve")?.replace("[id]", id) || `/admin/comments/${id}/approve`,
-    unapprove: (id: string) => getResourceApiRoute("comments", "POST", "unapprove")?.replace("[id]", id) || `/admin/comments/${id}/unapprove`,
+    approve: (id: string) =>
+      buildResourceActionRoute("comments", "POST", "approve", id, `/admin/comments/${id}/approve`),
+    unapprove: (id: string) =>
+      buildResourceActionRoute("comments", "POST", "unapprove", id, `/admin/comments/${id}/unapprove`),
   },
 
   // Socket
@@ -129,26 +160,23 @@ export const apiRoutes = {
   },
   adminConversations: {
     list: (params?: { page?: number; limit?: number; search?: string; otherUserId?: string }) => {
-      // Get route từ route-config
-      const routes = getResourceAdminApiRoutes("conversations")
-      const adminRoute = routes.find((r: { method?: string; path: string }) => r.method === "GET")?.path
-      const route = adminRoute ? stripApiBase(adminRoute) : "/admin/conversations"
-      return withQuery(route, {
-        page: params?.page,
-        limit: params?.limit,
-        search: params?.search,
-        otherUserId: params?.otherUserId,
-      })
+      const route = getAdminRoute(
+        "conversations",
+        (routes) => routes.find((r) => r.method === "GET")?.path,
+        "/admin/conversations"
+      )
+      return withQuery(route, params)
     },
     markRead: (otherUserId: string) => `/admin/conversations/${otherUserId}/mark-read`,
   },
   adminUsers: {
     ...generateResourceApiRoutes("users"),
     search: (query: string) => {
-      // Get route từ route-config
-      const routes = getResourceAdminApiRoutes("users")
-      const adminRoute = routes.find((r: { path: string }) => r.path.includes("/search"))?.path
-      const route = adminRoute ? stripApiBase(adminRoute) : "/admin/users/search"
+      const route = getAdminRoute(
+        "users",
+        (routes) => routes.find((r) => r.path.includes("/search"))?.path,
+        "/admin/users/search"
+      )
       return withQuery(route, { q: query })
     },
   },
@@ -179,25 +207,3 @@ export const apiRoutes = {
 
 
 } as const
-
-/**
- * Helper để build query string từ params
- */
-export function buildQueryString(params: Record<string, string | number | boolean | undefined>): string {
-  const searchParams = new URLSearchParams()
-  Object.entries(params).forEach(([key, value]) => {
-    if (value !== undefined && value !== null && value !== "") {
-      searchParams.set(key, String(value))
-    }
-  })
-  return searchParams.toString()
-}
-
-export function withQuery(
-  path: string,
-  params?: Record<string, string | number | boolean | undefined>,
-): string {
-  if (!params) return path
-  const queryString = buildQueryString(params)
-  return queryString ? `${path}?${queryString}` : path
-}

@@ -75,7 +75,7 @@ const extractResponsePayload = <T>(response: AxiosResponse<T>): ApiResult<T> => 
   }
 }
 
-export async function requestJson<T = unknown>(input: string, init?: RequestInit): Promise<ApiResult<T>> {
+export const requestJson = async <T = unknown>(input: string, init?: RequestInit): Promise<ApiResult<T>> => {
   try {
     const { url, useBase } = normalizeUrl(input)
     const method = (init?.method || "GET").toUpperCase()
@@ -118,9 +118,7 @@ export async function requestJson<T = unknown>(input: string, init?: RequestInit
   }
 }
 
-export function toJsonBody(payload?: unknown): RequestInit {
-  return {
-    headers: { "Content-Type": "application/json" },
-    body: payload ? JSON.stringify(payload) : undefined,
-  }
-}
+export const toJsonBody = (payload?: unknown): RequestInit => ({
+  headers: { "Content-Type": "application/json" },
+  body: payload ? JSON.stringify(payload) : undefined,
+})

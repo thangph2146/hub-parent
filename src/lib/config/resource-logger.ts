@@ -12,6 +12,12 @@
 import { logger } from "./logger"
 
 /**
+ * Helper to exclude keys from object
+ */
+const excludeKeys = <T extends Record<string, unknown>>(obj: T, keys: string[]): Partial<T> =>
+  Object.fromEntries(Object.entries(obj).filter(([key]) => !keys.includes(key))) as Partial<T>
+
+/**
  * Action types cho resource operations
  */
 export type ResourceAction =
@@ -111,9 +117,7 @@ export const resourceLogger = {
       page: context.page,
       total: context.total,
       resourceId: context.resourceId,
-      ...Object.fromEntries(
-        Object.entries(context).filter(([key]) => !["resource", "action", "resourceId", "view", "page", "total"].includes(key))
-      ),
+      ...excludeKeys(context, ["resource", "action", "resourceId", "view", "page", "total"]),
     })
   },
 
@@ -161,11 +165,12 @@ export const resourceLogger = {
         tableStatus: structure.tableStatus,
       })
     } else if (dataType === "detail") {
+      const fields = Object.keys(structure.fields || {})
       logger.debug(`[${resource.toUpperCase()}] 📄 Detail Structure`, {
         resource,
         dataType,
-        fields: Object.keys(structure.fields || {}),
-        fieldCount: Object.keys(structure.fields || {}).length,
+        fields,
+        fieldCount: fields.length,
         data: structure.fields,
       })
     } else {
@@ -208,9 +213,7 @@ export const resourceLogger = {
       operation: context.operation,
       resourceId: context.resourceId,
       tags: context.tags,
-      ...Object.fromEntries(
-        Object.entries(context).filter(([key]) => !["resource", "operation", "resourceId", "tags"].includes(key))
-      ),
+      ...excludeKeys(context, ["resource", "operation", "resourceId", "tags"]),
     })
   },
 
@@ -224,9 +227,7 @@ export const resourceLogger = {
       action: context.action,
       resourceId: context.resourceId,
       payload: context.payload,
-      ...Object.fromEntries(
-        Object.entries(context).filter(([key]) => !["resource", "event", "action", "resourceId", "payload"].includes(key))
-      ),
+      ...excludeKeys(context, ["resource", "event", "action", "resourceId", "payload"]),
     })
   },
 }

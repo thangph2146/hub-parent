@@ -49,7 +49,7 @@ const VIETNAMESE_MAP: Record<string, string> = {
  * generateSlug("Hướng dẫn sử dụng") // "huong-dan-su-dung"
  * generateSlug("Bài viết về React") // "bai-viet-ve-react"
  */
-export function generateSlug(text: string): string {
+export const generateSlug = (text: string): string => {
   if (!text || typeof text !== "string") return ""
 
   let slug = text.trim()

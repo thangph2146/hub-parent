@@ -37,7 +37,7 @@ interface ResourceConfig {
 /**
  * Generate standard admin API routes cho resource với soft delete
  */
-function generateStandardAdminApiRoutes(name: string, permissions: ResourceConfig["permissions"]): Array<{ path: string; method: HttpMethod; permissions: Permission[] }> {
+const generateStandardAdminApiRoutes = (name: string, permissions: ResourceConfig["permissions"]): Array<{ path: string; method: HttpMethod; permissions: Permission[] }> => {
   // Bulk và hard-delete routes chấp nhận cả manage và delete permissions
   const bulkPermissions = permissions.manage 
     ? [permissions.manage, permissions.delete] 
@@ -58,7 +58,7 @@ function generateStandardAdminApiRoutes(name: string, permissions: ResourceConfi
 /**
  * Generate CRUD routes cho một resource
  */
-function generateResourceRoutes(config: ResourceConfig): RoutePermissionConfig[] {
+const generateResourceRoutes = (config: ResourceConfig): RoutePermissionConfig[] => {
   const { name, permissions, customPages = [], customApi = [], adminApi = false } = config
   const routes: RoutePermissionConfig[] = []
 

@@ -7,12 +7,13 @@
 import { NextRequest } from "next/server"
 import { ApplicationError, NotFoundError } from "@/features/admin/resources/server"
 import type { ApiRouteContext } from "./types"
-import { createErrorResponse } from "@/lib/config"
+import { createErrorResponse, logger } from "@/lib/config"
+import { normalizeError } from "@/lib/utils/api-utils"
 
 /**
  * Parse request body with error handling
  */
-export async function parseRequestBody(req: NextRequest): Promise<Record<string, unknown>> {
+export const parseRequestBody = async (req: NextRequest): Promise<Record<string, unknown>> => {
   try {
     return await req.json()
   } catch {
@@ -23,9 +24,9 @@ export async function parseRequestBody(req: NextRequest): Promise<Record<string,
 /**
  * Extract params from dynamic route args
  */
-export async function extractParams<T extends Record<string, string>>(
+export const extractParams = async <T extends Record<string, string>>(
   args: unknown[]
-): Promise<T> {
+): Promise<T> => {
   const { params } = (args[0] as { params: Promise<T> }) || {}
   if (!params) throw new ApplicationError("Invalid route parameters", 400)
   return await params
@@ -34,7 +35,7 @@ export async function extractParams<T extends Record<string, string>>(
 /**
  * Get user ID from context
  */
-export function getUserId(context: ApiRouteContext): string {
+export const getUserId = (context: ApiRouteContext): string => {
   const userId = context.session?.user?.id
   if (!userId) throw new ApplicationError("Unauthorized", 401)
   return userId
@@ -43,39 +44,34 @@ export function getUserId(context: ApiRouteContext): string {
 /**
  * Create auth context for mutations
  */
-export function createAuthContext(context: ApiRouteContext, userId: string) {
-  return {
-    actorId: userId,
-    permissions: context.permissions,
-    roles: context.roles,
-  }
-}
+export const createAuthContext = (context: ApiRouteContext, userId: string) => ({
+  actorId: userId,
+  permissions: context.permissions,
+  roles: context.roles,
+})
 
 /**
  * Handle API errors with proper response
  */
-export function handleApiError(
+export const handleApiError = (
   error: unknown,
   defaultMessage: string,
   defaultStatus = 500
-) {
+) => {
   if (error instanceof ApplicationError) {
     return createErrorResponse(error.message, { status: error.status || defaultStatus })
   }
   if (error instanceof NotFoundError) {
     return createErrorResponse(error.message, { status: 404 })
   }
-  console.error("API error:", error)
+  logger.error("API error", normalizeError(error))
   return createErrorResponse(defaultMessage, { status: defaultStatus })
 }
 
 /**
  * Validate required fields
  */
-export function validateRequired(
-  body: Record<string, unknown>,
-  fields: string[]
-): void {
+export const validateRequired = (body: Record<string, unknown>, fields: string[]): void => {
   for (const field of fields) {
     if (body[field] === undefined || body[field] === null || body[field] === "") {
       throw new ApplicationError(`${field} là bắt buộc`, 400)
@@ -86,21 +82,17 @@ export function validateRequired(
 /**
  * Extract string value from body
  */
-export function getStringValue(
-  body: Record<string, unknown>,
-  key: string
-): string | undefined {
-  return typeof body[key] === "string" ? body[key] : undefined
-}
+export const getStringValue = (body: Record<string, unknown>, key: string): string | undefined =>
+  typeof body[key] === "string" ? body[key] : undefined
 
 /**
  * Extract array value from body
  */
-export function getArrayValue<T>(
+export const getArrayValue = <T>(
   body: Record<string, unknown>,
   key: string,
   validator?: (item: unknown) => item is T
-): T[] {
+): T[] => {
   if (!Array.isArray(body[key])) return []
   return validator ? body[key].filter(validator) : (body[key] as T[])
 }

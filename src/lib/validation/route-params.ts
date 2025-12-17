@@ -14,10 +14,10 @@ import { validateID } from "../api/validation"
  * @param paramName - Name of the param to extract (default: "id")
  * @returns Validated ID hoặc null nếu invalid
  */
-export async function extractRouteId(
+export const extractRouteId = async (
   params: Promise<Record<string, unknown>>,
   paramName: string = "id"
-): Promise<string | null> {
+): Promise<string | null> => {
   const resolvedParams = await params
   const value = resolvedParams[paramName]
 
@@ -25,7 +25,6 @@ export async function extractRouteId(
     return null
   }
 
-  // Use existing validateID function
   const validation = validateID(value)
   if (!validation.valid) {
     return null
@@ -41,16 +40,8 @@ export async function extractRouteId(
  * @param _resourceName - Name of the resource (for error message, reserved for future use)
  * @returns Validated ID hoặc null nếu invalid
  */
-export function validateRouteId(id: string | null, _resourceName: string = "Tài nguyên"): string | null {
-  if (!id) {
-    return null
-  }
-
-  const validation = validateID(id)
-  if (!validation.valid) {
-    return null
-  }
-
+export const validateRouteId = (id: string | null, _resourceName: string = "Tài nguyên"): string | null => {
+  if (!id || !validateID(id).valid) return null
   return id.trim()
 }
 

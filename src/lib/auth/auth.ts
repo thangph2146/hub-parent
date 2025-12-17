@@ -12,6 +12,7 @@ import { prisma } from "@/lib/database"
 import { DEFAULT_ROLES } from "@/lib/permissions"
 import { NotificationKind } from "@prisma/client"
 import { logger } from "@/lib/config"
+import { getErrorMessage } from "@/lib/utils/api-utils"
 import {
   createNotificationForSuperAdmins,
   createNotificationForUser,
@@ -20,8 +21,8 @@ import {
 
 type DbUser = Awaited<ReturnType<typeof getUserWithRoles>>
 
-async function getUserWithRoles(email: string) {
-  return prisma.user.findUnique({
+const getUserWithRoles = async (email: string) =>
+  prisma.user.findUnique({
     where: { email },
     include: {
       userRoles: {
@@ -31,9 +32,8 @@ async function getUserWithRoles(email: string) {
       },
     },
   })
-}
 
-async function _getOrCreateDefaultRole() {
+const _getOrCreateDefaultRole = async () => {
   let defaultRole = await prisma.role.findUnique({
     where: { name: DEFAULT_ROLES.USER.name },
   })
@@ -52,7 +52,7 @@ async function _getOrCreateDefaultRole() {
   return defaultRole
 }
 
-async function getOrCreateParentRole() {
+const getOrCreateParentRole = async () => {
   let parentRole = await prisma.role.findUnique({
     where: { name: DEFAULT_ROLES.PARENT.name },
   })
@@ -71,7 +71,7 @@ async function getOrCreateParentRole() {
   return parentRole
 }
 
-async function createUserFromOAuth({
+const createUserFromOAuth = async ({
   email,
   name,
   image,
@@ -79,7 +79,7 @@ async function createUserFromOAuth({
   email: string
   name?: string | null
   image?: string | null
-}): Promise<DbUser> {
+}): Promise<DbUser> => {
   // Tìm hoặc tạo parent role cho user đăng ký/đăng nhập bằng Google
   const parentRole = await getOrCreateParentRole()
 
@@ -106,12 +106,11 @@ async function createUserFromOAuth({
   return getUserWithRoles(email)
 }
 
-function mapUserAuthPayload(user: DbUser | null) {
+const mapUserAuthPayload = (user: DbUser | null) => {
   if (!user) {
     return null
   }
 
-  // Đảm bảo user luôn có ít nhất một role
   if (!user.userRoles || user.userRoles.length === 0) {
     return null
   }
@@ -135,8 +134,7 @@ function mapUserAuthPayload(user: DbUser | null) {
 
 // Validate required environment variables
 // Chỉ validate khi NextAuth được khởi tạo (lazy validation)
-function validateAuthConfig() {
-  // Chỉ check trong runtime (server-side)
+const validateAuthConfig = () => {
   if (typeof window === "undefined") {
     if (!process.env.NEXTAUTH_SECRET) {
       logger.warn("⚠️  NEXTAUTH_SECRET is missing! Authentication may not work properly.")
@@ -231,7 +229,7 @@ export const authConfig: NextAuthConfig = {
           return authPayload
         } catch (error) {
           logger.error("Error in authorize callback", {
-            error: error instanceof Error ? error.message : String(error),
+            error: getErrorMessage(error),
             stack: error instanceof Error ? error.stack : undefined,
           })
           // Return null thay vì throw để NextAuth có thể xử lý lỗi đúng cách

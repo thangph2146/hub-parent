@@ -19,11 +19,8 @@ export interface NotificationCountParams {
  * QUAN TRỌNG: Với superadmin@hub.edu.vn, chỉ đếm SYSTEM notifications của chính user này
  * (không đếm SYSTEM notifications của user khác) để nhất quán với logic "mark all as read"
  */
-export function buildNotificationWhereClause(params: NotificationCountParams): Prisma.NotificationWhereInput {
+export const buildNotificationWhereClause = (params: NotificationCountParams): Prisma.NotificationWhereInput => {
   const { userId } = params
-
-  // Tất cả users (kể cả superadmin@hub.edu.vn): chỉ đếm notifications của chính user này
-  // Bao gồm cả SYSTEM và personal notifications của user này
   return {
     userId,
   }
@@ -33,23 +30,20 @@ export function buildNotificationWhereClause(params: NotificationCountParams): P
  * Build where clause cho unread notifications count
  * CRITICAL: Logic này phải được sử dụng ở TẤT CẢ các API endpoints để đảm bảo consistency
  */
-export function buildUnreadNotificationWhereClause(params: NotificationCountParams): Prisma.NotificationWhereInput {
-  return {
-    ...buildNotificationWhereClause(params),
-    isRead: false,
-  }
-}
+export const buildUnreadNotificationWhereClause = (params: NotificationCountParams): Prisma.NotificationWhereInput => ({
+  ...buildNotificationWhereClause(params),
+  isRead: false,
+})
 
 /**
  * Build where clause cho mark all as read - CHỈ mark notifications của user này
  * QUAN TRỌNG: Khác với buildUnreadNotificationWhereClause, function này LUÔN chỉ mark notifications của user này
  * (không mark tất cả SYSTEM notifications của tất cả users, ngay cả với superadmin@hub.edu.vn)
  */
-export function buildOwnUnreadNotificationWhereClause(params: NotificationCountParams): Prisma.NotificationWhereInput {
+export const buildOwnUnreadNotificationWhereClause = (params: NotificationCountParams): Prisma.NotificationWhereInput => {
   const { userId } = params
-  
   return {
-    userId, // CHỈ notifications của user này
+    userId,
     isRead: false,
   }
 }
@@ -58,7 +52,7 @@ export function buildOwnUnreadNotificationWhereClause(params: NotificationCountP
  * Count unread notifications với detailed breakdown
  * Trả về cả total count và breakdown để debug
  */
-export async function countUnreadNotificationsWithBreakdown(params: NotificationCountParams) {
+export const countUnreadNotificationsWithBreakdown = async (params: NotificationCountParams) => {
   const { userId, isProtectedSuperAdmin } = params
 
   const unreadWhere = buildUnreadNotificationWhereClause(params)
