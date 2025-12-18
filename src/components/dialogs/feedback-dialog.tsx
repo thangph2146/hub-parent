@@ -5,6 +5,7 @@ import { CheckCircle2, XCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { cn } from "@/lib/utils"
+import { typography, headerConfig } from "@/lib/typography"
 
 export type FeedbackVariant = "success" | "error"
 
@@ -37,11 +38,11 @@ export function FeedbackDialog({
           <div className="flex items-start gap-3">
             <Icon className={cn("size-6 flex-shrink-0", iconClass)} />
             <div className="flex-1">
-              <DialogPrimitive.Title className="text-foreground text-lg font-semibold">
+              <DialogPrimitive.Title className={`text-foreground ${headerConfig.subsection.className}`}>
                 {title}
               </DialogPrimitive.Title>
               {description ? (
-                <DialogPrimitive.Description className="text-muted-foreground mt-1 text-sm">
+                <DialogPrimitive.Description className={`text-muted-foreground mt-1 ${typography.body.medium}`}>
                   {description}
                 </DialogPrimitive.Description>
               ) : null}
@@ -50,11 +51,11 @@ export function FeedbackDialog({
 
           {details ? (
             <div className="mt-4">
-              <span className="text-foreground mb-2 block text-sm font-medium">
+              <span className={`text-foreground mb-2 block ${typography.body.medium} font-medium`}>
                 Chi tiết
               </span>
-              <ScrollArea className="max-h-48 rounded-md border border-border/60 bg-muted/30 p-3 text-sm text-muted-foreground">
-                <pre className="whitespace-pre-wrap break-words">{details}</pre>
+              <ScrollArea className={`max-h-48 rounded-md border border-border/60 bg-muted/30 p-3 ${typography.body.medium} text-muted-foreground`}>
+                <pre className={`${typography.body.small} whitespace-pre-wrap break-words`}>{details}</pre>
               </ScrollArea>
             </div>
           ) : null}

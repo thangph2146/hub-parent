@@ -16,6 +16,7 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+import { typography } from "@/lib/typography"
 import type { Permission } from "@/lib/permissions"
 import type { ReactNode } from "react"
 import { useResourceSegment } from "@/hooks/use-resource-segment"
@@ -104,9 +105,9 @@ export function AppSidebar({ navMainSlot, ...props }: AppSidebarProps) {
                     <div className="bg-white flex aspect-square size-8 items-center justify-center rounded-lg p-1" suppressHydrationWarning>
                       <Logo className="size-8 text-sidebar-primary-foreground" />
                     </div>
-                    <div className="grid flex-1 text-left text-sm leading-tight" suppressHydrationWarning>
+                    <div className={`grid flex-1 text-left ${typography.body.medium} leading-tight`} suppressHydrationWarning>
                       <span className="truncate font-medium" suppressHydrationWarning>{brandingName}</span>
-                      <span className="truncate text-xs" suppressHydrationWarning>{brandingDescription}</span>
+                      <span className={`truncate ${typography.body.small}`} suppressHydrationWarning>{brandingDescription}</span>
                     </div>
                   </a>
                 </SidebarMenuButton>
@@ -114,7 +115,7 @@ export function AppSidebar({ navMainSlot, ...props }: AppSidebarProps) {
               <TooltipContent side="right" sideOffset={8}>
                 <div className="space-y-1">
                   <p className="font-medium">{brandingName}</p>
-                  <p className="text-xs opacity-90">{brandingDescription}</p>
+                  <p className={`${typography.body.small} opacity-90`}>{brandingDescription}</p>
                 </div>
               </TooltipContent>
             </Tooltip>

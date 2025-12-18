@@ -17,6 +17,7 @@ import {
 import { Input } from "@/components/ui/input"
 import Image from "next/image"
 import Link from "next/link"
+import { headerConfig, typography } from "@/lib/typography"
 
 export function SignUpForm({
   className,
@@ -95,13 +96,13 @@ export function SignUpForm({
           <form onSubmit={handleSubmit} className="p-6 md:p-8">
             <FieldGroup>
               <div className="flex flex-col items-center gap-2 text-center">
-                <h1 className="text-2xl font-bold">Tạo tài khoản</h1>
-                <p className="text-muted-foreground text-balance">
+                <h1 className={headerConfig.section.className}>Tạo tài khoản</h1>
+                <p className={`${typography.body.muted.medium} text-balance`}>
                   Đăng ký tài khoản của bạn
                 </p>
               </div>
               {error && (
-                <div className="rounded-lg bg-destructive/10 p-3 text-sm text-destructive">
+                <div className={`rounded-lg bg-destructive/10 p-3 ${typography.body.medium} text-destructive`}>
                   {error}
                 </div>
               )}

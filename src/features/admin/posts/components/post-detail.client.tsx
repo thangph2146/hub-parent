@@ -36,6 +36,7 @@ import {
 import { resourceLogger } from "@/lib/config/resource-logger";
 import { usePermissions } from "@/hooks/use-permissions";
 import { PERMISSIONS } from "@/lib/permissions";
+import { typography } from "@/lib/typography";
 
 export interface PostDetailData {
   id: string;
@@ -138,11 +139,11 @@ export const PostDetailClient = ({
               )}
 
               <div className="space-y-2">
-                <h2 className="text-3xl font-semibold text-foreground leading-tight">
+                <h2 className={`${typography.heading.h2} leading-tight`}>
                   {postData.title || "Chưa có tiêu đề"}
                 </h2>
                 {postData.excerpt && (
-                  <p className="text-base leading-relaxed text-muted-foreground whitespace-pre-wrap">
+                  <p className={`${typography.body.large} leading-relaxed text-muted-foreground whitespace-pre-wrap`}>
                     {postData.excerpt}
                   </p>
                 )}
@@ -151,17 +152,17 @@ export const PostDetailClient = ({
 
             <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
               <FieldItem icon={Hash} label="Slug">
-                <div className="text-sm font-medium text-foreground font-mono break-all">
+                <div className={`${typography.body.medium} font-medium text-foreground font-mono break-all`}>
                   {postData.slug || "---"}
                 </div>
               </FieldItem>
 
               <FieldItem icon={User} label="Tác giả">
                 <div className="space-y-0.5">
-                  <div className="text-sm font-medium text-foreground">
+                  <div className={`${typography.body.medium} font-medium text-foreground`}>
                     {postData.author.name || "Không rõ tên"}
                   </div>
-                  <div className="text-xs text-muted-foreground line-clamp-1">
+                  <div className={`${typography.body.muted.small} line-clamp-1`}>
                     {postData.author.email}
                   </div>
                 </div>
@@ -173,7 +174,7 @@ export const PostDetailClient = ({
                     {postData.categories.map((category) => (
                       <span
                         key={category.id}
-                        className="inline-flex items-center rounded-md bg-primary/10 px-2 py-1 text-xs font-medium text-primary"
+                        className={`inline-flex items-center rounded-md bg-primary/10 px-2 py-1 ${typography.body.small} font-medium text-primary`}
                       >
                         {category.name}
                       </span>
@@ -188,7 +189,7 @@ export const PostDetailClient = ({
                     {postData.tags.map((tag) => (
                       <span
                         key={tag.id}
-                        className="inline-flex items-center rounded-md bg-secondary/60 px-2 py-1 text-xs font-medium text-secondary-foreground"
+                        className={`inline-flex items-center rounded-md bg-secondary/60 px-2 py-1 ${typography.body.small} font-medium text-secondary-foreground`}
                       >
                         {tag.name}
                       </span>
@@ -205,14 +206,14 @@ export const PostDetailClient = ({
                   {postData.published ? (
                     <>
                       <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-500" />
-                      <span className="text-sm font-medium text-foreground">
+                      <span className={`${typography.body.medium} font-medium text-foreground`}>
                         Đã xuất bản
                       </span>
                     </>
                   ) : (
                     <>
                       <EyeOff className="h-4 w-4 text-gray-600 dark:text-gray-400" />
-                      <span className="text-sm font-medium text-foreground">
+                      <span className={`${typography.body.medium} font-medium text-foreground`}>
                         Bản nháp
                       </span>
                     </>
@@ -222,7 +223,7 @@ export const PostDetailClient = ({
 
               {postData.publishedAt && (
                 <FieldItem icon={Calendar} label="Ngày xuất bản">
-                  <div className="text-sm font-medium text-foreground">
+                  <div className={`${typography.body.medium} font-medium text-foreground`}>
                     {formatDateVi(postData.publishedAt)}
                   </div>
                 </FieldItem>
@@ -231,20 +232,20 @@ export const PostDetailClient = ({
 
             <div className="grid gap-6 grid-cols-1 sm:grid-cols-3">
               <FieldItem icon={Clock} label="Ngày tạo">
-                <div className="text-sm font-medium text-foreground">
+                <div className={`${typography.body.medium} font-medium text-foreground`}>
                   {formatDateVi(postData.createdAt)}
                 </div>
               </FieldItem>
 
               <FieldItem icon={Clock} label="Cập nhật lần cuối">
-                <div className="text-sm font-medium text-foreground">
+                <div className={`${typography.body.medium} font-medium text-foreground`}>
                   {formatDateVi(postData.updatedAt)}
                 </div>
               </FieldItem>
 
               {postData.deletedAt && (
                 <FieldItem icon={Clock} label="Ngày xóa">
-                  <div className="text-sm font-medium text-rose-600 dark:text-rose-400">
+                  <div className={`${typography.body.medium} font-medium text-rose-600 dark:text-rose-400`}>
                     {formatDateVi(postData.deletedAt)}
                   </div>
                 </FieldItem>
@@ -284,7 +285,7 @@ export const PostDetailClient = ({
               <Editor editorSerializedState={editorState} readOnly={true} />
             ) : (
               <Card className="border border-border/50 bg-card p-5">
-                <div className="text-sm text-muted-foreground">
+                <div className={typography.body.muted.medium}>
                   Không có nội dung hoặc định dạng không hợp lệ
                 </div>
               </Card>

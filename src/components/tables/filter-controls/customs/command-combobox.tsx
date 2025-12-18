@@ -17,6 +17,7 @@ import {
     CommandList,
 } from "@/components/ui/command"
 import { useClientOnly } from "@/hooks/use-client-only"
+import { typography } from "@/lib/typography"
 import type { ColumnFilterControlProps } from "../types"
 
 export function CommandCombobox<T extends object = object>({
@@ -63,10 +64,10 @@ export function CommandCombobox<T extends object = object>({
             <Button
                 variant="outline"
                 role="combobox"
-                className={cn("h-7 sm:h-8 w-full justify-between text-xs font-normal", !value && "text-muted-foreground")}
+                className={cn(`h-7 sm:h-8 w-full justify-between ${typography.body.small} font-normal`, !value && "text-muted-foreground")}
                 disabled={true}
             >
-                <span className="truncate text-xs">
+                <span className={`truncate ${typography.body.small}`}>
                     {selectedOption ? selectedOption.label : column.filter.placeholder ?? "Chọn..."}
                 </span>
                 <ChevronsUpDown className="ml-1 sm:ml-2 h-3 w-3 shrink-0 opacity-50" />
@@ -82,10 +83,10 @@ export function CommandCombobox<T extends object = object>({
                     role="combobox"
                     aria-expanded={open}
                     aria-controls={filterId}
-                    className={cn("h-7 sm:h-8 w-full justify-between text-xs font-normal", !value && "text-muted-foreground")}
+                    className={cn(`h-7 sm:h-8 w-full justify-between ${typography.body.small} font-normal`, !value && "text-muted-foreground")}
                     disabled={disabled}
                 >
-                    <span className="truncate text-xs">
+                    <span className={`truncate ${typography.body.small}`}>
                         {selectedOption ? selectedOption.label : column.filter.placeholder ?? "Chọn..."}
                     </span>
                     <ChevronsUpDown className="ml-1 sm:ml-2 h-3 w-3 shrink-0 opacity-50" />

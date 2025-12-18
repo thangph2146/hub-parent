@@ -13,6 +13,7 @@ import { formatDateVi } from "../utils"
 import { useResourceNavigation, useResourceDetailData, useResourceDetailLogger } from "@/features/admin/resources/hooks"
 import { usePermissions } from "@/hooks/use-permissions"
 import { PERMISSIONS } from "@/lib/permissions"
+import { typography } from "@/lib/typography"
 
 export interface TagDetailData {
   id: string
@@ -70,26 +71,26 @@ export const TagDetailClient = ({ tagId, tag, backUrl = "/admin/tags" }: TagDeta
           <div className="grid gap-6 grid-cols-1 sm:grid-cols-2">
             {/* Name & Slug */}
             <FieldItem icon={Tag} label="Tên thẻ tag">
-              <div className="text-sm font-medium text-foreground">
+              <div className={`${typography.body.medium}`}>
                 {tagData.name || "—"}
               </div>
             </FieldItem>
 
             <FieldItem icon={Hash} label="Slug">
-              <div className="text-sm font-medium text-foreground font-mono">
+              <div className={`${typography.body.medium} font-mono`}>
                 {tagData.slug || "—"}
               </div>
             </FieldItem>
 
             {/* Timestamps */}
             <FieldItem icon={Calendar} label="Ngày tạo">
-              <div className="text-sm font-medium text-foreground">
+              <div className={`${typography.body.medium}`}>
                 {tagData.createdAt ? formatDateVi(tagData.createdAt) : "—"}
               </div>
             </FieldItem>
 
             <FieldItem icon={Clock} label="Cập nhật lần cuối">
-              <div className="text-sm font-medium text-foreground">
+              <div className={`${typography.body.medium}`}>
                 {tagData.updatedAt ? formatDateVi(tagData.updatedAt) : "—"}
               </div>
             </FieldItem>

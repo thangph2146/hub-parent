@@ -1,4 +1,5 @@
 import { useMemo } from "react"
+import { typography } from "@/lib/typography"
 import { Switch } from "@/components/ui/switch"
 import type { DataTableColumn } from "@/components/tables"
 import { useDynamicFilterOptions } from "@/features/admin/resources/hooks/use-dynamic-filter-options"
@@ -79,13 +80,13 @@ export const useRoleColumns = ({ togglingRoles, canManage, onToggleStatus }: Use
               {row.permissions.slice(0, 3).map((perm) => (
                 <span
                   key={perm}
-                  className="rounded-full bg-muted px-2 py-1 text-xs text-muted-foreground"
+                  className={`rounded-full bg-muted px-2 py-1 ${typography.body.muted.small}`}
                 >
                   {perm.split(":")[0]}
                 </span>
               ))}
               {row.permissions.length > 3 && (
-                <span className="rounded-full bg-muted px-2 py-1 text-xs text-muted-foreground">
+                <span className={`rounded-full bg-muted px-2 py-1 ${typography.body.muted.small}`}>
                   +{row.permissions.length - 3}
                 </span>
               )}
@@ -111,7 +112,7 @@ export const useRoleColumns = ({ togglingRoles, canManage, onToggleStatus }: Use
         headerClassName: "w-[120px]",
         cell: (row) =>
           row.deletedAt ? (
-            <span className="inline-flex min-w-[88px] items-center justify-center rounded-full bg-rose-100 px-2 py-1 text-xs font-medium text-rose-700">
+            <span className={`inline-flex min-w-[88px] items-center justify-center rounded-full bg-rose-100 px-2 py-1 ${typography.body.small} font-medium text-rose-700`}>
               Đã xóa
             </span>
           ) : (
@@ -122,7 +123,7 @@ export const useRoleColumns = ({ togglingRoles, canManage, onToggleStatus }: Use
                 onCheckedChange={(checked) => onToggleStatus(row, checked)}
                 aria-label={row.isActive ? "Vô hiệu hóa vai trò" : "Kích hoạt vai trò"}
               />
-              <span className="text-xs text-muted-foreground">
+              <span className={typography.body.muted.small}>
                 {row.isActive ? "Hoạt động" : "Tạm khóa"}
               </span>
             </div>

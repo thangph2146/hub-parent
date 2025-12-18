@@ -1,5 +1,7 @@
 "use client"
 
+import { typography } from "@/lib/typography"
+
 import { useIsMobile } from "@/hooks/use-mobile"
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable"
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet"
@@ -489,7 +491,7 @@ export const ChatTemplate = ({
                 >
                   <Menu className="h-4 w-4" />
                 </Button>
-                <h2 className="text-lg font-semibold">Chats</h2>
+                <h2 className={`${typography.heading.h4} font-semibold`}>Chats</h2>
               </div>
               <div className="flex-1 flex items-center justify-center">
                 <EmptyState variant="no-chat" />

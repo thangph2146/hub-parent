@@ -32,6 +32,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { cn } from "@/lib/utils"
 import { renderFieldInput } from "./form-fields"
 import { applyResourceSegmentToPath } from "@/lib/permissions"
+import { typography } from "@/lib/typography"
 
 export interface ResourceFormField<T = unknown> {
   name: keyof T | string
@@ -490,10 +491,10 @@ export const ResourceForm = <T extends Record<string, unknown>>({
         {(sectionInfo?.title || sectionInfo?.description) && (
           <div className="space-y-1.5 pb-2 border-b border-border/50">
             {sectionInfo.title && (
-              <h3 className="text-base font-semibold">{sectionInfo.title}</h3>
+              <h3 className={`${typography.heading.h4} font-semibold`}>{sectionInfo.title}</h3>
             )}
             {sectionInfo.description && (
-              <p className="text-sm text-muted-foreground">{sectionInfo.description}</p>
+              <p className={typography.body.muted.medium}>{sectionInfo.description}</p>
             )}
           </div>
         )}
@@ -512,7 +513,7 @@ export const ResourceForm = <T extends Record<string, unknown>>({
   const formContent = (
     <form id="resource-form" ref={formRef} onSubmit={handleSubmit} className={cn("space-y-6", formClassName)}>
       {submitError && (
-        <div className="rounded-lg bg-destructive/10 p-3 text-sm text-destructive">
+        <div className={`rounded-lg bg-destructive/10 p-3 ${typography.body.medium} text-destructive`}>
           {submitError}
         </div>
       )}
@@ -649,10 +650,10 @@ export const ResourceForm = <T extends Record<string, unknown>>({
               </Button>
             )}
             {title && !showCard && (
-              <h1 className="text-2xl md:text-3xl font-bold tracking-tight">{title}</h1>
+              <h1 className={`${typography.heading.h1} tracking-tight`}>{title}</h1>
             )}
             {description && !showCard && (
-              <p className="text-sm text-muted-foreground max-w-2xl">{description}</p>
+              <p className={`${typography.body.muted.medium} max-w-2xl`}>{description}</p>
             )}
           </div>
         </div>

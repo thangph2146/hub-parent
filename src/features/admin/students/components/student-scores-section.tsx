@@ -6,6 +6,8 @@
 
 "use client"
 
+import { typography } from "@/lib/typography"
+
 import { useCallback, useMemo, useState } from "react"
 import { 
   TrendingUp, 
@@ -267,11 +269,11 @@ const YearTermAveragesDataTable = ({ termAverages }: { termAverages: TermAverage
         header: "Học kỳ",
         cell: (row) => (
           <div className="flex items-center gap-2 flex-wrap">
-            <Badge variant="outline" className="text-xs whitespace-nowrap">
+            <Badge variant="outline" className={`${typography.body.small} whitespace-nowrap`}>
               {row.termID}
             </Badge>
             {row.orderTerm && (
-              <span className="text-xs text-muted-foreground whitespace-nowrap">
+              <span className={`${typography.body.muted.small} whitespace-nowrap`}>
                 Học kỳ {row.orderTerm}
               </span>
             )}
@@ -374,7 +376,7 @@ const YearTermAveragesDataTable = ({ termAverages }: { termAverages: TermAverage
 
   if (!termAverages || termAverages.length === 0) {
     return (
-      <div className="py-4 text-muted-foreground text-sm">
+      <div className={`py-4 ${typography.body.muted.medium}`}>
         Không có dữ liệu học kỳ
       </div>
     )
@@ -548,13 +550,13 @@ const TermScoresDataTable = ({ termScores }: { termScores: DetailedScore[] }) =>
       {
         accessorKey: "curriculumID",
         header: "Mã môn",
-        cell: (row) => <div className="text-sm">{row.curriculumID}</div>,
+        cell: (row) => <div className={typography.body.medium}>{row.curriculumID}</div>,
         className: "min-w-[120px]",
       },
       {
         accessorKey: "studyUnitAlias",
         header: "Mã học phần",
-        cell: (row) => <div className="text-sm text-muted-foreground">{row.studyUnitAlias}</div>,
+        cell: (row) => <div className={typography.body.muted.medium}>{row.studyUnitAlias}</div>,
         className: "min-w-[120px]",
       },
       {
@@ -663,7 +665,7 @@ const TermScoresDataTable = ({ termScores }: { termScores: DetailedScore[] }) =>
 
   if (!termScores || termScores.length === 0) {
     return (
-      <div className="py-4 text-muted-foreground text-sm">
+      <div className={`py-4 ${typography.body.muted.medium}`}>
         Không có dữ liệu môn học
       </div>
     )

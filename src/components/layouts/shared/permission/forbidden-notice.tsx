@@ -10,6 +10,7 @@
 import { useRouter } from "next/navigation"
 import { ShieldX, ArrowLeft, Home, Lock } from "lucide-react"
 import { motion } from "framer-motion"
+import { typography, headerConfig } from "@/lib/typography"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 
@@ -158,10 +159,10 @@ export function ForbiddenNotice({
 
               {/* Title và Message */}
               <motion.div variants={itemVariants} className="space-y-4">
-                <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text">
+                <h1 className={`${headerConfig.main.className} tracking-tight bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text`}>
                   {title}
                 </h1>
-                <p className="text-sm md:text-base text-muted-foreground max-w-md leading-relaxed mx-auto">
+                <p className={`${typography.body.muted.medium} max-w-md leading-relaxed mx-auto`}>
                   {message}
                 </p>
               </motion.div>

@@ -1,4 +1,5 @@
 import type { Metadata } from "next"
+import { typography, headerConfig } from "@/lib/typography"
 import { Filter, Tags } from "lucide-react"
 import { PostList } from "@/features/public/post/components/post-list"
 import { PostCategoryNav } from "@/features/public/post/components/post-category-nav"
@@ -104,8 +105,8 @@ export default async function PostPage({ searchParams }: PostPageProps) {
           {/* Header with Sort */}
           <div className="sticky top-14.5 z-10 w-full flex items-center justify-between gap-4 mb-8 border-b bg-background supports-[backdrop-filter]:bg-background/70 border-border backdrop-blur-lg">
             <div>
-              <h2 className="text-2xl font-semibold">Tất cả bài viết</h2>
-              <p className="text-sm text-muted-foreground mt-1">
+              <h2 className={headerConfig.section.className}>Tất cả bài viết</h2>
+              <p className={`${typography.body.muted.medium} mt-1`}>
                 {result.pagination.total} bài viết
               </p>
             </div>

@@ -159,7 +159,7 @@ export const FolderSelector = ({
           </Button>
         )}
       </div>
-      <p className="text-xs text-muted-foreground">
+      <p className={typography.body.muted.small}>
         {selectedFolder
           ? `File sẽ được lưu vào: ${selectedFolder}/ (upload trực tiếp vào folder này)`
           : "File sẽ được lưu theo ngày tháng năm (YYYY/MM/DD)"}

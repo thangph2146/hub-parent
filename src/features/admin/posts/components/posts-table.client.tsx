@@ -34,6 +34,7 @@ import type { PostRow, PostsResponse, PostsTableClientProps } from "../types"
 import { POST_CONFIRM_MESSAGES, POST_LABELS } from "../constants/messages"
 import { resourceLogger } from "@/lib/config"
 import { sanitizeSearchQuery } from "@/lib/api/validation"
+import { typography } from "@/lib/typography"
 
 export const PostsTableClient = ({
   canDelete = false,
@@ -578,7 +579,7 @@ export const PostsTableClient = ({
       type="button"
       size="sm"
       onClick={() => router.push("/admin/posts/new")}
-      className="h-8 px-3 text-xs sm:text-sm"
+      className={`h-8 px-3 ${typography.body.small}`}
     >
       <Plus className="mr-2 h-5 w-5" />
       {POST_LABELS.ADD_NEW}

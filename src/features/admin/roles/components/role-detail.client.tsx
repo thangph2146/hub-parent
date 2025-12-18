@@ -32,6 +32,7 @@ import {
   CommandList,
 } from "@/components/ui/command"
 import { cn } from "@/lib/utils"
+import { typography } from "@/lib/typography"
 
 export interface RoleDetailData {
   id: string
@@ -103,13 +104,13 @@ export const RoleDetailClient = ({ roleId, role, backUrl = "/admin/roles" }: Rol
             {/* Name & Display Name */}
             <div className="grid gap-6 grid-cols-1 sm:grid-cols-2">
               <FieldItem icon={Shield} label="Tên vai trò">
-                <div className="text-sm font-medium text-foreground">
+                <div className={`${typography.body.medium} font-medium text-foreground`}>
                   {roleData.name || "—"}
                 </div>
               </FieldItem>
 
               <FieldItem icon={FileText} label="Tên hiển thị">
-                <div className="text-sm font-medium text-foreground">
+                <div className={`${typography.body.medium} font-medium text-foreground`}>
                   {roleData.displayName || "—"}
                 </div>
               </FieldItem>
@@ -123,8 +124,8 @@ export const RoleDetailClient = ({ roleId, role, backUrl = "/admin/roles" }: Rol
                     <FileText className="h-4 w-4 text-muted-foreground" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-sm font-medium text-foreground mb-2">Mô tả</h3>
-                    <div className="text-sm leading-relaxed whitespace-pre-wrap text-foreground break-words">
+                    <h3 className={`${typography.body.medium} font-medium text-foreground mb-2`}>Mô tả</h3>
+                    <div className={`${typography.body.medium} leading-relaxed whitespace-pre-wrap text-foreground break-words`}>
                       {roleData.description || "—"}
                     </div>
                   </div>
@@ -149,8 +150,8 @@ export const RoleDetailClient = ({ roleId, role, backUrl = "/admin/roles" }: Rol
                 <Shield className="h-4 w-4 text-muted-foreground" />
               </div>
               <div className="flex-1 min-w-0">
-                <div className="text-xs font-medium text-muted-foreground mb-1.5">Quyền</div>
-                <div className="text-sm text-muted-foreground">—</div>
+                <div className={`${typography.body.muted.small} font-medium mb-1.5`}>Quyền</div>
+                <div className={typography.body.muted.medium}>—</div>
               </div>
             </div>
           )
@@ -178,7 +179,7 @@ export const RoleDetailClient = ({ roleId, role, backUrl = "/admin/roles" }: Rol
               </div>
               <div className="flex-1 min-w-0 space-y-3">
                 <div>
-                  <div className="text-xs font-medium text-muted-foreground mb-1.5">Quyền</div>
+                  <div className={`${typography.body.muted.small} font-medium mb-1.5`}>Quyền</div>
                   <Popover open={permissionsOpen} onOpenChange={setPermissionsOpen}>
                     <PopoverTrigger asChild>
                       <Button
@@ -231,12 +232,12 @@ export const RoleDetailClient = ({ roleId, role, backUrl = "/admin/roles" }: Rol
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {selectedPermissions.slice(0, 5).map((perm) => (
-                    <Badge key={perm.value} variant="outline" className="text-xs bg-primary/10 text-primary border-primary/20">
+                    <Badge key={perm.value} variant="outline" className={`${typography.body.small} bg-primary/10 text-primary border-primary/20`}>
                       {perm.label}
                     </Badge>
                   ))}
                   {selectedPermissions.length > 5 && (
-                    <Badge variant="outline" className="text-xs bg-muted text-muted-foreground">
+                    <Badge variant="outline" className={`${typography.body.small} bg-muted text-muted-foreground`}>
                       +{selectedPermissions.length - 5} quyền khác
                     </Badge>
                   )}
@@ -263,7 +264,7 @@ export const RoleDetailClient = ({ roleId, role, backUrl = "/admin/roles" }: Rol
             >
               <Badge
                 className={cn(
-                  "text-sm font-medium px-2.5 py-1",
+                  `${typography.body.medium} font-medium px-2.5 py-1`,
                   roleData.isActive
                     ? "bg-green-500/10 hover:bg-green-500/20 text-green-700 dark:text-green-400 border-green-500/20"
                     : "bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 dark:text-amber-400 border-amber-500/20"
@@ -287,13 +288,13 @@ export const RoleDetailClient = ({ roleId, role, backUrl = "/admin/roles" }: Rol
             {/* Timestamps */}
             <div className="grid gap-6 grid-cols-1 sm:grid-cols-2">
               <FieldItem icon={Calendar} label="Ngày tạo">
-                <div className="text-sm font-medium text-foreground">
+                <div className={`${typography.body.medium} font-medium text-foreground`}>
                   {roleData.createdAt ? formatDateVi(roleData.createdAt) : "—"}
                 </div>
               </FieldItem>
 
               <FieldItem icon={Clock} label="Cập nhật lần cuối">
-                <div className="text-sm font-medium text-foreground">
+                <div className={`${typography.body.medium} font-medium text-foreground`}>
                   {roleData.updatedAt ? formatDateVi(roleData.updatedAt) : "—"}
                 </div>
               </FieldItem>

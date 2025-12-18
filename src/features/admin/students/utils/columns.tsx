@@ -1,4 +1,5 @@
 import { useMemo } from "react"
+import { typography } from "@/lib/typography"
 import { Switch } from "@/components/ui/switch"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { AlertCircle, CheckCircle2 } from "lucide-react"
@@ -106,7 +107,7 @@ export const useStudentColumns = ({ togglingStudents, canToggleStatus, onToggleS
         headerClassName: "w-[120px]",
         cell: (row) =>
           row.deletedAt ? (
-            <span className="inline-flex min-w-[88px] items-center justify-center rounded-full bg-rose-100 px-2 py-1 text-xs font-medium text-rose-700">
+            <span className={`inline-flex min-w-[88px] items-center justify-center rounded-full bg-rose-100 px-2 py-1 ${typography.body.small} font-medium text-rose-700`}>
               {STUDENT_LABELS.DELETED}
             </span>
           ) : (
@@ -117,7 +118,7 @@ export const useStudentColumns = ({ togglingStudents, canToggleStatus, onToggleS
                 onCheckedChange={(checked) => onToggleStatus(row, checked)}
                 aria-label={row.isActive ? "Vô hiệu hóa sinh viên" : "Kích hoạt sinh viên"}
               />
-              <span className="text-xs text-muted-foreground">
+              <span className={typography.body.muted.small}>
                 {row.isActive ? STUDENT_LABELS.ACTIVE : STUDENT_LABELS.INACTIVE}
               </span>
             </div>
@@ -157,10 +158,10 @@ export const useStudentColumns = ({ togglingStudents, canToggleStatus, onToggleS
             return (
               <Alert variant="default" className="border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-900/20">
                 <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400" />
-                <AlertTitle className="text-sm font-semibold text-green-800 dark:text-green-200">
+                <AlertTitle className={`${typography.body.medium} font-semibold text-green-800 dark:text-green-200`}>
                   {STUDENT_LABELS.APPROVED_TITLE}
                 </AlertTitle>
-                <AlertDescription className="text-xs text-green-700 dark:text-green-300 mt-1">
+                <AlertDescription className={`${typography.body.small} text-green-700 dark:text-green-300 mt-1`}>
                   {STUDENT_LABELS.APPROVED_MESSAGE}
                 </AlertDescription>
               </Alert>
@@ -171,16 +172,16 @@ export const useStudentColumns = ({ togglingStudents, canToggleStatus, onToggleS
             return (
               <Alert variant="default" className="border-yellow-200 bg-yellow-50 dark:border-yellow-800 dark:bg-yellow-900/20">
                 <AlertCircle className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
-                <AlertTitle className="text-sm font-semibold text-yellow-800 dark:text-yellow-200">
+                <AlertTitle className={`${typography.body.medium} font-semibold text-yellow-800 dark:text-yellow-200`}>
                   {STUDENT_LABELS.PENDING_APPROVAL_TITLE}
                 </AlertTitle>
-                <AlertDescription className="text-xs text-yellow-700 dark:text-yellow-300 mt-1">
+                <AlertDescription className={`${typography.body.small} text-yellow-700 dark:text-yellow-300 mt-1`}>
                   {STUDENT_LABELS.PENDING_APPROVAL_MESSAGE}
                 </AlertDescription>
               </Alert>
             )
           }
-          return <span className="text-muted-foreground text-xs">-</span>
+          return <span className={`${typography.body.muted.small}`}>-</span>
         },
       })
     }

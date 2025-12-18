@@ -1,5 +1,7 @@
 "use client"
 
+import { typography } from "@/lib/typography"
+
 import { useCallback, useMemo, useState } from "react"
 import { useResourceRouter } from "@/hooks/use-resource-segment"
 import { Plus, RotateCcw, Trash2, AlertTriangle } from "lucide-react"
@@ -604,7 +606,7 @@ export const RolesTableClient = ({
       type="button"
       size="sm"
       onClick={() => router.push("/admin/roles/new")}
-      className="h-8 px-3 text-xs sm:text-sm"
+      className={`h-8 px-3 ${typography.body.small}`}
     >
       <Plus className="mr-2 h-5 w-5" />
       {ROLE_LABELS.ADD_NEW}

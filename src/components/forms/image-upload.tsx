@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils/index"
 import { apiClient } from "@/lib/api/axios"
 import { apiRoutes } from "@/lib/api/routes"
+import { typography } from "@/lib/typography"
 import type { UploadResponse, UploadError } from "@/features/admin/uploads/types"
 import { useToast } from "@/hooks/use-toast"
 
@@ -284,7 +285,7 @@ export function ImageUpload({
   return (
     <div className={cn("w-full", className)}>
       {label && (
-        <label className="text-sm font-medium mb-2 block">{label}</label>
+        <label className={`${typography.body.medium} font-medium mb-2 block`}>{label}</label>
       )}
       
       <div
@@ -348,17 +349,17 @@ export function ImageUpload({
             {isUploading ? (
               <>
                 <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
-                <p className="text-sm text-muted-foreground">Đang upload...</p>
+                <p className={typography.body.muted.medium}>Đang upload...</p>
               </>
             ) : (
               <>
                 <div className="rounded-full bg-muted p-4 mb-4">
                   <Upload className="h-8 w-8 text-muted-foreground" />
                 </div>
-                <p className="text-sm font-medium mb-1">
+                <p className={`${typography.body.medium} font-medium mb-1`}>
                   Kéo thả hình ảnh vào đây hoặc click để chọn
                 </p>
-                <p className="text-xs text-muted-foreground">
+                <p className={typography.body.muted.small}>
                   JPG, PNG, GIF, WEBP, SVG (tối đa {maxSizeMB}MB)
                 </p>
               </>
@@ -368,7 +369,7 @@ export function ImageUpload({
 
         {error && (
           <div className="px-4 pb-4">
-            <p className="text-sm text-destructive">{error}</p>
+            <p className={`${typography.body.medium} text-destructive`}>{error}</p>
           </div>
         )}
       </div>

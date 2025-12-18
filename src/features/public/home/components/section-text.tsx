@@ -1,9 +1,10 @@
 import { cn } from "@/lib/utils";
 import { ReactNode } from "react";
+import { typography } from "@/lib/typography";
 
-// Cấu hình mặc định cho text - chuẩn từ Guide Section
-const DEFAULT_TITLE_CLASSES = "text-md sm:text-lg md:text-xl lg:text-2xl font-bold text-card-foreground";
-const DEFAULT_CONTENT_CLASSES = "text-xs sm:text-sm md:text-base text-foreground leading-relaxed";
+// Cấu hình mặc định cho text - sử dụng shared typography
+const DEFAULT_TITLE_CLASSES = `${typography.title.default} text-card-foreground`;
+const DEFAULT_CONTENT_CLASSES = `${typography.body.medium} leading-relaxed`;
 const DEFAULT_PARAGRAPH_CLASSES = "mb-2";
 
 export interface ParagraphItem {

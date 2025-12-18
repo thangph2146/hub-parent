@@ -71,7 +71,7 @@ export const FolderTreeSelectItem = ({
             }}
             className="w-fit px-2 flex items-center justify-end gap-2 hover:bg-muted/10 rounded-sm"
           >
-            <span className="text-xs">{node.path}</span>
+            <span className={typography.body.small}>{node.path}</span>
             <ChevronRight
               className={cn(
                 "h-6 w-6 transition-transform hover:text-foreground",

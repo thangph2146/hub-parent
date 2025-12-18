@@ -25,6 +25,7 @@ const Timeline = dynamic(() => import("@/components/ui/timeline").then(mod => ({
   loading: () => <div className="h-96 flex items-center justify-center">Đang tải...</div>,
 })
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { typography, headerConfig, textColors } from "@/lib/typography";
 
 /**
  * Helper function để highlight "HUB" trong text với màu secondary
@@ -664,11 +665,11 @@ export const AboutClient = () => {
         <div className="flex flex-col justify-center lg:col-span-1">
           <div className="prose prose-sm sm:prose-base md:prose-lg text-foreground leading-relaxed dark:prose-invert max-w-none">
             {item.description ? (
-              <p className="text-xs sm:text-sm md:text-base lg:text-lg text-muted-foreground leading-relaxed">
+              <p className={`${typography.body.muted.large} leading-relaxed`}>
                 {item.description}
               </p>
             ) : (
-              <p className="text-xs sm:text-sm md:text-base text-muted-foreground italic">
+              <p className={`${typography.body.muted.small} italic`}>
                 Đang cập nhật thông tin...
               </p>
             )}
@@ -687,14 +688,14 @@ export const AboutClient = () => {
           <div className="border-b-2 border-primary mb-6 sm:mb-8 pb-6 sm:pb-8">
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 sm:gap-8">
               <div>
-                <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-foreground">
+                <h2 className={headerConfig.section.className}>
                   Tổng quan về{" "}
                   <span className="text-secondary font-bold">HUB</span>
                 </h2>
               </div>
               <div>
                 <div className="prose prose-sm sm:prose-base text-foreground leading-relaxed dark:prose-invert mb-4">
-                  <p className="text-sm sm:text-base md:text-lg text-muted-foreground">
+                  <p className={typography.description.large}>
                     Trường Đại học Ngân hàng Thành phố Hồ Chí Minh (Ho Chi Minh
                     University of Banking -{" "}
                     <span className="font-bold text-secondary">HUB</span>) là
@@ -703,7 +704,7 @@ export const AboutClient = () => {
                     <strong className="text-foreground">16/12/1976</strong>.
                   </p>
                 </div>
-                <h3 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-semibold text-foreground mt-4">
+                <h3 className={`${headerConfig.subsection.className} mt-4`}>
                   <span className="text-secondary font-bold">H</span>EIGHTENING{" "}
                   <span className="text-secondary font-bold">U</span>NIQUE{" "}
                   <span className="text-secondary font-bold">B</span>RILLIANCE
@@ -731,48 +732,48 @@ export const AboutClient = () => {
             {/* Statistics List */}
             <div className="space-y-4 sm:space-y-6">
               <div>
-                <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-primary mb-2">
+                <h2 className={`${typography.heading.primary.h1} mb-2`}>
                   49
-                  <span className="text-xl sm:text-2xl md:text-3xl lg:text-4xl">
+                  <span className={`${typography.heading.h4} ${textColors.primary}`}>
                     + năm
                   </span>
                 </h2>
-                <p className="text-xs sm:text-sm md:text-base text-muted-foreground leading-relaxed">
+                <p className={typography.body.muted.small}>
                   Xây dựng và phát triển với 16 ngành và 03 cơ sở sở đào tạo!
                 </p>
               </div>
 
               <div>
-                <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-primary mb-2">
+                <h2 className={`${typography.heading.primary.h1} mb-2`}>
                   17.500
-                  <span className="text-xl sm:text-2xl md:text-3xl lg:text-4xl">
+                  <span className={`${typography.heading.h4} ${textColors.primary}`}>
                     +
                   </span>
                 </h2>
-                <p className="text-xs sm:text-sm md:text-base text-muted-foreground leading-relaxed">
+                <p className={typography.body.muted.small}>
                   Sinh viên đang theo học ở các bậc đào tạo từ đại học, thạc sĩ,
                   tiến sĩ
                 </p>
               </div>
 
               <div>
-                <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-primary mb-2">
+                <h2 className={`${typography.heading.primary.h1} mb-2`}>
                   500
                 </h2>
-                <p className="text-xs sm:text-sm md:text-base text-muted-foreground leading-relaxed">
+                <p className={typography.body.muted.small}>
                   Cán bộ, giảng viên, nhân viên, trong đó có 38 Giáo sư, Phó
                   Giáo sư, 197 Tiến sĩ và 238 Thạc sĩ
                 </p>
               </div>
 
               <div>
-                <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-primary mb-2">
+                <h2 className={`${typography.heading.primary.h1} mb-2`}>
                   66.000
-                  <span className="text-xl sm:text-2xl md:text-3xl lg:text-4xl">
+                  <span className={`${typography.heading.h4} ${textColors.primary}`}>
                     +
                   </span>
                 </h2>
-                <p className="text-xs sm:text-sm md:text-base text-muted-foreground leading-relaxed">
+                <p className={typography.body.muted.small}>
                   Cử nhân, thạc sĩ, tiến sĩ đã được{" "}
                   <span className="font-bold text-secondary">HUB</span> đào tạo
                 </p>
@@ -785,13 +786,13 @@ export const AboutClient = () => {
       {/* About HUB Section */}
       <section className="py-12 sm:py-16 lg:py-20 bg-muted/30">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground uppercase mb-6 sm:mb-8">
+          <h2 className={`${headerConfig.section.className} uppercase`}>
             Về <span className="text-secondary font-bold">HUB</span>
           </h2>
 
           <div className="mb-6 sm:mb-8">
             <div className="prose prose-sm sm:prose-base md:prose-lg text-foreground leading-relaxed dark:prose-invert">
-              <p className="text-sm sm:text-base md:text-lg text-muted-foreground mb-4">
+              <p className={`${typography.description.large} mb-4`}>
                 Trường Đại học Ngân hàng TPHCM với truyền thống gần 50 năm hình
                 thành và phát triển và là Trường Đại học công lập trực thuộc
                 Ngân hàng nhà nước Việt Nam. Với đội ngũ Giáo sư – Phó giáo sư –
@@ -843,14 +844,14 @@ export const AboutClient = () => {
         <Dialog open={showMoreDialog} onOpenChange={setShowMoreDialog}>
           <DialogContent className="max-w-[90vw] lg:max-w-4xl">
             <DialogHeader>
-              <DialogTitle className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground uppercase">
+              <DialogTitle className={`${headerConfig.subsection.className} uppercase`}>
                 Về <span className="text-secondary">HUB</span>
               </DialogTitle>
             </DialogHeader>
             <DialogDescription asChild>
               <ScrollArea className="max-h-[calc(70dvh)] px-2 overflow-y-auto">
               <div className="prose prose-sm sm:prose-base md:prose-lg text-foreground leading-relaxed dark:prose-invert max-w-none">
-                <p className="text-sm sm:text-base md:text-lg text-muted-foreground mb-4">
+                <p className={`${typography.description.large} mb-4`}>
                   Trường Đại học Ngân hàng TP. Hồ Chí Minh đang đào tạo 16 ngành
                   đại học với hơn 16.000 sinh viên, 09 Chương trình Thạc sĩ với
                   gần 2000 học viên cao học và nghiên cứu sinh, 03 ngành Tiến sĩ
@@ -871,7 +872,7 @@ export const AboutClient = () => {
                   phần tạo nên hệ giá trị sinh thái bền vững hỗ trợ nhiều hoạt
                   động thiết thực, mang lại giá trị thực tiễn cao.
                 </p>
-                <p className="text-sm sm:text-base md:text-lg text-muted-foreground mb-4">
+                <p className={`${typography.description.large} mb-4`}>
                   Đội ngũ nhân sự của{" "}
                   <span className="font-bold text-secondary">HUB</span> với trên
                   500 cán bộ, giảng viên, nhân viên. Trong đó, 235 giảng viên có
@@ -887,7 +888,7 @@ export const AboutClient = () => {
                   nghệ tài chính (38 GS-TS). Điều này giúp phục vụ hiệu quả quá
                   trình đào tạo chuyển đổi số cho đất nước và ngành Ngân hàng.
                 </p>
-                <p className="text-sm sm:text-base md:text-lg text-muted-foreground mb-4">
+                <p className={`${typography.description.large} mb-4`}>
                   <span className="font-bold text-secondary">HUB</span> có 03 cơ
                   sở đào tạo với 02 cơ sở tại trung tâm Q1 TP. HCM và 01 cơ sở
                   tại Thủ Đức có tổng diện tích lên đến hơn 11 hecta được đầu tư
@@ -900,7 +901,7 @@ export const AboutClient = () => {
                   những Đại học đầu tiên thực hiện báo cáo quản trị theo chuẩn
                   ESG.
                 </p>
-                <p className="text-sm sm:text-base md:text-lg text-muted-foreground mb-4">
+                <p className={`${typography.description.large} mb-4`}>
                   Trường Đại học Ngân hàng TP. Hồ Chí Minh đã kiểm định 100%
                   chương trình đào tạo theo tiêu chuẩn quốc tế AUN – QA và MOET.
                   Không dừng lại ở kiểm định cấp CTĐT, Trường đã hoàn thành
@@ -911,7 +912,7 @@ export const AboutClient = () => {
                   hiểu Việt Nam&quot;. Chứng nhận Hệ thống quản lý chất lượng
                   theo tiêu chuẩn ISO 9001:2015 của Tổ chức Afnor Cộng hòa Pháp.
                 </p>
-                <p className="text-sm sm:text-base md:text-lg text-muted-foreground">
+                <p className={typography.description.large}>
                   Trường Đại học Ngân hàng TP. Hồ Chí Minh tiếp tục khẳng định
                   vị thế là Trường Đại học lớn ở Việt Nam, đào tạo đa ngành, xây
                   dựng hệ sinh thái hạnh phúc trong cộng đồng người học và cung
@@ -932,13 +933,13 @@ export const AboutClient = () => {
           <div className="border-b-2 border-primary mb-6 sm:mb-8 pb-6 sm:pb-8">
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 sm:gap-8">
               <div>
-                <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-foreground">
+                <h2 className={headerConfig.section.className}>
                   Tầm nhìn - Sứ mệnh
                 </h2>
               </div>
               <div>
                 <div className="prose prose-sm sm:prose-base text-foreground leading-relaxed dark:prose-invert">
-                  <p className="text-sm sm:text-base md:text-lg text-muted-foreground">
+                  <p className={typography.description.large}>
                     Đại học Ngân hàng hướng đến mục tiêu hiện thực hóa tầm nhìn
                     và sứ mệnh theo định hướng đề ra, góp phần xây dựng một
                     trường đại học uy tín trong khu vực và trường quốc tế.
@@ -966,10 +967,10 @@ export const AboutClient = () => {
             {/* Content */}
             <div className="space-y-6 sm:space-y-8">
               <div>
-                <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground mb-3 sm:mb-4">
+                <h3 className={`${headerConfig.subsection.className} mb-3 sm:mb-4`}>
                   Tầm nhìn
                 </h3>
-                <p className="text-sm sm:text-base md:text-lg text-muted-foreground leading-relaxed">
+                <p className={`${typography.description.large} leading-relaxed`}>
                   <span className="font-bold text-secondary">HUB</span> định
                   hướng trở thành đại học đa ngành và liên ngành nằm trong nhóm
                   các đại học có uy tín ở khu vực Đông Nam Á.{" "}
@@ -980,10 +981,10 @@ export const AboutClient = () => {
               </div>
 
               <div>
-                <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground mb-3 sm:mb-4">
+                <h3 className={`${headerConfig.subsection.className} mb-3 sm:mb-4`}>
                   Sứ mệnh
                 </h3>
-                <p className="text-sm sm:text-base md:text-lg text-muted-foreground leading-relaxed">
+                <p className={`${typography.description.large} leading-relaxed`}>
                   <span className="font-bold text-secondary">HUB</span> cung cấp
                   cho xã hội và ngành ngân hàng nguồn nhân lực chất lượng cao,
                   các nghiên cứu có tầm ảnh hưởng, cùng với dịch vụ tư vấn và
@@ -1004,7 +1005,7 @@ export const AboutClient = () => {
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 sm:gap-8 lg:gap-12 items-end">
             {/* Content */}
             <div>
-              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground mb-4 sm:mb-6">
+              <h2 className={`${headerConfig.section.className} mb-4 sm:mb-6`}>
                 Hệ giá trị cốt lõi
               </h2>
               <div className="space-y-4 sm:space-y-6">
@@ -1018,12 +1019,12 @@ export const AboutClient = () => {
                     }
                   >
                     <h3
-                      className="text-lg sm:text-xl md:text-2xl font-bold mb-2 sm:mb-3"
+                      className={`${typography.heading.h4} mb-2 sm:mb-3`}
                       style={{ color: value.color }}
                     >
                       {value.title}
                     </h3>
-                    <p className="text-sm sm:text-base md:text-lg text-muted-foreground leading-relaxed">
+                    <p className={`${typography.description.large} leading-relaxed`}>
                       {highlightHUB(value.description)}
                     </p>
                   </div>
@@ -1053,7 +1054,7 @@ export const AboutClient = () => {
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 sm:gap-8 lg:gap-12 items-end">
             {/* Content */}
             <div>
-              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground mb-4 sm:mb-6">
+              <h2 className={`${headerConfig.section.className} mb-4 sm:mb-6`}>
                 Triết lý giáo dục
               </h2>
               <div className="space-y-4 sm:space-y-6">
@@ -1067,12 +1068,12 @@ export const AboutClient = () => {
                     }
                   >
                     <h3
-                      className="text-lg sm:text-xl md:text-2xl font-bold mb-2 sm:mb-3"
+                      className={`${typography.heading.h4} mb-2 sm:mb-3`}
                       style={{ color: philosophy.color }}
                     >
                       {philosophy.title}
                     </h3>
-                    <p className="text-sm sm:text-base md:text-lg text-muted-foreground leading-relaxed">
+                    <p className={`${typography.description.large} leading-relaxed`}>
                       {highlightHUB(philosophy.description)}
                     </p>
                   </div>
@@ -1103,13 +1104,13 @@ export const AboutClient = () => {
           <div className="border-b-2 border-primary mb-6 sm:mb-8 pb-6 sm:pb-8">
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 sm:gap-8">
               <div>
-                <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-foreground">
+                <h2 className={headerConfig.section.className}>
                   Bộ máy tổ chức
                 </h2>
               </div>
               <div>
                 <div className="prose prose-sm sm:prose-base text-foreground leading-relaxed dark:prose-invert">
-                  <p className="text-sm sm:text-base md:text-lg text-muted-foreground">
+                  <p className={typography.description.large}>
                     Bộ máy tổ chức của Đại học Ngân hàng TP.HCM được xây dựng
                     theo hướng tinh gọn, hiệu lực, hiệu quả, phù hợp với quy
                     định của pháp luật và điều kiện thực tiễn của trường.
@@ -1141,13 +1142,13 @@ export const AboutClient = () => {
           <div className="border-b-2 border-primary mb-6 sm:mb-8 pb-6 sm:pb-8">
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 sm:gap-8">
               <div>
-                <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-foreground">
+                <h2 className={headerConfig.section.className}>
                   Cơ sở vật chất
                 </h2>
               </div>
               <div>
                 <div className="prose prose-sm sm:prose-base text-foreground leading-relaxed dark:prose-invert mb-4">
-                  <p className="text-sm sm:text-base md:text-lg text-muted-foreground">
+                  <p className={typography.description.large}>
                     Trường Đại học Ngân hàng TP.HCM (
                     <span className="font-bold text-secondary">HUB</span>) có cơ
                     sở vật chất khang trang, hiện đại với không gian xanh,
@@ -1155,7 +1156,7 @@ export const AboutClient = () => {
                     rèn luyện thể thao… của hơn 12.000 người
                   </p>
                 </div>
-                <h3 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-semibold text-foreground mt-4">
+                <h3 className={`${headerConfig.subsection.className} mt-4`}>
                   <span className="text-secondary font-bold">H</span>EIGHTENING{" "}
                   <span className="text-secondary font-bold">U</span>NIQUE{" "}
                   <span className="text-secondary font-bold">B</span>RILLIANCE
@@ -1168,10 +1169,10 @@ export const AboutClient = () => {
           <div className="grid grid-cols-2 -3 sm:gap-4 md:gap-6 mb-6 sm:mb-8">
             {facilities.map((facility, index) => (
               <div key={index} className="text-center">
-                <div className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-primary mb-1 sm:mb-2">
+                <div className={`${typography.heading.primary.h1} mb-1 sm:mb-2`}>
                   {facility.number}
                 </div>
-                <div className="text-xs sm:text-sm md:text-base text-muted-foreground">
+                <div className={typography.body.muted.small}>
                   {facility.label}
                 </div>
               </div>
@@ -1180,7 +1181,7 @@ export const AboutClient = () => {
 
           {/* Content */}
           <div className="prose prose-sm sm:prose-base md:prose-lg text-foreground leading-relaxed dark:prose-invert">
-            <p className="text-sm sm:text-base md:text-lg text-muted-foreground mb-4">
+            <p className={`${typography.description.large} mb-4`}>
               Trường Đại học Ngân hàng TP.HCM (
               <span className="font-bold text-secondary">HUB</span>) có 3 cơ sở
               đào tạo, gồm 02 cơ sở tọa lạc tại Trung tâm Quận 1, Tp. Hồ Chí
@@ -1188,7 +1189,7 @@ export const AboutClient = () => {
               ha, diện tích xây dựng hơn 52,000 m2 đảm bảo nhu cầu dạy và học
               của hơn 12.000 người.
             </p>
-            <p className="text-sm sm:text-base md:text-lg text-muted-foreground mb-4">
+            <p className={`${typography.description.large} mb-4`}>
               <span className="font-bold text-secondary">HUB</span> tự hào về cơ
               sở vật chất khang trang, hiện đại với không gian xanh, sạch,
               thoáng mát, đáp ứng việc học tập, nghiên cứu, sinh hoạt, rèn luyện
@@ -1199,7 +1200,7 @@ export const AboutClient = () => {
               với người học nhằm xây dựng không gian lớp học thân hiện và hiệu
               quả.
             </p>
-            <p className="text-sm sm:text-base md:text-lg text-muted-foreground mb-4">
+            <p className={`${typography.description.large} mb-4`}>
               Ngoài không gian học tập, Nhà trường có hệ thống phụ trợ phục vụ
               công tác học tập, rèn luyện thể dục thể thao (cụm khu liên hợp thể
               dục thi thao, sân bóng đá, hồ bơi, tennis, cầu lông,
@@ -1208,7 +1209,7 @@ export const AboutClient = () => {
               kiện lớn của Trường, các Khoa, các CLB, Trung tâm Thông tin Thư
               viện hiện đại, trẻ trung, Ký túc xá rộng rãi và tiện nghi.
             </p>
-            <p className="text-sm sm:text-base md:text-lg text-muted-foreground">
+            <p className={typography.description.large}>
               Thư viện, trung tâm học liệu với diện tích sàn 6,666 m2 ; với gần
               47,000 đầu sách, giáo trình, tài liệu tham khảo tiếng Việt và
               tiếng nước ngoài, gần 359,000 bản sách các loại, 20 máy tính trang
@@ -1237,13 +1238,13 @@ export const AboutClient = () => {
                         fill
                         className="object-cover transition-transform duration-300 hover:scale-105"
                         sizes="(max-width: 768px) 100vw, 50vw"
-                        quality={100}
+                        quality={85}
                         priority={actualIndex < 2}
                         loading={actualIndex < 2 ? "eager" : "lazy"}
                       />
                       {/* Caption for each image */}
                       <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/60 to-transparent p-3 sm:p-4">
-                        <h3 className="text-xs sm:text-sm md:text-base font-semibold text-white line-clamp-2">
+                        <h3 className={`${typography.heading.h6} font-semibold text-white line-clamp-2`}>
                           {image.title}
                         </h3>
                       </div>
@@ -1302,7 +1303,7 @@ export const AboutClient = () => {
               >
                 <ChevronLeft className="h-5 w-5" />
               </button>
-              <span className="text-xs sm:text-sm text-muted-foreground">
+              <span className={typography.body.muted.small}>
                 {currentImageIndex + 1} / {facilityImages.length}
               </span>
               <button
@@ -1324,13 +1325,13 @@ export const AboutClient = () => {
           <div className="border-b-2 border-primary mb-6 sm:mb-8 pb-6 sm:pb-8">
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 sm:gap-8">
               <div>
-                <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-foreground">
+                <h2 className={headerConfig.section.className}>
                   Đội ngũ Giảng viên - Nhà khoa học
                 </h2>
               </div>
               <div>
                 <div className="prose prose-sm sm:prose-base text-foreground leading-relaxed dark:prose-invert">
-                  <p className="text-sm sm:text-base md:text-lg text-muted-foreground">
+                  <p className={typography.description.large}>
                     <span className="font-bold text-secondary">HUB</span> có gần
                     500 cán bộ, giảng viên, nhân viên. Đội ngũ giảng viên bao
                     gồm: 38 Giáo sư, Phó Giáo sư, 184 Tiến sĩ và 238 Thạc sĩ
@@ -1349,34 +1350,34 @@ export const AboutClient = () => {
           {/* Statistics */}
           <div className="grid grid-cols-2 -3 sm:gap-4 md:gap-6 mb-8 sm:mb-12 lg:mb-16">
             <div className="text-center">
-              <div className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-primary mb-1 sm:mb-2">
+              <div className={`${typography.heading.primary.h1} mb-1 sm:mb-2`}>
                 38
               </div>
-              <div className="text-xs sm:text-sm md:text-base text-muted-foreground">
+              <div className={typography.body.muted.small}>
                 Giáo sư, Phó Giáo sư
               </div>
             </div>
             <div className="text-center">
-              <div className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-primary mb-1 sm:mb-2">
+              <div className={`${typography.heading.primary.h1} mb-1 sm:mb-2`}>
                 237
               </div>
-              <div className="text-xs sm:text-sm md:text-base text-muted-foreground">
+              <div className={typography.body.muted.small}>
                 Tiến sĩ
               </div>
             </div>
             <div className="text-center">
-              <div className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-primary mb-1 sm:mb-2">
+              <div className={`${typography.heading.primary.h1} mb-1 sm:mb-2`}>
                 87
               </div>
-              <div className="text-xs sm:text-sm md:text-base text-muted-foreground">
+              <div className={typography.body.muted.small}>
                 PGS- TS Thỉnh giảng
               </div>
             </div>
             <div className="text-center">
-              <div className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-primary mb-1 sm:mb-2">
+              <div className={`${typography.heading.primary.h1} mb-1 sm:mb-2`}>
                 500
               </div>
-              <div className="text-xs sm:text-sm md:text-base text-muted-foreground">
+              <div className={typography.body.muted.small}>
                 Giảng viên cơ hữu
               </div>
             </div>
@@ -1392,7 +1393,7 @@ export const AboutClient = () => {
                 rel="noopener noreferrer"
                 className="flex items-center justify-between p-4 sm:p-5 bg-card border border-border rounded-lg sm:rounded-xl hover:bg-muted/50 hover:border-primary/50 transition-all group"
               >
-                <span className="text-sm sm:text-base md:text-lg font-medium text-foreground group-hover:text-primary transition-colors">
+                <span className={`${typography.description.large} font-medium group-hover:text-primary transition-colors`}>
                   {department.name}
                 </span>
                 <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all flex-shrink-0" />
@@ -1409,12 +1410,12 @@ export const AboutClient = () => {
           <div className="border-b-2 border-primary mb-6 sm:mb-8 pb-6 sm:pb-8">
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 sm:gap-8">
               <div className="mx-auto flex flex-col gap-4">
-                <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-foreground">
+                <h2 className={headerConfig.section.className}>
                   Góc truyền thống
                 </h2>
                 <div>
                   <div className="prose prose-sm sm:prose-base text-foreground leading-relaxed dark:prose-invert">
-                    <p className="text-sm sm:text-base md:text-lg text-muted-foreground">
+                    <p className={typography.description.large}>
                       Đại học Ngân hàng có lịch sử hình thành và phát triển lâu
                       đời, với nhiều truyền thống quý báu được gìn giữ và phát
                       huy qua nhiều thế hệ.
@@ -1426,7 +1427,7 @@ export const AboutClient = () => {
 
             {/* History Timeline */}
             <div className="mt-8">
-              <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground text-center mb-6 sm:mb-8">
+              <h3 className={`${headerConfig.subsection.className} text-center mb-6 sm:mb-8`}>
                 Lịch sử hình thành
               </h3>
 
@@ -1445,7 +1446,7 @@ export const AboutClient = () => {
           <div className="max-w-7xl mx-auto">
             {/* Header */}
             <div className="text-center mb-8 sm:mb-12">
-              <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-foreground">
+              <h2 className={headerConfig.section.className}>
                 Các thế hệ lãnh đạo
               </h2>
             </div>
@@ -1471,7 +1472,7 @@ export const AboutClient = () => {
                       }`}
                     />
                     <h3
-                      className={`text-xs sm:text-sm md:text-base font-semibold text-center ${
+                      className={`${typography.body.small} sm:${typography.body.medium} md:${typography.body.medium} font-semibold text-center ${
                         currentLeaderIndex === index
                           ? "text-primary-foreground"
                           : "text-foreground"
@@ -1549,11 +1550,11 @@ export const AboutClient = () => {
                                   />
                                 </div>
                                 {/* Leader Info */}
-                                <h4 className="text-sm sm:text-base md:text-lg font-bold text-foreground mb-2 sm:mb-3">
+                                <h4 className={`${typography.title.small} mb-2 sm:mb-3`}>
                                   {leader.name}
                                 </h4>
                                 <div className="prose prose-sm sm:prose-base text-foreground dark:prose-invert">
-                                  <p className="text-xs sm:text-sm md:text-base text-muted-foreground whitespace-pre-line">
+                                  <p className={`${typography.body.muted.small} whitespace-pre-line`}>
                                     {leader.position}
                                   </p>
                                 </div>
@@ -1566,7 +1567,7 @@ export const AboutClient = () => {
                     </>
                   ) : (
                     <div className="text-center py-8">
-                      <p className="text-sm sm:text-base text-muted-foreground">
+                      <p className={typography.description.default}>
                         Thông tin lãnh đạo sẽ được cập nhật...
                       </p>
                     </div>

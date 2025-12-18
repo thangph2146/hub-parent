@@ -1,5 +1,7 @@
 "use client";
 
+import { typography } from "@/lib/typography";
+
 import * as React from "react";
 import { useMemo } from "react";
 import Link from "next/link";
@@ -340,9 +342,9 @@ export function NavUser({ className }: { className?: string }) {
             <Avatar className="h-8 w-8 rounded-lg">
               <AvatarFallback className="rounded-lg">...</AvatarFallback>
             </Avatar>
-            <div className="grid flex-1 text-left text-sm leading-tight" suppressHydrationWarning>
-              <span className="truncate font-medium">Đang tải...</span>
-              <span className="truncate text-xs">Vui lòng chờ</span>
+            <div className={`grid flex-1 text-left ${typography.body.medium} leading-tight`} suppressHydrationWarning>
+              <span className={`truncate font-medium`}>Đang tải...</span>
+              <span className={`truncate ${typography.body.small}`}>Vui lòng chờ</span>
             </div>
           </SidebarMenuButton>
         </SidebarMenuItem>
@@ -358,7 +360,7 @@ export function NavUser({ className }: { className?: string }) {
       sideOffset={4}
     >
       <DropdownMenuLabel className="p-0 font-normal">
-        <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
+        <div className={`flex items-center gap-2 px-1 py-1.5 text-left ${typography.body.medium}`}>
           <Avatar className="h-8 w-8 rounded-lg">
             <AvatarImage
               src={user.image || "/avatars/default.jpg"}
@@ -368,14 +370,14 @@ export function NavUser({ className }: { className?: string }) {
               {getInitials(user.name)}
             </AvatarFallback>
           </Avatar>
-          <div className="grid flex-1 text-left text-sm leading-tight">
+          <div className={`grid flex-1 text-left ${typography.body.medium} leading-tight`}>
             <span className="truncate font-medium">
               {user.name || user.email}
             </span>
-            <span className="truncate text-xs">
+            <span className={`truncate ${typography.body.small}`}>
               {user.email}
               {primaryRole && (
-                <span className="ml-1 text-muted-foreground">
+                <span className={`ml-1 ${typography.body.muted.small}`}>
                   • {primaryRole.displayName || primaryRole.name}
                 </span>
               )}
@@ -509,7 +511,7 @@ export function NavUser({ className }: { className?: string }) {
             />
             <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
           </Avatar>
-          <span className="inline-block text-sm font-medium truncate max-w-[120px]" suppressHydrationWarning>
+          <span className={`inline-block ${typography.body.medium} font-medium truncate max-w-[120px]`} suppressHydrationWarning>
             {user.name || user.email}
           </span>
         </div>
@@ -528,11 +530,11 @@ export function NavUser({ className }: { className?: string }) {
                 {getInitials(user.name)}
               </AvatarFallback>
             </Avatar>
-            <div className="grid flex-1 text-left text-sm leading-tight" suppressHydrationWarning>
+            <div className={`grid flex-1 text-left ${typography.body.medium} leading-tight`} suppressHydrationWarning>
               <span className="truncate font-medium" suppressHydrationWarning>
                 {user.name || user.email}
               </span>
-              <span className="truncate text-xs" suppressHydrationWarning>
+              <span className={`truncate ${typography.body.small}`} suppressHydrationWarning>
                 {primaryRole?.displayName || primaryRole?.name || user.email}
               </span>
             </div>
@@ -559,7 +561,7 @@ export function NavUser({ className }: { className?: string }) {
               />
               <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
             </Avatar>
-            <span className="inline-block text-sm font-medium truncate max-w-[120px]" suppressHydrationWarning>
+            <span className={`inline-block ${typography.body.medium} font-medium truncate max-w-[120px]`} suppressHydrationWarning>
               {user.name || user.email}
             </span>
             <ChevronsUpDown className="h-5 w-5 opacity-50" />
@@ -589,11 +591,11 @@ export function NavUser({ className }: { className?: string }) {
                   {getInitials(user.name)}
                 </AvatarFallback>
               </Avatar>
-              <div className="grid flex-1 text-left text-sm leading-tight" suppressHydrationWarning>
+              <div className={`grid flex-1 text-left ${typography.body.medium} leading-tight`} suppressHydrationWarning>
                 <span className="truncate font-medium">
                   {user.name || user.email}
                 </span>
-                <span className="truncate text-xs">
+                <span className={`truncate ${typography.body.small}`}>
                   {primaryRole?.displayName || primaryRole?.name || user.email}
                 </span>
               </div>

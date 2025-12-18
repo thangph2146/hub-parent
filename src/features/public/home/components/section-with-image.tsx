@@ -2,10 +2,11 @@ import { cn } from "@/lib/utils";
 import Image from "next/image";
 import { ReactNode } from "react";
 import { ContentCard } from "./content-card";
+import { typography } from "@/lib/typography";
 
-// Cấu hình mặc định cho text - chuẩn từ Guide Section
-const DEFAULT_TITLE_CLASSES = "text-md sm:text-lg md:text-xl lg:text-2xl text-primary";
-const DEFAULT_DESCRIPTION_CLASSES = "text-xs sm:text-sm md:text-base text-card-foreground";
+// Cấu hình mặc định cho text - sử dụng shared typography
+const DEFAULT_TITLE_CLASSES = `${typography.title.default} text-primary`;
+const DEFAULT_DESCRIPTION_CLASSES = `${typography.body.small} text-card-foreground`;
 const DEFAULT_IMAGE_HEIGHT = "h-[200px] sm:h-[250px] lg:h-[350px] xl:h-[400px]";
 
 export interface SectionWithImageProps {

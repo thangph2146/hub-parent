@@ -18,6 +18,7 @@ import {
   CommandList,
 } from "@/components/ui/command"
 import { cn } from "@/lib/utils"
+import { typography } from "@/lib/typography"
 import type { ResourceFormField } from "../../resource-form"
 
 interface MultipleSelectComboboxProps<T> {
@@ -54,7 +55,7 @@ export const MultipleSelectCombobox = <T,>({
 
   if (allOptions.length === 0) {
     return (
-      <div className="flex h-10 w-full items-center rounded-md border border-input bg-background px-3 py-2 text-sm text-muted-foreground">
+      <div className={`flex h-10 w-full items-center rounded-md border border-input bg-background px-3 py-2 ${typography.body.muted.medium}`}>
         Không có tùy chọn
       </div>
     )
@@ -123,7 +124,7 @@ export const MultipleSelectCombobox = <T,>({
                   <Badge
                     key={option.value}
                     variant="secondary"
-                    className="mr-0 text-xs"
+                    className={`mr-0 ${typography.body.small}`}
                     onClick={(e) => {
                       e.stopPropagation()
                       handleToggle(option.value)
@@ -135,10 +136,10 @@ export const MultipleSelectCombobox = <T,>({
                 ))
               ) : (
                 // Show count if > 3 items
-                <span className="text-sm">{displayText}</span>
+                <span className={typography.body.medium}>{displayText}</span>
               )
             ) : (
-              <span className="text-sm">{displayText}</span>
+              <span className={typography.body.medium}>{displayText}</span>
             )}
           </div>
           <div className="flex items-center gap-1 ml-2 flex-shrink-0">

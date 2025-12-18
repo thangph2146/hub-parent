@@ -16,6 +16,7 @@ import { formatDateVi } from "../utils"
 import { cn } from "@/lib/utils"
 import { usePermissions } from "@/hooks/use-permissions"
 import { PERMISSIONS } from "@/lib/permissions"
+import { typography } from "@/lib/typography"
 
 export interface SessionDetailData {
   id: string
@@ -79,11 +80,11 @@ export const SessionDetailClient = ({ sessionId, session, backUrl = "/admin/sess
           <div className="space-y-6">
             <FieldItem icon={User} label="Người dùng" iconColor="bg-primary/10">
               <div>
-                <div className="text-sm font-medium text-foreground">
+                <div className={`${typography.body.medium} font-medium text-foreground`}>
                   {sessionData.userName || sessionData.userEmail || "—"}
                 </div>
                 {sessionData.userEmail && sessionData.userName && (
-                  <div className="text-xs text-muted-foreground mt-0.5">
+                  <div className={`${typography.body.muted.small} mt-0.5`}>
                     {sessionData.userEmail}
                   </div>
                 )}
@@ -103,26 +104,26 @@ export const SessionDetailClient = ({ sessionId, session, backUrl = "/admin/sess
         return (
           <div className="space-y-6">
             <FieldItem icon={Key} label="Access Token" iconColor="bg-chart-1/10">
-              <div className="font-mono text-xs break-all text-foreground">
+              <div className={`font-mono ${typography.body.small} break-all text-foreground`}>
                 {sessionData.accessToken || "—"}
               </div>
             </FieldItem>
 
             <FieldItem icon={RefreshCw} label="Refresh Token" iconColor="bg-chart-2/10">
-              <div className="font-mono text-xs break-all text-foreground">
+              <div className={`font-mono ${typography.body.small} break-all text-foreground`}>
                 {sessionData.refreshToken || "—"}
               </div>
             </FieldItem>
 
             <div className="grid gap-6 grid-cols-1 sm:grid-cols-2">
               <FieldItem icon={Globe} label="User Agent" iconColor="bg-chart-3/10">
-                <div className="text-sm break-all text-foreground">
+                <div className={`${typography.body.medium} break-all text-foreground`}>
                   {sessionData.userAgent || "—"}
                 </div>
               </FieldItem>
 
               <FieldItem icon={MapPin} label="IP Address" iconColor="bg-chart-4/10">
-                <div className="text-sm font-medium text-foreground">
+                <div className={`${typography.body.medium} font-medium text-foreground`}>
                   {sessionData.ipAddress || "—"}
                 </div>
               </FieldItem>
@@ -159,19 +160,19 @@ export const SessionDetailClient = ({ sessionId, session, backUrl = "/admin/sess
 
             <div className="grid gap-6 grid-cols-1 sm:grid-cols-2">
               <FieldItem icon={Calendar} label="Thời gian hết hạn">
-                <div className="text-sm font-medium text-foreground">
+                <div className={`${typography.body.medium} font-medium text-foreground`}>
                   {sessionData.expiresAt ? formatDateVi(sessionData.expiresAt) : "—"}
                 </div>
               </FieldItem>
 
               <FieldItem icon={Clock} label="Hoạt động cuối">
-                <div className="text-sm font-medium text-foreground">
+                <div className={`${typography.body.medium} font-medium text-foreground`}>
                   {sessionData.lastActivity ? formatDateVi(sessionData.lastActivity) : "—"}
                 </div>
               </FieldItem>
 
               <FieldItem icon={Calendar} label="Ngày tạo">
-                <div className="text-sm font-medium text-foreground">
+                <div className={`${typography.body.medium} font-medium text-foreground`}>
                   {sessionData.createdAt ? formatDateVi(sessionData.createdAt) : "—"}
                 </div>
               </FieldItem>

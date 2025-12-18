@@ -18,6 +18,7 @@ import Link from "next/link";
 import { appConfig } from "@/lib/config";
 import { appFeatures } from "@/lib/config/app-features";
 import { getResourceMainRoute } from "@/lib/permissions/route-helpers";
+import { typography, headerConfig } from "@/lib/typography";
 import { Logo } from "../../../../public/svg/Logo"
 
 /**
@@ -70,13 +71,13 @@ export function PublicFooter() {
                 <Logo className="h-28 w-28 text-blue-100" />
               </div>
               <div className="space-y-2">
-                <h3 className="text-2xl font-bold text-white">
+                <h3 className={`${headerConfig.section.className} text-white`}>
                   Trường Đại học Ngân hàng
                 </h3>
-                <p className="text-blue-100 font-medium">
+                <p className={`${typography.body.medium} text-blue-100 font-medium`}>
                   Thành Phố Hồ Chí Minh
                 </p>
-                <p className="text-white/70 leading-relaxed max-w-md">
+                <p className={`${typography.body.muted.medium} text-white/70 leading-relaxed max-w-md`}>
                   {appConfig.description}
                 </p>
               </div>
@@ -86,32 +87,32 @@ export function PublicFooter() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {/* Locations */}
               <div className="space-y-2">
-                <h4 className="text-lg font-semibold text-white flex items-center gap-2 mb-1">
+                <h4 className={`${typography.heading.h4} font-semibold text-white flex items-center gap-2 mb-1`}>
                   <Building2 className="h-5 w-5 text-blue-400" />
                   Cơ sở đào tạo
                 </h4>
                 <div className="space-y-4">
                   <div className="group mb-1">
-                    <h5 className="text-sm font-medium text-blue-200 mb-1">Trụ sở chính</h5>
+                    <h5 className={`${typography.body.medium} font-medium text-blue-200 mb-1`}>Trụ sở chính</h5>
                     <div className="flex items-start gap-3 text-white/80 group-hover:text-white transition-colors">
                       <MapPin className="h-4 w-4 flex-shrink-0 mt-0.5 text-blue-400" />
-                      <span className="text-sm leading-relaxed">36 Tôn Thất Đạm, Phường Sài Gòn, TP.Hồ Chí Minh</span>
+                      <span className={`${typography.body.medium} leading-relaxed`}>36 Tôn Thất Đạm, Phường Sài Gòn, TP.Hồ Chí Minh</span>
                     </div>
                   </div>
                   
                   <div className="group mb-1">
-                    <h5 className="text-sm font-medium text-blue-200 mb-1">Cơ sở Hàm Nghi</h5>
+                    <h5 className={`${typography.body.medium} font-medium text-blue-200 mb-1`}>Cơ sở Hàm Nghi</h5>
                     <div className="flex items-start gap-3 text-white/80 group-hover:text-white transition-colors">
                       <MapPin className="h-4 w-4 flex-shrink-0 mt-0.5 text-blue-400" />
-                      <span className="text-sm leading-relaxed">39 Hàm Nghi, Phường Sài Gòn, TP. Hồ Chí Minh</span>
+                      <span className={`${typography.body.medium} leading-relaxed`}>39 Hàm Nghi, Phường Sài Gòn, TP. Hồ Chí Minh</span>
                     </div>
                   </div>
                   
                   <div className="group mb-1">
-                    <h5 className="text-sm font-medium text-blue-200 mb-1">Cơ sở Hoàng Diệu</h5>
+                    <h5 className={`${typography.body.medium} font-medium text-blue-200 mb-1`}>Cơ sở Hoàng Diệu</h5>
                     <div className="flex items-start gap-3 text-white/80 group-hover:text-white transition-colors">
                       <MapPin className="h-4 w-4 flex-shrink-0 mt-0.5 text-blue-400" />
-                      <span className="text-sm leading-relaxed">56 Hoàng Diệu 2, Phường Thủ Đức, TP. Hồ Chí Minh</span>
+                      <span className={`${typography.body.medium} leading-relaxed`}>56 Hoàng Diệu 2, Phường Thủ Đức, TP. Hồ Chí Minh</span>
                     </div>
                   </div>
                 </div>
@@ -119,12 +120,12 @@ export function PublicFooter() {
 
               {/* Contact Details */}
               <div className="space-y-2 mb-2">
-                <h4 className="text-lg font-semibold text-white flex items-center gap-2 mb-1">
+                <h4 className={`${typography.heading.h4} font-semibold text-white flex items-center gap-2 mb-1`}>
                   <GraduationCap className="h-5 w-5 text-blue-400" />
                   Liên hệ
                 </h4>
                 <div className="space-y-2">
-                  <a
+                  <Link
                     href="mailto:dhnhtphcm@hub.edu.vn"
                     className="flex items-center gap-3 text-white/80 hover:text-white transition-all duration-200 group mb-1"
                   >
@@ -132,12 +133,12 @@ export function PublicFooter() {
                       <Mail className="h-4 w-4 text-blue-400" />
                     </div>
                     <div>
-                      <p className="text-sm font-medium">Email</p>
-                      <p className="text-sm">dhnhtphcm@hub.edu.vn</p>
+                      <p className={`${typography.body.medium} font-medium`}>Email</p>
+                      <p className={typography.body.medium}>dhnhtphcm@hub.edu.vn</p>
                     </div>
-                  </a>
+                  </Link>
                   
-                  <a
+                  <Link
                     href="tel:0888353488"
                     className="flex items-center gap-3 text-white/80 hover:text-white transition-all duration-200 group mb-1"
                   >
@@ -145,12 +146,12 @@ export function PublicFooter() {
                       <Phone className="h-4 w-4 text-blue-400" />
                     </div>
                     <div>
-                      <p className="text-sm font-medium">Tuyển sinh</p>
-                      <p className="text-sm">0888353488</p>
+                      <p className={`${typography.body.medium} font-medium`}>Tuyển sinh</p>
+                      <p className={typography.body.medium}>0888353488</p>
                     </div>
-                  </a>
+                  </Link>
                   
-                  <a
+                  <Link
                     href="tel:02838212430"
                     className="flex items-center gap-3 text-white/80 hover:text-white transition-all duration-200 group mb-1"
                   >
@@ -158,10 +159,10 @@ export function PublicFooter() {
                       <Phone className="h-4 w-4 text-blue-400" />
                     </div>
                     <div>
-                      <p className="text-sm font-medium">Đào tạo</p>
-                      <p className="text-sm">(028) 38 212 430</p>
+                      <p className={`${typography.body.medium} font-medium`}>Đào tạo</p>
+                      <p className={typography.body.medium}>(028) 38 212 430</p>
                     </div>
-                  </a>
+                  </Link>
                 </div>
               </div>
             </div>
@@ -171,7 +172,7 @@ export function PublicFooter() {
           <div className="space-y-2 mb-2">
             {/* Quick Links */}
             <div className="space-y-6">
-              <h4 className="text-lg font-semibold text-white flex items-center gap-2 mb-1">
+              <h4 className={`${typography.heading.h4} font-semibold text-white flex items-center gap-2 mb-1`}>
                 <div className="h-1 w-8 rounded-full bg-white" />
                 Liên kết nhanh
               </h4>
@@ -181,28 +182,28 @@ export function PublicFooter() {
                   className="flex items-center gap-2 text-white/80 hover:text-white transition-all duration-200 group mb-1"
                 >
                   <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                  <span>Trang chủ</span>
+                  <span className={typography.body.medium}>Trang chủ</span>
                 </Link>
                 <Link
                   href={FOOTER_ROUTES.blog}
                   className="flex items-center gap-2 text-white/80 hover:text-white transition-all duration-200 group mb-1"
                 >
                   <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                  <span>Blog</span>
+                  <span className={typography.body.medium}>Blog</span>
                 </Link>
                 <Link
                   href={FOOTER_ROUTES.categories}
                   className="flex items-center gap-2 text-white/80 hover:text-white transition-all duration-200 group mb-1"
                 >
                   <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                  <span>Danh mục</span>
+                  <span className={typography.body.medium}>Danh mục</span>
                 </Link>
               </nav>
             </div>
 
             {/* Resources */}
             <div className="space-y-2 mb-2">
-              <h4 className="text-lg font-semibold text-white flex items-center gap-2 mb-1">
+              <h4 className={`${typography.heading.h4} font-semibold text-white flex items-center gap-2 mb-1`}>
                 <div className="h-1 w-8 rounded-full bg-white" />
                 Tài nguyên
               </h4>
@@ -212,85 +213,85 @@ export function PublicFooter() {
                   className="flex items-center gap-2 text-white/80 hover:text-white transition-all duration-200 group mb-1"
                 >
                   <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                  <span>Quản trị</span>
+                  <span className={typography.body.medium}>Quản trị</span>
                 </Link>
-                <a
+                <Link
                   href="#"
                   className="flex items-center gap-2 text-white/80 hover:text-white transition-all duration-200 group mb-1"
                 >
                   <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                  <span>Hướng dẫn sử dụng</span>
-                </a>
-                <a
+                  <span className={typography.body.medium}>Hướng dẫn sử dụng</span>
+                </Link>
+                <Link
                   href="#"
                   className="flex items-center gap-2 text-white/80 hover:text-white transition-all duration-200 group mb-1"
                 >
                   <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                  <span>Điều khoản dịch vụ</span>
-                </a>
-                <a
+                  <span className={typography.body.medium}>Điều khoản dịch vụ</span>
+                </Link>
+                <Link
                   href="#"
                   className="flex items-center gap-2 text-white/80 hover:text-white transition-all duration-200 group mb-1"
                 >
                   <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                  <span>Chính sách bảo mật</span>
-                </a>
+                  <span className={typography.body.medium}>Chính sách bảo mật</span>
+                </Link>
               </nav>
             </div>
 
             {/* Social Media */}
             <div className="space-y-2 mb-2">
-              <h4 className="text-lg font-semibold text-white flex items-center gap-2 mb-1">
+              <h4 className={`${typography.heading.h4} font-semibold text-white flex items-center gap-2 mb-1`}>
                 <div className="h-1 w-8 rounded-full bg-white" />
                 Kết nối
               </h4>
               <div className="flex items-center gap-3">
                 {appConfig.social.facebook && (
-                  <a
+                  <Link
                     href={`https://facebook.com/${appConfig.social.facebook}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="group flex items-center justify-center h-12 w-12 rounded-xl bg-white/10 hover:bg-blue-500/20 transition-all duration-300 hover:scale-110"
                   >
                     <Facebook className="h-5 w-5 text-white/80 group-hover:text-white" />
-                  </a>
+                  </Link>
                 )}
                 {appConfig.social.twitter && (
-                  <a
+                  <Link
                     href={`https://twitter.com/${appConfig.social.twitter}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="group flex items-center justify-center h-12 w-12 rounded-xl bg-white/10 hover:bg-sky-500/20 transition-all duration-300 hover:scale-110"
                   >
                     <Twitter className="h-5 w-5 text-white/80 group-hover:text-white" />
-                  </a>
+                  </Link>
                 )}
                 {appConfig.social.linkedin && (
-                  <a
+                  <Link
                     href={`https://linkedin.com/company/${appConfig.social.linkedin}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="group flex items-center justify-center h-12 w-12 rounded-xl bg-white/10 hover:bg-blue-600/20 transition-all duration-300 hover:scale-110"
                   >
                     <Linkedin className="h-5 w-5 text-white/80 group-hover:text-white" />
-                  </a>
+                  </Link>
                 )}
-                <a
+                <Link
                   href="#"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="group flex items-center justify-center h-12 w-12 rounded-xl bg-white/10 hover:bg-pink-500/20 transition-all duration-300 hover:scale-110"
                 >
                   <Instagram className="h-5 w-5 text-white/80 group-hover:text-white" />
-                </a>
-                <a
-                  href="#"
+                </Link>
+                <Link
+                  href={appConfig.social.youtube}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="group flex items-center justify-center h-12 w-12 rounded-xl bg-white/10 hover:bg-red-500/20 transition-all duration-300 hover:scale-110"
                 >
                   <Youtube className="h-5 w-5 text-white/80 group-hover:text-white" />
-                </a>
+                </Link>
               </div>
             </div>
           </div>
@@ -301,7 +302,7 @@ export function PublicFooter() {
 
         {/* Bottom Footer */}
         <div className="flex flex-col lg:flex-row items-center justify-between gap-6 text-white/60">
-          <div className="flex flex-col sm:flex-row items-center gap-2 text-sm">
+          <div className={`flex flex-col sm:flex-row items-center gap-2 ${typography.body.medium}`}>
             <span>© {currentYear} {appConfig.namePublic}.</span>
             <span className="hidden sm:inline">Được phát triển bởi</span>
             <span className="font-semibold text-white hover:text-blue-300 transition-colors cursor-pointer">
@@ -311,18 +312,18 @@ export function PublicFooter() {
           </div>
 
 
-          <div className="flex items-center gap-6 text-sm">
-            <Link href={FOOTER_ROUTES.about} className="hover:text-white transition-colors">
+          <div className={`flex items-center gap-6 ${typography.body.medium}`}>
+            <Link href={FOOTER_ROUTES.about} className={`hover:text-white transition-colors ${typography.body.medium}`}>
               Về chúng tôi
             </Link>
             <span className="text-white/20">•</span>
-            <Link href={FOOTER_ROUTES.contact} className="hover:text-white transition-colors">
+            <Link href={FOOTER_ROUTES.contact} className={`hover:text-white transition-colors ${typography.body.medium}`}>
               Liên hệ
             </Link>
             <span className="text-white/20">•</span>
             <Link 
               href={FOOTER_ROUTES.help}
-              className="hover:text-white transition-colors flex items-center gap-1"
+              className={`hover:text-white transition-colors flex items-center gap-1 ${typography.body.medium}`}
             >
               Trợ giúp
               <ExternalLink className="h-3 w-3" />

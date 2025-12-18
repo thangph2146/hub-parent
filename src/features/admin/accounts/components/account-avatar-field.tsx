@@ -1,5 +1,7 @@
 "use client"
 
+import { typography } from "@/lib/typography"
+
 import * as React from "react"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { Input } from "@/components/ui/input"
@@ -54,7 +56,7 @@ export const AccountAvatarField = ({
                 onError={() => setImageError(true)}
                 onLoad={() => setImageError(false)}
               />
-              <AvatarFallback className="text-2xl font-bold bg-gradient-to-br from-primary via-primary/90 to-chart-1 text-primary-foreground">
+              <AvatarFallback className={`${typography.heading.h4} font-bold bg-gradient-to-br from-primary via-primary/90 to-chart-1 text-primary-foreground`}>
                 {getUserInitials(name, "")}
               </AvatarFallback>
             </Avatar>
@@ -92,7 +94,7 @@ export const AccountAvatarField = ({
                 </Button>
               )}
             </div>
-            <p className="text-sm text-muted-foreground">
+            <p className={typography.body.muted.medium}>
               Nhập URL của ảnh đại diện hoặc để trống để sử dụng chữ cái đầu
             </p>
           </div>

@@ -3,6 +3,7 @@
 import { FieldContent, FieldError } from "@/components/ui/field"
 import { Label } from "@/components/ui/label"
 import { cn } from "@/lib/utils"
+import { typography } from "@/lib/typography"
 import type { ResourceFormField } from "../resource-form"
 
 interface CheckboxFieldProps<T> {
@@ -41,7 +42,7 @@ export const CheckboxField = <T,>({
             error && "border-destructive"
           )}
         />
-        <Label htmlFor={fieldId} className="text-sm font-normal">
+        <Label htmlFor={fieldId} className={`${typography.body.medium} font-normal`}>
           {field.label}
         </Label>
       </div>

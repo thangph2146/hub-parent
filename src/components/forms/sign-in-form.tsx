@@ -5,6 +5,7 @@ import { signIn } from "next-auth/react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Eye, EyeOff } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { typography, headerConfig } from "@/lib/typography"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import {
@@ -165,10 +166,10 @@ export function SignInForm({
           <form onSubmit={handleSubmit} className="p-6 md:p-8">
             <FieldGroup>
               <div className="flex flex-col items-center gap-2 text-center">
-                <h1 className="text-2xl font-bold">Đăng nhập vào hệ thống</h1>
+                <h1 className={headerConfig.section.className}>Đăng nhập vào hệ thống</h1>
               </div>
               {error && (
-                <div className="rounded-lg bg-destructive/10 p-3 text-sm text-destructive">
+                <div className={`rounded-lg bg-destructive/10 p-3 ${typography.body.medium} text-destructive`}>
                   {error}
                 </div>
               )}
@@ -189,7 +190,7 @@ export function SignInForm({
                   <FieldLabel htmlFor="password">Mật khẩu</FieldLabel>
                   <Link
                     href="/auth/forgot-password"
-                    className="ml-auto text-sm underline-offset-2 hover:underline"
+                    className={`ml-auto ${typography.body.medium} underline-offset-2 hover:underline`}
                   >
                     Quên mật khẩu?
                   </Link>

@@ -14,6 +14,7 @@ import { formatDateVi } from "../utils"
 import { queryKeys } from "@/lib/query-keys"
 import { usePermissions } from "@/hooks/use-permissions"
 import { PERMISSIONS } from "@/lib/permissions"
+import { typography } from "@/lib/typography"
 
 export interface CategoryDetailData {
   id: string
@@ -73,13 +74,13 @@ export const CategoryDetailClient = ({ categoryId, category, backUrl = "/admin/c
             {/* Name & Slug */}
             <div className="grid gap-6 grid-cols-1 sm:grid-cols-2">
               <FieldItem icon={Tag} label="Tên danh mục">
-                <div className="text-sm font-medium text-foreground">
+                <div className={`${typography.body.medium} font-medium text-foreground`}>
                   {categoryData.name || "—"}
                 </div>
               </FieldItem>
 
               <FieldItem icon={Hash} label="Slug">
-                <div className="text-sm font-medium text-foreground font-mono">
+                <div className={`${typography.body.medium} font-medium text-foreground font-mono`}>
                   {categoryData.slug || "—"}
                 </div>
               </FieldItem>
@@ -93,8 +94,8 @@ export const CategoryDetailClient = ({ categoryId, category, backUrl = "/admin/c
                     <AlignLeft className="h-4 w-4 text-muted-foreground" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-sm font-medium text-foreground mb-2">Mô tả</h3>
-                    <div className="text-sm leading-relaxed whitespace-pre-wrap text-foreground break-words">
+                    <h3 className={`${typography.body.medium} font-medium text-foreground mb-2`}>Mô tả</h3>
+                    <div className={`${typography.body.medium} leading-relaxed whitespace-pre-wrap text-foreground break-words`}>
                       {categoryData.description || "—"}
                     </div>
                   </div>
@@ -105,13 +106,13 @@ export const CategoryDetailClient = ({ categoryId, category, backUrl = "/admin/c
             {/* Timestamps */}
             <div className="grid gap-6 grid-cols-1 sm:grid-cols-2">
               <FieldItem icon={Calendar} label="Ngày tạo">
-                <div className="text-sm font-medium text-foreground">
+                <div className={`${typography.body.medium} font-medium text-foreground`}>
                   {categoryData.createdAt ? formatDateVi(categoryData.createdAt) : "—"}
                 </div>
               </FieldItem>
 
               <FieldItem icon={Clock} label="Cập nhật lần cuối">
-                <div className="text-sm font-medium text-foreground">
+                <div className={`${typography.body.medium} font-medium text-foreground`}>
                   {categoryData.updatedAt ? formatDateVi(categoryData.updatedAt) : "—"}
                 </div>
               </FieldItem>

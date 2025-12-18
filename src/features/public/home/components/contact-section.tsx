@@ -5,6 +5,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { typography } from "@/lib/typography";
 
 export interface FeatureItem {
   icon: ReactNode;
@@ -47,7 +48,7 @@ export const ContactSection = ({
         <div className="mb-6 sm:mb-8">
           <h3
             className={cn(
-              "text-md sm:text-lg md:text-xl lg:text-2xl font-bold text-foreground mb-3 sm:mb-4",
+              `${typography.title.default} mb-3 sm:mb-4`,
               titleClassName
             )}
           >
@@ -55,7 +56,7 @@ export const ContactSection = ({
           </h3>
           <p
             className={cn(
-              "text-xs sm:text-sm md:text-base text-muted-foreground leading-relaxed",
+              typography.body.muted.small,
               descriptionClassName
             )}
           >
@@ -67,7 +68,7 @@ export const ContactSection = ({
           {contactInfo && (
             <Card className="bg-muted/50 dark:bg-muted rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-border">
               <CardHeader className="px-0">
-                <CardTitle className="text-sm sm:text-base lg:text-lg font-semibold text-card-foreground">
+                <CardTitle className={`${typography.title.small} text-card-foreground`}>
                   {contactInfo.title}
                 </CardTitle>
               </CardHeader>
@@ -75,7 +76,7 @@ export const ContactSection = ({
                 {contactInfo.items.map((item, index) => (
                   <div key={index} className="flex items-center gap-2 sm:gap-3">
                     <div className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0">{item.icon}</div>
-                    <span className="text-xs sm:text-sm text-foreground break-words">{item.text}</span>
+                    <span className={`${typography.body.small} break-words`}>{item.text}</span>
                   </div>
                 ))}
               </div>

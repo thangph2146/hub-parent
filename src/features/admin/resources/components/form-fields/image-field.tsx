@@ -11,6 +11,7 @@ import { ImageIcon, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Image from "next/image"
 import { cn } from "@/lib/utils"
+import { typography } from "@/lib/typography"
 
 export interface ImageFieldProps {
   value: unknown
@@ -90,8 +91,8 @@ export const ImageField = ({
           <div className="relative w-full rounded-lg border border-destructive/50 overflow-hidden bg-destructive/5">
             <div className="aspect-video w-full flex flex-col items-center justify-center gap-2 p-4 text-destructive">
               <ImageIcon className="h-8 w-8" />
-              <span className="text-sm font-medium">Không thể tải hình ảnh</span>
-              <span className="text-xs text-muted-foreground">Vui lòng kiểm tra lại URL</span>
+              <span className={`${typography.body.medium} font-medium`}>Không thể tải hình ảnh</span>
+              <span className={typography.body.muted.small}>Vui lòng kiểm tra lại URL</span>
             </div>
           </div>
         )}
@@ -101,7 +102,7 @@ export const ImageField = ({
           <div className="relative w-full rounded-lg border border-dashed border-border overflow-hidden bg-muted/30">
             <div className="aspect-video w-full flex flex-col items-center justify-center gap-2 text-muted-foreground">
               <ImageIcon className="h-12 w-12" />
-              <span className="text-sm">Chưa có hình ảnh</span>
+              <span className={typography.body.medium}>Chưa có hình ảnh</span>
             </div>
           </div>
         )}

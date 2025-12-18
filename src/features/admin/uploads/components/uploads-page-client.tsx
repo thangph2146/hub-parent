@@ -34,6 +34,7 @@ import { ImageGrid } from "./image-grid"
 import { Pagination } from "./pagination"
 import { ViewModeToggle } from "./view-mode-toggle"
 import { DeleteDialogs } from "./delete-dialogs"
+import { typography } from "@/lib/typography"
 
 export const UploadsPageClient = () => {
   const queryClient = useQueryClient()
@@ -257,7 +258,7 @@ export const UploadsPageClient = () => {
                 <ImageIcon className="h-5 w-5 shrink-0" />
                 <span className="truncate">Tất cả hình ảnh</span>
               </CardTitle>
-              <CardDescription className="text-xs sm:text-sm">
+              <CardDescription className={typography.body.small}>
                 {pagination
                   ? `Tổng cộng ${pagination.total} hình ảnh${viewMode === "tree" && folderTree ? " (theo thư mục)" : ""}`
                   : "Danh sách tất cả hình ảnh đã upload"}
@@ -283,7 +284,7 @@ export const UploadsPageClient = () => {
                       />
                       <label
                         htmlFor="select-all-checkbox"
-                        className="text-sm text-muted-foreground whitespace-nowrap cursor-pointer select-none transition-colors hover:text-foreground"
+                        className={`${typography.body.medium} text-muted-foreground whitespace-nowrap cursor-pointer select-none transition-colors hover:text-foreground`}
                         onClick={(e) => {
                           e.preventDefault()
                           handleSelectAll(isAllSelected ? false : true)
@@ -299,7 +300,7 @@ export const UploadsPageClient = () => {
                       </label>
                     </div>
                   </TooltipTrigger>
-                  <TooltipContent side="bottom" className="text-xs">
+                  <TooltipContent side="bottom" className={typography.body.small}>
                     <div className="flex flex-col gap-1">
                       <span>
                         {isAllSelected
@@ -309,7 +310,7 @@ export const UploadsPageClient = () => {
                             : `Chọn tất cả ${allImages.length} hình ảnh`}
                       </span>
                       <span className="">
-                        Nhấn <kbd className="px-1.5 py-0.5 text-xs font-semibold rounded border">Ctrl+A</kbd> để chọn/bỏ chọn
+                        Nhấn <kbd className={`px-1.5 py-0.5 ${typography.body.small} font-semibold rounded border`}>Ctrl+A</kbd> để chọn/bỏ chọn
                       </span>
                     </div>
                   </TooltipContent>

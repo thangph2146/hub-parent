@@ -10,6 +10,7 @@ import {
   CONTACT_REQUEST_STATUS_COLORS, 
   CONTACT_REQUEST_PRIORITY_COLORS 
 } from "../constants"
+import { typography } from "@/lib/typography"
 
 interface UseContactRequestColumnsOptions {
   togglingRequests: Set<string>
@@ -183,7 +184,7 @@ export const useContactRequestColumns = ({
         headerClassName: "min-w-[140px] max-w-[180px]",
         cell: (row) =>
           row.deletedAt ? (
-            <span className="inline-flex min-w-[88px] items-center justify-center rounded-full bg-rose-100 px-2 py-1 text-xs font-medium text-rose-700">
+            <span className={`inline-flex min-w-[88px] items-center justify-center rounded-full bg-rose-100 px-2 py-1 ${typography.body.small} font-medium text-rose-700`}>
               {CONTACT_REQUEST_LABELS.DELETED}
             </span>
           ) : (
@@ -194,7 +195,7 @@ export const useContactRequestColumns = ({
                 onCheckedChange={(checked) => onToggleRead(row, checked)}
                 aria-label={row.isRead ? "Đánh dấu chưa đọc" : "Đánh dấu đã đọc"}
               />
-              <span className="text-xs text-muted-foreground">
+              <span className={typography.body.muted.small}>
                 {row.isRead ? CONTACT_REQUEST_LABELS.READ : CONTACT_REQUEST_LABELS.UNREAD}
               </span>
             </div>

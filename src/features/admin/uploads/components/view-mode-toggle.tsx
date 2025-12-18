@@ -3,9 +3,9 @@
  * Component để chuyển đổi giữa tree và flat view
  */
 
-import * as React from "react"
 import { Button } from "@/components/ui/button"
 import { Folder, List } from "lucide-react"
+import { typography } from "@/lib/typography"
 
 interface ViewModeToggleProps {
   viewMode: "flat" | "tree"
@@ -20,7 +20,7 @@ export const ViewModeToggle = ({ viewMode, onViewModeChange }: ViewModeTogglePro
         variant={viewMode === "tree" ? "default" : "outline"}
         size="sm"
         onClick={() => onViewModeChange("tree")}
-        className="text-xs px-2 gap-1"
+        className={`${typography.body.small} px-2 gap-1`}
       >
         <Folder className="h-4 w-4" />
         <span className="inline">Thư mục</span>
@@ -30,7 +30,7 @@ export const ViewModeToggle = ({ viewMode, onViewModeChange }: ViewModeTogglePro
         variant={viewMode === "flat" ? "default" : "outline"}
         size="sm"
         onClick={() => onViewModeChange("flat")}
-        className="text-xs px-2 gap-1"
+        className={`${typography.body.small} px-2 gap-1`}
       >
         <List className="h-4 w-4" />
         <span className="inline">Danh sách</span>

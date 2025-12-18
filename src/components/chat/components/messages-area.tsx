@@ -1,6 +1,7 @@
 "use client"
 
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { typography } from "@/lib/typography"
 import type { Message, GroupRole, Contact } from "../types"
 import { EmptyState } from "./empty-state"
 import { MessageBubble } from "./message-bubble"
@@ -63,7 +64,7 @@ export function MessagesArea({
         {filteredMessages.length > 0 ? (
           <>
             {searchQuery.trim() && (
-              <div className="text-xs text-muted-foreground text-center py-2">
+              <div className={`${typography.body.muted.small} text-center py-2`}>
                 Tìm thấy {filteredMessages.length} tin nhắn
               </div>
             )}
@@ -95,8 +96,8 @@ export function MessagesArea({
           </>
         ) : searchQuery.trim() ? (
           <div className="flex flex-col items-center justify-center py-8 text-center">
-            <p className="text-sm text-muted-foreground">Không tìm thấy tin nhắn nào</p>
-            <p className="text-xs text-muted-foreground mt-1">Thử tìm kiếm với từ khóa khác</p>
+            <p className={typography.body.muted.medium}>Không tìm thấy tin nhắn nào</p>
+            <p className={`${typography.body.muted.small} mt-1`}>Thử tìm kiếm với từ khóa khác</p>
           </div>
         ) : isGroupDeleted ? (
           <>

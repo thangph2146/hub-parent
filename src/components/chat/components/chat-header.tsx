@@ -11,6 +11,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet"
 import { ArrowLeft, Search } from "lucide-react"
+import { typography } from "@/lib/typography"
 import type { Contact, Message } from "../types"
 import { filterMessagesByQuery } from "../utils/message-helpers"
 import { MessageSearchSheet } from "./message-search-sheet"
@@ -78,11 +79,11 @@ function ChatHeader(
         )}
         <Avatar className="h-10 w-10 shrink-0">
           <AvatarImage src={contact.image || undefined} alt={contact.name} />
-          <AvatarFallback className="text-xs">{contact.name[0]}</AvatarFallback>
+          <AvatarFallback className={typography.body.small}>{contact.name[0]}</AvatarFallback>
         </Avatar>
         <div className="flex-1 min-w-0">
-          <CardTitle className="text-sm font-semibold truncate">{contact.name}</CardTitle>
-          <CardDescription className="text-xs truncate">
+          <CardTitle className={`${typography.body.medium} font-semibold truncate`}>{contact.name}</CardTitle>
+          <CardDescription className={`${typography.body.small} truncate`}>
             {contact.type === "GROUP" ? `${contact.group?.memberCount || 0} thành viên` : "Contact Info"}
           </CardDescription>
         </div>

@@ -1,5 +1,7 @@
 "use client";
 
+import { typography } from "@/lib/typography";
+
 import {
   Bell,
   User,
@@ -180,13 +182,13 @@ export const NotificationDetailClient = ({
             {/* Kind & Title */}
             <div className="grid gap-6 grid-cols-1 sm:grid-cols-2">
               <FieldItem icon={Bell} label="Loại thông báo">
-                <Badge variant={kindConfigData.variant} className="text-xs">
+                <Badge variant={kindConfigData.variant} className={typography.body.small}>
                   {kindConfigData.label}
                 </Badge>
               </FieldItem>
 
               <FieldItem icon={FileText} label="Tiêu đề">
-                <div className="text-sm font-medium text-foreground">
+                <div className={`${typography.body.medium} font-medium`}>
                   {notificationData.title || "—"}
                 </div>
               </FieldItem>
@@ -200,10 +202,10 @@ export const NotificationDetailClient = ({
                     <FileText className="h-4 w-4 text-muted-foreground" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-sm font-medium text-foreground mb-2">
+                    <h3 className={`${typography.body.medium} font-medium mb-2`}>
                       Mô tả
                     </h3>
-                    <div className="text-sm leading-relaxed whitespace-pre-wrap text-foreground break-words">
+                    <div className={`${typography.body.medium} whitespace-pre-wrap break-words`}>
                       {notificationData.description || "—"}
                     </div>
                   </div>
@@ -214,11 +216,11 @@ export const NotificationDetailClient = ({
             {/* User */}
             <FieldItem icon={User} label="Người dùng">
               <div className="space-y-0.5">
-                <div className="text-sm font-medium text-foreground">
+                <div className={`${typography.body.medium} font-medium`}>
                   {notificationData.user?.email || "—"}
                 </div>
                 {notificationData.user?.name && (
-                  <div className="text-xs text-muted-foreground">
+                  <div className={typography.body.muted.small}>
                     {notificationData.user.name}
                   </div>
                 )}
@@ -264,7 +266,7 @@ export const NotificationDetailClient = ({
                   
                 </div>
                 {!isNotificationOwner && (
-                  <p className="text-xs text-muted-foreground mt-1.5">
+                  <p className={`${typography.body.muted.small} mt-1.5`}>
                     Chỉ có thể thay đổi trạng thái thông báo của chính mình
                   </p>
                 )}
@@ -277,7 +279,7 @@ export const NotificationDetailClient = ({
                     <Clock className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                     <time
                       dateTime={notificationData.readAt}
-                      className="text-sm font-medium text-foreground"
+                      className={`${typography.body.medium} font-medium`}
                       title={new Date(notificationData.readAt).toLocaleString(
                         "vi-VN",
                         {
@@ -324,7 +326,7 @@ export const NotificationDetailClient = ({
                     href={notificationData.actionUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="group inline-flex items-center gap-2 text-sm font-medium text-primary hover:text-primary/80 hover:underline transition-colors w-full min-w-0"
+                    className={`group inline-flex items-center gap-2 ${typography.body.medium} font-medium text-primary hover:text-primary/80 hover:underline transition-colors w-full min-w-0`}
                     title={notificationData.actionUrl}
                   >
                     <span className="truncate flex-1 min-w-0">
@@ -341,7 +343,7 @@ export const NotificationDetailClient = ({
                     <Calendar className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                     <time
                       dateTime={notificationData.createdAt}
-                      className="text-sm font-medium text-foreground"
+                      className={`${typography.body.medium} font-medium`}
                       title={new Date(
                         notificationData.createdAt
                       ).toLocaleString("vi-VN", {
@@ -353,7 +355,7 @@ export const NotificationDetailClient = ({
                     </time>
                   </div>
                 ) : (
-                  <span className="text-sm text-muted-foreground">—</span>
+                  <span className={typography.body.muted.medium}>—</span>
                 )}
               </FieldItem>
 
@@ -378,7 +380,7 @@ export const NotificationDetailClient = ({
                       <time
                         dateTime={notificationData.expiresAt}
                         className={cn(
-                          "text-sm font-medium",
+                          `${typography.body.medium}`,
                           new Date(notificationData.expiresAt) < new Date()
                             ? "text-destructive"
                             : "text-foreground"
@@ -394,7 +396,7 @@ export const NotificationDetailClient = ({
                       </time>
                     </div>
                     {new Date(notificationData.expiresAt) < new Date() && (
-                      <Badge variant="destructive" className="text-xs w-fit">
+                      <Badge variant="destructive" className={`${typography.body.small} w-fit`}>
                         <AlertCircle className="mr-1 h-3 w-3" />
                         Đã hết hạn
                       </Badge>

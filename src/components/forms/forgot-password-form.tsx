@@ -1,5 +1,7 @@
 "use client"
 
+import { typography, headerConfig } from "@/lib/typography"
+
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -28,10 +30,10 @@ export function ForgotPasswordForm({
 
               {/* Title - sử dụng primary color */}
               <div className="space-y-2">
-                <h1 className="text-3xl font-bold tracking-tight text-primary">
+                <h1 className={`${headerConfig.main.className} tracking-tight text-primary`}>
                   Quên mật khẩu?
                 </h1>
-                <p className="text-muted-foreground text-sm md:text-base">
+                <p className={typography.description.default}>
                   Chúng tôi sẽ giúp bạn lấy lại quyền truy cập
                 </p>
               </div>
@@ -47,10 +49,10 @@ export function ForgotPasswordForm({
                     <Info className="h-5 w-5 text-primary" />
                   </div>
                   <div className="flex-1 space-y-2">
-                    <p className="text-base font-semibold text-foreground">
+                    <p className={`${typography.body.large} font-semibold`}>
                       Vui lòng liên hệ phòng QLCTT
                     </p>
-                    <p className="text-sm leading-relaxed text-muted-foreground">
+                    <p className={`${typography.body.muted.medium} leading-relaxed`}>
                       Trường Đại học Ngân hàng Thành phố Hồ Chí Minh để được cấp lại mật khẩu.
                     </p>
                   </div>
@@ -58,7 +60,7 @@ export function ForgotPasswordForm({
 
                 {/* Contact Info - sử dụng card background */}
                 <div className="mt-6 space-y-3 rounded-lg bg-card/80 backdrop-blur-sm border border-border/50 p-4 shadow-sm">
-                  <div className="flex items-center gap-3 text-sm">
+                  <div className={`flex items-center gap-3 ${typography.body.medium}`}>
                     <div className="rounded-md bg-primary/10 p-1.5 dark:bg-primary/20 ring-1 ring-primary/20">
                       <MapPin className="h-4 w-4 text-primary" />
                     </div>
@@ -66,7 +68,7 @@ export function ForgotPasswordForm({
                       Trường Đại học Ngân hàng TP.HCM
                     </span>
                   </div>
-                  <div className="flex items-center gap-3 text-sm">
+                  <div className={`flex items-center gap-3 ${typography.body.medium}`}>
                     <div className="rounded-md bg-secondary/10 p-1.5 dark:bg-secondary/20 ring-1 ring-secondary/20">
                       <Phone className="h-4 w-4 text-secondary" />
                     </div>
@@ -96,7 +98,7 @@ export function ForgotPasswordForm({
               <div className="text-center">
                 <Link
                   href="/auth/sign-in"
-                  className="text-sm text-muted-foreground hover:text-primary transition-colors underline-offset-4 hover:underline"
+                  className={`${typography.body.muted.medium} hover:text-primary transition-colors underline-offset-4 hover:underline`}
                 >
                   Nhớ mật khẩu rồi? Đăng nhập ngay
                 </Link>

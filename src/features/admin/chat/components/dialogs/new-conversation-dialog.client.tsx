@@ -32,6 +32,7 @@ import { Loader2, User } from "lucide-react"
 import { logger } from "@/lib/config"
 import { requestJson } from "@/lib/api/client"
 import { withApiBase } from "@/lib/config/api-paths"
+import { typography } from "@/lib/typography"
 import type { Contact } from "@/components/chat/types"
 
 interface UserOption {
@@ -122,7 +123,7 @@ export const NewConversationDialog = ({ onSelectUser, existingContactIds = [] }:
                 className="h-9 px-3 gap-2 hover:bg-accent"
               >
                 <User className="h-4 w-4" />
-                <span className="inline text-sm">Trò chuyện mới</span>
+                <span className={`inline ${typography.body.medium}`}>Trò chuyện mới</span>
               </Button>
             </DialogTrigger>
           </TooltipTrigger>
@@ -144,7 +145,7 @@ export const NewConversationDialog = ({ onSelectUser, existingContactIds = [] }:
             {isLoading && (
               <div className="flex items-center justify-center py-6">
                 <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                <span className="ml-2 text-sm text-muted-foreground">Đang tải...</span>
+                <span className={`ml-2 ${typography.body.muted.medium}`}>Đang tải...</span>
               </div>
             )}
             {!isLoading && users.length === 0 && searchValue.length >= 2 && (
@@ -164,13 +165,13 @@ export const NewConversationDialog = ({ onSelectUser, existingContactIds = [] }:
                   >
                     <Avatar className="h-8 w-8">
                       <AvatarImage src={user.avatar || undefined} alt={user.name || user.email} />
-                      <AvatarFallback className="text-xs">
+                      <AvatarFallback className={typography.body.small}>
                         {(user.name || user.email).substring(0, 2).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex flex-col flex-1 min-w-0">
-                      <span className="text-sm font-medium truncate">{user.name || user.email}</span>
-                      {user.name && <span className="text-xs truncate">{user.email}</span>}
+                      <span className={`${typography.body.medium} font-medium truncate`}>{user.name || user.email}</span>
+                      {user.name && <span className={`${typography.body.small} truncate`}>{user.email}</span>}
                     </div>
                   </CommandItem>
                 ))}

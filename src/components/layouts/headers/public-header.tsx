@@ -34,6 +34,7 @@ import { appFeatures } from "@/lib/config/app-features";
 import { getResourceMainRoute } from "@/lib/permissions/route-helpers";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
+import { typography } from "@/lib/typography";
 
 /**
  * Helper functions để lấy routes từ appFeatures
@@ -173,13 +174,13 @@ export function PublicHeader() {
             href={PUBLIC_ROUTES.home}
             className="dark:bg-foreground rounded-md p-1 flex items-center gap-2"
           >
-            <Logo className="h-10 w-10 text-blue-100" />
+            <Logo className="h-10 w-10 sm:h-11 sm:w-11 text-blue-100" />  
           </Link>
           <div>
-            <h3 className="text-sm md:text-md text-center font-bold text-foreground">
+            <h3 className={`${typography.heading.h5} text-center`}>
               Trường Đại học Ngân hàng
             </h3>
-            <p className="text-sm font-medium">Thành Phố Hồ Chí Minh</p>
+            <p className={`${typography.body.medium} font-medium`}>Thành Phố Hồ Chí Minh</p>
           </div>
           <Separator orientation="vertical" className="h-4" />
           {mounted ? (
@@ -196,7 +197,7 @@ export function PublicHeader() {
                         <NavigationMenuLink asChild>
                           <Link
                             href={link.href}
-                            className="group inline-flex h-10 w-max items-center justify-center rounded-md bg-transparent px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50"
+                            className={`group inline-flex h-10 w-max items-center justify-center rounded-md bg-transparent px-4 py-2 ${typography.body.medium} font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50`}
                           >
                             {link.href === PUBLIC_ROUTES.home && (
                               <link.icon className="mr-2 h-4 w-4" />
@@ -313,7 +314,7 @@ export function PublicHeader() {
                     </div>
                     <div className="flex flex-col items-start">
                       <span className="font-semibold">Đăng nhập</span>
-                      <span className="text-xs text-muted-foreground">
+                      <span className={typography.body.muted.small}>
                         Đăng nhập vào tài khoản của bạn
                       </span>
                     </div>
@@ -331,7 +332,7 @@ export function PublicHeader() {
                     </div>
                     <div className="flex flex-col items-start">
                       <span className="font-semibold">Đăng ký</span>
-                      <span className="text-xs text-muted-foreground">
+                      <span className={typography.body.muted.small}>
                         Tạo tài khoản mới
                       </span>
                     </div>
@@ -360,11 +361,11 @@ export function PublicHeader() {
                           <link.icon className="text-foreground size-5" />
                         </div>
                         <div className="flex flex-col items-start justify-center min-w-0 flex-1">
-                          <span className="font-medium text-sm">
+                          <span className={`font-medium ${typography.body.medium}`}>
                             {link.title}
                           </span>
                           {link.description && (
-                            <span className="text-xs leading-relaxed">
+                            <span className={typography.body.muted.small}>
                               {link.description}
                             </span>
                           )}
@@ -381,7 +382,7 @@ export function PublicHeader() {
                     link.href !== PUBLIC_ROUTES.blog
                 ).length > 0 && (
                     <>
-                      <span className="px-2 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      <span className={`px-2 py-2 ${typography.body.muted.small} font-semibold uppercase tracking-wider`}>
                         Hỗ trợ
                       </span>
                       {publicLinks
@@ -401,11 +402,11 @@ export function PublicHeader() {
                               <link.icon className="text-foreground size-5" />
                             </div>
                             <div className="flex flex-col items-start justify-center min-w-0 flex-1">
-                              <span className="font-medium text-sm">
+                              <span className={`font-medium ${typography.body.medium}`}>
                                 {link.title}
                               </span>
                               {link.description && (
-                                <span className="text-xs leading-relaxed">
+                                <span className={typography.body.muted.small}>
                                   {link.description}
                                 </span>
                               )}
@@ -490,7 +491,7 @@ function ListItem({
         </div>
         <div className="flex flex-col items-start justify-center">
           <span className="font-medium">{title}</span>
-          {description && <span className="text-xs">{description}</span>}
+          {description && <span className={typography.body.small}>{description}</span>}
         </div>
       </Link>
     </NavigationMenuLink>

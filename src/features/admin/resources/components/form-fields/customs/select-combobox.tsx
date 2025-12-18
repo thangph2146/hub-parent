@@ -17,6 +17,7 @@ import {
   CommandList,
 } from "@/components/ui/command"
 import { cn } from "@/lib/utils"
+import { typography } from "@/lib/typography"
 import type { ResourceFormField } from "../../resource-form"
 
 interface SelectComboboxProps<T> {
@@ -42,7 +43,7 @@ export const SelectCombobox = <T,>({
 
   if (!field.options || field.options.length === 0) {
     return (
-      <div className="flex h-10 w-full items-center rounded-md border border-input bg-background px-3 py-2 text-sm text-muted-foreground">
+      <div className={`flex h-10 w-full items-center rounded-md border border-input bg-background px-3 py-2 ${typography.body.muted.medium}`}>
         Không có tùy chọn
       </div>
     )
