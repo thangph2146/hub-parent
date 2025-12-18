@@ -87,10 +87,10 @@ export function PublicFooter() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {/* Locations */}
               <div className="space-y-2">
-                <h4 className={`${typography.heading.h4} font-semibold text-white flex items-center gap-2 mb-1`}>
+                <h3 className={`${typography.heading.h4} font-semibold text-white flex items-center gap-2 mb-1`}>
                   <Building2 className={`${iconSizes.md} text-blue-400`} />
                   Cơ sở đào tạo
-                </h4>
+                </h3>
                 <div className="space-y-4">
                   <div className="group mb-1">
                     <h5 className={`${typography.body.medium} font-medium text-blue-200 mb-1`}>Trụ sở chính</h5>
@@ -120,10 +120,10 @@ export function PublicFooter() {
 
               {/* Contact Details */}
               <div className="space-y-2 mb-2">
-                <h4 className={`${typography.heading.h4} font-semibold text-white flex items-center gap-2 mb-1`}>
+                <h3 className={`${typography.heading.h4} font-semibold text-white flex items-center gap-2 mb-1`}>
                   <GraduationCap className="h-5 w-5 text-blue-400" />
                   Liên hệ
-                </h4>
+                </h3>
                 <div className="space-y-2">
                   <Link
                     href="mailto:dhnhtphcm@hub.edu.vn"
@@ -172,10 +172,10 @@ export function PublicFooter() {
           <div className="space-y-2 mb-2">
             {/* Quick Links */}
             <div className="space-y-6">
-              <h4 className={`${typography.heading.h4} font-semibold text-white flex items-center gap-2 mb-1`}>
+              <h3 className={`${typography.heading.h4} font-semibold text-white flex items-center gap-2 mb-1`}>
                 <div className="h-1 w-8 rounded-full bg-white" />
                 Liên kết nhanh
-              </h4>
+              </h3>
               <nav className="space-y-3">
                 <Link
                   href={FOOTER_ROUTES.home}
@@ -203,10 +203,10 @@ export function PublicFooter() {
 
             {/* Resources */}
             <div className="space-y-2 mb-2">
-              <h4 className={`${typography.heading.h4} font-semibold text-white flex items-center gap-2 mb-1`}>
+              <h3 className={`${typography.heading.h4} font-semibold text-white flex items-center gap-2 mb-1`}>
                 <div className="h-1 w-8 rounded-full bg-white" />
                 Tài nguyên
-              </h4>
+              </h3>
               <nav className="space-y-3">
                 <Link
                   href={FOOTER_ROUTES.admin}
@@ -241,10 +241,10 @@ export function PublicFooter() {
 
             {/* Social Media */}
             <div className="space-y-2 mb-2">
-              <h4 className={`${typography.heading.h4} font-semibold text-white flex items-center gap-2 mb-1`}>
+              <h3 className={`${typography.heading.h4} font-semibold text-white flex items-center gap-2 mb-1`}>
                 <div className="h-1 w-8 rounded-full bg-white" />
                 Kết nối
-              </h4>
+              </h3>
               <div className="flex items-center gap-3">
                 {appConfig.social.facebook && (
                   <Link

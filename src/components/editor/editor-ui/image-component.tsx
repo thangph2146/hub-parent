@@ -40,6 +40,7 @@ import {
   SELECTION_CHANGE_COMMAND,
 } from "lexical"
 import { $getRoot } from "lexical"
+import type { LexicalNode } from "lexical"
 
 // import brokenImage from '@/registry/new-york-v4/editor/images/image-broken.svg';
 import { ContentEditable } from "@/components/editor/editor-ui/content-editable"
@@ -130,7 +131,9 @@ function LazyImage({
   const getNumericValue = (value: DimensionValue): number | undefined => {
     if (typeof value === "number") return value
     if (typeof value === "string") {
-      const num = parseInt(value.replace("px", ""), 10)
+      // Handle "inherit" case - will be set via style, not attributes
+      if (value === "inherit") return undefined
+      const num = parseInt((value as string).replace("px", ""), 10)
       return isNaN(num) ? undefined : num
     }
     return undefined
@@ -139,14 +142,40 @@ function LazyImage({
   const widthAttr = getNumericValue(width)
   const heightAttr = getNumericValue(height)
   
+  // For inherit dimensions, try to get from image element after load
+  const [actualDimensions, setActualDimensions] = useState<{ width?: number; height?: number }>({})
+  
+  useEffect(() => {
+    if ((width === "inherit" || height === "inherit") && imageRef.current) {
+      const img = imageRef.current
+      if (img.complete && img.naturalWidth && img.naturalHeight) {
+        setActualDimensions({
+          width: img.naturalWidth,
+          height: img.naturalHeight,
+        })
+      } else {
+        const handleLoad = () => {
+          if (img.naturalWidth && img.naturalHeight) {
+            setActualDimensions({
+              width: img.naturalWidth,
+              height: img.naturalHeight,
+            })
+          }
+        }
+        img.addEventListener("load", handleLoad)
+        return () => img.removeEventListener("load", handleLoad)
+      }
+    }
+  }, [width, height, imageRef])
+  
   return (
     <img
       className={className || undefined}
       src={src}
       alt={altText}
       ref={imageRef}
-      width={widthAttr}
-      height={heightAttr}
+      width={widthAttr || actualDimensions.width}
+      height={heightAttr || actualDimensions.height}
       style={{
         height,
         width,
@@ -801,20 +830,28 @@ export default function ImageComponent({
   useEffect(() => {
     editor.getEditorState().read(() => {
       const root = $getRoot()
-      const children = root.getChildren()
       
-      // Find first image node
-      for (const child of children) {
-        if (child.getType() === "image") {
-          // Check if this is the first image (matches current nodeKey)
-          if (child.getKey() === nodeKey) {
-            setIsFirstImage(true)
-          } else {
-            setIsFirstImage(false)
-          }
-          break // Found first image, stop searching
+      // Recursively find first image node
+      const findFirstImage = (node: LexicalNode): string | null => {
+        if (node.getType() === "image") {
+          return node.getKey()
         }
+        
+        // Check children recursively
+        const nodeWithChildren = node as LexicalNode & { getChildren?: () => LexicalNode[] }
+        if (typeof nodeWithChildren.getChildren === "function") {
+          const children = nodeWithChildren.getChildren()
+          for (const child of children) {
+            const imageKey = findFirstImage(child)
+            if (imageKey) return imageKey
+          }
+        }
+        
+        return null
       }
+      
+      const firstImageKey = findFirstImage(root)
+      setIsFirstImage(firstImageKey === nodeKey)
     })
   }, [editor, nodeKey])
   const {
