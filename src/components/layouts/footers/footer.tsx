@@ -18,7 +18,7 @@ import Link from "next/link";
 import { appConfig } from "@/lib/config";
 import { appFeatures } from "@/lib/config/app-features";
 import { getResourceMainRoute } from "@/lib/permissions/route-helpers";
-import { typography, headerConfig } from "@/lib/typography";
+import { typography, headerConfig, iconSizes } from "@/lib/typography";
 import { Logo } from "../../../../public/svg/Logo"
 
 /**
@@ -88,14 +88,14 @@ export function PublicFooter() {
               {/* Locations */}
               <div className="space-y-2">
                 <h4 className={`${typography.heading.h4} font-semibold text-white flex items-center gap-2 mb-1`}>
-                  <Building2 className="h-5 w-5 text-blue-400" />
+                  <Building2 className={`${iconSizes.md} text-blue-400`} />
                   Cơ sở đào tạo
                 </h4>
                 <div className="space-y-4">
                   <div className="group mb-1">
                     <h5 className={`${typography.body.medium} font-medium text-blue-200 mb-1`}>Trụ sở chính</h5>
                     <div className="flex items-start gap-3 text-white/80 group-hover:text-white transition-colors">
-                      <MapPin className="h-4 w-4 flex-shrink-0 mt-0.5 text-blue-400" />
+                      <MapPin className={`${iconSizes.sm} flex-shrink-0 mt-0.5 text-blue-400`} />
                       <span className={`${typography.body.medium} leading-relaxed`}>36 Tôn Thất Đạm, Phường Sài Gòn, TP.Hồ Chí Minh</span>
                     </div>
                   </div>
@@ -103,7 +103,7 @@ export function PublicFooter() {
                   <div className="group mb-1">
                     <h5 className={`${typography.body.medium} font-medium text-blue-200 mb-1`}>Cơ sở Hàm Nghi</h5>
                     <div className="flex items-start gap-3 text-white/80 group-hover:text-white transition-colors">
-                      <MapPin className="h-4 w-4 flex-shrink-0 mt-0.5 text-blue-400" />
+                      <MapPin className={`${iconSizes.sm} flex-shrink-0 mt-0.5 text-blue-400`} />
                       <span className={`${typography.body.medium} leading-relaxed`}>39 Hàm Nghi, Phường Sài Gòn, TP. Hồ Chí Minh</span>
                     </div>
                   </div>
@@ -111,7 +111,7 @@ export function PublicFooter() {
                   <div className="group mb-1">
                     <h5 className={`${typography.body.medium} font-medium text-blue-200 mb-1`}>Cơ sở Hoàng Diệu</h5>
                     <div className="flex items-start gap-3 text-white/80 group-hover:text-white transition-colors">
-                      <MapPin className="h-4 w-4 flex-shrink-0 mt-0.5 text-blue-400" />
+                      <MapPin className={`${iconSizes.sm} flex-shrink-0 mt-0.5 text-blue-400`} />
                       <span className={`${typography.body.medium} leading-relaxed`}>56 Hoàng Diệu 2, Phường Thủ Đức, TP. Hồ Chí Minh</span>
                     </div>
                   </div>

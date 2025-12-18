@@ -6,7 +6,7 @@
 
 import { Button } from "@/components/ui/button"
 import { X } from "lucide-react"
-import { typography } from "@/lib/typography"
+import { typography, iconSizes } from "@/lib/typography"
 import type { Message } from "../types"
 
 interface ReplyBannerProps {
@@ -21,8 +21,8 @@ export function ReplyBanner({ replyingTo, onCancel }: ReplyBannerProps) {
         <p className={`${typography.body.small} font-medium text-muted-foreground mb-0.5`}>Replying to:</p>
         <p className={`${typography.body.small} truncate`}>{replyingTo.content}</p>
       </div>
-      <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0" onClick={onCancel}>
-        <X className="h-3 w-3" />
+      <Button variant="ghost" size="icon" className={`${iconSizes.lg} shrink-0`} onClick={onCancel}>
+        <X className={iconSizes.xs} />
       </Button>
     </div>
   )

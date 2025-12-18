@@ -25,7 +25,7 @@ const Timeline = dynamic(() => import("@/components/ui/timeline").then(mod => ({
   loading: () => <div className="h-96 flex items-center justify-center">Đang tải...</div>,
 })
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import { typography, headerConfig, textColors } from "@/lib/typography";
+import { typography, headerConfig, textColors, iconSizes, responsiveIconSizes } from "@/lib/typography";
 
 /**
  * Helper function để highlight "HUB" trong text với màu secondary
@@ -823,7 +823,7 @@ export const AboutClient = () => {
               className="inline-flex items-center gap-2 text-primary hover:text-primary/80 transition-colors font-medium mt-4"
             >
               <span>Xem thêm</span>
-              <ChevronDown className="h-4 w-4" />
+              <ChevronDown className={iconSizes.sm} />
             </button>
           </div>
 
@@ -1260,14 +1260,14 @@ export const AboutClient = () => {
                   className="absolute left-4 top-1/2 -translate-y-1/2 bg-background/80 hover:bg-background/90 text-foreground rounded-full p-2 shadow-lg transition-all pointer-events-auto"
                   aria-label="Slide trước"
                 >
-                  <ChevronLeft className="h-5 w-5 sm:h-6 sm:w-6" />
+                  <ChevronLeft className={responsiveIconSizes.medium} />
                 </button>
                 <button
                   onClick={nextImage}
                   className="absolute right-4 top-1/2 -translate-y-1/2 bg-background/80 hover:bg-background/90 text-foreground rounded-full p-2 shadow-lg transition-all pointer-events-auto"
                   aria-label="Slide tiếp theo"
                 >
-                  <ChevronRight className="h-5 w-5 sm:h-6 sm:w-6" />
+                  <ChevronRight className={responsiveIconSizes.medium} />
                 </button>
               </div>
             </div>
@@ -1311,7 +1311,7 @@ export const AboutClient = () => {
                 className="bg-background border border-border hover:bg-muted text-foreground rounded-full p-2 shadow-md transition-all"
                 aria-label="Hình ảnh tiếp theo"
               >
-                <ChevronRight className="h-5 w-5" />
+                <ChevronRight className={iconSizes.md} />
               </button>
             </div>
           </div>

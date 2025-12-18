@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Loader2, Trash2 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
-import { typography } from "@/lib/typography"
+import { typography, iconSizes } from "@/lib/typography"
 import type { ImageItem as ImageItemType } from "../types"
 
 interface ImageItemProps {
@@ -72,15 +72,15 @@ export const ImageItem = ({
         <Button
           variant="destructive"
           size="icon"
-          className="h-7 w-7 bg-red-600/80 hover:bg-red-600"
+          className={`${iconSizes.xl} bg-red-600/80 hover:bg-red-600`}
           onClick={() => onDelete(image)}
           disabled={isDeleting}
           title="Xóa hình ảnh"
         >
           {isDeleting ? (
-            <Loader2 className="h-3 w-3 animate-spin" />
+            <Loader2 className={`${iconSizes.xs} animate-spin`} />
           ) : (
-            <Trash2 className="h-3 w-3" />
+            <Trash2 className={iconSizes.xs} />
           )}
         </Button>
       </div>

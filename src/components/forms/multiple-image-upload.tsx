@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils/index"
 import { apiClient } from "@/lib/api/axios"
 import { apiRoutes } from "@/lib/api/routes"
 import { logger } from "@/lib/config"
-import { typography } from "@/lib/typography"
+import { typography, iconSizes } from "@/lib/typography"
 import type { UploadResponse, UploadError } from "@/features/admin/uploads/types"
 import { useToast } from "@/hooks/use-toast"
 
@@ -448,7 +448,7 @@ export function MultipleImageUpload({
           ) : (
             <>
               <div className="rounded-full bg-muted p-4 mb-4">
-                <Upload className="h-8 w-8 text-muted-foreground" />
+                <Upload className={`${iconSizes["2xl"]} text-muted-foreground`} />
               </div>
               <p className={`${typography.body.medium} font-medium mb-1`}>
                 Kéo thả hình ảnh vào đây hoặc click để chọn
@@ -502,10 +502,10 @@ export function MultipleImageUpload({
                   <div className="flex items-center gap-2 mb-1">
                     <p className={`${typography.body.medium} font-medium truncate`}>{item.file.name}</p>
                     {item.status === "success" && (
-                      <CheckCircle2 className="h-4 w-4 text-green-500 flex-shrink-0" />
+                      <CheckCircle2 className={`${iconSizes.sm} text-green-500 flex-shrink-0`} />
                     )}
                     {item.status === "error" && (
-                      <AlertCircle className="h-4 w-4 text-destructive flex-shrink-0" />
+                      <AlertCircle className={`${iconSizes.sm} text-destructive flex-shrink-0`} />
                     )}
                     {item.status === "processing" && (
                       <Loader2 className="h-4 w-4 animate-spin text-primary flex-shrink-0" />

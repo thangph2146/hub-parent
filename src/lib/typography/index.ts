@@ -10,6 +10,8 @@ export {
   fontWeights,
   lineHeights,
   textColors,
+  iconSizes,
+  responsiveIconSizes,
   typography,
   headerConfig,
 } from "./typography"

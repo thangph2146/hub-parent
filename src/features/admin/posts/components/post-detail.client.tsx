@@ -36,7 +36,7 @@ import {
 import { resourceLogger } from "@/lib/config/resource-logger";
 import { usePermissions } from "@/hooks/use-permissions";
 import { PERMISSIONS } from "@/lib/permissions";
-import { typography } from "@/lib/typography";
+import { typography, iconSizes } from "@/lib/typography";
 
 export interface PostDetailData {
   id: string;
@@ -205,14 +205,14 @@ export const PostDetailClient = ({
                 <div className="flex items-center gap-2">
                   {postData.published ? (
                     <>
-                      <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-500" />
+                      <CheckCircle2 className={`${iconSizes.sm} text-green-600 dark:text-green-500`} />
                       <span className={`${typography.body.medium} font-medium text-foreground`}>
                         Đã xuất bản
                       </span>
                     </>
                   ) : (
                     <>
-                      <EyeOff className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                      <EyeOff className={`${iconSizes.sm} text-gray-600 dark:text-gray-400`} />
                       <span className={`${typography.body.medium} font-medium text-foreground`}>
                         Bản nháp
                       </span>

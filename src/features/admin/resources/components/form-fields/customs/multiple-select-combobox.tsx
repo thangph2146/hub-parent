@@ -18,7 +18,7 @@ import {
   CommandList,
 } from "@/components/ui/command"
 import { cn } from "@/lib/utils"
-import { typography } from "@/lib/typography"
+import { typography, iconSizes } from "@/lib/typography"
 import type { ResourceFormField } from "../../resource-form"
 
 interface MultipleSelectComboboxProps<T> {
@@ -131,7 +131,7 @@ export const MultipleSelectCombobox = <T,>({
                     }}
                   >
                     {option.label}
-                    <X className="ml-1.5 h-3 w-3" />
+                    <X className={`ml-1.5 ${iconSizes.xs}`} />
                   </Badge>
                 ))
               ) : (
@@ -145,7 +145,7 @@ export const MultipleSelectCombobox = <T,>({
           <div className="flex items-center gap-1 ml-2 flex-shrink-0">
             {selectedValues.length > 0 && (
               <X
-                className="h-4 w-4 text-muted-foreground hover:text-foreground"
+                className={`${iconSizes.sm} text-muted-foreground hover:text-foreground`}
                 onClick={handleClear}
               />
             )}

@@ -19,7 +19,7 @@ import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { logger } from "@/lib/config/logger"
 import { useSession } from "@/lib/auth"
-import { typography } from "@/lib/typography"
+import { typography, iconSizes } from "@/lib/typography"
 
 interface NotificationItemProps {
   notification: Notification
@@ -164,7 +164,7 @@ export function NotificationItem({
         <div className="mt-0.5 flex-shrink-0">
           <Icon
             className={cn(
-              "h-5 w-5",
+              iconSizes.md,
               notification.kind === "SUCCESS" && "text-green-600",
               notification.kind === "WARNING" && "text-orange-600",
               notification.kind === "ALERT" && "text-red-600",

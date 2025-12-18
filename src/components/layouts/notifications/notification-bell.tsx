@@ -18,7 +18,7 @@ import { NotificationItem } from "./notification-item"
 import { Separator } from "@/components/ui/separator"
 import { isSuperAdmin } from "@/lib/permissions"
 import { logger } from "@/lib/config/logger"
-import { typography, headerConfig } from "@/lib/typography"
+import { typography, headerConfig, iconSizes } from "@/lib/typography"
 
 export function NotificationBell() {
   const router = useRouter()
@@ -253,9 +253,9 @@ export function NotificationBell() {
           className="relative"
           aria-label="Thông báo"
         >
-          <Bell className="h-5 w-5" />
+          <Bell className={iconSizes.md} />
           {data && data.unreadCount > 0 && (
-            <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground">
+            <span className={`absolute -top-1 -right-1 flex ${iconSizes.md} items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground`}>
               {data.unreadCount > 99 ? "99+" : data.unreadCount}
             </span>
           )}
@@ -270,9 +270,9 @@ export function NotificationBell() {
           <div className="flex items-center gap-2">
             <h2 className={headerConfig.subsection.className}>Thông báo</h2>
             {isSocketConnected ? (
-              <Wifi className="h-4 w-4 text-green-500" />
+              <Wifi className={`${iconSizes.sm} text-green-500`} />
             ) : (
-              <WifiOff className="h-4 w-4 text-muted-foreground" />
+              <WifiOff className={`${iconSizes.sm} text-muted-foreground`} />
             )}
           </div>
           <div className="flex items-center gap-2">

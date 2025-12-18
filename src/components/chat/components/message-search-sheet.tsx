@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Button } from "@/components/ui/button"
 import { Search, X } from "lucide-react"
-import { typography } from "@/lib/typography"
+import { typography, iconSizes } from "@/lib/typography"
 import type { Message } from "../types"
 import { formatMessageTime } from "../utils"
 import { highlightText } from "../utils/text-helpers"
@@ -31,7 +31,7 @@ export function MessageSearchSheet({
   return (
     <div className="space-y-4 mt-4 p-4">
       <div className="relative">
-        <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Search className={`absolute left-2 top-1/2 transform -translate-y-1/2 ${iconSizes.sm} text-muted-foreground`} />
         <Input
           placeholder="Nhập từ khóa để tìm kiếm..."
           value={searchQuery}
@@ -43,10 +43,10 @@ export function MessageSearchSheet({
           <Button
             variant="ghost"
             size="icon"
-            className="absolute right-1 top-1/2 transform -translate-y-1/2 h-7 w-7"
+            className={`absolute right-1 top-1/2 transform -translate-y-1/2 ${iconSizes.xl}`}
             onClick={onClose}
           >
-            <X className="h-4 w-4" />
+            <X className={iconSizes.sm} />
           </Button>
         )}
       </div>

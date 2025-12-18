@@ -34,7 +34,7 @@ import { appFeatures } from "@/lib/config/app-features";
 import { getResourceMainRoute } from "@/lib/permissions/route-helpers";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
-import { typography } from "@/lib/typography";
+import { typography, iconSizes } from "@/lib/typography";
 
 /**
  * Helper functions để lấy routes từ appFeatures
@@ -200,7 +200,7 @@ export function PublicHeader() {
                             className={`group inline-flex h-10 w-max items-center justify-center rounded-md bg-transparent px-4 py-2 ${typography.body.medium} font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50`}
                           >
                             {link.href === PUBLIC_ROUTES.home && (
-                              <link.icon className="mr-2 h-4 w-4" />
+                              <link.icon className={`mr-2 ${iconSizes.sm}`} />
                             )}
                             {link.title}
                           </Link>
@@ -280,7 +280,7 @@ export function PublicHeader() {
               aria-controls="mobile-menu"
               aria-label="Toggle menu"
             >
-              <MenuToggleIcon open={open} className="size-5" duration={300} />
+              <MenuToggleIcon open={open} className={iconSizes.md} duration={300} />
             </Button>
           </div>
         ) : (
@@ -479,7 +479,7 @@ function ListItem({
   return (
     <NavigationMenuLink
       className={cn(
-        "w-full flex flex-row gap-x-2 data-[active=true]:focus:bg-accent data-[active=true]:hover:bg-accent data-[active=true]:bg-accent/50 data-[active=true]:text-accent-foreground hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground rounded-sm p-2",
+        "group w-full flex flex-row gap-x-2 data-[active=true]:focus:bg-accent data-[active=true]:hover:bg-accent data-[active=true]:bg-accent/50 data-[active=true]:text-accent-foreground hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground rounded-sm p-2",
         className
       )}
       {...props}
@@ -487,7 +487,7 @@ function ListItem({
     >
       <Link href={href}>
         <div className="bg-background/40 flex aspect-square size-12 items-center justify-center rounded-md border shadow-sm">
-          <Icon className="text-foreground size-5" />
+          <Icon className="text-foreground group-hover:text-accent-foreground group-focus:text-accent-foreground group-data-[active]:text-accent-foreground size-5 transition-colors" />
         </div>
         <div className="flex flex-col items-start justify-center">
           <span className="font-medium">{title}</span>

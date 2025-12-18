@@ -3,7 +3,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { CardDescription, CardTitle } from "@/components/ui/card"
 import { Trash2 } from "lucide-react"
-import { typography } from "@/lib/typography"
+import { typography, iconSizes } from "@/lib/typography"
 import type { Contact } from "../types"
 import { formatTime } from "../utils"
 
@@ -30,7 +30,7 @@ export function ContactItem({ contact, isSelected, onClick }: ContactItemProps) 
               <AvatarFallback className={typography.body.medium}>{contact.name[0]}</AvatarFallback>
             </Avatar>
             {contact.isOnline && (
-              <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-green-500 border-2 border-background" />
+              <span className={`absolute bottom-0 right-0 ${iconSizes.xs} rounded-full bg-green-500 border-2 border-background`} />
             )}
           </div>
           <div className="flex-1 min-w-0">
@@ -38,7 +38,7 @@ export function ContactItem({ contact, isSelected, onClick }: ContactItemProps) 
               <div className="flex items-center gap-2 flex-1 min-w-0">
                 <CardTitle className={`${typography.body.medium} font-medium truncate`}>{contact.name}</CardTitle>
                 {contact.isDeleted && (
-                  <Trash2 className="h-3 w-3 text-destructive shrink-0" aria-label="Deleted" />
+                  <Trash2 className={`${iconSizes.xs} text-destructive shrink-0`} aria-label="Deleted" />
                 )}
               </div>
               <span className={`${typography.body.muted.small} shrink-0`}>

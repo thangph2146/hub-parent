@@ -32,7 +32,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { cn } from "@/lib/utils"
 import { renderFieldInput } from "./form-fields"
 import { applyResourceSegmentToPath } from "@/lib/permissions"
-import { typography } from "@/lib/typography"
+import { typography, iconSizes } from "@/lib/typography"
 
 export interface ResourceFormField<T = unknown> {
   name: keyof T | string
@@ -548,12 +548,12 @@ export const ResourceForm = <T extends Record<string, unknown>>({
       >
         {variant === "page" && resolvedBackUrl ? (
           <>
-            <ArrowLeft className="mr-2 h-5 w-5" />
+            <ArrowLeft className={`mr-2 ${iconSizes.md}`} />
             {cancelLabel}
           </>
         ) : (
           <>
-            <X className="mr-2 h-5 w-5" />
+            <X className={`mr-2 ${iconSizes.md}`} />
             {cancelLabel}
           </>
         )}

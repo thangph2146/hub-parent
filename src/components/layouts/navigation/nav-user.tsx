@@ -1,6 +1,6 @@
 "use client";
 
-import { typography } from "@/lib/typography";
+import { typography, iconSizes } from "@/lib/typography";
 
 import * as React from "react";
 import { useMemo } from "react";
@@ -51,7 +51,7 @@ const iconMap: Record<string, LucideIcon> = {
 };
 
 const createIcon = (Icon: LucideIcon) =>
-  React.createElement(Icon, { className: "h-4 w-4" });
+  React.createElement(Icon, { className: iconSizes.sm });
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -354,10 +354,10 @@ export function NavUser({ className }: { className?: string }) {
 
   const dropdownMenuContent = (
     <DropdownMenuContent
-      className={"w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"}
+      className={"w-(--radix-dropdown-menu-trigger-width) min-w-62 rounded-lg"}
       side={!isInSidebar ? "bottom" : isMobile ? "bottom" : "right"}
       align="end"
-      sideOffset={4}
+      sideOffset={5}
     >
       <DropdownMenuLabel className="p-0 font-normal">
         <div className={`flex items-center gap-2 px-1 py-1.5 text-left ${typography.body.medium}`}>
@@ -395,7 +395,7 @@ export function NavUser({ className }: { className?: string }) {
             )}
           >
             <div className="flex items-center gap-2">
-              <BadgeCheck className={!isInSidebar ? "mr-2 h-5 w-5" : ""} />
+              <BadgeCheck className={!isInSidebar ? `mr-2 ${iconSizes.md}` : ""} />
               <span>Tài khoản</span>
             </div>
           </Link>
@@ -426,7 +426,7 @@ export function NavUser({ className }: { className?: string }) {
                       >
                         <div className="flex items-center gap-2">
                           <LayoutDashboard
-                            className={!isInSidebar ? "mr-2 h-5 w-5" : ""}
+                            className={!isInSidebar ? `mr-2 ${iconSizes.md}` : ""}
                           />
                           <span>{item.title}</span>
                         </div>
@@ -489,10 +489,10 @@ export function NavUser({ className }: { className?: string }) {
             callbackUrl: "/auth/sign-in",
           });
         }}
-        className="text-destructive focus:text-destructive data-[highlighted]:text-destructive data-[highlighted]:bg-destructive/10 disabled:opacity-50"
+        className="w-full text-destructive focus:text-destructive data-[highlighted]:text-destructive data-[highlighted]:bg-destructive/10 disabled:opacity-50"
       >
         <LogOut
-          className={cn("text-destructive", !isInSidebar ? "mr-2 h-5 w-5" : "")}
+          className={cn("text-destructive", !isInSidebar ? `mr-2 ${iconSizes.md}` : "")}
         />
         <span>Đăng xuất</span>
       </DropdownMenuItem>
@@ -564,7 +564,7 @@ export function NavUser({ className }: { className?: string }) {
             <span className={`inline-block ${typography.body.medium} font-medium truncate max-w-[120px]`} suppressHydrationWarning>
               {user.name || user.email}
             </span>
-            <ChevronsUpDown className="h-5 w-5 opacity-50" />
+            <ChevronsUpDown className={`${iconSizes.md} opacity-50`} />
           </Button>
         </DropdownMenuTrigger>
         {dropdownMenuContent}

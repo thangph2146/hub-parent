@@ -21,7 +21,7 @@ import { logger } from "@/lib/config/logger"
 import { usePageLoadLogger } from "@/hooks/use-page-load-logger"
 import { usePermissions } from "@/hooks/use-permissions"
 import { PERMISSIONS } from "@/lib/permissions"
-import { typography } from "@/lib/typography"
+import { typography, iconSizes } from "@/lib/typography"
 
 export interface UserDetailData {
   id: string
@@ -98,15 +98,15 @@ export const UserDetailClient = ({ userId, user, backUrl = "/admin/users" }: Use
               </AvatarFallback>
             </Avatar>
             {detailData.isActive && (
-              <div className="absolute -bottom-1 -right-1 h-6 w-6 rounded-full bg-green-500 border-2 border-background flex items-center justify-center">
-                <CheckCircle2 className="h-3.5 w-3.5 text-white" />
+              <div className={`absolute -bottom-1 -right-1 ${iconSizes.lg} rounded-full bg-green-500 border-2 border-background flex items-center justify-center`}>
+                <CheckCircle2 className={`h-3.5 w-3.5 text-white`} />
               </div>
             )}
           </div>
           <div className="flex-1">
             <h3 className={`${typography.heading.h4} font-semibold`}>{detailData.name || "Chưa có tên"}</h3>
             <p className={`${typography.body.muted.medium} flex items-center gap-2 mt-1`}>
-              <Mail className="h-4 w-4" />
+              <Mail className={iconSizes.sm} />
               {detailData.email}
             </p>
             {detailData.roles && detailData.roles.length > 0 && (

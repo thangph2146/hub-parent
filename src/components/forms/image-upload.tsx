@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils/index"
 import { apiClient } from "@/lib/api/axios"
 import { apiRoutes } from "@/lib/api/routes"
-import { typography } from "@/lib/typography"
+import { typography, iconSizes } from "@/lib/typography"
 import type { UploadResponse, UploadError } from "@/features/admin/uploads/types"
 import { useToast } from "@/hooks/use-toast"
 
@@ -328,13 +328,13 @@ export function ImageUpload({
                   className="absolute top-2 right-2"
                   onClick={handleRemove}
                 >
-                  <X className="h-4 w-4" />
+                  <X className={iconSizes.sm} />
                 </Button>
               )}
             </div>
             {isUploading && (
               <div className="absolute inset-0 flex items-center justify-center bg-background/80 rounded-md">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                <Loader2 className={`${iconSizes["2xl"]} animate-spin text-primary`} />
               </div>
             )}
           </div>

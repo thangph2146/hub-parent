@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { typography } from "@/lib/typography"
+import { typography, iconSizes } from "@/lib/typography"
 import { useSearchParams } from "next/navigation"
 import { useMemo } from "react"
 import { Tag, X } from "lucide-react"
@@ -70,12 +70,12 @@ export const PostTagNav = ({ tags }: PostTagNavProps) => {
             )}
           >
             <Tag className={cn(
-              "h-4 w-4 transition-transform",
+              `${iconSizes.sm} transition-transform`,
               selectedTags.size === 0 && "scale-110"
             )} />
             <span>Tất cả</span>
             {selectedTags.size > 0 && (
-              <X className="h-3 w-3 opacity-50 group-hover:opacity-100" />
+              <X className={`${iconSizes.xs} opacity-50 group-hover:opacity-100`} />
             )}
           </Link>
           {tags.map((tag) => {

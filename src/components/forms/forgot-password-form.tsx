@@ -1,6 +1,6 @@
 "use client"
 
-import { typography, headerConfig } from "@/lib/typography"
+import { typography, headerConfig, iconSizes } from "@/lib/typography"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -24,7 +24,7 @@ export function ForgotPasswordForm({
               <div className="relative">
                 <div className="absolute inset-0 rounded-full bg-primary/20 blur-xl animate-pulse" />
                 <div className="relative rounded-full bg-primary p-4 shadow-lg ring-4 ring-primary/10">
-                  <Shield className="h-8 w-8 text-primary-foreground" />
+                  <Shield className={`${iconSizes["2xl"]} text-primary-foreground`} />
                 </div>
               </div>
 
@@ -46,7 +46,7 @@ export function ForgotPasswordForm({
               <div className="relative space-y-4">
                 <div className="flex items-start gap-3">
                   <div className="mt-0.5 rounded-lg bg-primary/10 p-2.5 dark:bg-primary/20 ring-2 ring-primary/20">
-                    <Info className="h-5 w-5 text-primary" />
+                    <Info className={`${iconSizes.md} text-primary`} />
                   </div>
                   <div className="flex-1 space-y-2">
                     <p className={`${typography.body.large} font-semibold`}>
@@ -62,7 +62,7 @@ export function ForgotPasswordForm({
                 <div className="mt-6 space-y-3 rounded-lg bg-card/80 backdrop-blur-sm border border-border/50 p-4 shadow-sm">
                   <div className={`flex items-center gap-3 ${typography.body.medium}`}>
                     <div className="rounded-md bg-primary/10 p-1.5 dark:bg-primary/20 ring-1 ring-primary/20">
-                      <MapPin className="h-4 w-4 text-primary" />
+                      <MapPin className={`${iconSizes.sm} text-primary`} />
                     </div>
                     <span className="text-foreground font-medium">
                       Trường Đại học Ngân hàng TP.HCM
@@ -70,7 +70,7 @@ export function ForgotPasswordForm({
                   </div>
                   <div className={`flex items-center gap-3 ${typography.body.medium}`}>
                     <div className="rounded-md bg-secondary/10 p-1.5 dark:bg-secondary/20 ring-1 ring-secondary/20">
-                      <Phone className="h-4 w-4 text-secondary" />
+                      <Phone className={`${iconSizes.sm} text-secondary`} />
                     </div>
                     <span className="text-foreground font-medium">
                       Phòng Quản lý Công tác Tuyển sinh (QLCTT)
@@ -90,7 +90,7 @@ export function ForgotPasswordForm({
                 className="w-full bg-primary hover:bg-primary/90 text-primary-foreground shadow-md hover:shadow-lg transition-all duration-200 group"
               >
                 <Link href="/auth/sign-in" className="flex items-center justify-center gap-2">
-                  <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
+                  <ArrowLeft className={`${iconSizes.sm} transition-transform group-hover:-translate-x-1`} />
                   Quay lại đăng nhập
                 </Link>
               </Button>

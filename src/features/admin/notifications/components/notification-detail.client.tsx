@@ -1,6 +1,6 @@
 "use client";
 
-import { typography } from "@/lib/typography";
+import { typography, iconSizes } from "@/lib/typography";
 
 import {
   Bell,
@@ -199,7 +199,7 @@ export const NotificationDetailClient = ({
               <Card className="border border-border/50 bg-card p-5">
                 <div className="flex items-start gap-3">
                   <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted">
-                    <FileText className="h-4 w-4 text-muted-foreground" />
+                    <FileText className={`${iconSizes.sm} text-muted-foreground`} />
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3 className={`${typography.body.medium} font-medium mb-2`}>

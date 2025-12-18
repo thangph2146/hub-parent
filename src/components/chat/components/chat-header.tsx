@@ -11,7 +11,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet"
 import { ArrowLeft, Search } from "lucide-react"
-import { typography } from "@/lib/typography"
+import { typography, iconSizes } from "@/lib/typography"
 import type { Contact, Message } from "../types"
 import { filterMessagesByQuery } from "../utils/message-helpers"
 import { MessageSearchSheet } from "./message-search-sheet"
@@ -73,8 +73,8 @@ function ChatHeader(
     <>
       <div ref={ref} className="flex items-center gap-3 h-16 px-4 border-b shrink-0">
         {showBackButton && onBack && (
-          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onBack}>
-            <ArrowLeft className="h-4 w-4" />
+          <Button variant="ghost" size="icon" className={iconSizes["2xl"]} onClick={onBack}>
+            <ArrowLeft className={iconSizes.sm} />
           </Button>
         )}
         <Avatar className="h-10 w-10 shrink-0">
@@ -92,10 +92,10 @@ function ChatHeader(
           <Button 
             variant="ghost" 
             size="icon" 
-            className="h-8 w-8"
+            className={iconSizes["2xl"]}
             onClick={() => setIsSearchOpen(true)}
           >
-            <Search className="h-4 w-4" />
+            <Search className={iconSizes.sm} />
           </Button>
         </div>
       </div>

@@ -150,13 +150,13 @@ export const useStudentColumns = ({ togglingStudents, canToggleStatus, onToggleS
       columns.push({
         accessorKey: "id" as keyof StudentRow, // Sử dụng id làm accessorKey vì pendingApproval không có trong StudentRow
         header: "Thông báo",
-        className: "min-w-[300px] max-w-[500px]",
-        headerClassName: "min-w-[300px] max-w-[500px]",
+        className: "w-full min-w-[300px] max-w-[500px]",
+        headerClassName: "w-full min-w-[300px] max-w-[500px]",
         cell: (row) => {
           // Hiển thị thông báo đã được duyệt nếu student đã active và chưa bị xóa
           if (row.isActive && !row.deletedAt) {
             return (
-              <Alert variant="default" className="border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-900/20">
+              <Alert variant="default" className="w-full border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-900/20">
                 <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400" />
                 <AlertTitle className={`${typography.body.medium} font-semibold text-green-800 dark:text-green-200`}>
                   {STUDENT_LABELS.APPROVED_TITLE}

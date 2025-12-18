@@ -27,7 +27,7 @@ import {
   CONTACT_REQUEST_STATUS_COLORS, 
   CONTACT_REQUEST_PRIORITY_COLORS 
 } from "../constants"
-import { typography } from "@/lib/typography"
+import { typography, iconSizes } from "@/lib/typography"
 import type { ContactRequestRow, ContactStatus, ContactPriority } from "../types"
 
 export interface ContactRequestDetailData {
@@ -211,7 +211,7 @@ export const ContactRequestDetailClient = ({ contactRequestId, contactRequest, b
             <Card className="border border-border/50 bg-card p-5">
               <div className="flex items-start gap-3">
                 <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted">
-                  <MessageSquare className="h-4 w-4 text-muted-foreground" />
+                  <MessageSquare className={`${iconSizes.sm} text-muted-foreground`} />
                 </div>
                 <div className="flex-1 min-w-0">
                   <h3 className={`${typography.body.medium} font-medium text-foreground mb-2`}>Nội dung</h3>
@@ -338,7 +338,7 @@ export const ContactRequestDetailClient = ({ contactRequestId, contactRequest, b
             onClick={() => router.push(`/admin/contact-requests/${contactRequestId}/edit`)}
             className="gap-2"
           >
-            <Edit className="h-4 w-4" />
+            <Edit className={iconSizes.sm} />
             Chỉnh sửa
           </Button>
         ) : null

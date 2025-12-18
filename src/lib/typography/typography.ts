@@ -129,6 +129,42 @@ export const typography = {
 } as const
 
 /**
+ * Icon Size Classes
+ * Đồng bộ kích thước icon cho toàn bộ hệ thống
+ */
+export const iconSizes = {
+  // Extra small icons (3x3 = 12px) - Badges, inline indicators
+  xs: "h-3 w-3",
+  // Small icons (4x4 = 16px) - Navigation, menu items, form labels
+  sm: "h-4 w-4",
+  // Medium icons (5x5 = 20px) - Buttons, dropdowns, cards
+  md: "h-5 w-5",
+  // Large icons (6x6 = 24px) - Section headers, prominent buttons
+  lg: "h-6 w-6",
+  // Extra large icons (7x7 = 28px) - Large buttons, featured sections
+  xl: "h-7 w-7",
+  // 2XL icons (8x8 = 32px) - Avatars, large featured icons
+  "2xl": "h-8 w-8",
+  // 3XL icons (9x9 = 36px) - Extra large avatars
+  "3xl": "h-9 w-9",
+  // 4XL icons (10x10 = 40px) - Hero sections, large displays
+  "4xl": "h-10 w-10",
+} as const
+
+/**
+ * Responsive Icon Size Classes
+ * Icon sizes responsive theo breakpoints
+ */
+export const responsiveIconSizes = {
+  // Small responsive (4x4 mobile, 5x5 desktop)
+  small: "h-4 w-4 sm:h-5 sm:w-5",
+  // Medium responsive (5x5 mobile, 6x6 desktop)
+  medium: "h-5 w-5 sm:h-6 sm:w-6",
+  // Large responsive (6x6 mobile, 8x8 desktop)
+  large: "h-6 w-6 sm:h-8 sm:w-8",
+} as const
+
+/**
  * Header Configuration
  * Styles cho các header components
  */

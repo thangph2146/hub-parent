@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { useClientOnly } from "@/hooks/use-client-only"
+import { typography, iconSizes } from "@/lib/typography"
 
 interface DatePickerProps {
   date?: Date
@@ -205,7 +206,7 @@ export function DatePicker({
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8 text-muted-foreground hover:text-foreground"
+              className={`${iconSizes["2xl"]} text-muted-foreground hover:text-foreground`}
               onClick={handlePreviousMonth}
               aria-label="Tháng trước"
             >
@@ -215,7 +216,7 @@ export function DatePicker({
               <select
                 value={currentMonthIndex}
                 onChange={handleMonthChange}
-                className="h-8 rounded-md border border-input bg-background px-2 text-sm font-medium outline-none focus-visible:ring-1 focus-visible:ring-ring cursor-pointer"
+                className={`h-8 rounded-md border border-input bg-background px-2 font-medium outline-none focus-visible:ring-1 focus-visible:ring-ring cursor-pointer ${typography.body.small}`}
                 aria-label="Chọn tháng"
               >
                 {monthNames.map((monthName, index) => (
@@ -228,7 +229,7 @@ export function DatePicker({
               <select
                 value={currentYear}
                 onChange={handleYearChange}
-                className="h-8 rounded-md border border-input bg-background px-2 text-sm font-medium outline-none focus-visible:ring-1 focus-visible:ring-ring cursor-pointer"
+                className={`h-8 rounded-md border border-input bg-background px-2 font-medium outline-none focus-visible:ring-1 focus-visible:ring-ring cursor-pointer ${typography.body.small}`}
                 aria-label="Chọn năm"
               >
                 {years.map((year) => (
@@ -241,7 +242,7 @@ export function DatePicker({
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8 text-muted-foreground hover:text-foreground"
+              className={`${iconSizes["2xl"]} text-muted-foreground hover:text-foreground`}
               onClick={handleNextMonth}
               aria-label="Tháng sau"
             >
@@ -312,7 +313,7 @@ export function DatePicker({
         )}
         disabled={disabled}
       >
-        <CalendarIcon className="mr-2 h-3 w-3" />
+        <CalendarIcon className={`mr-2 ${iconSizes.xs}`} />
         {displayDate}
       </Button>
     )
@@ -324,14 +325,14 @@ export function DatePicker({
         <Button
           variant="outline"
           className={cn(
-            "h-8 w-full justify-start text-left text-xs font-normal",
+            `h-8 w-full justify-start text-left font-normal ${typography.body.small}`,
             !hasValue && "text-muted-foreground",
             className,
           )}
           disabled={disabled}
           aria-controls={datePickerId}
         >
-          <CalendarIcon className="mr-2 h-3 w-3" />
+          <CalendarIcon className={`mr-2 ${iconSizes.xs}`} />
           {displayDate}
         </Button>
       </PopoverTrigger>
@@ -350,7 +351,7 @@ export function DatePicker({
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8 text-muted-foreground hover:text-foreground"
+              className={`${iconSizes["2xl"]} text-muted-foreground hover:text-foreground`}
               onClick={handlePreviousMonth}
               aria-label="Tháng trước"
             >
@@ -360,7 +361,7 @@ export function DatePicker({
               <select
                 value={currentMonthIndex}
                 onChange={handleMonthChange}
-                className="h-8 rounded-md border border-input bg-background px-2 text-sm font-medium outline-none focus-visible:ring-1 focus-visible:ring-ring cursor-pointer"
+                className={`h-8 rounded-md border border-input bg-background px-2 font-medium outline-none focus-visible:ring-1 focus-visible:ring-ring cursor-pointer ${typography.body.small}`}
                 aria-label="Chọn tháng"
               >
                 {monthNames.map((monthName, index) => (
@@ -373,7 +374,7 @@ export function DatePicker({
               <select
                 value={currentYear}
                 onChange={handleYearChange}
-                className="h-8 rounded-md border border-input bg-background px-2 text-sm font-medium outline-none focus-visible:ring-1 focus-visible:ring-ring cursor-pointer"
+                className={`h-8 rounded-md border border-input bg-background px-2 font-medium outline-none focus-visible:ring-1 focus-visible:ring-ring cursor-pointer ${typography.body.small}`}
                 aria-label="Chọn năm"
               >
                 {years.map((year) => (
@@ -386,7 +387,7 @@ export function DatePicker({
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8 text-muted-foreground hover:text-foreground"
+              className={`${iconSizes["2xl"]} text-muted-foreground hover:text-foreground`}
               onClick={handleNextMonth}
               aria-label="Tháng sau"
             >

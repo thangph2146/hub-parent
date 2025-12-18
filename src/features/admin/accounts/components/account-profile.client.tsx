@@ -1,6 +1,6 @@
 "use client";
 
-import { typography, headerConfig } from "@/lib/typography";
+import { typography, headerConfig, iconSizes } from "@/lib/typography";
 
 import * as React from "react";
 import {
@@ -110,7 +110,7 @@ export const AccountProfileClient = ({
                 </AvatarFallback>
               </Avatar>
               <div className="absolute -bottom-1 -right-1 h-7 w-7 rounded-full bg-green-500 border-[3px] border-background flex items-center justify-center shadow-md">
-                <CheckCircle2 className="h-4 w-4 text-white" />
+                <CheckCircle2 className={`${iconSizes.sm} text-white`} />
               </div>
             </div>
             <div className="flex-1 min-w-0 space-y-3">
@@ -119,7 +119,7 @@ export const AccountProfileClient = ({
                   {account.name || "Chưa có tên"}
                 </h3>
                 <p className={`${typography.body.muted.medium} flex items-center gap-2 mt-1.5`}>
-                  <Mail className="h-4 w-4 shrink-0" />
+                  <Mail className={`${iconSizes.sm} shrink-0`} />
                   <span className="truncate">{account.email}</span>
                 </p>
               </div>
@@ -131,7 +131,7 @@ export const AccountProfileClient = ({
                       variant="secondary"
                       className={`${typography.body.small} font-medium bg-primary/10 text-primary border-primary/20 hover:bg-primary/20 transition-colors`}
                     >
-                      <Shield className="mr-1.5 h-3 w-3" />
+                      <Shield className={`mr-1.5 ${iconSizes.xs}`} />
                       {role.displayName || role.name}
                     </Badge>
                   ))}
@@ -176,7 +176,7 @@ export const AccountProfileClient = ({
               <Card className="border-2 border-border/50 bg-gradient-to-br from-card to-muted/20 p-6 shadow-sm">
                 <div className="flex items-start gap-4">
                   <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 ring-2 ring-primary/5">
-                    <FileText className="h-5 w-5 text-primary" />
+                    <FileText className={`${iconSizes.md} text-primary`} />
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3 className={`${typography.body.medium} font-semibold mb-3 uppercase tracking-wide`}>
@@ -370,7 +370,7 @@ export const AccountProfileClient = ({
             className="gap-2 shadow-sm"
             size="lg"
           >
-            <Edit className="h-4 w-4" />
+            <Edit className={iconSizes.sm} />
             Chỉnh sửa
           </Button>
         )}

@@ -1,6 +1,6 @@
 "use client";
 
-import { typography, headerConfig } from "@/lib/typography";
+import { typography, headerConfig, iconSizes } from "@/lib/typography";
 
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -470,13 +470,13 @@ export const DashboardStatsClient = ({ stats }: DashboardStatsClientProps) => {
           <div className="flex items-center justify-between">
             <div>
               <h1 className={`${headerConfig.main.className} flex items-center gap-3`}>
-                <BarChart3 className="h-8 w-8 text-primary" />
+                <BarChart3 className={`${iconSizes["2xl"]} text-primary`} />
                 <span className="bg-gradient-to-r from-primary via-primary/90 to-primary/70 bg-clip-text text-transparent">
                   Thống kê chi tiết
                 </span>
               </h1>
               <p className="text-muted-foreground mt-2 flex items-center gap-2">
-                <Calendar className="h-5 w-5" />
+                <Calendar className={iconSizes.md} />
                 {new Date().toLocaleDateString("vi-VN", {
                   weekday: "long",
                   year: "numeric",
