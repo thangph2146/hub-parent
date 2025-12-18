@@ -4,7 +4,7 @@ import { validatePagination, buildPagination } from "@/features/admin/resources/
 import { mapContactRequestRecord, buildWhereClause } from "./helpers"
 import type { ListContactRequestsInput, ContactRequestDetail, ListContactRequestsResult } from "../types"
 
-export async function listContactRequests(params: ListContactRequestsInput = {}): Promise<ListContactRequestsResult> {
+export const listContactRequests = async (params: ListContactRequestsInput = {}): Promise<ListContactRequestsResult> => {
   const { page, limit } = validatePagination(params.page, params.limit, 100)
   const where = buildWhereClause(params)
 
@@ -33,11 +33,11 @@ export async function listContactRequests(params: ListContactRequestsInput = {})
   }
 }
 
-export async function getContactRequestColumnOptions(
+export const getContactRequestColumnOptions = async (
   column: string,
   search?: string,
   limit: number = 50
-): Promise<Array<{ label: string; value: string }>> {
+): Promise<Array<{ label: string; value: string }>> => {
   const where: Prisma.ContactRequestWhereInput = {
     deletedAt: null, // Only active contact requests
   }
@@ -102,9 +102,9 @@ export async function getContactRequestColumnOptions(
       return null
     })
     .filter((item): item is { label: string; value: string } => item !== null)
-}
+};
 
-export async function getContactRequestById(id: string): Promise<ContactRequestDetail | null> {
+export const getContactRequestById = async (id: string): Promise<ContactRequestDetail | null> => {
   const contactRequest = await prisma.contactRequest.findUnique({
     where: { id },
     include: {
@@ -123,5 +123,5 @@ export async function getContactRequestById(id: string): Promise<ContactRequestD
   }
 
   return mapContactRequestRecord(contactRequest)
-}
+};
 

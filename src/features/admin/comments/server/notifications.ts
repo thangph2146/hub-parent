@@ -1,23 +1,17 @@
 import { createNotificationForAllAdmins, emitNotificationToAllAdminsAfterCreate } from "@/features/admin/notifications/server/mutations"
-import { getActorInfo, logNotificationError } from "@/features/admin/notifications/server/notification-helpers"
+import { getActorInfo, logNotificationError, formatItemNames } from "@/features/admin/notifications/server/notification-helpers"
 import { NotificationKind } from "@prisma/client"
 
 export const formatCommentNames = (
   comments: Array<{ authorName: string | null; authorEmail: string; content?: string }>,
   maxDisplay: number = 3
 ): string => {
-  if (comments.length === 0) return ""
-  
-  const names = comments.slice(0, maxDisplay).map((c) => {
-    return c.authorName || c.authorEmail || "Không xác định"
-  })
-  
-  if (comments.length <= maxDisplay) {
-    return names.join(", ")
-  }
-  
-  const remaining = comments.length - maxDisplay
-  return `${names.join(", ")} và ${remaining} bình luận khác`
+  return formatItemNames(
+    comments,
+    (c) => c.authorName || c.authorEmail || "Không xác định",
+    maxDisplay,
+    "bình luận"
+  )
 }
 
 export const notifySuperAdminsOfCommentAction = async (

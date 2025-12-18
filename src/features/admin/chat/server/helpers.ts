@@ -109,12 +109,7 @@ export const mapMessageRecord = (message: MessageWithRelations): MessageDetail =
           }))
       : undefined,
   }
-}
-
-export const mapConversationRecord = (data: unknown) => {
-  // Placeholder for future use
-  return data
-}
+};
 
 export const buildConversationWhereClause = (params: ListConversationsInput): Prisma.MessageWhereInput => {
   const where: Prisma.MessageWhereInput = {

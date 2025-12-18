@@ -1,5 +1,4 @@
 import type { Prisma } from "@prisma/client"
-import type { DataTableResult } from "@/components/tables"
 import {
   serializeDate,
   applyStatusFilter,
@@ -8,8 +7,9 @@ import {
   applyStringFilter,
   applyBooleanFilter,
   applyStatusFilterFromFilters,
+  createSerializeList,
 } from "@/features/admin/resources/server"
-import type { ListUsersInput, ListedUser, UserDetail, ListUsersResult } from "./queries"
+import type { ListUsersInput, ListedUser, UserDetail } from "./queries"
 import type { UserRow } from "../types"
 
 type UserWithRoles = Prisma.UserGetPayload<{
@@ -102,15 +102,7 @@ export const serializeUserForTable = (user: ListedUser): UserRow => {
   }
 }
 
-export const serializeUsersList = (data: ListUsersResult): DataTableResult<UserRow> => {
-  return {
-    page: data.pagination.page,
-    limit: data.pagination.limit,
-    total: data.pagination.total,
-    totalPages: data.pagination.totalPages,
-    rows: data.data.map(serializeUserForTable),
-  }
-}
+export const serializeUsersList = createSerializeList(serializeUserForTable)
 
 export const serializeUserDetail = (user: UserDetail) => {
   return {

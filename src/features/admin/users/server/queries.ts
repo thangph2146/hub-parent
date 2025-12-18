@@ -44,7 +44,7 @@ export interface ListUsersResult {
   pagination: ResourcePagination
 }
 
-export async function listUsers(params: ListUsersInput = {}): Promise<ListUsersResult> {
+export const listUsers = async (params: ListUsersInput = {}): Promise<ListUsersResult> => {
   const { page, limit } = validatePagination(params.page, params.limit, 100)
   const where = buildWhereClause(params)
 
@@ -75,13 +75,13 @@ export async function listUsers(params: ListUsersInput = {}): Promise<ListUsersR
     data: users.map(mapUserRecord),
     pagination: buildPagination(page, limit, total),
   }
-}
+};
 
-export async function getUserColumnOptions(
+export const getUserColumnOptions = async (
   column: string,
   search?: string,
   limit: number = 50
-): Promise<Array<{ label: string; value: string }>> {
+): Promise<Array<{ label: string; value: string }>> => {
   const where: Prisma.UserWhereInput = {}
 
   // Apply status filter (default: active - column options thường chỉ cần active items)
@@ -123,9 +123,9 @@ export async function getUserColumnOptions(
 
   // Map results to options format
   return mapToColumnOptions(results, column)
-}
+};
 
-export async function getActiveRoles(): Promise<Array<{ id: string; name: string; displayName: string }>> {
+export const getActiveRoles = async (): Promise<Array<{ id: string; name: string; displayName: string }>> => {
   const roles = await prisma.role.findMany({
     where: {
       isActive: true,
@@ -141,9 +141,9 @@ export async function getActiveRoles(): Promise<Array<{ id: string; name: string
     },
   })
   return roles
-}
+};
 
-export async function getActiveRolesForSelect(): Promise<Array<{ label: string; value: string }>> {
+export const getActiveRolesForSelect = async (): Promise<Array<{ label: string; value: string }>> => {
   const roles = await prisma.role.findMany({
     where: {
       isActive: true,
@@ -163,9 +163,9 @@ export async function getActiveRolesForSelect(): Promise<Array<{ label: string; 
     label: role.displayName || role.name,
     value: role.id,
   }))
-}
+};
 
-export async function getActiveUsersForSelect(limit: number = 100): Promise<Array<{ label: string; value: string }>> {
+export const getActiveUsersForSelect = async (limit: number = 100): Promise<Array<{ label: string; value: string }>> => {
   const users = await prisma.user.findMany({
     where: {
       isActive: true,
@@ -186,9 +186,9 @@ export async function getActiveUsersForSelect(limit: number = 100): Promise<Arra
     label: user.name ? `${user.name} (${user.email})` : user.email || user.id,
     value: user.id,
   }))
-}
+};
 
-export async function getUserById(id: string): Promise<ListedUser | null> {
+export const getUserById = async (id: string): Promise<ListedUser | null> => {
   const user = await prisma.user.findUnique({
     where: { id },
     include: {
@@ -211,9 +211,9 @@ export async function getUserById(id: string): Promise<ListedUser | null> {
   }
 
   return mapUserRecord(user)
-}
+};
 
-export async function getUserDetailById(id: string): Promise<UserDetail | null> {
+export const getUserDetailById = async (id: string): Promise<UserDetail | null> => {
   const user = await prisma.user.findUnique({
     where: { id },
     include: {
@@ -244,7 +244,7 @@ export async function getUserDetailById(id: string): Promise<UserDetail | null> 
     emailVerified: user.emailVerified,
     updatedAt: user.updatedAt,
   }
-}
+};
 
 // Re-export helpers for convenience
 export { mapUserRecord, type UserWithRoles } from "./helpers"

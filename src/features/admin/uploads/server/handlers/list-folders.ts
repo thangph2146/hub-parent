@@ -10,7 +10,7 @@ import { initializeStorageDirectories } from "@/lib/utils/file-utils"
 import { logger } from "@/lib/config"
 import { scanStorageDirectoryForFolders } from "../utils/folder-scanning"
 
-export async function listFoldersHandler(_req: NextRequest, context: ApiRouteContext) {
+export const listFoldersHandler = async (_req: NextRequest, context: ApiRouteContext) => {
   const userId = getUserId(context)
 
   logger.info("List folders request received", { userId })

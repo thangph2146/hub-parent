@@ -62,7 +62,7 @@ export const HardDeleteGroupDialog = ({
     setDeleteConfirm({
       open: true,
       type: "hard",
-      group,
+      row: group,
       onConfirm: async () => {
         await executeSingleAction("hard-delete", group)
       },
@@ -105,10 +105,10 @@ export const HardDeleteGroupDialog = ({
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 <AlertTriangle className="h-5 w-5 text-destructive" />
-                {GROUP_CONFIRM_MESSAGES.HARD_DELETE_TITLE(deleteConfirm.group?.name)}
+                {GROUP_CONFIRM_MESSAGES.HARD_DELETE_TITLE(deleteConfirm.row?.name)}
               </DialogTitle>
               <DialogDescription>
-                {GROUP_CONFIRM_MESSAGES.HARD_DELETE_DESCRIPTION(deleteConfirm.group?.name)}
+                {GROUP_CONFIRM_MESSAGES.HARD_DELETE_DESCRIPTION(deleteConfirm.row?.name)}
               </DialogDescription>
             </DialogHeader>
             <DialogFooter>

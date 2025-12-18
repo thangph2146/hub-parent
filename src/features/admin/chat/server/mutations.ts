@@ -23,7 +23,7 @@ export interface MarkMessagesAsReadInput {
   userId: string
 }
 
-export async function createMessage(ctx: AuthContext, input: CreateMessageInput): Promise<MessageWithRelations> {
+export const createMessage = async (ctx: AuthContext, input: CreateMessageInput): Promise<MessageWithRelations> => {
   if (!input.content) {
     throw new ApplicationError("Content là bắt buộc", 400)
   }
@@ -183,9 +183,9 @@ export async function createMessage(ctx: AuthContext, input: CreateMessageInput)
   }
 
   return message
-}
+};
 
-export async function markMessageAsRead(ctx: AuthContext, messageId: string, userId: string) {
+export const markMessageAsRead = async (ctx: AuthContext, messageId: string, userId: string) => {
   if (!messageId || !userId) {
     throw new ApplicationError("Message ID and User ID are required", 400)
   }
@@ -366,9 +366,9 @@ export async function markMessageAsRead(ctx: AuthContext, messageId: string, use
   }
 
   return updated
-}
+};
 
-export async function markMessageAsUnread(ctx: AuthContext, messageId: string, userId: string) {
+export const markMessageAsUnread = async (ctx: AuthContext, messageId: string, userId: string) => {
   if (!messageId || !userId) {
     throw new ApplicationError("Message ID and User ID are required", 400)
   }
@@ -462,9 +462,9 @@ export async function markMessageAsUnread(ctx: AuthContext, messageId: string, u
   }
 
   return updated
-}
+};
 
-export async function markMessagesAsRead(ctx: AuthContext, input: MarkMessagesAsReadInput): Promise<{ count: number }> {
+export const markMessagesAsRead = async (ctx: AuthContext, input: MarkMessagesAsReadInput): Promise<{ count: number }> => {
   if (!input.messageIds || input.messageIds.length === 0) {
     return { count: 0 }
   }
@@ -518,13 +518,13 @@ export async function markMessagesAsRead(ctx: AuthContext, input: MarkMessagesAs
   }
 
   return { count: result.count }
-}
+};
 
-export async function markConversationAsRead(
+export const markConversationAsRead = async (
   ctx: AuthContext,
   userId: string,
   otherUserId: string
-): Promise<{ count: number }> {
+): Promise<{ count: number }> => {
   if (!ctx.actorId || ctx.actorId !== userId) {
     throw new ApplicationError("Unauthorized", 401)
   }
@@ -582,13 +582,13 @@ export async function markConversationAsRead(
   }
 
   return { count: result.count }
-}
+};
 
-export async function markGroupMessagesAsRead(
+export const markGroupMessagesAsRead = async (
   ctx: AuthContext,
   userId: string,
   groupId: string
-): Promise<{ count: number }> {
+): Promise<{ count: number }> => {
   if (!ctx.actorId || ctx.actorId !== userId) {
     throw new ApplicationError("Unauthorized", 401)
   }
@@ -701,9 +701,9 @@ export interface CreateGroupInput {
   description?: string
   avatar?: string | null
   memberIds: string[]
-}
+};
 
-export async function createGroup(ctx: AuthContext, input: CreateGroupInput) {
+export const createGroup = async (ctx: AuthContext, input: CreateGroupInput) => {
   if (!input.name?.trim()) {
     throw new ApplicationError("Tên nhóm là bắt buộc", 400)
   }
@@ -783,9 +783,9 @@ export async function createGroup(ctx: AuthContext, input: CreateGroupInput) {
 export interface AddGroupMembersInput {
   groupId: string
   memberIds: string[]
-}
+};
 
-export async function addGroupMembers(ctx: AuthContext, input: AddGroupMembersInput) {
+export const addGroupMembers = async (ctx: AuthContext, input: AddGroupMembersInput) => {
   if (!ctx.actorId) {
     throw new ApplicationError("Unauthorized", 401)
   }
@@ -915,9 +915,9 @@ export interface UpdateGroupInput {
   name?: string
   description?: string
   avatar?: string | null
-}
+};
 
-export async function updateGroup(ctx: AuthContext, input: UpdateGroupInput) {
+export const updateGroup = async (ctx: AuthContext, input: UpdateGroupInput) => {
   if (!ctx.actorId) {
     throw new ApplicationError("Unauthorized", 401)
   }
@@ -1004,9 +1004,9 @@ export async function updateGroup(ctx: AuthContext, input: UpdateGroupInput) {
   }
 
   return updated
-}
+};
 
-export async function deleteGroup(ctx: AuthContext, groupId: string) {
+export const deleteGroup = async (ctx: AuthContext, groupId: string) => {
   if (!ctx.actorId) {
     throw new ApplicationError("Unauthorized", 401)
   }
@@ -1049,9 +1049,9 @@ export async function deleteGroup(ctx: AuthContext, groupId: string) {
   await emitGroupDeleted(groupId)
 
   return deleted
-}
+};
 
-export async function hardDeleteGroup(ctx: AuthContext, groupId: string) {
+export const hardDeleteGroup = async (ctx: AuthContext, groupId: string) => {
   if (!ctx.actorId) {
     throw new ApplicationError("Unauthorized", 401)
   }
@@ -1098,9 +1098,9 @@ export async function hardDeleteGroup(ctx: AuthContext, groupId: string) {
   await emitGroupHardDeleted(groupId, memberIds)
 
   return { success: true }
-}
+};
 
-export async function restoreGroup(ctx: AuthContext, groupId: string) {
+export const restoreGroup = async (ctx: AuthContext, groupId: string) => {
   if (!ctx.actorId) {
     throw new ApplicationError("Unauthorized", 401)
   }
@@ -1148,9 +1148,9 @@ export async function restoreGroup(ctx: AuthContext, groupId: string) {
 export interface RemoveGroupMemberInput {
   groupId: string
   memberId: string
-}
+};
 
-export async function removeGroupMember(ctx: AuthContext, input: RemoveGroupMemberInput) {
+export const removeGroupMember = async (ctx: AuthContext, input: RemoveGroupMemberInput) => {
   if (!ctx.actorId) {
     throw new ApplicationError("Unauthorized", 401)
   }
@@ -1251,9 +1251,9 @@ export interface UpdateGroupMemberRoleInput {
   groupId: string
   memberId: string
   role: "ADMIN" | "MEMBER"
-}
+};
 
-export async function updateGroupMemberRole(ctx: AuthContext, input: UpdateGroupMemberRoleInput) {
+export const updateGroupMemberRole = async (ctx: AuthContext, input: UpdateGroupMemberRoleInput) => {
   if (!ctx.actorId) {
     throw new ApplicationError("Unauthorized", 401)
   }
@@ -1347,9 +1347,9 @@ export async function updateGroupMemberRole(ctx: AuthContext, input: UpdateGroup
   }
 
   return { success: true }
-}
+};
 
-export async function softDeleteMessage(ctx: AuthContext, messageId: string) {
+export const softDeleteMessage = async (ctx: AuthContext, messageId: string) => {
   if (!ctx.actorId) {
     throw new ApplicationError("Unauthorized", 401)
   }
@@ -1421,9 +1421,9 @@ export async function softDeleteMessage(ctx: AuthContext, messageId: string) {
   }
 
   return deleted
-}
+};
 
-export async function hardDeleteMessage(ctx: AuthContext, messageId: string) {
+export const hardDeleteMessage = async (ctx: AuthContext, messageId: string) => {
   if (!ctx.actorId) {
     throw new ApplicationError("Unauthorized", 401)
   }
@@ -1489,9 +1489,9 @@ export async function hardDeleteMessage(ctx: AuthContext, messageId: string) {
   }
 
   return { success: true }
-}
+};
 
-export async function restoreMessage(ctx: AuthContext, messageId: string) {
+export const restoreMessage = async (ctx: AuthContext, messageId: string) => {
   if (!ctx.actorId) {
     throw new ApplicationError("Unauthorized", 401)
   }
@@ -1563,7 +1563,7 @@ export async function restoreMessage(ctx: AuthContext, messageId: string) {
   }
 
   return restored
-}
+};
 
 // Re-export for backward compatibility
 export { ApplicationError, NotFoundError, type AuthContext }

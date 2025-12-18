@@ -11,7 +11,7 @@ import { promises as fs } from "fs"
 import { logger } from "@/lib/config"
 import { resolveAndValidateFolderPath } from "../utils/path-validation"
 
-export async function deleteFolderHandler(req: NextRequest, context: ApiRouteContext) {
+export const deleteFolderHandler = async (req: NextRequest, context: ApiRouteContext) => {
   const userId = getUserId(context)
   const { searchParams } = new URL(req.url)
   const folderPath = searchParams.get("path")

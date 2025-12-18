@@ -17,11 +17,11 @@ export interface ScannedFolder {
 /**
  * Scan directory for folders recursively
  */
-export async function scanDirectoryForFolders(
+export const scanDirectoryForFolders = async (
   dirPath: string,
   basePath: string = "",
   maxDepth: number = 4
-): Promise<ScannedFolder[]> {
+): Promise<ScannedFolder[]> => {
   const folders: ScannedFolder[] = []
 
   try {
@@ -56,12 +56,12 @@ export async function scanDirectoryForFolders(
   }
 
   return folders
-}
+};
 
 /**
  * Scan STORAGE_DIR for all folders
  */
-export async function scanStorageDirectoryForFolders(maxDepth: number = 10): Promise<ScannedFolder[]> {
+export const scanStorageDirectoryForFolders = async (maxDepth: number = 10): Promise<ScannedFolder[]> => {
   const folders: ScannedFolder[] = []
 
   try {
@@ -92,5 +92,5 @@ export async function scanStorageDirectoryForFolders(maxDepth: number = 10): Pro
   }
 
   return folders
-}
+};
 

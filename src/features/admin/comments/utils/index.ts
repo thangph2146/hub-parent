@@ -1,5 +1,6 @@
 export { useCommentColumns } from "./columns"
-export { useCommentRowActions, renderRowActions, type RowActionConfig } from "./row-actions"
+export { useCommentRowActions } from "./row-actions"
+export { renderRowActions, type RowActionConfig } from "@/features/admin/resources/utils/render-row-actions"
 export {
   matchesSearch,
   matchesFilters,

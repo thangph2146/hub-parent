@@ -52,12 +52,12 @@ export interface DashboardStatsData {
   }>
 }
 
-function calculateChange(current: number, previous: number): number {
+const calculateChange = (current: number, previous: number): number => {
   if (previous === 0) return current > 0 ? 100 : 0
   return ((current - previous) / previous) * 100
-}
+};
 
-export async function getDashboardStats(): Promise<DashboardStatsData> {
+export const getDashboardStats = async (): Promise<DashboardStatsData> => {
   const now = new Date()
   const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1)
 
@@ -382,7 +382,7 @@ export async function getDashboardStats(): Promise<DashboardStatsData> {
         categoryData,
         topPosts: topPostsData,
       }
-}
+};
 
 export const getDashboardStatsCached = cache(async (): Promise<DashboardStatsData> => {
   return getDashboardStats()

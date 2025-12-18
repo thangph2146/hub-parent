@@ -1,5 +1,5 @@
 import type { ResourceFormField, ResourceFormSection } from "@/features/admin/resources/components"
-import { validateCategoryName, validateCategorySlug, validateDescription } from "./utils"
+import { validateName, validateSlug, validateDescription } from "./utils"
 import React from "react"
 import { Tag, Hash, AlignLeft } from "lucide-react"
 
@@ -26,7 +26,7 @@ export const getBaseCategoryFields = (): ResourceFormField<CategoryFormData>[] =
       placeholder: "vd: Công nghệ, Hướng dẫn",
       required: true,
       description: "Tên danh mục sẽ hiển thị trên website",
-      validate: validateCategoryName,
+      validate: validateName,
       icon: React.createElement(Tag, { className: "h-4 w-4" }),
       section: "basic",
     },
@@ -38,7 +38,7 @@ export const getBaseCategoryFields = (): ResourceFormField<CategoryFormData>[] =
       placeholder: "vd: cong-nghe, huong-dan",
       required: true,
       description: "URL-friendly identifier (tự động tạo từ tên)",
-      validate: validateCategorySlug,
+      validate: validateSlug,
       icon: React.createElement(Hash, { className: "h-4 w-4" }),
       section: "basic",
     },

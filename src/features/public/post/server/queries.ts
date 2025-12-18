@@ -26,7 +26,7 @@ export interface PostsResult {
   pagination: ResourcePagination
 }
 
-export async function getPosts(params: GetPostsParams = {}): Promise<PostsResult> {
+export const getPosts = async (params: GetPostsParams = {}): Promise<PostsResult> => {
   const paginationResult = validatePagination({
     page: params.page?.toString(),
     limit: params.limit?.toString(),
@@ -97,9 +97,9 @@ export async function getPosts(params: GetPostsParams = {}): Promise<PostsResult
     data: mappedPosts,
     pagination: buildPagination(page, limit, total),
   }
-}
+};
 
-export async function getPostBySlug(slug: string): Promise<PostDetail | null> {
+export const getPostBySlug = async (slug: string): Promise<PostDetail | null> => {
   const post = await prisma.post.findUnique({
     where: {
       slug,
@@ -157,12 +157,12 @@ export async function getPostBySlug(slug: string): Promise<PostDetail | null> {
  * @param limit - Maximum number of related posts to return (default: 4)
  * @returns Array of related posts
  */
-export async function getRelatedPosts(
+export const getRelatedPosts = async (
   postId: string,
   categoryIds: string[],
   tagIds: string[],
   limit: number = 4
-): Promise<Post[]> {
+): Promise<Post[]> => {
   if (categoryIds.length === 0 && tagIds.length === 0) {
     return []
   }
@@ -238,12 +238,12 @@ export async function getRelatedPosts(
   })
 
   return posts.map(mapPostRecord)
-}
+};
 
 /**
  * Get all categories that have published posts
  */
-export async function getCategories() {
+export const getCategories = async () => {
   return await prisma.category.findMany({
     where: {
       deletedAt: null,
@@ -268,12 +268,12 @@ export async function getCategories() {
       name: "asc",
     },
   })
-}
+};
 
 /**
  * Get all tags that have published posts
  */
-export async function getTags() {
+export const getTags = async () => {
   return await prisma.tag.findMany({
     where: {
       deletedAt: null,

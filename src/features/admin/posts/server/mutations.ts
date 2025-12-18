@@ -42,9 +42,7 @@ export {
   type BulkActionResult,
 };
 
-const sanitizePost = (post: PostWithAuthor) => {
-  return mapPostRecord(post);
-};
+const sanitizePost = (post: PostWithAuthor) => mapPostRecord(post);
 
 export const createPost = async (ctx: AuthContext, input: CreatePostSchema) => {
   const startTime = Date.now();
@@ -380,7 +378,7 @@ export const updatePost = async (
   return sanitized;
 }
 
-export async function deletePost(ctx: AuthContext, postId: string) {
+export const deletePost = async (ctx: AuthContext, postId: string) => {
   const startTime = Date.now();
 
   logActionFlow("posts", "delete", "start", { postId, actorId: ctx.actorId });
@@ -424,7 +422,7 @@ export async function deletePost(ctx: AuthContext, postId: string) {
   );
 
   return { success: true };
-}
+};
 
 export const restorePost = async (ctx: AuthContext, postId: string) => {
   const startTime = Date.now();

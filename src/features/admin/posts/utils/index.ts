@@ -1,6 +1,6 @@
 export { usePostColumns } from "./columns"
-export { usePostRowActions, renderRowActions } from "./row-actions"
-export type { RowActionConfig } from "./row-actions"
+export { usePostRowActions } from "./row-actions"
+export { renderRowActions, type RowActionConfig } from "@/features/admin/resources/utils/render-row-actions"
 export {
   matchesSearch,
   matchesFilters,

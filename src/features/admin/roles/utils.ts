@@ -31,18 +31,3 @@ export const validateDisplayName = (value: unknown): { valid: boolean; error?: s
   return { valid: true }
 }
 
-export const validatePermissions = (value: unknown): { valid: boolean; error?: string } => {
-  if (value === undefined || value === null) {
-    return { valid: true } // Optional field
-  }
-  if (!Array.isArray(value)) {
-    return { valid: false, error: "Quyền phải là một mảng" }
-  }
-  for (const perm of value) {
-    if (typeof perm !== "string" || perm.trim() === "") {
-      return { valid: false, error: "Mỗi quyền phải là một chuỗi không rỗng" }
-    }
-  }
-  return { valid: true }
-}
-

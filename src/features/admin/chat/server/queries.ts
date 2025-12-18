@@ -78,7 +78,7 @@ export interface MessageDetail {
   }[] // List of users who have read this message (for group messages)
 }
 
-export async function listConversations(params: ListConversationsInput): Promise<ListConversationsResult> {
+export const listConversations = async (params: ListConversationsInput): Promise<ListConversationsResult> => {
   const { userId, page = 1, limit = 50, search } = params
 
   let matchingUserIds: string[] | undefined = undefined
@@ -261,13 +261,13 @@ export async function listConversations(params: ListConversationsInput): Promise
       totalPages,
     },
   }
-}
+};
 
-export async function getMessagesBetweenUsers(
+export const getMessagesBetweenUsers = async (
   userId: string,
   otherUserId: string,
   limit: number = 100
-): Promise<MessageDetail[]> {
+): Promise<MessageDetail[]> => {
   const messages = await prisma.message.findMany({
     where: {
       OR: [
@@ -323,13 +323,13 @@ export async function getMessagesBetweenUsers(
   })
 
   return messages.map(mapMessageRecord)
-}
+};
 
-export async function getMessagesForGroup(
+export const getMessagesForGroup = async (
   groupId: string,
   userId: string,
   limit: number = 100
-): Promise<MessageDetail[]> {
+): Promise<MessageDetail[]> => {
   // Verify user is a member of the group
   const groupMember = await prisma.groupMember.findFirst({
     where: {
@@ -395,9 +395,9 @@ export async function getMessagesForGroup(
   })
 
   return messages.map(mapMessageRecord)
-}
+};
 
-export async function getMessageById(id: string): Promise<MessageDetail | null> {
+export const getMessageById = async (id: string): Promise<MessageDetail | null> => {
   const message = await prisma.message.findUnique({
     where: { id },
     include: {
@@ -449,9 +449,9 @@ export async function getMessageById(id: string): Promise<MessageDetail | null> 
   }
 
   return mapMessageRecord(message)
-}
+};
 
-export async function listGroups(input: ListGroupsInput) {
+export const listGroups = async (input: ListGroupsInput) => {
   const page = input.page || 1
   const limit = input.limit || 50
   const skip = (page - 1) * limit
@@ -588,9 +588,9 @@ export async function listGroups(input: ListGroupsInput) {
       totalPages: Math.ceil(total / limit),
     },
   }
-}
+};
 
-export async function getGroup(groupId: string, userId: string) {
+export const getGroup = async (groupId: string, userId: string) => {
   const groupMember = await prisma.groupMember.findFirst({
     where: {
       groupId,
@@ -654,7 +654,7 @@ export async function getGroup(groupId: string, userId: string) {
     memberCount: groupMember.group.members.length,
     userRole: groupMember.role,
   }
-}
+};
 
 // Re-export helpers
-export { mapMessageRecord, mapConversationRecord, type MessageWithRelations } from "./helpers"
+export { mapMessageRecord, type MessageWithRelations } from "./helpers"

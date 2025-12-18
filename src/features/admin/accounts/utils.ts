@@ -1,15 +1,7 @@
-import { getUserInitials, validatePassword } from "@/features/admin/resources/utils"
+import { getUserInitials, validatePassword, validateName } from "@/features/admin/resources/utils"
 
 // Re-export common utilities from resources
-export { getUserInitials, validatePassword }
-
-// Account-specific validation (simpler than resources version)
-export const validateName = (value: unknown): { valid: boolean; error?: string } => {
-  if (value && typeof value === "string" && value.trim().length < 2) {
-    return { valid: false, error: "Tên phải có ít nhất 2 ký tự" }
-  }
-  return { valid: true }
-}
+export { getUserInitials, validatePassword, validateName }
 
 type StructuredAddress = {
   address?: string

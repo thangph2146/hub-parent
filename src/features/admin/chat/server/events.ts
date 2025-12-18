@@ -2,7 +2,7 @@ import { prisma } from "@/lib/database"
 import { getSocketServer } from "@/lib/socket/state"
 import { logger } from "@/lib/config"
 
-export async function emitGroupDeleted(groupId: string): Promise<void> {
+export const emitGroupDeleted = async (groupId: string): Promise<void> => {
   const io = getSocketServer()
   if (!io) return
 
@@ -23,9 +23,9 @@ export async function emitGroupDeleted(groupId: string): Promise<void> {
   } catch (error) {
     logger.error("Failed to emit socket group delete", error instanceof Error ? error : new Error(String(error)))
   }
-}
+};
 
-export async function emitGroupHardDeleted(groupId: string, memberIds: string[]): Promise<void> {
+export const emitGroupHardDeleted = async (groupId: string, memberIds: string[]): Promise<void> => {
   const io = getSocketServer()
   if (!io) return
 
@@ -37,9 +37,9 @@ export async function emitGroupHardDeleted(groupId: string, memberIds: string[])
   } catch (error) {
     logger.error("Failed to emit socket group hard delete", error instanceof Error ? error : new Error(String(error)))
   }
-}
+};
 
-export async function emitGroupRestored(groupId: string): Promise<void> {
+export const emitGroupRestored = async (groupId: string): Promise<void> => {
   const io = getSocketServer()
   if (!io) return
 
@@ -60,5 +60,5 @@ export async function emitGroupRestored(groupId: string): Promise<void> {
   } catch (error) {
     logger.error("Failed to emit socket group restore", error instanceof Error ? error : new Error(String(error)))
   }
-}
+};
 

@@ -11,12 +11,12 @@ import { promises as fs } from "fs"
 import { logger } from "@/lib/config"
 import { sanitizeFolderName, resolveAndValidateFolderPath } from "../utils/path-validation"
 
-export async function createFolderHandler(
+export const createFolderHandler = async (
   req: NextRequest,
   context: ApiRouteContext,
   folderName: string | null,
   parentPath: string | null
-) {
+) => {
   const userId = getUserId(context)
 
   logger.info("Create folder request received", {

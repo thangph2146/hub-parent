@@ -62,7 +62,7 @@ export const DeleteGroupDialog = ({
     setDeleteConfirm({
       open: true,
       type: "soft",
-      group,
+      row: group,
       onConfirm: async () => {
         await executeSingleAction("delete", group)
         onOpenChange(false)
@@ -76,7 +76,7 @@ export const DeleteGroupDialog = ({
     setDeleteConfirm({
       open: true,
       type: "hard",
-      group,
+      row: group,
       onConfirm: async () => {
         await executeSingleAction("hard-delete", group)
         onOpenChange(false)
@@ -147,17 +147,17 @@ export const DeleteGroupDialog = ({
               <DialogTitle className="flex items-center gap-2">
                 <AlertTriangle className="h-5 w-5 text-destructive" />
                 {deleteConfirm.type === "hard"
-                  ? GROUP_CONFIRM_MESSAGES.HARD_DELETE_TITLE(deleteConfirm.group?.name)
+                  ? GROUP_CONFIRM_MESSAGES.HARD_DELETE_TITLE(deleteConfirm.row?.name)
                   : deleteConfirm.type === "restore"
-                    ? GROUP_CONFIRM_MESSAGES.RESTORE_TITLE(deleteConfirm.group?.name)
-                    : GROUP_CONFIRM_MESSAGES.DELETE_TITLE(deleteConfirm.group?.name)}
+                    ? GROUP_CONFIRM_MESSAGES.RESTORE_TITLE(deleteConfirm.row?.name)
+                    : GROUP_CONFIRM_MESSAGES.DELETE_TITLE(deleteConfirm.row?.name)}
               </DialogTitle>
               <DialogDescription>
                 {deleteConfirm.type === "hard"
-                  ? GROUP_CONFIRM_MESSAGES.HARD_DELETE_DESCRIPTION(deleteConfirm.group?.name)
+                  ? GROUP_CONFIRM_MESSAGES.HARD_DELETE_DESCRIPTION(deleteConfirm.row?.name)
                   : deleteConfirm.type === "restore"
-                    ? GROUP_CONFIRM_MESSAGES.RESTORE_DESCRIPTION(deleteConfirm.group?.name)
-                    : GROUP_CONFIRM_MESSAGES.DELETE_DESCRIPTION(deleteConfirm.group?.name)}
+                    ? GROUP_CONFIRM_MESSAGES.RESTORE_DESCRIPTION(deleteConfirm.row?.name)
+                    : GROUP_CONFIRM_MESSAGES.DELETE_DESCRIPTION(deleteConfirm.row?.name)}
               </DialogDescription>
             </DialogHeader>
             <DialogFooter>

@@ -16,7 +16,7 @@ export interface AuthInfo {
   isSuperAdminUser: boolean
 }
 
-export async function getAuthInfo(): Promise<AuthInfo> {
+export const getAuthInfo = async (): Promise<AuthInfo> => {
   const [session, permissions] = await Promise.all([getSession(), getPermissions()])
   const sessionWithMeta = session as SessionWithMeta | null
   const roles = sessionWithMeta?.roles ?? []
@@ -27,5 +27,5 @@ export async function getAuthInfo(): Promise<AuthInfo> {
     actorId: sessionWithMeta?.user?.id,
     isSuperAdminUser: isSuperAdmin(roles),
   }
-}
+};
 

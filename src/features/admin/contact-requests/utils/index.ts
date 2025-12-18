@@ -1,5 +1,6 @@
 export { useContactRequestColumns } from "./columns"
-export { useContactRequestRowActions, renderRowActions, type RowActionConfig } from "./row-actions"
+export { useContactRequestRowActions } from "./row-actions"
+export { renderRowActions, type RowActionConfig } from "@/features/admin/resources/utils/render-row-actions"
 export {
   matchesSearch,
   matchesFilters,

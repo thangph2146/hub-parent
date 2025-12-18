@@ -1,5 +1,6 @@
 export { useNotificationColumns } from "./columns"
-export { useNotificationRowActions, renderRowActions, type RowActionConfig } from "./row-actions"
+export { useNotificationRowActions } from "./row-actions"
+export { renderRowActions, type RowActionConfig } from "@/features/admin/resources/utils/render-row-actions"
 export {
   matchesSearch,
   matchesFilters,

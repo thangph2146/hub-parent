@@ -4,7 +4,7 @@ import { validatePagination } from "@/features/admin/resources/server"
 import { mapSessionRecord, buildWhereClause } from "./helpers"
 import type { ListSessionsInput, SessionDetail, ListSessionsResult } from "../types"
 
-export async function listSessions(params: ListSessionsInput = {}): Promise<ListSessionsResult> {
+export const listSessions = async (params: ListSessionsInput = {}): Promise<ListSessionsResult> => {
   const { page, limit } = validatePagination(params.page, params.limit, 100)
   const where = buildWhereClause(params)
 
@@ -46,13 +46,13 @@ export async function listSessions(params: ListSessionsInput = {}): Promise<List
     limit,
     totalPages,
   }
-}
+};
 
-export async function getSessionColumnOptions(
+export const getSessionColumnOptions = async (
   column: string,
   search?: string,
   limit: number = 50
-): Promise<Array<{ label: string; value: string }>> {
+): Promise<Array<{ label: string; value: string }>> => {
   const where: Prisma.SessionWhereInput = {
     isActive: true, // Only active sessions
   }
@@ -119,9 +119,9 @@ export async function getSessionColumnOptions(
       return null
     })
     .filter((item): item is { label: string; value: string } => item !== null)
-}
+};
 
-export async function getSessionById(id: string): Promise<SessionDetail | null> {
+export const getSessionById = async (id: string): Promise<SessionDetail | null> => {
   const session = await prisma.session.findUnique({
     where: { id },
     include: {
@@ -144,5 +144,5 @@ export async function getSessionById(id: string): Promise<SessionDetail | null> 
     userName: session.user?.name || null,
     userEmail: session.user?.email || "",
   }
-}
+};
 

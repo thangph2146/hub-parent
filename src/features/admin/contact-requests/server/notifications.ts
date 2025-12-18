@@ -11,6 +11,7 @@ import {
 import {
   getActorInfo,
   logNotificationError,
+  formatItemNames,
 } from "@/features/admin/notifications/server/notification-helpers";
 import { NotificationKind } from "@prisma/client";
 
@@ -18,18 +19,12 @@ export const formatContactRequestNames = (
   contactRequests: Array<{ subject: string; name: string }>,
   maxDisplay: number = 3
 ): string => {
-  if (contactRequests.length === 0) return "";
-
-  const names = contactRequests.slice(0, maxDisplay).map((cr) => {
-    return cr.subject || cr.name || "Không xác định";
-  });
-
-  if (contactRequests.length <= maxDisplay) {
-    return names.join(", ");
-  }
-
-  const remaining = contactRequests.length - maxDisplay;
-  return `${names.join(", ")} và ${remaining} yêu cầu khác`;
+  return formatItemNames(
+    contactRequests,
+    (cr) => cr.subject || cr.name || "Không xác định",
+    maxDisplay,
+    "yêu cầu"
+  );
 };
 
 export const notifySuperAdminsOfContactRequestAction = async (

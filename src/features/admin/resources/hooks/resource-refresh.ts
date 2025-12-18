@@ -10,12 +10,12 @@ interface RunResourceRefreshOptions {
 
 const lastRefreshTime = new Map<string, number>()
 
-export async function runResourceRefresh({
+export const runResourceRefresh = async ({
   refresh,
   resource = "unknown",
   skipIfSocketRefreshed: _skipIfSocketRefreshed = true,
   debounceMs = 500,
-}: RunResourceRefreshOptions): Promise<void> {
+}: RunResourceRefreshOptions): Promise<void> => {
   if (!refresh) return
 
   const now = Date.now()
@@ -37,5 +37,5 @@ export async function runResourceRefresh({
       error as Error,
     )
   }
-}
+};
 

@@ -84,7 +84,7 @@ const POST_INCLUDE = {
   },
 } satisfies Prisma.PostInclude
 
-export async function listPosts(params: ListPostsInput = {}): Promise<ListPostsResult> {
+export const listPosts = async (params: ListPostsInput = {}): Promise<ListPostsResult> => {
   const { page, limit } = validatePagination(params.page, params.limit, 100)
   const where = buildWhereClause(params)
 
@@ -103,13 +103,13 @@ export async function listPosts(params: ListPostsInput = {}): Promise<ListPostsR
     data: posts.map(mapPostRecord),
     pagination: buildPagination(page, limit, total),
   }
-}
+};
 
-export async function getPostColumnOptions(
+export const getPostColumnOptions = async (
   column: string,
   search?: string,
   limit: number = 50
-): Promise<Array<{ label: string; value: string }>> {
+): Promise<Array<{ label: string; value: string }>> => {
   const where: Prisma.PostWhereInput = {
     deletedAt: null, // Only active posts
   }
@@ -165,7 +165,7 @@ export async function getPostColumnOptions(
   
 }
 
-export async function getPostById(id: string): Promise<PostDetail | null> {
+export const getPostById = async (id: string): Promise<PostDetail | null> => {
   const post = await prisma.post.findUnique({
     where: { id },
     include: POST_INCLUDE,
@@ -179,7 +179,7 @@ export async function getPostById(id: string): Promise<PostDetail | null> {
     ...mapPostRecord(post),
     content: post.content,
   }
-}
+};
 
 // Re-export helpers for convenience
 export { mapPostRecord, type PostWithAuthor } from "./helpers"

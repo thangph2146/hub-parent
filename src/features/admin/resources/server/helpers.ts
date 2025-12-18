@@ -86,6 +86,32 @@ export const serializeResourceList = <T extends Record<string, unknown>>(
   }
 }
 
+/**
+ * Generic helper để serialize list với custom serializer function
+ * Giảm code duplication trong các serializeXXXList functions
+ */
+export const createSerializeList = <TInput, TOutput extends object>(
+  serializeForTable: (item: TInput) => TOutput
+) => {
+  return (data: {
+    pagination: {
+      page: number
+      limit: number
+      total: number
+      totalPages: number
+    }
+    data: TInput[]
+  }): DataTableResult<TOutput> => {
+    return {
+      page: data.pagination.page,
+      limit: data.pagination.limit,
+      total: data.pagination.total,
+      totalPages: data.pagination.totalPages,
+      rows: data.data.map(serializeForTable),
+    }
+  }
+}
+
 export const applyStatusFilter = <T extends Record<string, unknown>>(
   where: T,
   status?: "active" | "deleted" | "all"
