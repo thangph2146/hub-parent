@@ -19,6 +19,7 @@ export function ContentEditable({
     <LexicalContentEditable
       className={cn("ContentEditable__root relative block min-h-72 px-8 py-4 focus:outline-none", className)}
       aria-placeholder={placeholder}
+      aria-label={placeholder || "Editor nội dung"}
       placeholder={
         <div
           className={cn(

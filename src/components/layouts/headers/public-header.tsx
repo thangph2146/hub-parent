@@ -173,6 +173,7 @@ export function PublicHeader() {
           <Link
             href={PUBLIC_ROUTES.home}
             className="dark:bg-foreground rounded-md p-1 flex items-center gap-2"
+            aria-label="Trang chủ - Trường Đại học Ngân hàng TP.HCM"
           >
             <Logo className="h-10 w-10 sm:h-11 sm:w-11 text-blue-100" />  
           </Link>

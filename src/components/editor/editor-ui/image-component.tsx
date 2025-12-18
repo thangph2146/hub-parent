@@ -112,6 +112,7 @@ function LazyImage({
   height,
   maxWidth: _maxWidth,
   onError,
+  fetchPriority = "auto",
 }: {
   altText: string
   className: string | null
@@ -121,14 +122,31 @@ function LazyImage({
   src: string
   width: DimensionValue
   onError: () => void
+  fetchPriority?: "high" | "low" | "auto"
 }): JSX.Element {
   useSuspenseImage(src)
+  
+  // Convert DimensionValue to number for width/height attributes
+  const getNumericValue = (value: DimensionValue): number | undefined => {
+    if (typeof value === "number") return value
+    if (typeof value === "string") {
+      const num = parseInt(value.replace("px", ""), 10)
+      return isNaN(num) ? undefined : num
+    }
+    return undefined
+  }
+  
+  const widthAttr = getNumericValue(width)
+  const heightAttr = getNumericValue(height)
+  
   return (
     <img
       className={className || undefined}
       src={src}
       alt={altText}
       ref={imageRef}
+      width={widthAttr}
+      height={heightAttr}
       style={{
         height,
         width,
@@ -137,6 +155,9 @@ function LazyImage({
       }}
       onError={onError}
       draggable="false"
+      loading={fetchPriority === "high" ? "eager" : "lazy"}
+      decoding="async"
+      fetchPriority={fetchPriority}
     />
   )
 }
@@ -773,6 +794,29 @@ export default function ImageComponent({
   const [isReplaceDialogOpen, setIsReplaceDialogOpen] = useState(false)
   const isEditable = useLexicalEditable()
   const editorContainer = useEditorContainer()
+  
+  // Check if this is the first image in the editor (LCP candidate)
+  const [isFirstImage, setIsFirstImage] = useState<boolean>(false)
+  
+  useEffect(() => {
+    editor.getEditorState().read(() => {
+      const root = $getRoot()
+      const children = root.getChildren()
+      
+      // Find first image node
+      for (const child of children) {
+        if (child.getType() === "image") {
+          // Check if this is the first image (matches current nodeKey)
+          if (child.getKey() === nodeKey) {
+            setIsFirstImage(true)
+          } else {
+            setIsFirstImage(false)
+          }
+          break // Found first image, stop searching
+        }
+      }
+    })
+  }, [editor, nodeKey])
   const {
     hasCaptionContent,
     localShowCaption,
@@ -914,6 +958,7 @@ export default function ImageComponent({
               height={responsiveDimensions.height}
               maxWidth={maxWidth}
               onError={() => setIsLoadError(true)}
+              fetchPriority={isFirstImage ? "high" : "auto"}
             />
           )}
         </div>

@@ -61,6 +61,7 @@ export const HeroSection = ({
           priority
           fetchPriority="high"
           sizes="100vw"
+          quality={75}
         />
       </div>
 

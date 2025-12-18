@@ -83,6 +83,7 @@ export const SectionWithImage = ({
           sizes="(max-width: 1024px) 100vw, 50vw"
           priority
           fetchPriority="high"
+          quality={75}
         />
       </div>
     </div>
