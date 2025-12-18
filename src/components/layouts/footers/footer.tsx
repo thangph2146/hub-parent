@@ -93,7 +93,7 @@ export function PublicFooter() {
                 </h3>
                 <div className="space-y-4">
                   <div className="group mb-1">
-                    <h5 className={`${typography.body.medium} font-medium text-blue-200 mb-1`}>Trụ sở chính</h5>
+                    <h4 className={`${typography.body.medium} font-medium text-blue-200 mb-1`}>Trụ sở chính</h4>
                     <div className="flex items-start gap-3 text-white/80 group-hover:text-white transition-colors">
                       <MapPin className={`${iconSizes.sm} flex-shrink-0 mt-0.5 text-blue-400`} />
                       <span className={`${typography.body.medium} leading-relaxed`}>36 Tôn Thất Đạm, Phường Sài Gòn, TP.Hồ Chí Minh</span>
@@ -101,7 +101,7 @@ export function PublicFooter() {
                   </div>
                   
                   <div className="group mb-1">
-                    <h5 className={`${typography.body.medium} font-medium text-blue-200 mb-1`}>Cơ sở Hàm Nghi</h5>
+                    <h4 className={`${typography.body.medium} font-medium text-blue-200 mb-1`}>Cơ sở Hàm Nghi</h4>
                     <div className="flex items-start gap-3 text-white/80 group-hover:text-white transition-colors">
                       <MapPin className={`${iconSizes.sm} flex-shrink-0 mt-0.5 text-blue-400`} />
                       <span className={`${typography.body.medium} leading-relaxed`}>39 Hàm Nghi, Phường Sài Gòn, TP. Hồ Chí Minh</span>
@@ -109,7 +109,7 @@ export function PublicFooter() {
                   </div>
                   
                   <div className="group mb-1">
-                    <h5 className={`${typography.body.medium} font-medium text-blue-200 mb-1`}>Cơ sở Hoàng Diệu</h5>
+                    <h4 className={`${typography.body.medium} font-medium text-blue-200 mb-1`}>Cơ sở Hoàng Diệu</h4>
                     <div className="flex items-start gap-3 text-white/80 group-hover:text-white transition-colors">
                       <MapPin className={`${iconSizes.sm} flex-shrink-0 mt-0.5 text-blue-400`} />
                       <span className={`${typography.body.medium} leading-relaxed`}>56 Hoàng Diệu 2, Phường Thủ Đức, TP. Hồ Chí Minh</span>

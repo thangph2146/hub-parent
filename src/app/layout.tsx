@@ -101,9 +101,6 @@ export default async function RootLayout({
 
   return (
     <html lang="vi" suppressHydrationWarning>
-      <head>
-        <link rel="preconnect" href="https://fileserver2.hub.edu.vn" crossOrigin="anonymous" />
-      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         suppressHydrationWarning
