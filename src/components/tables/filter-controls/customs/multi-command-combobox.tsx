@@ -140,7 +140,7 @@ export function MultiCommandCombobox<T extends object = object>({
                                 onClick={handleClear}
                             />
                         )}
-                        <ChevronsUpDown className="h-3 w-3 shrink-0 opacity-50" />
+                        <ChevronsUpDown className={`${iconSizes.xs} shrink-0 opacity-50`} />
                     </div>
                 </Button>
             </PopoverTrigger>
@@ -170,19 +170,19 @@ export function MultiCommandCombobox<T extends object = object>({
                                 onClick={handleClearSearch}
                                 className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                             >
-                                <X className="h-3 w-3" />
+                                <X className={iconSizes.xs} />
                             </button>
                         )}
                         {isLoading && searchValue && (
                             <div className="absolute right-8 top-1/2 -translate-y-1/2">
-                                <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />
+                                <Loader2 className={`${iconSizes.xs} animate-spin text-muted-foreground`} />
                             </div>
                         )}
                     </div>
                     <CommandList>
                         {isLoading && column.filter.options.length === 0 ? (
                             <div className="flex items-center justify-center py-6">
-                                <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                                <Loader2 className={`${iconSizes.sm} animate-spin text-muted-foreground`} />
                             </div>
                         ) : (
                             <CommandEmpty>{column.filter.emptyMessage ?? "Không tìm thấy."}</CommandEmpty>
@@ -196,7 +196,7 @@ export function MultiCommandCombobox<T extends object = object>({
                                         value={option.value}
                                         onSelect={() => handleToggle(option.value)}
                                     >
-                                        <Check className={cn("mr-2 h-3 w-3", isSelected ? "opacity-100" : "opacity-0")} />
+                                        <Check className={cn(`mr-2 ${iconSizes.xs}`, isSelected ? "opacity-100" : "opacity-0")} />
                                         {option.label}
                                     </CommandItem>
                                 )

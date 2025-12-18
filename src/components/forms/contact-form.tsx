@@ -2,7 +2,7 @@
 
 import { useForm } from "react-hook-form";
 import { cn } from "@/lib/utils";
-import { typography } from "@/lib/typography";
+import { typography, responsiveIconSizes } from "@/lib/typography";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -116,7 +116,7 @@ export function ContactForm({ onSubmit, className, apiUrl = "/api/contact" }: Co
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
               <Field data-invalid={Boolean(errors.name)}>
                 <FieldLabel htmlFor="name" className={`flex items-center gap-1.5 sm:gap-2 ${typography.body.small} text-foreground`}>
-                  <User className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary flex-shrink-0" />
+                  <User className={`${responsiveIconSizes.small} text-primary flex-shrink-0`} />
                   Họ tên <span className="text-destructive">*</span>  
                 </FieldLabel>
                 <FieldContent>
@@ -149,7 +149,7 @@ export function ContactForm({ onSubmit, className, apiUrl = "/api/contact" }: Co
 
               <Field data-invalid={Boolean(errors.email)}>
                 <FieldLabel htmlFor="email" className={`flex items-center gap-1.5 sm:gap-2 ${typography.body.small} text-foreground`}>
-                  <Mail className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary flex-shrink-0" />
+                  <Mail className={`${responsiveIconSizes.small} text-primary flex-shrink-0`} />
                   Email <span className="text-destructive">*</span>
                 </FieldLabel>
                 <FieldContent>
@@ -184,7 +184,7 @@ export function ContactForm({ onSubmit, className, apiUrl = "/api/contact" }: Co
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
               <Field data-invalid={Boolean(errors.phone)}>
                 <FieldLabel htmlFor="phone" className={`flex items-center gap-1.5 sm:gap-2 ${typography.body.small} text-foreground`}>
-                  <Phone className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary flex-shrink-0" />
+                  <Phone className={`${responsiveIconSizes.small} text-primary flex-shrink-0`} />
                   Số điện thoại
                 </FieldLabel>
                 <FieldContent>
@@ -211,7 +211,7 @@ export function ContactForm({ onSubmit, className, apiUrl = "/api/contact" }: Co
 
               <Field data-invalid={Boolean(errors.subject)}>
                 <FieldLabel htmlFor="subject" className={`flex items-center gap-1.5 sm:gap-2 ${typography.body.small} text-foreground`}>
-                  <FileText className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary flex-shrink-0" />
+                  <FileText className={`${responsiveIconSizes.small} text-primary flex-shrink-0`} />
                   Tiêu đề <span className="text-destructive">*</span>
                 </FieldLabel>
                 <FieldContent>
@@ -245,7 +245,7 @@ export function ContactForm({ onSubmit, className, apiUrl = "/api/contact" }: Co
 
             <Field data-invalid={Boolean(errors.message)}>
               <FieldLabel htmlFor="message" className={`flex items-center gap-1.5 sm:gap-2 ${typography.body.small} text-foreground`}>
-                <MessageSquare className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary flex-shrink-0" />
+                <MessageSquare className={`${responsiveIconSizes.small} text-primary flex-shrink-0`} />
                 Nội dung tin nhắn <span className="text-destructive">*</span>
               </FieldLabel>
               <FieldContent>
@@ -283,12 +283,12 @@ export function ContactForm({ onSubmit, className, apiUrl = "/api/contact" }: Co
           <Button type="submit" className="w-full" disabled={isSubmitting}>
             {isSubmitting ? (
               <>
-                <Loader2 className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4 animate-spin" />
+                <Loader2 className={`mr-1.5 sm:mr-2 ${responsiveIconSizes.small} animate-spin`} />
                 <span className={typography.body.small}>Đang gửi...</span>
               </>
             ) : (
               <>
-                <Send className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                <Send className={`mr-1.5 sm:mr-2 ${responsiveIconSizes.small}`} />
                 <span className={`${typography.body.small}`}>Gửi tin nhắn</span>
               </>
             )}

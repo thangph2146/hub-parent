@@ -2,6 +2,7 @@
 
 import { useCallback, useMemo, useState } from "react"
 import { RotateCcw, Trash2, AlertTriangle, Check, X } from "lucide-react"
+import { iconSizes } from "@/lib/typography"
 
 import { ConfirmDialog } from "@/components/dialogs"
 import type { DataTableQueryState, DataTableResult } from "@/components/tables"
@@ -292,7 +293,7 @@ export const CommentsTableClient = ({
                   onClick={() => executeBulk("approve", selectedIds, clearSelection)}
                   className="whitespace-nowrap"
                 >
-                  <Check className="mr-2 h-5 w-5 shrink-0" />
+                  <Check className={`mr-2 ${iconSizes.md} shrink-0`} />
                   <span className="hidden sm:inline">
                     {COMMENT_LABELS.APPROVE_SELECTED(unapprovedCount)}
                   </span>
@@ -308,7 +309,7 @@ export const CommentsTableClient = ({
                   onClick={() => executeBulk("unapprove", selectedIds, clearSelection)}
                   className="whitespace-nowrap"
                 >
-                  <X className="mr-2 h-5 w-5 shrink-0" />
+                  <X className={`mr-2 ${iconSizes.md} shrink-0`} />
                   <span className="hidden sm:inline">
                     {COMMENT_LABELS.UNAPPROVE_SELECTED(approvedCount)}
                   </span>
@@ -324,7 +325,7 @@ export const CommentsTableClient = ({
                   onClick={() => executeBulk("delete", selectedIds, clearSelection)}
                   className="whitespace-nowrap"
                 >
-                  <Trash2 className="mr-2 h-5 w-5 shrink-0" />
+                  <Trash2 className={`mr-2 ${iconSizes.md} shrink-0`} />
                   <span className="hidden sm:inline">
                     {COMMENT_LABELS.DELETE_SELECTED(selectedIds.length)}
                   </span>
@@ -340,7 +341,7 @@ export const CommentsTableClient = ({
                   onClick={() => executeBulk("hard-delete", selectedIds, clearSelection)}
                   className="whitespace-nowrap"
                 >
-                  <AlertTriangle className="mr-2 h-5 w-5 shrink-0" />
+                  <AlertTriangle className={`mr-2 ${iconSizes.md} shrink-0`} />
                   <span className="hidden sm:inline">
                     {COMMENT_LABELS.HARD_DELETE_SELECTED(selectedIds.length)}
                   </span>
@@ -387,7 +388,7 @@ export const CommentsTableClient = ({
                 onClick={() => executeBulk("restore", selectedIds, clearSelection)}
                 className="whitespace-nowrap"
               >
-                <RotateCcw className="mr-2 h-5 w-5 shrink-0" />
+                <RotateCcw className={`mr-2 ${iconSizes.md} shrink-0`} />
                 <span className="hidden sm:inline">
                   {COMMENT_LABELS.RESTORE_SELECTED(selectedIds.length)}
                 </span>

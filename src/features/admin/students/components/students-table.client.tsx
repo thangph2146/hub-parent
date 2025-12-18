@@ -334,7 +334,7 @@ export const StudentsTableClient = ({
                   onClick={() => executeBulk("active", selectedIds, refresh, clearSelection)}
                   className="whitespace-nowrap"
                 >
-                  <CheckCircle2 className="mr-2 h-5 w-5 shrink-0" />
+                  <CheckCircle2 className={`mr-2 ${iconSizes.md} shrink-0`} />
                   <span className="hidden sm:inline">
                     {STUDENT_LABELS.ACTIVE_SELECTED(selectedIds.length)}
                   </span>
@@ -350,7 +350,7 @@ export const StudentsTableClient = ({
                   onClick={() => executeBulk("unactive", selectedIds, refresh, clearSelection)}
                   className="whitespace-nowrap"
                 >
-                  <XCircle className="mr-2 h-5 w-5 shrink-0" />
+                  <XCircle className={`mr-2 ${iconSizes.md} shrink-0`} />
                   <span className="hidden sm:inline">
                     {STUDENT_LABELS.UNACTIVE_SELECTED(selectedIds.length)}
                   </span>
@@ -365,7 +365,7 @@ export const StudentsTableClient = ({
               onClick={() => executeBulk("delete", selectedIds, refresh, clearSelection)}
               className="whitespace-nowrap"
             >
-              <Trash2 className="mr-2 h-5 w-5 shrink-0" />
+              <Trash2 className={`mr-2 ${iconSizes.md} shrink-0`} />
               <span className="hidden sm:inline">
                 {STUDENT_LABELS.DELETE_SELECTED(selectedIds.length)}
               </span>
@@ -380,7 +380,7 @@ export const StudentsTableClient = ({
                 onClick={() => executeBulk("hard-delete", selectedIds, refresh, clearSelection)}
                 className="whitespace-nowrap"
               >
-                <AlertTriangle className="mr-2 h-5 w-5 shrink-0" />
+                <AlertTriangle className={`mr-2 ${iconSizes.md} shrink-0`} />
                 <span className="hidden sm:inline">
                   {STUDENT_LABELS.HARD_DELETE_SELECTED(selectedIds.length)}
                 </span>
@@ -427,7 +427,7 @@ export const StudentsTableClient = ({
                 onClick={() => executeBulk("restore", selectedIds, refresh, clearSelection)}
                 className="whitespace-nowrap"
               >
-                <RotateCcw className="mr-2 h-5 w-5 shrink-0" />
+                <RotateCcw className={`mr-2 ${iconSizes.md} shrink-0`} />
                 <span className="hidden sm:inline">
                   {STUDENT_LABELS.RESTORE_SELECTED(selectedIds.length)}
                 </span>
@@ -443,7 +443,7 @@ export const StudentsTableClient = ({
                 onClick={() => executeBulk("hard-delete", selectedIds, refresh, clearSelection)}
                 className="whitespace-nowrap"
               >
-                <AlertTriangle className="mr-2 h-5 w-5 shrink-0" />
+                <AlertTriangle className={`mr-2 ${iconSizes.md} shrink-0`} />
                 <span className="hidden sm:inline">
                   {STUDENT_LABELS.HARD_DELETE_SELECTED(selectedIds.length)}
                 </span>

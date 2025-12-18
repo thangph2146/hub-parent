@@ -1,6 +1,6 @@
 "use client"
 
-import { typography } from "@/lib/typography"
+import { typography, iconSizes } from "@/lib/typography"
 
 import * as React from "react"
 import { useQueryClient } from "@tanstack/react-query"
@@ -145,7 +145,7 @@ export const StudentDetailClient = ({ studentId, student, backUrl = "/admin/stud
               onClick={() => router.push(`/admin/students/${studentId}/edit`)}
               className="gap-2"
             >
-              <Edit className="h-4 w-4" />
+              <Edit className={iconSizes.sm} />
               Chỉnh sửa
             </Button>
           ) : null

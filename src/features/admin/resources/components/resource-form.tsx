@@ -561,12 +561,12 @@ export const ResourceForm = <T extends Record<string, unknown>>({
       <Button type="submit" form="resource-form" disabled={isPending}>
         {isPending ? (
           <>
-            <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+            <Loader2 className={`mr-2 ${iconSizes.md} animate-spin`} />
             Đang lưu...
           </>
         ) : (
           <>
-            <Save className="mr-2 h-5 w-5" />
+            <Save className={`mr-2 ${iconSizes.md}`} />
             {submitLabel}
           </>
         )}
@@ -645,7 +645,7 @@ export const ResourceForm = <T extends Record<string, unknown>>({
                 onClick={handleBack}
                 className="-ml-2"
               >
-                <ArrowLeft className="mr-2 h-4 w-4" />
+                <ArrowLeft className={`mr-2 ${iconSizes.sm}`} />
                 {backLabel}
               </Button>
             )}

@@ -92,12 +92,12 @@ export const PostTagNav = ({ tags }: PostTagNavProps) => {
                 )}
               >
                 <Tag className={cn(
-                  "h-4 w-4 transition-transform",
+                  `${iconSizes.sm} transition-transform`,
                   isActive && "scale-110"
                 )} />
                 <span>{tag.name}</span>
                 {isActive && (
-                  <X className="h-3 w-3 opacity-50 group-hover:opacity-100 ml-auto" />
+                  <X className={`${iconSizes.xs} opacity-50 group-hover:opacity-100 ml-auto`} />
                 )}
               </Link>
             )
@@ -119,12 +119,12 @@ export const PostTagNav = ({ tags }: PostTagNavProps) => {
               )}
             >
               <Tag className={cn(
-                "h-4 w-4 transition-transform",
+                `${iconSizes.sm} transition-transform`,
                 selectedTags.size === 0 && "scale-110"
               )} />
               <span>Tất cả</span>
               {selectedTags.size > 0 && (
-                <X className="h-3 w-3 opacity-50 group-hover:opacity-100 ml-auto" />
+                <X className={`${iconSizes.xs} opacity-50 group-hover:opacity-100 ml-auto`} />
               )}
             </Link>
             {tags.map((tag) => {
@@ -141,12 +141,12 @@ export const PostTagNav = ({ tags }: PostTagNavProps) => {
                   )}
                 >
                   <Tag className={cn(
-                    "h-4 w-4 transition-transform",
+                    `${iconSizes.sm} transition-transform`,
                     isActive && "scale-110"
                   )} />
                   <span>{tag.name}</span>
                   {isActive && (
-                    <X className="h-3 w-3 opacity-50 group-hover:opacity-100 ml-auto" />
+                    <X className={`${iconSizes.xs} opacity-50 group-hover:opacity-100 ml-auto`} />
                   )}
                 </Link>
               )

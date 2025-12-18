@@ -276,7 +276,7 @@ export const NotificationDetailClient = ({
               {notificationData.readAt && (
                 <FieldItem icon={Clock} label="Ngày đọc">
                   <div className="flex items-center gap-2">
-                    <Clock className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                    <Clock className={`${iconSizes.xs} text-muted-foreground shrink-0`} />
                     <time
                       dateTime={notificationData.readAt}
                       className={`${typography.body.medium} font-medium`}
@@ -340,7 +340,7 @@ export const NotificationDetailClient = ({
               <FieldItem icon={Calendar} label="Ngày tạo">
                 {notificationData.createdAt ? (
                   <div className="flex items-center gap-2">
-                    <Calendar className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                    <Calendar className={`${iconSizes.xs} text-muted-foreground shrink-0`} />
                     <time
                       dateTime={notificationData.createdAt}
                       className={`${typography.body.medium} font-medium`}
@@ -376,7 +376,7 @@ export const NotificationDetailClient = ({
                 >
                   <div className="space-y-1.5">
                     <div className="flex items-center gap-2">
-                      <Calendar className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                      <Calendar className={`${iconSizes.xs} text-muted-foreground shrink-0`} />
                       <time
                         dateTime={notificationData.expiresAt}
                         className={cn(
@@ -397,7 +397,7 @@ export const NotificationDetailClient = ({
                     </div>
                     {new Date(notificationData.expiresAt) < new Date() && (
                       <Badge variant="destructive" className={`${typography.body.small} w-fit`}>
-                        <AlertCircle className="mr-1 h-3 w-3" />
+                        <AlertCircle className={`mr-1 ${iconSizes.xs}`} />
                         Đã hết hạn
                       </Badge>
                     )}

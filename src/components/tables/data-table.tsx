@@ -745,7 +745,7 @@ function TableSummary<T extends object>({
                     disabled={isPending || result.page <= 1}
                     className="h-8 px-2 sm:px-3"
                 >
-                    <ChevronLeft className="h-5 w-5 sm:mr-2" />
+                    <ChevronLeft className={`${iconSizes.md} sm:mr-2`} />
                     <span className="hidden sm:inline">Trước</span>
                 </Button>
                 <span className={`min-w-[80px] sm:min-w-[100px] text-center ${typography.body.small}`}>
@@ -761,7 +761,7 @@ function TableSummary<T extends object>({
                     className="h-8 px-2 sm:px-3"
                 >
                     <span className="hidden sm:inline">Sau</span>
-                    <ChevronRight className="h-5 w-5 sm:ml-2" />
+                    <ChevronRight className={`${iconSizes.md} sm:ml-2`} />
                 </Button>
             </div>
         </div>

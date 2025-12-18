@@ -329,7 +329,7 @@ export function NavUser({ className }: { className?: string }) {
     if (!isInSidebar) {
       return (
         <div className="flex items-center gap-2">
-          <Avatar className="h-8 w-8">
+          <Avatar className={iconSizes["2xl"]}>
             <AvatarFallback>...</AvatarFallback>
           </Avatar>
         </div>
@@ -339,7 +339,7 @@ export function NavUser({ className }: { className?: string }) {
       <SidebarMenu>
         <SidebarMenuItem>
           <SidebarMenuButton size="lg" disabled>
-            <Avatar className="h-8 w-8 rounded-lg">
+            <Avatar className={`${iconSizes["2xl"]} rounded-lg`}>
               <AvatarFallback className="rounded-lg">...</AvatarFallback>
             </Avatar>
             <div className={`grid flex-1 text-left ${typography.body.medium} leading-tight`} suppressHydrationWarning>
@@ -504,7 +504,7 @@ export function NavUser({ className }: { className?: string }) {
     if (!isInSidebar) {
       return (
         <div className="flex items-center gap-2" suppressHydrationWarning>
-          <Avatar className="h-8 w-8" suppressHydrationWarning>
+          <Avatar className={`${iconSizes["2xl"]}`} suppressHydrationWarning>
             <AvatarImage
               src={user.image || "/avatars/default.jpg"}
               alt={user.name || ""}
@@ -554,7 +554,7 @@ export function NavUser({ className }: { className?: string }) {
             className={cn("flex items-center gap-2 px-2", className)}
             suppressHydrationWarning
           >
-            <Avatar className="h-8 w-8" suppressHydrationWarning>
+            <Avatar className={`${iconSizes["2xl"]}`} suppressHydrationWarning>
               <AvatarImage
                 src={user.image || "/avatars/default.jpg"}
                 alt={user.name || ""}
@@ -582,7 +582,7 @@ export function NavUser({ className }: { className?: string }) {
               size="lg"
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
-              <Avatar className="h-8 w-8 rounded-lg">
+              <Avatar className={`${iconSizes["2xl"]} rounded-lg`}>
                 <AvatarImage
                   src={user.image || "/avatars/default.jpg"}
                   alt={user.name || ""}

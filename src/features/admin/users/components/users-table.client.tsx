@@ -385,7 +385,7 @@ export const UsersTableClient = ({
                         onClick={() => executeBulk("restore", selectedIds, selectedRows, refresh, clearSelection)}
                         className="whitespace-nowrap"
                       >
-                        <RotateCcw className="mr-2 h-5 w-5 shrink-0" />
+                        <RotateCcw className={`mr-2 ${iconSizes.md} shrink-0`} />
                         <span className="hidden sm:inline">
                           {USER_LABELS.RESTORE_SELECTED(selectedIds.length)}
                         </span>

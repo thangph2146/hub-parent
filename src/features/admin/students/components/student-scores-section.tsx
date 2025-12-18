@@ -225,7 +225,7 @@ const YearAveragesList = ({ averages, isLoading }: { averages?: YearAverage[]; i
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-8">
-        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        <Loader2 className={`${iconSizes.lg} animate-spin text-muted-foreground`} />
       </div>
     )
   }
@@ -450,7 +450,7 @@ const TermAveragesList = ({ averages, isLoading }: { averages?: TermAverage[]; i
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-8">
-        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        <Loader2 className={`${iconSizes.lg} animate-spin text-muted-foreground`} />
       </div>
     )
   }
@@ -471,7 +471,7 @@ const TermAveragesList = ({ averages, isLoading }: { averages?: TermAverage[]; i
       <div className="flex flex-col sm:flex-row gap-3">
         <Select value={filterYear} onValueChange={setFilterYear}>
           <SelectTrigger className="w-full sm:w-[180px]">
-            <Filter className="mr-2 h-4 w-4" />
+            <Filter className={`mr-2 ${iconSizes.sm}`} />
             <SelectValue placeholder="Tất cả năm học" />
           </SelectTrigger>
           <SelectContent>
@@ -497,11 +497,11 @@ const TermAveragesList = ({ averages, isLoading }: { averages?: TermAverage[]; i
                   <div className="rounded-md border overflow-hidden">
                     <CollapsibleTrigger className="flex items-center gap-2 w-full p-3 hover:bg-muted transition-colors">
                       {isYearOpen ? (
-                        <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                        <ChevronDown className={`${iconSizes.sm} text-muted-foreground`} />
                       ) : (
-                        <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                        <ChevronRight className={`${iconSizes.sm} text-muted-foreground`} />
                       )}
-                      <Calendar className="h-4 w-4 text-muted-foreground" />
+                      <Calendar className={`${iconSizes.sm} text-muted-foreground`} />
                       <span className="font-semibold">Năm học ({yearStudy})</span>
                       <Badge variant="secondary" className="ml-auto">
                         {termAverages.length} học kỳ
@@ -775,7 +775,7 @@ const DetailedScoresTable = ({ scores, isLoading }: { scores?: DetailedScore[]; 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-8">
-        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        <Loader2 className={`${iconSizes.lg} animate-spin text-muted-foreground`} />
       </div>
     )
   }
@@ -835,11 +835,11 @@ const DetailedScoresTable = ({ scores, isLoading }: { scores?: DetailedScore[]; 
                   <div className="rounded-md border overflow-hidden">
                     <CollapsibleTrigger className="flex items-center gap-2 w-full p-3 hover:bg-muted transition-colors">
                       {isYearOpen ? (
-                        <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                        <ChevronDown className={`${iconSizes.sm} text-muted-foreground`} />
                       ) : (
-                        <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                        <ChevronRight className={`${iconSizes.sm} text-muted-foreground`} />
                       )}
-                      <Calendar className="h-4 w-4 text-muted-foreground" />
+                      <Calendar className={`${iconSizes.sm} text-muted-foreground`} />
                       <span className="font-semibold">Năm học ({yearStudy})</span>
                       <Badge variant="secondary" className="ml-auto">
                         {Object.keys(terms).length} học kỳ
@@ -860,11 +860,11 @@ const DetailedScoresTable = ({ scores, isLoading }: { scores?: DetailedScore[]; 
                               >
                                 <CollapsibleTrigger className="flex items-center gap-2 w-full p-2 hover:bg-muted rounded-md transition-colors">
                                   {isTermOpen ? (
-                                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                                    <ChevronDown className={`${iconSizes.sm} text-muted-foreground`} />
                                   ) : (
-                                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                                    <ChevronRight className={`${iconSizes.sm} text-muted-foreground`} />
                                   )}
-                                  <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                                  <TrendingUp className={`${iconSizes.sm} text-muted-foreground`} />
                                   <span className="font-medium">Học kỳ ({termID})</span>
                                 </CollapsibleTrigger>
                                 <CollapsibleContent className="ml-6 mt-2">
@@ -913,7 +913,7 @@ export const StudentScoresSection = ({ studentId, isActive }: StudentScoresSecti
       <Card>
         <CardContent>
           <Alert>
-            <AlertCircle className="h-4 w-4" />
+            <AlertCircle className={iconSizes.sm} />
             <AlertDescription>
               sinh viên này chưa được kích hoạt. Vui lòng kích hoạt sinh viên để xem điểm số.
             </AlertDescription>
@@ -929,7 +929,7 @@ export const StudentScoresSection = ({ studentId, isActive }: StudentScoresSecti
     <div className="space-y-6">
       {hasError && (
         <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
+          <AlertCircle className={iconSizes.sm} />
           <AlertDescription>
             {errorYear?.message || errorTerm?.message || errorScores?.message || "Không thể tải dữ liệu điểm số"}
           </AlertDescription>
@@ -940,17 +940,17 @@ export const StudentScoresSection = ({ studentId, isActive }: StudentScoresSecti
       <Tabs defaultValue="year" className="w-full">
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="year" className="flex items-center gap-2">
-            <Calendar className="h-4 w-4" />
+            <Calendar className={iconSizes.sm} />
             <span className="hidden sm:inline">Theo năm học</span>
             <span className="sm:hidden">Năm học</span>
           </TabsTrigger>
           <TabsTrigger value="term" className="flex items-center gap-2">
-            <TrendingUp className="h-4 w-4" />
+            <TrendingUp className={iconSizes.sm} />
             <span className="hidden sm:inline">Theo học kỳ</span>
             <span className="sm:hidden">Học kỳ</span>
           </TabsTrigger>
           <TabsTrigger value="detailed" className="flex items-center gap-2">
-            <BookOpen className="h-4 w-4" />
+            <BookOpen className={iconSizes.sm} />
             <span className="hidden sm:inline">Điểm chi tiết</span>
             <span className="sm:hidden">Chi tiết</span>
           </TabsTrigger>
@@ -960,7 +960,7 @@ export const StudentScoresSection = ({ studentId, isActive }: StudentScoresSecti
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Calendar className="h-5 w-5" />
+                <Calendar className={iconSizes.md} />
                 Điểm trung bình theo năm học
               </CardTitle>
             </CardHeader>
@@ -974,7 +974,7 @@ export const StudentScoresSection = ({ studentId, isActive }: StudentScoresSecti
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <TrendingUp className="h-5 w-5" />
+                <TrendingUp className={iconSizes.md} />
                 Điểm trung bình tích lũy theo học kỳ
               </CardTitle>
             </CardHeader>
@@ -988,7 +988,7 @@ export const StudentScoresSection = ({ studentId, isActive }: StudentScoresSecti
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <BookOpen className="h-5 w-5" />
+                <BookOpen className={iconSizes.md} />
                 Điểm chi tiết các môn học
               </CardTitle>
             </CardHeader>

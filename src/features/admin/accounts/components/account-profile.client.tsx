@@ -283,7 +283,7 @@ export const AccountProfileClient = ({
                       className={`bg-green-500/15 hover:bg-green-500/25 text-green-700 dark:text-green-400 border-green-500/30 ${typography.body.small} font-medium px-3 py-1`}
                       variant="outline"
                     >
-                      <CheckCircle2 className="mr-1.5 h-3.5 w-3.5" />
+                      <CheckCircle2 className={`mr-1.5 ${iconSizes.xs}`} />
                       Đã xác thực email
                     </Badge>
                   )}

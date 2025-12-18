@@ -163,7 +163,7 @@ export const NewConversationDialog = ({ onSelectUser, existingContactIds = [] }:
                     onSelect={() => handleSelectUser(user)}
                     className="flex items-center gap-3 cursor-pointer"
                   >
-                    <Avatar className="h-8 w-8">
+                    <Avatar className={iconSizes["2xl"]}>
                       <AvatarImage src={user.avatar || undefined} alt={user.name || user.email} />
                       <AvatarFallback className={typography.body.small}>
                         {(user.name || user.email).substring(0, 2).toUpperCase()}

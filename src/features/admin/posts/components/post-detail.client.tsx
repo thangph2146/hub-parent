@@ -314,7 +314,7 @@ export const PostDetailClient = ({
             onClick={() => router.push(`/admin/posts/${detailData.id}/edit`)}
             className="gap-2"
           >
-            <Edit className="h-4 w-4" />
+            <Edit className={iconSizes.sm} />
             Chỉnh sửa
           </Button>
         ) : null

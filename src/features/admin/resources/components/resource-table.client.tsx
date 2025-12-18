@@ -19,7 +19,7 @@ import {
 import { ChevronDown } from "lucide-react"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { useDebouncedCallback } from "@/hooks/use-debounced-callback"
-import { headerConfig, typography } from "@/lib/typography"
+import { headerConfig, typography, iconSizes } from "@/lib/typography"
 import type {
   ResourceTableLoader,
   ResourceViewMode,
@@ -188,7 +188,7 @@ export const ResourceTableClient = <T extends object>({
               className={`h-8 px-3 ${typography.body.small} min-w-[100px] max-w-[180px] justify-between`}
             >
               <span className="truncate">{currentView.label}</span>
-              <ChevronDown className="ml-2 h-4 w-4 shrink-0" />
+              <ChevronDown className={`ml-2 ${iconSizes.sm} shrink-0`} />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="min-w-[120px]">

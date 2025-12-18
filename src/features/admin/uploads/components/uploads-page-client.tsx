@@ -322,11 +322,11 @@ export const UploadsPageClient = () => {
         <CardContent>
           {isLoading ? (
             <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              <Loader2 className={`${iconSizes["2xl"]} animate-spin text-primary`} />
             </div>
           ) : allImages.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
-              <ImageIcon className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <ImageIcon className={`${iconSizes["4xl"]} mx-auto mb-4 opacity-50`} />
               <p>Chưa có hình ảnh nào được upload</p>
             </div>
           ) : (
@@ -346,9 +346,9 @@ export const UploadsPageClient = () => {
                           className="whitespace-nowrap"
                         >
                           {bulkDeleteImagesMutation.isPending ? (
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            <Loader2 className={`mr-2 ${iconSizes.sm} animate-spin`} />
                           ) : (
-                            <Trash2 className="mr-2 h-4 w-4" />
+                            <Trash2 className={`mr-2 ${iconSizes.sm}`} />
                           )}
                           <span className="hidden sm:inline">
                             Xóa {selectedImages.size} hình đã chọn

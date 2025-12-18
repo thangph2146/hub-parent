@@ -96,7 +96,7 @@ const ImageItem = ({
             disabled={disabled || image.isPrimary}
             title={image.isPrimary ? "Ảnh chính" : "Đặt làm ảnh chính"}
           >
-            <Star className={cn("h-4 w-4", image.isPrimary ? "fill-yellow-400 text-yellow-400" : "text-gray-700")} />
+            <Star className={cn(iconSizes.sm, image.isPrimary ? "fill-yellow-400 text-yellow-400" : "text-gray-700")} />
           </Button>
           <Button
             type="button"
@@ -107,12 +107,12 @@ const ImageItem = ({
             disabled={disabled}
             title="Xóa ảnh"
           >
-            <X className="h-4 w-4 text-destructive" />
+            <X className={`${iconSizes.sm} text-destructive`} />
           </Button>
         </div>
         {image.isPrimary && (
           <div className={`absolute top-2 left-2 bg-primary text-primary-foreground px-2 py-1 rounded ${typography.body.small} font-medium flex items-center gap-1`}>
-            <Star className="h-3 w-3 fill-current" />
+            <Star className={`${iconSizes.xs} fill-current`} />
             Chính
           </div>
         )}
@@ -402,7 +402,7 @@ export const MultipleImagesField = ({ value, onChange, error, disabled = false }
           </div>
         ) : (
           <div className="border-2 border-dashed border-border rounded-lg p-8 text-center">
-            <ImageIcon className="h-12 w-12 mx-auto text-muted-foreground mb-2" />
+            <ImageIcon className={`${iconSizes["4xl"]} mx-auto text-muted-foreground mb-2`} />
             <p className={typography.body.muted.medium}>Chưa có hình ảnh nào</p>
             <p className={`${typography.body.muted.small} mt-1`}>Upload hoặc thêm URL để bắt đầu</p>
           </div>

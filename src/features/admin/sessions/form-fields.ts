@@ -2,6 +2,7 @@ import type { ResourceFormField, ResourceFormSection } from "@/features/admin/re
 import { validateIpAddress, validateUserAgent } from "./utils"
 import React from "react"
 import { User, Globe, MapPin, ToggleLeft, Calendar } from "lucide-react"
+import { iconSizes } from "@/lib/typography"
 
 export interface SessionFormData {
   userId: string
@@ -43,7 +44,7 @@ export const getBaseSessionFields = (
       placeholder: "Chọn người dùng",
       options: usersOptions || [],
       description: "Người dùng sở hữu session này",
-      icon: React.createElement(User, { className: "h-4 w-4" }),
+      icon: React.createElement(User, { className: iconSizes.sm }),
       section: "basic",
     },
     {
@@ -54,7 +55,7 @@ export const getBaseSessionFields = (
       required: false,
       description: "Thông tin trình duyệt/thiết bị",
       validate: validateUserAgent,
-      icon: React.createElement(Globe, { className: "h-4 w-4" }),
+      icon: React.createElement(Globe, { className: iconSizes.sm }),
       section: "security",
     },
     {
@@ -65,7 +66,7 @@ export const getBaseSessionFields = (
       required: false,
       description: "Địa chỉ IP của client",
       validate: validateIpAddress,
-      icon: React.createElement(MapPin, { className: "h-4 w-4" }),
+      icon: React.createElement(MapPin, { className: iconSizes.sm }),
       section: "security",
     },
     {
@@ -75,7 +76,7 @@ export const getBaseSessionFields = (
       required: true,
       placeholder: "YYYY-MM-DDTHH:mm:ss.sssZ",
       description: "Thời gian session hết hạn (ISO 8601 format)",
-      icon: React.createElement(Calendar, { className: "h-4 w-4" }),
+      icon: React.createElement(Calendar, { className: iconSizes.sm }),
       section: "status",
     },
     {
@@ -84,7 +85,7 @@ export const getBaseSessionFields = (
       description: "Bật/tắt để kích hoạt hoặc vô hiệu hóa session",
       type: "switch",
       defaultValue: true,
-      icon: React.createElement(ToggleLeft, { className: "h-4 w-4" }),
+      icon: React.createElement(ToggleLeft, { className: iconSizes.sm }),
       section: "status",
     },
 ]

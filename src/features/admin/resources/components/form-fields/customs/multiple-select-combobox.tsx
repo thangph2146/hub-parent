@@ -149,7 +149,7 @@ export const MultipleSelectCombobox = <T,>({
                 onClick={handleClear}
               />
             )}
-            <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-50" />
+            <ChevronsUpDown className={`${iconSizes.sm} shrink-0 opacity-50`} />
           </div>
         </Button>
       </PopoverTrigger>
@@ -179,7 +179,7 @@ export const MultipleSelectCombobox = <T,>({
                     >
                       <Check
                         className={cn(
-                          "mr-2 h-5 w-5",
+                          `mr-2 ${iconSizes.md}`,
                           allSelected ? "opacity-100" : "opacity-0"
                         )}
                       />
@@ -199,7 +199,7 @@ export const MultipleSelectCombobox = <T,>({
                         >
                           <Check
                             className={cn(
-                              "mr-2 h-5 w-5",
+                              `mr-2 ${iconSizes.md}`,
                               isSelected ? "opacity-100" : "opacity-0"
                             )}
                           />

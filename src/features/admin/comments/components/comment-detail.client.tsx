@@ -212,7 +212,7 @@ export const CommentDetailClient = ({ commentId, comment, backUrl = "/admin/comm
                   className={`group inline-flex items-center gap-1.5 ${typography.body.medium} font-medium text-primary hover:text-primary/80 hover:underline transition-colors`}
                 >
                   <span className="truncate">{commentData.postTitle || "—"}</span>
-                  <ExternalLink className="h-3.5 w-3.5 shrink-0 opacity-50 group-hover:opacity-100 transition-opacity" />
+                  <ExternalLink className={`${iconSizes.xs} shrink-0 opacity-50 group-hover:opacity-100 transition-opacity`} />
                 </a>
               ) : (
                 <div className={`${typography.body.medium} font-medium text-foreground truncate`}>{commentData.postTitle || "—"}</div>

@@ -9,6 +9,7 @@ import {
   QuoteIcon,
   TextIcon,
 } from "lucide-react"
+import { iconSizes } from "@/lib/typography"
 
 export const blockTypeToBlockName: Record<
   string,
@@ -16,7 +17,7 @@ export const blockTypeToBlockName: Record<
 > = {
   paragraph: {
     label: "Paragraph",
-    icon: <TextIcon className="size-4" />,
+    icon: <TextIcon className={iconSizes.sm} />,
   },
   h1: {
     label: "Heading 1",

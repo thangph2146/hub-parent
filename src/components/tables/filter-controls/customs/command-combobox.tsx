@@ -118,19 +118,19 @@ export function CommandCombobox<T extends object = object>({
                                 onClick={handleClearSearch}
                                 className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                             >
-                                <X className="h-3 w-3" />
+                                <X className={iconSizes.xs} />
                             </button>
                         )}
                         {isLoading && searchValue && (
                             <div className="absolute right-8 top-1/2 -translate-y-1/2">
-                                <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />
+                                <Loader2 className={`${iconSizes.xs} animate-spin text-muted-foreground`} />
                             </div>
                         )}
                     </div>
                     <CommandList>
                         {isLoading && options.length === 0 ? (
                             <div className="flex items-center justify-center py-6">
-                                <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                                <Loader2 className={`${iconSizes.sm} animate-spin text-muted-foreground`} />
                             </div>
                         ) : (
                             <CommandEmpty>{column.filter.emptyMessage ?? "Không tìm thấy."}</CommandEmpty>
@@ -146,7 +146,7 @@ export function CommandCombobox<T extends object = object>({
                                     setOpen(false)
                                 }}
                             >
-                                <Check className={cn("mr-2 h-3 w-3", value === "" ? "opacity-100" : "opacity-0")} />
+                                <Check className={cn(`mr-2 ${iconSizes.xs}`, value === "" ? "opacity-100" : "opacity-0")} />
                                 {column.filter.placeholder ?? "Tất cả"}
                             </CommandItem>
                             {options.map((option) => (
@@ -161,7 +161,7 @@ export function CommandCombobox<T extends object = object>({
                                         setOpen(false)
                                     }}
                                 >
-                                    <Check className={cn("mr-2 h-3 w-3", value === option.value ? "opacity-100" : "opacity-0")} />
+                                    <Check className={cn(`mr-2 ${iconSizes.xs}`, value === option.value ? "opacity-100" : "opacity-0")} />
                                     {option.label}
                                 </CommandItem>
                             ))}

@@ -1,6 +1,6 @@
 "use client";
 
-import { typography, headerConfig, iconSizes } from "@/lib/typography";
+import { typography, headerConfig, iconSizes, responsiveIconSizes } from "@/lib/typography";
 
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -128,7 +128,7 @@ const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
               >
                 <div className="flex items-center gap-2 flex-1 min-w-0">
                   <div
-                    className="w-3 h-3 rounded-full flex-shrink-0"
+                    className={`${iconSizes.xs} rounded-full flex-shrink-0`}
                     style={{ backgroundColor: entry.color }}
                   />
                   <span className={`${typography.body.small} font-medium truncate`}>
@@ -520,7 +520,7 @@ export const DashboardStatsClient = ({ stats }: DashboardStatsClientProps) => {
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                       <div>
                         <CardTitle className={`flex items-center gap-2 ${typography.title.large}`}>
-                          <LineChart className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
+                          <LineChart className={`${responsiveIconSizes.medium} text-primary`} />
                           Xu hướng theo tháng
                         </CardTitle>
                         <CardDescription className={typography.description.default}>
@@ -535,7 +535,7 @@ export const DashboardStatsClient = ({ stats }: DashboardStatsClientProps) => {
                             className="gap-2 w-full sm:w-auto"
                             aria-label="Chọn resources để hiển thị trên biểu đồ"
                           >
-                            <BarChart3 className="h-4 w-4" />
+                            <BarChart3 className={iconSizes.sm} />
                             <span className="hidden sm:inline">Chọn mục hiển thị</span>
                             <span className="sm:hidden">Chọn</span>
                           </Button>
@@ -586,7 +586,7 @@ export const DashboardStatsClient = ({ stats }: DashboardStatsClientProps) => {
                                     className={`${typography.body.medium} font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center gap-2 flex-1 cursor-pointer`}
                                   >
                                     <div
-                                      className="w-3 h-3 rounded-full"
+                                      className={`${iconSizes.xs} rounded-full`}
                                       style={{
                                         backgroundColor: resource.color,
                                       }}
@@ -611,7 +611,7 @@ export const DashboardStatsClient = ({ stats }: DashboardStatsClientProps) => {
                           className={`h-7 px-3 ${typography.body.small}`}
                           onClick={() => setChartType("line")}
                         >
-                          <LineChart className="h-3 w-3 mr-1" />
+                          <LineChart className={`${iconSizes.xs} mr-1`} />
                           Đường
                         </Button>
                         <Button
@@ -620,7 +620,7 @@ export const DashboardStatsClient = ({ stats }: DashboardStatsClientProps) => {
                           className={`h-7 px-3 ${typography.body.small}`}
                           onClick={() => setChartType("bar")}
                         >
-                          <BarChart3 className="h-3 w-3 mr-1" />
+                          <BarChart3 className={`${iconSizes.xs} mr-1`} />
                           Cột
                         </Button>
                         <Button
@@ -629,7 +629,7 @@ export const DashboardStatsClient = ({ stats }: DashboardStatsClientProps) => {
                           className={`h-7 px-3 ${typography.body.small}`}
                           onClick={() => setChartType("composed")}
                         >
-                          <BarChart3 className="h-3 w-3 mr-1" />
+                          <BarChart3 className={`${iconSizes.xs} mr-1`} />
                           Kết hợp
                         </Button>
                       </div>
@@ -981,7 +981,7 @@ export const DashboardStatsClient = ({ stats }: DashboardStatsClientProps) => {
                   <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-background" />
                   <CardHeader className="relative z-10">
                     <CardTitle className={`flex items-center gap-2 ${typography.heading.h4}`}>
-                      <PieChart className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
+                      <PieChart className={`${responsiveIconSizes.medium} text-primary`} />
                       Phân bố danh mục
                     </CardTitle>
                     <CardDescription className={typography.body.medium}>
@@ -1089,7 +1089,7 @@ export const DashboardStatsClient = ({ stats }: DashboardStatsClientProps) => {
                                   className="flex items-center gap-3 p-3 rounded-lg bg-background/50 border border-border/50 hover:bg-background/80 hover:border-border transition-all group cursor-pointer"
                                 >
                                   <div
-                                    className="w-4 h-4 rounded-full flex-shrink-0 shadow-sm"
+                                    className={`${iconSizes.sm} rounded-full flex-shrink-0 shadow-sm`}
                                     style={{ backgroundColor: item.color }}
                                   />
                                   <div className="flex-1 min-w-0">
