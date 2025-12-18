@@ -6,7 +6,7 @@
 
 "use client"
 
-import { typography } from "@/lib/typography"
+import { typography, iconSizes } from "@/lib/typography"
 
 import { useCallback, useMemo, useState } from "react"
 import { 
@@ -796,7 +796,7 @@ const DetailedScoresTable = ({ scores, isLoading }: { scores?: DetailedScore[]; 
       <div className="flex flex-col sm:flex-row gap-3">
         <Select value={filterYear} onValueChange={setFilterYear}>
           <SelectTrigger className="w-full sm:w-[180px]">
-            <Filter className="mr-2 h-4 w-4" />
+            <Filter className={`mr-2 ${iconSizes.sm}`} />
             <SelectValue placeholder="Tất cả năm học" />
           </SelectTrigger>
           <SelectContent>
