@@ -10,6 +10,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Loader2, AlertTriangle } from "lucide-react"
+import { iconSizes } from "@/lib/typography"
 import type { Contact, Group } from "@/components/chat/types"
 import { useGroupDeleteConfirm } from "../../hooks/use-group-delete-confirm"
 import { useGroupDialogActions } from "../../hooks/use-group-dialog-actions"
@@ -77,7 +78,7 @@ export const HardDeleteGroupDialog = ({
         <DialogContent className="sm:max-w-[460px]">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-destructive" />
+              <AlertTriangle className={`${iconSizes.md} text-destructive`} />
               {GROUP_CONFIRM_MESSAGES.HARD_DELETE_TITLE(group?.name)}
             </DialogTitle>
             <DialogDescription>
@@ -89,7 +90,7 @@ export const HardDeleteGroupDialog = ({
               {GROUP_CONFIRM_MESSAGES.CANCEL_LABEL}
             </Button>
             <Button variant="destructive" onClick={handleConfirm} disabled={isDeleting}>
-              {isDeleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {isDeleting && <Loader2 className={`mr-2 ${iconSizes.sm} animate-spin`} />}
               {GROUP_CONFIRM_MESSAGES.HARD_DELETE_LABEL}
             </Button>
           </DialogFooter>
@@ -104,7 +105,7 @@ export const HardDeleteGroupDialog = ({
           <DialogContent className="sm:max-w-[460px]">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
-                <AlertTriangle className="h-5 w-5 text-destructive" />
+                <AlertTriangle className={`${iconSizes.md} text-destructive`} />
                 {GROUP_CONFIRM_MESSAGES.HARD_DELETE_TITLE(deleteConfirm.row?.name)}
               </DialogTitle>
               <DialogDescription>
@@ -116,7 +117,7 @@ export const HardDeleteGroupDialog = ({
                 {GROUP_CONFIRM_MESSAGES.CANCEL_LABEL}
               </Button>
               <Button variant="destructive" onClick={handleDeleteConfirm} disabled={isDeleting}>
-                {isDeleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {isDeleting && <Loader2 className={`mr-2 ${iconSizes.sm} animate-spin`} />}
                 {GROUP_CONFIRM_MESSAGES.HARD_DELETE_LABEL}
               </Button>
             </DialogFooter>

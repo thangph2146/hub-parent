@@ -46,7 +46,7 @@ export const renderRowActions = (actions: RowActionConfig[]) => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="h-8 w-8">
+        <Button variant="ghost" size="icon" className={iconSizes["2xl"]}>
           <MoreHorizontal className={iconSizes.md} />
         </Button>
       </DropdownMenuTrigger>

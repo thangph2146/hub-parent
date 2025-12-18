@@ -1301,7 +1301,7 @@ export const AboutClient = () => {
                 className="bg-background border border-border hover:bg-muted text-foreground rounded-full p-2 shadow-md transition-all"
                 aria-label="Hình ảnh trước"
               >
-                <ChevronLeft className="h-5 w-5" />
+                <ChevronLeft className={iconSizes.md} />
               </button>
               <span className={typography.body.muted.small}>
                 {currentImageIndex + 1} / {facilityImages.length}
@@ -1396,7 +1396,7 @@ export const AboutClient = () => {
                 <span className={`${typography.description.large} font-medium group-hover:text-primary transition-colors`}>
                   {department.name}
                 </span>
-                <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all flex-shrink-0" />
+                <ArrowRight className={`${responsiveIconSizes.medium} text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all flex-shrink-0`} />
               </Link>
             ))}
           </div>

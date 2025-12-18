@@ -54,13 +54,13 @@ export const Timeline = ({ data }: { data: TimelineEntry[] }) => {
             className="flex justify-start pt-10"
           >
             <div className="sticky flex flex-col md:flex-row z-10 items-center top-40 self-start max-w-[200px] md:w-full">
-              <h3 className="hidden md:block text-xl font-bold text-neutral-500 dark:text-neutral-500 ">
+              <h3 className={`hidden md:block ${typography.heading.h4} font-bold text-neutral-500 dark:text-neutral-500`}>
                 {item.title}
               </h3>
             </div>
 
             <div className="relative pl-20 pr-4 md:pl-4 w-full z-10">
-              <h3 className="md:hidden block text-2xl mb-4 text-left font-bold text-neutral-500 dark:text-neutral-500">
+              <h3 className={`md:hidden block ${typography.heading.h3} mb-4 text-left font-bold text-neutral-500 dark:text-neutral-500`}>
                 {item.title}
               </h3>
               {item.content}{" "}

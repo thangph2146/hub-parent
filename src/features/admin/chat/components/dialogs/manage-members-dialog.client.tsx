@@ -245,7 +245,7 @@ export const ManageMembersDialog = ({
                   <div className="space-y-2">
                     {group?.members?.map((member) => (
                       <div key={member.id} className="flex items-center gap-3 rounded border p-2">
-                        <Avatar className="h-8 w-8">
+                        <Avatar className={iconSizes["2xl"]}>
                           <AvatarImage src={member.user?.avatar || undefined} alt={member.user?.name || member.user?.email || ""} />
                           <AvatarFallback className={typography.body.small}>
                             {(member.user?.name || member.user?.email || "").substring(0, 2).toUpperCase()}
@@ -258,16 +258,16 @@ export const ManageMembersDialog = ({
                         <div className="flex items-center gap-2">
                           {canPromoteAdmin && (
                             <Button size="sm" variant="secondary" disabled={isProcessing === member.id} onClick={() => handleUpdateRole(member.userId, member.role === "ADMIN" ? "MEMBER" : "ADMIN")}>
-                              <ShieldCheck className="mr-2 h-4 w-4" />
+                              <ShieldCheck className={`mr-2 ${iconSizes.sm}`} />
                               {member.role === "ADMIN" ? "Hạ cấp" : "Thăng cấp"}
                             </Button>
                           )}
                           {canManageMembers && (
                             <Button size="sm" variant="destructive" disabled={isProcessing === member.id} onClick={() => handleRemoveMember(member.userId)}>
                               {isProcessing === member.id ? (
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                <Loader2 className={`mr-2 ${iconSizes.sm} animate-spin`} />
                               ) : (
-                                <UserMinus className="mr-2 h-4 w-4" />
+                                <UserMinus className={`mr-2 ${iconSizes.sm}`} />
                               )}
                               Xóa
                             </Button>

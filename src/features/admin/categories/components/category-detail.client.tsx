@@ -142,7 +142,7 @@ export const CategoryDetailClient = ({ categoryId, category, backUrl = "/admin/c
             onClick={() => router.push(`/admin/categories/${categoryId}/edit`)}
             className="gap-2"
           >
-            <Edit className="h-4 w-4" />
+            <Edit className={iconSizes.sm} />
             Chỉnh sửa
           </Button>
         ) : null

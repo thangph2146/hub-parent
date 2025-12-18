@@ -1,6 +1,6 @@
 "use client"
 
-import { typography } from "@/lib/typography"
+import { typography, iconSizes } from "@/lib/typography"
 
 import * as React from "react"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
@@ -89,7 +89,7 @@ export const AccountAvatarField = ({
                   }}
                   className="w-full sm:w-auto"
                 >
-                  <X className="h-4 w-4 mr-2" />
+                  <X className={`${iconSizes.sm} mr-2`} />
                   Xóa ảnh đại diện
                 </Button>
               )}

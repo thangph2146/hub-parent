@@ -95,7 +95,7 @@ export const DeleteGroupDialog = ({
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-destructive" />
+              <AlertTriangle className={`${iconSizes.md} text-destructive`} />
               {GROUP_CONFIRM_MESSAGES.DELETE_TITLE(group?.name)}
             </DialogTitle>
             <DialogDescription>
@@ -123,9 +123,9 @@ export const DeleteGroupDialog = ({
               className="w-full justify-start"
             >
               {isHardDeleting ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Loader2 className={`mr-2 ${iconSizes.sm} animate-spin`} />
               ) : (
-                <Trash className="mr-2 h-4 w-4" />
+                <Trash className={`mr-2 ${iconSizes.sm}`} />
               )}
               {GROUP_LABELS.HARD_DELETE}
             </Button>
@@ -146,7 +146,7 @@ export const DeleteGroupDialog = ({
           <DialogContent className="sm:max-w-[460px]">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
-                <AlertTriangle className="h-5 w-5 text-destructive" />
+                <AlertTriangle className={`${iconSizes.md} text-destructive`} />
                 {deleteConfirm.type === "hard"
                   ? GROUP_CONFIRM_MESSAGES.HARD_DELETE_TITLE(deleteConfirm.row?.name)
                   : deleteConfirm.type === "restore"
@@ -167,7 +167,7 @@ export const DeleteGroupDialog = ({
               </Button>
               <Button variant="destructive" onClick={handleDeleteConfirm} disabled={isProcessing}>
                 {(deleteConfirm.type === "hard" ? isHardDeleting : isDeleting) && (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <Loader2 className={`mr-2 ${iconSizes.sm} animate-spin`} />
                 )}
                 {deleteConfirm.type === "hard"
                   ? GROUP_CONFIRM_MESSAGES.HARD_DELETE_LABEL

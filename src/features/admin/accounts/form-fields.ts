@@ -1,6 +1,7 @@
 import type { ResourceFormField, ResourceFormSection } from "@/features/admin/resources/components"
 import React from "react"
 import { User, AlignLeft, Phone, MapPin, Lock, UserCircle, Building2, Navigation } from "lucide-react"
+import { iconSizes } from "@/lib/typography"
 import { AccountAvatarField } from "./components/account-avatar-field"
 
 export interface AccountFormData {
@@ -57,7 +58,7 @@ export const getAccountFields = (): ResourceFormField<AccountFormData>[] => {
       type: "image",
       placeholder: "https://example.com/avatar.jpg",
       description: "URL của ảnh đại diện",
-      icon: React.createElement(UserCircle, { className: "h-4 w-4" }),
+      icon: React.createElement(UserCircle, { className: iconSizes.sm }),
       section: "avatar",
       render: (field, value, onChange) => {
         return React.createElement(AccountAvatarField, {
@@ -73,7 +74,7 @@ export const getAccountFields = (): ResourceFormField<AccountFormData>[] => {
       type: "text",
       placeholder: "Nhập tên",
       required: true,
-      icon: React.createElement(User, { className: "h-4 w-4" }),
+      icon: React.createElement(User, { className: iconSizes.sm }),
       section: "personal",
     },
     {
@@ -81,7 +82,7 @@ export const getAccountFields = (): ResourceFormField<AccountFormData>[] => {
       label: "Số điện thoại",
       type: "text",
       placeholder: "Nhập số điện thoại",
-      icon: React.createElement(Phone, { className: "h-4 w-4" }),
+      icon: React.createElement(Phone, { className: iconSizes.sm }),
       section: "personal",
     },
     {
@@ -89,7 +90,7 @@ export const getAccountFields = (): ResourceFormField<AccountFormData>[] => {
       label: "Giới thiệu",
       type: "textarea",
       placeholder: "Nhập giới thiệu về bản thân",
-      icon: React.createElement(AlignLeft, { className: "h-4 w-4" }),
+      icon: React.createElement(AlignLeft, { className: iconSizes.sm }),
       section: "additional",
     },
     {
@@ -97,7 +98,7 @@ export const getAccountFields = (): ResourceFormField<AccountFormData>[] => {
       label: "Số nhà, Đường",
       type: "text",
       placeholder: "Ví dụ: 125 Đường Đỗ Uyên",
-      icon: React.createElement(MapPin, { className: "h-4 w-4" }),
+      icon: React.createElement(MapPin, { className: iconSizes.sm }),
       section: "address",
     },
     {
@@ -105,7 +106,7 @@ export const getAccountFields = (): ResourceFormField<AccountFormData>[] => {
       label: "Phường/Xã",
       type: "text",
       placeholder: "Ví dụ: Phường 2",
-      icon: React.createElement(Building2, { className: "h-4 w-4" }),
+      icon: React.createElement(Building2, { className: iconSizes.sm }),
       section: "address",
     },
     {
@@ -113,7 +114,7 @@ export const getAccountFields = (): ResourceFormField<AccountFormData>[] => {
       label: "Quận/Huyện",
       type: "text",
       placeholder: "Ví dụ: Quận Hoàn Kiếm",
-      icon: React.createElement(Navigation, { className: "h-4 w-4" }),
+      icon: React.createElement(Navigation, { className: iconSizes.sm }),
       section: "address",
     },
     {
@@ -121,7 +122,7 @@ export const getAccountFields = (): ResourceFormField<AccountFormData>[] => {
       label: "Thành phố/Tỉnh",
       type: "text",
       placeholder: "Ví dụ: Hà Nội",
-      icon: React.createElement(MapPin, { className: "h-4 w-4" }),
+      icon: React.createElement(MapPin, { className: iconSizes.sm }),
       section: "address",
     },
     {
@@ -129,7 +130,7 @@ export const getAccountFields = (): ResourceFormField<AccountFormData>[] => {
       label: "Mã bưu điện",
       type: "text",
       placeholder: "Ví dụ: 71593 (tùy chọn)",
-      icon: React.createElement(MapPin, { className: "h-4 w-4" }),
+      icon: React.createElement(MapPin, { className: iconSizes.sm }),
       section: "address",
     },
     {
@@ -139,7 +140,7 @@ export const getAccountFields = (): ResourceFormField<AccountFormData>[] => {
       placeholder: "Để trống nếu không muốn thay đổi",
       description: "Chỉ nhập nếu muốn thay đổi mật khẩu. Để trống để giữ nguyên mật khẩu hiện tại.",
       required: false,
-      icon: React.createElement(Lock, { className: "h-4 w-4" }),
+      icon: React.createElement(Lock, { className: iconSizes.sm }),
       section: "security",
     },
   ]

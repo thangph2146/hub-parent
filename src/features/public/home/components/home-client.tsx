@@ -1,6 +1,6 @@
 "use client";
 
-import { typography, headerConfig, responsiveIconSizes } from "@/lib/typography";
+import { typography, headerConfig, responsiveIconSizes, iconSizes } from "@/lib/typography";
 
 import {
   Users,
@@ -63,7 +63,7 @@ export const HomeClient = ({ featuredPosts = [] }: HomeClientProps) => {
             text: "Đăng ký",
             variant: "outline",
             size: "sm",
-            leftIcon: <MessageSquare className="h-3 w-3 sm:h-4 sm:w-4" />,
+            leftIcon: <MessageSquare className={responsiveIconSizes.small} />,
           },
         ]}
       />
@@ -140,7 +140,7 @@ export const HomeClient = ({ featuredPosts = [] }: HomeClientProps) => {
                 className="hidden sm:flex items-center gap-2 text-primary hover:text-primary/80 font-medium transition-colors"
               >
                 Xem tất cả
-                <ArrowRight className="h-4 w-4" />
+                <ArrowRight className={iconSizes.sm} />
               </Link>
             </div>
 
@@ -162,7 +162,7 @@ export const HomeClient = ({ featuredPosts = [] }: HomeClientProps) => {
                 className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors font-medium"
               >
                 Xem tất cả bài viết
-                <ArrowRight className="h-4 w-4" />
+                <ArrowRight className={iconSizes.sm} />
               </Link>
             </div>
           </div>
@@ -178,15 +178,15 @@ export const HomeClient = ({ featuredPosts = [] }: HomeClientProps) => {
             title: "Thông tin liên hệ",
             items: [
               {
-                icon: <Phone className="h-5 w-5 text-primary" />,
+                icon: <Phone className={`${iconSizes.md} text-primary`} />,
                 text: "(028) 38 212 430",
               },
               {
-                icon: <Mail className="h-5 w-5 text-primary" />,
+                icon: <Mail className={`${iconSizes.md} text-primary`} />,
                 text: "dhnhtphcm@hub.edu.vn",
               },
               {
-                icon: <GraduationCap className="h-5 w-5 text-primary" />,
+                icon: <GraduationCap className={`${iconSizes.md} text-primary`} />,
                 text: "Trường Đại học Ngân hàng TP.HCM",
               },
             ],

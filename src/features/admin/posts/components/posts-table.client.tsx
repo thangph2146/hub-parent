@@ -458,7 +458,7 @@ export const PostsTableClient = ({
                 onClick={() => executeBulk("restore", selectedIds, refresh, clearSelection)}
                 className="whitespace-nowrap"
               >
-                <RotateCcw className="mr-2 h-5 w-5 shrink-0" />
+                <RotateCcw className={`mr-2 ${iconSizes.md} shrink-0`} />
                 <span className="hidden sm:inline">
                   {POST_LABELS.RESTORE_SELECTED(selectedIds.length)}
                 </span>

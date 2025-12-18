@@ -119,7 +119,7 @@ export const FolderSelector = ({
                         !selectedFolder ? "opacity-100" : "opacity-0"
                       )}
                     />
-                    <Folder className="mr-2 h-4 w-4 hover:text-foreground" />
+                    <Folder className={`mr-2 ${iconSizes.sm} hover:text-foreground`} />
                     Theo ngày (mặc định)
                   </CommandItem>
                   {folderTreeForSelect.map((node) => (
@@ -153,9 +153,9 @@ export const FolderSelector = ({
           >
             {deleteFolderMutation.isPending &&
             deleteFolderMutation.variables === selectedFolder ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
+              <Loader2 className={`${iconSizes.sm} animate-spin`} />
             ) : (
-              <Trash2 className="h-4 w-4" />
+              <Trash2 className={iconSizes.sm} />
             )}
           </Button>
         )}

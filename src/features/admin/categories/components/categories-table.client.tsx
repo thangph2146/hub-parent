@@ -1,6 +1,6 @@
 "use client"
 
-import { typography } from "@/lib/typography"
+import { typography, iconSizes } from "@/lib/typography"
 
 import { useCallback, useMemo, useState } from "react"
 import { useResourceRouter } from "@/hooks/use-resource-segment"
@@ -322,7 +322,7 @@ export const CategoriesTableClient = ({
                 onClick={() => executeBulk("delete", selectedIds, refresh, clearSelection)}
                 className="whitespace-nowrap"
               >
-                <Trash2 className="mr-2 h-5 w-5 shrink-0" />
+                <Trash2 className={`mr-2 ${iconSizes.md} shrink-0`} />
                 <span className="hidden sm:inline">
                   {CATEGORY_LABELS.DELETE_SELECTED(selectedIds.length)}
                 </span>
@@ -338,7 +338,7 @@ export const CategoriesTableClient = ({
                 onClick={() => executeBulk("hard-delete", selectedIds, refresh, clearSelection)}
                 className="whitespace-nowrap"
               >
-                <AlertTriangle className="mr-2 h-5 w-5 shrink-0" />
+                <AlertTriangle className={`mr-2 ${iconSizes.md} shrink-0`} />
                 <span className="hidden sm:inline">
                   {CATEGORY_LABELS.HARD_DELETE_SELECTED(selectedIds.length)}
                 </span>
@@ -384,7 +384,7 @@ export const CategoriesTableClient = ({
                 onClick={() => executeBulk("restore", selectedIds, refresh, clearSelection)}
                 className="whitespace-nowrap"
               >
-                <RotateCcw className="mr-2 h-5 w-5 shrink-0" />
+                <RotateCcw className={`mr-2 ${iconSizes.md} shrink-0`} />
                 <span className="hidden sm:inline">
                   {CATEGORY_LABELS.RESTORE_SELECTED(selectedIds.length)}
                 </span>
@@ -400,7 +400,7 @@ export const CategoriesTableClient = ({
                 onClick={() => executeBulk("hard-delete", selectedIds, refresh, clearSelection)}
                 className="whitespace-nowrap"
               >
-                <AlertTriangle className="mr-2 h-5 w-5 shrink-0" />
+                <AlertTriangle className={`mr-2 ${iconSizes.md} shrink-0`} />
                 <span className="hidden sm:inline">
                   {CATEGORY_LABELS.HARD_DELETE_SELECTED(selectedIds.length)}
                 </span>
@@ -507,7 +507,7 @@ export const CategoriesTableClient = ({
       onClick={() => router.push("/admin/categories/new")}
       className={`h-8 px-3 ${typography.body.small}`}
     >
-      <Plus className="mr-2 h-5 w-5" />
+      <Plus className={`mr-2 ${iconSizes.md}`} />
       {CATEGORY_LABELS.ADD_NEW}
     </Button>
   ) : undefined

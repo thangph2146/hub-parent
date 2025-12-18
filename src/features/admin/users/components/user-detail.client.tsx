@@ -99,7 +99,7 @@ export const UserDetailClient = ({ userId, user, backUrl = "/admin/users" }: Use
             </Avatar>
             {detailData.isActive && (
               <div className={`absolute -bottom-1 -right-1 ${iconSizes.lg} rounded-full bg-green-500 border-2 border-background flex items-center justify-center`}>
-                <CheckCircle2 className={`h-3.5 w-3.5 text-white`} />
+                <CheckCircle2 className={`${iconSizes.xs} text-white`} />
               </div>
             )}
           </div>
@@ -117,7 +117,7 @@ export const UserDetailClient = ({ userId, user, backUrl = "/admin/users" }: Use
                     variant="outline"
                     className={`inline-flex items-center gap-1.5 bg-primary/10 px-2 py-0.5 ${typography.body.small} font-semibold text-primary border-primary/20`}
                   >
-                    <Shield className="h-3 w-3" />
+                    <Shield className={iconSizes.xs} />
                     {role.displayName || role.name}
                   </Badge>
                 ))}
@@ -142,7 +142,7 @@ export const UserDetailClient = ({ userId, user, backUrl = "/admin/users" }: Use
                 </a>
                 {userData.emailVerified && (
                   <div className={`flex items-center gap-1.5 ${typography.body.muted.small}`}>
-                    <CheckCircle2 className="h-3 w-3 text-green-600 dark:text-green-500" />
+                    <CheckCircle2 className={`${iconSizes.xs} text-green-600 dark:text-green-500`} />
                     <span>Đã xác thực</span>
                   </div>
                 )}
@@ -194,7 +194,7 @@ export const UserDetailClient = ({ userId, user, backUrl = "/admin/users" }: Use
               <Card className="border border-border/50 bg-card p-5">
                 <div className="flex items-start gap-3">
                   <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted">
-                    <FileText className="h-4 w-4 text-muted-foreground" />
+                    <FileText className={`${iconSizes.sm} text-muted-foreground`} />
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3 className={`${typography.body.medium} font-medium text-foreground mb-2`}>Giới thiệu</h3>
@@ -225,7 +225,7 @@ export const UserDetailClient = ({ userId, user, backUrl = "/admin/users" }: Use
                       variant="outline"
                       className={`inline-flex items-center gap-1.5 bg-primary/10 px-2.5 py-1 ${typography.body.small} font-medium text-primary border-primary/20`}
                     >
-                      <Shield className="h-3 w-3" />
+                      <Shield className={iconSizes.xs} />
                       {role.displayName || role.name}
                     </Badge>
                   ))}
@@ -249,12 +249,12 @@ export const UserDetailClient = ({ userId, user, backUrl = "/admin/users" }: Use
               >
                 {userData.isActive ? (
                   <>
-                    <CheckCircle2 className="mr-1.5 h-3.5 w-3.5" />
+                    <CheckCircle2 className={`mr-1.5 ${iconSizes.xs}`} />
                     Đang hoạt động
-                  </>
+                  </> 
                 ) : (
                   <>
-                    <XCircle className="mr-1.5 h-3.5 w-3.5" />
+                    <XCircle className={`mr-1.5 ${iconSizes.xs}`} />
                     Đã vô hiệu hóa
                   </>
                 )}
@@ -308,7 +308,7 @@ export const UserDetailClient = ({ userId, user, backUrl = "/admin/users" }: Use
             }}
             className="gap-2"
           >
-            <Edit className="h-4 w-4" />
+            <Edit className={iconSizes.sm} />
             Chỉnh sửa
           </Button>
         ) : null

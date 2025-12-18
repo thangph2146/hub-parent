@@ -1,6 +1,6 @@
 "use client"
 
-import { typography, headerConfig } from "@/lib/typography"
+import { typography, headerConfig, iconSizes } from "@/lib/typography"
 
 /**
  * Guide Client Component
@@ -184,7 +184,7 @@ export const GuideClient = () => {
                 <Card key={guide.id} className="border">
                   <CardHeader className="pb-3">
                     <div className="flex items-center gap-3">
-                      <Icon className="w-5 h-5 text-primary flex-shrink-0" />
+                      <Icon className={`${iconSizes.md} text-primary flex-shrink-0`} />
                       <div>
                         <CardTitle className={typography.title.small}>{guide.title}</CardTitle>
                         <CardDescription className={`${typography.description.small} mt-1`}>
@@ -212,7 +212,7 @@ export const GuideClient = () => {
                       className="w-full gap-2"
                       onClick={() => handleDownload(guide.imagePath, guide.title)}
                     >
-                      <Download className="w-4 h-4" />
+                      <Download className={iconSizes.sm} />
                       Tải xuống
                     </Button>
                   </CardContent>

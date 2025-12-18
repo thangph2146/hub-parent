@@ -53,7 +53,7 @@ export const ContactClient = ({}: ContactClientProps) => {
 
                       <div className="flex items-start gap-4">
                         <div className="w-10 h-10 rounded-lg bg-muted/50 dark:bg-muted flex items-center justify-center flex-shrink-0">
-                          <Mail className="h-5 w-5 text-primary" />
+                          <Mail className={`${iconSizes.md} text-primary`} />
                         </div>
                         <div>
                           <p className="font-semibold text-card-foreground mb-1">Email</p>
@@ -63,7 +63,7 @@ export const ContactClient = ({}: ContactClientProps) => {
 
                       <div className="flex items-start gap-4">
                         <div className="w-10 h-10 rounded-lg bg-muted/50 dark:bg-muted flex items-center justify-center flex-shrink-0">
-                          <MapPin className="h-5 w-5 text-primary" />
+                          <MapPin className={`${iconSizes.md} text-primary`} />
                         </div>
                         <div>
                           <p className="font-semibold text-card-foreground mb-1">Địa chỉ</p>
@@ -75,7 +75,7 @@ export const ContactClient = ({}: ContactClientProps) => {
 
                       <div className="flex items-start gap-4">
                         <div className="w-10 h-10 rounded-lg bg-muted/50 dark:bg-muted flex items-center justify-center flex-shrink-0">
-                          <Clock className="h-5 w-5 text-primary" />
+                          <Clock className={`${iconSizes.md} text-primary`} />
                         </div>
                         <div>
                           <p className="font-semibold text-card-foreground mb-1">Giờ làm việc</p>
@@ -92,7 +92,7 @@ export const ContactClient = ({}: ContactClientProps) => {
                   <Card className="border-border bg-muted/30">
                     <CardHeader>
                       <CardTitle className={`${typography.title.small} text-card-foreground flex items-center gap-2`}>
-                        <GraduationCap className="h-5 w-5 text-primary" />
+                        <GraduationCap className={`${iconSizes.md} text-primary`} />
                         Về chúng tôi
                       </CardTitle>
                     </CardHeader>

@@ -227,7 +227,7 @@ export const NewGroupDialog = ({ onSelectGroup }: NewGroupDialogProps) => {
               <CommandList>
                 {isLoading && (
                   <div className="flex items-center justify-center py-6">
-                    <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                    <Loader2 className={`${iconSizes.sm} animate-spin text-muted-foreground`} />
                     <span className={`ml-2 ${typography.body.muted.medium}`}>Đang tải...</span>
                   </div>
                 )}
@@ -245,7 +245,7 @@ export const NewGroupDialog = ({ onSelectGroup }: NewGroupDialogProps) => {
                           onSelect={() => toggleUser(user)}
                           className={`flex items-center gap-3 cursor-pointer ${selected ? "bg-accent/10" : ""} mb-1`}
                         >
-                          <Avatar className="h-8 w-8">
+                          <Avatar className={iconSizes["2xl"]}>
                             <AvatarImage src={user.avatar || undefined} alt={user.name || user.email} />
                             <AvatarFallback className={typography.body.small}>
                               {(user.name || user.email).substring(0, 2).toUpperCase()}
@@ -267,7 +267,7 @@ export const NewGroupDialog = ({ onSelectGroup }: NewGroupDialogProps) => {
           <div className="flex items-center justify-end gap-2 pt-2">
             <Button variant="outline" onClick={() => setOpen(false)} disabled={isCreating}>Hủy</Button>
             <Button onClick={handleCreateGroup} disabled={isCreating || !groupName.trim() || selectedUsers.length === 0}>
-              {isCreating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {isCreating && <Loader2 className={`mr-2 ${iconSizes.sm} animate-spin`} />}
               Tạo nhóm
             </Button>
           </div>
