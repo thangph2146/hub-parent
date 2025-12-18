@@ -168,6 +168,19 @@ function LazyImage({
     }
   }, [width, height, imageRef])
   
+  // Calculate responsive sizes for mobile optimization
+  const getSizes = (): string => {
+    if (typeof widthAttr === "number" && widthAttr > 0) {
+      // For images with explicit width, use responsive sizes
+      if (widthAttr <= 640) {
+        return "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+      }
+      return "(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 992px"
+    }
+    // Default responsive sizes for unknown dimensions
+    return "(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 992px"
+  }
+
   return (
     <img
       className={className || undefined}
@@ -176,6 +189,7 @@ function LazyImage({
       ref={imageRef}
       width={widthAttr || actualDimensions.width}
       height={heightAttr || actualDimensions.height}
+      sizes={getSizes()}
       style={{
         height,
         width,
