@@ -71,9 +71,9 @@ export function PublicFooter() {
                 <Logo className="h-28 w-28 text-blue-100" />
               </div>
               <div className="space-y-2">
-                <h3 className={`${headerConfig.section.className} text-white`}>
+                <h2 className={`${headerConfig.section.className} text-white`}>
                   Trường Đại học Ngân hàng
-                </h3>
+                </h2>
                 <p className={`${typography.body.medium} text-blue-100 font-medium`}>
                   Thành Phố Hồ Chí Minh
                 </p>
@@ -251,6 +251,7 @@ export function PublicFooter() {
                     href={`https://facebook.com/${appConfig.social.facebook}`}
                     target="_blank"
                     rel="noopener noreferrer"
+                    aria-label="Facebook - Trường Đại học Ngân hàng TP.HCM"
                     className="group flex items-center justify-center h-12 w-12 rounded-xl bg-white/10 hover:bg-blue-500/20 transition-all duration-300 hover:scale-110"
                   >
                     <Facebook className="h-5 w-5 text-white/80 group-hover:text-white" />
@@ -261,6 +262,7 @@ export function PublicFooter() {
                     href={`https://twitter.com/${appConfig.social.twitter}`}
                     target="_blank"
                     rel="noopener noreferrer"
+                    aria-label="Twitter - Trường Đại học Ngân hàng TP.HCM"
                     className="group flex items-center justify-center h-12 w-12 rounded-xl bg-white/10 hover:bg-sky-500/20 transition-all duration-300 hover:scale-110"
                   >
                     <Twitter className="h-5 w-5 text-white/80 group-hover:text-white" />
@@ -271,6 +273,7 @@ export function PublicFooter() {
                     href={`https://linkedin.com/company/${appConfig.social.linkedin}`}
                     target="_blank"
                     rel="noopener noreferrer"
+                    aria-label="LinkedIn - Trường Đại học Ngân hàng TP.HCM"
                     className="group flex items-center justify-center h-12 w-12 rounded-xl bg-white/10 hover:bg-blue-600/20 transition-all duration-300 hover:scale-110"
                   >
                     <Linkedin className="h-5 w-5 text-white/80 group-hover:text-white" />
@@ -280,6 +283,7 @@ export function PublicFooter() {
                   href="#"
                   target="_blank"
                   rel="noopener noreferrer"
+                  aria-label="Instagram - Trường Đại học Ngân hàng TP.HCM"
                   className="group flex items-center justify-center h-12 w-12 rounded-xl bg-white/10 hover:bg-pink-500/20 transition-all duration-300 hover:scale-110"
                 >
                   <Instagram className="h-5 w-5 text-white/80 group-hover:text-white" />
@@ -288,6 +292,7 @@ export function PublicFooter() {
                   href={appConfig.social.youtube}
                   target="_blank"
                   rel="noopener noreferrer"
+                  aria-label="YouTube - Trường Đại học Ngân hàng TP.HCM"
                   className="group flex items-center justify-center h-12 w-12 rounded-xl bg-white/10 hover:bg-red-500/20 transition-all duration-300 hover:scale-110"
                 >
                   <Youtube className="h-5 w-5 text-white/80 group-hover:text-white" />
