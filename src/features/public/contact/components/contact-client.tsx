@@ -1,6 +1,6 @@
 "use client"
 
-import { typography } from "@/lib/typography"
+import { typography, iconSizes } from "@/lib/typography"
 
 import { ContactForm } from "@/components/forms/contact-form"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -35,7 +35,7 @@ export const ContactClient = ({}: ContactClientProps) => {
                     <CardHeader>
                       <CardTitle className={`${typography.title.large} text-card-foreground flex items-center gap-3`}>
                         <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                          <Phone className="h-5 w-5 text-primary" />
+                          <Phone className={`${iconSizes.md} text-primary`} />
                         </div>
                         Thông tin liên hệ
                       </CardTitle>
@@ -43,7 +43,7 @@ export const ContactClient = ({}: ContactClientProps) => {
                     <CardContent className="space-y-4">
                       <div className="flex items-start gap-4">
                         <div className="w-10 h-10 rounded-lg bg-muted/50 dark:bg-muted flex items-center justify-center flex-shrink-0">
-                          <Phone className="h-5 w-5 text-primary" />
+                          <Phone className={`${iconSizes.md} text-primary`} />
                         </div>
                         <div>
                           <p className="font-semibold text-card-foreground mb-1">Điện thoại</p>

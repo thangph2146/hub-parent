@@ -1,6 +1,6 @@
 "use client"
 
-import { typography } from "@/lib/typography"
+import { typography, iconSizes } from "@/lib/typography"
 
 import {
     Suspense,
@@ -460,12 +460,12 @@ export function DataTable<T extends object>({
                             >
                                 {showFilters ? (
                                     <>
-                                        <EyeOff className="h-5 w-5 sm:mr-2" />
+                                        <EyeOff className={`${iconSizes.md} sm:mr-2`} />
                                         <span className="inline">Ẩn bộ lọc</span>
                                     </>
                                 ) : (
                                     <>
-                                        <Eye className="h-5 w-5 sm:mr-2" />
+                                        <Eye className={`${iconSizes.md} sm:mr-2`} />
                                         <span className="inline">Hiện bộ lọc</span>
                                     </>
                                 )}

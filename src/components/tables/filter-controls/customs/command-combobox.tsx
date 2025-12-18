@@ -17,7 +17,7 @@ import {
     CommandList,
 } from "@/components/ui/command"
 import { useClientOnly } from "@/hooks/use-client-only"
-import { typography } from "@/lib/typography"
+import { typography, iconSizes } from "@/lib/typography"
 import type { ColumnFilterControlProps } from "../types"
 
 export function CommandCombobox<T extends object = object>({
@@ -70,7 +70,7 @@ export function CommandCombobox<T extends object = object>({
                 <span className={`truncate ${typography.body.small}`}>
                     {selectedOption ? selectedOption.label : column.filter.placeholder ?? "Chọn..."}
                 </span>
-                <ChevronsUpDown className="ml-1 sm:ml-2 h-3 w-3 shrink-0 opacity-50" />
+                <ChevronsUpDown className={`ml-1 sm:ml-2 ${iconSizes.xs} shrink-0 opacity-50`} />
             </Button>
         )
     }
@@ -89,7 +89,7 @@ export function CommandCombobox<T extends object = object>({
                     <span className={`truncate ${typography.body.small}`}>
                         {selectedOption ? selectedOption.label : column.filter.placeholder ?? "Chọn..."}
                     </span>
-                    <ChevronsUpDown className="ml-1 sm:ml-2 h-3 w-3 shrink-0 opacity-50" />
+                    <ChevronsUpDown className={`ml-1 sm:ml-2 ${iconSizes.xs} shrink-0 opacity-50`} />
                 </Button>
             </PopoverTrigger>
             <PopoverContent id={filterId} className="w-[--radix-popover-trigger-width] p-0" align="start">

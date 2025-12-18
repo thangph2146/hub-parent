@@ -4,6 +4,7 @@ import { useScrollToTop, useScrollPosition, scrollToTop } from "@/hooks/use-scro
 import { Button } from "@/components/ui/button"
 import { ArrowUp } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { iconSizes } from "@/lib/typography"
 
 /**
  * Component để tự động scroll về đầu trang khi pathname thay đổi
@@ -32,7 +33,7 @@ export function ScrollToTop() {
         )}
         aria-label="Scroll to top"
       >
-        <ArrowUp className="h-5 w-5" />
+        <ArrowUp className={iconSizes.md} />
       </Button>
     </>
   )

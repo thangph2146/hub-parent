@@ -1,6 +1,7 @@
 import * as React from "react"
 
 import { cn } from "@/lib/utils/index"
+import { typography } from "@/lib/typography"
 
 function Card({ className, ...props }: React.ComponentProps<"div">) {
   return (
@@ -42,7 +43,7 @@ function CardDescription({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="card-description"
-      className={cn("text-muted-foreground text-sm", className)}
+      className={cn(`text-muted-foreground ${typography.body.small}`, className)}
       {...props}
     />
   )

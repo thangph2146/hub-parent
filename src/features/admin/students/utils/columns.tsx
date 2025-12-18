@@ -1,5 +1,5 @@
 import { useMemo } from "react"
-import { typography } from "@/lib/typography"
+import { typography, iconSizes } from "@/lib/typography"
 import { Switch } from "@/components/ui/switch"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { AlertCircle, CheckCircle2 } from "lucide-react"
@@ -157,7 +157,7 @@ export const useStudentColumns = ({ togglingStudents, canToggleStatus, onToggleS
           if (row.isActive && !row.deletedAt) {
             return (
               <Alert variant="default" className="w-full border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-900/20">
-                <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400" />
+                <CheckCircle2 className={`${iconSizes.sm} text-green-600 dark:text-green-400`} />
                 <AlertTitle className={`${typography.body.medium} font-semibold text-green-800 dark:text-green-200`}>
                   {STUDENT_LABELS.APPROVED_TITLE}
                 </AlertTitle>
@@ -171,7 +171,7 @@ export const useStudentColumns = ({ togglingStudents, canToggleStatus, onToggleS
           if (!row.isActive && !row.deletedAt) {
             return (
               <Alert variant="default" className="border-yellow-200 bg-yellow-50 dark:border-yellow-800 dark:bg-yellow-900/20">
-                <AlertCircle className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
+                <AlertCircle className={`${iconSizes.sm} text-yellow-600 dark:text-yellow-400`} />
                 <AlertTitle className={`${typography.body.medium} font-semibold text-yellow-800 dark:text-yellow-200`}>
                   {STUDENT_LABELS.PENDING_APPROVAL_TITLE}
                 </AlertTitle>

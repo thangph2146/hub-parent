@@ -29,7 +29,7 @@ import { useToast } from "@/hooks/use-toast"
 import { requestJson, toJsonBody } from "@/lib/api/client"
 import { withApiBase } from "@/lib/config/api-paths"
 import { logger } from "@/lib/config"
-import { typography } from "@/lib/typography"
+import { typography, iconSizes } from "@/lib/typography"
 
 interface UserOption {
   id: string
@@ -202,8 +202,8 @@ export const NewGroupDialog = ({ onSelectGroup }: NewGroupDialogProps) => {
   return (
     <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (o) { setSearchValue(""); void searchUsers("") } }}>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="icon" className="h-8 w-8">
-          <Users className="h-4 w-4" />
+        <Button variant="ghost" size="icon" className={iconSizes["2xl"]}>
+          <Users className={iconSizes.sm} />
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[560px]">

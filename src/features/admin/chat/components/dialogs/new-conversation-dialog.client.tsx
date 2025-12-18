@@ -32,7 +32,7 @@ import { Loader2, User } from "lucide-react"
 import { logger } from "@/lib/config"
 import { requestJson } from "@/lib/api/client"
 import { withApiBase } from "@/lib/config/api-paths"
-import { typography } from "@/lib/typography"
+import { typography, iconSizes } from "@/lib/typography"
 import type { Contact } from "@/components/chat/types"
 
 interface UserOption {
@@ -122,7 +122,7 @@ export const NewConversationDialog = ({ onSelectUser, existingContactIds = [] }:
                 size="default" 
                 className="h-9 px-3 gap-2 hover:bg-accent"
               >
-                <User className="h-4 w-4" />
+                <User className={iconSizes.sm} />
                 <span className={`inline ${typography.body.medium}`}>Trò chuyện mới</span>
               </Button>
             </DialogTrigger>
@@ -144,7 +144,7 @@ export const NewConversationDialog = ({ onSelectUser, existingContactIds = [] }:
           <CommandList>
             {isLoading && (
               <div className="flex items-center justify-center py-6">
-                <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                <Loader2 className={`${iconSizes.sm} animate-spin text-muted-foreground`} />
                 <span className={`ml-2 ${typography.body.muted.medium}`}>Đang tải...</span>
               </div>
             )}

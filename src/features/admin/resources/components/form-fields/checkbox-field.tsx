@@ -3,7 +3,7 @@
 import { FieldContent, FieldError } from "@/components/ui/field"
 import { Label } from "@/components/ui/label"
 import { cn } from "@/lib/utils"
-import { typography } from "@/lib/typography"
+import { typography, iconSizes } from "@/lib/typography"
 import type { ResourceFormField } from "../resource-form"
 
 interface CheckboxFieldProps<T> {
@@ -38,7 +38,7 @@ export const CheckboxField = <T,>({
           aria-invalid={error ? "true" : "false"}
           aria-describedby={errorId || field.description ? `${fieldId}-description` : undefined}
           className={cn(
-            "h-5 w-5 rounded border border-input",
+            `${iconSizes.md} rounded border border-input`,
             error && "border-destructive"
           )}
         />

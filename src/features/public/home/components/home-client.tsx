@@ -1,6 +1,6 @@
 "use client";
 
-import { typography, headerConfig } from "@/lib/typography";
+import { typography, headerConfig, iconSizes, responsiveIconSizes } from "@/lib/typography";
 
 import {
   Users,
@@ -51,8 +51,8 @@ export const HomeClient = ({ featuredPosts = [] }: HomeClientProps) => {
             text: "Đăng nhập ngay",
             variant: "default",
             size: "sm",
-            leftIcon: <Users className="h-3 w-3 sm:h-4 sm:w-4" />,
-            rightIcon: <ArrowRight className="h-3 w-3 sm:h-4 sm:w-4" />,
+            leftIcon: <Users className={responsiveIconSizes.small} />,
+            rightIcon: <ArrowRight className={responsiveIconSizes.small} />,
             responsiveText: {
               mobile: "Đăng nhập",
               desktop: "Đăng nhập ngay",

@@ -32,7 +32,7 @@ import { useUserDeleteConfirm } from "@/features/admin/users/hooks/use-user-dele
 import { useUserColumns } from "@/features/admin/users/utils/columns"
 import { useUserRowActions } from "@/features/admin/users/utils/row-actions"
 import { resourceLogger } from "@/lib/config"
-import { typography } from "@/lib/typography"
+import { typography, iconSizes } from "@/lib/typography"
 
 import type { AdminUsersListParams } from "@/lib/query-keys"
 import type { UserRow, UsersResponse, UsersTableClientProps } from "../types"
@@ -325,7 +325,7 @@ export const UsersTableClient = ({
                       onClick={() => executeBulk("delete", deletableRows.map((r) => r.id), deletableRows, refresh, clearSelection)}
                       className="whitespace-nowrap"
                     >
-                      <Trash2 className="mr-2 h-5 w-5 shrink-0" />
+                      <Trash2 className={`mr-2 ${iconSizes.md} shrink-0`} />
                       <span className="hidden sm:inline">
                         {USER_LABELS.DELETE_SELECTED(deletableRows.length)}
                       </span>
@@ -340,7 +340,7 @@ export const UsersTableClient = ({
                         onClick={() => executeBulk("hard-delete", deletableRows.map((r) => r.id), deletableRows, refresh, clearSelection)}
                         className="whitespace-nowrap"
                       >
-                        <AlertTriangle className="mr-2 h-5 w-5 shrink-0" />
+                        <AlertTriangle className={`mr-2 ${iconSizes.md} shrink-0`} />
                         <span className="hidden sm:inline">
                           {USER_LABELS.HARD_DELETE_SELECTED(deletableRows.length)}
                         </span>
@@ -401,7 +401,7 @@ export const UsersTableClient = ({
                         onClick={() => executeBulk("hard-delete", selectedIds, selectedRows, refresh, clearSelection)}
                         className="whitespace-nowrap"
                       >
-                        <AlertTriangle className="mr-2 h-5 w-5 shrink-0" />
+                        <AlertTriangle className={`mr-2 ${iconSizes.md} shrink-0`} />
                         <span className="hidden sm:inline">
                           {USER_LABELS.HARD_DELETE_SELECTED(selectedIds.length)}
                         </span>

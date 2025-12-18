@@ -11,6 +11,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Loader2, AlertTriangle, Trash } from "lucide-react"
+import { iconSizes } from "@/lib/typography"
 import type { Contact, Group } from "@/components/chat/types"
 import { HardDeleteGroupDialog } from "./hard-delete-group-dialog.client"
 import { useGroupDeleteConfirm } from "../../hooks/use-group-delete-confirm"
@@ -109,9 +110,9 @@ export const DeleteGroupDialog = ({
               className="w-full justify-start"
             >
               {isDeleting ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Loader2 className={`mr-2 ${iconSizes.sm} animate-spin`} />
               ) : (
-                <Trash className="mr-2 h-4 w-4" />
+                <Trash className={`mr-2 ${iconSizes.sm}`} />
               )}
               {GROUP_LABELS.SOFT_DELETE}
             </Button>

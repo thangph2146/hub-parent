@@ -7,7 +7,7 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Trash2 } from "lucide-react"
-import { typography } from "@/lib/typography"
+import { typography, iconSizes } from "@/lib/typography"
 import type { GroupRole, Group, Contact } from "../types"
 import { HardDeleteGroupDialog } from "@/features/admin/chat/components/dialogs/hard-delete-group-dialog.client"
 
@@ -44,7 +44,7 @@ export function DeletedGroupBanner({
       <div className="flex items-center justify-between py-4 px-4 bg-destructive/10 border border-destructive/20 rounded-lg mb-2">
         <div className={`flex items-center gap-2 ${typography.body.medium} text-destructive`}>
           <svg
-            className="h-4 w-4"
+            className={iconSizes.sm}
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -61,7 +61,7 @@ export function DeletedGroupBanner({
         </div>
         {canHardDelete && (
           <Button variant="destructive" size="sm" onClick={handleHardDeleteClick} className={`h-7 ${typography.body.small}`}>
-            <Trash2 className="mr-1 h-3 w-3" />
+            <Trash2 className={`mr-1 ${iconSizes.xs}`} />
             Xóa vĩnh viễn
           </Button>
         )}

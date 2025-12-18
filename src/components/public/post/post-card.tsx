@@ -5,7 +5,7 @@ import Image from "next/image"
 import { Calendar, Tag, ArrowRight, FolderOpen } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
-import { typography } from "@/lib/typography"
+import { typography, iconSizes } from "@/lib/typography"
 import type { Post } from "@/features/public/post/types"
 import { formatPostDate } from "@/features/public/post/utils/date-formatter"
 
@@ -77,7 +77,7 @@ export function PostCard({ post, className, priority = false }: PostCardProps) {
           {/* Date */}
           {post.publishedAt && (
             <div className={`flex items-center gap-1.5 ${typography.body.muted.medium} mb-4`}>
-              <Calendar className="h-4 w-4" />
+              <Calendar className={iconSizes.sm} />
               <time dateTime={getPublishedAtISO()}>
                 {formatPostDate(post.publishedAt)}
               </time>
@@ -87,7 +87,7 @@ export function PostCard({ post, className, priority = false }: PostCardProps) {
           {/* Read Now Button */}
           <div className="mt-auto flex items-center gap-2 text-primary font-medium group-hover:gap-3 transition-all">
             <span>Đọc ngay</span>
-            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+            <ArrowRight className={`${iconSizes.sm} transition-transform group-hover:translate-x-1`} />
           </div>
         </div>
       </Link>

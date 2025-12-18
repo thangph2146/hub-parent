@@ -17,7 +17,7 @@ import {
   CommandList,
 } from "@/components/ui/command"
 import { cn } from "@/lib/utils"
-import { typography } from "@/lib/typography"
+import { typography, iconSizes } from "@/lib/typography"
 import type { ResourceFormField } from "../../resource-form"
 
 interface SelectComboboxProps<T> {
@@ -71,7 +71,7 @@ export const SelectCombobox = <T,>({
           <span className="truncate">
             {selectedOption ? selectedOption.label : field.placeholder || "-- Chọn --"}
           </span>
-          <ChevronsUpDown className="ml-2 h-5 w-5 shrink-0 opacity-50" />
+          <ChevronsUpDown className={`ml-2 ${iconSizes.md} shrink-0 opacity-50`} />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="p-0" align="start">
@@ -90,7 +90,7 @@ export const SelectCombobox = <T,>({
                 >
                   <Check
                     className={cn(
-                      "mr-2 h-5 w-5",
+                      `mr-2 ${iconSizes.md}`,
                       !fieldValue || fieldValue === "" ? "opacity-100" : "opacity-0"
                     )}
                   />
@@ -108,7 +108,7 @@ export const SelectCombobox = <T,>({
                 >
                   <Check
                     className={cn(
-                      "mr-2 h-5 w-5",
+                      `mr-2 ${iconSizes.md}`,
                       String(fieldValue) === String(option.value) ? "opacity-100" : "opacity-0"
                     )}
                   />

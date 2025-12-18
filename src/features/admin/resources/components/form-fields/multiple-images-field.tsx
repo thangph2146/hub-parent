@@ -11,7 +11,7 @@ import { useToast } from "@/hooks/use-toast"
 import { MultipleImageUpload } from "@/components/forms"
 import type { UploadResponse } from "@/features/admin/uploads/types"
 import { logger } from "@/lib/config/logger"
-import { typography } from "@/lib/typography"
+import { typography, iconSizes } from "@/lib/typography"
 
 export interface ProductImage {
   url: string
@@ -74,7 +74,7 @@ const ImageItem = ({
               disabled={disabled || index === 0}
               title="Di chuyển lên"
             >
-              <ArrowUp className="h-4 w-4" />
+              <ArrowUp className={iconSizes.sm} />
             </Button>
             <Button
               type="button"
@@ -84,7 +84,7 @@ const ImageItem = ({
               disabled={disabled || index === total - 1}
               title="Di chuyển xuống"
             >
-              <ArrowDown className="h-4 w-4" />
+              <ArrowDown className={iconSizes.sm} />
             </Button>
           </div>
           <Button

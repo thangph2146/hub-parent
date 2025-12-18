@@ -34,7 +34,7 @@ import { ImageGrid } from "./image-grid"
 import { Pagination } from "./pagination"
 import { ViewModeToggle } from "./view-mode-toggle"
 import { DeleteDialogs } from "./delete-dialogs"
-import { typography } from "@/lib/typography"
+import { typography, iconSizes } from "@/lib/typography"
 
 export const UploadsPageClient = () => {
   const queryClient = useQueryClient()
@@ -214,7 +214,7 @@ export const UploadsPageClient = () => {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Upload className="h-5 w-5 shrink-0" />
+            <Upload className={`${iconSizes.md} shrink-0`} />
             <span>Upload hình ảnh mới</span>
           </CardTitle>
           <CardDescription>
@@ -255,7 +255,7 @@ export const UploadsPageClient = () => {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="min-w-0 flex-1">
               <CardTitle className="flex items-center gap-2">
-                <ImageIcon className="h-5 w-5 shrink-0" />
+                <ImageIcon className={`${iconSizes.md} shrink-0`} />
                 <span className="truncate">Tất cả hình ảnh</span>
               </CardTitle>
               <CardDescription className={typography.body.small}>

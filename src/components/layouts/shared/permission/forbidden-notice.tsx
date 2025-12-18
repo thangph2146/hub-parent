@@ -10,7 +10,7 @@
 import { useRouter } from "next/navigation"
 import { ShieldX, ArrowLeft, Home, Lock } from "lucide-react"
 import { motion } from "framer-motion"
-import { typography, headerConfig } from "@/lib/typography"
+import { typography, headerConfig, iconSizes } from "@/lib/typography"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 
@@ -136,7 +136,7 @@ export function ForbiddenNotice({
                       repeatDelay: 1,
                     }}
                   >
-                    <ShieldX className="h-12 w-12 text-destructive" strokeWidth={2.5} />
+                    <ShieldX className={`${iconSizes["3xl"]} text-destructive`} strokeWidth={2.5} />
                   </motion.div>
                   
                   {/* Lock icon overlay */}
@@ -151,7 +151,7 @@ export function ForbiddenNotice({
                     }}
                   >
                     <div className="rounded-full bg-background border-2 border-destructive/30 p-1.5 shadow-md">
-                      <Lock className="h-4 w-4 text-destructive" strokeWidth={2} />
+                      <Lock className={`${iconSizes.sm} text-destructive`} strokeWidth={2} />
                     </div>
                   </motion.div>
                 </div>
@@ -182,7 +182,7 @@ export function ForbiddenNotice({
                       onClick={handleGoBack}
                       className="w-full sm:w-auto min-w-[160px] h-11 shadow-sm hover:shadow-md transition-shadow"
                     >
-                      <ArrowLeft className="mr-2 h-4 w-4" />
+                      <ArrowLeft className={`mr-2 ${iconSizes.sm}`} />
                       Quay lại
                     </Button>
                   </motion.div>
@@ -197,7 +197,7 @@ export function ForbiddenNotice({
                       onClick={() => router.push(homeUrl)}
                       className="w-full sm:w-auto min-w-[160px] h-11 shadow-md hover:shadow-lg transition-shadow"
                     >
-                      <Home className="mr-2 h-4 w-4" />
+                      <Home className={`mr-2 ${iconSizes.sm}`} />
                       Về trang chủ
                     </Button>
                   </motion.div>

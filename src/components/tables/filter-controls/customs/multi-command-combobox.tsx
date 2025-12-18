@@ -18,7 +18,7 @@ import {
     CommandList,
 } from "@/components/ui/command"
 import { useClientOnly } from "@/hooks/use-client-only"
-import { typography } from "@/lib/typography"
+import { typography, iconSizes } from "@/lib/typography"
 import type { ColumnFilterControlProps } from "../types"
 
 export function MultiCommandCombobox<T extends object = object>({
@@ -103,7 +103,7 @@ export function MultiCommandCombobox<T extends object = object>({
                 disabled={true}
             >
                 <span className={`truncate ${typography.body.small}`}>{displayText}</span>
-                <ChevronsUpDown className="ml-1 sm:ml-2 h-3 w-3 shrink-0 opacity-50" />
+                <ChevronsUpDown className={`ml-1 sm:ml-2 ${iconSizes.xs} shrink-0 opacity-50`} />
             </Button>
         )
     }
@@ -136,7 +136,7 @@ export function MultiCommandCombobox<T extends object = object>({
                     <div className="flex items-center gap-1 flex-shrink-0">
                         {selectedValues.length > 0 && (
                             <X
-                                className="h-3 w-3 text-muted-foreground hover:text-foreground"
+                                className={`${iconSizes.xs} text-muted-foreground hover:text-foreground`}
                                 onClick={handleClear}
                             />
                         )}

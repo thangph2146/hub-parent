@@ -1,6 +1,6 @@
 "use client"
 
-import { typography } from "@/lib/typography"
+import { typography, iconSizes } from "@/lib/typography"
 
 import { useState, useCallback } from "react"
 import { useAuth } from "@/hooks/use-session"
@@ -198,7 +198,7 @@ export const ManageMembersDialog = ({
               <CommandList>
                 {isLoading && (
                   <div className="flex items-center justify-center py-6">
-                    <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                    <Loader2 className={`${iconSizes.sm} animate-spin text-muted-foreground`} />
                     <span className={`ml-2 ${typography.body.muted.medium}`}>Đang tải...</span>
                   </div>
                 )}
@@ -210,7 +210,7 @@ export const ManageMembersDialog = ({
                     <ScrollArea className="h-[180px] pr-2">
                       {users.map((user) => (
                         <CommandItem key={user.id} value={user.id} className="flex items-center gap-3 cursor-pointer">
-                          <Avatar className="h-8 w-8">
+                          <Avatar className={iconSizes["2xl"]}>
                             <AvatarImage src={user.avatar || undefined} alt={user.name || user.email} />
                             <AvatarFallback className={typography.body.small}>
                               {(user.name || user.email).substring(0, 2).toUpperCase()}

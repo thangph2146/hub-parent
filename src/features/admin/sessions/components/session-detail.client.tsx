@@ -16,7 +16,7 @@ import { formatDateVi } from "../utils"
 import { cn } from "@/lib/utils"
 import { usePermissions } from "@/hooks/use-permissions"
 import { PERMISSIONS } from "@/lib/permissions"
-import { typography } from "@/lib/typography"
+import { typography, iconSizes } from "@/lib/typography"
 
 export interface SessionDetailData {
   id: string
@@ -201,7 +201,7 @@ export const SessionDetailClient = ({ sessionId, session, backUrl = "/admin/sess
             onClick={() => router.push(`/admin/sessions/${sessionId}/edit`)}
             className="gap-2"
           >
-            <Edit className="h-4 w-4" />
+            <Edit className={iconSizes.sm} />
             Chỉnh sửa
           </Button>
         ) : null
