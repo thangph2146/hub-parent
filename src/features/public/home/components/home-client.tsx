@@ -1,6 +1,6 @@
 "use client";
 
-import { typography, headerConfig, iconSizes, responsiveIconSizes } from "@/lib/typography";
+import { typography, headerConfig, responsiveIconSizes } from "@/lib/typography";
 
 import {
   Users,

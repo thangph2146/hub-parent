@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/command"
 import { Check, Folder, ChevronsUpDown, Trash2, Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { iconSizes } from "@/lib/typography"
+import { iconSizes, typography } from "@/lib/typography"
 import { useUploadsStore } from "../store/uploads-store"
 import { useDeleteFolder } from "../hooks/use-uploads-queries"
 import { FolderTreeSelectItem } from "./folder-tree-select-item"
