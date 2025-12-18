@@ -34,6 +34,7 @@ import type { PostRow, PostsResponse, PostsTableClientProps } from "../types"
 import { POST_CONFIRM_MESSAGES, POST_LABELS } from "../constants/messages"
 import { resourceLogger } from "@/lib/config"
 import { sanitizeSearchQuery } from "@/lib/api/validation"
+import { typography, iconSizes } from "@/lib/typography"
 
 export const PostsTableClient = ({
   canDelete = false,
@@ -395,7 +396,7 @@ export const PostsTableClient = ({
                 onClick={() => executeBulk("delete", selectedIds, refresh, clearSelection)}
                 className="whitespace-nowrap"
               >
-                <Trash2 className="mr-2 h-5 w-5 shrink-0" />
+                <Trash2 className={`mr-2 ${iconSizes.md} shrink-0`} />
                 <span className="hidden sm:inline">
                   {POST_LABELS.DELETE_SELECTED(selectedIds.length)}
                 </span>
@@ -411,7 +412,7 @@ export const PostsTableClient = ({
                 onClick={() => executeBulk("hard-delete", selectedIds, refresh, clearSelection)}
                 className="whitespace-nowrap"
               >
-                <AlertTriangle className="mr-2 h-5 w-5 shrink-0" />
+                <AlertTriangle className={`mr-2 ${iconSizes.md} shrink-0`} />
                 <span className="hidden sm:inline">
                   {POST_LABELS.HARD_DELETE_SELECTED(selectedIds.length)}
                 </span>
@@ -473,7 +474,7 @@ export const PostsTableClient = ({
                 onClick={() => executeBulk("hard-delete", selectedIds, refresh, clearSelection)}
                 className="whitespace-nowrap"
               >
-                <AlertTriangle className="mr-2 h-5 w-5 shrink-0" />
+                <AlertTriangle className={`mr-2 ${iconSizes.md} shrink-0`} />
                 <span className="hidden sm:inline">
                   {POST_LABELS.HARD_DELETE_SELECTED(selectedIds.length)}
                 </span>
@@ -578,7 +579,7 @@ export const PostsTableClient = ({
       type="button"
       size="sm"
       onClick={() => router.push("/admin/posts/new")}
-      className="h-8 px-3 text-xs sm:text-sm"
+      className={`h-8 px-3 ${typography.body.small}`}
     >
       <Plus className="mr-2 h-5 w-5" />
       {POST_LABELS.ADD_NEW}

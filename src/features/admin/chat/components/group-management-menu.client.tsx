@@ -10,6 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Settings, Edit, Users, Trash2 } from "lucide-react"
+import { iconSizes } from "@/lib/typography"
 import type { Group, GroupRole, Contact } from "@/components/chat/types"
 import { EditGroupDialog } from "./dialogs/edit-group-dialog.client"
 import { ManageMembersDialog } from "./dialogs/manage-members-dialog.client"
@@ -47,25 +48,25 @@ export const GroupManagementMenu = ({
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon" className="h-8 w-8">
-            <Settings className="h-4 w-4" />
+          <Button variant="ghost" size="icon" className={iconSizes["2xl"]}>
+            <Settings className={iconSizes.sm} />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           {canEdit && (
             <DropdownMenuItem onClick={() => setEditDialogOpen(true)}>
-              <Edit className="mr-2 h-4 w-4" />
+              <Edit className={`mr-2 ${iconSizes.sm}`} />
               Chỉnh sửa nhóm
             </DropdownMenuItem>
           )}
           {canManageMembers ? (
             <DropdownMenuItem onClick={() => setMembersDialogOpen(true)}>
-              <Users className="mr-2 h-4 w-4" />
+              <Users className={`mr-2 ${iconSizes.sm}`} />
               Quản lý thành viên
             </DropdownMenuItem>
           ) : canViewMembers ? (
             <DropdownMenuItem onClick={() => setMembersDialogOpen(true)}>
-              <Users className="mr-2 h-4 w-4" />
+              <Users className={`mr-2 ${iconSizes.sm}`} />
               Xem thành viên
             </DropdownMenuItem>
           ) : null}
@@ -76,7 +77,7 @@ export const GroupManagementMenu = ({
                 onClick={() => setDeleteDialogOpen(true)}
                 variant="destructive"
               >
-                <Trash2 className="mr-2 h-4 w-4 text-destructive" />
+                <Trash2 className={`mr-2 ${iconSizes.sm} text-destructive`} />
                 Xóa nhóm
               </DropdownMenuItem>
             </>

@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { logger } from "@/lib/config/logger"
 import { useSession } from "@/lib/auth"
+import { typography, iconSizes } from "@/lib/typography"
 
 interface NotificationItemProps {
   notification: Notification
@@ -163,7 +164,7 @@ export function NotificationItem({
         <div className="mt-0.5 flex-shrink-0">
           <Icon
             className={cn(
-              "h-5 w-5",
+              iconSizes.md,
               notification.kind === "SUCCESS" && "text-green-600",
               notification.kind === "WARNING" && "text-orange-600",
               notification.kind === "ALERT" && "text-red-600",
@@ -178,7 +179,7 @@ export function NotificationItem({
           <div className="flex items-start justify-between gap-2">
             <h4
               className={cn(
-                "text-sm font-medium leading-none",
+                `${typography.body.medium} font-medium leading-none`,
                 !notification.isRead && "font-semibold"
               )}
             >
@@ -192,7 +193,7 @@ export function NotificationItem({
           {notification.description && (
             <p
               className={cn(
-                "text-sm text-muted-foreground line-clamp-2",
+                `${typography.body.muted.medium} line-clamp-2`,
                 notification.isRead && "opacity-70"
               )}
             >
@@ -201,13 +202,13 @@ export function NotificationItem({
           )}
 
           <div className="flex items-center justify-between pt-2">
-            <span className="text-xs text-muted-foreground">{timeAgo}</span>
+            <span className={typography.body.muted.small}>{timeAgo}</span>
             <div className="flex items-center gap-2">
               <Button
                 variant={notification.isRead ? "outline" : "default"}
                 size="sm"
                 className={cn(
-                  "h-8 gap-1.5 text-xs",
+                  `h-8 gap-1.5 ${typography.body.small}`,
                   notification.isRead
                     ? "border text-blue-700 hover:bg-accent dark:border-blue-700 dark:text-blue-300 dark:hover:bg-blue-950/30"
                     : "bg-green-600 text-white hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-600",

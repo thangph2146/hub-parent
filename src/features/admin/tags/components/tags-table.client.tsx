@@ -34,6 +34,7 @@ import { useTagRowActions } from "@/features/admin/tags/utils/row-actions"
 import type { AdminTagsListParams } from "@/lib/query-keys"
 import type { TagRow, TagsResponse, TagsTableClientProps } from "../types"
 import { TAG_CONFIRM_MESSAGES, TAG_LABELS } from "../constants/messages"
+import { typography, iconSizes } from "@/lib/typography"
 
 export const TagsTableClient = ({
   canDelete = false,
@@ -314,7 +315,7 @@ export const TagsTableClient = ({
               onClick={() => executeBulk("delete", selectedIds, refresh, clearSelection)}
               className="whitespace-nowrap"
             >
-              <Trash2 className="mr-2 h-5 w-5 shrink-0" />
+              <Trash2 className={`mr-2 ${iconSizes.md} shrink-0`} />
               <span className="hidden sm:inline">
                 {TAG_LABELS.DELETE_SELECTED(selectedIds.length)}
               </span>
@@ -329,7 +330,7 @@ export const TagsTableClient = ({
                 onClick={() => executeBulk("hard-delete", selectedIds, refresh, clearSelection)}
                 className="whitespace-nowrap"
               >
-                <AlertTriangle className="mr-2 h-5 w-5 shrink-0" />
+                <AlertTriangle className={`mr-2 ${iconSizes.md} shrink-0`} />
                 <span className="hidden sm:inline">
                   {TAG_LABELS.HARD_DELETE_SELECTED(selectedIds.length)}
                 </span>
@@ -387,7 +388,7 @@ export const TagsTableClient = ({
                 onClick={() => executeBulk("hard-delete", selectedIds, refresh, clearSelection)}
                 className="whitespace-nowrap"
               >
-                <AlertTriangle className="mr-2 h-5 w-5 shrink-0" />
+                <AlertTriangle className={`mr-2 ${iconSizes.md} shrink-0`} />
                 <span className="hidden sm:inline">
                   {TAG_LABELS.HARD_DELETE_SELECTED(selectedIds.length)}
                 </span>
@@ -492,7 +493,7 @@ export const TagsTableClient = ({
       type="button"
       size="sm"
       onClick={() => router.push("/admin/tags/new")}
-      className="h-8 px-3 text-xs sm:text-sm"
+      className={`h-8 px-3 ${typography.body.small}`}
     >
       <Plus className="mr-2 h-5 w-5" />
       {TAG_LABELS.ADD_NEW}

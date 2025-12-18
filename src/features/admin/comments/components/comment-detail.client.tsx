@@ -17,6 +17,7 @@ import { apiRoutes } from "@/lib/api/routes"
 import { useResourceNavigation, useResourceDetailData, useResourceDetailLogger } from "@/features/admin/resources/hooks"
 import { queryKeys } from "@/lib/query-keys"
 import { resourceLogger } from "@/lib/config/resource-logger"
+import { typography, iconSizes } from "@/lib/typography"
 
 export interface CommentDetailData {
   id: string
@@ -51,10 +52,10 @@ const StatusField = ({ approved, canApprove, onToggle, isToggling }: StatusField
   return (
     <div className="flex items-center gap-3">
       <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted">
-        <MessageSquare className="h-4 w-4 text-muted-foreground" />
+        <MessageSquare className={`${iconSizes.sm} text-muted-foreground`} />
       </div>
       <div className="flex-1 min-w-0">
-        <div className="text-xs font-medium text-muted-foreground mb-1.5">Trạng thái duyệt</div>
+        <div className={`${typography.body.muted.small} font-medium mb-1.5`}>Trạng thái duyệt</div>
         <div className="flex items-center gap-2">
           <Switch
             checked={approved}
@@ -62,7 +63,7 @@ const StatusField = ({ approved, canApprove, onToggle, isToggling }: StatusField
             onCheckedChange={onToggle}
             aria-label={approved ? "Hủy duyệt bình luận" : "Duyệt bình luận"}
           />
-          <span className="text-sm text-foreground">
+          <span className={typography.body.medium}>
             {approved ? "Đã duyệt" : "Chờ duyệt"}
           </span>
         </div>
@@ -164,11 +165,11 @@ export const CommentDetailClient = ({ commentId, comment, backUrl = "/admin/comm
             <Card className="border border-border/50 bg-card p-5">
               <div className="flex items-start gap-3">
                 <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted">
-                  <MessageSquare className="h-4 w-4 text-muted-foreground" />
+                  <MessageSquare className={`${iconSizes.sm} text-muted-foreground`} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-sm font-medium text-foreground mb-2">Nội dung</h3>
-                  <div className="text-sm leading-relaxed whitespace-pre-wrap text-foreground break-words">
+                  <h3 className={`${typography.body.medium} font-medium text-foreground mb-2`}>Nội dung</h3>
+                  <div className={`${typography.body.medium} leading-relaxed whitespace-pre-wrap text-foreground break-words`}>
                     {commentData.content || "—"}
                   </div>
                 </div>
@@ -186,7 +187,7 @@ export const CommentDetailClient = ({ commentId, comment, backUrl = "/admin/comm
             {/* Author Info */}
             <div className="grid gap-6 grid-cols-1 sm:grid-cols-2">
               <FieldItem icon={User} label="Người bình luận">
-                <div className="text-sm font-medium text-foreground truncate">
+                <div className={`${typography.body.medium} font-medium text-foreground truncate`}>
                   {commentData.authorName || commentData.authorEmail || "—"}
                 </div>
               </FieldItem>
@@ -194,7 +195,7 @@ export const CommentDetailClient = ({ commentId, comment, backUrl = "/admin/comm
               <FieldItem icon={Mail} label="Email">
                 <a
                   href={`mailto:${commentData.authorEmail}`}
-                  className="text-sm font-medium text-primary hover:underline truncate block transition-colors"
+                  className={`${typography.body.medium} font-medium text-primary hover:underline truncate block transition-colors`}
                 >
                   {commentData.authorEmail || "—"}
                 </a>
@@ -208,26 +209,26 @@ export const CommentDetailClient = ({ commentId, comment, backUrl = "/admin/comm
                   href={`/admin/posts/${commentData.postId}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:text-primary/80 hover:underline transition-colors"
+                  className={`group inline-flex items-center gap-1.5 ${typography.body.medium} font-medium text-primary hover:text-primary/80 hover:underline transition-colors`}
                 >
                   <span className="truncate">{commentData.postTitle || "—"}</span>
                   <ExternalLink className="h-3.5 w-3.5 shrink-0 opacity-50 group-hover:opacity-100 transition-opacity" />
                 </a>
               ) : (
-                <div className="text-sm font-medium text-foreground truncate">{commentData.postTitle || "—"}</div>
+                <div className={`${typography.body.medium} font-medium text-foreground truncate`}>{commentData.postTitle || "—"}</div>
               )}
             </FieldItem>
 
             {/* Timestamps */}
             <div className="grid gap-6 grid-cols-1 sm:grid-cols-2">
               <FieldItem icon={Calendar} label="Ngày tạo">
-                <div className="text-sm font-medium text-foreground">
+                <div className={`${typography.body.medium} font-medium text-foreground`}>
                   {commentData.createdAt ? formatDateVi(commentData.createdAt) : "—"}
                 </div>
               </FieldItem>
 
               <FieldItem icon={Clock} label="Cập nhật lần cuối">
-                <div className="text-sm font-medium text-foreground">
+                <div className={`${typography.body.medium} font-medium text-foreground`}>
                   {commentData.updatedAt ? formatDateVi(commentData.updatedAt) : "—"}
                 </div>
               </FieldItem>

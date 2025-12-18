@@ -4,6 +4,7 @@
  */
 
 import * as React from "react"
+import { typography } from "@/lib/typography"
 
 interface PaginationProps {
   currentPage: number
@@ -19,17 +20,17 @@ export const Pagination = ({ currentPage, totalPages, onPageChange }: Pagination
       <button
         onClick={() => onPageChange(Math.max(1, currentPage - 1))}
         disabled={currentPage === 1}
-        className="w-full sm:w-auto px-4 py-2 border rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-muted transition-colors text-sm"
+        className={`w-full sm:w-auto px-4 py-2 border rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-muted transition-colors ${typography.body.small}`}
       >
         Trước
       </button>
-      <span className="text-xs sm:text-sm text-muted-foreground whitespace-nowrap">
+      <span className={`${typography.body.small} text-muted-foreground whitespace-nowrap`}>
         Trang {currentPage} / {totalPages}
       </span>
       <button
         onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
         disabled={currentPage === totalPages}
-        className="w-full sm:w-auto px-4 py-2 border rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-muted transition-colors text-sm"
+        className={`w-full sm:w-auto px-4 py-2 border rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-muted transition-colors ${typography.body.small}`}
       >
         Sau
       </button>

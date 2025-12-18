@@ -18,6 +18,7 @@ import { NotificationItem } from "./notification-item"
 import { Separator } from "@/components/ui/separator"
 import { isSuperAdmin } from "@/lib/permissions"
 import { logger } from "@/lib/config/logger"
+import { typography, headerConfig, iconSizes } from "@/lib/typography"
 
 export function NotificationBell() {
   const router = useRouter()
@@ -252,9 +253,9 @@ export function NotificationBell() {
           className="relative"
           aria-label="Thông báo"
         >
-          <Bell className="h-5 w-5" />
+          <Bell className={iconSizes.md} />
           {data && data.unreadCount > 0 && (
-            <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground">
+            <span className={`absolute -top-1 -right-1 flex ${iconSizes.md} items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground`}>
               {data.unreadCount > 99 ? "99+" : data.unreadCount}
             </span>
           )}
@@ -267,11 +268,11 @@ export function NotificationBell() {
       >
         <div className="flex items-center justify-between border-b px-4 py-3">
           <div className="flex items-center gap-2">
-            <h2 className="text-lg font-semibold">Thông báo</h2>
+            <h2 className={headerConfig.subsection.className}>Thông báo</h2>
             {isSocketConnected ? (
-              <Wifi className="h-4 w-4 text-green-500" />
+              <Wifi className={`${iconSizes.sm} text-green-500`} />
             ) : (
-              <WifiOff className="h-4 w-4 text-muted-foreground" />
+              <WifiOff className={`${iconSizes.sm} text-muted-foreground`} />
             )}
           </div>
           <div className="flex items-center gap-2">
@@ -314,7 +315,7 @@ export function NotificationBell() {
                   markAllAsRead.mutate()
                 }}
                 disabled={markAllAsRead.isPending}
-                className="h-8 text-xs"
+                className={`h-8 ${typography.body.small}`}
               >
                 {markAllAsRead.isPending ? (
                   <Loader2 className="mr-1 h-3 w-3 animate-spin" />
@@ -329,7 +330,7 @@ export function NotificationBell() {
 
         <div className="max-h-[400px] overflow-y-auto">
           {connectionError && !isSocketConnected && (
-            <div className="border-b bg-yellow-50/50 px-4 py-2 text-xs text-yellow-700 dark:bg-yellow-950/20 dark:text-yellow-300">
+            <div className={`border-b bg-yellow-50/50 px-4 py-2 ${typography.body.small} text-yellow-700 dark:bg-yellow-950/20 dark:text-yellow-300`}>
               <div className="flex items-center gap-2">
                 <WifiOff className="h-3 w-3" />
                 <span>Đang sử dụng chế độ offline. Thông báo có thể không cập nhật real-time.</span>
@@ -343,8 +344,8 @@ export function NotificationBell() {
           ) : ownedNotifications.length === 0 ? (
             <div className="flex flex-col items-center justify-center p-8 text-center">
               <Bell className="mb-2 h-12 w-12 text-muted-foreground opacity-50" />
-              <p className="text-sm font-medium">Không có thông báo</p>
-              <p className="mt-1 text-xs text-muted-foreground">
+              <p className={`${typography.body.medium} font-medium`}>Không có thông báo</p>
+              <p className={`mt-1 ${typography.body.muted.small}`}>
                 Bạn sẽ nhận thông báo tại đây khi có cập nhật mới
               </p>
             </div>

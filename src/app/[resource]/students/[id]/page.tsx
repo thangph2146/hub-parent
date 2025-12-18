@@ -6,6 +6,7 @@ import { FormPageSuspense } from "@/features/admin/resources/components"
 import { getStudentById } from "@/features/admin/students/server/queries"
 import { createDetailBreadcrumbs, truncateBreadcrumbLabel } from "@/features/admin/resources/utils"
 import { getAuthInfo } from "@/features/admin/resources/server"
+import { typography } from "@/lib/typography"
 
 /**
  * Student Detail Page Metadata (Dynamic)
@@ -76,7 +77,7 @@ export default async function StudentDetailPage({ params }: StudentDetailPagePro
         <div className="flex flex-1 flex-col gap-4 p-4">
           <div className="flex min-h-[400px] flex-1 items-center justify-center">
             <div className="text-center">
-              <h2 className="mb-2 text-2xl font-bold">ID không hợp lệ</h2>
+              <h2 className={`mb-2 ${typography.heading.h2}`}>ID không hợp lệ</h2>
               <p className="text-muted-foreground">
                 ID sinh viên không hợp lệ.
               </p>

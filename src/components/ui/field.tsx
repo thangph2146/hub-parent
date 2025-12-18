@@ -6,6 +6,7 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
+import { typography } from "@/lib/typography"
 
 function FieldSet({ className, ...props }: React.ComponentProps<"fieldset">) {
   return (
@@ -32,8 +33,8 @@ function FieldLegend({
       data-variant={variant}
       className={cn(
         "mb-3 font-medium",
-        "data-[variant=legend]:text-base",
-        "data-[variant=label]:text-sm",
+        `data-[variant=legend]:${typography.body.medium}`,
+        `data-[variant=label]:${typography.body.small}`,
         className
       )}
       {...props}
@@ -130,7 +131,7 @@ function FieldTitle({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="field-label"
       className={cn(
-        "flex w-fit items-center gap-2 text-sm leading-snug font-medium group-data-[disabled=true]/field:opacity-50",
+        `flex w-fit items-center gap-2 leading-snug font-medium group-data-[disabled=true]/field:opacity-50 ${typography.body.small}`,
         className
       )}
       {...props}
@@ -143,7 +144,7 @@ function FieldDescription({ className, ...props }: React.ComponentProps<"p">) {
     <p
       data-slot="field-description"
       className={cn(
-        "text-muted-foreground text-sm leading-normal font-normal group-has-[[data-orientation=horizontal]]/field:text-balance",
+        `text-muted-foreground leading-normal font-normal group-has-[[data-orientation=horizontal]]/field:text-balance ${typography.body.small}`,
         "last:mt-0 nth-last-2:-mt-1 [[data-variant=legend]+&]:-mt-1.5",
         "[&>a:hover]:text-primary [&>a]:underline [&>a]:underline-offset-4",
         className
@@ -165,7 +166,7 @@ function FieldSeparator({
       data-slot="field-separator"
       data-content={!!children}
       className={cn(
-        "relative -my-2 h-5 text-sm group-data-[variant=outline]/field-group:-mb-2",
+        `relative -my-2 h-5 group-data-[variant=outline]/field-group:-mb-2 ${typography.body.small}`,
         className
       )}
       {...props}
@@ -228,7 +229,7 @@ function FieldError({
       aria-live="polite"
       aria-atomic="true"
       data-slot="field-error"
-      className={cn("text-destructive text-sm font-normal", className)}
+      className={cn(`text-destructive font-normal ${typography.body.small}`, className)}
       {...props}
     >
       {content}

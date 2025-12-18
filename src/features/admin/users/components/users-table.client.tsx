@@ -32,6 +32,7 @@ import { useUserDeleteConfirm } from "@/features/admin/users/hooks/use-user-dele
 import { useUserColumns } from "@/features/admin/users/utils/columns"
 import { useUserRowActions } from "@/features/admin/users/utils/row-actions"
 import { resourceLogger } from "@/lib/config"
+import { typography, iconSizes } from "@/lib/typography"
 
 import type { AdminUsersListParams } from "@/lib/query-keys"
 import type { UserRow, UsersResponse, UsersTableClientProps } from "../types"
@@ -304,13 +305,13 @@ export const UsersTableClient = ({
               const hasSuperAdmin = selectedRows.some((row) => row.email === PROTECTED_SUPER_ADMIN_EMAIL)
               
               return (
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-sm">
+                <div className={`flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 ${typography.body.small}`}>
                   <div className="flex-shrink-0">
                     <span className="block sm:inline">
                       {USER_LABELS.SELECTED_USERS(selectedIds.length)}
                     </span>
                     {hasSuperAdmin && (
-                      <span className="block sm:inline ml-0 sm:ml-2 mt-1 sm:mt-0 text-xs text-muted-foreground">
+                      <span className={`block sm:inline ml-0 sm:ml-2 mt-1 sm:mt-0 ${typography.body.muted.small}`}>
                         (Tài khoản super admin không thể xóa)
                       </span>
                     )}
@@ -324,7 +325,7 @@ export const UsersTableClient = ({
                       onClick={() => executeBulk("delete", deletableRows.map((r) => r.id), deletableRows, refresh, clearSelection)}
                       className="whitespace-nowrap"
                     >
-                      <Trash2 className="mr-2 h-5 w-5 shrink-0" />
+                      <Trash2 className={`mr-2 ${iconSizes.md} shrink-0`} />
                       <span className="hidden sm:inline">
                         {USER_LABELS.DELETE_SELECTED(deletableRows.length)}
                       </span>
@@ -339,7 +340,7 @@ export const UsersTableClient = ({
                         onClick={() => executeBulk("hard-delete", deletableRows.map((r) => r.id), deletableRows, refresh, clearSelection)}
                         className="whitespace-nowrap"
                       >
-                        <AlertTriangle className="mr-2 h-5 w-5 shrink-0" />
+                        <AlertTriangle className={`mr-2 ${iconSizes.md} shrink-0`} />
                         <span className="hidden sm:inline">
                           {USER_LABELS.HARD_DELETE_SELECTED(deletableRows.length)}
                         </span>
@@ -400,7 +401,7 @@ export const UsersTableClient = ({
                         onClick={() => executeBulk("hard-delete", selectedIds, selectedRows, refresh, clearSelection)}
                         className="whitespace-nowrap"
                       >
-                        <AlertTriangle className="mr-2 h-5 w-5 shrink-0" />
+                        <AlertTriangle className={`mr-2 ${iconSizes.md} shrink-0`} />
                         <span className="hidden sm:inline">
                           {USER_LABELS.HARD_DELETE_SELECTED(selectedIds.length)}
                         </span>
@@ -515,7 +516,7 @@ export const UsersTableClient = ({
         })
         router.push("/admin/users/new")
       }}
-      className="h-8 px-3 text-xs sm:text-sm"
+      className={`h-8 px-3 ${typography.body.small}`}
     >
       <Plus className="mr-2 h-5 w-5" />
       {USER_LABELS.ADD_NEW}

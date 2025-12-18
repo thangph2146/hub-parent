@@ -1,6 +1,7 @@
 "use client"
 
 import { AlertCircle, RefreshCw, Home } from "lucide-react"
+import { typography, headerConfig } from "@/lib/typography"
 import Link from "next/link"
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
@@ -76,10 +77,10 @@ export default function Error({ error, reset }: ErrorProps) {
               </div>
             </motion.div>
             <motion.div variants={itemVariants} className="space-y-2">
-              <CardTitle className="text-2xl md:text-3xl">
+              <CardTitle className={headerConfig.section.className}>
                 Đã xảy ra lỗi
               </CardTitle>
-              <CardDescription className="text-base">
+              <CardDescription className={typography.description.default}>
                 {error.message || "Đã xảy ra lỗi không mong muốn"}
               </CardDescription>
             </motion.div>
@@ -91,7 +92,7 @@ export default function Error({ error, reset }: ErrorProps) {
                 variants={itemVariants}
                 className="rounded-lg bg-muted p-3 border"
               >
-                <p className="text-xs font-mono text-muted-foreground">
+                <p className={`${typography.body.muted.small} font-mono`}>
                   <span className="font-semibold">Error ID:</span> {error.digest}
                 </p>
               </motion.div>
@@ -101,7 +102,7 @@ export default function Error({ error, reset }: ErrorProps) {
               variants={itemVariants}
               className="rounded-lg bg-muted/50 p-4 border border-destructive/20"
             >
-              <p className="text-sm text-muted-foreground text-center">
+              <p className={`${typography.body.muted.medium} text-center`}>
                 Vui lòng thử lại hoặc quay về trang chủ. Nếu vấn đề vẫn tiếp tục,
                 vui lòng liên hệ với bộ phận hỗ trợ.
               </p>

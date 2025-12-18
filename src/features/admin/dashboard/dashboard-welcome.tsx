@@ -18,6 +18,7 @@ import { useClientOnly } from "@/hooks/use-client-only"
 import { usePermissions } from "@/hooks/use-permissions"
 import { PERMISSIONS, isSuperAdmin } from "@/lib/permissions"
 import { cn } from "@/lib/utils"
+import { typography } from "@/lib/typography"
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -193,7 +194,7 @@ export const DashboardWelcome = () => {
             <div className="space-y-4">
               <div className="flex items-center gap-3 flex-wrap">
                 <motion.h1
-                  className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight"
+                  className={`${typography.heading.h1} leading-tight`}
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.6 }}
@@ -210,7 +211,7 @@ export const DashboardWelcome = () => {
                 </motion.h1>
               </div>
               <motion.p
-                className="text-muted-foreground flex items-center gap-2 text-base md:text-lg"
+                className={`${typography.description.large} flex items-center gap-2`}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.3, duration: 0.6 }}
@@ -237,7 +238,7 @@ export const DashboardWelcome = () => {
                   <RoleIcon className="h-5 w-5" />
                   <span>{roleInfo.label}</span>
                 </Badge>
-                <span className="text-sm md:text-base text-muted-foreground">
+                <span className={typography.body.muted.medium}>
                   {roleInfo.description}
                 </span>
               </motion.div>
@@ -254,11 +255,11 @@ export const DashboardWelcome = () => {
           <Card className="relative overflow-hidden backdrop-blur-md bg-card/80 border border-primary/20 shadow-xl">
             <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-primary/5 to-background" />
             <CardHeader className="relative z-10">
-              <CardTitle className="flex items-center gap-2 text-xl">
+              <CardTitle className={`flex items-center gap-2 ${typography.title.large}`}>
                 <CheckCircle2 className="h-6 w-6 text-primary" />
                 {isSuperAdminUser ? "Quyền truy cập đầy đủ" : "Quyền truy cập của bạn"}
               </CardTitle>
-              <CardDescription className="text-base">
+              <CardDescription className={`${typography.body. medium} text-muted-foreground`}>
                 {isSuperAdminUser 
                   ? "Bạn có quyền truy cập đầy đủ vào tất cả các tính năng của hệ thống."
                   : "Danh sách các tính năng bạn có thể sử dụng với quyền hiện tại."}
@@ -276,7 +277,7 @@ export const DashboardWelcome = () => {
                       transition={{ delay: 0.1 * index }}
                     >
                       <CheckCircle2 className="h-4 w-4 text-[#00cc44] dark:text-[#00ff88] flex-shrink-0" />
-                      <span className="text-sm text-muted-foreground">{item.label}</span>
+                      <span className={typography.body.muted.medium}>{item.label}</span>
                     </motion.div>
                   ))}
                 </div>
@@ -284,7 +285,7 @@ export const DashboardWelcome = () => {
                 <div className="text-center py-4 text-muted-foreground">
                   <AlertCircle className="h-8 w-8 mx-auto mb-2 opacity-50" />
                   <p>Bạn chưa có quyền truy cập vào bất kỳ tính năng nào.</p>
-                  <p className="text-xs mt-1">Vui lòng liên hệ quản trị viên để được cấp quyền.</p>
+                  <p className={`${typography.body.muted.small} mt-1`}>Vui lòng liên hệ quản trị viên để được cấp quyền.</p>
                 </div>
               )}
             </CardContent>

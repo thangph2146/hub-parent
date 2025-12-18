@@ -2,6 +2,7 @@
 
 import { useForm } from "react-hook-form";
 import { cn } from "@/lib/utils";
+import { typography } from "@/lib/typography";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -114,9 +115,9 @@ export function ContactForm({ onSubmit, className, apiUrl = "/api/contact" }: Co
           <FieldGroup>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
               <Field data-invalid={Boolean(errors.name)}>
-                <FieldLabel htmlFor="name" className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-foreground">
+                <FieldLabel htmlFor="name" className={`flex items-center gap-1.5 sm:gap-2 ${typography.body.small} text-foreground`}>
                   <User className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary flex-shrink-0" />
-                  Họ tên *
+                  Họ tên <span className="text-destructive">*</span>  
                 </FieldLabel>
                 <FieldContent>
                   <Input
@@ -147,9 +148,9 @@ export function ContactForm({ onSubmit, className, apiUrl = "/api/contact" }: Co
               </Field>
 
               <Field data-invalid={Boolean(errors.email)}>
-                <FieldLabel htmlFor="email" className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-foreground">
+                <FieldLabel htmlFor="email" className={`flex items-center gap-1.5 sm:gap-2 ${typography.body.small} text-foreground`}>
                   <Mail className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary flex-shrink-0" />
-                  Email *
+                  Email <span className="text-destructive">*</span>
                 </FieldLabel>
                 <FieldContent>
                   <Input
@@ -182,7 +183,7 @@ export function ContactForm({ onSubmit, className, apiUrl = "/api/contact" }: Co
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
               <Field data-invalid={Boolean(errors.phone)}>
-                <FieldLabel htmlFor="phone" className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-foreground">
+                <FieldLabel htmlFor="phone" className={`flex items-center gap-1.5 sm:gap-2 ${typography.body.small} text-foreground`}>
                   <Phone className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary flex-shrink-0" />
                   Số điện thoại
                 </FieldLabel>
@@ -209,9 +210,9 @@ export function ContactForm({ onSubmit, className, apiUrl = "/api/contact" }: Co
               </Field>
 
               <Field data-invalid={Boolean(errors.subject)}>
-                <FieldLabel htmlFor="subject" className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-foreground">
+                <FieldLabel htmlFor="subject" className={`flex items-center gap-1.5 sm:gap-2 ${typography.body.small} text-foreground`}>
                   <FileText className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary flex-shrink-0" />
-                  Tiêu đề *
+                  Tiêu đề <span className="text-destructive">*</span>
                 </FieldLabel>
                 <FieldContent>
                   <Input
@@ -243,9 +244,9 @@ export function ContactForm({ onSubmit, className, apiUrl = "/api/contact" }: Co
             </div>
 
             <Field data-invalid={Boolean(errors.message)}>
-              <FieldLabel htmlFor="message" className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-foreground">
+              <FieldLabel htmlFor="message" className={`flex items-center gap-1.5 sm:gap-2 ${typography.body.small} text-foreground`}>
                 <MessageSquare className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary flex-shrink-0" />
-                Nội dung tin nhắn *
+                Nội dung tin nhắn <span className="text-destructive">*</span>
               </FieldLabel>
               <FieldContent>
                 <Textarea
@@ -283,12 +284,12 @@ export function ContactForm({ onSubmit, className, apiUrl = "/api/contact" }: Co
             {isSubmitting ? (
               <>
                 <Loader2 className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4 animate-spin" />
-                <span className="text-xs sm:text-sm">Đang gửi...</span>
+                <span className={typography.body.small}>Đang gửi...</span>
               </>
             ) : (
               <>
                 <Send className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                <span className="text-xs sm:text-sm">Gửi tin nhắn</span>
+                <span className={`${typography.body.small}`}>Gửi tin nhắn</span>
               </>
             )}
           </Button>

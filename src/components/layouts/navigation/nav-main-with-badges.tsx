@@ -34,6 +34,7 @@ import type { LucideIcon } from "lucide-react"
 import { useQueryClient } from "@tanstack/react-query"
 import { queryKeys } from "@/lib/query-keys"
 import { logger } from "@/lib/config"
+import { iconSizes } from "@/lib/typography"
 // Icon mapping để tạo lại icon trong client component
 const iconMap: Record<string, LucideIcon> = {
   dashboard: LayoutDashboard,
@@ -59,7 +60,7 @@ const iconMap: Record<string, LucideIcon> = {
 }
 
 const createIcon = (Icon: LucideIcon) =>
-  React.createElement(Icon, { className: "h-4 w-4" })
+  React.createElement(Icon, { className: iconSizes.sm })
 
 interface NavMainWithBadgesProps {
   items: MenuItem[]

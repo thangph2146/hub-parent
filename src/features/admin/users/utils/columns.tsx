@@ -5,6 +5,7 @@ import { apiRoutes } from "@/lib/api/routes"
 import type { UserRow } from "../types"
 import { Switch } from "@/components/ui/switch"
 import { USER_MESSAGES, PROTECTED_SUPER_ADMIN_EMAIL } from "../constants"
+import { typography } from "@/lib/typography"
 
 interface UseUserColumnsOptions {
   rolesOptions: Array<{ label: string; value: string }>
@@ -89,7 +90,7 @@ export const useUserColumns = ({
               {row.roles.map((role) => (
                 <span
                   key={role.id}
-                  className="rounded-full bg-muted px-2 py-1 text-xs text-muted-foreground"
+                  className={`rounded-full bg-muted px-2 py-1 ${typography.body.muted.small}`}
                 >
                   {role.displayName}
                 </span>
@@ -120,7 +121,7 @@ export const useUserColumns = ({
           const isDisabled = togglingUsers.has(row.id) || !canManage || (isSuperAdmin && row.isActive)
 
           return row.deletedAt ? (
-            <span className="inline-flex min-w-[88px] items-center justify-center rounded-full bg-rose-100 px-2 py-1 text-xs font-medium text-rose-700">
+            <span className={`inline-flex min-w-[88px] items-center justify-center rounded-full bg-rose-100 px-2 py-1 ${typography.body.small} font-medium text-rose-700`}>
               Đã xóa
             </span>
           ) : (
@@ -139,10 +140,10 @@ export const useUserColumns = ({
                 aria-label={row.isActive ? "Vô hiệu hóa người dùng" : "Kích hoạt người dùng"}
                 title={isSuperAdmin && row.isActive ? "Không thể vô hiệu hóa tài khoản super admin" : undefined}
               />
-              <span className="text-xs text-muted-foreground">
+              <span className={typography.body.muted.small}>
                 {row.isActive ? "Hoạt động" : "Tạm khóa"}
                 {isSuperAdmin && (
-                  <span className="ml-1 text-xs text-muted-foreground">(Super Admin)</span>
+                  <span className={`ml-1 ${typography.body.muted.small}`}>(Super Admin)</span>
                 )}
               </span>
             </div>

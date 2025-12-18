@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import { typography, iconSizes } from "@/lib/typography"
 import { useSearchParams } from "next/navigation"
 import { useMemo } from "react"
 import { Tag, X } from "lucide-react"
@@ -62,19 +63,19 @@ export const PostTagNav = ({ tags }: PostTagNavProps) => {
           <Link
             href={clearAllTags()}
             className={cn(
-              "group flex items-center gap-2 px-3 sm:px-4 py-2 rounded-md text-sm font-medium whitespace-nowrap transition-all border",
+              `group flex items-center gap-2 px-3 sm:px-4 py-2 rounded-md ${typography.body.medium} font-medium whitespace-nowrap transition-all border`,
               selectedTags.size === 0
                 ? "bg-accent/10 hover:bg-accent/10 text-primary border-primary/20 shadow-sm"
                 : "hover:bg-accent/10 text-muted-foreground border-transparent hover:border-border"
             )}
           >
             <Tag className={cn(
-              "h-4 w-4 transition-transform",
+              `${iconSizes.sm} transition-transform`,
               selectedTags.size === 0 && "scale-110"
             )} />
             <span>Tất cả</span>
             {selectedTags.size > 0 && (
-              <X className="h-3 w-3 opacity-50 group-hover:opacity-100" />
+              <X className={`${iconSizes.xs} opacity-50 group-hover:opacity-100`} />
             )}
           </Link>
           {tags.map((tag) => {
@@ -84,7 +85,7 @@ export const PostTagNav = ({ tags }: PostTagNavProps) => {
                 key={tag.id}
                 href={toggleTag(tag.slug)}
                 className={cn(
-                  "group flex items-center gap-2 px-3 sm:px-4 py-2 rounded-md text-sm font-medium whitespace-nowrap transition-all border",
+                  `group flex items-center gap-2 px-3 sm:px-4 py-2 rounded-md ${typography.body.medium} font-medium whitespace-nowrap transition-all border`,
                   isActive
                     ? "bg-accent/10 hover:bg-accent/10 text-primary border-primary/20 shadow-sm"
                     : "hover:bg-accent/10 text-muted-foreground border-transparent hover:border-border"
@@ -111,7 +112,7 @@ export const PostTagNav = ({ tags }: PostTagNavProps) => {
             <Link
               href={clearAllTags()}
               className={cn(
-                "group flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium whitespace-nowrap transition-all border w-full",
+                `group flex items-center gap-2 px-4 py-2 rounded-md ${typography.body.medium} font-medium whitespace-nowrap transition-all border w-full`,
                 selectedTags.size === 0
                   ? "bg-primary/10 text-primary border-primary/20 shadow-sm"
                   : "hover:bg-accent/10 text-muted-foreground border-transparent hover:border-border"
@@ -133,7 +134,7 @@ export const PostTagNav = ({ tags }: PostTagNavProps) => {
                   key={tag.id}
                   href={toggleTag(tag.slug)}
                   className={cn(
-                    "group flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium whitespace-nowrap transition-all border w-full",
+                    `group flex items-center gap-2 px-4 py-2 rounded-md ${typography.body.medium} font-medium whitespace-nowrap transition-all border w-full`,
                     isActive
                       ? "bg-primary/10 text-primary border-primary/20 shadow-sm"
                       : "hover:bg-accent/10 text-muted-foreground border-transparent hover:border-border"

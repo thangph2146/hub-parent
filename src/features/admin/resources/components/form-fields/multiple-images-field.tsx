@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast"
 import { MultipleImageUpload } from "@/components/forms"
 import type { UploadResponse } from "@/features/admin/uploads/types"
 import { logger } from "@/lib/config/logger"
+import { typography, iconSizes } from "@/lib/typography"
 
 export interface ProductImage {
   url: string
@@ -73,7 +74,7 @@ const ImageItem = ({
               disabled={disabled || index === 0}
               title="Di chuyển lên"
             >
-              <ArrowUp className="h-4 w-4" />
+              <ArrowUp className={iconSizes.sm} />
             </Button>
             <Button
               type="button"
@@ -83,7 +84,7 @@ const ImageItem = ({
               disabled={disabled || index === total - 1}
               title="Di chuyển xuống"
             >
-              <ArrowDown className="h-4 w-4" />
+              <ArrowDown className={iconSizes.sm} />
             </Button>
           </div>
           <Button
@@ -110,7 +111,7 @@ const ImageItem = ({
           </Button>
         </div>
         {image.isPrimary && (
-          <div className="absolute top-2 left-2 bg-primary text-primary-foreground px-2 py-1 rounded text-xs font-medium flex items-center gap-1">
+          <div className={`absolute top-2 left-2 bg-primary text-primary-foreground px-2 py-1 rounded ${typography.body.small} font-medium flex items-center gap-1`}>
             <Star className="h-3 w-3 fill-current" />
             Chính
           </div>
@@ -122,7 +123,7 @@ const ImageItem = ({
           value={image.alt || ""}
           onChange={(e) => onAltChange(e.target.value)}
           placeholder="Mô tả ảnh (alt text)"
-          className="text-xs"
+          className={typography.body.small}
           disabled={disabled}
         />
       </div>
@@ -402,8 +403,8 @@ export const MultipleImagesField = ({ value, onChange, error, disabled = false }
         ) : (
           <div className="border-2 border-dashed border-border rounded-lg p-8 text-center">
             <ImageIcon className="h-12 w-12 mx-auto text-muted-foreground mb-2" />
-            <p className="text-sm text-muted-foreground">Chưa có hình ảnh nào</p>
-            <p className="text-xs text-muted-foreground mt-1">Upload hoặc thêm URL để bắt đầu</p>
+            <p className={typography.body.muted.medium}>Chưa có hình ảnh nào</p>
+            <p className={`${typography.body.muted.small} mt-1`}>Upload hoặc thêm URL để bắt đầu</p>
           </div>
         )}
 

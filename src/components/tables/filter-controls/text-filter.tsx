@@ -4,6 +4,7 @@
 "use client"
 
 import { Input } from "@/components/ui/input"
+import { typography } from "@/lib/typography"
 import type { ColumnFilterControlProps } from "./types"
 
 export function TextFilter<T extends object = object>({
@@ -17,7 +18,7 @@ export function TextFilter<T extends object = object>({
             value={value}
             onChange={(event) => onChange(event.target.value)}
             placeholder={column.filter?.placeholder ?? `Lọc ${column.header.toLowerCase()}...`}
-            className="h-7 sm:h-8 text-xs"
+            className={`h-7 sm:h-8 ${typography.body.small}`}
             disabled={disabled}
         />
     )

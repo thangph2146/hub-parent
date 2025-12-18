@@ -11,6 +11,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet"
 import { ArrowLeft, Search } from "lucide-react"
+import { typography, iconSizes } from "@/lib/typography"
 import type { Contact, Message } from "../types"
 import { filterMessagesByQuery } from "../utils/message-helpers"
 import { MessageSearchSheet } from "./message-search-sheet"
@@ -72,17 +73,17 @@ function ChatHeader(
     <>
       <div ref={ref} className="flex items-center gap-3 h-16 px-4 border-b shrink-0">
         {showBackButton && onBack && (
-          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onBack}>
-            <ArrowLeft className="h-4 w-4" />
+          <Button variant="ghost" size="icon" className={iconSizes["2xl"]} onClick={onBack}>
+            <ArrowLeft className={iconSizes.sm} />
           </Button>
         )}
         <Avatar className="h-10 w-10 shrink-0">
           <AvatarImage src={contact.image || undefined} alt={contact.name} />
-          <AvatarFallback className="text-xs">{contact.name[0]}</AvatarFallback>
+          <AvatarFallback className={typography.body.small}>{contact.name[0]}</AvatarFallback>
         </Avatar>
         <div className="flex-1 min-w-0">
-          <CardTitle className="text-sm font-semibold truncate">{contact.name}</CardTitle>
-          <CardDescription className="text-xs truncate">
+          <CardTitle className={`${typography.body.medium} font-semibold truncate`}>{contact.name}</CardTitle>
+          <CardDescription className={`${typography.body.small} truncate`}>
             {contact.type === "GROUP" ? `${contact.group?.memberCount || 0} thành viên` : "Contact Info"}
           </CardDescription>
         </div>
@@ -91,10 +92,10 @@ function ChatHeader(
           <Button 
             variant="ghost" 
             size="icon" 
-            className="h-8 w-8"
+            className={iconSizes["2xl"]}
             onClick={() => setIsSearchOpen(true)}
           >
-            <Search className="h-4 w-4" />
+            <Search className={iconSizes.sm} />
           </Button>
         </div>
       </div>

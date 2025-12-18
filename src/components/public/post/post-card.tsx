@@ -5,6 +5,7 @@ import Image from "next/image"
 import { Calendar, Tag, ArrowRight, FolderOpen } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
+import { typography, iconSizes } from "@/lib/typography"
 import type { Post } from "@/features/public/post/types"
 import { formatPostDate } from "@/features/public/post/utils/date-formatter"
 
@@ -63,20 +64,20 @@ export function PostCard({ post, className, priority = false }: PostCardProps) {
         <div className="flex flex-col flex-1 p-6">
           {/* Category Badge */}
           {primaryCategory && primaryCategory.name && (
-            <Badge variant="secondary" className="w-fit mb-3 text-xs font-medium">
+            <Badge variant="secondary" className={`w-fit mb-3 ${typography.body.small} font-medium`}>
               {primaryCategory.name}
             </Badge>
           )}
 
           {/* Title */}
-          <h3 className="text-xl font-semibold mb-3 line-clamp-2 group-hover:text-primary transition-colors">
+          <h3 className={`${typography.heading.h4} font-semibold mb-3 line-clamp-2 group-hover:text-primary transition-colors`}>
             {post.title}
           </h3>
 
           {/* Date */}
           {post.publishedAt && (
-            <div className="flex items-center gap-1.5 text-sm text-muted-foreground mb-4">
-              <Calendar className="h-4 w-4" />
+            <div className={`flex items-center gap-1.5 ${typography.body.muted.medium} mb-4`}>
+              <Calendar className={iconSizes.sm} />
               <time dateTime={getPublishedAtISO()}>
                 {formatPostDate(post.publishedAt)}
               </time>
@@ -86,7 +87,7 @@ export function PostCard({ post, className, priority = false }: PostCardProps) {
           {/* Read Now Button */}
           <div className="mt-auto flex items-center gap-2 text-primary font-medium group-hover:gap-3 transition-all">
             <span>Đọc ngay</span>
-            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+            <ArrowRight className={`${iconSizes.sm} transition-transform group-hover:translate-x-1`} />
           </div>
         </div>
       </Link>
@@ -96,7 +97,7 @@ export function PostCard({ post, className, priority = false }: PostCardProps) {
         <div className="flex flex-wrap items-center gap-2 p-4 border-t">
           <Tag className="h-3.5 w-3.5 text-muted-foreground" />
           {displayTags.map((tag) => (
-            <Badge key={tag.id} variant="outline" className="text-xs">
+            <Badge key={tag.id} variant="outline" className={typography.body.small}>
               {tag.name}
             </Badge>
           ))}

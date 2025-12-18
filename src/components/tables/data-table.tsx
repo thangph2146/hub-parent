@@ -1,5 +1,7 @@
 "use client"
 
+import { typography, iconSizes } from "@/lib/typography"
+
 import {
     Suspense,
     use,
@@ -423,7 +425,7 @@ export function DataTable<T extends object>({
             <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-3">
                 <div className="w-full flex gap-2 sm:gap-3 sm:items-center justify-between">
                     <div className="flex items-center gap-2">
-                        <span className="text-xs sm:text-sm text-muted-foreground whitespace-nowrap">Hiển thị</span>
+                        <span className={`${typography.body.muted.small} whitespace-nowrap`}>Hiển thị</span>
                         <Select
                             value={String(query.limit)}
                             onValueChange={(value) => handleLimitChange(Number(value))}
@@ -431,7 +433,7 @@ export function DataTable<T extends object>({
                         >
                             <SelectTrigger
                                 size="sm"
-                                className="h-8 sm:h-9 w-fit min-w-[80px] text-xs sm:text-sm"
+                                className={`h-8 sm:h-9 w-fit min-w-[80px] ${typography.body.small}`}
                                 aria-label="Chọn số bản ghi mỗi trang"
                             >
                                 <SelectValue />
@@ -458,12 +460,12 @@ export function DataTable<T extends object>({
                             >
                                 {showFilters ? (
                                     <>
-                                        <EyeOff className="h-5 w-5 sm:mr-2" />
+                                        <EyeOff className={`${iconSizes.md} sm:mr-2`} />
                                         <span className="inline">Ẩn bộ lọc</span>
                                     </>
                                 ) : (
                                     <>
-                                        <Eye className="h-5 w-5 sm:mr-2" />
+                                        <Eye className={`${iconSizes.md} sm:mr-2`} />
                                         <span className="inline">Hiện bộ lọc</span>
                                     </>
                                 )}
@@ -476,7 +478,7 @@ export function DataTable<T extends object>({
                                 size="sm"
                                 onClick={handleResetFilters}
                                 disabled={isPending}
-                                className="h-8 px-2 sm:px-3 text-xs sm:text-sm"
+                                className={`h-8 px-2 sm:px-3 ${typography.body.small}`}
                             >
                                 <span className="inline">Xóa bộ lọc</span>
                             </Button>
@@ -501,7 +503,7 @@ export function DataTable<T extends object>({
                     <div className="absolute inset-0 bg-background/80 backdrop-blur-[2px] z-10 flex items-center justify-center rounded-md">
                         <div className="flex flex-col items-center gap-3">
                             <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-                            <span className="text-sm font-medium text-foreground">Đang tải dữ liệu...</span>
+                            <span className={`${typography.body.medium} font-medium`}>Đang tải dữ liệu...</span>
                         </div>
                     </div>
                 )}
@@ -524,12 +526,12 @@ export function DataTable<T extends object>({
                                     key={`header-${column.accessorKey}`}
                                     className={cn("align-middle whitespace-nowrap px-2 sm:px-3 bg-primary text-primary-foreground", column.headerClassName)}
                                 >
-                                    <span className="text-xs sm:text-sm font-medium text-primary-foreground">{column.header}</span>
+                                    <span className={`${typography.body.small} font-medium text-primary-foreground`}>{column.header}</span>
                                 </TableHead>
                             ))}
                             {actions ? (
                                 <TableHead className="min-w-[100px] text-center px-2 sm:px-3 sticky right-0 z-10 bg-primary text-primary-foreground border-l border-border">
-                                    <span className="text-xs sm:text-sm text-primary-foreground">Hành động</span>
+                                    <span className={`${typography.body.small} text-primary-foreground`}>Hành động</span>
                                 </TableHead>
                             ) : null}
                         </TableRow>
@@ -660,7 +662,7 @@ function TableBodyContent<T extends object>({
         return (
             <TableBody>
                 <TableRow>
-                    <TableCell colSpan={totalColumns} className="py-10 text-center text-sm text-muted-foreground">
+                    <TableCell colSpan={totalColumns} className={`py-10 text-center ${typography.body.muted.medium}`}>
                         {emptyMessage}
                     </TableCell>
                 </TableRow>
@@ -729,7 +731,7 @@ function TableSummary<T extends object>({
     const totalPages = result.totalPages || 1
 
     return (
-        <div className="flex flex-col sm:flex-row flex-wrap items-center justify-between gap-2 sm:gap-3 border-t border-border px-2 sm:px-4 py-3 sm:py-4 text-xs sm:text-sm text-muted-foreground">
+        <div className={`flex flex-col sm:flex-row flex-wrap items-center justify-between gap-2 sm:gap-3 border-t border-border px-2 sm:px-4 py-3 sm:py-4 ${typography.body.muted.small}`}>
             <div className="text-center sm:text-left">
                 <span className="hidden sm:inline">Hiển thị {startIndex}-{endIndex} trong {result.total} kết quả</span>
                 <span className="sm:hidden">{startIndex}-{endIndex} / {result.total}</span>
@@ -746,7 +748,7 @@ function TableSummary<T extends object>({
                     <ChevronLeft className="h-5 w-5 sm:mr-2" />
                     <span className="hidden sm:inline">Trước</span>
                 </Button>
-                <span className="min-w-[80px] sm:min-w-[100px] text-center text-xs sm:text-sm">
+                <span className={`min-w-[80px] sm:min-w-[100px] text-center ${typography.body.small}`}>
                     <span className="hidden sm:inline">Trang </span>
                     {totalPages === 0 ? 0 : result.page} / {Math.max(totalPages, 1)}
                 </span>

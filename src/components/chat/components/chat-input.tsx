@@ -2,14 +2,9 @@
 
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
-// import {
-//   DropdownMenu,
-//   DropdownMenuTrigger,
-// } from "@/components/ui/dropdown-menu"
-// import { Paperclip, Send, Smile } from "lucide-react"
 import { Send } from "lucide-react"
+import { iconSizes } from "@/lib/typography"
 import type { Contact, Message } from "../types"
-// import { AttachmentMenu } from "./attachment-menu"
 import { ReplyBanner } from "./reply-banner"
 import { GroupDeletedBanner } from "./group-deleted-banner"
 import { forwardRef } from "react"
@@ -85,7 +80,7 @@ function ChatInput(
           onClick={handleSendMessage}
           disabled={!messageInput.trim() || isDisabled}
         >
-          <Send className="h-4 w-4" />
+          <Send className={iconSizes.sm} />
         </Button>
       </div>
     </div>

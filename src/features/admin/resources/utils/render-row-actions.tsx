@@ -7,6 +7,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { iconSizes } from "@/lib/typography"
 
 export interface RowActionConfig {
   label: string
@@ -36,7 +37,7 @@ export const renderRowActions = (actions: RowActionConfig[]) => {
           if (!isDisabled) singleAction.onSelect()
         }}
       >
-        <Icon className={`mr-2 h-5 w-5 ${singleAction.isLoading ? "animate-spin" : ""}`} />
+        <Icon className={`mr-2 ${iconSizes.md} ${singleAction.isLoading ? "animate-spin" : ""}`} />
         {displayLabel}
       </Button>
     )
@@ -46,7 +47,7 @@ export const renderRowActions = (actions: RowActionConfig[]) => {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon" className="h-8 w-8">
-          <MoreHorizontal className="h-5 w-5" />
+          <MoreHorizontal className={iconSizes.md} />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
@@ -71,8 +72,8 @@ export const renderRowActions = (actions: RowActionConfig[]) => {
               <Icon
                 className={
                   action.destructive
-                    ? `mr-2 h-5 w-5 text-destructive ${action.isLoading ? "animate-spin" : ""}`
-                    : `mr-2 h-5 w-5 ${action.isLoading ? "animate-spin" : ""}`
+                    ? `mr-2 ${iconSizes.md} text-destructive ${action.isLoading ? "animate-spin" : ""}`
+                    : `mr-2 ${iconSizes.md} ${action.isLoading ? "animate-spin" : ""}`
                 }
               />
               {displayLabel}

@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Button } from "@/components/ui/button"
 import { Search, X } from "lucide-react"
+import { typography, iconSizes } from "@/lib/typography"
 import type { Message } from "../types"
 import { formatMessageTime } from "../utils"
 import { highlightText } from "../utils/text-helpers"
@@ -30,7 +31,7 @@ export function MessageSearchSheet({
   return (
     <div className="space-y-4 mt-4 p-4">
       <div className="relative">
-        <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Search className={`absolute left-2 top-1/2 transform -translate-y-1/2 ${iconSizes.sm} text-muted-foreground`} />
         <Input
           placeholder="Nhập từ khóa để tìm kiếm..."
           value={searchQuery}
@@ -42,15 +43,15 @@ export function MessageSearchSheet({
           <Button
             variant="ghost"
             size="icon"
-            className="absolute right-1 top-1/2 transform -translate-y-1/2 h-7 w-7"
+            className={`absolute right-1 top-1/2 transform -translate-y-1/2 ${iconSizes.xl}`}
             onClick={onClose}
           >
-            <X className="h-4 w-4" />
+            <X className={iconSizes.sm} />
           </Button>
         )}
       </div>
       {searchQuery && (
-        <div className="text-sm text-muted-foreground">
+        <div className={typography.body.muted.medium}>
           Tìm thấy {messages.length} tin nhắn
         </div>
       )}
@@ -65,10 +66,10 @@ export function MessageSearchSheet({
               >
                 <div className="flex items-start gap-2">
                   <div className="flex-1 min-w-0">
-                    <div className="text-xs text-muted-foreground mb-1">
+                    <div className={`${typography.body.muted.small} mb-1`}>
                       {formatMessageTime(message.timestamp)}
                     </div>
-                    <div className="text-sm break-words">
+                    <div className={`${typography.body.medium} break-words`}>
                       {highlightText(message.content, searchQuery)}
                     </div>
                   </div>
@@ -80,8 +81,8 @@ export function MessageSearchSheet({
       )}
       {searchQuery && messages.length === 0 && (
         <div className="flex flex-col items-center justify-center py-8 text-center">
-          <p className="text-sm text-muted-foreground">Không tìm thấy tin nhắn nào</p>
-          <p className="text-xs text-muted-foreground mt-1">Thử tìm kiếm với từ khóa khác</p>
+          <p className={typography.body.muted.medium}>Không tìm thấy tin nhắn nào</p>
+          <p className={`${typography.body.muted.small} mt-1`}>Thử tìm kiếm với từ khóa khác</p>
         </div>
       )}
     </div>

@@ -1,5 +1,7 @@
 "use client";
 
+import { typography, headerConfig, iconSizes, responsiveIconSizes } from "@/lib/typography";
+
 import {
   Users,
   MessageSquare,
@@ -7,7 +9,6 @@ import {
   GraduationCap,
   Phone,
   Mail,
-  FileText,
 } from "lucide-react";
 import { ContactForm } from "@/components/forms/contact-form";
 import { getRouteFromFeature } from "@/lib/utils";
@@ -50,8 +51,8 @@ export const HomeClient = ({ featuredPosts = [] }: HomeClientProps) => {
             text: "Đăng nhập ngay",
             variant: "default",
             size: "sm",
-            leftIcon: <Users className="h-3 w-3 sm:h-4 sm:w-4" />,
-            rightIcon: <ArrowRight className="h-3 w-3 sm:h-4 sm:w-4" />,
+            leftIcon: <Users className={responsiveIconSizes.small} />,
+            rightIcon: <ArrowRight className={responsiveIconSizes.small} />,
             responsiveText: {
               mobile: "Đăng nhập",
               desktop: "Đăng nhập ngay",
@@ -125,14 +126,11 @@ export const HomeClient = ({ featuredPosts = [] }: HomeClientProps) => {
             {/* Header */}
             <div className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-primary/10 rounded-lg">
-                  <FileText className="h-5 w-5 text-primary" />
-                </div>
                 <div>
-                  <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">
+                  <h2 className={`${headerConfig.section.className} tracking-tight`}>
                     Bài viết nổi bật
                   </h2>
-                  <p className="text-sm text-muted-foreground mt-1">
+                  <p className={`${typography.description.small} mt-1`}>
                     Các bài viết mới nhất từ nhà trường
                   </p>
                 </div>

@@ -1,5 +1,7 @@
 "use client";
 
+import { typography, headerConfig, iconSizes } from "@/lib/typography";
+
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSession } from "next-auth/react";
@@ -110,7 +112,7 @@ const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
         exit={{ opacity: 0, scale: 0.95 }}
         className="bg-background/95 backdrop-blur-md border border-border/50 rounded-xl shadow-2xl p-4 min-w-[200px]"
       >
-        <p className="text-sm font-bold mb-3 text-foreground border-b border-border/50 pb-2">
+        <p className={`${typography.body.medium} font-bold mb-3 border-b border-border/50 pb-2`}>
           {label}
         </p>
         <div className="space-y-2">
@@ -129,19 +131,19 @@ const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
                     className="w-3 h-3 rounded-full flex-shrink-0"
                     style={{ backgroundColor: entry.color }}
                   />
-                  <span className="text-xs font-medium text-muted-foreground truncate">
+                  <span className={`${typography.body.small} font-medium truncate`}>
                     {entry.name ?? ""}
                   </span>
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0">
                   <span
-                    className="text-sm font-bold"
+                    className={`${typography.body.medium} font-bold`}
                     style={{ color: entry.color }}
                   >
                     {entry.value?.toLocaleString("vi-VN") ?? "0"}
                   </span>
                   {payload.length > 1 && (
-                    <span className="text-xs text-muted-foreground">
+                    <span className={typography.body.muted.small}>
                       ({percentage.toFixed(1)}%)
                     </span>
                   )}
@@ -152,8 +154,8 @@ const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
         </div>
         {payload.length > 1 && (
           <div className="mt-3 pt-2 border-t border-border/50 flex items-center justify-between">
-            <span className="text-xs font-semibold text-muted-foreground">Tổng cộng</span>
-            <span className="text-sm font-bold text-foreground">
+            <span className={`${typography.body.small} font-semibold`}>Tổng cộng</span>
+            <span className={`${typography.body.medium} font-bold`}>
               {total.toLocaleString("vi-VN")}
             </span>
           </div>
@@ -190,10 +192,10 @@ const CustomPieTooltip = ({ active, payload }: CustomPieTooltipProps) => {
             className="w-3 h-3 rounded-full"
             style={{ backgroundColor: data.color }}
           />
-          <p className="text-sm font-bold text-foreground">{data.name}</p>
+          <p className={`${typography.body.medium} font-bold`}>{data.name}</p>
         </div>
         <div className="space-y-1">
-          <p className="text-xs text-muted-foreground">
+          <p className={typography.body.muted.small}>
             Tỷ lệ: <span className="font-semibold text-foreground">{value}%</span>
           </p>
         </div>
@@ -467,14 +469,14 @@ export const DashboardStatsClient = ({ stats }: DashboardStatsClientProps) => {
         <motion.div variants={itemVariants} className="space-y-2">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl md:text-4xl font-bold flex items-center gap-3">
-                <BarChart3 className="h-8 w-8 text-primary" />
+              <h1 className={`${headerConfig.main.className} flex items-center gap-3`}>
+                <BarChart3 className={`${iconSizes["2xl"]} text-primary`} />
                 <span className="bg-gradient-to-r from-primary via-primary/90 to-primary/70 bg-clip-text text-transparent">
                   Thống kê chi tiết
                 </span>
               </h1>
               <p className="text-muted-foreground mt-2 flex items-center gap-2">
-                <Calendar className="h-5 w-5" />
+                <Calendar className={iconSizes.md} />
                 {new Date().toLocaleDateString("vi-VN", {
                   weekday: "long",
                   year: "numeric",
@@ -517,11 +519,11 @@ export const DashboardStatsClient = ({ stats }: DashboardStatsClientProps) => {
                   <CardHeader className="relative z-10">
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                       <div>
-                        <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                        <CardTitle className={`flex items-center gap-2 ${typography.title.large}`}>
                           <LineChart className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
                           Xu hướng theo tháng
                         </CardTitle>
-                        <CardDescription className="text-sm sm:text-base">
+                        <CardDescription className={typography.description.default}>
                           Thống kê các resources theo tháng
                         </CardDescription>
                       </div>
@@ -541,14 +543,14 @@ export const DashboardStatsClient = ({ stats }: DashboardStatsClientProps) => {
                         <PopoverContent className="w-64" align="end">
                           <div className="space-y-3">
                             <div className="flex items-center justify-between">
-                              <h4 className="font-semibold text-sm">
+                              <h4 className={`font-semibold ${typography.body.medium}`}>
                                 Chọn resources
                               </h4>
                               <div className="flex gap-1">
                                 <Button
                                   variant="ghost"
                                   size="sm"
-                                  className="h-7 px-2 text-xs"
+                                  className={`h-7 px-2 ${typography.body.small}`}
                                   onClick={selectAll}
                                 >
                                   Tất cả
@@ -556,7 +558,7 @@ export const DashboardStatsClient = ({ stats }: DashboardStatsClientProps) => {
                                 <Button
                                   variant="ghost"
                                   size="sm"
-                                  className="h-7 px-2 text-xs"
+                                  className={`h-7 px-2 ${typography.body.small}`}
                                   onClick={deselectAll}
                                 >
                                   Bỏ chọn
@@ -581,7 +583,7 @@ export const DashboardStatsClient = ({ stats }: DashboardStatsClientProps) => {
                                   />
                                   <label
                                     htmlFor={resource.key}
-                                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center gap-2 flex-1 cursor-pointer"
+                                    className={`${typography.body.medium} font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center gap-2 flex-1 cursor-pointer`}
                                   >
                                     <div
                                       className="w-3 h-3 rounded-full"
@@ -606,7 +608,7 @@ export const DashboardStatsClient = ({ stats }: DashboardStatsClientProps) => {
                         <Button
                           variant={chartType === "line" ? "default" : "ghost"}
                           size="sm"
-                          className="h-7 px-3 text-xs"
+                          className={`h-7 px-3 ${typography.body.small}`}
                           onClick={() => setChartType("line")}
                         >
                           <LineChart className="h-3 w-3 mr-1" />
@@ -615,7 +617,7 @@ export const DashboardStatsClient = ({ stats }: DashboardStatsClientProps) => {
                         <Button
                           variant={chartType === "bar" ? "default" : "ghost"}
                           size="sm"
-                          className="h-7 px-3 text-xs"
+                          className={`h-7 px-3 ${typography.body.small}`}
                           onClick={() => setChartType("bar")}
                         >
                           <BarChart3 className="h-3 w-3 mr-1" />
@@ -624,7 +626,7 @@ export const DashboardStatsClient = ({ stats }: DashboardStatsClientProps) => {
                         <Button
                           variant={chartType === "composed" ? "default" : "ghost"}
                           size="sm"
-                          className="h-7 px-3 text-xs"
+                          className={`h-7 px-3 ${typography.body.small}`}
                           onClick={() => setChartType("composed")}
                         >
                           <BarChart3 className="h-3 w-3 mr-1" />
@@ -641,7 +643,7 @@ export const DashboardStatsClient = ({ stats }: DashboardStatsClientProps) => {
                       >
                         <div className="text-center">
                           <BarChart3 className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                          <p className="text-sm font-medium">Vui lòng chọn ít nhất một resource để hiển thị</p>
+                          <p className={`${typography.body.medium} font-medium`}>Vui lòng chọn ít nhất một resource để hiển thị</p>
                         </div>
                       </motion.div>
                     ) : (
@@ -978,11 +980,11 @@ export const DashboardStatsClient = ({ stats }: DashboardStatsClientProps) => {
                 <Card className="relative overflow-hidden backdrop-blur-md bg-card/80 border border-border shadow-lg">
                   <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-background" />
                   <CardHeader className="relative z-10">
-                    <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                    <CardTitle className={`flex items-center gap-2 ${typography.heading.h4}`}>
                       <PieChart className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
                       Phân bố danh mục
                     </CardTitle>
-                    <CardDescription className="text-sm sm:text-base">
+                    <CardDescription className={typography.body.medium}>
                       Tỷ lệ bài viết theo từng danh mục
                     </CardDescription>
                   </CardHeader>
@@ -995,7 +997,7 @@ export const DashboardStatsClient = ({ stats }: DashboardStatsClientProps) => {
                       >
                         <div className="text-center">
                           <PieChart className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                          <p className="text-sm font-medium">Chưa có dữ liệu danh mục</p>
+                          <p className={`${typography.body.medium} font-medium`}>Chưa có dữ liệu danh mục</p>
                         </div>
                       </motion.div>
                     ) : (
@@ -1059,10 +1061,10 @@ export const DashboardStatsClient = ({ stats }: DashboardStatsClientProps) => {
                           {/* Center label showing total */}
                           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                             <div className="text-center">
-                              <div className="text-2xl font-bold text-foreground">
+                              <div className={`${typography.heading.h2} font-bold`}>
                                 {stats.overview.totalPosts}
                               </div>
-                              <div className="text-xs text-muted-foreground font-medium">
+                              <div className={`${typography.body.muted.small} font-medium`}>
                                 Tổng bài viết
                               </div>
                             </div>
@@ -1091,10 +1093,10 @@ export const DashboardStatsClient = ({ stats }: DashboardStatsClientProps) => {
                                     style={{ backgroundColor: item.color }}
                                   />
                                   <div className="flex-1 min-w-0">
-                                    <div className="text-sm font-semibold truncate text-foreground">
+                                    <div className={`${typography.body.medium} font-semibold truncate`}>
                                       {item.name}
                                     </div>
-                                    <div className="flex items-center gap-2 text-xs mt-0.5">
+                                    <div className={`flex items-center gap-2 ${typography.body.small} mt-0.5`}>
                                       <span className="text-muted-foreground font-medium">
                                         {item.value}%
                                       </span>
@@ -1105,7 +1107,7 @@ export const DashboardStatsClient = ({ stats }: DashboardStatsClientProps) => {
                                     </div>
                                   </div>
                                   <div className="flex items-center gap-2 flex-shrink-0">
-                                    <div className="text-xs font-bold text-muted-foreground bg-muted/50 px-2 py-1 rounded">
+                                    <div className={`${typography.body.small} font-bold bg-muted/50 px-2 py-1 rounded`}>
                                       #{index + 1}
                                     </div>
                                   </div>

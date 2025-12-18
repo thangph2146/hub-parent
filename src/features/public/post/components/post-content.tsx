@@ -1,6 +1,7 @@
 "use client"
 
 import { Editor } from "@/components/editor/editor-x/editor"
+import { typography } from "@/lib/typography"
 import { Card } from "@/components/ui/card"
 import type { SerializedEditorState } from "lexical"
 
@@ -23,7 +24,7 @@ export const PostContent = ({ content }: PostContentProps) => {
   if (!editorState) {
     return (
       <Card className="border border-border/50 bg-card p-6">
-        <div className="text-sm text-muted-foreground text-center">
+        <div className={`${typography.body.muted.medium} text-center`}>
           Không có nội dung hoặc định dạng không hợp lệ
         </div>
       </Card>

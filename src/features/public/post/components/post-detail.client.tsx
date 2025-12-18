@@ -1,5 +1,7 @@
 "use client"
 
+import { typography, headerConfig, iconSizes } from "@/lib/typography"
+
 import { Calendar, User, Tag, Clock } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { PostContent } from "./post-content"
@@ -32,19 +34,19 @@ export const PostDetailClient = ({ post }: PostDetailClientProps) => {
         <header className="space-y-6">
 
           {/* Title */}
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight leading-tight">
+          <h1 className={`${headerConfig.main.className} tracking-tight leading-tight`}>
             {post.title}
           </h1>
 
           {/* Meta Info */}
-          <div className="flex flex-wrap items-center gap-4 sm:gap-6 text-sm text-muted-foreground pt-2 border-t">
+          <div className={`flex flex-wrap items-center gap-4 sm:gap-6 ${typography.body.muted.small} pt-2 border-t`}>
             <div className="flex items-center gap-2">
-              <User className="h-4 w-4" />
+              <User className={iconSizes.sm} />
               <span className="font-medium">{post.author.name ?? post.author.email}</span>
             </div>
             {post.publishedAt && (
               <div className="flex items-center gap-2">
-                <Calendar className="h-4 w-4" />
+                <Calendar className={iconSizes.sm} />
                 <time dateTime={getPublishedAtISO()}>
                   {formatPostDateLong(post.publishedAt)}
                 </time>
@@ -52,7 +54,7 @@ export const PostDetailClient = ({ post }: PostDetailClientProps) => {
             )}
             {post.publishedAt && (
               <div className="flex items-center gap-2">
-                <Clock className="h-4 w-4" />
+                <Clock className={iconSizes.sm} />
                 <span>
                   {(() => {
                     try {
@@ -80,10 +82,10 @@ export const PostDetailClient = ({ post }: PostDetailClientProps) => {
         {/* Tags */}
         {post.tags.length > 0 && (
           <div className="flex flex-wrap items-center gap-3 pt-8 border-t">
-            <Tag className="h-5 w-5 text-muted-foreground" />
+            <Tag className={`${iconSizes.md} text-muted-foreground`} />
             <div className="flex flex-wrap gap-2">
               {post.tags.map((tag) => (
-                <Badge key={tag.id} variant="outline" className="text-sm">
+                <Badge key={tag.id} variant="outline" className={typography.body.medium}>
                   {tag.name}
                 </Badge>
               ))}

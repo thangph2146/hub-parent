@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { CommandItem } from "@/components/ui/command"
 import { Folder, ChevronRight, Check } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { typography, iconSizes } from "@/lib/typography"
 import type { FolderTreeSelectNode } from "../utils/folder-utils"
 
 interface FolderTreeSelectItemProps {
@@ -45,12 +46,12 @@ export const FolderTreeSelectItem = ({
       >
         <Check
           className={cn(
-            "h-4 w-4 rounded-sm hover:text-foreground",
+            `${iconSizes.sm} rounded-sm hover:text-foreground`,
             isSelected ? "opacity-100" : "opacity-0"
           )}
         />
         {!hasChildren && <div className="w-4" />}
-        <Folder className="h-4 w-4 hover:text-foreground" />
+        <Folder className={`${iconSizes.sm} hover:text-foreground`} />
         <span className="flex-1">{node.name}</span>
 
         {hasChildren && (
@@ -71,10 +72,10 @@ export const FolderTreeSelectItem = ({
             }}
             className="w-fit px-2 flex items-center justify-end gap-2 hover:bg-muted/10 rounded-sm"
           >
-            <span className="text-xs">{node.path}</span>
+            <span className={typography.body.small}>{node.path}</span>
             <ChevronRight
               className={cn(
-                "h-6 w-6 transition-transform hover:text-foreground",
+                `${iconSizes.lg} transition-transform hover:text-foreground`,
                 isOpen && "rotate-90"
               )}
             />

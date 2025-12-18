@@ -5,6 +5,7 @@ import { formatMessageTime } from "../utils"
 import { highlightText } from "../utils/text-helpers"
 import { isMessageReadByUser } from "../utils/message-helpers"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { typography } from "@/lib/typography"
 
 interface MessageBubbleProps {
   message: Message
@@ -83,7 +84,7 @@ export function MessageBubble({
           }}
         >
           {showSenderInfo && (
-            <p className={`text-xs font-medium mb-1 ${
+            <p className={`${typography.body.small} font-medium mb-1 ${
               isOwnMessage ? "text-primary-foreground/80" : "text-muted-foreground"
             }`}>
               {senderName}
@@ -111,23 +112,23 @@ export function MessageBubble({
                 }
               }}
             >
-              <p className={`text-xs font-medium ${
+              <p className={`${typography.body.small} font-medium ${
                 isOwnMessage ? "text-primary-foreground/80" : "text-muted-foreground"
               }`}>
                 {isParentOwnMessage ? "You" : "Reply"}
               </p>
-              <p className={`text-xs truncate ${
+              <p className={`${typography.body.small} truncate ${
                 isOwnMessage ? "text-primary-foreground/60" : "text-muted-foreground/80"
               }`}>
                 {searchQuery ? highlightText(parentMessage.content, searchQuery) : parentMessage.content}
               </p>
             </div>
           )}
-          <p className="text-sm break-words">
+          <p className={`${typography.body.medium} break-words`}>
             {searchQuery ? highlightText(message.content, searchQuery) : message.content}
           </p>
           <div className="flex items-center justify-between gap-2 mt-1">
-            <p className={`text-xs ${
+            <p className={`${typography.body.small} ${
               isOwnMessage ? "text-primary-foreground/70" : "text-muted-foreground"
             }`}>
               {formatMessageTime(message.timestamp)}
@@ -139,7 +140,7 @@ export function MessageBubble({
             )}
             {canMarkRead && (
               <button
-                className={`opacity-0 group-hover:opacity-100 transition-opacity text-xs px-2 py-1 rounded ${
+                className={`opacity-0 group-hover:opacity-100 transition-opacity ${typography.body.small} px-2 py-1 rounded ${
                   isReadByCurrentUser
                     ? "text-muted-foreground hover:text-foreground"
                     : "text-primary hover:text-primary/80"

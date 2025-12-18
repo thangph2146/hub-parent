@@ -1,5 +1,7 @@
 "use client"
 
+import { typography, headerConfig } from "@/lib/typography"
+
 import { useState } from "react"
 import Link from "next/link"
 import { motion } from "framer-motion"
@@ -169,10 +171,10 @@ export const NotFoundClient = () => {
 
           {/* Error Message */}
           <motion.div variants={itemVariants} className="space-y-4">
-            <h1 className="text-3xl md:text-4xl font-bold">
+            <h1 className={headerConfig.main.className}>
               Trang không tìm thấy
             </h1>
-            <p className="text-muted-foreground text-lg">
+            <p className={typography.description.large}>
               Xin lỗi, trang bạn đang tìm kiếm không tồn tại hoặc đã bị di chuyển.
             </p>
           </motion.div>
@@ -197,10 +199,10 @@ export const NotFoundClient = () => {
           {/* Helpful Links */}
           <motion.div variants={itemVariants}>
             <div className="mt-8 p-6 bg-muted/50 rounded-lg border border-border/50">
-              <p className="text-sm text-muted-foreground mb-4">
+              <p className={`${typography.body.muted.medium} mb-4`}>
                 Bạn có thể thử:
               </p>
-              <ul className="text-left space-y-2 text-sm text-muted-foreground">
+              <ul className={`text-left space-y-2 ${typography.body.muted.medium}`}>
                 <li>• Kiểm tra lại URL đã nhập đúng chưa</li>
                 <li>• Quay lại trang trước đó</li>
                 <li>• Sử dụng menu điều hướng để tìm trang bạn cần</li>

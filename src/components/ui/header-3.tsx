@@ -3,6 +3,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { MenuToggleIcon } from '@/components/ui/menu-toggle-icon';
+import { typography, iconSizes } from '@/lib/typography';
 import { createPortal } from 'react-dom';
 import {
 	NavigationMenu,
@@ -77,7 +78,7 @@ export function Header() {
 										))}
 									</ul>
 									<div className="p-2">
-										<p className="text-muted-foreground text-sm">
+										<p className={`text-muted-foreground ${typography.body.small}`}>
 											Interested?{' '}
 											<a href="#" className="text-foreground font-medium hover:underline">
 												Schedule a demo
@@ -104,7 +105,7 @@ export function Header() {
 														href={item.href}
 														className="flex p-2 hover:bg-accent flex-row rounded-md items-center gap-x-2"
 													>
-														<item.icon className="text-foreground size-4" />
+														<item.icon className={`text-foreground ${iconSizes.sm}`} />
 														<span className="font-medium">{item.title}</span>
 													</NavigationMenuLink>
 												</li>
@@ -134,7 +135,7 @@ export function Header() {
 					aria-controls="mobile-menu"
 					aria-label="Toggle menu"
 				>
-					<MenuToggleIcon open={open} className="size-5" duration={300} />
+					<MenuToggleIcon open={open} className={iconSizes.md} duration={300} />
 				</Button>
 			</nav>
 			<MobileMenu open={open} className="flex flex-col justify-between gap-2 overflow-y-auto">

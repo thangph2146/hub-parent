@@ -10,10 +10,11 @@ import {
 } from "@/components/ui/card";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import { typography, iconSizes } from "@/lib/typography";
 
-// Cấu hình mặc định
-const DEFAULT_TITLE_CLASSES = "text-md sm:text-lg md:text-xl lg:text-2xl font-bold";
-const DEFAULT_DESCRIPTION_CLASSES = "text-xs sm:text-sm md:text-base leading-relaxed";
+// Cấu hình mặc định - sử dụng shared typography
+const DEFAULT_TITLE_CLASSES = typography.title.default;
+const DEFAULT_DESCRIPTION_CLASSES = typography.description.default;
 
 export interface ContentCardButton {
   href: string;
@@ -109,7 +110,7 @@ export const ContentCard = ({
                       <span className="ml-1 sm:ml-2">{btn.rightIcon}</span>
                     )}
                     {btn.showArrowRight && !btn.rightIcon && (
-                      <ArrowRight className="h-4 w-4 ml-2" />
+                      <ArrowRight className={`${iconSizes.sm} ml-2`} />
                     )}
                   </Link>
                 </Button>

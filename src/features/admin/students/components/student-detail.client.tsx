@@ -1,5 +1,7 @@
 "use client"
 
+import { typography } from "@/lib/typography"
+
 import * as React from "react"
 import { useQueryClient } from "@tanstack/react-query"
 import { User, Mail, Hash, Edit } from "lucide-react"
@@ -81,13 +83,13 @@ export const StudentDetailClient = ({ studentId, student, backUrl = "/admin/stud
           <div className="grid gap-6 grid-cols-1 sm:grid-cols-2">
             {/* Student Code & Name */}
             <FieldItem icon={Hash} label="Mã sinh viên">
-              <div className="text-sm font-medium text-foreground font-mono">
+              <div className={`${typography.body.medium} font-medium font-mono`}>
                 {studentData.studentCode || "—"}
               </div>
             </FieldItem>
 
             <FieldItem icon={User} label="Tên sinh viên">
-              <div className="text-sm font-medium text-foreground">
+              <div className={`${typography.body.medium} font-medium`}>
                 {studentData.name || "—"}
               </div>
             </FieldItem>
@@ -97,7 +99,7 @@ export const StudentDetailClient = ({ studentId, student, backUrl = "/admin/stud
               <FieldItem icon={Mail} label="Email">
                 <a
                   href={`mailto:${studentData.email}`}
-                  className="text-sm font-medium text-primary hover:underline truncate block transition-colors"
+                  className={`${typography.body.medium} font-medium text-primary hover:underline truncate block transition-colors`}
                 >
                   {studentData.email}
                 </a>
@@ -108,11 +110,11 @@ export const StudentDetailClient = ({ studentId, student, backUrl = "/admin/stud
             {studentData.userId && studentData.userName && (
               <FieldItem icon={User} label="Tài khoản liên kết">
                 <div className="space-y-0.5">
-                  <div className="text-sm font-medium text-foreground">
+                  <div className={`${typography.body.medium} font-medium`}>
                     {studentData.userName}
                   </div>
                   {studentData.userEmail && (
-                    <div className="text-xs text-muted-foreground">
+                    <div className={typography.body.muted.small}>
                       {studentData.userEmail}
                     </div>
                   )}

@@ -19,6 +19,7 @@ import {
 import { ChevronDown } from "lucide-react"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { useDebouncedCallback } from "@/hooks/use-debounced-callback"
+import { typography } from "@/lib/typography"
 import type {
   ResourceTableLoader,
   ResourceViewMode,
@@ -184,7 +185,7 @@ export const ResourceTableClient = <T extends object>({
               type="button"
               size="sm"
               variant="outline"
-              className="h-8 px-3 text-xs min-w-[100px] max-w-[180px] justify-between"
+              className={`h-8 px-3 ${typography.body.small} min-w-[100px] max-w-[180px] justify-between`}
             >
               <span className="truncate">{currentView.label}</span>
               <ChevronDown className="ml-2 h-4 w-4 shrink-0" />
@@ -214,7 +215,7 @@ export const ResourceTableClient = <T extends object>({
             size="sm"
             variant={currentViewId === view.id ? "default" : "outline"}
             onClick={() => handleViewChange(view.id)}
-            className="h-8 px-2 sm:px-3 text-xs sm:text-sm whitespace-nowrap"
+            className={`h-8 px-2 sm:px-3 ${typography.body.small} whitespace-nowrap`}
           >
             {view.label}
           </Button>
@@ -228,7 +229,7 @@ export const ResourceTableClient = <T extends object>({
       {(title || viewModes.length > 1 || headerActions) && (
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0">
           {title ? (
-            <h2 className="text-base sm:text-lg font-semibold truncate">{title}</h2>
+            <h2 className={`${typography.heading.h4} truncate`}>{title}</h2>
           ) : (
             <span />
           )}

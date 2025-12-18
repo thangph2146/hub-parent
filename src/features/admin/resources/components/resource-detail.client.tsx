@@ -24,6 +24,7 @@ import { useResourceSegment } from "@/hooks/use-resource-segment";
 import { applyResourceSegmentToPath } from "@/lib/permissions";
 import { useResourceNavigation } from "../hooks";
 import { logger } from "@/lib/config/logger";
+import { typography } from "@/lib/typography";
 
 export interface ResourceDetailField<T = unknown> {
   name: keyof T | string;
@@ -150,7 +151,7 @@ export const ResourceDetailClient = <T extends Record<string, unknown>>({
           return (
             <span
               className={cn(
-                "inline-flex items-center rounded-full px-2 py-1 text-xs font-medium",
+                `inline-flex items-center rounded-full px-2 py-1 ${typography.body.small} font-medium`,
                 boolValue
                   ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
                   : "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300"
@@ -238,19 +239,19 @@ export const ResourceDetailClient = <T extends Record<string, unknown>>({
             !inSection && "border-b border-border/50 last:border-0"
           )}
         >
-          <FieldTitle className="text-muted-foreground text-xs font-medium mb-1">
+          <FieldTitle className={`text-muted-foreground ${typography.body.small} font-medium mb-1`}>
             {field.label}
           </FieldTitle>
           <FieldContent>
             {isCustomRender || isComplexNode ? (
               formattedValue
             ) : (
-              <div className="text-sm break-words break-all whitespace-pre-wrap">
+              <div className={`${typography.body.medium} break-words break-all whitespace-pre-wrap`}>
                 {formattedValue}
               </div>
             )}
             {field.description && (
-              <FieldDescription className="text-xs mt-1">
+              <FieldDescription className={`${typography.body.small} mt-1`}>
                 {field.description}
               </FieldDescription>
             )}
@@ -320,11 +321,11 @@ export const ResourceDetailClient = <T extends Record<string, unknown>>({
       return (
         <Card key={sectionId} className="h-fit">
           <CardHeader className="pb-3">
-            <CardTitle className="text-base font-semibold">
+            <CardTitle className={`${typography.heading.h4} font-semibold`}>
               {sectionInfo?.title || "Thông tin chi tiết"}
             </CardTitle>
             {sectionInfo?.description && (
-              <CardDescription className="mt-0.5 text-xs">
+              <CardDescription className={`mt-0.5 ${typography.body.small}`}>
                 {sectionInfo.description}
               </CardDescription>
             )}
@@ -412,12 +413,12 @@ export const ResourceDetailClient = <T extends Record<string, unknown>>({
               </Button>
             )}
             {title && (
-              <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
+              <h1 className={`${typography.heading.h1} tracking-tight`}>
                 {title}
               </h1>
             )}
             {description && (
-              <p className="text-sm text-muted-foreground max-w-2xl">
+              <p className={`${typography.body.muted.medium} max-w-2xl`}>
                 {description}
               </p>
             )}
@@ -469,11 +470,11 @@ export const ResourceDetailClient = <T extends Record<string, unknown>>({
               {ungrouped.length > 0 && (
                 <Card>
                   <CardHeader className="pb-3">
-                    <CardTitle className="text-base font-semibold">
+                    <CardTitle className={`${typography.heading.h4} font-semibold`}>
                       {fieldsTitle}
                     </CardTitle>
                     {fieldsDesc && (
-                      <CardDescription className="mt-0.5 text-xs">
+                      <CardDescription className={`mt-0.5 ${typography.body.small}`}>
                         {fieldsDesc}
                       </CardDescription>
                     )}
@@ -501,11 +502,11 @@ export const ResourceDetailClient = <T extends Record<string, unknown>>({
                   {sections.map((section, i) => (
                     <Card key={i} className="h-fit">
                       <CardHeader className="pb-3">
-                        <CardTitle className="text-base font-semibold">
+                        <CardTitle className={`${typography.heading.h4} font-semibold`}>
                           {section.title}
                         </CardTitle>
                         {section.description && (
-                          <CardDescription className="mt-0.5 text-xs">
+                          <CardDescription className={`mt-0.5 ${typography.body.small}`}>
                             {section.description}
                           </CardDescription>
                         )}

@@ -35,6 +35,7 @@ import {
   getResourceSubRoutes,
 } from "@/lib/permissions/route-helpers"
 import type { MenuItem, MenuSubItem } from "./navigation-types"
+import { iconSizes } from "@/lib/typography"
 
 type FeatureGroup = "main" | "secondary" | "public"
 export type ComponentRenderMode = "static" | "dynamic"
@@ -75,7 +76,7 @@ interface FeatureDefinition {
 }
 
 const createIcon = (Icon: LucideIcon) =>
-  React.createElement(Icon, { className: "h-4 w-4" })
+  React.createElement(Icon, { className: iconSizes.sm })
 
 export const appFeatures: FeatureDefinition[] = [
   {

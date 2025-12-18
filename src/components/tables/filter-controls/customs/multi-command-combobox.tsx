@@ -18,6 +18,7 @@ import {
     CommandList,
 } from "@/components/ui/command"
 import { useClientOnly } from "@/hooks/use-client-only"
+import { typography, iconSizes } from "@/lib/typography"
 import type { ColumnFilterControlProps } from "../types"
 
 export function MultiCommandCombobox<T extends object = object>({
@@ -96,13 +97,13 @@ export function MultiCommandCombobox<T extends object = object>({
                 variant="outline"
                 role="combobox"
                 className={cn(
-                    "h-7 sm:h-8 w-full justify-between text-xs font-normal",
+                    `h-7 sm:h-8 w-full justify-between ${typography.body.small} font-normal`,
                     selectedValues.length === 0 && "text-muted-foreground",
                 )}
                 disabled={true}
             >
-                <span className="truncate text-xs">{displayText}</span>
-                <ChevronsUpDown className="ml-1 sm:ml-2 h-3 w-3 shrink-0 opacity-50" />
+                <span className={`truncate ${typography.body.small}`}>{displayText}</span>
+                <ChevronsUpDown className={`ml-1 sm:ml-2 ${iconSizes.xs} shrink-0 opacity-50`} />
             </Button>
         )
     }
@@ -116,7 +117,7 @@ export function MultiCommandCombobox<T extends object = object>({
                     aria-expanded={open}
                     aria-controls={filterId}
                     className={cn(
-                        "h-auto min-h-7 sm:min-h-8 w-full justify-between text-xs font-normal px-2 py-1",
+                        `h-auto min-h-7 sm:min-h-8 w-full justify-between ${typography.body.small} font-normal px-2 py-1`,
                         selectedValues.length === 0 && "text-muted-foreground",
                     )}
                     disabled={disabled}
@@ -124,18 +125,18 @@ export function MultiCommandCombobox<T extends object = object>({
                     <div className="flex flex-1 flex-wrap gap-1 items-center min-w-0 mr-1">
                         {selectedOptions.length > 0 && selectedOptions.length <= 3 ? (
                             selectedOptions.map((option) => (
-                                <Badge key={option.value} variant="secondary" className="text-xs mr-0">
+                                <Badge key={option.value} variant="secondary" className={`${typography.body.small} mr-0`}>
                                     {option.label}
                                 </Badge>
                             ))
                         ) : (
-                            <span className="truncate text-xs">{displayText}</span>
+                            <span className={`truncate ${typography.body.small}`}>{displayText}</span>
                         )}
                     </div>
                     <div className="flex items-center gap-1 flex-shrink-0">
                         {selectedValues.length > 0 && (
                             <X
-                                className="h-3 w-3 text-muted-foreground hover:text-foreground"
+                                className={`${iconSizes.xs} text-muted-foreground hover:text-foreground`}
                                 onClick={handleClear}
                             />
                         )}

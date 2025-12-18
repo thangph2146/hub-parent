@@ -1,5 +1,7 @@
 "use client"
 
+import { typography, iconSizes } from "@/lib/typography"
+
 import { useState, useCallback } from "react"
 import { useAuth } from "@/hooks/use-session"
 import { Button } from "@/components/ui/button"
@@ -196,8 +198,8 @@ export const ManageMembersDialog = ({
               <CommandList>
                 {isLoading && (
                   <div className="flex items-center justify-center py-6">
-                    <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                    <span className="ml-2 text-sm text-muted-foreground">Đang tải...</span>
+                    <Loader2 className={`${iconSizes.sm} animate-spin text-muted-foreground`} />
+                    <span className={`ml-2 ${typography.body.muted.medium}`}>Đang tải...</span>
                   </div>
                 )}
                 {!isLoading && users.length === 0 && searchValue.length >= 2 && (
@@ -208,15 +210,15 @@ export const ManageMembersDialog = ({
                     <ScrollArea className="h-[180px] pr-2">
                       {users.map((user) => (
                         <CommandItem key={user.id} value={user.id} className="flex items-center gap-3 cursor-pointer">
-                          <Avatar className="h-8 w-8">
+                          <Avatar className={iconSizes["2xl"]}>
                             <AvatarImage src={user.avatar || undefined} alt={user.name || user.email} />
-                            <AvatarFallback className="text-xs">
+                            <AvatarFallback className={typography.body.small}>
                               {(user.name || user.email).substring(0, 2).toUpperCase()}
                             </AvatarFallback>
                           </Avatar>
                           <div className="flex flex-col flex-1 min-w-0">
-                            <span className="text-sm font-medium truncate">{user.name || user.email}</span>
-                            {user.name && <span className="text-xs text-muted-foreground truncate">{user.email}</span>}
+                            <span className={`${typography.body.medium} font-medium truncate`}>{user.name || user.email}</span>
+                            {user.name && <span className={`${typography.body.muted.small} truncate`}>{user.email}</span>}
                           </div>
                           <Button size="sm" variant="secondary" disabled={isProcessing === user.id} onClick={() => handleAddMember(user.id)}>
                             {isProcessing === user.id ? (
@@ -245,13 +247,13 @@ export const ManageMembersDialog = ({
                       <div key={member.id} className="flex items-center gap-3 rounded border p-2">
                         <Avatar className="h-8 w-8">
                           <AvatarImage src={member.user?.avatar || undefined} alt={member.user?.name || member.user?.email || ""} />
-                          <AvatarFallback className="text-xs">
+                          <AvatarFallback className={typography.body.small}>
                             {(member.user?.name || member.user?.email || "").substring(0, 2).toUpperCase()}
                           </AvatarFallback>
                         </Avatar>
                         <div className="flex flex-col flex-1 min-w-0">
-                          <span className="text-sm font-medium truncate">{member.user?.name || member.user?.email}</span>
-                          <span className="text-xs text-muted-foreground truncate">{member.role}</span>
+                          <span className={`${typography.body.medium} font-medium truncate`}>{member.user?.name || member.user?.email}</span>
+                          <span className={`${typography.body.muted.small} truncate`}>{member.role}</span>
                         </div>
                         <div className="flex items-center gap-2">
                           {canPromoteAdmin && (
@@ -276,7 +278,7 @@ export const ManageMembersDialog = ({
                   </div>
                 </ScrollArea>
               ) : (
-                <div className="text-sm text-muted-foreground">Chưa có thành viên nào</div>
+                <div className={typography.body.muted.medium}>Chưa có thành viên nào</div>
               )}
             </div>
           </div>

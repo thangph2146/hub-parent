@@ -1,5 +1,6 @@
 "use client"
 
+import { headerConfig } from "@/lib/typography"
 import type { Contact } from "../types"
 
 export type ChatFilterType = "ACTIVE" | "DELETED"
@@ -21,7 +22,7 @@ export function ChatListHeader({
 }: ChatListHeaderProps) {
   return (
     <div className="flex items-center justify-between h-16 px-4 border-b shrink-0">
-      <h2 className="text-lg font-semibold">Chats</h2>
+      <h2 className={headerConfig.subsection.className}>Chats</h2>
       <div className="flex items-center gap-2 shrink-0 mr-8">
         {newConversationDialog}
         {newGroupDialog}
