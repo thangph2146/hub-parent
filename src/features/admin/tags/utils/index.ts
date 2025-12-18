@@ -7,5 +7,6 @@ export {
 } from "./socket-helpers"
 
 export { useTagColumns } from "./columns"
-export { useTagRowActions, renderRowActions, type RowActionConfig } from "./row-actions"
+export { useTagRowActions } from "./row-actions"
+export { renderRowActions, type RowActionConfig } from "@/features/admin/resources/utils/render-row-actions"
 

@@ -3,6 +3,7 @@ export {
   buildPagination,
   serializeResourceForTable,
   serializeResourceList,
+  createSerializeList,
   serializeDate,
   serializeDates,
   applyStatusFilter,
@@ -20,6 +21,7 @@ export type { ResourcePagination, ResourceResponse } from "../types"
 export { ApplicationError, ForbiddenError, NotFoundError } from "./errors"
 export { ensurePermission, type AuthContext } from "./mutations-helpers"
 export { logTableStatusAfterMutation, logActionFlow, logDetailAction } from "./mutation-helpers"
+export { validateBulkIds, buildBulkError } from "./bulk-helpers"
 export { getAuthInfo, type SessionWithMeta, type AuthInfo } from "./auth-helpers"
 export { getTablePermissions, getTablePermissionsAsync, type TablePermissions } from "./page-helpers"
 export {

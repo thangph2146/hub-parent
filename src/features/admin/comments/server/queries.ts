@@ -5,7 +5,7 @@ import { validatePagination, buildPagination } from "@/features/admin/resources/
 import { mapCommentRecord, buildWhereClause } from "./helpers"
 import type { ListCommentsInput, CommentDetail, ListCommentsResult } from "../types"
 
-export async function listComments(params: ListCommentsInput = {}): Promise<ListCommentsResult> {
+export const listComments = async (params: ListCommentsInput = {}): Promise<ListCommentsResult> => {
   const { page, limit } = validatePagination(params.page, params.limit, 100)
   const where = buildWhereClause(params)
   const status = params.filters?.deleted === true ? "deleted" : "active"
@@ -43,11 +43,11 @@ export async function listComments(params: ListCommentsInput = {}): Promise<List
   return result
 }
 
-export async function getCommentColumnOptions(
+export const getCommentColumnOptions = async (
   column: string,
   search?: string,
   limit: number = 50
-): Promise<Array<{ label: string; value: string }>> {
+): Promise<Array<{ label: string; value: string }>> => {
   const where: Prisma.CommentWhereInput = { deletedAt: null }
 
   if (search?.trim()) {
@@ -95,9 +95,9 @@ export async function getCommentColumnOptions(
   }
 
   return Array.from(optionsMap.entries()).map(([value, label]) => ({ label, value }))
-}
+};
 
-export async function getCommentById(id: string): Promise<CommentDetail | null> {
+export const getCommentById = async (id: string): Promise<CommentDetail | null> => {
   const comment = await prisma.comment.findUnique({
     where: { id },
     include: {
@@ -107,5 +107,5 @@ export async function getCommentById(id: string): Promise<CommentDetail | null> 
   })
 
   return comment ? { ...mapCommentRecord(comment), updatedAt: comment.updatedAt.toISOString() } : null
-}
+};
 

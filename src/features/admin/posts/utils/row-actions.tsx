@@ -27,7 +27,7 @@ export const usePostRowActions = ({
   deletingIds = new Set(),
   restoringIds = new Set(),
   hardDeletingIds = new Set(),
-}: UseRowActionsOptions) {
+}: UseRowActionsOptions) => {
   const router = useResourceRouter()
 
   const renderActiveRowActions = useCallback(

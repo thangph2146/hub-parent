@@ -5,32 +5,29 @@ import {
   emitNotificationToAllAdminsAfterCreate,
 } from "@/features/admin/notifications/server/mutations";
 import { NotificationKind } from "@prisma/client";
-import { logNotificationError } from "../../notifications/server/notification-helpers";
+import { logNotificationError, formatItemNames } from "@/features/admin/notifications/server/notification-helpers";
 
-async function getActorInfo(actorId: string) {
+const getActorInfo = async (actorId: string) => {
   const actor = await prisma.user.findUnique({
     where: { id: actorId },
     select: { id: true, email: true, name: true },
   });
   return actor;
-}
+};
 
-function formatUserNames(
+const formatUserNames = (
   users: Array<{ name: string | null; email: string }>,
   maxNames = 3
-): string {
-  if (!users || users.length === 0) return "";
+): string => {
+  return formatItemNames(
+    users,
+    (u) => u.name || u.email,
+    maxNames,
+    "người dùng"
+  );
+};
 
-  const displayNames = users.slice(0, maxNames).map((u) => u.name || u.email);
-  const remainingCount = users.length > maxNames ? users.length - maxNames : 0;
-
-  if (remainingCount > 0) {
-    return `${displayNames.join(", ")} và ${remainingCount} người dùng khác`;
-  }
-  return displayNames.join(", ");
-}
-
-export async function notifySuperAdminsOfUserAction(
+export const notifySuperAdminsOfUserAction = async (
   action: "create" | "update" | "delete" | "restore" | "hard-delete",
   actorId: string,
   targetUser: { id: string; email: string; name: string | null },
@@ -39,7 +36,7 @@ export async function notifySuperAdminsOfUserAction(
     isActive?: { old: boolean; new: boolean };
     roles?: { old: string[]; new: string[] };
   }
-) {
+): Promise<void> => {
   try {
     const actor = await getActorInfo(actorId);
     const actorName = actor?.name || actor?.email || "Hệ thống";
@@ -153,7 +150,7 @@ export async function notifySuperAdminsOfUserAction(
       { userId: targetUser.id }
     );
   }
-}
+};
 
 export const notifySuperAdminsOfBulkUserAction = async (
   action: "delete" | "restore" | "hard-delete",

@@ -2,23 +2,27 @@ import type { AdminBreadcrumbItem } from "@/components/layouts/headers/admin-hea
 import { applyResourceSegmentToPath, DEFAULT_RESOURCE_SEGMENT } from "@/lib/permissions"
 import { logActionFlow } from "./server/mutation-helpers"
 
-export const formatDateVi = (date: string | Date): string =>
-  new Date(date).toLocaleDateString("vi-VN", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  })
+export const formatDateVi = (date: string | Date | null | undefined): string => {
+  if (!date) return "—"
+  try {
+    const dateObj = typeof date === "string" ? new Date(date) : date
+    if (isNaN(dateObj.getTime())) return "—"
+    return new Intl.DateTimeFormat("vi-VN", {
+      dateStyle: "long",
+      timeStyle: "short",
+    }).format(dateObj)
+  } catch {
+    return "—"
+  }
+}
 
-export const generateSlug = (name: string): string => {
-  return name
+export const generateSlug = (name: string): string =>
+  name
     .toLowerCase()
     .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "") // Remove diacritics
-    .replace(/[^a-z0-9]+/g, "-") // Replace non-alphanumeric with dash
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "")
-}
 
 export const validateName = (value: unknown): { valid: boolean; error?: string } => {
   if (!value || typeof value !== "string") {
@@ -144,9 +148,7 @@ export const truncateBreadcrumbLabel = (text: string, maxLength: number = 30): s
 export const getResourceSegmentFromParams = (
   resource?: string,
   defaultSegment: string = DEFAULT_RESOURCE_SEGMENT
-): string => {
-  return resource && resource.length > 0 ? resource.toLowerCase() : defaultSegment
-}
+): string => (resource && resource.length > 0 ? resource.toLowerCase() : defaultSegment)
 
 export interface CreateBreadcrumbsOptions {
   resourceSegment?: string
@@ -246,16 +248,7 @@ const getResourceSingularName = (resourceName: string): string => {
     "contact-requests": "contact-request",
     notifications: "notification",
   }
-  
-  if (specialCases[resourceName]) {
-    return specialCases[resourceName]
-  }
-  
-  if (resourceName.endsWith("s")) {
-    return resourceName.slice(0, -1)
-  }
-  
-  return resourceName
+  return specialCases[resourceName] || (resourceName.endsWith("s") ? resourceName.slice(0, -1) : resourceName)
 }
 
 export const createResourceEditOnSuccess = ({

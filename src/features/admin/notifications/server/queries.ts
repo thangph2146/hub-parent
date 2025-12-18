@@ -38,11 +38,11 @@ export interface ListNotificationsResult {
   pagination: ResourcePagination
 }
 
-function isValidKind(value: string): value is NotificationKind {
+const isValidKind = (value: string): value is NotificationKind => {
   return Object.values(NotificationKind).includes(value as NotificationKind)
-}
+};
 
-function buildWhereClause(params: ListNotificationsInput): Prisma.NotificationWhereInput {
+const buildWhereClause = (params: ListNotificationsInput): Prisma.NotificationWhereInput => {
   const where: Prisma.NotificationWhereInput = {}
   const isSuperAdminUser = params.isSuperAdmin ?? false
 
@@ -202,9 +202,9 @@ function buildWhereClause(params: ListNotificationsInput): Prisma.NotificationWh
   }
 
   return where
-}
+};
 
-export async function listNotifications(params: ListNotificationsInput = {}): Promise<ListNotificationsResult> {
+export const listNotifications = async (params: ListNotificationsInput = {}): Promise<ListNotificationsResult> => {
   const { page, limit } = validatePagination(params.page, params.limit, 100)
   const where = buildWhereClause(params)
 
@@ -281,9 +281,9 @@ export async function listNotifications(params: ListNotificationsInput = {}): Pr
     })),
     pagination: buildPagination(page, limit, total),
   }
-}
+};
 
-export async function getNotificationById(id: string): Promise<ListedNotification | null> {
+export const getNotificationById = async (id: string): Promise<ListedNotification | null> => {
   const notification = await prisma.notification.findUnique({
     where: { id },
     include: {
@@ -315,11 +315,11 @@ export async function getNotificationById(id: string): Promise<ListedNotificatio
   } as ListedNotification
 }
 
-export async function getNotificationColumnOptions(
+export const getNotificationColumnOptions = async (
   column: string,
   search?: string,
   limit: number = 50
-): Promise<Array<{ label: string; value: string }>> {
+): Promise<Array<{ label: string; value: string }>> => {
   if (column !== "userEmail") {
     return []
   }
@@ -361,5 +361,5 @@ export async function getNotificationColumnOptions(
       return null
     })
     .filter((item): item is { label: string; value: string } => item !== null)
-}
+};
 

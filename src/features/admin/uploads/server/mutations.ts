@@ -12,7 +12,7 @@ import type { UploadResponse, UploadError } from "../types"
  * Upload hình ảnh
  * Sử dụng fetch API trong server action thay vì axios
  */
-export async function uploadImage(file: File): Promise<UploadResponse | UploadError> {
+export const uploadImage = async (file: File): Promise<UploadResponse | UploadError> => {
   try {
     const formData = new FormData()
     formData.append("file", file)

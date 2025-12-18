@@ -1,5 +1,4 @@
 import type { Prisma } from "@prisma/client"
-import type { DataTableResult } from "@/components/tables"
 import {
   serializeDate,
   applyStatusFilter,
@@ -8,8 +7,9 @@ import {
   applyStringFilter,
   applyBooleanFilter,
   applyStatusFilterFromFilters,
+  createSerializeList,
 } from "@/features/admin/resources/server"
-import type { ListPostsInput, ListedPost, PostDetail, ListPostsResult } from "./queries"
+import type { ListPostsInput, ListedPost, PostDetail } from "./queries"
 import type { PostRow } from "../types"
 
 type PostWithAuthor = Prisma.PostGetPayload<{
@@ -128,15 +128,7 @@ export const serializePostForTable = (post: ListedPost): PostRow => {
   }
 }
 
-export const serializePostsList = (data: ListPostsResult): DataTableResult<PostRow> => {
-  return {
-    page: data.pagination.page,
-    limit: data.pagination.limit,
-    total: data.pagination.total,
-    totalPages: data.pagination.totalPages,
-    rows: data.data.map(serializePostForTable),
-  }
-}
+export const serializePostsList = createSerializeList(serializePostForTable)
 
 export const serializePostDetail = (post: PostDetail) => {
   return {

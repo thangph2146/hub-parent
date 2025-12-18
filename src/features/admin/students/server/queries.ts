@@ -4,7 +4,7 @@ import { validatePagination, buildPagination } from "@/features/admin/resources/
 import { mapStudentRecord, buildWhereClause } from "./helpers"
 import type { ListStudentsInput, StudentDetail, ListStudentsResult } from "../types"
 
-export async function listStudents(params: ListStudentsInput = {}): Promise<ListStudentsResult> {
+export const listStudents = async (params: ListStudentsInput = {}): Promise<ListStudentsResult> => {
   const { page, limit } = validatePagination(params.page, params.limit, 100)
   const where = buildWhereClause(params)
 
@@ -38,13 +38,13 @@ export async function listStudents(params: ListStudentsInput = {}): Promise<List
   }
 }
 
-export async function getStudentColumnOptions(
+export const getStudentColumnOptions = async (
   column: string,
   search?: string,
   limit: number = 50,
   actorId?: string,
   isSuperAdmin?: boolean
-): Promise<Array<{ label: string; value: string }>> {
+): Promise<Array<{ label: string; value: string }>> => {
   const where: Prisma.StudentWhereInput = {
     deletedAt: null,
   }
@@ -107,13 +107,13 @@ export async function getStudentColumnOptions(
       return null
     })
     .filter((item): item is { label: string; value: string } => item !== null)
-}
+};
 
-export async function getStudentById(
+export const getStudentById = async (
   id: string,
   actorId?: string,
   isSuperAdmin?: boolean
-): Promise<StudentDetail | null> {
+): Promise<StudentDetail | null> => {
   const where: Prisma.StudentWhereUniqueInput = { id }
   
   const student = await prisma.student.findUnique({
@@ -142,5 +142,5 @@ export async function getStudentById(
     userName: student.user?.name || null,
     userEmail: student.user?.email || null,
   }
-}
+};
 

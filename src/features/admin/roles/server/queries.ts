@@ -37,7 +37,7 @@ export interface ListRolesResult {
   pagination: ResourcePagination
 }
 
-export async function listRoles(params: ListRolesInput = {}): Promise<ListRolesResult> {
+export const listRoles = async (params: ListRolesInput = {}): Promise<ListRolesResult> => {
   const { page, limit } = validatePagination(params.page, params.limit, 100)
   const where = buildWhereClause(params)
 
@@ -55,13 +55,13 @@ export async function listRoles(params: ListRolesInput = {}): Promise<ListRolesR
     data: roles.map(mapRoleRecord),
     pagination: buildPagination(page, limit, total),
   }
-}
+};
 
-export async function getRoleColumnOptions(
+export const getRoleColumnOptions = async (
   column: string,
   search?: string,
   limit: number = 50
-): Promise<Array<{ label: string; value: string }>> {
+): Promise<Array<{ label: string; value: string }>> => {
   const where: Prisma.RoleWhereInput = {}
 
   // Apply status filter (default: active - column options thường chỉ cần active items)
@@ -103,9 +103,9 @@ export async function getRoleColumnOptions(
 
   // Map results to options format
   return mapToColumnOptions(results, column)
-}
+};
 
-export async function getAllPermissionsOptions(): Promise<Array<{ label: string; value: string }>> {
+export const getAllPermissionsOptions = async (): Promise<Array<{ label: string; value: string }>> => {
   const { PERMISSIONS } = await import("@/lib/permissions")
   
   // Map resource names to Vietnamese labels
@@ -163,9 +163,9 @@ export async function getAllPermissionsOptions(): Promise<Array<{ label: string;
     })
     .filter((item): item is { label: string; value: string } => item !== null)
     .sort((a, b) => a.label.localeCompare(b.label))
-}
+};
 
-export async function getRoleById(id: string): Promise<RoleDetail | null> {
+export const getRoleById = async (id: string): Promise<RoleDetail | null> => {
   const role = await prisma.role.findUnique({
     where: { id },
   })
@@ -176,7 +176,7 @@ export async function getRoleById(id: string): Promise<RoleDetail | null> {
 
   // mapRoleRecord đã include updatedAt
   return mapRoleRecord(role)
-}
+};;
 
 // Re-export helpers for convenience
 export { mapRoleRecord, type RoleWithRelations } from "./helpers"

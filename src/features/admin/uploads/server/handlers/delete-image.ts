@@ -11,7 +11,7 @@ import { promises as fs } from "fs"
 import { logger } from "@/lib/config"
 import { resolveAndValidateFilePath } from "../utils/path-validation"
 
-export async function deleteImageHandler(req: NextRequest, context: ApiRouteContext) {
+export const deleteImageHandler = async (req: NextRequest, context: ApiRouteContext) => {
   const userId = getUserId(context)
   const { searchParams } = new URL(req.url)
   const relativePath = searchParams.get("path")

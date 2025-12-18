@@ -21,7 +21,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
-import { formatDateVi } from "@/features/admin/users/utils";
+import { formatDateVi } from "@/features/admin/resources/utils";
 import { cn } from "@/lib/utils";
 import {
   useResourceDetailData,

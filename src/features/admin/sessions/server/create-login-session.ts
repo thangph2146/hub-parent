@@ -9,11 +9,11 @@ interface CreateLoginSessionParams {
   ipAddress?: string | null
 }
 
-export async function createLoginSession({
+export const createLoginSession = async ({
   userId,
   userAgent,
   ipAddress,
-}: CreateLoginSessionParams) {
+}: CreateLoginSessionParams) => {
   try {
     // Kiểm tra user tồn tại trước khi tạo session
     const userExists = await prisma.user.findUnique({
@@ -92,5 +92,5 @@ export async function createLoginSession({
     logger.error("Error creating login session", error instanceof Error ? error : new Error(String(error)))
     throw error
   }
-}
+};
 

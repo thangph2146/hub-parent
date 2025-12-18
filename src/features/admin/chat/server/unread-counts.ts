@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/database"
 import { cache } from "react"
 
-export async function getTotalUnreadMessagesCount(userId: string): Promise<number> {
+export const getTotalUnreadMessagesCount = async (userId: string): Promise<number> => {
   const personalUnreadCount = await prisma.message.count({
     where: {
       receiverId: userId,
@@ -40,7 +40,7 @@ export async function getTotalUnreadMessagesCount(userId: string): Promise<numbe
   }
 
   return personalUnreadCount + groupUnreadCount
-}
+};
 
 export const getTotalUnreadMessagesCountCached = cache(getTotalUnreadMessagesCount)
 

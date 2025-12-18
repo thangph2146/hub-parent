@@ -13,7 +13,7 @@ import { logger } from "@/lib/config"
 import { scanDirectoryForImages } from "../utils/image-scanning"
 import { buildFolderTreeFromImages } from "../utils/folder-tree-builder"
 
-export async function listImagesHandler(req: NextRequest, context: ApiRouteContext) {
+export const listImagesHandler = async (req: NextRequest, context: ApiRouteContext) => {
   const userId = getUserId(context)
   const { searchParams } = new URL(req.url)
   const page = parseInt(searchParams.get("page") || "1", 10)

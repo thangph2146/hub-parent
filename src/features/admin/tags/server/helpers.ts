@@ -1,5 +1,4 @@
 import type { Prisma } from "@prisma/client"
-import type { DataTableResult } from "@/components/tables"
 import {
   serializeDate,
   applyStatusFilter,
@@ -7,8 +6,9 @@ import {
   applyDateFilter,
   applyStringFilter,
   applyStatusFilterFromFilters,
+  createSerializeList,
 } from "@/features/admin/resources/server"
-import type { ListTagsInput, ListedTag, TagDetail, ListTagsResult } from "../types"
+import type { ListTagsInput, ListedTag, TagDetail } from "../types"
 import type { TagRow } from "../types"
 
 type TagWithRelations = Prisma.TagGetPayload<Record<string, never>>
@@ -70,15 +70,7 @@ export const serializeTagForTable = (tag: ListedTag | { id: string; name: string
   }
 }
 
-export const serializeTagsList = (data: ListTagsResult): DataTableResult<TagRow> => {
-  return {
-    page: data.pagination.page,
-    limit: data.pagination.limit,
-    total: data.pagination.total,
-    totalPages: data.pagination.totalPages,
-    rows: data.data.map(serializeTagForTable),
-  }
-}
+export const serializeTagsList = createSerializeList(serializeTagForTable)
 
 export const serializeTagDetail = (tag: TagDetail) => {
   return {

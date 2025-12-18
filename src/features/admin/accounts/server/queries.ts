@@ -18,7 +18,7 @@ type _UserWithRoles = Prisma.UserGetPayload<{
   }
 }>
 
-export async function getCurrentUserProfile(userId: string): Promise<AccountProfile | null> {
+export const getCurrentUserProfile = async (userId: string): Promise<AccountProfile | null> => {
   const user = await prisma.user.findUnique({
     where: { id: userId },
     include: {
@@ -53,5 +53,5 @@ export async function getCurrentUserProfile(userId: string): Promise<AccountProf
     updatedAt: user.updatedAt.toISOString(),
     roles: user.userRoles.map((ur) => ur.role),
   }
-}
+};
 

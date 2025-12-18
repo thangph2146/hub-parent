@@ -6,6 +6,7 @@ import {
 import {
   getActorInfo,
   logNotificationError,
+  formatItemNames,
 } from "@/features/admin/notifications/server/notification-helpers";
 import { NotificationKind } from "@prisma/client";
 
@@ -13,18 +14,12 @@ export const formatSessionNames = (
   sessions: Array<{ userName: string | null; userEmail: string }>,
   maxDisplay: number = 3
 ): string => {
-  if (sessions.length === 0) return "";
-
-  const names = sessions.slice(0, maxDisplay).map((s) => {
-    return s.userName || s.userEmail || "Không xác định";
-  });
-
-  if (sessions.length <= maxDisplay) {
-    return names.join(", ");
-  }
-
-  const remaining = sessions.length - maxDisplay;
-  return `${names.join(", ")} và ${remaining} session khác`;
+  return formatItemNames(
+    sessions,
+    (s) => s.userName || s.userEmail || "Không xác định",
+    maxDisplay,
+    "session"
+  );
 };
 
 export const notifySuperAdminsOfSessionAction = async (

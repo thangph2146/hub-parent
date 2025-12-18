@@ -67,12 +67,12 @@ export const generateImageUrlPath = (
 /**
  * Scan directory for images recursively
  */
-export async function scanDirectoryForImages(
+export const scanDirectoryForImages = async (
   dirPath: string,
   basePath: string = "",
   rootFolder: string = "",
   onImageFound?: (image: ScannedImage) => void
-): Promise<ScannedImage[]> {
+): Promise<ScannedImage[]> => {
   const images: ScannedImage[] = []
 
   try {
@@ -116,5 +116,5 @@ export async function scanDirectoryForImages(
   }
 
   return images
-}
+};
 

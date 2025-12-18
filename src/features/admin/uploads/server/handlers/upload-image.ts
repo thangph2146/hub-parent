@@ -19,11 +19,11 @@ import { promises as fs } from "fs"
 import path from "path"
 import { logger } from "@/lib/config"
 
-export async function uploadImageHandler(
+export const uploadImageHandler = async (
   req: NextRequest,
   context: ApiRouteContext,
   formData?: FormData
-) {
+) => {
   const userId = getUserId(context)
 
   logger.info("Upload request received", {

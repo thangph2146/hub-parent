@@ -7,5 +7,6 @@ export {
 } from "./socket-helpers"
 
 export { useRoleColumns } from "./columns"
-export { useRoleRowActions, renderRowActions, type RowActionConfig } from "./row-actions"
+export { useRoleRowActions } from "./row-actions"
+export { renderRowActions, type RowActionConfig } from "@/features/admin/resources/utils/render-row-actions"
 

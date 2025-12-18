@@ -1,5 +1,4 @@
 import type { Prisma } from "@prisma/client"
-import type { DataTableResult } from "@/components/tables"
 import {
   serializeDate,
   applyStatusFilter,
@@ -7,8 +6,9 @@ import {
   applyDateFilter,
   applyStringFilter,
   applyStatusFilterFromFilters,
+  createSerializeList,
 } from "@/features/admin/resources/server"
-import type { ListCategoriesInput, ListedCategory, CategoryDetail, ListCategoriesResult } from "../types"
+import type { ListCategoriesInput, ListedCategory, CategoryDetail } from "../types"
 import type { CategoryRow } from "../types"
 
 type CategoryWithRelations = Prisma.CategoryGetPayload<Record<string, never>>
@@ -72,15 +72,7 @@ export const serializeCategoryForTable = (category: ListedCategory): CategoryRow
   }
 }
 
-export const serializeCategoriesList = (data: ListCategoriesResult): DataTableResult<CategoryRow> => {
-  return {
-    page: data.pagination.page,
-    limit: data.pagination.limit,
-    total: data.pagination.total,
-    totalPages: data.pagination.totalPages,
-    rows: data.data.map(serializeCategoryForTable),
-  }
-}
+export const serializeCategoriesList = createSerializeList(serializeCategoryForTable)
 
 export const serializeCategoryDetail = (category: CategoryDetail) => {
   return {

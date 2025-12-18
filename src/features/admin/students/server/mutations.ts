@@ -30,7 +30,7 @@ import { emitStudentUpsert, emitStudentRemove, emitStudentBatchUpsert } from "./
 export { ApplicationError, ForbiddenError, NotFoundError, type AuthContext }
 export type { BulkActionResult }
 
-export async function createStudent(ctx: AuthContext, input: CreateStudentInput): Promise<ListedStudent> {
+export const createStudent = async (ctx: AuthContext, input: CreateStudentInput): Promise<ListedStudent> => {
   const startTime = Date.now()
   logActionFlow("students", "create", "init", { actorId: ctx.actorId, input: { studentCode: input.studentCode, name: input.name } })
 
@@ -102,7 +102,7 @@ export async function createStudent(ctx: AuthContext, input: CreateStudentInput)
   return sanitized
 }
 
-export async function updateStudent(ctx: AuthContext, id: string, input: UpdateStudentInput): Promise<ListedStudent> {
+export const updateStudent = async (ctx: AuthContext, id: string, input: UpdateStudentInput): Promise<ListedStudent> => {
   const startTime = Date.now()
   logActionFlow("students", "update", "init", { studentId: id, actorId: ctx.actorId })
 
@@ -249,9 +249,9 @@ export async function updateStudent(ctx: AuthContext, id: string, input: UpdateS
   logDetailAction("students", "update", sanitized.id, { ...sanitized, changes } as unknown as Record<string, unknown>)
 
   return sanitized
-}
+};
 
-export async function softDeleteStudent(ctx: AuthContext, id: string): Promise<void> {
+export const softDeleteStudent = async (ctx: AuthContext, id: string): Promise<void> => {
   const startTime = Date.now()
   logActionFlow("students", "delete", "init", { studentId: id, actorId: ctx.actorId })
 
@@ -298,9 +298,9 @@ export async function softDeleteStudent(ctx: AuthContext, id: string): Promise<v
 
   logActionFlow("students", "delete", "success", { studentId: id, studentCode: student.studentCode }, startTime)
   logDetailAction("students", "delete", id, { id: student.id, studentCode: student.studentCode, name: student.name } as unknown as Record<string, unknown>)
-}
+};
 
-export async function bulkSoftDeleteStudents(ctx: AuthContext, ids: string[]): Promise<BulkActionResult> {
+export const bulkSoftDeleteStudents = async (ctx: AuthContext, ids: string[]): Promise<BulkActionResult> => {
   const startTime = Date.now()
   logActionFlow("students", "bulk-delete", "start", { count: ids.length, studentIds: ids, actorId: ctx.actorId })
 
@@ -405,9 +405,9 @@ export async function bulkSoftDeleteStudents(ctx: AuthContext, ids: string[]): P
     : `Đã xóa ${result.count} sinh viên`
   
   return { success: true, message, affected: result.count }
-}
+};
 
-export async function restoreStudent(ctx: AuthContext, id: string): Promise<void> {
+export const restoreStudent = async (ctx: AuthContext, id: string): Promise<void> => {
   const startTime = Date.now()
   logActionFlow("students", "restore", "init", { studentId: id, actorId: ctx.actorId })
 
@@ -447,9 +447,9 @@ export async function restoreStudent(ctx: AuthContext, id: string): Promise<void
 
   logActionFlow("students", "restore", "success", { studentId: id, studentCode: student.studentCode }, startTime)
   logDetailAction("students", "restore", id, { id: student.id, studentCode: student.studentCode, name: student.name } as unknown as Record<string, unknown>)
-}
+};
 
-export async function bulkRestoreStudents(ctx: AuthContext, ids: string[]): Promise<BulkActionResult> {
+export const bulkRestoreStudents = async (ctx: AuthContext, ids: string[]): Promise<BulkActionResult> => {
   const startTime = Date.now()
   logActionFlow("students", "bulk-restore", "start", { count: ids.length, studentIds: ids, actorId: ctx.actorId })
 
@@ -562,9 +562,9 @@ export async function bulkRestoreStudents(ctx: AuthContext, ids: string[]): Prom
   }
 
   return { success: true, message, affected: result.count }
-}
+};
 
-export async function bulkActiveStudents(ctx: AuthContext, ids: string[]): Promise<BulkActionResult> {
+export const bulkActiveStudents = async (ctx: AuthContext, ids: string[]): Promise<BulkActionResult> => {
   const startTime = Date.now()
   logActionFlow("students", "bulk-active", "start", { count: ids.length, studentIds: ids, actorId: ctx.actorId })
 
@@ -663,9 +663,9 @@ export async function bulkActiveStudents(ctx: AuthContext, ids: string[]): Promi
     message,
     affected: result.count,
   }
-}
+};
 
-export async function bulkUnactiveStudents(ctx: AuthContext, ids: string[]): Promise<BulkActionResult> {
+export const bulkUnactiveStudents = async (ctx: AuthContext, ids: string[]): Promise<BulkActionResult> => {
   const startTime = Date.now()
   logActionFlow("students", "bulk-unactive", "start", { count: ids.length, studentIds: ids, actorId: ctx.actorId })
 
@@ -764,9 +764,9 @@ export async function bulkUnactiveStudents(ctx: AuthContext, ids: string[]): Pro
     message,
     affected: result.count,
   }
-}
+};
 
-export async function hardDeleteStudent(ctx: AuthContext, id: string): Promise<void> {
+export const hardDeleteStudent = async (ctx: AuthContext, id: string): Promise<void> => {
   const startTime = Date.now()
   logActionFlow("students", "hard-delete", "init", { studentId: id, actorId: ctx.actorId })
 
@@ -792,9 +792,9 @@ export async function hardDeleteStudent(ctx: AuthContext, id: string): Promise<v
 
   logActionFlow("students", "hard-delete", "success", { studentId: id, studentCode: student.studentCode }, startTime)
   logDetailAction("students", "hard-delete", id, student as unknown as Record<string, unknown>)
-}
+};
 
-export async function bulkHardDeleteStudents(ctx: AuthContext, ids: string[]): Promise<BulkActionResult> {
+export const bulkHardDeleteStudents = async (ctx: AuthContext, ids: string[]): Promise<BulkActionResult> => {
   const startTime = Date.now()
   logActionFlow("students", "bulk-hard-delete", "start", { count: ids.length, studentIds: ids, actorId: ctx.actorId })
 
@@ -880,5 +880,5 @@ export async function bulkHardDeleteStudents(ctx: AuthContext, ids: string[]): P
     : `Đã xóa vĩnh viễn ${result.count} sinh viên`
   
   return { success: true, message, affected: result.count }
-}
+};
 

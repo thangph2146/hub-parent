@@ -10,7 +10,7 @@ import {
 import { mapTagRecord, buildWhereClause } from "./helpers"
 import type { ListTagsInput, TagDetail, ListTagsResult } from "../types"
 
-export async function listTags(params: ListTagsInput = {}): Promise<ListTagsResult> {
+export const listTags = async (params: ListTagsInput = {}): Promise<ListTagsResult> => {
   const { page, limit } = validatePagination(params.page, params.limit, 100)
   const where = buildWhereClause(params)
 
@@ -30,11 +30,11 @@ export async function listTags(params: ListTagsInput = {}): Promise<ListTagsResu
   }
 }
 
-export async function getTagColumnOptions(
+export const getTagColumnOptions = async (
   column: string,
   search?: string,
   limit: number = 50
-): Promise<Array<{ label: string; value: string }>> {
+): Promise<Array<{ label: string; value: string }>> => {
   const where: Prisma.TagWhereInput = {}
 
   // Apply status filter (default: active - column options thường chỉ cần active items)
@@ -76,9 +76,9 @@ export async function getTagColumnOptions(
 
   // Map results to options format
   return mapToColumnOptions(results, column)
-}
+};
 
-export async function getTagById(id: string): Promise<TagDetail | null> {
+export const getTagById = async (id: string): Promise<TagDetail | null> => {
   const tag = await prisma.tag.findUnique({
     where: { id },
   })
@@ -89,9 +89,9 @@ export async function getTagById(id: string): Promise<TagDetail | null> {
 
   // mapTagRecord đã include updatedAt
   return mapTagRecord(tag)
-}
+};
 
-export async function getActiveTagsForSelect(limit: number = 100): Promise<Array<{ label: string; value: string }>> {
+export const getActiveTagsForSelect = async (limit: number = 100): Promise<Array<{ label: string; value: string }>> => {
   const tags = await prisma.tag.findMany({
     where: {
       deletedAt: null,
@@ -110,5 +110,5 @@ export async function getActiveTagsForSelect(limit: number = 100): Promise<Array
     label: tag.name,
     value: tag.id,
   }))
-}
+};
 

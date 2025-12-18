@@ -14,10 +14,10 @@ import {
   type AuthContext,
 } from "@/features/admin/resources/server"
 
-export async function updateCurrentUserAccount(
+export const updateCurrentUserAccount = async (
   ctx: AuthContext,
   input: UpdateAccountInput
-): Promise<AccountProfile> {
+): Promise<AccountProfile> => {
   const userId = ctx.actorId
 
   if (!userId) {
@@ -63,5 +63,5 @@ export async function updateCurrentUserAccount(
   }
 
   return updated
-}
+};
 
