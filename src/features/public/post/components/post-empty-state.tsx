@@ -3,7 +3,7 @@
  * Server Component - không cần client-side logic
  */
 import { FileText, Search } from "lucide-react"
-import { typography, headerConfig, iconSizes } from "@/lib/typography"
+import { typography, iconSizes } from "@/lib/typography"
 
 export const PostEmptyState = () => {
   return (
