@@ -222,9 +222,9 @@ export const ManageMembersDialog = ({
                           </div>
                           <Button size="sm" variant="secondary" disabled={isProcessing === user.id} onClick={() => handleAddMember(user.id)}>
                             {isProcessing === user.id ? (
-                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              <Loader2 className={`mr-2 ${iconSizes.sm} animate-spin`} />
                             ) : (
-                              <UserPlus className="mr-2 h-4 w-4" />
+                              <UserPlus className={`mr-2 ${iconSizes.sm}`} />
                             )}
                             Thêm
                           </Button>

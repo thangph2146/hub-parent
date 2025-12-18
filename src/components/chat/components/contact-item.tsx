@@ -3,7 +3,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { CardDescription, CardTitle } from "@/components/ui/card"
 import { Trash2 } from "lucide-react"
-import { typography, iconSizes } from "@/lib/typography"
+import { typography, iconSizes, responsiveIconSizes } from "@/lib/typography"
 import type { Contact } from "../types"
 import { formatTime } from "../utils"
 
@@ -25,7 +25,7 @@ export function ContactItem({ contact, isSelected, onClick }: ContactItemProps) 
       >
         <div className="flex items-center gap-3">
           <div className="relative shrink-0">
-            <Avatar className="h-12 w-12">
+            <Avatar className={`${responsiveIconSizes.large} sm:${iconSizes["3xl"]}`}>
               <AvatarImage src={contact.image || undefined} alt={contact.name} />
               <AvatarFallback className={typography.body.medium}>{contact.name[0]}</AvatarFallback>
             </Avatar>

@@ -518,7 +518,7 @@ export const UsersTableClient = ({
       }}
       className={`h-8 px-3 ${typography.body.small}`}
     >
-      <Plus className="mr-2 h-5 w-5" />
+      <Plus className={`mr-2 ${iconSizes.md}`} />
       {USER_LABELS.ADD_NEW}
     </Button>
   ) : undefined

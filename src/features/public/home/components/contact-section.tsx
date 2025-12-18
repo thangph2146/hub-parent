@@ -5,7 +5,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { typography } from "@/lib/typography";
+import { iconSizes, typography } from "@/lib/typography";
 
 export interface FeatureItem {
   icon: ReactNode;
@@ -75,7 +75,7 @@ export const ContactSection = ({
               <div className="space-y-2 sm:space-y-3">
                 {contactInfo.items.map((item, index) => (
                   <div key={index} className="flex items-center gap-2 sm:gap-3">
-                    <div className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0">{item.icon}</div>
+                    <div className={`${iconSizes.sm} sm:${iconSizes.md} text-primary flex-shrink-0`}>{item.icon}</div>
                     <span className={`${typography.body.small} break-words`}>{item.text}</span>
                   </div>
                 ))}

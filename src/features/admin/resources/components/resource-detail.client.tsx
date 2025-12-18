@@ -24,7 +24,7 @@ import { useResourceSegment } from "@/hooks/use-resource-segment";
 import { applyResourceSegmentToPath } from "@/lib/permissions";
 import { useResourceNavigation } from "../hooks";
 import { logger } from "@/lib/config/logger";
-import { typography } from "@/lib/typography";
+import { typography, headerConfig } from "@/lib/typography";
 
 export interface ResourceDetailField<T = unknown> {
   name: keyof T | string;
@@ -321,7 +321,7 @@ export const ResourceDetailClient = <T extends Record<string, unknown>>({
       return (
         <Card key={sectionId} className="h-fit">
           <CardHeader className="pb-3">
-            <CardTitle className={`${typography.heading.h4} font-semibold`}>
+            <CardTitle className={`${headerConfig.card.className}`}>
               {sectionInfo?.title || "Thông tin chi tiết"}
             </CardTitle>
             {sectionInfo?.description && (

@@ -6,7 +6,7 @@ import { DayPicker } from "react-day-picker";
 
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
-import { typography } from "@/lib/typography";
+import { typography, iconSizes } from "@/lib/typography";
 
 export type CalendarProps = React.ComponentProps<typeof DayPicker>;
 
@@ -60,10 +60,12 @@ function Calendar({
 
   const defaultComponents = {
     Chevron: (props: { className?: string; size?: number; disabled?: boolean; orientation?: "left" | "right" | "up" | "down" }) => {
+      // Use iconSizes.xl (h-7 w-7 = 28px) for calendar navigation icons
+      const iconSize = 28; // 28px matches iconSizes.xl
       if (props.orientation === "left") {
-        return <ChevronLeft size={28} strokeWidth={2.5} {...props} aria-hidden="true" />;
+        return <ChevronLeft size={iconSize} strokeWidth={2.5} className={iconSizes.xl} {...props} aria-hidden="true" />;
       }
-      return <ChevronRight size={28} strokeWidth={2.5} {...props} aria-hidden="true" />;
+      return <ChevronRight size={iconSize} strokeWidth={2.5} className={iconSizes.xl} {...props} aria-hidden="true" />;
     },
   };
 

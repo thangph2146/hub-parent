@@ -318,9 +318,9 @@ export function NotificationBell() {
                 className={`h-8 ${typography.body.small}`}
               >
                 {markAllAsRead.isPending ? (
-                  <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+                  <Loader2 className={`mr-1 ${iconSizes.xs} animate-spin`} />
                 ) : (
-                  <CheckCheck className="mr-1 h-3 w-3" />
+                  <CheckCheck className={`mr-1 ${iconSizes.xs}`} />
                 )}
                 Đánh dấu tất cả đã đọc
               </Button>
@@ -332,18 +332,18 @@ export function NotificationBell() {
           {connectionError && !isSocketConnected && (
             <div className={`border-b bg-yellow-50/50 px-4 py-2 ${typography.body.small} text-yellow-700 dark:bg-yellow-950/20 dark:text-yellow-300`}>
               <div className="flex items-center gap-2">
-                <WifiOff className="h-3 w-3" />
+                <WifiOff className={iconSizes.xs} />
                 <span>Đang sử dụng chế độ offline. Thông báo có thể không cập nhật real-time.</span>
               </div>
             </div>
           )}
           {isLoading ? (
             <div className="flex items-center justify-center p-8">
-              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+              <Loader2 className={`${iconSizes.lg} animate-spin text-muted-foreground`} />
             </div>
           ) : ownedNotifications.length === 0 ? (
             <div className="flex flex-col items-center justify-center p-8 text-center">
-              <Bell className="mb-2 h-12 w-12 text-muted-foreground opacity-50" />
+              <Bell className={`mb-2 ${iconSizes["4xl"]} text-muted-foreground opacity-50`} />
               <p className={`${typography.body.medium} font-medium`}>Không có thông báo</p>
               <p className={`mt-1 ${typography.body.muted.small}`}>
                 Bạn sẽ nhận thông báo tại đây khi có cập nhật mới
@@ -438,7 +438,7 @@ export function NotificationBell() {
                 }}
               >
                 <span>Xem tất cả thông báo</span>
-                <ArrowRight className="ml-2 h-5 w-5" />
+                <ArrowRight className={`ml-2 ${iconSizes.md}`} />
               </Button>
             </div>
           </>

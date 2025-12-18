@@ -6,6 +6,7 @@
 "use client"
 
 import { motion } from "framer-motion"
+import { typography } from "@/lib/typography"
 
 const letters = ["L", "O", "A", "D", "I", "N", "G"]
 
@@ -42,7 +43,7 @@ function Cube({ letter, index }: CubeProps) {
     >
       {/* Front face - có chữ */}
       <motion.div
-        className="absolute inset-0 flex items-center justify-center border border-gray-200 bg-white text-xl font-bold text-black sm:text-2xl md:text-3xl"
+        className={`absolute inset-0 flex items-center justify-center border border-gray-200 bg-white ${typography.body.medium} font-bold text-black`}
         style={{
           transform: `translateZ(${cubeDepth}px)`,
         }}

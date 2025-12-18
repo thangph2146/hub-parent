@@ -354,7 +354,7 @@ export function ImageUpload({
             ) : (
               <>
                 <div className="rounded-full bg-muted p-4 mb-4">
-                  <Upload className="h-8 w-8 text-muted-foreground" />
+                  <Upload className={`${iconSizes["2xl"]} text-muted-foreground`} />
                 </div>
                 <p className={`${typography.body.medium} font-medium mb-1`}>
                   Kéo thả hình ảnh vào đây hoặc click để chọn
@@ -384,7 +384,7 @@ export function ImageUpload({
             disabled={disabled}
             className="mt-2"
           >
-            <ImageIcon className="h-4 w-4 mr-2" />
+            <ImageIcon className={`${iconSizes.sm} mr-2`} />
             Chọn hình ảnh
           </Button>
         </div>

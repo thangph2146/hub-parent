@@ -5,7 +5,7 @@ import Image from "next/image"
 import { Calendar, Tag, ArrowRight, FolderOpen } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
-import { typography, iconSizes } from "@/lib/typography"
+import { typography, iconSizes, responsiveIconSizes } from "@/lib/typography"
 import type { Post } from "@/features/public/post/types"
 import { formatPostDate } from "@/features/public/post/utils/date-formatter"
 
@@ -57,7 +57,7 @@ export function PostCard({ post, className, priority = false }: PostCardProps) {
           </div>
         ) : (
           <div className="aspect-video w-full bg-gradient-to-br from-muted to-muted/50 flex items-center justify-center">
-            <FolderOpen className="h-12 w-12 text-muted-foreground/50" />
+            <FolderOpen className={`${iconSizes["4xl"]} text-muted-foreground/50`} />
           </div>
         )}
         
@@ -88,7 +88,7 @@ export function PostCard({ post, className, priority = false }: PostCardProps) {
           {/* Read Now Button */}
           <div className="mt-auto flex items-center gap-2 text-primary font-medium group-hover:gap-3 transition-all">
             <span>Đọc ngay</span>
-            <ArrowRight className={`${iconSizes.sm} transition-transform group-hover:translate-x-1`} />
+            <ArrowRight className={`${responsiveIconSizes.small} transition-transform group-hover:translate-x-1`} />
           </div>
         </div>
       </Link>
@@ -96,7 +96,7 @@ export function PostCard({ post, className, priority = false }: PostCardProps) {
       {/* Tags */}
       {displayTags.length > 0 && (
         <div className="flex flex-wrap items-center gap-2 p-4 border-t">
-          <Tag className="h-3.5 w-3.5 text-muted-foreground" />
+          <Tag className={`${iconSizes.xs} text-muted-foreground`} />
           {displayTags.map((tag) => (
             <Badge key={tag.id} variant="outline" className={typography.body.small}>
               {tag.name}

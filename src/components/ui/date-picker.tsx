@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { useClientOnly } from "@/hooks/use-client-only"
-import { typography, iconSizes } from "@/lib/typography"
+import { typography, iconSizes, textSizes } from "@/lib/typography"
 
 interface DatePickerProps {
   date?: Date
@@ -225,7 +225,7 @@ export function DatePicker({
                   </option>
                 ))}
               </select>
-              <span className="text-sm font-medium text-muted-foreground">/</span>
+              <span className={`${typography.body.small} font-medium text-muted-foreground`}>/</span>
               <select
                 value={currentYear}
                 onChange={handleYearChange}
@@ -272,7 +272,7 @@ export function DatePicker({
               <ScrollArea className="h-full">
                 <div className="space-y-3">
                   <div className="flex h-5 shrink-0 items-center px-5">
-                    <p className="text-sm font-medium">
+                    <p className={`${typography.body.small} font-medium`}>
                       {currentDate ? format(currentDate, "EEEE, d", { locale: vi }) : format(today, "EEEE, d", { locale: vi })}
                     </p>
                   </div>
@@ -307,7 +307,7 @@ export function DatePicker({
       <Button
         variant="outline"
         className={cn(
-          "h-8 w-full justify-start text-left text-xs font-normal",
+          `h-8 w-full justify-start text-left ${typography.body.small} font-normal`,
           !hasValue && "text-muted-foreground",
           className,
         )}
@@ -370,7 +370,7 @@ export function DatePicker({
                   </option>
                 ))}
               </select>
-              <span className="text-sm font-medium text-muted-foreground">/</span>
+              <span className={`${typography.body.small} font-medium text-muted-foreground`}>/</span>
               <select
                 value={currentYear}
                 onChange={handleYearChange}
@@ -413,7 +413,7 @@ export function DatePicker({
           {enableTime && (
             <div className="border-t bg-muted/30">
               <div className="px-4 py-3 space-y-2.5">
-                <label className="text-xs font-medium text-foreground block">Thời gian</label>
+                <label className={`${typography.body.small} font-medium text-foreground block`}>Thời gian</label>
                 <div className="flex items-end gap-2 justify-center">
                   <div className="flex flex-col items-center gap-1.5">
                     <label htmlFor="time-hour" className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
@@ -433,12 +433,12 @@ export function DatePicker({
                         const val = Math.max(0, Math.min(23, parseInt(e.target.value) || 0))
                         handleTimeInputChange("hour", val)
                       }}
-                      className="h-10 w-16 text-center text-base font-semibold"
+                      className={`h-10 w-16 text-center ${typography.body.medium} font-semibold`}
                       placeholder="00"
                       disabled={disabled}
                     />
                   </div>
-                  <span className="text-xl font-bold text-muted-foreground pb-1.5 leading-none">:</span>
+                  <span className={`${textSizes.xl} font-bold text-muted-foreground pb-1.5 leading-none`}>:</span>
                   <div className="flex flex-col items-center gap-1.5">
                     <label htmlFor="time-minute" className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
                       Phút
@@ -457,14 +457,14 @@ export function DatePicker({
                         const val = Math.max(0, Math.min(59, parseInt(e.target.value) || 0))
                         handleTimeInputChange("minute", val)
                       }}
-                      className="h-10 w-16 text-center text-base font-semibold"
+                      className={`h-10 w-16 text-center ${typography.body.medium} font-semibold`}
                       placeholder="00"
                       disabled={disabled}
                     />
                   </div>
                   {showSeconds && (
                     <>
-                      <span className="text-xl font-bold text-muted-foreground pb-1.5 leading-none">:</span>
+                      <span className={`${textSizes.xl} font-bold text-muted-foreground pb-1.5 leading-none`}>:</span>
                       <div className="flex flex-col items-center gap-1.5">
                         <label htmlFor="time-second" className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
                           Giây
@@ -483,7 +483,7 @@ export function DatePicker({
                             const val = Math.max(0, Math.min(59, parseInt(e.target.value) || 0))
                             handleTimeInputChange("second", val)
                           }}
-                          className="h-10 w-16 text-center text-base font-semibold"
+                          className={`h-10 w-16 text-center ${typography.body.medium} font-semibold`}
                           placeholder="00"
                           disabled={disabled}
                         />
@@ -499,7 +499,7 @@ export function DatePicker({
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-8 w-full text-xs"
+                className={`h-8 w-full ${typography.body.small}`}
                 onClick={() => {
                   setInternalDate(undefined)
                   setTimeInputs({ hour: 0, minute: 0, second: 0 })

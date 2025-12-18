@@ -34,7 +34,7 @@ import { appFeatures } from "@/lib/config/app-features";
 import { getResourceMainRoute } from "@/lib/permissions/route-helpers";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
-import { typography, iconSizes } from "@/lib/typography";
+import { typography, iconSizes, responsiveIconSizes } from "@/lib/typography";
 
 /**
  * Helper functions để lấy routes từ appFeatures
@@ -175,15 +175,15 @@ export function PublicHeader() {
             className="dark:bg-foreground rounded-md p-1 flex items-center gap-2"
             aria-label="Trang chủ - Trường Đại học Ngân hàng TP.HCM"
           >
-            <Logo className="h-10 w-10 sm:h-11 sm:w-11 text-blue-100" />  
+            <Logo className={`${iconSizes["2xl"]} sm:${iconSizes["3xl"]} text-blue-100`} />  
           </Link>
           <div>
-            <h3 className={`${typography.heading.h5} text-center`}>
+            <h3 className={`${typography.heading.h6} text-center`}>
               Trường Đại học Ngân hàng
             </h3>
-            <p className={`${typography.body.medium} font-medium`}>Thành Phố Hồ Chí Minh</p>
+            <p className={`${typography.body.small} font-medium`}>Thành Phố Hồ Chí Minh</p>
           </div>
-          <Separator orientation="vertical" className="h-4" />
+          <Separator orientation="vertical" className={`h-6 w-px bg-border`} />
           {mounted ? (
             <NavigationMenu className="hidden md:flex">
               <NavigationMenuList>
@@ -310,8 +310,8 @@ export function PublicHeader() {
                   onClick={() => setOpen(false)}
                 >
                   <Link href="/auth/sign-in">
-                    <div className="bg-primary/10 flex aspect-square size-10 items-center justify-center rounded-md">
-                      <LogIn className="text-primary size-5 text-primary-foreground" />
+                    <div className={`bg-primary/10 flex aspect-square ${iconSizes["2xl"]} items-center justify-center rounded-md`}>
+                      <LogIn className={`text-primary ${iconSizes.md} text-primary-foreground`} />
                     </div>
                     <div className="flex flex-col items-start">
                       <span className="font-semibold">Đăng nhập</span>
@@ -328,8 +328,8 @@ export function PublicHeader() {
                   onClick={() => setOpen(false)}
                 >
                   <Link href="/auth/sign-up">
-                    <div className="bg-muted flex aspect-square size-10 items-center justify-center rounded-md">
-                      <UserPlus className="text-foreground size-5 text-foreground-primary" />
+                    <div className={`bg-muted flex aspect-square ${responsiveIconSizes.large} items-center justify-center rounded-md`}>
+                      <UserPlus className={`text-foreground ${responsiveIconSizes.medium} text-foreground-primary`} />
                     </div>
                     <div className="flex flex-col items-start">
                       <span className="font-semibold">Đăng ký</span>
@@ -355,18 +355,18 @@ export function PublicHeader() {
                       <Link
                         key={link.href}
                         href={link.href}
-                        className="w-full flex flex-row gap-x-3 hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground rounded-lg p-3 transition-colors"
+                        className="group w-full flex flex-row gap-x-3 hover:bg-accent hover:text-accent-foreground focus-visible:bg-accent focus-visible:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-lg p-3 transition-colors active:bg-accent/80"
                         onClick={() => setOpen(false)}
                       >
-                        <div className="bg-background/40 flex aspect-square size-11 items-center justify-center rounded-lg border shadow-sm shrink-0">
-                          <link.icon className="text-foreground size-5" />
+                        <div className="bg-background/40 flex aspect-square size-11 items-center justify-center rounded-lg border shadow-sm shrink-0 group-hover:bg-background/60 transition-colors">
+                          <link.icon className={`text-foreground group-hover:text-accent-foreground group-focus-visible:text-accent-foreground ${responsiveIconSizes.medium} transition-colors`} />
                         </div>
                         <div className="flex flex-col items-start justify-center min-w-0 flex-1">
-                          <span className={`font-medium ${typography.body.medium}`}>
+                          <span className={`${typography.body.medium} group-hover:text-accent-foreground group-focus-visible:text-accent-foreground transition-colors`}>
                             {link.title}
                           </span>
                           {link.description && (
-                            <span className={typography.body.muted.small}>
+                            <span className={`${typography.body.small} group-hover:text-accent-foreground/80 group-focus-visible:text-accent-foreground transition-colors`}>
                               {link.description}
                             </span>
                           )}
@@ -396,18 +396,18 @@ export function PublicHeader() {
                           <Link
                             key={link.href}
                             href={link.href}
-                            className="w-full flex flex-row gap-x-3 hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground rounded-lg p-3 transition-colors"
+                            className="group w-full flex flex-row gap-x-3 hover:bg-accent hover:text-accent-foreground focus-visible:bg-accent focus-visible:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-lg p-3 transition-colors active:bg-accent/80"
                             onClick={() => setOpen(false)}
                           >
-                            <div className="bg-background/40 flex aspect-square size-11 items-center justify-center rounded-lg border shadow-sm shrink-0">
-                              <link.icon className="text-foreground size-5" />
+                            <div className="bg-background/40 flex aspect-square size-11 items-center justify-center rounded-lg border shadow-sm shrink-0 group-hover:bg-background/60 transition-colors">
+                              <link.icon className={`text-foreground group-hover:text-accent-foreground group-focus-visible:text-accent-foreground ${responsiveIconSizes.medium} transition-colors`} />
                             </div>
                             <div className="flex flex-col items-start justify-center min-w-0 flex-1">
-                              <span className={`font-medium ${typography.body.medium}`}>
+                              <span className={`${typography.body.medium} group-hover:text-accent-foreground group-focus-visible:text-accent-foreground transition-colors`}>
                                 {link.title}
                               </span>
                               {link.description && (
-                                <span className={typography.body.muted.small}>
+                                <span className={`${typography.body.small} group-hover:text-accent-foreground/80 group-focus-visible:text-accent-foreground transition-colors`}>
                                   {link.description}
                                 </span>
                               )}
@@ -488,10 +488,10 @@ function ListItem({
     >
       <Link href={href}>
         <div className="bg-background/40 flex aspect-square size-12 items-center justify-center rounded-md border shadow-sm">
-          <Icon className="text-foreground group-hover:text-accent-foreground group-focus:text-accent-foreground group-data-[active]:text-accent-foreground size-5 transition-colors" />
+          <Icon className={`text-foreground group-hover:text-accent-foreground group-focus:text-accent-foreground group-data-[active]:text-accent-foreground ${responsiveIconSizes.medium}`} />
         </div>
         <div className="flex flex-col items-start justify-center">
-          <span className="font-medium">{title}</span>
+          <span className={`font-medium ${typography.body.medium}`}>{title}</span>
           {description && <span className={typography.body.small}>{description}</span>}
         </div>
       </Link>

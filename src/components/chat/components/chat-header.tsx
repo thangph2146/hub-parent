@@ -77,7 +77,7 @@ function ChatHeader(
             <ArrowLeft className={iconSizes.sm} />
           </Button>
         )}
-        <Avatar className="h-10 w-10 shrink-0">
+        <Avatar className={`${iconSizes["2xl"]} shrink-0`}>
           <AvatarImage src={contact.image || undefined} alt={contact.name} />
           <AvatarFallback className={typography.body.small}>{contact.name[0]}</AvatarFallback>
         </Avatar>

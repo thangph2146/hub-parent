@@ -18,7 +18,7 @@ import Link from "next/link";
 import { appConfig } from "@/lib/config";
 import { appFeatures } from "@/lib/config/app-features";
 import { getResourceMainRoute } from "@/lib/permissions/route-helpers";
-import { typography, headerConfig, iconSizes } from "@/lib/typography";
+import { typography, headerConfig, iconSizes, responsiveIconSizes } from "@/lib/typography";
 import { Logo } from "../../../../public/svg/Logo"
 
 /**
@@ -71,13 +71,13 @@ export function PublicFooter() {
                 <Logo className="h-28 w-28 text-blue-100" />
               </div>
               <div className="space-y-2">
-                <h2 className={`${headerConfig.section.className} text-white`}>
+                <h2 className={`${headerConfig.subsection.className}`}>
                   Trường Đại học Ngân hàng
                 </h2>
-                <p className={`${typography.body.medium} text-blue-100 font-medium`}>
+                <p className={`${typography.body.medium}`}>
                   Thành Phố Hồ Chí Minh
                 </p>
-                <p className={`${typography.body.muted.medium} text-white/70 leading-relaxed max-w-md`}>
+                <p className={`${typography.body.small}`}>
                   {appConfig.description}
                 </p>
               </div>
@@ -87,8 +87,8 @@ export function PublicFooter() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {/* Locations */}
               <div className="space-y-2">
-                <h3 className={`${typography.heading.h4} font-semibold text-white flex items-center gap-2 mb-1`}>
-                  <Building2 className={`${iconSizes.md} text-blue-400`} />
+                <h3 className={`${headerConfig.card.className} text-white flex items-center gap-2 mb-1`}>
+                  <Building2 className={`${responsiveIconSizes.medium} text-blue-400`} />
                   Cơ sở đào tạo
                 </h3>
                 <div className="space-y-4">
@@ -120,8 +120,8 @@ export function PublicFooter() {
 
               {/* Contact Details */}
               <div className="space-y-2 mb-2">
-                <h3 className={`${typography.heading.h4} font-semibold text-white flex items-center gap-2 mb-1`}>
-                  <GraduationCap className="h-5 w-5 text-blue-400" />
+                <h3 className={`${headerConfig.card.className} text-white flex items-center gap-2 mb-1`}>
+                  <GraduationCap className={`${responsiveIconSizes.medium} text-blue-400`} />
                   Liên hệ
                 </h3>
                 <div className="space-y-2">
@@ -129,8 +129,8 @@ export function PublicFooter() {
                     href="mailto:dhnhtphcm@hub.edu.vn"
                     className="flex items-center gap-3 text-white/80 hover:text-white transition-all duration-200 group mb-1"
                   >
-                    <div className="h-10 w-10 rounded-lg bg-white/10 flex items-center justify-center group-hover:bg-white/20 transition-colors">
-                      <Mail className="h-4 w-4 text-blue-400" />
+                    <div className={`${responsiveIconSizes.large} rounded-lg bg-white/10 flex items-center justify-center group-hover:bg-white/20 transition-colors`}>
+                      <Mail className={`${iconSizes.sm} text-blue-400`} />
                     </div>
                     <div>
                       <p className={`${typography.body.medium} font-medium`}>Email</p>
@@ -142,8 +142,8 @@ export function PublicFooter() {
                     href="tel:0888353488"
                     className="flex items-center gap-3 text-white/80 hover:text-white transition-all duration-200 group mb-1"
                   >
-                    <div className="h-10 w-10 rounded-lg bg-white/10 flex items-center justify-center group-hover:bg-white/20 transition-colors">
-                      <Phone className="h-4 w-4 text-blue-400" />
+                    <div className={`${responsiveIconSizes.large} rounded-lg bg-white/10 flex items-center justify-center group-hover:bg-white/20 transition-colors`}>
+                      <Phone className={`${iconSizes.sm} text-blue-400`} />
                     </div>
                     <div>
                       <p className={`${typography.body.medium} font-medium`}>Tuyển sinh</p>
@@ -155,8 +155,8 @@ export function PublicFooter() {
                     href="tel:02838212430"
                     className="flex items-center gap-3 text-white/80 hover:text-white transition-all duration-200 group mb-1"
                   >
-                    <div className="h-10 w-10 rounded-lg bg-white/10 flex items-center justify-center group-hover:bg-white/20 transition-colors">
-                      <Phone className="h-4 w-4 text-blue-400" />
+                    <div className={`${responsiveIconSizes.large} rounded-lg bg-white/10 flex items-center justify-center group-hover:bg-white/20 transition-colors`}>
+                      <Phone className={`${iconSizes.sm} text-blue-400`} />
                     </div>
                     <div>
                       <p className={`${typography.body.medium} font-medium`}>Đào tạo</p>
@@ -172,7 +172,7 @@ export function PublicFooter() {
           <div className="space-y-2 mb-2">
             {/* Quick Links */}
             <div className="space-y-6">
-              <h3 className={`${typography.heading.h4} font-semibold text-white flex items-center gap-2 mb-1`}>
+              <h3 className={`${headerConfig.card.className} text-white flex items-center gap-2 mb-1`}>
                 <div className="h-1 w-8 rounded-full bg-white" />
                 Liên kết nhanh
               </h3>
@@ -181,21 +181,21 @@ export function PublicFooter() {
                   href={FOOTER_ROUTES.home}
                   className="flex items-center gap-2 text-white/80 hover:text-white transition-all duration-200 group mb-1"
                 >
-                  <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                  <ArrowRight className={`${iconSizes.sm} group-hover:translate-x-1 transition-transform`} />
                   <span className={typography.body.medium}>Trang chủ</span>
                 </Link>
                 <Link
                   href={FOOTER_ROUTES.blog}
                   className="flex items-center gap-2 text-white/80 hover:text-white transition-all duration-200 group mb-1"
                 >
-                  <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                  <ArrowRight className={`${iconSizes.sm} group-hover:translate-x-1 transition-transform`} />
                   <span className={typography.body.medium}>Blog</span>
                 </Link>
                 <Link
                   href={FOOTER_ROUTES.categories}
                   className="flex items-center gap-2 text-white/80 hover:text-white transition-all duration-200 group mb-1"
                 >
-                  <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                  <ArrowRight className={`${iconSizes.sm} group-hover:translate-x-1 transition-transform`} />
                   <span className={typography.body.medium}>Danh mục</span>
                 </Link>
               </nav>
@@ -203,7 +203,7 @@ export function PublicFooter() {
 
             {/* Resources */}
             <div className="space-y-2 mb-2">
-              <h3 className={`${typography.heading.h4} font-semibold text-white flex items-center gap-2 mb-1`}>
+              <h3 className={`${headerConfig.card.className} text-white flex items-center gap-2 mb-1`}>
                 <div className="h-1 w-8 rounded-full bg-white" />
                 Tài nguyên
               </h3>
@@ -212,28 +212,28 @@ export function PublicFooter() {
                   href={FOOTER_ROUTES.admin}
                   className="flex items-center gap-2 text-white/80 hover:text-white transition-all duration-200 group mb-1"
                 >
-                  <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                  <ArrowRight className={`${iconSizes.sm} group-hover:translate-x-1 transition-transform`} />
                   <span className={typography.body.medium}>Quản trị</span>
                 </Link>
                 <Link
                   href="#"
                   className="flex items-center gap-2 text-white/80 hover:text-white transition-all duration-200 group mb-1"
                 >
-                  <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                  <ArrowRight className={`${iconSizes.sm} group-hover:translate-x-1 transition-transform`} />
                   <span className={typography.body.medium}>Hướng dẫn sử dụng</span>
                 </Link>
                 <Link
                   href="#"
                   className="flex items-center gap-2 text-white/80 hover:text-white transition-all duration-200 group mb-1"
                 >
-                  <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                  <ArrowRight className={`${iconSizes.sm} group-hover:translate-x-1 transition-transform`} />
                   <span className={typography.body.medium}>Điều khoản dịch vụ</span>
                 </Link>
                 <Link
                   href="#"
                   className="flex items-center gap-2 text-white/80 hover:text-white transition-all duration-200 group mb-1"
                 >
-                  <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                  <ArrowRight className={`${iconSizes.sm} group-hover:translate-x-1 transition-transform`} />
                   <span className={typography.body.medium}>Chính sách bảo mật</span>
                 </Link>
               </nav>
@@ -241,7 +241,7 @@ export function PublicFooter() {
 
             {/* Social Media */}
             <div className="space-y-2 mb-2">
-              <h3 className={`${typography.heading.h4} font-semibold text-white flex items-center gap-2 mb-1`}>
+              <h3 className={`${headerConfig.card.className} text-white flex items-center gap-2 mb-1`}>
                 <div className="h-1 w-8 rounded-full bg-white" />
                 Kết nối
               </h3>
@@ -254,7 +254,7 @@ export function PublicFooter() {
                     aria-label="Facebook - Trường Đại học Ngân hàng TP.HCM"
                     className="group flex items-center justify-center h-12 w-12 rounded-xl bg-white/10 hover:bg-blue-500/20 transition-all duration-300 hover:scale-110"
                   >
-                    <Facebook className="h-5 w-5 text-white/80 group-hover:text-white" />
+                    <Facebook className={`${responsiveIconSizes.medium} text-white/80 group-hover:text-white`} />
                   </Link>
                 )}
                 {appConfig.social.twitter && (
@@ -265,7 +265,7 @@ export function PublicFooter() {
                     aria-label="Twitter - Trường Đại học Ngân hàng TP.HCM"
                     className="group flex items-center justify-center h-12 w-12 rounded-xl bg-white/10 hover:bg-sky-500/20 transition-all duration-300 hover:scale-110"
                   >
-                    <Twitter className="h-5 w-5 text-white/80 group-hover:text-white" />
+                    <Twitter className={`${responsiveIconSizes.medium} text-white/80 group-hover:text-white`} />
                   </Link>
                 )}
                 {appConfig.social.linkedin && (
@@ -276,7 +276,7 @@ export function PublicFooter() {
                     aria-label="LinkedIn - Trường Đại học Ngân hàng TP.HCM"
                     className="group flex items-center justify-center h-12 w-12 rounded-xl bg-white/10 hover:bg-blue-600/20 transition-all duration-300 hover:scale-110"
                   >
-                    <Linkedin className="h-5 w-5 text-white/80 group-hover:text-white" />
+                    <Linkedin className={`${responsiveIconSizes.medium} text-white/80 group-hover:text-white`} />
                   </Link>
                 )}
                 <Link
@@ -286,7 +286,7 @@ export function PublicFooter() {
                   aria-label="Instagram - Trường Đại học Ngân hàng TP.HCM"
                   className="group flex items-center justify-center h-12 w-12 rounded-xl bg-white/10 hover:bg-pink-500/20 transition-all duration-300 hover:scale-110"
                 >
-                  <Instagram className="h-5 w-5 text-white/80 group-hover:text-white" />
+                  <Instagram className={`${responsiveIconSizes.medium} text-white/80 group-hover:text-white`} />
                 </Link>
                 <Link
                   href={appConfig.social.youtube}
@@ -295,7 +295,7 @@ export function PublicFooter() {
                   aria-label="YouTube - Trường Đại học Ngân hàng TP.HCM"
                   className="group flex items-center justify-center h-12 w-12 rounded-xl bg-white/10 hover:bg-red-500/20 transition-all duration-300 hover:scale-110"
                 >
-                  <Youtube className="h-5 w-5 text-white/80 group-hover:text-white" />
+                  <Youtube className={`${responsiveIconSizes.medium} text-white/80 group-hover:text-white`} />
                 </Link>
               </div>
             </div>
@@ -331,7 +331,7 @@ export function PublicFooter() {
               className={`hover:text-white transition-colors flex items-center gap-1 ${typography.body.medium}`}
             >
               Trợ giúp
-              <ExternalLink className="h-3 w-3" />
+              <ExternalLink className={iconSizes.xs} />
             </Link>
           </div>
         </div>

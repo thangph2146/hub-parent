@@ -36,7 +36,7 @@ import {
 import { resourceLogger } from "@/lib/config/resource-logger";
 import { usePermissions } from "@/hooks/use-permissions";
 import { PERMISSIONS } from "@/lib/permissions";
-import { typography, iconSizes } from "@/lib/typography";
+import { typography, iconSizes, headerConfig } from "@/lib/typography";
 
 export interface PostDetailData {
   id: string;
@@ -139,7 +139,7 @@ export const PostDetailClient = ({
               )}
 
               <div className="space-y-2">
-                <h2 className={`${typography.heading.h2} leading-tight`}>
+                <h2 className={`${headerConfig.section.className} leading-tight`}>
                   {postData.title || "Chưa có tiêu đề"}
                 </h2>
                 {postData.excerpt && (
