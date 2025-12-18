@@ -38,10 +38,6 @@ export function ModeToggle() {
           <Moon className={`mr-2 ${iconSizes.md}`} />
           <span>Tối</span>
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("system")} className="data-[highlighted]:bg-accent/10 disabled:opacity-50">
-          <Monitor className={`mr-2 ${iconSizes.md}`} />
-          <span>Theo hệ thống</span>
-        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   )
