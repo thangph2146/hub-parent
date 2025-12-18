@@ -86,6 +86,8 @@ export const viewport: Viewport = {
   width: appConfig.viewport.width,
   initialScale: appConfig.viewport.initialScale,
   maximumScale: appConfig.viewport.maximumScale,
+  // Prevent zoom on input focus (mobile UX best practice)
+  userScalable: true,
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "#ffffff" },
     { media: "(prefers-color-scheme: dark)", color: "#000000" },
