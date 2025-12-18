@@ -508,10 +508,10 @@ export function MultipleImageUpload({
                       <AlertCircle className={`${iconSizes.sm} text-destructive flex-shrink-0`} />
                     )}
                     {item.status === "processing" && (
-                      <Loader2 className="h-4 w-4 animate-spin text-primary flex-shrink-0" />
+                      <Loader2 className={`${iconSizes.sm} animate-spin text-primary flex-shrink-0`} />
                     )}
                     {item.status === "uploading" && (
-                      <Loader2 className="h-4 w-4 animate-spin text-primary flex-shrink-0" />
+                      <Loader2 className={`${iconSizes.sm} animate-spin text-primary flex-shrink-0`} />
                     )}
                   </div>
 
@@ -534,11 +534,11 @@ export function MultipleImageUpload({
                   type="button"
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8 flex-shrink-0"
+                  className={`${iconSizes["2xl"]} flex-shrink-0`}
                   onClick={() => handleRemove(item.id)}
                   disabled={item.status === "uploading" || item.status === "processing"}
                 >
-                  <X className="h-4 w-4" />
+                  <X className={iconSizes.sm} />
                 </Button>
               </div>
             ))}

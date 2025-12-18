@@ -112,14 +112,6 @@ export const useNotificationColumns = ({
       {
         accessorKey: "isRead",
         header: "Trạng thái",
-        filter: {
-          type: "select",
-          placeholder: "Chọn trạng thái...",
-          options: [
-            { label: NOTIFICATION_LABELS.READ, value: "true" },
-            { label: NOTIFICATION_LABELS.UNREAD, value: "false" },
-          ],
-        },
         className: "min-w-[140px] max-w-[180px]",
         headerClassName: "min-w-[140px] max-w-[180px]",
         cell: (row) => {

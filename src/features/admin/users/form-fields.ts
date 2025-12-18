@@ -3,6 +3,7 @@ import { validateEmail, validateName, validatePassword } from "./utils"
 import type { Role } from "./utils"
 import React from "react"
 import { Mail, User, Shield, AlignLeft, Phone, MapPin, ToggleLeft, Lock } from "lucide-react"
+import { iconSizes } from "@/lib/typography"
 
 export interface UserFormData {
   email: string
@@ -48,7 +49,7 @@ export const getBaseUserFields = (roles: Role[], roleDefaultValue = ""): Resourc
       placeholder: "email@example.com",
       required: true,
       validate: validateEmail,
-      icon: React.createElement(Mail, { className: "h-4 w-4" }),
+      icon: React.createElement(Mail, { className: iconSizes.sm }),
       section: "login",
     },
     {
@@ -57,7 +58,7 @@ export const getBaseUserFields = (roles: Role[], roleDefaultValue = ""): Resourc
       type: "text",
       placeholder: "Nhập tên",
       validate: validateName,
-      icon: React.createElement(User, { className: "h-4 w-4" }),
+      icon: React.createElement(User, { className: iconSizes.sm }),
       section: "personal",
     },
     {
@@ -65,7 +66,7 @@ export const getBaseUserFields = (roles: Role[], roleDefaultValue = ""): Resourc
       label: "Số điện thoại",
       type: "text",
       placeholder: "Nhập số điện thoại",
-      icon: React.createElement(Phone, { className: "h-4 w-4" }),
+      icon: React.createElement(Phone, { className: iconSizes.sm }),
       section: "personal",
     },
     {
@@ -73,7 +74,7 @@ export const getBaseUserFields = (roles: Role[], roleDefaultValue = ""): Resourc
       label: "Giới thiệu",
       type: "textarea",
       placeholder: "Nhập giới thiệu về người dùng",
-      icon: React.createElement(AlignLeft, { className: "h-4 w-4" }),
+      icon: React.createElement(AlignLeft, { className: iconSizes.sm }),
       section: "additional",
     },
     {
@@ -81,7 +82,7 @@ export const getBaseUserFields = (roles: Role[], roleDefaultValue = ""): Resourc
       label: "Địa chỉ",
       type: "textarea",
       placeholder: "Nhập địa chỉ",
-      icon: React.createElement(MapPin, { className: "h-4 w-4" }),
+      icon: React.createElement(MapPin, { className: iconSizes.sm }),
       section: "additional",
     },
     {
@@ -95,7 +96,7 @@ export const getBaseUserFields = (roles: Role[], roleDefaultValue = ""): Resourc
         value: role.id,
       })),
       defaultValue: roleDefaultValue,
-      icon: React.createElement(Shield, { className: "h-4 w-4" }),
+      icon: React.createElement(Shield, { className: iconSizes.sm }),
       section: "access",
     },
     {
@@ -104,7 +105,7 @@ export const getBaseUserFields = (roles: Role[], roleDefaultValue = ""): Resourc
       description: "Bật/tắt để kích hoạt hoặc vô hiệu hóa người dùng",
       type: "switch",
       defaultValue: true,
-      icon: React.createElement(ToggleLeft, { className: "h-4 w-4" }),
+      icon: React.createElement(ToggleLeft, { className: iconSizes.sm }),
       section: "access",
     }
   ]
@@ -118,7 +119,7 @@ export const getPasswordField = (): ResourceFormField<UserFormData> => ({
   required: true,
   description: "Mật khẩu phải có ít nhất 6 ký tự",
   validate: (value) => validatePassword(value, false),
-  icon: React.createElement(Lock, { className: "h-4 w-4" }),
+  icon: React.createElement(Lock, { className: iconSizes.sm }),
   section: "login",
 })
 
@@ -130,7 +131,7 @@ export const getPasswordEditField = (): ResourceFormField<UserFormData> => ({
   description: "Chỉ nhập nếu muốn thay đổi mật khẩu. Để trống để giữ nguyên mật khẩu hiện tại.",
   required: false,
   validate: (value) => validatePassword(value, true),
-  icon: React.createElement(Lock, { className: "h-4 w-4" }),
+  icon: React.createElement(Lock, { className: iconSizes.sm }),
   section: "login",
 })
 

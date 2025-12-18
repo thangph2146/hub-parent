@@ -599,7 +599,7 @@ export function NavUser({ className }: { className?: string }) {
                   {primaryRole?.displayName || primaryRole?.name || user.email}
                 </span>
               </div>
-              <ChevronsUpDown className="ml-auto size-4" />
+              <ChevronsUpDown className={`ml-auto ${iconSizes.sm} opacity-50`} />
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           {dropdownMenuContent}

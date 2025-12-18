@@ -18,7 +18,7 @@ import { useClientOnly } from "@/hooks/use-client-only"
 import { usePermissions } from "@/hooks/use-permissions"
 import { PERMISSIONS, isSuperAdmin } from "@/lib/permissions"
 import { cn } from "@/lib/utils"
-import { typography } from "@/lib/typography"
+import { typography, iconSizes, responsiveIconSizes, headerConfig } from "@/lib/typography"
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -194,7 +194,7 @@ export const DashboardWelcome = () => {
             <div className="space-y-4">
               <div className="flex items-center gap-3 flex-wrap">
                 <motion.h1
-                  className={`${typography.heading.h1} leading-tight`}
+                  className={`${headerConfig.main.className} leading-tight`}
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.6 }}
@@ -216,7 +216,7 @@ export const DashboardWelcome = () => {
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.3, duration: 0.6 }}
               >
-                <Calendar className="h-5 w-5" />
+                <Calendar className={responsiveIconSizes.medium} />
                 {currentDate}
               </motion.p>
               <motion.div
@@ -235,7 +235,7 @@ export const DashboardWelcome = () => {
                     "hover:scale-105 hover:shadow-xl transition-all duration-300"
                   )}
                 >
-                  <RoleIcon className="h-5 w-5" />
+                  <RoleIcon className={responsiveIconSizes.medium} />
                   <span>{roleInfo.label}</span>
                 </Badge>
                 <span className={typography.body.muted.medium}>
@@ -256,7 +256,7 @@ export const DashboardWelcome = () => {
             <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-primary/5 to-background" />
             <CardHeader className="relative z-10">
               <CardTitle className={`flex items-center gap-2 ${typography.title.large}`}>
-                <CheckCircle2 className="h-6 w-6 text-primary" />
+                <CheckCircle2 className={`${iconSizes.lg} text-primary`} />
                 {isSuperAdminUser ? "Quyền truy cập đầy đủ" : "Quyền truy cập của bạn"}
               </CardTitle>
               <CardDescription className={`${typography.body. medium} text-muted-foreground`}>
@@ -276,14 +276,14 @@ export const DashboardWelcome = () => {
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: 0.1 * index }}
                     >
-                      <CheckCircle2 className="h-4 w-4 text-[#00cc44] dark:text-[#00ff88] flex-shrink-0" />
+                      <CheckCircle2 className={`${iconSizes.sm} text-[#00cc44] dark:text-[#00ff88] flex-shrink-0`} />
                       <span className={typography.body.muted.medium}>{item.label}</span>
                     </motion.div>
                   ))}
                 </div>
               ) : (
                 <div className="text-center py-4 text-muted-foreground">
-                  <AlertCircle className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                  <AlertCircle className={`${iconSizes["2xl"]} mx-auto mb-2 opacity-50`} />
                   <p>Bạn chưa có quyền truy cập vào bất kỳ tính năng nào.</p>
                   <p className={`${typography.body.muted.small} mt-1`}>Vui lòng liên hệ quản trị viên để được cấp quyền.</p>
                 </div>

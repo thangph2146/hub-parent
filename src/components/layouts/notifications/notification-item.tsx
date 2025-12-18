@@ -186,7 +186,7 @@ export function NotificationItem({
               {notification.title}
             </h4>
             {!notification.isRead && (
-              <div className="h-2 w-2 flex-shrink-0 rounded-full bg-primary" />
+              <div className={`${iconSizes.xs} flex-shrink-0 rounded-full bg-primary`} />
             )}
           </div>
 
@@ -226,12 +226,12 @@ export function NotificationItem({
               >
                 {notification.isRead ? (
                   <>
-                    <EyeOff className="h-3.5 w-3.5" />
+                    <EyeOff className={iconSizes.xs} />
                     <span className="hidden sm:inline">Chưa đọc</span>
                   </>
                 ) : (
                   <>
-                    <CheckCircle2 className="h-3.5 w-3.5" />
+                    <CheckCircle2 className={iconSizes.xs} />
                     <span className="hidden sm:inline">Đã đọc</span>
                   </>
                 )}

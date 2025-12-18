@@ -6,7 +6,7 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { X } from "lucide-react"
 
 import { cn } from "@/lib/utils"
-import { iconSizes } from "@/lib/typography"
+import { iconSizes, typography } from "@/lib/typography"
 
 const ToastProvider = ToastPrimitives.Provider
 
@@ -102,7 +102,7 @@ const ToastTitle = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <ToastPrimitives.Title
     ref={ref}
-    className={cn("text-sm font-semibold", className)}
+    className={cn(`${typography.body.small} font-semibold`, className)}
     {...props}
   />
 ))
@@ -114,7 +114,7 @@ const ToastDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <ToastPrimitives.Description
     ref={ref}
-    className={cn("text-sm opacity-90", className)}
+    className={cn(`${typography.body.small} opacity-90`, className)}
     {...props}
   />
 ))

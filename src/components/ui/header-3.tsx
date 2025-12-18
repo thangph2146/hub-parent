@@ -3,7 +3,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { MenuToggleIcon } from '@/components/ui/menu-toggle-icon';
-import { typography, iconSizes } from '@/lib/typography';
+import { typography, iconSizes, responsiveIconSizes } from '@/lib/typography';
 import { createPortal } from 'react-dom';
 import {
 	NavigationMenu,
@@ -63,7 +63,7 @@ export function Header() {
 			<nav className="mx-auto flex h-14 w-full max-w-5xl items-center justify-between px-4">
 				<div className="flex items-center gap-5">
 					<a href="#" className="hover:bg-accent rounded-md p-2">
-						<WordmarkIcon className="h-4" />
+						<WordmarkIcon className={iconSizes.sm} />
 					</a>
 					<NavigationMenu className="hidden md:flex">
 						<NavigationMenuList>
@@ -141,11 +141,11 @@ export function Header() {
 			<MobileMenu open={open} className="flex flex-col justify-between gap-2 overflow-y-auto">
 				<NavigationMenu className="max-w-full">
 					<div className="flex w-full flex-col gap-y-2">
-						<span className="text-sm">Product</span>
+						<span className={typography.body.small}>Product</span>
 						{productLinks.map((link) => (
 							<ListItem key={link.title} {...link} />
 						))}
-						<span className="text-sm">Company</span>
+						<span className={typography.body.small}>Company</span>
 						{companyLinks.map((link) => (
 							<ListItem key={link.title} {...link} />
 						))}
@@ -208,11 +208,11 @@ function ListItem({
 		<NavigationMenuLink className={cn('w-full flex flex-row gap-x-2 data-[active=true]:focus:bg-accent data-[active=true]:hover:bg-accent data-[active=true]:bg-accent/50 data-[active=true]:text-accent-foreground hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground rounded-sm p-2', className)} {...props} asChild>
 			<a href={href}>
 				<div className="bg-background/40 flex aspect-square size-12 items-center justify-center rounded-md border shadow-sm">
-					<Icon className="text-foreground size-5" />
+					<Icon className={`text-foreground ${responsiveIconSizes.medium}`} />
 				</div>
 				<div className="flex flex-col items-start justify-center">
-					<span className="font-medium">{title}</span>
-					<span className="text-muted-foreground text-xs">{description}</span>
+					<span className={`${typography.body.medium} font-medium`}>{title}</span>
+					<span className={`text-muted-foreground ${typography.body.small}`}>{description}</span>
 				</div>
 			</a>
 		</NavigationMenuLink>

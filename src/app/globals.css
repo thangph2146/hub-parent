@@ -275,6 +275,18 @@
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
   }
+  
+  /* Reduce layout shifts on mobile */
+  img {
+    height: auto;
+    max-width: 100%;
+  }
+  
+  /* Optimize scrolling on mobile */
+  html {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
 }
 
 @layer utilities {

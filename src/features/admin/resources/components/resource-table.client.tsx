@@ -19,7 +19,7 @@ import {
 import { ChevronDown } from "lucide-react"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { useDebouncedCallback } from "@/hooks/use-debounced-callback"
-import { typography } from "@/lib/typography"
+import { headerConfig, typography } from "@/lib/typography"
 import type {
   ResourceTableLoader,
   ResourceViewMode,
@@ -229,7 +229,7 @@ export const ResourceTableClient = <T extends object>({
       {(title || viewModes.length > 1 || headerActions) && (
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0">
           {title ? (
-            <h2 className={`${typography.heading.h4} truncate`}>{title}</h2>
+            <h2 className={`${headerConfig.card.className} truncate`}>{title}</h2>
           ) : (
             <span />
           )}

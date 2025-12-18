@@ -1,6 +1,6 @@
 "use client"
 
-import { typography } from "@/lib/typography"
+import { iconSizes, typography } from "@/lib/typography"
 
 import { useCallback, useMemo, useState } from "react"
 import { RotateCcw, Trash2, AlertTriangle, Plus, CheckCircle2, XCircle } from "lucide-react"
@@ -582,7 +582,7 @@ export const StudentsTableClient = ({
       onClick={() => router.push("/admin/students/new")}
       className={`h-8 px-3 ${typography.body.small}`}
     >
-      <Plus className="mr-2 h-5 w-5" />
+      <Plus className={`mr-2 ${iconSizes.md}`} />
       {STUDENT_LABELS.ADD_NEW}
     </Button>
   ) : undefined

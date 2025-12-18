@@ -1,9 +1,25 @@
 "use client"
 
-import { Editor } from "@/components/editor/editor-x/editor"
+import dynamic from "next/dynamic"
 import { typography } from "@/lib/typography"
 import { Card } from "@/components/ui/card"
 import type { SerializedEditorState } from "lexical"
+
+// Lazy load Editor component to reduce initial bundle size for mobile
+// Editor contains Lexical which is a large library
+const Editor = dynamic(
+  () => import("@/components/editor/editor-x/editor").then(mod => ({ default: mod.Editor })),
+  {
+    ssr: true, // Keep SSR for SEO
+    loading: () => (
+      <Card className="border border-border/50 bg-card p-6">
+        <div className={`${typography.body.muted.medium} text-center`}>
+          Đang tải nội dung...
+        </div>
+      </Card>
+    ),
+  }
+)
 
 interface PostContentProps {
   content: unknown

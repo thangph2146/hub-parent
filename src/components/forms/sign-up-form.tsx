@@ -181,9 +181,9 @@ export function SignUpForm({
                     disabled={isLoading}
                   >
                     {showConfirmPassword ? (
-                      <EyeOff className="h-4 w-4 text-muted-foreground" />
+                      <EyeOff className={`${iconSizes.sm} text-muted-foreground`} />
                     ) : (
-                      <Eye className="h-4 w-4 text-muted-foreground" />
+                      <Eye className={`${iconSizes.sm} text-muted-foreground`} />
                     )}
                   </Button>
                 </div>

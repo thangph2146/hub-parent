@@ -38,7 +38,7 @@ export const Timeline = ({ data }: { data: TimelineEntry[] }) => {
       ref={containerRef}
     >
       <div className="container mx-auto py-20">
-        <h2 className="text-lg md:text-4xl mb-4 text-black dark:text-white max-w-4xl">
+        <h2 className={`${typography.heading.h2} mb-4 text-black dark:text-white max-w-4xl`}>
           Changelog from my journey
         </h2>
         <p className={`text-neutral-700 dark:text-neutral-300 max-w-sm ${typography.body.small} md:${typography.body.medium}`}>

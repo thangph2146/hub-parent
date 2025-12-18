@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Send } from "lucide-react"
-import { iconSizes } from "@/lib/typography"
+import { iconSizes, responsiveIconSizes } from "@/lib/typography"
 import type { Contact, Message } from "../types"
 import { ReplyBanner } from "./reply-banner"
 import { GroupDeletedBanner } from "./group-deleted-banner"
@@ -76,7 +76,7 @@ function ChatInput(
         <Button
           variant="ghost"
           size="icon"
-          className="h-9 w-9 shrink-0 mb-0.5"
+          className={`${responsiveIconSizes.medium} shrink-0 mb-0.5`}
           onClick={handleSendMessage}
           disabled={!messageInput.trim() || isDisabled}
         >

@@ -32,7 +32,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { cn } from "@/lib/utils"
 import { renderFieldInput } from "./form-fields"
 import { applyResourceSegmentToPath } from "@/lib/permissions"
-import { typography, iconSizes } from "@/lib/typography"
+import { typography, iconSizes, headerConfig } from "@/lib/typography"
 
 export interface ResourceFormField<T = unknown> {
   name: keyof T | string
@@ -491,7 +491,7 @@ export const ResourceForm = <T extends Record<string, unknown>>({
         {(sectionInfo?.title || sectionInfo?.description) && (
           <div className="space-y-1.5 pb-2 border-b border-border/50">
             {sectionInfo.title && (
-              <h3 className={`${typography.heading.h4} font-semibold`}>{sectionInfo.title}</h3>
+              <h3 className={`${headerConfig.card.className}`}>{sectionInfo.title}</h3>
             )}
             {sectionInfo.description && (
               <p className={typography.body.muted.medium}>{sectionInfo.description}</p>
