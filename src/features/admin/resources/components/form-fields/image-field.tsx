@@ -11,8 +11,7 @@ import { ImageIcon, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Image from "next/image"
 import { cn } from "@/lib/utils"
-import { iconSizes } from "@/lib/typography"
-import { TypographySpanMuted, TypographySpanSmallMuted } from "@/components/ui/typography"
+import { TypographySpanMuted, TypographySpanSmallMuted, IconSize } from "@/components/ui/typography"
 
 export interface ImageFieldProps {
   value: unknown
@@ -67,7 +66,9 @@ export const ImageField = ({
               disabled={disabled}
               aria-label="Xóa hình ảnh"
             >
-              <X className={iconSizes.sm} />
+              <IconSize size="sm">
+                <X />
+              </IconSize>
             </Button>
           )}
         </div>
@@ -91,7 +92,9 @@ export const ImageField = ({
         {hasImage && imageError && (
           <div className="relative w-full rounded-lg border border-destructive/50 overflow-hidden bg-destructive/5">
             <div className="aspect-video w-full flex flex-col items-center justify-center gap-2 p-4 text-destructive">
-              <ImageIcon className={iconSizes["2xl"]} />
+              <IconSize size="2xl">
+                <ImageIcon />
+              </IconSize>
               <TypographySpanMuted className="font-medium">Không thể tải hình ảnh</TypographySpanMuted>
               <TypographySpanSmallMuted>Vui lòng kiểm tra lại URL</TypographySpanSmallMuted>
             </div>

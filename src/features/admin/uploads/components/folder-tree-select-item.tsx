@@ -8,8 +8,7 @@ import { Button } from "@/components/ui/button"
 import { CommandItem } from "@/components/ui/command"
 import { Folder, ChevronRight, Check } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { iconSizes } from "@/lib/typography"
-import { TypographySpanSmall } from "@/components/ui/typography"
+import { TypographySpanSmall, IconSize } from "@/components/ui/typography"
 import type { FolderTreeSelectNode } from "../utils/folder-utils"
 
 interface FolderTreeSelectItemProps {
@@ -45,14 +44,13 @@ export const FolderTreeSelectItem = ({
         }}
         className={cn("flex items-center gap-2", level > 0 && "ml-4")}
       >
-        <Check
-          className={cn(
-            iconSizes.sm, "rounded-sm hover:text-foreground",
-            isSelected ? "opacity-100" : "opacity-0"
-          )}
-        />
+        <IconSize size="sm" className={cn("rounded-sm hover:text-foreground", isSelected ? "opacity-100" : "opacity-0")}>
+          <Check />
+        </IconSize>
         {!hasChildren && <div className="w-4" />}
-        <Folder className={cn(iconSizes.sm, "hover:text-foreground")} />
+        <IconSize size="sm">
+          <Folder className="hover:text-foreground" />
+        </IconSize>
         <span className="flex-1">{node.name}</span>
 
         {hasChildren && (
@@ -74,12 +72,9 @@ export const FolderTreeSelectItem = ({
             className="w-fit px-2 flex items-center justify-end gap-2 hover:bg-muted/10 rounded-sm"
           >
             <TypographySpanSmall>{node.path}</TypographySpanSmall>
-            <ChevronRight
-              className={cn(
-                iconSizes.lg, "transition-transform hover:text-foreground",
-                isOpen && "rotate-90"
-              )}
-            />
+            <IconSize size="lg" className={cn("transition-transform hover:text-foreground", isOpen && "rotate-90")}>
+              <ChevronRight />
+            </IconSize>
           </Button>
         )}
       </CommandItem>

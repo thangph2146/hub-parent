@@ -1,5 +1,5 @@
 import type { ReactNode } from "react"
-import { typography } from "@/lib/typography"
+import { TypographySpanSmall, TypographySpanSmallMuted } from "@/components/ui/typography"
 
 interface SelectionActionsWrapperProps {
   label: ReactNode
@@ -13,13 +13,13 @@ export const SelectionActionsWrapper = ({
   actions,
 }: SelectionActionsWrapperProps) => {
   return (
-    <div className={`flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 ${typography.body.small}`}>
+    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
       <div className="flex-shrink-0">
-        <span className="block sm:inline">{label}</span>
+        <TypographySpanSmall className="block sm:inline">{label}</TypographySpanSmall>
         {labelSuffix && (
-          <span className={`block sm:inline ml-0 sm:ml-2 mt-1 sm:mt-0 ${typography.body.muted.small}`}>
+          <TypographySpanSmallMuted className="block sm:inline ml-0 sm:ml-2 mt-1 sm:mt-0">
             {labelSuffix}
-          </span>
+          </TypographySpanSmallMuted>
         )}
       </div>
       <div className="flex items-center gap-2 flex-wrap">{actions}</div>

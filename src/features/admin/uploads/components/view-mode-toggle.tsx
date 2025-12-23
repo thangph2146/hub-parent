@@ -5,7 +5,7 @@
 
 import { Button } from "@/components/ui/button"
 import { Folder, List } from "lucide-react"
-import { iconSizes } from "@/lib/typography"
+import { IconSize } from "@/components/ui/typography"
 
 interface ViewModeToggleProps {
   viewMode: "flat" | "tree"
@@ -22,7 +22,9 @@ export const ViewModeToggle = ({ viewMode, onViewModeChange }: ViewModeTogglePro
         onClick={() => onViewModeChange("tree")}
         className="px-2 gap-1"
       >
-        <Folder className={iconSizes.sm} />
+        <IconSize size="sm">
+          <Folder />
+        </IconSize>
         <span className="inline">Thư mục</span>
       </Button>
       <Button
@@ -32,7 +34,9 @@ export const ViewModeToggle = ({ viewMode, onViewModeChange }: ViewModeTogglePro
         onClick={() => onViewModeChange("flat")}
         className="px-2 gap-1"
       >
-        <List className={iconSizes.sm} />
+        <IconSize size="sm">
+          <List />
+        </IconSize>
         <span className="inline">Danh sách</span>
       </Button>
     </div>

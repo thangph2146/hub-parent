@@ -5,7 +5,7 @@ import { formatMessageTime } from "../utils"
 import { highlightText } from "../utils/text-helpers"
 import { isMessageReadByUser } from "../utils/message-helpers"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { typography } from "@/lib/typography"
+import { TypographyPSmall, TypographyP } from "@/components/ui/typography"
 
 interface MessageBubbleProps {
   message: Message
@@ -84,11 +84,11 @@ export function MessageBubble({
           }}
         >
           {showSenderInfo && (
-            <p className={`${typography.body.small} font-medium mb-1 ${
+            <TypographyPSmall className={`font-medium mb-1 ${
               isOwnMessage ? "text-primary-foreground/80" : "text-muted-foreground"
             }`}>
               {senderName}
-            </p>
+            </TypographyPSmall>
           )}
           {parentMessage && (
             <div
@@ -112,27 +112,27 @@ export function MessageBubble({
                 }
               }}
             >
-              <p className={`${typography.body.small} font-medium ${
+              <TypographyPSmall className={`font-medium ${
                 isOwnMessage ? "text-primary-foreground/80" : "text-muted-foreground"
               }`}>
                 {isParentOwnMessage ? "You" : "Reply"}
-              </p>
-              <p className={`${typography.body.small} truncate ${
+              </TypographyPSmall>
+              <TypographyPSmall className={`truncate ${
                 isOwnMessage ? "text-primary-foreground/60" : "text-muted-foreground/80"
               }`}>
                 {searchQuery ? highlightText(parentMessage.content, searchQuery) : parentMessage.content}
-              </p>
+              </TypographyPSmall>
             </div>
           )}
-          <p className={`${typography.body.medium} break-words`}>
+          <TypographyP className="break-words">
             {searchQuery ? highlightText(message.content, searchQuery) : message.content}
-          </p>
+          </TypographyP>
           <div className="flex items-center justify-between gap-2 mt-1">
-            <p className={`${typography.body.small} ${
+            <TypographyPSmall className={`${
               isOwnMessage ? "text-primary-foreground/70" : "text-muted-foreground"
             }`}>
               {formatMessageTime(message.timestamp)}
-            </p>
+            </TypographyPSmall>
             {isOwnMessage && message.status === "sending" && (
               <span className="text-[10px] text-primary-foreground/70">
                 Đang gửi...
@@ -140,14 +140,16 @@ export function MessageBubble({
             )}
             {canMarkRead && (
               <button
-                className={`opacity-0 group-hover:opacity-100 transition-opacity ${typography.body.small} px-2 py-1 rounded ${
+                className={`opacity-0 group-hover:opacity-100 transition-opacity px-2 py-1 rounded ${
                   isReadByCurrentUser
                     ? "text-muted-foreground hover:text-foreground"
                     : "text-primary hover:text-primary/80"
                 }`}
                 title={isReadByCurrentUser ? "Đánh dấu chưa đọc" : "Đánh dấu đã đọc"}
               >
-                {isReadByCurrentUser ? "✓ Đã đọc" : "○ Chưa đọc"}
+                <TypographyPSmall>
+                  {isReadByCurrentUser ? "✓ Đã đọc" : "○ Chưa đọc"}
+                </TypographyPSmall>
               </button>
             )}
           </div>
