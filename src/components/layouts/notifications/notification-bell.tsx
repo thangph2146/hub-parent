@@ -18,8 +18,7 @@ import { NotificationItem } from "./notification-item"
 import { Separator } from "@/components/ui/separator"
 import { isSuperAdmin } from "@/lib/permissions"
 import { logger } from "@/lib/config/logger"
-import { typography, iconSizes } from "@/lib/typography"
-import { TypographyH3 } from "@/components/ui/typography"
+import { TypographyH3, TypographyP, TypographyPSmall, TypographyPSmallMuted, TypographySpanSmall, IconSize } from "@/components/ui/typography"
 
 export function NotificationBell() {
   const router = useRouter()
@@ -254,9 +253,11 @@ export function NotificationBell() {
           className="relative"
           aria-label="Thông báo"
         >
-          <Bell className={iconSizes.md} />
+          <IconSize size="md">
+            <Bell />
+          </IconSize>
           {data && data.unreadCount > 0 && (
-            <span className={`absolute -top-1 -right-1 flex ${iconSizes.md} items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground`}>
+            <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground">
               {data.unreadCount > 99 ? "99+" : data.unreadCount}
             </span>
           )}
@@ -271,9 +272,13 @@ export function NotificationBell() {
           <div className="flex items-center gap-2">
             <TypographyH3>Thông báo</TypographyH3>
             {isSocketConnected ? (
-              <Wifi className={`${iconSizes.sm} text-green-500`} />
+              <IconSize size="sm">
+                <Wifi className="text-green-500" />
+              </IconSize>
             ) : (
-              <WifiOff className={`${iconSizes.sm} text-muted-foreground`} />
+              <IconSize size="sm">
+                <WifiOff className="text-muted-foreground" />
+              </IconSize>
             )}
           </div>
           <div className="flex items-center gap-2">
@@ -316,14 +321,18 @@ export function NotificationBell() {
                   markAllAsRead.mutate()
                 }}
                 disabled={markAllAsRead.isPending}
-                className={`h-8 ${typography.body.small}`}
+                className="h-8"
               >
                 {markAllAsRead.isPending ? (
-                  <Loader2 className={`mr-1 ${iconSizes.xs} animate-spin`} />
+                  <IconSize size="xs" className="mr-1">
+                    <Loader2 className="animate-spin" />
+                  </IconSize>
                 ) : (
-                  <CheckCheck className={`mr-1 ${iconSizes.xs}`} />
+                  <IconSize size="xs" className="mr-1">
+                    <CheckCheck />
+                  </IconSize>
                 )}
-                Đánh dấu tất cả đã đọc
+                <TypographySpanSmall>Đánh dấu tất cả đã đọc</TypographySpanSmall>
               </Button>
             )}
           </div>
@@ -331,24 +340,30 @@ export function NotificationBell() {
 
         <div className="max-h-[400px] overflow-y-auto">
           {connectionError && !isSocketConnected && (
-            <div className={`border-b bg-yellow-50/50 px-4 py-2 ${typography.body.small} text-yellow-700 dark:bg-yellow-950/20 dark:text-yellow-300`}>
+            <div className="border-b bg-yellow-50/50 px-4 py-2 text-yellow-700 dark:bg-yellow-950/20 dark:text-yellow-300">
               <div className="flex items-center gap-2">
-                <WifiOff className={iconSizes.xs} />
-                <span>Đang sử dụng chế độ offline. Thông báo có thể không cập nhật real-time.</span>
+                <IconSize size="xs">
+                  <WifiOff />
+                </IconSize>
+                <TypographyPSmall>Đang sử dụng chế độ offline. Thông báo có thể không cập nhật real-time.</TypographyPSmall>
               </div>
             </div>
           )}
           {isLoading ? (
             <div className="flex items-center justify-center p-8">
-              <Loader2 className={`${iconSizes.lg} animate-spin text-muted-foreground`} />
+              <IconSize size="lg">
+                <Loader2 className="animate-spin text-muted-foreground" />
+              </IconSize>
             </div>
           ) : ownedNotifications.length === 0 ? (
             <div className="flex flex-col items-center justify-center p-8 text-center">
-              <Bell className={`mb-2 ${iconSizes["4xl"]} text-muted-foreground opacity-50`} />
-              <p className={`${typography.body.medium} font-medium`}>Không có thông báo</p>
-              <p className={`mt-1 ${typography.body.muted.small}`}>
+              <IconSize size="4xl">
+                <Bell className="mb-2 text-muted-foreground opacity-50" />
+              </IconSize>
+              <TypographyP className="font-medium">Không có thông báo</TypographyP>
+              <TypographyPSmallMuted className="mt-1">
                 Bạn sẽ nhận thông báo tại đây khi có cập nhật mới
-              </p>
+              </TypographyPSmallMuted>
             </div>
           ) : (
             <div className="divide-y">
@@ -439,7 +454,9 @@ export function NotificationBell() {
                 }}
               >
                 <span>Xem tất cả thông báo</span>
-                <ArrowRight className={`ml-2 ${iconSizes.md}`} />
+                <IconSize size="md" className="ml-2">
+                  <ArrowRight />
+                </IconSize>
               </Button>
             </div>
           </>

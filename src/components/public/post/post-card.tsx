@@ -5,7 +5,7 @@ import Image from "next/image"
 import { Calendar, Tag, ArrowRight, FolderOpen } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
-import { typography, iconSizes, responsiveIconSizes } from "@/lib/typography"
+import { TypographyH4, TypographySpanSmall, TypographyPMuted, IconSize } from "@/components/ui/typography"
 import type { Post } from "@/features/public/post/types"
 import { formatPostDate } from "@/features/public/post/utils/date-formatter"
 
@@ -57,7 +57,9 @@ export function PostCard({ post, className, priority = false }: PostCardProps) {
           </div>
         ) : (
           <div className="aspect-video w-full bg-gradient-to-br from-muted to-muted/50 flex items-center justify-center">
-            <FolderOpen className={`${iconSizes["4xl"]} text-muted-foreground/50`} />
+            <IconSize size="4xl">
+              <FolderOpen className="text-muted-foreground/50" />
+            </IconSize>
           </div>
         )}
         
@@ -65,22 +67,24 @@ export function PostCard({ post, className, priority = false }: PostCardProps) {
         <div className="flex flex-col flex-1 p-6">
           {/* Category Badge */}
           {primaryCategory && primaryCategory.name && (
-            <Badge variant="secondary" className={`w-fit mb-3 ${typography.body.small} font-medium`}>
-              {primaryCategory.name}
+            <Badge variant="secondary" className="w-fit mb-3 font-medium">
+              <TypographySpanSmall>{primaryCategory.name}</TypographySpanSmall>
             </Badge>
           )}
 
           {/* Title */}
-          <h3 className={`${typography.heading.h4} font-semibold mb-3 line-clamp-2 group-hover:text-primary transition-colors`}>
+          <TypographyH4 className="font-semibold mb-3 line-clamp-2 group-hover:text-primary transition-colors">
             {post.title}
-          </h3>
+          </TypographyH4>
 
           {/* Date */}
           {post.publishedAt && (
-            <div className={`flex items-center gap-1.5 ${typography.body.muted.medium} mb-4`}>
-              <Calendar className={iconSizes.sm} />
+            <div className="flex items-center gap-1.5 mb-4">
+              <IconSize size="sm">
+                <Calendar />
+              </IconSize>
               <time dateTime={getPublishedAtISO()}>
-                {formatPostDate(post.publishedAt)}
+                <TypographyPMuted>{formatPostDate(post.publishedAt)}</TypographyPMuted>
               </time>
             </div>
           )}
@@ -88,7 +92,9 @@ export function PostCard({ post, className, priority = false }: PostCardProps) {
           {/* Read Now Button */}
           <div className="mt-auto flex items-center gap-2 text-primary font-medium group-hover:gap-3 transition-all">
             <span>Đọc ngay</span>
-            <ArrowRight className={`${responsiveIconSizes.small} transition-transform group-hover:translate-x-1`} />
+            <IconSize size="sm" className="transition-transform group-hover:translate-x-1">
+              <ArrowRight />
+            </IconSize>
           </div>
         </div>
       </Link>
@@ -96,10 +102,12 @@ export function PostCard({ post, className, priority = false }: PostCardProps) {
       {/* Tags */}
       {displayTags.length > 0 && (
         <div className="flex flex-wrap items-center gap-2 p-4 border-t">
-          <Tag className={`${iconSizes.xs} text-muted-foreground`} />
+          <IconSize size="xs">
+            <Tag className="text-muted-foreground" />
+          </IconSize>
           {displayTags.map((tag) => (
-            <Badge key={tag.id} variant="outline" className={typography.body.small}>
-              {tag.name}
+            <Badge key={tag.id} variant="outline">
+              <TypographySpanSmall>{tag.name}</TypographySpanSmall>
             </Badge>
           ))}
         </div>
