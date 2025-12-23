@@ -5,7 +5,11 @@ import * as SheetPrimitive from "@radix-ui/react-dialog"
 import { XIcon } from "lucide-react"
 
 import { cn } from "@/lib/utils/index"
-import { iconSizes, typography } from "@/lib/typography"
+import { iconSizes, headingSizes, fontWeights, responsiveTextSizes, lineHeights } from "@/lib/typography"
+
+const sheetTitleDefault = `${headingSizes.h4} ${fontWeights.bold}`
+const sheetBodySmall = `${responsiveTextSizes.small} ${fontWeights.normal} ${lineHeights.relaxed}`
+const sheetIconSize = iconSizes.lg
 
 function Sheet({ ...props }: React.ComponentProps<typeof SheetPrimitive.Root>) {
   return <SheetPrimitive.Root data-slot="sheet" {...props} />
@@ -74,7 +78,7 @@ function SheetContent({
       >
         {children}
         <SheetPrimitive.Close className="ring-offset-background focus:ring-ring data-[state=open]:bg-secondary absolute top-4 right-4 rounded-xs opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none">
-          <XIcon className={`${iconSizes.lg} text-destructive`} />
+          <XIcon className={`${sheetIconSize} text-destructive`} />
           <span className="sr-only">Close</span>
         </SheetPrimitive.Close>
       </SheetPrimitive.Content>
@@ -109,7 +113,7 @@ function SheetTitle({
   return (
     <SheetPrimitive.Title
       data-slot="sheet-title"
-      className={cn(`${typography.title.default}`, className)}
+      className={cn(`${sheetTitleDefault}`, className)}
       {...props}
     />
   )
@@ -122,7 +126,7 @@ function SheetDescription({
   return (
     <SheetPrimitive.Description
       data-slot="sheet-description"
-      className={cn(`text-muted-foreground ${typography.body.small}`, className)}
+      className={cn(`text-muted-foreground ${sheetBodySmall}`, className)}
       {...props}
     />
   )

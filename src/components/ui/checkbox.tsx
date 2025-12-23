@@ -7,6 +7,8 @@ import { CheckIcon } from "lucide-react"
 import { cn } from "@/lib/utils/index"
 import { iconSizes } from "@/lib/typography"
 
+const checkboxIconSize = iconSizes.xs
+
 function Checkbox({
   className,
   ...props
@@ -24,7 +26,7 @@ function Checkbox({
         data-slot="checkbox-indicator"
         className="grid place-content-center text-current transition-none"
       >
-        <CheckIcon className={iconSizes.xs} />
+        <CheckIcon className={checkboxIconSize} />
       </CheckboxPrimitive.Indicator>
     </CheckboxPrimitive.Root>
   )

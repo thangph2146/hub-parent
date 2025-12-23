@@ -2,8 +2,11 @@ import { Slot } from "@radix-ui/react-slot"
 import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "@/lib/utils/index"
-import { typography, iconSizes } from "@/lib/typography"
+import { responsiveTextSizes, fontWeights, lineHeights, iconSizes } from "@/lib/typography"
 import { Separator } from "@/components/ui/separator"
+
+const buttonGroupBodySmall = `${responsiveTextSizes.small} ${fontWeights.normal} ${lineHeights.relaxed}`
+const buttonGroupIconSize = iconSizes.sm
 
 const buttonGroupVariants = cva(
   "flex w-fit items-stretch [&>*]:focus-visible:z-10 [&>*]:focus-visible:relative [&>[data-slot=select-trigger]:not([class*='w-'])]:w-fit [&>input]:flex-1 has-[select[aria-hidden=true]:last-child]:[&>[data-slot=select-trigger]:last-of-type]:rounded-r-md has-[>[data-slot=button-group]]:gap-2",
@@ -50,7 +53,7 @@ function ButtonGroupText({
   return (
     <Comp
       className={cn(
-        `bg-muted flex items-center gap-2 rounded-md border px-4 ${typography.body.small} font-medium shadow-xs [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:${iconSizes.sm}`,
+        `bg-muted flex items-center gap-2 rounded-md border px-4 ${buttonGroupBodySmall} font-medium shadow-xs [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:${buttonGroupIconSize}`,
         className
       )}
       {...props}

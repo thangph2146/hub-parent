@@ -1,7 +1,10 @@
 import * as React from "react"
 
 import { cn } from "@/lib/utils/index"
-import { typography } from "@/lib/typography"
+import { headingSizes, fontWeights, responsiveTextSizes, fontWeights as fw, lineHeights } from "@/lib/typography"
+
+const cardTitleDefault = `${headingSizes.h4} ${fontWeights.bold}`
+const cardBodySmall = `${responsiveTextSizes.small} ${fw.normal} ${lineHeights.relaxed}`
 
 function Card({ className, ...props }: React.ComponentProps<"div">) {
   return (
@@ -33,7 +36,7 @@ function CardTitle({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="card-title"
-      className={cn(typography.title.default, className)}
+      className={cn(cardTitleDefault, className)}
       {...props}
     />
   )
@@ -43,7 +46,7 @@ function CardDescription({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="card-description"
-      className={cn(`text-muted-foreground ${typography.body.small}`, className)}
+      className={cn(`text-muted-foreground ${cardBodySmall}`, className)}
       {...props}
     />
   )

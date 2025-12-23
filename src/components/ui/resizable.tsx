@@ -6,6 +6,8 @@ import * as ResizablePrimitive from "react-resizable-panels"
 import { cn } from "@/lib/utils/index"
 import { iconSizes } from "@/lib/typography"
 
+const resizableIconSize = iconSizes.xs
+
 const ResizablePanelGroup = ({
   className,
   ...props
@@ -37,7 +39,7 @@ const ResizableHandle = ({
   >
     {withHandle && (
       <div className="z-10 flex h-4 w-3 items-center justify-center rounded-sm border bg-border">
-        <GripVertical className={iconSizes.xs} />
+        <GripVertical className={resizableIconSize} />
       </div>
     )}
   </ResizablePrimitive.PanelResizeHandle>

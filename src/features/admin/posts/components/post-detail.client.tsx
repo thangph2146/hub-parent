@@ -306,6 +306,8 @@ export const PostDetailClient = ({
   return (
     <ResourceDetailClient<PostDetailData>
       data={detailData}
+      title={"Chi tiết bài viết"}
+      description={`Chi tiết bài viết ${detailData.title}`}
       fields={detailFields}
       detailSections={detailSections}
       backUrl={backUrl}

@@ -1,11 +1,13 @@
 import * as React from "react";
 
 import { cn } from "@/lib/utils";
-import { typography } from "@/lib/typography";
+import { responsiveTextSizes, fontWeights, lineHeights } from "@/lib/typography";
+
+const tableBodySmall = `${responsiveTextSizes.small} ${fontWeights.normal} ${lineHeights.relaxed}`
 
 const Table = React.forwardRef<HTMLTableElement, React.HTMLAttributes<HTMLTableElement>>(
   ({ className, ...props }, ref) => (
-    <table ref={ref} className={cn(`w-full caption-bottom ${typography.body.small}`, className)} {...props} />
+    <table ref={ref} className={cn(`w-full caption-bottom ${tableBodySmall}`, className)} {...props} />
   ),
 );
 Table.displayName = "Table";
@@ -60,7 +62,7 @@ const TableHead = React.forwardRef<
   <th
     ref={ref}
     className={cn(
-      `h-12 px-3 text-left align-middle ${typography.body.small} font-medium text-muted-foreground [&:has([role=checkbox])]:w-px [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-0.5`,
+      `h-12 px-3 text-left align-middle ${tableBodySmall} font-medium text-muted-foreground [&:has([role=checkbox])]:w-px [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-0.5`,
       className,
     )}
     {...props}
@@ -75,7 +77,7 @@ const TableCell = React.forwardRef<
   <td
     ref={ref}
     className={cn(
-      `p-3 align-middle ${typography.body.small} [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-0.5`,
+      `p-3 align-middle ${tableBodySmall} [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-0.5`,
       className,
     )}
     {...props}
@@ -87,7 +89,7 @@ const TableCaption = React.forwardRef<
   HTMLTableCaptionElement,
   React.HTMLAttributes<HTMLTableCaptionElement>
 >(({ className, ...props }, ref) => (
-  <caption ref={ref} className={cn(`mt-4 ${typography.body.small} text-muted-foreground`, className)} {...props} />
+  <caption ref={ref} className={cn(`mt-4 ${tableBodySmall} text-muted-foreground`, className)} {...props} />
 ));
 TableCaption.displayName = "TableCaption";
 

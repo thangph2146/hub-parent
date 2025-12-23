@@ -146,13 +146,23 @@ export const MultipleSelectCombobox = <T,>({
           </div>
           <div className="flex items-center gap-1 ml-2 flex-shrink-0">
             {selectedValues.length > 0 && (
-              <button type="button" onClick={handleClear} className="text-muted-foreground hover:text-foreground">
-                <IconSize size="sm">
+              <div
+                role="button"
+                tabIndex={0}
+                onClick={handleClear}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault()
+                    handleClear(e as any)
+                  }
+                }}
+              >
+                <IconSize size="md" className="shrink-0 opacity-50">
                   <X />
                 </IconSize>
-              </button>
+              </div>
             )}
-            <IconSize size="sm" className="shrink-0 opacity-50">
+            <IconSize size="md" className="shrink-0 opacity-50">
               <ChevronsUpDown />
             </IconSize>
           </div>
