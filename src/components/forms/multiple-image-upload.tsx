@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils/index"
 import { apiClient } from "@/lib/api/axios"
 import { apiRoutes } from "@/lib/api/routes"
 import { logger } from "@/lib/config"
-import { typography, iconSizes } from "@/lib/typography"
+import { TypographyP, TypographyPSmall, TypographyPSmallMuted, IconSize } from "@/components/ui/typography"
 import type { UploadResponse, UploadError } from "@/features/admin/uploads/types"
 import { useToast } from "@/hooks/use-toast"
 
@@ -406,7 +406,7 @@ export function MultipleImageUpload({
 
   return (
     <div className={cn("w-full space-y-4", className)}>
-      {label && <label className={`${typography.body.medium} font-medium block`}>{label}</label>}
+      {label && <label className="font-medium block"><TypographyP>{label}</TypographyP></label>}
 
       <div
         className={cn(
@@ -440,22 +440,22 @@ export function MultipleImageUpload({
           {isProcessing ? (
             <>
               <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
-              <p className={`${typography.body.medium} font-medium mb-1`}>Đang xử lý {pendingCount} hình ảnh...</p>
-              <p className={typography.body.muted.small}>
+              <TypographyP className="font-medium mb-1">Đang xử lý {pendingCount} hình ảnh...</TypographyP>
+              <TypographyPSmallMuted>
                 {successCount} hình ảnh đã upload thành công
-              </p>
+              </TypographyPSmallMuted>
             </>
           ) : (
             <>
               <div className="rounded-full bg-muted p-4 mb-4">
-                <Upload className={`${iconSizes["2xl"]} text-muted-foreground`} />
+                <IconSize size="2xl" className="text-muted-foreground"><Upload /></IconSize>
               </div>
-              <p className={`${typography.body.medium} font-medium mb-1`}>
+              <TypographyP className="font-medium mb-1">
                 Kéo thả hình ảnh vào đây hoặc click để chọn
-              </p>
-              <p className={typography.body.muted.small}>
+              </TypographyP>
+              <TypographyPSmallMuted>
                 JPG, PNG, GIF, WEBP, SVG (tối đa {maxSizeMB}MB mỗi file, tự động resize nếu cần)
-              </p>
+              </TypographyPSmallMuted>
             </>
           )}
         </div>
@@ -464,9 +464,9 @@ export function MultipleImageUpload({
       {uploadItems.length > 0 && (
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <p className={`${typography.body.medium} font-medium`}>
+            <TypographyP className="font-medium">
               {uploadItems.length} hình ảnh ({successCount} thành công)
-            </p>
+            </TypographyP>
             {uploadItems.length > 0 && (
               <Button
                 type="button"
@@ -500,18 +500,18 @@ export function MultipleImageUpload({
 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
-                    <p className={`${typography.body.medium} font-medium truncate`}>{item.file.name}</p>
+                    <TypographyP className="font-medium truncate">{item.file.name}</TypographyP>
                     {item.status === "success" && (
-                      <CheckCircle2 className={`${iconSizes.sm} text-green-500 flex-shrink-0`} />
+                      <IconSize size="sm" className="text-green-500 flex-shrink-0"><CheckCircle2 /></IconSize>
                     )}
                     {item.status === "error" && (
-                      <AlertCircle className={`${iconSizes.sm} text-destructive flex-shrink-0`} />
+                      <IconSize size="sm" className="text-destructive flex-shrink-0"><AlertCircle /></IconSize>
                     )}
                     {item.status === "processing" && (
-                      <Loader2 className={`${iconSizes.sm} animate-spin text-primary flex-shrink-0`} />
+                      <IconSize size="sm" className="animate-spin text-primary flex-shrink-0"><Loader2 /></IconSize>
                     )}
                     {item.status === "uploading" && (
-                      <Loader2 className={`${iconSizes.sm} animate-spin text-primary flex-shrink-0`} />
+                      <IconSize size="sm" className="animate-spin text-primary flex-shrink-0"><Loader2 /></IconSize>
                     )}
                   </div>
 
@@ -520,13 +520,13 @@ export function MultipleImageUpload({
                   )}
 
                   {item.status === "error" && item.error && (
-                    <p className={`${typography.body.small} text-destructive mt-1`}>{item.error}</p>
+                    <TypographyPSmall className="text-destructive mt-1">{item.error}</TypographyPSmall>
                   )}
 
                   {item.status === "success" && item.result && (
-                    <p className={`${typography.body.muted.small} mt-1`}>
+                    <TypographyPSmallMuted className="mt-1">
                       {(item.result.size / 1024).toFixed(1)} KB
-                    </p>
+                    </TypographyPSmallMuted>
                   )}
                 </div>
 
@@ -534,11 +534,11 @@ export function MultipleImageUpload({
                   type="button"
                   variant="ghost"
                   size="icon"
-                  className={`${iconSizes["2xl"]} flex-shrink-0`}
+                  className="h-11 w-11 flex-shrink-0"
                   onClick={() => handleRemove(item.id)}
                   disabled={item.status === "uploading" || item.status === "processing"}
                 >
-                  <X className={iconSizes.sm} />
+                  <IconSize size="sm"><X /></IconSize>
                 </Button>
               </div>
             ))}

@@ -6,7 +6,7 @@ import { useDynamicFilterOptions } from "@/features/admin/resources/hooks/use-dy
 import { apiRoutes } from "@/lib/api/routes"
 import type { NotificationRow } from "../types"
 import { NOTIFICATION_KINDS, NOTIFICATION_LABELS } from "../constants"
-import { typography } from "@/lib/typography"
+import { TypographyPMuted, TypographySpanSmallMuted } from "@/components/ui/typography"
 
 interface UseNotificationColumnsOptions {
   togglingNotifications: Set<string>
@@ -54,9 +54,9 @@ export const useNotificationColumns = ({
             <div className="flex items-center gap-2">
               <div>
                 <div className="font-medium">{row.userEmail || "-"}</div>
-                {row.userName && <div className={typography.body.muted.medium}>{row.userName}</div>}
+                {row.userName && <TypographyPMuted>{row.userName}</TypographyPMuted>}
                 {isOwner && (
-                  <Badge variant="outline" className={typography.body.small}>
+                  <Badge variant="outline" className="text-xs">
                     {NOTIFICATION_LABELS.OWN_NOTIFICATION}
                   </Badge>
                 )}
@@ -129,9 +129,9 @@ export const useNotificationColumns = ({
                 }}
                 aria-label={row.isRead ? "Đánh dấu chưa đọc" : "Đánh dấu đã đọc"}
               />
-              <span className={typography.body.muted.small}>
+              <TypographySpanSmallMuted>
                 {row.isRead ? NOTIFICATION_LABELS.READ : NOTIFICATION_LABELS.UNREAD}
-              </span>
+              </TypographySpanSmallMuted>
             </div>
           )
         },

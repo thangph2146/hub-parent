@@ -5,7 +5,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { iconSizes } from "@/lib/typography";
+import { IconSize } from "@/components/ui/typography";
 import { TypographyH3, TypographyPSmallMuted, TypographySpanSmall } from "@/components/ui/typography";
 
 export interface FeatureItem {
@@ -68,9 +68,13 @@ export const ContactSection = ({
               <div className="space-y-2 sm:space-y-3">
                 {contactInfo.items.map((item, index) => (
                   <div key={index} className="flex items-center gap-2 sm:gap-3">
-                    <div className={cn(iconSizes.sm, "sm:block hidden text-primary flex-shrink-0")}>
-                      <div className={cn(iconSizes.md, "hidden sm:block")}>{item.icon}</div>
-                      <div className={cn(iconSizes.sm, "block sm:hidden")}>{item.icon}</div>
+                    <div className="sm:block hidden text-primary flex-shrink-0">
+                      <div className="hidden sm:block">
+                        <IconSize size="md">{item.icon}</IconSize>
+                      </div>
+                      <div className="block sm:hidden">
+                        <IconSize size="sm">{item.icon}</IconSize>
+                      </div>
                     </div>
                     <TypographySpanSmall className="break-words">{item.text}</TypographySpanSmall>
                   </div>

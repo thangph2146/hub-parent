@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/card";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { iconSizes, typography } from "@/lib/typography";
+import { IconSize } from "@/components/ui/typography";
 import { cn } from "@/lib/utils"; 
 
 export interface ContentCardButton {
@@ -51,8 +51,8 @@ export const ContentCard = ({
   titleClassName,
   descriptionClassName,
   contentClassName,
-  titleDefaultClasses = typography.title.default,
-  descriptionDefaultClasses = typography.description.default,
+  titleDefaultClasses = "text-card-foreground",
+  descriptionDefaultClasses = "text-muted-foreground",
   children,
 }: ContentCardProps) => {
   const buttonsToRender = buttons || (button ? [button] : []);
@@ -106,7 +106,9 @@ export const ContentCard = ({
                       <span className="ml-1 sm:ml-2">{btn.rightIcon}</span>
                     )}
                     {btn.showArrowRight && !btn.rightIcon && (
-                      <ArrowRight className={cn(iconSizes.sm, "ml-2")} />
+                      <IconSize size="sm" className="ml-2">
+                        <ArrowRight />
+                      </IconSize>
                     )}
                   </Link>
                 </Button>

@@ -1,6 +1,6 @@
 "use client"
 
-import { typography, iconSizes } from "@/lib/typography"
+import { TypographyP, TypographyPSmallMuted, IconSize } from "@/components/ui/typography"
 
 import * as React from "react"
 import { useQueryClient } from "@tanstack/react-query"
@@ -83,15 +83,15 @@ export const StudentDetailClient = ({ studentId, student, backUrl = "/admin/stud
           <div className="grid gap-6 grid-cols-1 sm:grid-cols-2">
             {/* Student Code & Name */}
             <FieldItem icon={Hash} label="Mã sinh viên">
-              <div className={`${typography.body.medium} font-medium font-mono`}>
+              <TypographyP className="font-medium font-mono">
                 {studentData.studentCode || "—"}
-              </div>
+              </TypographyP>
             </FieldItem>
 
             <FieldItem icon={User} label="Tên sinh viên">
-              <div className={`${typography.body.medium} font-medium`}>
+              <TypographyP className="font-medium">
                 {studentData.name || "—"}
-              </div>
+              </TypographyP>
             </FieldItem>
 
             {/* Email */}
@@ -99,7 +99,7 @@ export const StudentDetailClient = ({ studentId, student, backUrl = "/admin/stud
               <FieldItem icon={Mail} label="Email">
                 <a
                   href={`mailto:${studentData.email}`}
-                  className={`${typography.body.medium} font-medium text-primary hover:underline truncate block transition-colors`}
+                  className="font-medium text-primary hover:underline truncate block transition-colors"
                 >
                   {studentData.email}
                 </a>
@@ -110,13 +110,13 @@ export const StudentDetailClient = ({ studentId, student, backUrl = "/admin/stud
             {studentData.userId && studentData.userName && (
               <FieldItem icon={User} label="Tài khoản liên kết">
                 <div className="space-y-0.5">
-                  <div className={`${typography.body.medium} font-medium`}>
+                  <TypographyP className="font-medium">
                     {studentData.userName}
-                  </div>
+                  </TypographyP>
                   {studentData.userEmail && (
-                    <div className={typography.body.muted.small}>
+                    <TypographyPSmallMuted>
                       {studentData.userEmail}
-                    </div>
+                    </TypographyPSmallMuted>
                   )}
                 </div>
               </FieldItem>
@@ -145,7 +145,9 @@ export const StudentDetailClient = ({ studentId, student, backUrl = "/admin/stud
               onClick={() => router.push(`/admin/students/${studentId}/edit`)}
               className="gap-2"
             >
-              <Edit className={iconSizes.sm} />
+              <IconSize size="sm">
+                <Edit />
+              </IconSize>
               Chỉnh sửa
             </Button>
           ) : null

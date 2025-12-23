@@ -17,7 +17,7 @@ import {
   CommandList,
 } from "@/components/ui/command"
 import { cn } from "@/lib/utils"
-import { typography, iconSizes } from "@/lib/typography"
+import { TypographyPMuted, IconSize } from "@/components/ui/typography"
 import type { ResourceFormField } from "../../resource-form"
 
 interface SelectComboboxProps<T> {
@@ -43,8 +43,8 @@ export const SelectCombobox = <T,>({
 
   if (!field.options || field.options.length === 0) {
     return (
-      <div className={`flex h-10 w-full items-center rounded-md border border-input bg-background px-3 py-2 ${typography.body.muted.medium}`}>
-        Không có tùy chọn
+      <div className="flex h-10 w-full items-center rounded-md border border-input bg-background px-3 py-2">
+        <TypographyPMuted>Không có tùy chọn</TypographyPMuted>
       </div>
     )
   }
@@ -71,7 +71,9 @@ export const SelectCombobox = <T,>({
           <span className="truncate">
             {selectedOption ? selectedOption.label : field.placeholder || "-- Chọn --"}
           </span>
-          <ChevronsUpDown className={`ml-2 ${iconSizes.md} shrink-0 opacity-50`} />
+          <IconSize size="md" className="ml-2 shrink-0 opacity-50">
+            <ChevronsUpDown />
+          </IconSize>
         </Button>
       </PopoverTrigger>
       <PopoverContent className="p-0" align="start">
@@ -90,7 +92,7 @@ export const SelectCombobox = <T,>({
                 >
                   <Check
                     className={cn(
-                      `mr-2 ${iconSizes.md}`,
+                      "mr-2",
                       !fieldValue || fieldValue === "" ? "opacity-100" : "opacity-0"
                     )}
                   />
@@ -106,12 +108,9 @@ export const SelectCombobox = <T,>({
                     setSelectOpen(false)
                   }}
                 >
-                  <Check
-                    className={cn(
-                      `mr-2 ${iconSizes.md}`,
-                      String(fieldValue) === String(option.value) ? "opacity-100" : "opacity-0"
-                    )}
-                  />
+                  <IconSize size="md" className={cn("mr-2", String(fieldValue) === String(option.value) ? "opacity-100" : "opacity-0")}>
+                    <Check />
+                  </IconSize>
                   {option.label}
                 </CommandItem>
               ))}

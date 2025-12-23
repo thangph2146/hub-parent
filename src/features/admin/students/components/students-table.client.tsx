@@ -1,6 +1,6 @@
 "use client"
 
-import { iconSizes, typography } from "@/lib/typography"
+import { IconSize } from "@/components/ui/typography"
 
 import { useCallback, useMemo, useState } from "react"
 import { RotateCcw, Trash2, AlertTriangle, Plus, CheckCircle2, XCircle } from "lucide-react"
@@ -334,7 +334,9 @@ export const StudentsTableClient = ({
                   onClick={() => executeBulk("active", selectedIds, refresh, clearSelection)}
                   className="whitespace-nowrap"
                 >
-                  <CheckCircle2 className={`mr-2 ${iconSizes.md} shrink-0`} />
+                  <IconSize size="md" className="mr-2 shrink-0">
+                    <CheckCircle2 />
+                  </IconSize>
                   <span className="hidden sm:inline">
                     {STUDENT_LABELS.ACTIVE_SELECTED(selectedIds.length)}
                   </span>
@@ -350,7 +352,9 @@ export const StudentsTableClient = ({
                   onClick={() => executeBulk("unactive", selectedIds, refresh, clearSelection)}
                   className="whitespace-nowrap"
                 >
-                  <XCircle className={`mr-2 ${iconSizes.md} shrink-0`} />
+                  <IconSize size="md" className="mr-2 shrink-0">
+                    <XCircle />
+                  </IconSize>
                   <span className="hidden sm:inline">
                     {STUDENT_LABELS.UNACTIVE_SELECTED(selectedIds.length)}
                   </span>
@@ -365,7 +369,9 @@ export const StudentsTableClient = ({
               onClick={() => executeBulk("delete", selectedIds, refresh, clearSelection)}
               className="whitespace-nowrap"
             >
-              <Trash2 className={`mr-2 ${iconSizes.md} shrink-0`} />
+              <IconSize size="md" className="mr-2 shrink-0">
+                <Trash2 />
+              </IconSize>
               <span className="hidden sm:inline">
                 {STUDENT_LABELS.DELETE_SELECTED(selectedIds.length)}
               </span>
@@ -380,7 +386,9 @@ export const StudentsTableClient = ({
                 onClick={() => executeBulk("hard-delete", selectedIds, refresh, clearSelection)}
                 className="whitespace-nowrap"
               >
-                <AlertTriangle className={`mr-2 ${iconSizes.md} shrink-0`} />
+                <IconSize size="md" className="mr-2 shrink-0">
+                  <AlertTriangle />
+                </IconSize>
                 <span className="hidden sm:inline">
                   {STUDENT_LABELS.HARD_DELETE_SELECTED(selectedIds.length)}
                 </span>
@@ -427,7 +435,9 @@ export const StudentsTableClient = ({
                 onClick={() => executeBulk("restore", selectedIds, refresh, clearSelection)}
                 className="whitespace-nowrap"
               >
-                <RotateCcw className={`mr-2 ${iconSizes.md} shrink-0`} />
+                <IconSize size="md" className="mr-2 shrink-0">
+                  <RotateCcw />
+                </IconSize>
                 <span className="hidden sm:inline">
                   {STUDENT_LABELS.RESTORE_SELECTED(selectedIds.length)}
                 </span>
@@ -443,7 +453,9 @@ export const StudentsTableClient = ({
                 onClick={() => executeBulk("hard-delete", selectedIds, refresh, clearSelection)}
                 className="whitespace-nowrap"
               >
-                <AlertTriangle className={`mr-2 ${iconSizes.md} shrink-0`} />
+                <IconSize size="md" className="mr-2 shrink-0">
+                  <AlertTriangle />
+                </IconSize>
                 <span className="hidden sm:inline">
                   {STUDENT_LABELS.HARD_DELETE_SELECTED(selectedIds.length)}
                 </span>
@@ -580,9 +592,11 @@ export const StudentsTableClient = ({
       type="button"
       size="sm"
       onClick={() => router.push("/admin/students/new")}
-      className={`h-8 px-3 ${typography.body.small}`}
+      className="h-8 px-3"
     >
-      <Plus className={`mr-2 ${iconSizes.md}`} />
+      <IconSize size="md" className="mr-2">
+        <Plus />
+      </IconSize>
       {STUDENT_LABELS.ADD_NEW}
     </Button>
   ) : undefined

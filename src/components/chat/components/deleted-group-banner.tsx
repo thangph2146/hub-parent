@@ -7,7 +7,7 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Trash2 } from "lucide-react"
-import { typography, iconSizes } from "@/lib/typography"
+import { TypographyP, IconSize } from "@/components/ui/typography"
 import type { GroupRole, Group, Contact } from "../types"
 import { HardDeleteGroupDialog } from "@/features/admin/chat/components/dialogs/hard-delete-group-dialog.client"
 
@@ -42,26 +42,27 @@ export function DeletedGroupBanner({
   return (
     <>
       <div className="flex items-center justify-between py-4 px-4 bg-destructive/10 border border-destructive/20 rounded-lg mb-2">
-        <div className={`flex items-center gap-2 ${typography.body.medium} text-destructive`}>
-          <svg
-            className={iconSizes.sm}
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-            />
-          </svg>
-          <span className="font-medium">Nhóm này đã bị xóa</span>
+        <div className="flex items-center gap-2 text-destructive">
+          <IconSize size="sm">
+            <svg
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+              />
+            </svg>
+          </IconSize>
+          <TypographyP className="font-medium">Nhóm này đã bị xóa</TypographyP>
         </div>
         {canHardDelete && (
-          <Button variant="destructive" size="sm" onClick={handleHardDeleteClick} className={`h-7 ${typography.body.small}`}>
-            <Trash2 className={`mr-1 ${iconSizes.xs}`} />
+          <Button variant="destructive" size="sm" onClick={handleHardDeleteClick} className="h-7">
+            <IconSize size="xs" className="mr-1"><Trash2 /></IconSize>
             Xóa vĩnh viễn
           </Button>
         )}

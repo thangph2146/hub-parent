@@ -7,7 +7,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { iconSizes } from "@/lib/typography"
+import { IconSize } from "@/components/ui/typography"
 
 export interface RowActionConfig {
   label: string
@@ -37,7 +37,9 @@ export const renderRowActions = (actions: RowActionConfig[]) => {
           if (!isDisabled) singleAction.onSelect()
         }}
       >
-        <Icon className={`mr-2 ${iconSizes.md} ${singleAction.isLoading ? "animate-spin" : ""}`} />
+        <IconSize size="md" className={`mr-2 ${singleAction.isLoading ? "animate-spin" : ""}`}>
+          <Icon />
+        </IconSize>
         {displayLabel}
       </Button>
     )
@@ -46,8 +48,10 @@ export const renderRowActions = (actions: RowActionConfig[]) => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className={iconSizes["2xl"]}>
-          <MoreHorizontal className={iconSizes.md} />
+        <Button variant="ghost" size="icon">
+          <IconSize size="md">
+            <MoreHorizontal />
+          </IconSize>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
@@ -69,13 +73,13 @@ export const renderRowActions = (actions: RowActionConfig[]) => {
                   : "data-[highlighted]:bg-accent/10 disabled:opacity-50"
               }
             >
-              <Icon
-                className={
+              <IconSize size="md" className={
                   action.destructive
-                    ? `mr-2 ${iconSizes.md} text-destructive ${action.isLoading ? "animate-spin" : ""}`
-                    : `mr-2 ${iconSizes.md} ${action.isLoading ? "animate-spin" : ""}`
-                }
-              />
+                    ? `mr-2 text-destructive ${action.isLoading ? "animate-spin" : ""}`
+                    : `mr-2 ${action.isLoading ? "animate-spin" : ""}`
+                }>
+                <Icon />
+              </IconSize>
               {displayLabel}
             </DropdownMenuItem>
           )

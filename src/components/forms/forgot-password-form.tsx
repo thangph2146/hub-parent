@@ -1,6 +1,6 @@
 "use client"
 
-import { typography, headerConfig, iconSizes } from "@/lib/typography"
+import { TypographyH1, TypographyDescription, TypographyP, TypographyPMuted, IconSize } from "@/components/ui/typography"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -24,18 +24,18 @@ export function ForgotPasswordForm({
               <div className="relative">
                 <div className="absolute inset-0 rounded-full bg-primary/20 blur-xl animate-pulse" />
                 <div className="relative rounded-full bg-primary p-4 shadow-lg ring-4 ring-primary/10">
-                  <Shield className={`${iconSizes["2xl"]} text-primary-foreground`} />
+                  <IconSize size="2xl" className="text-primary-foreground"><Shield /></IconSize>
                 </div>
               </div>
 
               {/* Title - sử dụng primary color */}
               <div className="space-y-2">
-                <h1 className={`${headerConfig.main.className} tracking-tight text-primary`}>
+                <TypographyH1 className="tracking-tight text-primary">
                   Quên mật khẩu?
-                </h1>
-                <p className={typography.description.default}>
+                </TypographyH1>
+                <TypographyDescription>
                   Chúng tôi sẽ giúp bạn lấy lại quyền truy cập
-                </p>
+                </TypographyDescription>
               </div>
             </div>
 
@@ -46,35 +46,35 @@ export function ForgotPasswordForm({
               <div className="relative space-y-4">
                 <div className="flex items-start gap-3">
                   <div className="mt-0.5 rounded-lg bg-primary/10 p-2.5 dark:bg-primary/20 ring-2 ring-primary/20">
-                    <Info className={`${iconSizes.md} text-primary`} />
+                    <IconSize size="md" className="text-primary"><Info /></IconSize>
                   </div>
                   <div className="flex-1 space-y-2">
-                    <p className={`${typography.body.large} font-semibold`}>
+                    <TypographyP className="font-semibold">
                       Vui lòng liên hệ phòng QLCTT
-                    </p>
-                    <p className={`${typography.body.muted.medium} leading-relaxed`}>
+                    </TypographyP>
+                    <TypographyPMuted className="leading-relaxed">
                       Trường Đại học Ngân hàng Thành phố Hồ Chí Minh để được cấp lại mật khẩu.
-                    </p>
+                    </TypographyPMuted>
                   </div>
                 </div>
 
                 {/* Contact Info - sử dụng card background */}
                 <div className="mt-6 space-y-3 rounded-lg bg-card/80 backdrop-blur-sm border border-border/50 p-4 shadow-sm">
-                  <div className={`flex items-center gap-3 ${typography.body.medium}`}>
+                  <div className="flex items-center gap-3">
                     <div className="rounded-md bg-primary/10 p-1.5 dark:bg-primary/20 ring-1 ring-primary/20">
-                      <MapPin className={`${iconSizes.sm} text-primary`} />
+                      <IconSize size="sm" className="text-primary"><MapPin /></IconSize>
                     </div>
-                    <span className="text-foreground font-medium">
+                    <TypographyP className="text-foreground font-medium">
                       Trường Đại học Ngân hàng TP.HCM
-                    </span>
+                    </TypographyP>
                   </div>
-                  <div className={`flex items-center gap-3 ${typography.body.medium}`}>
+                  <div className="flex items-center gap-3">
                     <div className="rounded-md bg-secondary/10 p-1.5 dark:bg-secondary/20 ring-1 ring-secondary/20">
-                      <Phone className={`${iconSizes.sm} text-secondary`} />
+                      <IconSize size="sm" className="text-secondary"><Phone /></IconSize>
                     </div>
-                    <span className="text-foreground font-medium">
+                    <TypographyP className="text-foreground font-medium">
                       Phòng Quản lý Công tác Tuyển sinh (QLCTT)
-                    </span>
+                    </TypographyP>
                   </div>
                 </div>
               </div>
@@ -90,7 +90,7 @@ export function ForgotPasswordForm({
                 className="w-full bg-primary hover:bg-primary/90 text-primary-foreground shadow-md hover:shadow-lg transition-all duration-200 group"
               >
                 <Link href="/auth/sign-in" className="flex items-center justify-center gap-2">
-                  <ArrowLeft className={`${iconSizes.sm} transition-transform group-hover:-translate-x-1`} />
+                  <IconSize size="sm" className="transition-transform group-hover:-translate-x-1"><ArrowLeft /></IconSize>
                   Quay lại đăng nhập
                 </Link>
               </Button>
@@ -98,7 +98,7 @@ export function ForgotPasswordForm({
               <div className="text-center">
                 <Link
                   href="/auth/sign-in"
-                  className={`${typography.body.muted.medium} hover:text-primary transition-colors underline-offset-4 hover:underline`}
+                  className="hover:text-primary transition-colors underline-offset-4 hover:underline"
                 >
                   Nhớ mật khẩu rồi? Đăng nhập ngay
                 </Link>

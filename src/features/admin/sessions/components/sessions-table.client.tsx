@@ -1,6 +1,6 @@
 "use client"
 
-import { typography, iconSizes } from "@/lib/typography"
+import { IconSize } from "@/components/ui/typography"
 import { useCallback, useMemo, useState } from "react"
 import { useResourceRouter } from "@/hooks/use-resource-segment"
 import { Plus, RotateCcw, Trash2, AlertTriangle } from "lucide-react"
@@ -276,7 +276,9 @@ export const SessionsTableClient = ({
                 onClick={() => executeBulk("delete", selectedIds, refresh, clearSelection)}
                 className="whitespace-nowrap"
               >
-                <Trash2 className={`mr-2 ${iconSizes.md} shrink-0`} />
+                <IconSize size="md" className="mr-2 shrink-0">
+                  <Trash2 />
+                </IconSize>
                 <span className="hidden sm:inline">
                   {SESSION_LABELS.DELETE_SELECTED(selectedIds.length)}
                 </span>
@@ -292,7 +294,9 @@ export const SessionsTableClient = ({
                 onClick={() => executeBulk("hard-delete", selectedIds, refresh, clearSelection)}
                 className="whitespace-nowrap"
               >
-                <AlertTriangle className={`mr-2 ${iconSizes.md} shrink-0`} />
+                <IconSize size="md" className="mr-2 shrink-0">
+                  <AlertTriangle />
+                </IconSize>
                 <span className="hidden sm:inline">
                   {SESSION_LABELS.HARD_DELETE_SELECTED(selectedIds.length)}
                 </span>
@@ -338,7 +342,9 @@ export const SessionsTableClient = ({
                 onClick={() => executeBulk("restore", selectedIds, refresh, clearSelection)}
                 className="whitespace-nowrap"
               >
-                <RotateCcw className={`mr-2 ${iconSizes.md} shrink-0`} />
+                <IconSize size="md" className="mr-2 shrink-0">
+                  <RotateCcw />
+                </IconSize>
                 <span className="hidden sm:inline">
                   {SESSION_LABELS.RESTORE_SELECTED(selectedIds.length)}
                 </span>
@@ -354,7 +360,9 @@ export const SessionsTableClient = ({
                 onClick={() => executeBulk("hard-delete", selectedIds, refresh, clearSelection)}
                 className="whitespace-nowrap"
               >
-                <AlertTriangle className={`mr-2 ${iconSizes.md} shrink-0`} />
+                <IconSize size="md" className="mr-2 shrink-0">
+                  <AlertTriangle />
+                </IconSize>
                 <span className="hidden sm:inline">
                   {SESSION_LABELS.HARD_DELETE_SELECTED(selectedIds.length)}
                 </span>
@@ -488,9 +496,11 @@ export const SessionsTableClient = ({
       type="button"
       size="sm"
       onClick={() => router.push("/admin/sessions/new")}
-      className={`h-8 px-3 ${typography.body.small}`}
+      className="h-8 px-3"
     >
-      <Plus className={`mr-2 ${iconSizes.md}`} />
+      <IconSize size="md" className="mr-2">
+        <Plus />
+      </IconSize>
       {SESSION_LABELS.ADD_NEW}
     </Button>
   ) : undefined

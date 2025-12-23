@@ -13,7 +13,7 @@ import { formatDateVi } from "../utils"
 import { useResourceNavigation, useResourceDetailData, useResourceDetailLogger } from "@/features/admin/resources/hooks"
 import { usePermissions } from "@/hooks/use-permissions"
 import { PERMISSIONS } from "@/lib/permissions"
-import { typography, iconSizes } from "@/lib/typography"
+import { TypographyP, IconSize } from "@/components/ui/typography"
 
 export interface TagDetailData {
   id: string
@@ -71,28 +71,28 @@ export const TagDetailClient = ({ tagId, tag, backUrl = "/admin/tags" }: TagDeta
           <div className="grid gap-6 grid-cols-1 sm:grid-cols-2">
             {/* Name & Slug */}
             <FieldItem icon={Tag} label="Tên thẻ tag">
-              <div className={`${typography.body.medium}`}>
+              <TypographyP>
                 {tagData.name || "—"}
-              </div>
+              </TypographyP>
             </FieldItem>
 
             <FieldItem icon={Hash} label="Slug">
-              <div className={`${typography.body.medium} font-mono`}>
+              <TypographyP className="font-mono">
                 {tagData.slug || "—"}
-              </div>
+              </TypographyP>
             </FieldItem>
 
             {/* Timestamps */}
             <FieldItem icon={Calendar} label="Ngày tạo">
-              <div className={`${typography.body.medium}`}>
+              <TypographyP>
                 {tagData.createdAt ? formatDateVi(tagData.createdAt) : "—"}
-              </div>
+              </TypographyP>
             </FieldItem>
 
             <FieldItem icon={Clock} label="Cập nhật lần cuối">
-              <div className={`${typography.body.medium}`}>
+              <TypographyP>
                 {tagData.updatedAt ? formatDateVi(tagData.updatedAt) : "—"}
-              </div>
+              </TypographyP>
             </FieldItem>
           </div>
         )
@@ -119,7 +119,9 @@ export const TagDetailClient = ({ tagId, tag, backUrl = "/admin/tags" }: TagDeta
             onClick={() => router.push(`/admin/tags/${tagId}/edit`)}
             className="gap-2"
           >
-            <Edit className={iconSizes.sm} />
+            <IconSize size="sm">
+              <Edit />
+            </IconSize>
             Chỉnh sửa
           </Button>
         ) : null

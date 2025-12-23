@@ -1,5 +1,5 @@
 import { useMemo } from "react"
-import { typography } from "@/lib/typography"
+import { TypographyPSmallMuted, TypographyP } from "@/components/ui/typography"
 import { Switch } from "@/components/ui/switch"
 import type { DataTableColumn } from "@/components/tables"
 import { useDynamicFilterOptions } from "@/features/admin/resources/hooks/use-dynamic-filter-options"
@@ -46,7 +46,7 @@ export const useSessionColumns = ({
           <div>
             <div className="font-medium">{row.userName || row.userEmail || "-"}</div>
             {row.userEmail && row.userName && (
-              <div className={typography.body.muted.small}>{row.userEmail}</div>
+              <TypographyPSmallMuted>{row.userEmail}</TypographyPSmallMuted>
             )}
           </div>
         ),
@@ -82,9 +82,9 @@ export const useSessionColumns = ({
         className: "min-w-[200px] max-w-[400px]",
         headerClassName: "min-w-[200px] max-w-[400px]",
         cell: (row) => (
-          <div className={`break-words max-w-[400px] ${typography.body.medium}`} title={row.userAgent || undefined}>
+          <TypographyP className="break-words max-w-[400px]" title={row.userAgent || undefined}>
             {row.userAgent ?? <span className="text-muted-foreground">-</span>}
-          </div>
+          </TypographyP>
         ),
       },
       {
@@ -112,9 +112,9 @@ export const useSessionColumns = ({
               }}
               aria-label={row.isActive ? SESSION_LABELS.TOGGLE_INACTIVE : SESSION_LABELS.TOGGLE_ACTIVE}
             />
-            <span className={typography.body.muted.small}>
+            <TypographyPSmallMuted>
               {row.isActive ? SESSION_LABELS.ACTIVE : SESSION_LABELS.INACTIVE}
-            </span>
+            </TypographyPSmallMuted>
           </div>
         ),
       },

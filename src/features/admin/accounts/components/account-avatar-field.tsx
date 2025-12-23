@@ -1,6 +1,6 @@
 "use client"
 
-import { typography, iconSizes } from "@/lib/typography"
+import { TypographyH4, TypographyPMuted, IconSize } from "@/components/ui/typography"
 
 import * as React from "react"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
@@ -56,8 +56,10 @@ export const AccountAvatarField = ({
                 onError={() => setImageError(true)}
                 onLoad={() => setImageError(false)}
               />
-              <AvatarFallback className={`${typography.heading.h4} font-bold bg-gradient-to-br from-primary via-primary/90 to-chart-1 text-primary-foreground`}>
-                {getUserInitials(name, "")}
+              <AvatarFallback asChild>
+                <TypographyH4 className="font-bold bg-gradient-to-br from-primary via-primary/90 to-chart-1 text-primary-foreground">
+                  {getUserInitials(name, "")}
+                </TypographyH4>
               </AvatarFallback>
             </Avatar>
             {hasAvatar && !imageError && (
@@ -89,14 +91,16 @@ export const AccountAvatarField = ({
                   }}
                   className="w-full sm:w-auto"
                 >
-                  <X className={`${iconSizes.sm} mr-2`} />
+                  <IconSize size="sm" className="mr-2">
+                    <X />
+                  </IconSize>
                   Xóa ảnh đại diện
                 </Button>
               )}
             </div>
-            <p className={typography.body.muted.medium}>
+            <TypographyPMuted>
               Nhập URL của ảnh đại diện hoặc để trống để sử dụng chữ cái đầu
-            </p>
+            </TypographyPMuted>
           </div>
         </div>
       </Card>

@@ -24,7 +24,7 @@ export const FieldItem = ({
       </IconSize>
     </div>
     <div className="flex-1 min-w-0">
-      <TypographySpanSmallMuted className="font-medium mb-1.5">{label}</TypographySpanSmallMuted>
+      <TypographySpanSmallMuted className="font-medium mb-1.5">{label}</TypographySpanSmallMuted><br />
       {children}
     </div>
   </div>

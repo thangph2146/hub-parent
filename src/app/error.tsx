@@ -1,7 +1,7 @@
 "use client"
 
 import { AlertCircle, RefreshCw, Home } from "lucide-react"
-import { typography, headerConfig } from "@/lib/typography"
+import { TypographyH2, TypographyDescription, TypographyPSmallMuted, TypographyPMuted } from "@/components/ui/typography"
 import Link from "next/link"
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
@@ -77,11 +77,13 @@ export default function Error({ error, reset }: ErrorProps) {
               </div>
             </motion.div>
             <motion.div variants={itemVariants} className="space-y-2">
-              <CardTitle className={headerConfig.section.className}>
-                Đã xảy ra lỗi
+              <CardTitle>
+                <TypographyH2>Đã xảy ra lỗi</TypographyH2>
               </CardTitle>
-              <CardDescription className={typography.description.default}>
-                {error.message || "Đã xảy ra lỗi không mong muốn"}
+              <CardDescription>
+                <TypographyDescription>
+                  {error.message || "Đã xảy ra lỗi không mong muốn"}
+                </TypographyDescription>
               </CardDescription>
             </motion.div>
           </CardHeader>
@@ -92,9 +94,9 @@ export default function Error({ error, reset }: ErrorProps) {
                 variants={itemVariants}
                 className="rounded-lg bg-muted p-3 border"
               >
-                <p className={`${typography.body.muted.small} font-mono`}>
+                <TypographyPSmallMuted className="font-mono">
                   <span className="font-semibold">Error ID:</span> {error.digest}
-                </p>
+                </TypographyPSmallMuted>
               </motion.div>
             )}
 
@@ -102,10 +104,10 @@ export default function Error({ error, reset }: ErrorProps) {
               variants={itemVariants}
               className="rounded-lg bg-muted/50 p-4 border border-destructive/20"
             >
-              <p className={`${typography.body.muted.medium} text-center`}>
+              <TypographyPMuted className="text-center">
                 Vui lòng thử lại hoặc quay về trang chủ. Nếu vấn đề vẫn tiếp tục,
                 vui lòng liên hệ với bộ phận hỗ trợ.
-              </p>
+              </TypographyPMuted>
             </motion.div>
           </CardContent>
 

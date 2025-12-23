@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils/index"
 import { apiClient } from "@/lib/api/axios"
 import { apiRoutes } from "@/lib/api/routes"
-import { typography, iconSizes } from "@/lib/typography"
+import { TypographyP, TypographyPSmallMuted, TypographyPMuted, IconSize } from "@/components/ui/typography"
 import type { UploadResponse, UploadError } from "@/features/admin/uploads/types"
 import { useToast } from "@/hooks/use-toast"
 
@@ -285,7 +285,7 @@ export function ImageUpload({
   return (
     <div className={cn("w-full", className)}>
       {label && (
-        <label className={`${typography.body.medium} font-medium mb-2 block`}>{label}</label>
+        <label className="font-medium mb-2 block"><TypographyP>{label}</TypographyP></label>
       )}
       
       <div
@@ -328,13 +328,13 @@ export function ImageUpload({
                   className="absolute top-2 right-2"
                   onClick={handleRemove}
                 >
-                  <X className={iconSizes.sm} />
+                  <IconSize size="sm"><X /></IconSize>
                 </Button>
               )}
             </div>
             {isUploading && (
               <div className="absolute inset-0 flex items-center justify-center bg-background/80 rounded-md">
-                <Loader2 className={`${iconSizes["2xl"]} animate-spin text-primary`} />
+                <IconSize size="2xl" className="animate-spin text-primary"><Loader2 /></IconSize>
               </div>
             )}
           </div>
@@ -349,19 +349,19 @@ export function ImageUpload({
             {isUploading ? (
               <>
                 <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
-                <p className={typography.body.muted.medium}>Đang upload...</p>
+                <TypographyPMuted>Đang upload...</TypographyPMuted>
               </>
             ) : (
               <>
                 <div className="rounded-full bg-muted p-4 mb-4">
-                  <Upload className={`${iconSizes["2xl"]} text-muted-foreground`} />
+                  <IconSize size="2xl" className="text-muted-foreground"><Upload /></IconSize>
                 </div>
-                <p className={`${typography.body.medium} font-medium mb-1`}>
+                <TypographyP className="font-medium mb-1">
                   Kéo thả hình ảnh vào đây hoặc click để chọn
-                </p>
-                <p className={typography.body.muted.small}>
+                </TypographyP>
+                <TypographyPSmallMuted>
                   JPG, PNG, GIF, WEBP, SVG (tối đa {maxSizeMB}MB)
-                </p>
+                </TypographyPSmallMuted>
               </>
             )}
           </div>
@@ -369,7 +369,7 @@ export function ImageUpload({
 
         {error && (
           <div className="px-4 pb-4">
-            <p className={`${typography.body.medium} text-destructive`}>{error}</p>
+            <TypographyP className="text-destructive">{error}</TypographyP>
           </div>
         )}
       </div>
@@ -384,7 +384,7 @@ export function ImageUpload({
             disabled={disabled}
             className="mt-2"
           >
-            <ImageIcon className={`${iconSizes.sm} mr-2`} />
+            <IconSize size="sm" className="mr-2"><ImageIcon /></IconSize>
             Chọn hình ảnh
           </Button>
         </div>

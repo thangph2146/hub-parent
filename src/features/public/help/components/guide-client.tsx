@@ -1,6 +1,6 @@
 "use client"
 
-import { iconSizes } from "@/lib/typography"
+import { IconSize } from "@/components/ui/typography"
 import { TypographyDescriptionSmall, TypographyH1 } from "@/components/ui/typography"
 
 /**
@@ -185,7 +185,9 @@ export const GuideClient = () => {
                 <Card key={guide.id} className="border">
                   <CardHeader className="pb-3">
                     <div className="flex items-center gap-3">
-                      <Icon className={`${iconSizes.md} text-primary flex-shrink-0`} />
+                      <IconSize size="md" className="text-primary flex-shrink-0">
+                        <Icon />
+                      </IconSize>
                       <div>
                         <CardTitle className="text-base">{guide.title}</CardTitle>
                         <CardDescription className="mt-1">
@@ -213,7 +215,9 @@ export const GuideClient = () => {
                       className="w-full gap-2"
                       onClick={() => handleDownload(guide.imagePath, guide.title)}
                     >
-                      <Download className={iconSizes.sm} />
+                      <IconSize size="sm">
+                        <Download />
+                      </IconSize>
                       Tải xuống
                     </Button>
                   </CardContent>

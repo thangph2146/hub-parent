@@ -11,7 +11,7 @@ import { useToast } from "@/hooks/use-toast"
 import { MultipleImageUpload } from "@/components/forms"
 import type { UploadResponse } from "@/features/admin/uploads/types"
 import { logger } from "@/lib/config/logger"
-import { typography, iconSizes } from "@/lib/typography"
+import { TypographyPSmall, TypographyPSmallMuted, TypographyPMuted, IconSize } from "@/components/ui/typography"
 
 export interface ProductImage {
   url: string
@@ -74,7 +74,9 @@ const ImageItem = ({
               disabled={disabled || index === 0}
               title="Di chuyển lên"
             >
-              <ArrowUp className={iconSizes.sm} />
+              <IconSize size="sm">
+                <ArrowUp />
+              </IconSize>
             </Button>
             <Button
               type="button"
@@ -84,7 +86,9 @@ const ImageItem = ({
               disabled={disabled || index === total - 1}
               title="Di chuyển xuống"
             >
-              <ArrowDown className={iconSizes.sm} />
+              <IconSize size="sm">
+                <ArrowDown />
+              </IconSize>
             </Button>
           </div>
           <Button
@@ -96,7 +100,9 @@ const ImageItem = ({
             disabled={disabled || image.isPrimary}
             title={image.isPrimary ? "Ảnh chính" : "Đặt làm ảnh chính"}
           >
-            <Star className={cn(iconSizes.sm, image.isPrimary ? "fill-yellow-400 text-yellow-400" : "text-gray-700")} />
+            <IconSize size="sm" className={cn(image.isPrimary ? "fill-yellow-400 text-yellow-400" : "text-gray-700")}>
+              <Star />
+            </IconSize>
           </Button>
           <Button
             type="button"
@@ -107,13 +113,17 @@ const ImageItem = ({
             disabled={disabled}
             title="Xóa ảnh"
           >
-            <X className={`${iconSizes.sm} text-destructive`} />
+            <IconSize size="sm" className="text-destructive">
+              <X />
+            </IconSize>
           </Button>
         </div>
         {image.isPrimary && (
-          <div className={`absolute top-2 left-2 bg-primary text-primary-foreground px-2 py-1 rounded ${typography.body.small} font-medium flex items-center gap-1`}>
-            <Star className={`${iconSizes.xs} fill-current`} />
-            Chính
+          <div className="absolute top-2 left-2 bg-primary text-primary-foreground px-2 py-1 rounded font-medium flex items-center gap-1">
+            <IconSize size="xs" className="fill-current">
+              <Star />
+            </IconSize>
+            <TypographyPSmall className="font-medium">Chính</TypographyPSmall>
           </div>
         )}
       </div>
@@ -123,7 +133,7 @@ const ImageItem = ({
           value={image.alt || ""}
           onChange={(e) => onAltChange(e.target.value)}
           placeholder="Mô tả ảnh (alt text)"
-          className={typography.body.small}
+          className=""
           disabled={disabled}
         />
       </div>
@@ -402,9 +412,11 @@ export const MultipleImagesField = ({ value, onChange, error, disabled = false }
           </div>
         ) : (
           <div className="border-2 border-dashed border-border rounded-lg p-8 text-center">
-            <ImageIcon className={`${iconSizes["4xl"]} mx-auto text-muted-foreground mb-2`} />
-            <p className={typography.body.muted.medium}>Chưa có hình ảnh nào</p>
-            <p className={`${typography.body.muted.small} mt-1`}>Upload hoặc thêm URL để bắt đầu</p>
+            <IconSize size="4xl" className="mx-auto text-muted-foreground mb-2">
+              <ImageIcon />
+            </IconSize>
+            <TypographyPMuted>Chưa có hình ảnh nào</TypographyPMuted>
+            <TypographyPSmallMuted className="mt-1">Upload hoặc thêm URL để bắt đầu</TypographyPSmallMuted>
           </div>
         )}
 

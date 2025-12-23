@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { iconSizes } from "@/lib/typography"
+import { IconSize } from "@/components/ui/typography"
 import { useSearchParams } from "next/navigation"
 import { useMemo } from "react"
 import { Tag, X } from "lucide-react"
@@ -69,13 +69,14 @@ export const PostTagNav = ({ tags }: PostTagNavProps) => {
                 : "hover:bg-accent/10 text-muted-foreground border-transparent hover:border-border"
             )}
           >
-            <Tag className={cn(
-              iconSizes.sm, "transition-transform",
-              selectedTags.size === 0 && "scale-110"
-            )} />
+            <IconSize size="sm" className={cn("transition-transform", selectedTags.size === 0 && "scale-110")}>
+              <Tag />
+            </IconSize>
             <span>Tất cả</span>
             {selectedTags.size > 0 && (
-              <X className={cn(iconSizes.xs, "opacity-50 group-hover:opacity-100")} />
+              <IconSize size="xs" className="opacity-50 group-hover:opacity-100">
+                <X />
+              </IconSize>
             )}
           </Link>
           {tags.map((tag) => {
@@ -91,13 +92,14 @@ export const PostTagNav = ({ tags }: PostTagNavProps) => {
                     : "hover:bg-accent/10 text-muted-foreground border-transparent hover:border-border"
                 )}
               >
-                <Tag className={cn(
-                  iconSizes.sm, "transition-transform",
-                  isActive && "scale-110"
-                )} />
+                <IconSize size="sm" className={cn("transition-transform", isActive && "scale-110")}>
+                  <Tag />
+                </IconSize>
                 <span>{tag.name}</span>
                 {isActive && (
-                  <X className={cn(iconSizes.xs, "opacity-50 group-hover:opacity-100 ml-auto")} />
+                  <IconSize size="xs" className="opacity-50 group-hover:opacity-100 ml-auto">
+                    <X />
+                  </IconSize>
                 )}
               </Link>
             )
@@ -118,13 +120,14 @@ export const PostTagNav = ({ tags }: PostTagNavProps) => {
                   : "hover:bg-accent/10 text-muted-foreground border-transparent hover:border-border"
               )}
             >
-              <Tag className={cn(
-                `${iconSizes.sm} transition-transform`,
-                selectedTags.size === 0 && "scale-110"
-              )} />
+              <IconSize size="sm" className={cn("transition-transform", selectedTags.size === 0 && "scale-110")}>
+                <Tag />
+              </IconSize>
               <span>Tất cả</span>
               {selectedTags.size > 0 && (
-                <X className={`${iconSizes.xs} opacity-50 group-hover:opacity-100 ml-auto`} />
+                <IconSize size="xs" className="opacity-50 group-hover:opacity-100 ml-auto">
+                  <X />
+                </IconSize>
               )}
             </Link>
             {tags.map((tag) => {
@@ -140,13 +143,14 @@ export const PostTagNav = ({ tags }: PostTagNavProps) => {
                       : "hover:bg-accent/10 text-muted-foreground border-transparent hover:border-border"
                   )}
                 >
-                  <Tag className={cn(
-                    `${iconSizes.sm} transition-transform`,
-                    isActive && "scale-110"
-                  )} />
+                  <IconSize size="sm" className={cn("transition-transform", isActive && "scale-110")}>
+                    <Tag />
+                  </IconSize>
                   <span>{tag.name}</span>
                   {isActive && (
-                    <X className={`${iconSizes.xs} opacity-50 group-hover:opacity-100 ml-auto`} />
+                    <IconSize size="xs" className="opacity-50 group-hover:opacity-100 ml-auto">
+                      <X />
+                    </IconSize>
                   )}
                 </Link>
               )

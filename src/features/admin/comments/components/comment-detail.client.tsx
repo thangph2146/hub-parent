@@ -17,7 +17,7 @@ import { apiRoutes } from "@/lib/api/routes"
 import { useResourceNavigation, useResourceDetailData, useResourceDetailLogger } from "@/features/admin/resources/hooks"
 import { queryKeys } from "@/lib/query-keys"
 import { resourceLogger } from "@/lib/config/resource-logger"
-import { typography, iconSizes } from "@/lib/typography"
+import { TypographyP, TypographyPSmallMuted, IconSize } from "@/components/ui/typography"
 
 export interface CommentDetailData {
   id: string
@@ -52,10 +52,12 @@ const StatusField = ({ approved, canApprove, onToggle, isToggling }: StatusField
   return (
     <div className="flex items-center gap-3">
       <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted">
-        <MessageSquare className={`${iconSizes.sm} text-muted-foreground`} />
+        <IconSize size="sm" className="text-muted-foreground">
+          <MessageSquare />
+        </IconSize>
       </div>
       <div className="flex-1 min-w-0">
-        <div className={`${typography.body.muted.small} font-medium mb-1.5`}>Trạng thái duyệt</div>
+        <TypographyPSmallMuted className="font-medium mb-1.5">Trạng thái duyệt</TypographyPSmallMuted>
         <div className="flex items-center gap-2">
           <Switch
             checked={approved}
@@ -63,9 +65,9 @@ const StatusField = ({ approved, canApprove, onToggle, isToggling }: StatusField
             onCheckedChange={onToggle}
             aria-label={approved ? "Hủy duyệt bình luận" : "Duyệt bình luận"}
           />
-          <span className={typography.body.medium}>
+          <TypographyP>
             {approved ? "Đã duyệt" : "Chờ duyệt"}
-          </span>
+          </TypographyP>
         </div>
       </div>
     </div>
@@ -165,13 +167,15 @@ export const CommentDetailClient = ({ commentId, comment, backUrl = "/admin/comm
             <Card className="border border-border/50 bg-card p-5">
               <div className="flex items-start gap-3">
                 <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted">
-                  <MessageSquare className={`${iconSizes.sm} text-muted-foreground`} />
+                  <IconSize size="sm" className="text-muted-foreground">
+          <MessageSquare />
+        </IconSize>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className={`${typography.body.medium} font-medium text-foreground mb-2`}>Nội dung</h3>
-                  <div className={`${typography.body.medium} leading-relaxed whitespace-pre-wrap text-foreground break-words`}>
+                  <TypographyP className="font-medium text-foreground mb-2">Nội dung</TypographyP>
+                  <TypographyP className="leading-relaxed whitespace-pre-wrap text-foreground break-words">
                     {commentData.content || "—"}
-                  </div>
+                  </TypographyP>
                 </div>
               </div>
             </Card>
@@ -187,15 +191,15 @@ export const CommentDetailClient = ({ commentId, comment, backUrl = "/admin/comm
             {/* Author Info */}
             <div className="grid gap-6 grid-cols-1 sm:grid-cols-2">
               <FieldItem icon={User} label="Người bình luận">
-                <div className={`${typography.body.medium} font-medium text-foreground truncate`}>
+                <TypographyP className="font-medium text-foreground truncate">
                   {commentData.authorName || commentData.authorEmail || "—"}
-                </div>
+                </TypographyP>
               </FieldItem>
 
               <FieldItem icon={Mail} label="Email">
                 <a
                   href={`mailto:${commentData.authorEmail}`}
-                  className={`${typography.body.medium} font-medium text-primary hover:underline truncate block transition-colors`}
+                  className="font-medium text-primary hover:underline truncate block transition-colors"
                 >
                   {commentData.authorEmail || "—"}
                 </a>
@@ -209,28 +213,30 @@ export const CommentDetailClient = ({ commentId, comment, backUrl = "/admin/comm
                   href={`/admin/posts/${commentData.postId}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className={`group inline-flex items-center gap-1.5 ${typography.body.medium} font-medium text-primary hover:text-primary/80 hover:underline transition-colors`}
+                  className="group inline-flex items-center gap-1.5 font-medium text-primary hover:text-primary/80 hover:underline transition-colors"
                 >
                   <span className="truncate">{commentData.postTitle || "—"}</span>
-                  <ExternalLink className={`${iconSizes.xs} shrink-0 opacity-50 group-hover:opacity-100 transition-opacity`} />
+                  <IconSize size="xs" className="shrink-0 opacity-50 group-hover:opacity-100 transition-opacity">
+                    <ExternalLink />
+                  </IconSize>
                 </a>
               ) : (
-                <div className={`${typography.body.medium} font-medium text-foreground truncate`}>{commentData.postTitle || "—"}</div>
+                <TypographyP className="font-medium text-foreground truncate">{commentData.postTitle || "—"}</TypographyP>
               )}
             </FieldItem>
 
             {/* Timestamps */}
             <div className="grid gap-6 grid-cols-1 sm:grid-cols-2">
               <FieldItem icon={Calendar} label="Ngày tạo">
-                <div className={`${typography.body.medium} font-medium text-foreground`}>
+                <TypographyP className="font-medium text-foreground">
                   {commentData.createdAt ? formatDateVi(commentData.createdAt) : "—"}
-                </div>
+                </TypographyP>
               </FieldItem>
 
               <FieldItem icon={Clock} label="Cập nhật lần cuối">
-                <div className={`${typography.body.medium} font-medium text-foreground`}>
+                <TypographyP className="font-medium text-foreground">
                   {commentData.updatedAt ? formatDateVi(commentData.updatedAt) : "—"}
-                </div>
+                </TypographyP>
               </FieldItem>
             </div>
           </div>

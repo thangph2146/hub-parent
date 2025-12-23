@@ -3,9 +3,7 @@
  * Server Component - không cần client-side logic
  */
 import { FileText, Search } from "lucide-react"
-import { iconSizes } from "@/lib/typography"
-import { TypographyH3, TypographyPMuted, TypographySpanSmallMuted } from "@/components/ui/typography"
-import { cn } from "@/lib/utils"
+import { TypographyH3, TypographyPMuted, TypographySpanSmallMuted, IconSize } from "@/components/ui/typography"
 
 export const PostEmptyState = () => {
   return (
@@ -13,7 +11,9 @@ export const PostEmptyState = () => {
       <div className="mb-6 relative">
         <div className="absolute inset-0 bg-primary/10 rounded-full blur-2xl" />
         <div className="relative bg-muted rounded-full p-6">
-          <FileText className={cn(iconSizes["4xl"], "text-muted-foreground")} />
+          <IconSize size="4xl" className="text-muted-foreground">
+            <FileText />
+          </IconSize>
         </div>
       </div>
       <TypographyH3 className="mb-2">Không tìm thấy bài viết</TypographyH3>
@@ -21,7 +21,9 @@ export const PostEmptyState = () => {
         Chưa có bài viết nào được xuất bản hoặc không có bài viết phù hợp với bộ lọc của bạn.
       </TypographyPMuted>
       <div className="flex items-center gap-2">
-        <Search className={cn(iconSizes.sm)} />
+        <IconSize size="sm">
+          <Search />
+        </IconSize>
         <TypographySpanSmallMuted>Thử thay đổi bộ lọc hoặc quay lại sau</TypographySpanSmallMuted>
       </div>
     </div>

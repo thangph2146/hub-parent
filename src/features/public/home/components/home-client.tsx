@@ -1,6 +1,6 @@
 "use client";
 
-import { responsiveIconSizes, iconSizes } from "@/lib/typography";
+import { IconSize } from "@/components/ui/typography";
 import { TypographyDescriptionSmall, TypographyH2 } from "@/components/ui/typography";
 
 import {
@@ -52,8 +52,16 @@ export const HomeClient = ({ featuredPosts = [] }: HomeClientProps) => {
             text: "Đăng nhập ngay",
             variant: "default",
             size: "sm",
-            leftIcon: <Users className={responsiveIconSizes.small} />,
-            rightIcon: <ArrowRight className={responsiveIconSizes.small} />,
+            leftIcon: (
+              <IconSize size="sm">
+                <Users />
+              </IconSize>
+            ),
+            rightIcon: (
+              <IconSize size="sm">
+                <ArrowRight />
+              </IconSize>
+            ),
             responsiveText: {
               mobile: "Đăng nhập",
               desktop: "Đăng nhập ngay",
@@ -64,7 +72,11 @@ export const HomeClient = ({ featuredPosts = [] }: HomeClientProps) => {
             text: "Đăng ký",
             variant: "outline",
             size: "sm",
-            leftIcon: <MessageSquare className={responsiveIconSizes.small} />,
+            leftIcon: (
+              <IconSize size="sm">
+                <MessageSquare />
+              </IconSize>
+            ),
           },
         ]}
       />
@@ -141,7 +153,9 @@ export const HomeClient = ({ featuredPosts = [] }: HomeClientProps) => {
                 className="hidden sm:flex items-center gap-2 text-primary hover:text-primary/80 font-medium transition-colors"
               >
                 Xem tất cả
-                <ArrowRight className={iconSizes.sm} />
+                <IconSize size="sm">
+                  <ArrowRight />
+                </IconSize>
               </Link>
             </div>
 
@@ -163,7 +177,9 @@ export const HomeClient = ({ featuredPosts = [] }: HomeClientProps) => {
                 className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors font-medium"
               >
                 Xem tất cả bài viết
-                <ArrowRight className={iconSizes.sm} />
+                <IconSize size="sm">
+                  <ArrowRight />
+                </IconSize>
               </Link>
             </div>
           </div>
@@ -179,15 +195,27 @@ export const HomeClient = ({ featuredPosts = [] }: HomeClientProps) => {
             title: "Thông tin liên hệ",
             items: [
               {
-                icon: <Phone className={`${iconSizes.md} text-primary`} />,
+                icon: (
+                  <IconSize size="md" className="text-primary">
+                    <Phone />
+                  </IconSize>
+                ),
                 text: "(028) 38 212 430",
               },
               {
-                icon: <Mail className={`${iconSizes.md} text-primary`} />,
+                icon: (
+                  <IconSize size="md" className="text-primary">
+                    <Mail />
+                  </IconSize>
+                ),
                 text: "dhnhtphcm@hub.edu.vn",
               },
               {
-                icon: <GraduationCap className={`${iconSizes.md} text-primary`} />,
+                icon: (
+                  <IconSize size="md" className="text-primary">
+                    <GraduationCap />
+                  </IconSize>
+                ),
                 text: "Trường Đại học Ngân hàng TP.HCM",
               },
             ],

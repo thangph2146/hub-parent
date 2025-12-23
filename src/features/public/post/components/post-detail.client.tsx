@@ -1,6 +1,6 @@
 "use client"
 
-import { iconSizes } from "@/lib/typography"
+import { IconSize } from "@/components/ui/typography"
 import { TypographySpanSmallMuted, TypographyH1 } from "@/components/ui/typography"
 import { cn } from "@/lib/utils"
 
@@ -43,12 +43,16 @@ export const PostDetailClient = ({ post }: PostDetailClientProps) => {
           {/* Meta Info */}
           <div className={cn("flex flex-wrap items-center gap-4 sm:gap-6 pt-2 border-t")}>
             <div className="flex items-center gap-2">
-              <User className={cn(iconSizes.sm)} />
+              <IconSize size="sm">
+                <User />
+              </IconSize>
               <TypographySpanSmallMuted className="font-medium">{post.author.name ?? post.author.email}</TypographySpanSmallMuted>
             </div>
             {post.publishedAt && (
               <div className="flex items-center gap-2">
-                <Calendar className={cn(iconSizes.sm)} />
+                <IconSize size="sm">
+                  <Calendar />
+                </IconSize>
                 <time dateTime={getPublishedAtISO()}>
                   <TypographySpanSmallMuted>{formatPostDateLong(post.publishedAt)}</TypographySpanSmallMuted>
                 </time>
@@ -56,7 +60,9 @@ export const PostDetailClient = ({ post }: PostDetailClientProps) => {
             )}
             {post.publishedAt && (
               <div className="flex items-center gap-2">
-                <Clock className={cn(iconSizes.sm)} />
+                <IconSize size="sm">
+                  <Clock />
+                </IconSize>
                 <TypographySpanSmallMuted>
                   {(() => {
                     try {
@@ -84,7 +90,9 @@ export const PostDetailClient = ({ post }: PostDetailClientProps) => {
         {/* Tags */}
         {post.tags.length > 0 && (
           <div className="flex flex-wrap items-center gap-3 pt-8 border-t">
-            <Tag className={cn(iconSizes.md, "text-muted-foreground")} />
+            <IconSize size="md" className="text-muted-foreground">
+              <Tag />
+            </IconSize>
             <div className="flex flex-wrap gap-2">
               {post.tags.map((tag) => (
                 <Badge key={tag.id} variant="outline">

@@ -34,7 +34,7 @@ import { appFeatures } from "@/lib/config/app-features";
 import { getResourceMainRoute } from "@/lib/permissions/route-helpers";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
-import { typography, iconSizes, responsiveIconSizes } from "@/lib/typography";
+import { TypographyH6, TypographyPSmall, TypographyP, TypographyPSmallMuted, IconSize } from "@/components/ui/typography";
 
 /**
  * Helper functions để lấy routes từ appFeatures
@@ -175,13 +175,13 @@ export function PublicHeader() {
             className="dark:bg-foreground rounded-md p-1 flex items-center gap-2"
             aria-label="Trang chủ - Trường Đại học Ngân hàng TP.HCM"
           >
-            <Logo className={`${iconSizes["2xl"]} sm:${iconSizes["3xl"]} text-blue-100`} />  
+            <Logo className="h-8 w-8 sm:h-10 sm:w-10 text-blue-100" />  
           </Link>
           <div>
-            <h3 className={`${typography.heading.h6} text-center`}>
+            <TypographyH6 className="text-center">
               Trường Đại học Ngân hàng
-            </h3>
-            <p className={`${typography.body.small} font-medium`}>Thành Phố Hồ Chí Minh</p>
+            </TypographyH6>
+            <TypographyPSmall className="font-medium">Thành Phố Hồ Chí Minh</TypographyPSmall>
           </div>
           <Separator orientation="vertical" className={`h-6 w-px bg-border`} />
           {mounted ? (
@@ -198,10 +198,10 @@ export function PublicHeader() {
                         <NavigationMenuLink asChild>
                           <Link
                             href={link.href}
-                            className={`group inline-flex h-10 w-max items-center justify-center rounded-md bg-transparent px-4 py-2 ${typography.body.medium} font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50`}
+                            className="group inline-flex h-10 w-max items-center justify-center rounded-md bg-transparent px-4 py-2 font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50"
                           >
                             {link.href === PUBLIC_ROUTES.home && (
-                              <link.icon className={`mr-2 ${iconSizes.sm}`} />
+                              <IconSize size="sm" className="mr-2"><link.icon /></IconSize>
                             )}
                             {link.title}
                           </Link>
@@ -281,7 +281,7 @@ export function PublicHeader() {
               aria-controls="mobile-menu"
               aria-label="Toggle menu"
             >
-              <MenuToggleIcon open={open} className={iconSizes.md} duration={300} />
+              <MenuToggleIcon open={open} className="h-5 w-5" duration={300} />
             </Button>
           </div>
         ) : (
@@ -310,14 +310,14 @@ export function PublicHeader() {
                   onClick={() => setOpen(false)}
                 >
                   <Link href="/auth/sign-in">
-                    <div className={`bg-primary/10 flex aspect-square ${iconSizes["2xl"]} items-center justify-center rounded-md`}>
-                      <LogIn className={`text-primary ${iconSizes.md} text-primary-foreground`} />
+                    <div className="bg-primary/10 flex aspect-square h-12 w-12 items-center justify-center rounded-md">
+                      <IconSize size="md" className="text-primary text-primary-foreground"><LogIn /></IconSize>
                     </div>
                     <div className="flex flex-col items-start">
                       <span className="font-semibold">Đăng nhập</span>
-                      <span className={typography.body.muted.small}>
+                      <TypographyPSmallMuted>
                         Đăng nhập vào tài khoản của bạn
-                      </span>
+                      </TypographyPSmallMuted>
                     </div>
                   </Link>
                 </Button>
@@ -328,14 +328,14 @@ export function PublicHeader() {
                   onClick={() => setOpen(false)}
                 >
                   <Link href="/auth/sign-up">
-                    <div className={`bg-muted flex aspect-square ${responsiveIconSizes.large} items-center justify-center rounded-md`}>
-                      <UserPlus className={`text-foreground ${responsiveIconSizes.medium} text-foreground-primary`} />
+                    <div className="bg-muted flex aspect-square h-12 w-12 items-center justify-center rounded-md">
+                      <IconSize size="md" className="text-foreground text-foreground-primary"><UserPlus /></IconSize>
                     </div>
                     <div className="flex flex-col items-start">
                       <span className="font-semibold">Đăng ký</span>
-                      <span className={typography.body.muted.small}>
+                      <TypographyPSmallMuted>
                         Tạo tài khoản mới
-                      </span>
+                      </TypographyPSmallMuted>
                     </div>
                   </Link>
                 </Button>
@@ -359,16 +359,16 @@ export function PublicHeader() {
                         onClick={() => setOpen(false)}
                       >
                         <div className="bg-background/40 flex aspect-square size-11 items-center justify-center rounded-lg border shadow-sm shrink-0 group-hover:bg-background/60 transition-colors">
-                          <link.icon className={`text-foreground group-hover:text-accent-foreground group-focus-visible:text-accent-foreground ${responsiveIconSizes.medium} transition-colors`} />
+                          <IconSize size="md" className="text-foreground group-hover:text-accent-foreground group-focus-visible:text-accent-foreground transition-colors"><link.icon /></IconSize>
                         </div>
                         <div className="flex flex-col items-start justify-center min-w-0 flex-1">
-                          <span className={`${typography.body.medium} group-hover:text-accent-foreground group-focus-visible:text-accent-foreground transition-colors`}>
+                          <TypographyP className="group-hover:text-accent-foreground group-focus-visible:text-accent-foreground transition-colors">
                             {link.title}
-                          </span>
+                          </TypographyP>
                           {link.description && (
-                            <span className={`${typography.body.small} group-hover:text-accent-foreground/80 group-focus-visible:text-accent-foreground transition-colors`}>
+                            <TypographyPSmall className="group-hover:text-accent-foreground/80 group-focus-visible:text-accent-foreground transition-colors">
                               {link.description}
-                            </span>
+                            </TypographyPSmall>
                           )}
                         </div>
                       </Link>
@@ -383,9 +383,9 @@ export function PublicHeader() {
                     link.href !== PUBLIC_ROUTES.blog
                 ).length > 0 && (
                     <>
-                      <span className={`px-2 py-2 ${typography.body.muted.small} font-semibold uppercase tracking-wider`}>
+                      <TypographyPSmallMuted className="px-2 py-2 font-semibold uppercase tracking-wider">
                         Hỗ trợ
-                      </span>
+                      </TypographyPSmallMuted>
                       {publicLinks
                         .filter(
                           (link) =>
@@ -400,16 +400,16 @@ export function PublicHeader() {
                             onClick={() => setOpen(false)}
                           >
                             <div className="bg-background/40 flex aspect-square size-11 items-center justify-center rounded-lg border shadow-sm shrink-0 group-hover:bg-background/60 transition-colors">
-                              <link.icon className={`text-foreground group-hover:text-accent-foreground group-focus-visible:text-accent-foreground ${responsiveIconSizes.medium} transition-colors`} />
+                              <IconSize size="md" className="text-foreground group-hover:text-accent-foreground group-focus-visible:text-accent-foreground transition-colors"><link.icon /></IconSize>
                             </div>
                             <div className="flex flex-col items-start justify-center min-w-0 flex-1">
-                              <span className={`${typography.body.medium} group-hover:text-accent-foreground group-focus-visible:text-accent-foreground transition-colors`}>
+                              <TypographyP className="group-hover:text-accent-foreground group-focus-visible:text-accent-foreground transition-colors">
                                 {link.title}
-                              </span>
+                              </TypographyP>
                               {link.description && (
-                                <span className={`${typography.body.small} group-hover:text-accent-foreground/80 group-focus-visible:text-accent-foreground transition-colors`}>
+                                <TypographyPSmall className="group-hover:text-accent-foreground/80 group-focus-visible:text-accent-foreground transition-colors">
                                   {link.description}
-                                </span>
+                                </TypographyPSmall>
                               )}
                             </div>
                           </Link>
@@ -488,11 +488,11 @@ function ListItem({
     >
       <Link href={href}>
         <div className="bg-background/40 flex aspect-square size-12 items-center justify-center rounded-md border shadow-sm">
-          <Icon className={`text-foreground group-hover:text-accent-foreground group-focus:text-accent-foreground group-data-[active]:text-accent-foreground ${responsiveIconSizes.medium}`} />
+          <IconSize size="md" className="text-foreground group-hover:text-accent-foreground group-focus:text-accent-foreground group-data-[active]:text-accent-foreground"><Icon /></IconSize>
         </div>
         <div className="flex flex-col items-start justify-center">
-          <span className={`font-medium ${typography.body.medium}`}>{title}</span>
-          {description && <span className={typography.body.small}>{description}</span>}
+          <TypographyP className="font-medium">{title}</TypographyP>
+          {description && <TypographyPSmall>{description}</TypographyPSmall>}
         </div>
       </Link>
     </NavigationMenuLink>

@@ -1,7 +1,7 @@
 "use client";
 
 import { AlertTriangle, RefreshCw, Home } from "lucide-react";
-import { typography, headerConfig } from "@/lib/typography";
+import { TypographyH1, TypographyDescriptionLarge, TypographyPSmallMuted, TypographyPMuted } from "@/components/ui/typography";
 import Link from "next/link";
 import { motion } from "framer-motion";
 
@@ -79,12 +79,12 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
                 variants={itemVariants}
                 className="text-center space-y-3 mb-6"
               >
-                <h1 className={headerConfig.section.className}>
+                <TypographyH1>
                   Đã xảy ra lỗi nghiêm trọng
-                </h1>
-                <p className={typography.description.large}>
+                </TypographyH1>
+                <TypographyDescriptionLarge>
                   {error.message || "Đã xảy ra lỗi không mong muốn"}
-                </p>
+                </TypographyDescriptionLarge>
               </motion.div>
 
               {/* Error Details */}
@@ -93,10 +93,10 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
                   variants={itemVariants}
                   className="rounded-lg bg-muted p-4 border mb-6"
                 >
-                  <p className={`${typography.body.muted.small} font-mono text-center`}>
+                  <TypographyPSmallMuted className="font-mono text-center">
                     <span className="font-semibold">Error ID:</span>{" "}
                     {error.digest}
-                  </p>
+                  </TypographyPSmallMuted>
                 </motion.div>
               )}
 
@@ -105,11 +105,11 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
                 variants={itemVariants}
                 className="rounded-lg bg-muted/50 p-4 border border-destructive/20 mb-6"
               >
-                <p className={`${typography.body.muted.medium} text-center`}>
+                <TypographyPMuted className="text-center">
                   Đã xảy ra lỗi nghiêm trọng trong ứng dụng. Vui lòng thử lại
                   hoặc quay về trang chủ. Nếu vấn đề vẫn tiếp tục, vui lòng liên
                   hệ với bộ phận hỗ trợ kỹ thuật.
-                </p>
+                </TypographyPMuted>
               </motion.div>
 
               {/* Actions */}
@@ -119,14 +119,14 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
               >
                 <button
                   onClick={reset}
-                  className={`inline-flex items-center justify-center whitespace-nowrap rounded-lg ${typography.body.medium} font-medium transition-colors outline-offset-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring/70 disabled:pointer-events-none disabled:opacity-50 h-10 px-6 bg-primary text-primary-foreground shadow-sm shadow-black/5 hover:bg-primary/90 cursor-pointer`}
+                  className="inline-flex items-center justify-center whitespace-nowrap rounded-lg font-medium transition-colors outline-offset-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring/70 disabled:pointer-events-none disabled:opacity-50 h-10 px-6 bg-primary text-primary-foreground shadow-sm shadow-black/5 hover:bg-primary/90 cursor-pointer"
                 >
                   <RefreshCw className="mr-2 h-4 w-4" />
                   Thử lại
                 </button>
                 <Link
                   href="/"
-                  className={`inline-flex items-center justify-center whitespace-nowrap rounded-lg ${typography.body.medium} font-medium transition-colors outline-offset-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring/70 disabled:pointer-events-none disabled:opacity-50 h-10 px-6 border border-input bg-background shadow-sm shadow-black/5 hover:bg-accent hover:text-accent-foreground`}
+                  className="inline-flex items-center justify-center whitespace-nowrap rounded-lg font-medium transition-colors outline-offset-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring/70 disabled:pointer-events-none disabled:opacity-50 h-10 px-6 border border-input bg-background shadow-sm shadow-black/5 hover:bg-accent hover:text-accent-foreground"
                 >
                   <Home className="mr-2 h-4 w-4" />
                   Về trang chủ
