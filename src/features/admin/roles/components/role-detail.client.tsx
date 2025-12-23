@@ -32,8 +32,7 @@ import {
   CommandList,
 } from "@/components/ui/command"
 import { cn } from "@/lib/utils"
-import { iconSizes } from "@/lib/typography"
-import { TypographySpanMuted, TypographyH3, TypographyP, TypographySpanSmallMuted } from "@/components/ui/typography"
+import { TypographySpanMuted, TypographyH3, TypographyP, TypographySpanSmallMuted, IconSize } from "@/components/ui/typography"
 
 export interface RoleDetailData {
   id: string

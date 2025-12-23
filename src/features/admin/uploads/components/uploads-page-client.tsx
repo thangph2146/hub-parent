@@ -34,8 +34,7 @@ import { ImageGrid } from "./image-grid"
 import { Pagination } from "./pagination"
 import { ViewModeToggle } from "./view-mode-toggle"
 import { DeleteDialogs } from "./delete-dialogs"
-import { iconSizes } from "@/lib/typography"
-import { TypographySpanSmall } from "@/components/ui/typography"
+import { TypographySpanSmall, IconSize } from "@/components/ui/typography"
 
 export const UploadsPageClient = () => {
   const queryClient = useQueryClient()
@@ -215,7 +214,9 @@ export const UploadsPageClient = () => {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Upload className={`${iconSizes.md} shrink-0`} />
+            <IconSize size="md" className="shrink-0">
+              <Upload />
+            </IconSize>
             <span>Upload hình ảnh mới</span>
           </CardTitle>
           <CardDescription>
@@ -256,7 +257,9 @@ export const UploadsPageClient = () => {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="min-w-0 flex-1">
               <CardTitle className="flex items-center gap-2">
-                <ImageIcon className={`${iconSizes.md} shrink-0`} />
+                <IconSize size="md" className="shrink-0">
+                  <ImageIcon />
+                </IconSize>
                 <span className="truncate">Tất cả hình ảnh</span>
               </CardTitle>
               <CardDescription>
@@ -325,11 +328,15 @@ export const UploadsPageClient = () => {
         <CardContent>
           {isLoading ? (
             <div className="flex items-center justify-center py-12">
-              <Loader2 className={`${iconSizes["2xl"]} animate-spin text-primary`} />
+              <IconSize size="2xl">
+                <Loader2 className="animate-spin text-primary" />
+              </IconSize>
             </div>
           ) : allImages.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
-              <ImageIcon className={`${iconSizes["4xl"]} mx-auto mb-4 opacity-50`} />
+              <IconSize size="4xl" className="mx-auto mb-4">
+                <ImageIcon className="opacity-50" />
+              </IconSize>
               <p>Chưa có hình ảnh nào được upload</p>
             </div>
           ) : (
@@ -349,9 +356,13 @@ export const UploadsPageClient = () => {
                           className="whitespace-nowrap"
                         >
                           {bulkDeleteImagesMutation.isPending ? (
-                            <Loader2 className={`mr-2 ${iconSizes.sm} animate-spin`} />
+                            <IconSize size="sm" className="mr-2">
+                              <Loader2 className="animate-spin" />
+                            </IconSize>
                           ) : (
-                            <Trash2 className={`mr-2 ${iconSizes.sm}`} />
+                            <IconSize size="sm" className="mr-2">
+                              <Trash2 />
+                            </IconSize>
                           )}
                           <span className="hidden sm:inline">
                             Xóa {selectedImages.size} hình đã chọn

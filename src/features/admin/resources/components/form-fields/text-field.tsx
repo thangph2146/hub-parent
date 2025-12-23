@@ -6,7 +6,7 @@ import { FieldContent, FieldError } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
-import { iconSizes } from "@/lib/typography"
+import { IconSize } from "@/components/ui/typography"
 import type { ResourceFormField } from "../resource-form"
 
 interface TextFieldProps<T> {
@@ -60,9 +60,13 @@ export const TextField = <T,>({
             aria-label={showPassword ? "Ẩn mật khẩu" : "Hiển thị mật khẩu"}
           >
             {showPassword ? (
-              <EyeOff className={`${iconSizes.sm} text-muted-foreground`} />
+              <IconSize size="sm">
+                <EyeOff className="text-muted-foreground" />
+              </IconSize>
             ) : (
-              <Eye className={`${iconSizes.sm} text-muted-foreground`} />
+              <IconSize size="sm">
+                <Eye className="text-muted-foreground" />
+              </IconSize>
             )}
           </Button>
         )}

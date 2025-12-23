@@ -32,8 +32,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { cn } from "@/lib/utils"
 import { renderFieldInput } from "./form-fields"
 import { applyResourceSegmentToPath } from "@/lib/permissions"
-import { iconSizes } from "@/lib/typography"
-import { TypographyH1, TypographyH4, TypographyPMuted, TypographySpanMuted } from "@/components/ui/typography"
+import { TypographyH1, TypographyH4, TypographyPMuted, TypographySpanMuted, IconSize } from "@/components/ui/typography"
 
 export interface ResourceFormField<T = unknown> {
   name: keyof T | string
@@ -549,12 +548,16 @@ export const ResourceForm = <T extends Record<string, unknown>>({
       >
         {variant === "page" && resolvedBackUrl ? (
           <>
-            <ArrowLeft className={`mr-2 ${iconSizes.md}`} />
+            <IconSize size="md" className="mr-2">
+              <ArrowLeft />
+            </IconSize>
             {cancelLabel}
           </>
         ) : (
           <>
-            <X className={`mr-2 ${iconSizes.md}`} />
+            <IconSize size="md" className="mr-2">
+              <X />
+            </IconSize>
             {cancelLabel}
           </>
         )}
@@ -562,12 +565,16 @@ export const ResourceForm = <T extends Record<string, unknown>>({
       <Button type="submit" form="resource-form" disabled={isPending}>
         {isPending ? (
           <>
-            <Loader2 className={`mr-2 ${iconSizes.md} animate-spin`} />
+            <IconSize size="md" className="mr-2">
+              <Loader2 className="animate-spin" />
+            </IconSize>
             Đang lưu...
           </>
         ) : (
           <>
-            <Save className={`mr-2 ${iconSizes.md}`} />
+            <IconSize size="md" className="mr-2">
+              <Save />
+            </IconSize>
             {submitLabel}
           </>
         )}
@@ -646,7 +653,9 @@ export const ResourceForm = <T extends Record<string, unknown>>({
                 onClick={handleBack}
                 className="-ml-2"
               >
-                <ArrowLeft className={`mr-2 ${iconSizes.sm}`} />
+                <IconSize size="sm" className="mr-2">
+                  <ArrowLeft />
+                </IconSize>
                 {backLabel}
               </Button>
             )}

@@ -24,8 +24,7 @@ import { useResourceSegment } from "@/hooks/use-resource-segment";
 import { applyResourceSegmentToPath } from "@/lib/permissions";
 import { useResourceNavigation } from "../hooks";
 import { logger } from "@/lib/config/logger";
-import { iconSizes } from "@/lib/typography";
-import { TypographySpanSmall, TypographySpanMuted, TypographyH1, TypographyPMuted } from "@/components/ui/typography";
+import { TypographySpanSmall, TypographySpanMuted, TypographyH1, TypographyPMuted, IconSize } from "@/components/ui/typography";
 
 export interface ResourceDetailField<T = unknown> {
   name: keyof T | string;
@@ -386,7 +385,9 @@ export const ResourceDetailClient = <T extends Record<string, unknown>>({
                   onClick={() => navigateBack(resolvedBackUrl, onBack)}
                   className="mt-4"
                 >
-                  <ArrowLeft className={`mr-2 ${iconSizes.md}`} />
+                  <IconSize size="md" className="mr-2">
+                    <ArrowLeft />
+                  </IconSize>
                   {backLabel}
                 </Button>
               )}
@@ -409,7 +410,9 @@ export const ResourceDetailClient = <T extends Record<string, unknown>>({
                 onClick={handleBack}
                 className="-ml-2"
               >
-                <ArrowLeft className={`mr-2 ${iconSizes.sm}`} />
+                <IconSize size="sm" className="mr-2">
+                  <ArrowLeft />
+                </IconSize>
                 {backLabel}
               </Button>
             )}

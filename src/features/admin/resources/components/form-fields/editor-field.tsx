@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react"
 import { Editor } from "@/components/editor/editor-x/editor"
 import { FieldContent } from "@/components/ui/field"
-import { typography } from "@/lib/typography"
+import { TypographyP } from "@/components/ui/typography"
 import type { SerializedEditorState } from "lexical"
 
 export interface EditorFieldProps {
@@ -112,7 +112,7 @@ export const EditorField = ({
           readOnly={readOnly || disabled}
         />
         {error && (
-          <p className={`${typography.body.medium} text-destructive mt-2`}>{error}</p>
+          <TypographyP className="text-destructive mt-2">{error}</TypographyP>
         )}
       </div>
     </FieldContent>

@@ -16,8 +16,7 @@ import {
 } from "@/components/ui/command"
 import { Check, Folder, ChevronsUpDown, Trash2, Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { iconSizes } from "@/lib/typography"
-import { TypographyPSmallMuted } from "@/components/ui/typography"
+import { TypographyPSmallMuted, IconSize } from "@/components/ui/typography"
 import { useUploadsStore } from "../store/uploads-store"
 import { useDeleteFolder } from "../hooks/use-uploads-queries"
 import { FolderTreeSelectItem } from "./folder-tree-select-item"
@@ -96,7 +95,9 @@ export const FolderSelector = ({
                   ? "Đang tải..."
                   : "Chọn thư mục (để trống để lưu theo ngày)"}
               </span>
-              <ChevronsUpDown className={cn("ml-2", iconSizes.sm, "shrink-0 opacity-50")} />
+              <IconSize size="sm" className="ml-2 shrink-0 opacity-50">
+                <ChevronsUpDown />
+              </IconSize>
             </Button>
           </PopoverTrigger>
           <PopoverContent 
@@ -114,13 +115,12 @@ export const FolderSelector = ({
                       setFolderTreeSelectOpenUpload(false)
                     }}
                   >
-                    <Check
-                      className={cn(
-                        "mr-2", iconSizes.sm,
-                        !selectedFolder ? "opacity-100" : "opacity-0"
-                      )}
-                    />
-                    <Folder className={cn("mr-2", iconSizes.sm, "hover:text-foreground")} />
+                    <IconSize size="sm" className={cn("mr-2", !selectedFolder ? "opacity-100" : "opacity-0")}>
+                      <Check />
+                    </IconSize>
+                    <IconSize size="sm" className="mr-2 hover:text-foreground">
+                      <Folder />
+                    </IconSize>
                     Theo ngày (mặc định)
                   </CommandItem>
                   {folderTreeForSelect.map((node) => (
@@ -154,9 +154,13 @@ export const FolderSelector = ({
           >
             {deleteFolderMutation.isPending &&
             deleteFolderMutation.variables === selectedFolder ? (
-              <Loader2 className={cn(iconSizes.sm, "animate-spin")} />
+              <IconSize size="sm">
+                <Loader2 className="animate-spin" />
+              </IconSize>
             ) : (
-              <Trash2 className={iconSizes.sm} />
+              <IconSize size="sm">
+                <Trash2 />
+              </IconSize>
             )}
           </Button>
         )}
