@@ -1,5 +1,5 @@
 import { useMemo } from "react"
-import { typography } from "@/lib/typography"
+import { TypographySpanSmall, TypographySpanSmallMuted } from "@/components/ui/typography"
 import { Switch } from "@/components/ui/switch"
 import type { DataTableColumn } from "@/components/tables"
 import { useDynamicFilterOptions } from "@/features/admin/resources/hooks/use-dynamic-filter-options"
@@ -77,9 +77,9 @@ export const useCommentColumns = ({ togglingComments, canApprove, onToggleApprov
         headerClassName: "min-w-[140px] max-w-[180px]",
         cell: (row) =>
           row.deletedAt ? (
-            <span className={`inline-flex min-w-[88px] items-center justify-center rounded-full bg-rose-100 px-2 py-1 ${typography.body.small} font-medium text-rose-700`}>
+            <TypographySpanSmall className="inline-flex min-w-[88px] items-center justify-center rounded-full bg-rose-100 px-2 py-1 font-medium text-rose-700">
               Đã xóa
-            </span>
+            </TypographySpanSmall>
           ) : (
             <div className="flex items-center gap-2">
               <Switch
@@ -88,9 +88,9 @@ export const useCommentColumns = ({ togglingComments, canApprove, onToggleApprov
                 onCheckedChange={(checked) => onToggleApprove(row, checked)}
                 aria-label={row.approved ? "Hủy duyệt bình luận" : "Duyệt bình luận"}
               />
-              <span className={typography.body.muted.small}>
+              <TypographySpanSmallMuted>
                 {row.approved ? "Đã duyệt" : "Chờ duyệt"}
-              </span>
+              </TypographySpanSmallMuted>
             </div>
           ),
       },

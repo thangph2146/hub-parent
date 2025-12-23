@@ -1,6 +1,6 @@
 "use client"
 
-import { typography, iconSizes } from "@/lib/typography"
+import { TypographyP, TypographyPSmall, TypographyPSmallMuted, TypographyPMuted, IconSize } from "@/components/ui/typography"
 
 import { useState, useCallback } from "react"
 import { useAuth } from "@/hooks/use-session"
@@ -198,8 +198,10 @@ export const ManageMembersDialog = ({
               <CommandList>
                 {isLoading && (
                   <div className="flex items-center justify-center py-6">
-                    <Loader2 className={`${iconSizes.sm} animate-spin text-muted-foreground`} />
-                    <span className={`ml-2 ${typography.body.muted.medium}`}>Đang tải...</span>
+                    <IconSize size="sm" className="animate-spin text-muted-foreground">
+                      <Loader2 />
+                    </IconSize>
+                    <TypographyPMuted className="ml-2">Đang tải...</TypographyPMuted>
                   </div>
                 )}
                 {!isLoading && users.length === 0 && searchValue.length >= 2 && (
@@ -210,21 +212,27 @@ export const ManageMembersDialog = ({
                     <ScrollArea className="h-[180px] pr-2">
                       {users.map((user) => (
                         <CommandItem key={user.id} value={user.id} className="flex items-center gap-3 cursor-pointer">
-                          <Avatar className={iconSizes["2xl"]}>
+                          <Avatar className="h-12 w-12">
                             <AvatarImage src={user.avatar || undefined} alt={user.name || user.email} />
-                            <AvatarFallback className={typography.body.small}>
-                              {(user.name || user.email).substring(0, 2).toUpperCase()}
+                            <AvatarFallback>
+                              <TypographyPSmall>
+                                {(user.name || user.email).substring(0, 2).toUpperCase()}
+                              </TypographyPSmall>
                             </AvatarFallback>
                           </Avatar>
                           <div className="flex flex-col flex-1 min-w-0">
-                            <span className={`${typography.body.medium} font-medium truncate`}>{user.name || user.email}</span>
-                            {user.name && <span className={`${typography.body.muted.small} truncate`}>{user.email}</span>}
+                            <TypographyP className="font-medium truncate">{user.name || user.email}</TypographyP>
+                            {user.name && <TypographyPSmallMuted className="truncate">{user.email}</TypographyPSmallMuted>}
                           </div>
                           <Button size="sm" variant="secondary" disabled={isProcessing === user.id} onClick={() => handleAddMember(user.id)}>
                             {isProcessing === user.id ? (
-                              <Loader2 className={`mr-2 ${iconSizes.sm} animate-spin`} />
+                              <IconSize size="sm" className="mr-2 animate-spin">
+                                <Loader2 />
+                              </IconSize>
                             ) : (
-                              <UserPlus className={`mr-2 ${iconSizes.sm}`} />
+                              <IconSize size="sm" className="mr-2">
+                                <UserPlus />
+                              </IconSize>
                             )}
                             Thêm
                           </Button>
@@ -245,29 +253,37 @@ export const ManageMembersDialog = ({
                   <div className="space-y-2">
                     {group?.members?.map((member) => (
                       <div key={member.id} className="flex items-center gap-3 rounded border p-2">
-                        <Avatar className={iconSizes["2xl"]}>
+                        <Avatar className="h-12 w-12">
                           <AvatarImage src={member.user?.avatar || undefined} alt={member.user?.name || member.user?.email || ""} />
-                          <AvatarFallback className={typography.body.small}>
-                            {(member.user?.name || member.user?.email || "").substring(0, 2).toUpperCase()}
+                          <AvatarFallback>
+                            <TypographyPSmall>
+                              {(member.user?.name || member.user?.email || "").substring(0, 2).toUpperCase()}
+                            </TypographyPSmall>
                           </AvatarFallback>
                         </Avatar>
                         <div className="flex flex-col flex-1 min-w-0">
-                          <span className={`${typography.body.medium} font-medium truncate`}>{member.user?.name || member.user?.email}</span>
-                          <span className={`${typography.body.muted.small} truncate`}>{member.role}</span>
+                          <TypographyP className="font-medium truncate">{member.user?.name || member.user?.email}</TypographyP>
+                          <TypographyPSmallMuted className="truncate">{member.role}</TypographyPSmallMuted>
                         </div>
                         <div className="flex items-center gap-2">
                           {canPromoteAdmin && (
                             <Button size="sm" variant="secondary" disabled={isProcessing === member.id} onClick={() => handleUpdateRole(member.userId, member.role === "ADMIN" ? "MEMBER" : "ADMIN")}>
-                              <ShieldCheck className={`mr-2 ${iconSizes.sm}`} />
+                              <IconSize size="sm" className="mr-2">
+                                <ShieldCheck />
+                              </IconSize>
                               {member.role === "ADMIN" ? "Hạ cấp" : "Thăng cấp"}
                             </Button>
                           )}
                           {canManageMembers && (
                             <Button size="sm" variant="destructive" disabled={isProcessing === member.id} onClick={() => handleRemoveMember(member.userId)}>
                               {isProcessing === member.id ? (
-                                <Loader2 className={`mr-2 ${iconSizes.sm} animate-spin`} />
+                                <IconSize size="sm" className="mr-2 animate-spin">
+                                  <Loader2 />
+                                </IconSize>
                               ) : (
-                                <UserMinus className={`mr-2 ${iconSizes.sm}`} />
+                                <IconSize size="sm" className="mr-2">
+                                  <UserMinus />
+                                </IconSize>
                               )}
                               Xóa
                             </Button>
@@ -278,7 +294,7 @@ export const ManageMembersDialog = ({
                   </div>
                 </ScrollArea>
               ) : (
-                <div className={typography.body.muted.medium}>Chưa có thành viên nào</div>
+                <TypographyPMuted>Chưa có thành viên nào</TypographyPMuted>
               )}
             </div>
           </div>

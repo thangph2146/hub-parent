@@ -1,5 +1,5 @@
 import { useMemo } from "react"
-import { typography } from "@/lib/typography"
+import { TypographyP } from "@/components/ui/typography"
 import type { DataTableColumn } from "@/components/tables"
 import { useDynamicFilterOptions } from "@/features/admin/resources/hooks/use-dynamic-filter-options"
 import { apiRoutes } from "@/lib/api/routes"
@@ -71,9 +71,9 @@ export const useCategoryColumns = () => {
         className: "min-w-[200px] max-w-[400px]",
         headerClassName: "min-w-[200px] max-w-[400px]",
         cell: (row) => (
-          <div className={`break-words max-w-[400px] ${typography.body.medium}`} title={row.description || undefined}>
+          <TypographyP className="break-words max-w-[400px]" title={row.description || undefined}>
             {row.description ?? <span className="text-muted-foreground">-</span>}
-          </div>
+          </TypographyP>
         ),
       },
       {

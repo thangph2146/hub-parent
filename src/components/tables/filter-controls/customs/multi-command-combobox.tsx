@@ -6,7 +6,7 @@
 import { useState, useId, useCallback } from "react"
 import { Check, ChevronsUpDown, X, Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { iconSizes } from "@/lib/typography"
+import { IconSize } from "@/components/ui/typography"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
@@ -103,7 +103,9 @@ export function MultiCommandCombobox<T extends object = object>({
                 disabled={true}
             >
                 <span className="truncate">{displayText}</span>
-                <ChevronsUpDown className={cn("ml-1 sm:ml-2 shrink-0 opacity-50", iconSizes.xs)} />
+                <IconSize size="xs" className="ml-1 sm:ml-2 shrink-0 opacity-50">
+                  <ChevronsUpDown />
+                </IconSize>
             </Button>
         )
     }
@@ -135,12 +137,19 @@ export function MultiCommandCombobox<T extends object = object>({
                     </div>
                     <div className="flex items-center gap-1 flex-shrink-0">
                         {selectedValues.length > 0 && (
-                            <X
-                                className={cn(iconSizes.xs, "text-muted-foreground hover:text-foreground")}
+                            <button
+                                type="button"
                                 onClick={handleClear}
-                            />
+                                className="text-muted-foreground hover:text-foreground"
+                            >
+                                <IconSize size="xs">
+                                  <X />
+                                </IconSize>
+                            </button>
                         )}
-                        <ChevronsUpDown className={cn(iconSizes.xs, "shrink-0 opacity-50")} />
+                        <IconSize size="xs" className="shrink-0 opacity-50">
+                          <ChevronsUpDown />
+                        </IconSize>
                     </div>
                 </Button>
             </PopoverTrigger>
@@ -170,12 +179,16 @@ export function MultiCommandCombobox<T extends object = object>({
                                 onClick={handleClearSearch}
                                 className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                             >
-                                <X className={iconSizes.xs} />
+                                <IconSize size="xs">
+                                  <X />
+                                </IconSize>
                             </button>
                         )}
                         {isLoading && searchValue && (
                             <div className="absolute right-8 top-1/2 -translate-y-1/2">
-                                <Loader2 className={cn(iconSizes.xs, "animate-spin text-muted-foreground")} />
+                                <IconSize size="xs" className="animate-spin text-muted-foreground">
+                                  <Loader2 />
+                                </IconSize>
                             </div>
                         )}
                     </div>
@@ -196,7 +209,9 @@ export function MultiCommandCombobox<T extends object = object>({
                                         value={option.value}
                                         onSelect={() => handleToggle(option.value)}
                                     >
-                                        <Check className={cn("mr-2", iconSizes.xs, isSelected ? "opacity-100" : "opacity-0")} />
+                                        <IconSize size="xs" className={cn("mr-2", isSelected ? "opacity-100" : "opacity-0")}>
+                                          <Check />
+                                        </IconSize>
                                         {option.label}
                                     </CommandItem>
                                 )

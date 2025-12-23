@@ -25,7 +25,7 @@ const Timeline = dynamic(() => import("@/components/ui/timeline").then(mod => ({
   loading: () => <div className="h-96 flex items-center justify-center">Đang tải...</div>,
 })
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import { textColors, iconSizes, responsiveIconSizes } from "@/lib/typography";
+import { IconSize } from "@/components/ui/typography";
 import { TypographyPLargeMuted, TypographyPSmallMuted, TypographyDescriptionLarge, TypographyH1, TypographyH2, TypographyH3, TypographyH4, TypographyH6, TypographySpanSmallMuted, TypographyDescription } from "@/components/ui/typography";
 
 /**
@@ -735,7 +735,7 @@ export const AboutClient = () => {
               <div>
                 <TypographyH2 className="mb-2 text-primary">
                   49
-                  <TypographyH4 className={textColors.primary}>
+                  <TypographyH4 className="text-primary">
                     + năm
                   </TypographyH4>
                 </TypographyH2>
@@ -747,7 +747,7 @@ export const AboutClient = () => {
               <div>
                 <TypographyH2 className="mb-2 text-primary">
                   17.500
-                  <TypographyH4 className={textColors.primary}>
+                  <TypographyH4 className="text-primary">
                     +
                   </TypographyH4>
                 </TypographyH2>
@@ -770,7 +770,7 @@ export const AboutClient = () => {
               <div>
                 <TypographyH2 className="mb-2 text-primary">
                   66.000
-                  <TypographyH4 className={textColors.primary}>
+                  <TypographyH4 className="text-primary">
                     +
                   </TypographyH4>
                 </TypographyH2>
@@ -824,7 +824,9 @@ export const AboutClient = () => {
               className="inline-flex items-center gap-2 text-primary hover:text-primary/80 transition-colors font-medium mt-4"
             >
               <span>Xem thêm</span>
-              <ChevronDown className={iconSizes.sm} />
+              <IconSize size="sm">
+                <ChevronDown />
+              </IconSize>
             </button>
           </div>
 
@@ -1261,14 +1263,18 @@ export const AboutClient = () => {
                   className="absolute left-4 top-1/2 -translate-y-1/2 bg-background/80 hover:bg-background/90 text-foreground rounded-full p-2 shadow-lg transition-all pointer-events-auto"
                   aria-label="Slide trước"
                 >
-                  <ChevronLeft className={responsiveIconSizes.medium} />
+                  <IconSize size="md">
+                    <ChevronLeft />
+                  </IconSize>
                 </button>
                 <button
                   onClick={nextImage}
                   className="absolute right-4 top-1/2 -translate-y-1/2 bg-background/80 hover:bg-background/90 text-foreground rounded-full p-2 shadow-lg transition-all pointer-events-auto"
                   aria-label="Slide tiếp theo"
                 >
-                  <ChevronRight className={responsiveIconSizes.medium} />
+                  <IconSize size="md">
+                    <ChevronRight />
+                  </IconSize>
                 </button>
               </div>
             </div>
@@ -1302,7 +1308,9 @@ export const AboutClient = () => {
                 className="bg-background border border-border hover:bg-muted text-foreground rounded-full p-2 shadow-md transition-all"
                 aria-label="Hình ảnh trước"
               >
-                <ChevronLeft className={iconSizes.md} />
+                <IconSize size="md">
+                  <ChevronLeft />
+                </IconSize>
               </button>
               <TypographySpanSmallMuted>
                 {currentImageIndex + 1} / {facilityImages.length}
@@ -1312,7 +1320,9 @@ export const AboutClient = () => {
                 className="bg-background border border-border hover:bg-muted text-foreground rounded-full p-2 shadow-md transition-all"
                 aria-label="Hình ảnh tiếp theo"
               >
-                <ChevronRight className={iconSizes.md} />
+                <IconSize size="md">
+                  <ChevronRight />
+                </IconSize>
               </button>
             </div>
           </div>
@@ -1397,7 +1407,9 @@ export const AboutClient = () => {
                 <TypographyDescriptionLarge className="font-medium group-hover:text-primary transition-colors">
                   {department.name}
                 </TypographyDescriptionLarge>
-                <ArrowRight className={`${responsiveIconSizes.medium} text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all flex-shrink-0`} />
+                <IconSize size="md" className="text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all flex-shrink-0">
+                  <ArrowRight />
+                </IconSize>
               </Link>
             ))}
           </div>

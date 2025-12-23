@@ -127,50 +127,56 @@ export function PublicFooter() {
               </div>
 
               {/* Contact Details */}
-              <div className="space-y-2 mb-2">
-                <TypographyH4 className="text-white flex items-center gap-2 mb-1">
-                  <IconSize size="md" className="h-5 w-5 sm:h-6 sm:w-6">
+              <div className="space-y-2">
+                <TypographyH4 className="text-white flex items-center gap-2 mb-2">
+                  <IconSize size="md">
                     <GraduationCap className="text-blue-400" />
                   </IconSize>
                   Liên hệ
                 </TypographyH4>
-                <div className="space-y-2">
+                <div className="space-y-4">
                   <Link
                     href="mailto:dhnhtphcm@hub.edu.vn"
-                    className="flex items-center gap-3 text-white/80 hover:text-white transition-all duration-200 group mb-1"
+                    className="group flex items-start gap-3 text-white/80 hover:text-white transition-all duration-200"
                   >
-                    <IconSize size="lg" className="h-6 w-6 sm:h-8 sm:w-8 rounded-lg bg-white/10 flex items-center justify-center group-hover:bg-white/20 transition-colors">
-                      <Mail className="text-blue-400" />
-                    </IconSize>
+                    <div className="flex-shrink-0 rounded-lg bg-white/10 p-2 flex items-center justify-center group-hover:bg-white/20 transition-colors">
+                      <IconSize size="md">
+                        <Mail className="text-blue-400" />
+                      </IconSize>
+                    </div>
                     <div>
-                      <TypographyP className="font-medium">Email</TypographyP>
-                      <TypographyP>dhnhtphcm@hub.edu.vn</TypographyP>
+                      <TypographyP className="font-medium text-blue-200 mb-1">Email</TypographyP>
+                      <TypographyP className="leading-relaxed">dhnhtphcm@hub.edu.vn</TypographyP>
                     </div>
                   </Link>
 
                   <Link
                     href="tel:0888353488"
-                    className="flex items-center gap-3 text-white/80 hover:text-white transition-all duration-200 group mb-1"
+                    className="group flex items-start gap-3 text-white/80 hover:text-white transition-all duration-200"
                   >
-                    <IconSize size="lg" className="h-6 w-6 sm:h-8 sm:w-8 rounded-lg bg-white/10 flex items-center justify-center group-hover:bg-white/20 transition-colors">
-                      <Phone className="text-blue-400" />
-                    </IconSize>
+                    <div className="flex-shrink-0 rounded-lg bg-white/10 p-2 flex items-center justify-center group-hover:bg-white/20 transition-colors">
+                      <IconSize size="md">
+                        <Phone className="text-blue-400" />
+                      </IconSize>
+                    </div>
                     <div>
-                      <TypographyP className="font-medium">Tuyển sinh</TypographyP>
-                      <TypographyP>0888353488</TypographyP>
+                      <TypographyP className="font-medium text-blue-200 mb-1">Tuyển sinh</TypographyP>
+                      <TypographyP className="leading-relaxed">0888353488</TypographyP>
                     </div>
                   </Link>
 
                   <Link
                     href="tel:02838212430"
-                    className="flex items-center gap-3 text-white/80 hover:text-white transition-all duration-200 group mb-1"
+                    className="group flex items-start gap-3 text-white/80 hover:text-white transition-all duration-200"
                   >
-                    <IconSize size="lg" className="h-6 w-6 sm:h-8 sm:w-8 rounded-lg bg-white/10 flex items-center justify-center group-hover:bg-white/20 transition-colors">
-                      <Phone className="text-blue-400" />
-                    </IconSize>
+                    <div className="flex-shrink-0 rounded-lg bg-white/10 p-2 flex items-center justify-center group-hover:bg-white/20 transition-colors">
+                      <IconSize size="md">
+                        <Phone className="text-blue-400" />
+                      </IconSize>
+                    </div>
                     <div>
-                      <TypographyP className="font-medium">Đào tạo</TypographyP>
-                      <TypographyP>(028) 38 212 430</TypographyP>
+                      <TypographyP className="font-medium text-blue-200 mb-1">Đào tạo</TypographyP>
+                      <TypographyP className="leading-relaxed">(028) 38 212 430</TypographyP>
                     </div>
                   </Link>
                 </div>

@@ -29,7 +29,7 @@ import { useToast } from "@/hooks/use-toast"
 import { requestJson, toJsonBody } from "@/lib/api/client"
 import { withApiBase } from "@/lib/config/api-paths"
 import { logger } from "@/lib/config"
-import { typography, iconSizes } from "@/lib/typography"
+import { TypographyP, TypographyPSmall, TypographyPMuted, IconSize } from "@/components/ui/typography"
 
 interface UserOption {
   id: string
@@ -202,8 +202,10 @@ export const NewGroupDialog = ({ onSelectGroup }: NewGroupDialogProps) => {
   return (
     <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (o) { setSearchValue(""); void searchUsers("") } }}>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="icon" className={iconSizes["2xl"]}>
-          <Users className={iconSizes.sm} />
+        <Button variant="ghost" size="icon" className="h-12 w-12">
+          <IconSize size="sm">
+            <Users />
+          </IconSize>
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[560px]">
@@ -227,8 +229,10 @@ export const NewGroupDialog = ({ onSelectGroup }: NewGroupDialogProps) => {
               <CommandList>
                 {isLoading && (
                   <div className="flex items-center justify-center py-6">
-                    <Loader2 className={`${iconSizes.sm} animate-spin text-muted-foreground`} />
-                    <span className={`ml-2 ${typography.body.muted.medium}`}>Đang tải...</span>
+                    <IconSize size="sm" className="animate-spin text-muted-foreground">
+                      <Loader2 />
+                    </IconSize>
+                    <TypographyPMuted className="ml-2">Đang tải...</TypographyPMuted>
                   </div>
                 )}
                 {!isLoading && users.length === 0 && searchValue.length >= 2 && (
@@ -245,17 +249,19 @@ export const NewGroupDialog = ({ onSelectGroup }: NewGroupDialogProps) => {
                           onSelect={() => toggleUser(user)}
                           className={`flex items-center gap-3 cursor-pointer ${selected ? "bg-accent/10" : ""} mb-1`}
                         >
-                          <Avatar className={iconSizes["2xl"]}>
+                          <Avatar className="h-12 w-12">
                             <AvatarImage src={user.avatar || undefined} alt={user.name || user.email} />
-                            <AvatarFallback className={typography.body.small}>
-                              {(user.name || user.email).substring(0, 2).toUpperCase()}
+                            <AvatarFallback>
+                              <TypographyPSmall>
+                                {(user.name || user.email).substring(0, 2).toUpperCase()}
+                              </TypographyPSmall>
                             </AvatarFallback>
                           </Avatar>
                           <div className="flex flex-col flex-1 min-w-0">
-                            <span className={`${typography.body.medium} font-medium truncate`}>{user.name || user.email}</span>
-                            {user.name && <span className={`${typography.body.small} truncate`}>{user.email}</span>}
+                            <TypographyP className="font-medium truncate">{user.name || user.email}</TypographyP>
+                            {user.name && <TypographyPSmall className="truncate">{user.email}</TypographyPSmall>}
                           </div>
-                          {selected && <span className={typography.body.small}>Đã chọn</span>}
+                          {selected && <TypographyPSmall>Đã chọn</TypographyPSmall>}
                         </CommandItem>
                       )
                     })}
@@ -267,7 +273,11 @@ export const NewGroupDialog = ({ onSelectGroup }: NewGroupDialogProps) => {
           <div className="flex items-center justify-end gap-2 pt-2">
             <Button variant="outline" onClick={() => setOpen(false)} disabled={isCreating}>Hủy</Button>
             <Button onClick={handleCreateGroup} disabled={isCreating || !groupName.trim() || selectedUsers.length === 0}>
-              {isCreating && <Loader2 className={`mr-2 ${iconSizes.sm} animate-spin`} />}
+              {isCreating && (
+                <IconSize size="sm" className="mr-2 animate-spin">
+                  <Loader2 />
+                </IconSize>
+              )}
               Tạo nhóm
             </Button>
           </div>

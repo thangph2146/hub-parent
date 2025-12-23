@@ -27,7 +27,7 @@ import {
   CONTACT_REQUEST_STATUS_COLORS, 
   CONTACT_REQUEST_PRIORITY_COLORS 
 } from "../constants"
-import { typography, iconSizes } from "@/lib/typography"
+import { TypographyP, TypographyPMuted, TypographyPSmallMuted, IconSize } from "@/components/ui/typography"
 import type { ContactRequestRow, ContactStatus, ContactPriority } from "../types"
 
 export interface ContactRequestDetailData {
@@ -174,15 +174,15 @@ export const ContactRequestDetailClient = ({ contactRequestId, contactRequest, b
             {/* Contact Info */}
             <div className="grid gap-6 grid-cols-1 sm:grid-cols-2">
               <FieldItem icon={User} label="Tên người liên hệ">
-                <div className={`${typography.body.medium} font-medium text-foreground`}>
+                <TypographyP className="font-medium text-foreground">
                   {requestData.name || "—"}
-                </div>
+                </TypographyP>
               </FieldItem>
 
               <FieldItem icon={Mail} label="Email">
                 <a
                   href={`mailto:${requestData.email}`}
-                  className={`${typography.body.medium} font-medium text-primary hover:underline truncate block transition-colors`}
+                  className="font-medium text-primary hover:underline truncate block transition-colors"
                 >
                   {requestData.email || "—"}
                 </a>
@@ -193,7 +193,7 @@ export const ContactRequestDetailClient = ({ contactRequestId, contactRequest, b
               <FieldItem icon={Phone} label="Số điện thoại">
                 <a
                   href={`tel:${requestData.phone}`}
-                  className={`${typography.body.medium} font-medium text-primary hover:underline transition-colors`}
+                  className="font-medium text-primary hover:underline transition-colors"
                 >
                   {requestData.phone}
                 </a>
@@ -202,22 +202,24 @@ export const ContactRequestDetailClient = ({ contactRequestId, contactRequest, b
 
             {/* Subject */}
             <FieldItem icon={FileText} label="Tiêu đề">
-              <div className={`${typography.body.medium} font-medium text-foreground`}>
+              <TypographyP className="font-medium text-foreground">
                 {requestData.subject || "—"}
-              </div>
+              </TypographyP>
             </FieldItem>
 
             {/* Content */}
             <Card className="border border-border/50 bg-card p-5">
               <div className="flex items-start gap-3">
                 <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted">
-                  <MessageSquare className={`${iconSizes.sm} text-muted-foreground`} />
+                  <IconSize size="sm" className="text-muted-foreground">
+                    <MessageSquare />
+                  </IconSize>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className={`${typography.body.medium} font-medium text-foreground mb-2`}>Nội dung</h3>
-                  <div className={`${typography.body.medium} leading-relaxed whitespace-pre-wrap text-foreground break-words`}>
+                  <TypographyP className="font-medium text-foreground mb-2">Nội dung</TypographyP>
+                  <TypographyP className="leading-relaxed whitespace-pre-wrap text-foreground break-words">
                     {requestData.content || "—"}
-                  </div>
+                  </TypographyP>
                 </div>
               </div>
             </Card>
@@ -269,23 +271,23 @@ export const ContactRequestDetailClient = ({ contactRequestId, contactRequest, b
                   onCheckedChange={handleToggleReadStatus}
                   aria-label={requestData.isRead ? "Đánh dấu chưa đọc" : "Đánh dấu đã đọc"}
                 />
-                <span className={typography.body.muted.medium}>
+                <TypographyPMuted>
                   {requestData.isRead ? CONTACT_REQUEST_LABELS.READ : CONTACT_REQUEST_LABELS.UNREAD}
-                </span>
+                </TypographyPMuted>
               </div>
               {!canUpdate && (
-                <p className={`${typography.body.muted.small} mt-1.5`}>
+                <TypographyPSmallMuted className="mt-1.5">
                   Bạn không có quyền thay đổi trạng thái đọc
-                </p>
+                </TypographyPSmallMuted>
               )}
             </FieldItem>
 
             {/* Assigned To */}
             {requestData.assignedTo && (
               <FieldItem icon={UserCheck} label="Người được giao">
-                <div className={`${typography.body.medium} font-medium text-foreground`}>
+                <TypographyP className="font-medium text-foreground">
                   {requestData.assignedTo.name || requestData.assignedTo.email || "—"}
-                </div>
+                </TypographyP>
               </FieldItem>
             )}
           </div>
@@ -303,15 +305,15 @@ export const ContactRequestDetailClient = ({ contactRequestId, contactRequest, b
           <div className="space-y-6">
             <div className="grid gap-6 grid-cols-1 sm:grid-cols-2">
               <FieldItem icon={Calendar} label="Ngày tạo">
-                <div className={`${typography.body.medium} font-medium text-foreground`}>
+                <TypographyP className="font-medium text-foreground">
                   {requestData.createdAt ? formatDateVi(requestData.createdAt) : "—"}
-                </div>
+                </TypographyP>
               </FieldItem>
 
               <FieldItem icon={Clock} label="Cập nhật lần cuối">
-                <div className={`${typography.body.medium} font-medium text-foreground`}>
+                <TypographyP className="font-medium text-foreground">
                   {requestData.updatedAt ? formatDateVi(requestData.updatedAt) : "—"}
-                </div>
+                </TypographyP>
               </FieldItem>
             </div>
           </div>
@@ -338,7 +340,9 @@ export const ContactRequestDetailClient = ({ contactRequestId, contactRequest, b
             onClick={() => router.push(`/admin/contact-requests/${contactRequestId}/edit`)}
             className="gap-2"
           >
-            <Edit className={iconSizes.sm} />
+            <IconSize size="sm">
+              <Edit />
+            </IconSize>
             Chỉnh sửa
           </Button>
         ) : null

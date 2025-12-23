@@ -1,6 +1,6 @@
 "use client";
 
-import { typography, iconSizes } from "@/lib/typography";
+import { TypographyP, TypographyPSmallMuted, TypographyPMuted, IconSize } from "@/components/ui/typography";
 
 import {
   Bell,
@@ -182,15 +182,15 @@ export const NotificationDetailClient = ({
             {/* Kind & Title */}
             <div className="grid gap-6 grid-cols-1 sm:grid-cols-2">
               <FieldItem icon={Bell} label="Loại thông báo">
-                <Badge variant={kindConfigData.variant} className={typography.body.small}>
+                <Badge variant={kindConfigData.variant} className="text-xs">
                   {kindConfigData.label}
                 </Badge>
               </FieldItem>
 
               <FieldItem icon={FileText} label="Tiêu đề">
-                <div className={`${typography.body.medium} font-medium`}>
+                <TypographyP className="font-medium">
                   {notificationData.title || "—"}
-                </div>
+                </TypographyP>
               </FieldItem>
             </div>
 
@@ -199,15 +199,17 @@ export const NotificationDetailClient = ({
               <Card className="border border-border/50 bg-card p-5">
                 <div className="flex items-start gap-3">
                   <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted">
-                    <FileText className={`${iconSizes.sm} text-muted-foreground`} />
+                    <IconSize size="sm" className="text-muted-foreground">
+                      <FileText />
+                    </IconSize>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className={`${typography.body.medium} font-medium mb-2`}>
+                    <TypographyP className="font-medium mb-2">
                       Mô tả
-                    </h3>
-                    <div className={`${typography.body.medium} whitespace-pre-wrap break-words`}>
+                    </TypographyP>
+                    <TypographyP className="whitespace-pre-wrap break-words">
                       {notificationData.description || "—"}
-                    </div>
+                    </TypographyP>
                   </div>
                 </div>
               </Card>
@@ -216,13 +218,13 @@ export const NotificationDetailClient = ({
             {/* User */}
             <FieldItem icon={User} label="Người dùng">
               <div className="space-y-0.5">
-                <div className={`${typography.body.medium} font-medium`}>
+                <TypographyP className="font-medium">
                   {notificationData.user?.email || "—"}
-                </div>
+                </TypographyP>
                 {notificationData.user?.name && (
-                  <div className={typography.body.muted.small}>
+                  <TypographyPSmallMuted>
                     {notificationData.user.name}
-                  </div>
+                  </TypographyPSmallMuted>
                 )}
               </div>
             </FieldItem>
@@ -266,9 +268,9 @@ export const NotificationDetailClient = ({
                   
                 </div>
                 {!isNotificationOwner && (
-                  <p className={`${typography.body.muted.small} mt-1.5`}>
+                  <TypographyPSmallMuted className="mt-1.5">
                     Chỉ có thể thay đổi trạng thái thông báo của chính mình
-                  </p>
+                  </TypographyPSmallMuted>
                 )}
               </FieldItem>
 
@@ -276,10 +278,12 @@ export const NotificationDetailClient = ({
               {notificationData.readAt && (
                 <FieldItem icon={Clock} label="Ngày đọc">
                   <div className="flex items-center gap-2">
-                    <Clock className={`${iconSizes.xs} text-muted-foreground shrink-0`} />
+                    <IconSize size="xs" className="text-muted-foreground shrink-0">
+                      <Clock />
+                    </IconSize>
                     <time
                       dateTime={notificationData.readAt}
-                      className={`${typography.body.medium} font-medium`}
+                      className="font-medium"
                       title={new Date(notificationData.readAt).toLocaleString(
                         "vi-VN",
                         {
@@ -326,7 +330,7 @@ export const NotificationDetailClient = ({
                     href={notificationData.actionUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className={`group inline-flex items-center gap-2 ${typography.body.medium} font-medium text-primary hover:text-primary/80 hover:underline transition-colors w-full min-w-0`}
+                    className="group inline-flex items-center gap-2 font-medium text-primary hover:text-primary/80 hover:underline transition-colors w-full min-w-0"
                     title={notificationData.actionUrl}
                   >
                     <span className="truncate flex-1 min-w-0">
@@ -340,10 +344,12 @@ export const NotificationDetailClient = ({
               <FieldItem icon={Calendar} label="Ngày tạo">
                 {notificationData.createdAt ? (
                   <div className="flex items-center gap-2">
-                    <Calendar className={`${iconSizes.xs} text-muted-foreground shrink-0`} />
+                    <IconSize size="xs" className="text-muted-foreground shrink-0">
+                      <Calendar />
+                    </IconSize>
                     <time
                       dateTime={notificationData.createdAt}
-                      className={`${typography.body.medium} font-medium`}
+                      className="font-medium"
                       title={new Date(
                         notificationData.createdAt
                       ).toLocaleString("vi-VN", {
@@ -355,7 +361,7 @@ export const NotificationDetailClient = ({
                     </time>
                   </div>
                 ) : (
-                  <span className={typography.body.muted.medium}>—</span>
+                  <TypographyPMuted>—</TypographyPMuted>
                 )}
               </FieldItem>
 
@@ -376,11 +382,13 @@ export const NotificationDetailClient = ({
                 >
                   <div className="space-y-1.5">
                     <div className="flex items-center gap-2">
-                      <Calendar className={`${iconSizes.xs} text-muted-foreground shrink-0`} />
+                      <IconSize size="xs" className="text-muted-foreground shrink-0">
+                        <Calendar />
+                      </IconSize>
                       <time
                         dateTime={notificationData.expiresAt}
                         className={cn(
-                          `${typography.body.medium}`,
+                          "",
                           new Date(notificationData.expiresAt) < new Date()
                             ? "text-destructive"
                             : "text-foreground"
@@ -396,8 +404,10 @@ export const NotificationDetailClient = ({
                       </time>
                     </div>
                     {new Date(notificationData.expiresAt) < new Date() && (
-                      <Badge variant="destructive" className={`${typography.body.small} w-fit`}>
-                        <AlertCircle className={`mr-1 ${iconSizes.xs}`} />
+                      <Badge variant="destructive" className="text-xs w-fit">
+                        <IconSize size="xs" className="mr-1">
+                          <AlertCircle />
+                        </IconSize>
                         Đã hết hạn
                       </Badge>
                     )}

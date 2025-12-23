@@ -2,7 +2,11 @@ import type { ResourceFormField, ResourceFormSection } from "@/features/admin/re
 import { validateIpAddress, validateUserAgent } from "./utils"
 import React from "react"
 import { User, Globe, MapPin, ToggleLeft, Calendar } from "lucide-react"
-import { iconSizes } from "@/lib/typography"
+import { IconSize } from "@/components/ui/typography"
+
+// Helper function to create icon with IconSize wrapper
+const createIcon = (Icon: React.ComponentType<{ className?: string }>) =>
+  React.createElement(IconSize, { size: "sm" as const, children: React.createElement(Icon) } as React.ComponentProps<typeof IconSize>)
 
 export interface SessionFormData {
   userId: string
@@ -44,7 +48,7 @@ export const getBaseSessionFields = (
       placeholder: "Chọn người dùng",
       options: usersOptions || [],
       description: "Người dùng sở hữu session này",
-      icon: React.createElement(User, { className: iconSizes.sm }),
+      icon: createIcon(User),
       section: "basic",
     },
     {
@@ -55,7 +59,7 @@ export const getBaseSessionFields = (
       required: false,
       description: "Thông tin trình duyệt/thiết bị",
       validate: validateUserAgent,
-      icon: React.createElement(Globe, { className: iconSizes.sm }),
+      icon: createIcon(Globe),
       section: "security",
     },
     {
@@ -66,7 +70,7 @@ export const getBaseSessionFields = (
       required: false,
       description: "Địa chỉ IP của client",
       validate: validateIpAddress,
-      icon: React.createElement(MapPin, { className: iconSizes.sm }),
+      icon: createIcon(MapPin),
       section: "security",
     },
     {
@@ -76,7 +80,7 @@ export const getBaseSessionFields = (
       required: true,
       placeholder: "YYYY-MM-DDTHH:mm:ss.sssZ",
       description: "Thời gian session hết hạn (ISO 8601 format)",
-      icon: React.createElement(Calendar, { className: iconSizes.sm }),
+      icon: createIcon(Calendar),
       section: "status",
     },
     {
@@ -85,7 +89,7 @@ export const getBaseSessionFields = (
       description: "Bật/tắt để kích hoạt hoặc vô hiệu hóa session",
       type: "switch",
       defaultValue: true,
-      icon: React.createElement(ToggleLeft, { className: iconSizes.sm }),
+      icon: createIcon(ToggleLeft),
       section: "status",
     },
 ]

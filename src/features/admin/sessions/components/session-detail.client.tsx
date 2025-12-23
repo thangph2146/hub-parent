@@ -16,7 +16,7 @@ import { formatDateVi } from "../utils"
 import { cn } from "@/lib/utils"
 import { usePermissions } from "@/hooks/use-permissions"
 import { PERMISSIONS } from "@/lib/permissions"
-import { typography, iconSizes } from "@/lib/typography"
+import { TypographyP, TypographyPSmallMuted, TypographyPSmall, IconSize } from "@/components/ui/typography"
 
 export interface SessionDetailData {
   id: string
@@ -80,13 +80,13 @@ export const SessionDetailClient = ({ sessionId, session, backUrl = "/admin/sess
           <div className="space-y-6">
             <FieldItem icon={User} label="Người dùng" iconColor="bg-primary/10">
               <div>
-                <div className={`${typography.body.medium} font-medium text-foreground`}>
+                <TypographyP className="font-medium text-foreground">
                   {sessionData.userName || sessionData.userEmail || "—"}
-                </div>
+                </TypographyP>
                 {sessionData.userEmail && sessionData.userName && (
-                  <div className={`${typography.body.muted.small} mt-0.5`}>
+                  <TypographyPSmallMuted className="mt-0.5">
                     {sessionData.userEmail}
-                  </div>
+                  </TypographyPSmallMuted>
                 )}
               </div>
             </FieldItem>
@@ -104,28 +104,28 @@ export const SessionDetailClient = ({ sessionId, session, backUrl = "/admin/sess
         return (
           <div className="space-y-6">
             <FieldItem icon={Key} label="Access Token" iconColor="bg-chart-1/10">
-              <div className={`font-mono ${typography.body.small} break-all text-foreground`}>
+              <TypographyPSmall className="font-mono break-all text-foreground">
                 {sessionData.accessToken || "—"}
-              </div>
+              </TypographyPSmall>
             </FieldItem>
 
             <FieldItem icon={RefreshCw} label="Refresh Token" iconColor="bg-chart-2/10">
-              <div className={`font-mono ${typography.body.small} break-all text-foreground`}>
+              <TypographyPSmall className="font-mono break-all text-foreground">
                 {sessionData.refreshToken || "—"}
-              </div>
+              </TypographyPSmall>
             </FieldItem>
 
             <div className="grid gap-6 grid-cols-1 sm:grid-cols-2">
               <FieldItem icon={Globe} label="User Agent" iconColor="bg-chart-3/10">
-                <div className={`${typography.body.medium} break-all text-foreground`}>
+                <TypographyP className="break-all text-foreground">
                   {sessionData.userAgent || "—"}
-                </div>
+                </TypographyP>
               </FieldItem>
 
               <FieldItem icon={MapPin} label="IP Address" iconColor="bg-chart-4/10">
-                <div className={`${typography.body.medium} font-medium text-foreground`}>
+                <TypographyP className="font-medium text-foreground">
                   {sessionData.ipAddress || "—"}
-                </div>
+                </TypographyP>
               </FieldItem>
             </div>
           </div>
@@ -160,21 +160,21 @@ export const SessionDetailClient = ({ sessionId, session, backUrl = "/admin/sess
 
             <div className="grid gap-6 grid-cols-1 sm:grid-cols-2">
               <FieldItem icon={Calendar} label="Thời gian hết hạn">
-                <div className={`${typography.body.medium} font-medium text-foreground`}>
+                <TypographyP className="font-medium text-foreground">
                   {sessionData.expiresAt ? formatDateVi(sessionData.expiresAt) : "—"}
-                </div>
+                </TypographyP>
               </FieldItem>
 
               <FieldItem icon={Clock} label="Hoạt động cuối">
-                <div className={`${typography.body.medium} font-medium text-foreground`}>
+                <TypographyP className="font-medium text-foreground">
                   {sessionData.lastActivity ? formatDateVi(sessionData.lastActivity) : "—"}
-                </div>
+                </TypographyP>
               </FieldItem>
 
               <FieldItem icon={Calendar} label="Ngày tạo">
-                <div className={`${typography.body.medium} font-medium text-foreground`}>
+                <TypographyP className="font-medium text-foreground">
                   {sessionData.createdAt ? formatDateVi(sessionData.createdAt) : "—"}
-                </div>
+                </TypographyP>
               </FieldItem>
             </div>
           </div>
@@ -201,7 +201,9 @@ export const SessionDetailClient = ({ sessionId, session, backUrl = "/admin/sess
             onClick={() => router.push(`/admin/sessions/${sessionId}/edit`)}
             className="gap-2"
           >
-            <Edit className={iconSizes.sm} />
+            <IconSize size="sm">
+              <Edit />
+            </IconSize>
             Chỉnh sửa
           </Button>
         ) : null

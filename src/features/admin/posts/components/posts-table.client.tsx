@@ -34,7 +34,7 @@ import type { PostRow, PostsResponse, PostsTableClientProps } from "../types"
 import { POST_CONFIRM_MESSAGES, POST_LABELS } from "../constants/messages"
 import { resourceLogger } from "@/lib/config"
 import { sanitizeSearchQuery } from "@/lib/api/validation"
-import { typography, iconSizes } from "@/lib/typography"
+import { IconSize } from "@/components/ui/typography"
 
 export const PostsTableClient = ({
   canDelete = false,
@@ -396,7 +396,9 @@ export const PostsTableClient = ({
                 onClick={() => executeBulk("delete", selectedIds, refresh, clearSelection)}
                 className="whitespace-nowrap"
               >
-                <Trash2 className={`mr-2 ${iconSizes.md} shrink-0`} />
+                <IconSize size="md" className="mr-2 shrink-0">
+                  <Trash2 />
+                </IconSize>
                 <span className="hidden sm:inline">
                   {POST_LABELS.DELETE_SELECTED(selectedIds.length)}
                 </span>
@@ -412,7 +414,9 @@ export const PostsTableClient = ({
                 onClick={() => executeBulk("hard-delete", selectedIds, refresh, clearSelection)}
                 className="whitespace-nowrap"
               >
-                <AlertTriangle className={`mr-2 ${iconSizes.md} shrink-0`} />
+                <IconSize size="md" className="mr-2 shrink-0">
+                  <AlertTriangle />
+                </IconSize>
                 <span className="hidden sm:inline">
                   {POST_LABELS.HARD_DELETE_SELECTED(selectedIds.length)}
                 </span>
@@ -458,7 +462,9 @@ export const PostsTableClient = ({
                 onClick={() => executeBulk("restore", selectedIds, refresh, clearSelection)}
                 className="whitespace-nowrap"
               >
-                <RotateCcw className={`mr-2 ${iconSizes.md} shrink-0`} />
+                <IconSize size="md" className="mr-2 shrink-0">
+                  <RotateCcw />
+                </IconSize>
                 <span className="hidden sm:inline">
                   {POST_LABELS.RESTORE_SELECTED(selectedIds.length)}
                 </span>
@@ -474,7 +480,9 @@ export const PostsTableClient = ({
                 onClick={() => executeBulk("hard-delete", selectedIds, refresh, clearSelection)}
                 className="whitespace-nowrap"
               >
-                <AlertTriangle className={`mr-2 ${iconSizes.md} shrink-0`} />
+                <IconSize size="md" className="mr-2 shrink-0">
+                  <AlertTriangle />
+                </IconSize>
                 <span className="hidden sm:inline">
                   {POST_LABELS.HARD_DELETE_SELECTED(selectedIds.length)}
                 </span>
@@ -579,9 +587,11 @@ export const PostsTableClient = ({
       type="button"
       size="sm"
       onClick={() => router.push("/admin/posts/new")}
-      className={`h-8 px-3 ${typography.body.small}`}
+      className="h-8 px-3"
     >
-      <Plus className={`mr-2 ${iconSizes.md}`} />
+      <IconSize size="md" className="mr-2">
+        <Plus />
+      </IconSize>
       {POST_LABELS.ADD_NEW}
     </Button>
   ) : undefined

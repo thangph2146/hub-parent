@@ -2,7 +2,11 @@ import type { ResourceFormField, ResourceFormSection } from "@/features/admin/re
 import { validateName, validateSlug, validateDescription } from "./utils"
 import React from "react"
 import { Tag, Hash, AlignLeft } from "lucide-react"
-import { iconSizes } from "@/lib/typography"
+import { IconSize } from "@/components/ui/typography"
+
+// Helper function to create icon with IconSize wrapper
+const createIcon = (Icon: React.ComponentType<{ className?: string }>) =>
+  React.createElement(IconSize, { size: "sm" as const, children: React.createElement(Icon) } as React.ComponentProps<typeof IconSize>)
 
 export interface CategoryFormData {
   name: string
@@ -28,7 +32,7 @@ export const getBaseCategoryFields = (): ResourceFormField<CategoryFormData>[] =
       required: true,
       description: "Tên danh mục sẽ hiển thị trên website",
       validate: validateName,
-      icon: React.createElement(Tag, { className: iconSizes.sm }),
+      icon: createIcon(Tag),
       section: "basic",
     },
     {
@@ -40,7 +44,7 @@ export const getBaseCategoryFields = (): ResourceFormField<CategoryFormData>[] =
       required: true,
       description: "URL-friendly identifier (tự động tạo từ tên)",
       validate: validateSlug,
-      icon: React.createElement(Hash, { className: iconSizes.sm }),
+      icon: createIcon(Hash),
       section: "basic",
     },
     {
@@ -49,7 +53,7 @@ export const getBaseCategoryFields = (): ResourceFormField<CategoryFormData>[] =
       type: "textarea",
       placeholder: "Nhập mô tả về danh mục",
       validate: validateDescription,
-      icon: React.createElement(AlignLeft, { className: iconSizes.sm }),
+      icon: createIcon(AlignLeft),
       section: "basic",
     },
 ]

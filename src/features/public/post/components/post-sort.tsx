@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
-import { iconSizes } from "@/lib/typography"
+import { IconSize } from "@/components/ui/typography"
 
 const sortOptions = [
   { 
@@ -49,9 +49,13 @@ export const PostSort = () => {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" className="gap-2">
-          <CurrentIcon className={iconSizes.sm} />
+          <IconSize size="sm">
+            <CurrentIcon />
+          </IconSize>
           <span>{currentOption.label}</span>
-          <ChevronDown className={`${iconSizes.sm} opacity-50`} />
+          <IconSize size="sm" className="opacity-50">
+            <ChevronDown />
+          </IconSize>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-40 space-y-1">
@@ -67,7 +71,9 @@ export const PostSort = () => {
                 isActive && "bg-accent/10 font-medium"
               )}
             >
-              <OptionIcon className={iconSizes.sm} />
+              <IconSize size="sm">
+                <OptionIcon />
+              </IconSize>
               <span className="transition-colors">{option.label}</span>
             </DropdownMenuItem>
           )

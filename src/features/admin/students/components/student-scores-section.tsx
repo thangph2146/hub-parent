@@ -6,7 +6,7 @@
 
 "use client"
 
-import { typography, iconSizes } from "@/lib/typography"
+import { TypographyP, TypographyPSmall, TypographyPSmallMuted, TypographyPMuted, IconSize } from "@/components/ui/typography"
 
 import { useCallback, useMemo, useState } from "react"
 import { 
@@ -225,7 +225,9 @@ const YearAveragesList = ({ averages, isLoading }: { averages?: YearAverage[]; i
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-8">
-        <Loader2 className={`${iconSizes.lg} animate-spin text-muted-foreground`} />
+        <IconSize size="lg" className="animate-spin text-muted-foreground">
+          <Loader2 />
+        </IconSize>
       </div>
     )
   }
@@ -269,13 +271,15 @@ const YearTermAveragesDataTable = ({ termAverages }: { termAverages: TermAverage
         header: "Học kỳ",
         cell: (row) => (
           <div className="flex items-center gap-2 flex-wrap">
-            <Badge variant="outline" className={`${typography.body.small} whitespace-nowrap`}>
-              {row.termID}
+            <Badge variant="outline" className="whitespace-nowrap">
+              <TypographyPSmall>
+                {row.termID}
+              </TypographyPSmall>
             </Badge>
             {row.orderTerm && (
-              <span className={`${typography.body.muted.small} whitespace-nowrap`}>
+              <TypographyPSmallMuted className="whitespace-nowrap">
                 Học kỳ {row.orderTerm}
-              </span>
+              </TypographyPSmallMuted>
             )}
           </div>
         ),
@@ -376,9 +380,9 @@ const YearTermAveragesDataTable = ({ termAverages }: { termAverages: TermAverage
 
   if (!termAverages || termAverages.length === 0) {
     return (
-      <div className={`py-4 ${typography.body.muted.medium}`}>
+      <TypographyPMuted className="py-4">
         Không có dữ liệu học kỳ
-      </div>
+      </TypographyPMuted>
     )
   }
 
@@ -450,7 +454,9 @@ const TermAveragesList = ({ averages, isLoading }: { averages?: TermAverage[]; i
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-8">
-        <Loader2 className={`${iconSizes.lg} animate-spin text-muted-foreground`} />
+        <IconSize size="lg" className="animate-spin text-muted-foreground">
+          <Loader2 />
+        </IconSize>
       </div>
     )
   }
@@ -471,7 +477,9 @@ const TermAveragesList = ({ averages, isLoading }: { averages?: TermAverage[]; i
       <div className="flex flex-col sm:flex-row gap-3">
         <Select value={filterYear} onValueChange={setFilterYear}>
           <SelectTrigger className="w-full sm:w-[180px]">
-            <Filter className={`mr-2 ${iconSizes.sm}`} />
+            <IconSize size="sm" className="mr-2">
+              <Filter />
+            </IconSize>
             <SelectValue placeholder="Tất cả năm học" />
           </SelectTrigger>
           <SelectContent>
@@ -497,11 +505,17 @@ const TermAveragesList = ({ averages, isLoading }: { averages?: TermAverage[]; i
                   <div className="rounded-md border overflow-hidden">
                     <CollapsibleTrigger className="flex items-center gap-2 w-full p-3 hover:bg-muted transition-colors">
                       {isYearOpen ? (
-                        <ChevronDown className={`${iconSizes.sm} text-muted-foreground`} />
+                        <IconSize size="sm" className="text-muted-foreground">
+                          <ChevronDown />
+                        </IconSize>
                       ) : (
-                        <ChevronRight className={`${iconSizes.sm} text-muted-foreground`} />
+                        <IconSize size="sm" className="text-muted-foreground">
+                          <ChevronRight />
+                        </IconSize>
                       )}
-                      <Calendar className={`${iconSizes.sm} text-muted-foreground`} />
+                      <IconSize size="sm" className="text-muted-foreground">
+                        <Calendar />
+                      </IconSize>
                       <span className="font-semibold">Năm học ({yearStudy})</span>
                       <Badge variant="secondary" className="ml-auto">
                         {termAverages.length} học kỳ
@@ -550,13 +564,13 @@ const TermScoresDataTable = ({ termScores }: { termScores: DetailedScore[] }) =>
       {
         accessorKey: "curriculumID",
         header: "Mã môn",
-        cell: (row) => <div className={typography.body.medium}>{row.curriculumID}</div>,
+        cell: (row) => <TypographyP>{row.curriculumID}</TypographyP>,
         className: "min-w-[120px]",
       },
       {
         accessorKey: "studyUnitAlias",
         header: "Mã học phần",
-        cell: (row) => <div className={typography.body.muted.medium}>{row.studyUnitAlias}</div>,
+        cell: (row) => <TypographyPMuted>{row.studyUnitAlias}</TypographyPMuted>,
         className: "min-w-[120px]",
       },
       {
@@ -665,9 +679,9 @@ const TermScoresDataTable = ({ termScores }: { termScores: DetailedScore[] }) =>
 
   if (!termScores || termScores.length === 0) {
     return (
-      <div className={`py-4 ${typography.body.muted.medium}`}>
+      <TypographyPMuted className="py-4">
         Không có dữ liệu môn học
-      </div>
+      </TypographyPMuted>
     )
   }
 
@@ -775,7 +789,9 @@ const DetailedScoresTable = ({ scores, isLoading }: { scores?: DetailedScore[]; 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-8">
-        <Loader2 className={`${iconSizes.lg} animate-spin text-muted-foreground`} />
+        <IconSize size="lg" className="animate-spin text-muted-foreground">
+          <Loader2 />
+        </IconSize>
       </div>
     )
   }
@@ -796,7 +812,9 @@ const DetailedScoresTable = ({ scores, isLoading }: { scores?: DetailedScore[]; 
       <div className="flex flex-col sm:flex-row gap-3">
         <Select value={filterYear} onValueChange={setFilterYear}>
           <SelectTrigger className="w-full sm:w-[180px]">
-            <Filter className={`mr-2 ${iconSizes.sm}`} />
+            <IconSize size="sm" className="mr-2">
+              <Filter />
+            </IconSize>
             <SelectValue placeholder="Tất cả năm học" />
           </SelectTrigger>
           <SelectContent>
@@ -835,11 +853,17 @@ const DetailedScoresTable = ({ scores, isLoading }: { scores?: DetailedScore[]; 
                   <div className="rounded-md border overflow-hidden">
                     <CollapsibleTrigger className="flex items-center gap-2 w-full p-3 hover:bg-muted transition-colors">
                       {isYearOpen ? (
-                        <ChevronDown className={`${iconSizes.sm} text-muted-foreground`} />
+                        <IconSize size="sm" className="text-muted-foreground">
+                          <ChevronDown />
+                        </IconSize>
                       ) : (
-                        <ChevronRight className={`${iconSizes.sm} text-muted-foreground`} />
+                        <IconSize size="sm" className="text-muted-foreground">
+                          <ChevronRight />
+                        </IconSize>
                       )}
-                      <Calendar className={`${iconSizes.sm} text-muted-foreground`} />
+                      <IconSize size="sm" className="text-muted-foreground">
+                        <Calendar />
+                      </IconSize>
                       <span className="font-semibold">Năm học ({yearStudy})</span>
                       <Badge variant="secondary" className="ml-auto">
                         {Object.keys(terms).length} học kỳ
@@ -860,11 +884,17 @@ const DetailedScoresTable = ({ scores, isLoading }: { scores?: DetailedScore[]; 
                               >
                                 <CollapsibleTrigger className="flex items-center gap-2 w-full p-2 hover:bg-muted rounded-md transition-colors">
                                   {isTermOpen ? (
-                                    <ChevronDown className={`${iconSizes.sm} text-muted-foreground`} />
+                                    <IconSize size="sm" className="text-muted-foreground">
+                                      <ChevronDown />
+                                    </IconSize>
                                   ) : (
-                                    <ChevronRight className={`${iconSizes.sm} text-muted-foreground`} />
+                                    <IconSize size="sm" className="text-muted-foreground">
+                                      <ChevronRight />
+                                    </IconSize>
                                   )}
-                                  <TrendingUp className={`${iconSizes.sm} text-muted-foreground`} />
+                                  <IconSize size="sm" className="text-muted-foreground">
+                                    <TrendingUp />
+                                  </IconSize>
                                   <span className="font-medium">Học kỳ ({termID})</span>
                                 </CollapsibleTrigger>
                                 <CollapsibleContent className="ml-6 mt-2">
@@ -913,7 +943,9 @@ export const StudentScoresSection = ({ studentId, isActive }: StudentScoresSecti
       <Card>
         <CardContent>
           <Alert>
-            <AlertCircle className={iconSizes.sm} />
+            <IconSize size="sm">
+              <AlertCircle />
+            </IconSize>
             <AlertDescription>
               sinh viên này chưa được kích hoạt. Vui lòng kích hoạt sinh viên để xem điểm số.
             </AlertDescription>
@@ -929,7 +961,9 @@ export const StudentScoresSection = ({ studentId, isActive }: StudentScoresSecti
     <div className="space-y-6">
       {hasError && (
         <Alert variant="destructive">
-          <AlertCircle className={iconSizes.sm} />
+          <IconSize size="sm">
+            <AlertCircle />
+          </IconSize>
           <AlertDescription>
             {errorYear?.message || errorTerm?.message || errorScores?.message || "Không thể tải dữ liệu điểm số"}
           </AlertDescription>
@@ -940,17 +974,23 @@ export const StudentScoresSection = ({ studentId, isActive }: StudentScoresSecti
       <Tabs defaultValue="year" className="w-full">
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="year" className="flex items-center gap-2">
-            <Calendar className={iconSizes.sm} />
+            <IconSize size="sm">
+              <Calendar />
+            </IconSize>
             <span className="hidden sm:inline">Theo năm học</span>
             <span className="sm:hidden">Năm học</span>
           </TabsTrigger>
           <TabsTrigger value="term" className="flex items-center gap-2">
-            <TrendingUp className={iconSizes.sm} />
+            <IconSize size="sm">
+              <TrendingUp />
+            </IconSize>
             <span className="hidden sm:inline">Theo học kỳ</span>
             <span className="sm:hidden">Học kỳ</span>
           </TabsTrigger>
           <TabsTrigger value="detailed" className="flex items-center gap-2">
-            <BookOpen className={iconSizes.sm} />
+            <IconSize size="sm">
+              <BookOpen />
+            </IconSize>
             <span className="hidden sm:inline">Điểm chi tiết</span>
             <span className="sm:hidden">Chi tiết</span>
           </TabsTrigger>
@@ -960,7 +1000,9 @@ export const StudentScoresSection = ({ studentId, isActive }: StudentScoresSecti
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Calendar className={iconSizes.md} />
+                <IconSize size="md">
+                  <Calendar />
+                </IconSize>
                 Điểm trung bình theo năm học
               </CardTitle>
             </CardHeader>
@@ -974,7 +1016,9 @@ export const StudentScoresSection = ({ studentId, isActive }: StudentScoresSecti
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <TrendingUp className={iconSizes.md} />
+                <IconSize size="md">
+                  <TrendingUp />
+                </IconSize>
                 Điểm trung bình tích lũy theo học kỳ
               </CardTitle>
             </CardHeader>
@@ -988,7 +1032,9 @@ export const StudentScoresSection = ({ studentId, isActive }: StudentScoresSecti
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <BookOpen className={iconSizes.md} />
+                <IconSize size="md">
+                  <BookOpen />
+                </IconSize>
                 Điểm chi tiết các môn học
               </CardTitle>
             </CardHeader>

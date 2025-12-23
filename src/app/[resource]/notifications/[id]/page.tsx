@@ -1,5 +1,5 @@
 import type { Metadata } from "next"
-import { typography } from "@/lib/typography"
+import { TypographyH2, TypographyPSmallMuted } from "@/components/ui/typography"
 import { AdminHeader } from "@/components/layouts/headers"
 import { NotificationDetail } from "@/features/admin/notifications/components/notification-detail"
 import { validateRouteId } from "@/lib/validation/route-params"
@@ -76,10 +76,10 @@ export default async function NotificationDetailPage({
         <div className="flex flex-1 flex-col gap-4 p-4">
           <div className="flex min-h-[400px] flex-1 items-center justify-center">
             <div className="text-center">
-              <h2 className={`mb-2 ${typography.heading.h2}`}>ID không hợp lệ</h2>
-              <p className={`${typography.body.muted.small}`}>
+              <TypographyH2 className="mb-2">ID không hợp lệ</TypographyH2>
+              <TypographyPSmallMuted>
                 ID thông báo không hợp lệ.
-              </p>
+              </TypographyPSmallMuted>
             </div>
           </div>
         </div>

@@ -11,7 +11,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Loader2, AlertTriangle, Trash } from "lucide-react"
-import { iconSizes } from "@/lib/typography"
+import { IconSize } from "@/components/ui/typography"
 import type { Contact, Group } from "@/components/chat/types"
 import { HardDeleteGroupDialog } from "./hard-delete-group-dialog.client"
 import { useGroupDeleteConfirm } from "../../hooks/use-group-delete-confirm"
@@ -95,7 +95,9 @@ export const DeleteGroupDialog = ({
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <AlertTriangle className={`${iconSizes.md} text-destructive`} />
+              <IconSize size="md" className="text-destructive">
+                <AlertTriangle />
+              </IconSize>
               {GROUP_CONFIRM_MESSAGES.DELETE_TITLE(group?.name)}
             </DialogTitle>
             <DialogDescription>
@@ -110,9 +112,13 @@ export const DeleteGroupDialog = ({
               className="w-full justify-start"
             >
               {isDeleting ? (
-                <Loader2 className={`mr-2 ${iconSizes.sm} animate-spin`} />
+                <IconSize size="sm" className="mr-2 animate-spin">
+                  <Loader2 />
+                </IconSize>
               ) : (
-                <Trash className={`mr-2 ${iconSizes.sm}`} />
+                <IconSize size="sm" className="mr-2">
+                  <Trash />
+                </IconSize>
               )}
               {GROUP_LABELS.SOFT_DELETE}
             </Button>
@@ -123,9 +129,13 @@ export const DeleteGroupDialog = ({
               className="w-full justify-start"
             >
               {isHardDeleting ? (
-                <Loader2 className={`mr-2 ${iconSizes.sm} animate-spin`} />
+                <IconSize size="sm" className="mr-2 animate-spin">
+                  <Loader2 />
+                </IconSize>
               ) : (
-                <Trash className={`mr-2 ${iconSizes.sm}`} />
+                <IconSize size="sm" className="mr-2">
+                  <Trash />
+                </IconSize>
               )}
               {GROUP_LABELS.HARD_DELETE}
             </Button>
@@ -146,7 +156,9 @@ export const DeleteGroupDialog = ({
           <DialogContent className="sm:max-w-[460px]">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
-                <AlertTriangle className={`${iconSizes.md} text-destructive`} />
+                <IconSize size="md" className="text-destructive">
+                <AlertTriangle />
+              </IconSize>
                 {deleteConfirm.type === "hard"
                   ? GROUP_CONFIRM_MESSAGES.HARD_DELETE_TITLE(deleteConfirm.row?.name)
                   : deleteConfirm.type === "restore"
@@ -167,7 +179,9 @@ export const DeleteGroupDialog = ({
               </Button>
               <Button variant="destructive" onClick={handleDeleteConfirm} disabled={isProcessing}>
                 {(deleteConfirm.type === "hard" ? isHardDeleting : isDeleting) && (
-                  <Loader2 className={`mr-2 ${iconSizes.sm} animate-spin`} />
+                  <IconSize size="sm" className="mr-2 animate-spin">
+                  <Loader2 />
+                </IconSize>
                 )}
                 {deleteConfirm.type === "hard"
                   ? GROUP_CONFIRM_MESSAGES.HARD_DELETE_LABEL

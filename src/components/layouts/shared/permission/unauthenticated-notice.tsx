@@ -12,9 +12,7 @@ import { LogIn, ArrowLeft, Lock } from "lucide-react"
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { TypographyH1, TypographyPMuted } from "@/components/ui/typography"
-import { iconSizes } from "@/lib/typography"
-import { cn } from "@/lib/utils"
+import { TypographyH1, TypographyPMuted, IconSize } from "@/components/ui/typography"
 
 interface UnauthenticatedNoticeProps {
   onLogin?: () => void
@@ -135,7 +133,9 @@ export function UnauthenticatedNotice({ onLogin }: UnauthenticatedNoticeProps) {
                       repeatDelay: 1,
                     }}
                   >
-                    <Lock className={cn(iconSizes["3xl"], "text-red-600 dark:text-red-500")} strokeWidth={2.5} />
+                    <IconSize size="3xl" className="text-red-600 dark:text-red-500">
+                      <Lock strokeWidth={2.5} />
+                    </IconSize>
                   </motion.div>
                   
                   {/* Login icon overlay */}
@@ -150,7 +150,9 @@ export function UnauthenticatedNotice({ onLogin }: UnauthenticatedNoticeProps) {
                     }}
                   >
                     <div className="rounded-full bg-background border-2 border-red-500/30 p-1.5 shadow-md">
-                      <LogIn className={cn(iconSizes.sm, "text-red-600 dark:text-red-500")} strokeWidth={2} />
+                      <IconSize size="sm" className="text-red-600 dark:text-red-500">
+                        <LogIn strokeWidth={2} />
+                      </IconSize>
                     </div>
                   </motion.div>
                 </div>
@@ -180,7 +182,9 @@ export function UnauthenticatedNotice({ onLogin }: UnauthenticatedNoticeProps) {
                     onClick={handleGoBack}
                     className="w-full sm:w-auto min-w-[160px] h-11 shadow-sm hover:shadow-md transition-shadow"
                   >
-                    <ArrowLeft className={cn(iconSizes.sm, "mr-2")} />
+                    <IconSize size="sm" className="mr-2">
+                      <ArrowLeft />
+                    </IconSize>
                     Quay lại
                   </Button>
                 </motion.div>
@@ -193,7 +197,9 @@ export function UnauthenticatedNotice({ onLogin }: UnauthenticatedNoticeProps) {
                     onClick={handleLogin}
                     className="w-full sm:w-auto min-w-[160px] h-11 shadow-md hover:shadow-lg transition-shadow bg-red-600 hover:bg-red-700 text-white"
                   >
-                    <LogIn className={cn(iconSizes.sm, "mr-2")} />
+                    <IconSize size="sm" className="mr-2">
+                      <LogIn />
+                    </IconSize>
                     Đăng nhập
                   </Button>
                 </motion.div>

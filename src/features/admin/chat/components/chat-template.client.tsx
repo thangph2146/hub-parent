@@ -1,6 +1,6 @@
 "use client"
 
-import { typography, iconSizes } from "@/lib/typography"
+import { TypographyH4, IconSize } from "@/components/ui/typography"
 
 import { useIsMobile } from "@/hooks/use-mobile"
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable"
@@ -486,12 +486,14 @@ export const ChatTemplate = ({
                 <Button
                   variant="ghost"
                   size="icon"
-                  className={iconSizes["2xl"]}
+                  className="h-12 w-12"
                   onClick={() => setIsChatListOpen(true)}
                 >
-                  <Menu className={iconSizes.sm} />
+                  <IconSize size="sm">
+                    <Menu />
+                  </IconSize>
                 </Button>
-                <h2 className={`${typography.heading.h4} font-semibold`}>Chats</h2>
+                <TypographyH4 className="font-semibold">Chats</TypographyH4>
               </div>
               <div className="flex-1 flex items-center justify-center">
                 <EmptyState variant="no-chat" />

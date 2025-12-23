@@ -10,7 +10,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Loader2, AlertTriangle } from "lucide-react"
-import { iconSizes } from "@/lib/typography"
+import { IconSize } from "@/components/ui/typography"
 import type { Contact, Group } from "@/components/chat/types"
 import { useGroupDeleteConfirm } from "../../hooks/use-group-delete-confirm"
 import { useGroupDialogActions } from "../../hooks/use-group-dialog-actions"
@@ -78,7 +78,9 @@ export const HardDeleteGroupDialog = ({
         <DialogContent className="sm:max-w-[460px]">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <AlertTriangle className={`${iconSizes.md} text-destructive`} />
+              <IconSize size="md" className="text-destructive">
+                <AlertTriangle />
+              </IconSize>
               {GROUP_CONFIRM_MESSAGES.HARD_DELETE_TITLE(group?.name)}
             </DialogTitle>
             <DialogDescription>
@@ -90,7 +92,11 @@ export const HardDeleteGroupDialog = ({
               {GROUP_CONFIRM_MESSAGES.CANCEL_LABEL}
             </Button>
             <Button variant="destructive" onClick={handleConfirm} disabled={isDeleting}>
-              {isDeleting && <Loader2 className={`mr-2 ${iconSizes.sm} animate-spin`} />}
+              {isDeleting && (
+                <IconSize size="sm" className="mr-2 animate-spin">
+                  <Loader2 />
+                </IconSize>
+              )}
               {GROUP_CONFIRM_MESSAGES.HARD_DELETE_LABEL}
             </Button>
           </DialogFooter>
@@ -105,7 +111,9 @@ export const HardDeleteGroupDialog = ({
           <DialogContent className="sm:max-w-[460px]">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
-                <AlertTriangle className={`${iconSizes.md} text-destructive`} />
+                <IconSize size="md" className="text-destructive">
+                <AlertTriangle />
+              </IconSize>
                 {GROUP_CONFIRM_MESSAGES.HARD_DELETE_TITLE(deleteConfirm.row?.name)}
               </DialogTitle>
               <DialogDescription>
@@ -117,7 +125,11 @@ export const HardDeleteGroupDialog = ({
                 {GROUP_CONFIRM_MESSAGES.CANCEL_LABEL}
               </Button>
               <Button variant="destructive" onClick={handleDeleteConfirm} disabled={isDeleting}>
-                {isDeleting && <Loader2 className={`mr-2 ${iconSizes.sm} animate-spin`} />}
+                {isDeleting && (
+                <IconSize size="sm" className="mr-2 animate-spin">
+                  <Loader2 />
+                </IconSize>
+              )}
                 {GROUP_CONFIRM_MESSAGES.HARD_DELETE_LABEL}
               </Button>
             </DialogFooter>

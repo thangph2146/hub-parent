@@ -19,7 +19,7 @@ import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { logger } from "@/lib/config/logger"
 import { useSession } from "@/lib/auth"
-import { typography, iconSizes } from "@/lib/typography"
+import { TypographyP, TypographyPSmallMuted, TypographyPMuted, IconSize } from "@/components/ui/typography"
 
 interface NotificationItemProps {
   notification: Notification
@@ -162,9 +162,9 @@ export function NotificationItem({
     >
       <div className="flex items-start gap-3">
         <div className="mt-0.5 flex-shrink-0">
-          <Icon
+          <IconSize
+            size="md"
             className={cn(
-              iconSizes.md,
               notification.kind === "SUCCESS" && "text-green-600",
               notification.kind === "WARNING" && "text-orange-600",
               notification.kind === "ALERT" && "text-red-600",
@@ -172,43 +172,45 @@ export function NotificationItem({
               notification.kind === "MESSAGE" && "text-blue-600",
               notification.isRead && "opacity-50"
             )}
-          />
+          >
+            <Icon />
+          </IconSize>
         </div>
 
         <div className="flex-1 space-y-1">
           <div className="flex items-start justify-between gap-2">
-            <h4
+            <TypographyP
               className={cn(
-                `${typography.body.medium} font-medium leading-none`,
+                "font-medium leading-none",
                 !notification.isRead && "font-semibold"
               )}
             >
               {notification.title}
-            </h4>
+            </TypographyP>
             {!notification.isRead && (
-              <div className={`${iconSizes.xs} flex-shrink-0 rounded-full bg-primary`} />
+              <div className="h-2 w-2 flex-shrink-0 rounded-full bg-primary" />
             )}
           </div>
 
           {notification.description && (
-            <p
+            <TypographyPMuted
               className={cn(
-                `${typography.body.muted.medium} line-clamp-2`,
+                "line-clamp-2",
                 notification.isRead && "opacity-70"
               )}
             >
               {notification.description}
-            </p>
+            </TypographyPMuted>
           )}
 
           <div className="flex items-center justify-between pt-2">
-            <span className={typography.body.muted.small}>{timeAgo}</span>
+            <TypographyPSmallMuted>{timeAgo}</TypographyPSmallMuted>
             <div className="flex items-center gap-2">
               <Button
                 variant={notification.isRead ? "outline" : "default"}
                 size="sm"
                 className={cn(
-                  `h-8 gap-1.5 ${typography.body.small}`,
+                  "h-8 gap-1.5",
                   notification.isRead
                     ? "border text-blue-700 hover:bg-accent dark:border-blue-700 dark:text-blue-300 dark:hover:bg-blue-950/30"
                     : "bg-green-600 text-white hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-600",
@@ -226,12 +228,12 @@ export function NotificationItem({
               >
                 {notification.isRead ? (
                   <>
-                    <EyeOff className={iconSizes.xs} />
+                    <IconSize size="xs"><EyeOff /></IconSize>
                     <span className="hidden sm:inline">Chưa đọc</span>
                   </>
                 ) : (
                   <>
-                    <CheckCircle2 className={iconSizes.xs} />
+                    <IconSize size="xs"><CheckCircle2 /></IconSize>
                     <span className="hidden sm:inline">Đã đọc</span>
                   </>
                 )}

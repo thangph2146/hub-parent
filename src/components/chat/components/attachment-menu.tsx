@@ -3,28 +3,28 @@ import {
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu"
 import { Brush, Camera, ChartBarIncreasing, File, Image, UserRound } from "lucide-react"
-import { iconSizes } from "@/lib/typography"
+import { IconSize } from "@/components/ui/typography"
 
 export function AttachmentMenu() {
   return (
     <DropdownMenuContent side="top" align="start">
       <DropdownMenuItem>
-        <Image className={`mr-2 ${iconSizes.sm}`} aria-label="Photos & Videos" /> Photos & Videos
+        <IconSize size="sm" className="mr-2"><Image aria-label="Photos & Videos" /></IconSize> Photos & Videos
       </DropdownMenuItem>
       <DropdownMenuItem>
-        <Camera className={`mr-2 ${iconSizes.sm}`} /> Camera
+        <IconSize size="sm" className="mr-2"><Camera /></IconSize> Camera
       </DropdownMenuItem>
       <DropdownMenuItem>
-        <File className={`mr-2 ${iconSizes.sm}`} /> Document
+        <IconSize size="sm" className="mr-2"><File /></IconSize> Document
       </DropdownMenuItem>
       <DropdownMenuItem>
-        <UserRound className={`mr-2 ${iconSizes.sm}`} /> Contact
+        <IconSize size="sm" className="mr-2"><UserRound /></IconSize> Contact
       </DropdownMenuItem>
       <DropdownMenuItem>
-        <ChartBarIncreasing className={`mr-2 ${iconSizes.sm}`} /> Poll
+        <IconSize size="sm" className="mr-2"><ChartBarIncreasing /></IconSize> Poll
       </DropdownMenuItem>
       <DropdownMenuItem>
-        <Brush className={`mr-2 ${iconSizes.sm}`} /> Drawing
+        <IconSize size="sm" className="mr-2"><Brush /></IconSize> Drawing
       </DropdownMenuItem>
     </DropdownMenuContent>
   )

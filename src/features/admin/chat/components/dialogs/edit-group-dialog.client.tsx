@@ -14,7 +14,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Loader2 } from "lucide-react"
-import { iconSizes } from "@/lib/typography"
+import { IconSize } from "@/components/ui/typography"
 import { logger } from "@/lib/config"
 import type { Group } from "@/components/chat/types"
 import { apiRoutes } from "@/lib/api/routes"
@@ -101,7 +101,11 @@ export const EditGroupDialog = ({ open, onOpenChange, group, onSuccess }: EditGr
             Hủy
           </Button>
           <Button onClick={handleSave} disabled={isSaving}>
-            {isSaving && <Loader2 className={`mr-2 ${iconSizes.sm} animate-spin`} />}
+            {isSaving && (
+              <IconSize size="sm" className="mr-2 animate-spin">
+                <Loader2 />
+              </IconSize>
+            )}
             Lưu thay đổi
           </Button>
         </DialogFooter>

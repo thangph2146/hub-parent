@@ -5,7 +5,7 @@ import { CheckCircle2, XCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { cn } from "@/lib/utils"
-import { typography, headerConfig, iconSizes } from "@/lib/typography"
+import { TypographyH3, TypographyP, TypographyPSmall, IconSize } from "@/components/ui/typography"
 
 export type FeedbackVariant = "success" | "error"
 
@@ -36,14 +36,16 @@ export function FeedbackDialog({
         <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:fade-in data-[state=closed]:fade-out" />
         <DialogPrimitive.Content className="bg-background data-[state=open]:animate-in data-[state=closed]:animate-out fixed left-1/2 top-1/2 z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2 rounded-xl p-6 shadow-lg focus:outline-hidden">
           <div className="flex items-start gap-3">
-            <Icon className={cn(`${iconSizes.lg} flex-shrink-0`, iconClass)} />
+            <IconSize size="lg" className={cn("flex-shrink-0", iconClass)}>
+              <Icon />
+            </IconSize>
             <div className="flex-1">
-              <DialogPrimitive.Title className={`text-foreground ${headerConfig.subsection.className}`}>
-                {title}
+              <DialogPrimitive.Title asChild>
+                <TypographyH3 className="text-foreground">{title}</TypographyH3>
               </DialogPrimitive.Title>
               {description ? (
-                <DialogPrimitive.Description className={`text-muted-foreground mt-1 ${typography.body.medium}`}>
-                  {description}
+                <DialogPrimitive.Description asChild>
+                  <TypographyP className="text-muted-foreground mt-1">{description}</TypographyP>
                 </DialogPrimitive.Description>
               ) : null}
             </div>
@@ -51,11 +53,11 @@ export function FeedbackDialog({
 
           {details ? (
             <div className="mt-4">
-              <span className={`text-foreground mb-2 block ${typography.body.medium} font-medium`}>
+              <TypographyP className="text-foreground mb-2 block font-medium">
                 Chi tiết
-              </span>
-              <ScrollArea className={`max-h-48 rounded-md border border-border/60 bg-muted/30 p-3 ${typography.body.medium} text-muted-foreground`}>
-                <pre className={`${typography.body.small} whitespace-pre-wrap break-words`}>{details}</pre>
+              </TypographyP>
+              <ScrollArea className="max-h-48 rounded-md border border-border/60 bg-muted/30 p-3 text-muted-foreground">
+                <TypographyPSmall className="whitespace-pre-wrap break-words">{details}</TypographyPSmall>
               </ScrollArea>
             </div>
           ) : null}

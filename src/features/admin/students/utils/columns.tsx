@@ -1,5 +1,5 @@
 import { useMemo } from "react"
-import { typography, iconSizes } from "@/lib/typography"
+import { TypographySpanSmall, TypographySpanSmallMuted, IconSize } from "@/components/ui/typography"
 import { Switch } from "@/components/ui/switch"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { AlertCircle, CheckCircle2 } from "lucide-react"
@@ -107,9 +107,9 @@ export const useStudentColumns = ({ togglingStudents, canToggleStatus, onToggleS
         headerClassName: "w-[120px]",
         cell: (row) =>
           row.deletedAt ? (
-            <span className={`inline-flex min-w-[88px] items-center justify-center rounded-full bg-rose-100 px-2 py-1 ${typography.body.small} font-medium text-rose-700`}>
+            <TypographySpanSmall className="inline-flex min-w-[88px] items-center justify-center rounded-full bg-rose-100 px-2 py-1 font-medium text-rose-700">
               {STUDENT_LABELS.DELETED}
-            </span>
+            </TypographySpanSmall>
           ) : (
             <div className="flex items-center gap-2">
               <Switch
@@ -118,9 +118,9 @@ export const useStudentColumns = ({ togglingStudents, canToggleStatus, onToggleS
                 onCheckedChange={(checked) => onToggleStatus(row, checked)}
                 aria-label={row.isActive ? "Vô hiệu hóa sinh viên" : "Kích hoạt sinh viên"}
               />
-              <span className={typography.body.muted.small}>
+              <TypographySpanSmallMuted>
                 {row.isActive ? STUDENT_LABELS.ACTIVE : STUDENT_LABELS.INACTIVE}
-              </span>
+              </TypographySpanSmallMuted>
             </div>
           ),
       })
@@ -157,11 +157,13 @@ export const useStudentColumns = ({ togglingStudents, canToggleStatus, onToggleS
           if (row.isActive && !row.deletedAt) {
             return (
               <Alert variant="default" className="w-full border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-900/20">
-                <CheckCircle2 className={`${iconSizes.sm} text-green-600 dark:text-green-400`} />
-                <AlertTitle className={`${typography.body.medium} font-semibold text-green-800 dark:text-green-200`}>
+                <IconSize size="sm" className="text-green-600 dark:text-green-400">
+                  <CheckCircle2 />
+                </IconSize>
+                <AlertTitle className="font-semibold text-green-800 dark:text-green-200">
                   {STUDENT_LABELS.APPROVED_TITLE}
                 </AlertTitle>
-                <AlertDescription className={`${typography.body.small} text-green-700 dark:text-green-300 mt-1`}>
+                <AlertDescription className="text-green-700 dark:text-green-300 mt-1">
                   {STUDENT_LABELS.APPROVED_MESSAGE}
                 </AlertDescription>
               </Alert>
@@ -171,17 +173,19 @@ export const useStudentColumns = ({ togglingStudents, canToggleStatus, onToggleS
           if (!row.isActive && !row.deletedAt) {
             return (
               <Alert variant="default" className="border-yellow-200 bg-yellow-50 dark:border-yellow-800 dark:bg-yellow-900/20">
-                <AlertCircle className={`${iconSizes.sm} text-yellow-600 dark:text-yellow-400`} />
-                <AlertTitle className={`${typography.body.medium} font-semibold text-yellow-800 dark:text-yellow-200`}>
+                <IconSize size="sm" className="text-yellow-600 dark:text-yellow-400">
+                  <AlertCircle />
+                </IconSize>
+                <AlertTitle className="font-semibold text-yellow-800 dark:text-yellow-200">
                   {STUDENT_LABELS.PENDING_APPROVAL_TITLE}
                 </AlertTitle>
-                <AlertDescription className={`${typography.body.small} text-yellow-700 dark:text-yellow-300 mt-1`}>
+                <AlertDescription className="text-yellow-700 dark:text-yellow-300 mt-1">
                   {STUDENT_LABELS.PENDING_APPROVAL_MESSAGE}
                 </AlertDescription>
               </Alert>
             )
           }
-          return <span className={`${typography.body.muted.small}`}>-</span>
+          return <TypographySpanSmallMuted>-</TypographySpanSmallMuted>
         },
       })
     }
