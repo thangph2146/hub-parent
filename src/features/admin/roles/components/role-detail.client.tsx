@@ -121,7 +121,9 @@ export const RoleDetailClient = ({ roleId, role, backUrl = "/admin/roles" }: Rol
               <Card className="border border-border/50 bg-card p-5">
                 <div className="flex items-start gap-3">
                   <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted">
-                    <FileText className={`${iconSizes.sm} text-muted-foreground`} />
+                    <IconSize size="sm">
+                      <FileText className="text-muted-foreground" />
+                    </IconSize>
                   </div>
                   <div className="flex-1 min-w-0">
                     <TypographyH3 className="font-medium text-foreground mb-2">Mô tả</TypographyH3>
@@ -147,7 +149,9 @@ export const RoleDetailClient = ({ roleId, role, backUrl = "/admin/roles" }: Rol
           return (
             <div className="flex items-center gap-3">
               <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted">
-                <Shield className={`${iconSizes.sm} text-muted-foreground`} />
+                <IconSize size="sm">
+                  <Shield className="text-muted-foreground" />
+                </IconSize>
               </div>
               <div className="flex-1 min-w-0">
                 <TypographySpanSmallMuted className="font-medium mb-1.5">Quyền</TypographySpanSmallMuted>
@@ -175,7 +179,9 @@ export const RoleDetailClient = ({ roleId, role, backUrl = "/admin/roles" }: Rol
           <div className="space-y-4">
             <div className="flex items-start gap-3">
               <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted">
-                <Shield className={`${iconSizes.sm} text-muted-foreground`} />
+                <IconSize size="sm">
+                  <Shield className="text-muted-foreground" />
+                </IconSize>
               </div>
               <div className="flex-1 min-w-0 space-y-3">
                 <div>
@@ -189,7 +195,9 @@ export const RoleDetailClient = ({ roleId, role, backUrl = "/admin/roles" }: Rol
                         className="w-full justify-between"
                       >
                         <span className="truncate">{displayText}</span>
-                        <ChevronsUpDown className={`ml-2 ${iconSizes.sm} shrink-0 opacity-50`} />
+                        <IconSize size="sm" className="ml-2 shrink-0 opacity-50">
+                          <ChevronsUpDown />
+                        </IconSize>
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-[400px] p-0" align="start">
@@ -217,7 +225,9 @@ export const RoleDetailClient = ({ roleId, role, backUrl = "/admin/roles" }: Rol
                                       disabled
                                       className="cursor-default"
                                     >
-                                      <Check className={cn(`mr-2 ${iconSizes.sm}`, "opacity-100")} />
+                                      <IconSize size="sm" className="mr-2 opacity-100">
+                                        <Check />
+                                      </IconSize>
                                       {option.label}
                                     </CommandItem>
                                   )
@@ -273,12 +283,16 @@ export const RoleDetailClient = ({ roleId, role, backUrl = "/admin/roles" }: Rol
               >
                 {roleData.isActive ? (
                   <>
-                    <CheckCircle2 className={`mr-1.5 ${iconSizes.xs}`} />
+                    <IconSize size="xs" className="mr-1.5">
+                      <CheckCircle2 />
+                    </IconSize>
                     Hoạt động
                   </> 
                 ) : (
                   <>
-                    <XCircle className={`mr-1.5 ${iconSizes.xs}`} />
+                    <IconSize size="xs" className="mr-1.5">
+                      <XCircle />
+                    </IconSize>
                     Tạm khóa
                   </>
                 )}
@@ -324,7 +338,9 @@ export const RoleDetailClient = ({ roleId, role, backUrl = "/admin/roles" }: Rol
             onClick={() => router.push(`/admin/roles/${roleId}/edit`)}
             className="gap-2"
           >
-            <Edit className={iconSizes.sm} />
+            <IconSize size="sm">
+              <Edit />
+            </IconSize>
             Chỉnh sửa
           </Button>
         ) : null

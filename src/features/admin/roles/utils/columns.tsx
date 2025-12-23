@@ -1,5 +1,5 @@
 import { useMemo } from "react"
-import { typography } from "@/lib/typography"
+import { TypographySpanSmall, TypographySpanSmallMuted } from "@/components/ui/typography"
 import { Switch } from "@/components/ui/switch"
 import type { DataTableColumn } from "@/components/tables"
 import { useDynamicFilterOptions } from "@/features/admin/resources/hooks/use-dynamic-filter-options"
@@ -78,17 +78,17 @@ export const useRoleColumns = ({ togglingRoles, canManage, onToggleStatus }: Use
           row.permissions.length > 0 ? (
             <div className="flex flex-wrap gap-1">
               {row.permissions.slice(0, 3).map((perm) => (
-                <span
+                <TypographySpanSmallMuted
                   key={perm}
-                  className={`rounded-full bg-muted px-2 py-1 ${typography.body.muted.small}`}
+                  className="rounded-full bg-muted px-2 py-1"
                 >
                   {perm.split(":")[0]}
-                </span>
+                </TypographySpanSmallMuted>
               ))}
               {row.permissions.length > 3 && (
-                <span className={`rounded-full bg-muted px-2 py-1 ${typography.body.muted.small}`}>
+                <TypographySpanSmallMuted className="rounded-full bg-muted px-2 py-1">
                   +{row.permissions.length - 3}
-                </span>
+                </TypographySpanSmallMuted>
               )}
             </div>
           ) : (
@@ -112,9 +112,9 @@ export const useRoleColumns = ({ togglingRoles, canManage, onToggleStatus }: Use
         headerClassName: "w-[120px]",
         cell: (row) =>
           row.deletedAt ? (
-            <span className={`inline-flex min-w-[88px] items-center justify-center rounded-full bg-rose-100 px-2 py-1 ${typography.body.small} font-medium text-rose-700`}>
+            <TypographySpanSmall className="inline-flex min-w-[88px] items-center justify-center rounded-full bg-rose-100 px-2 py-1 font-medium text-rose-700">
               Đã xóa
-            </span>
+            </TypographySpanSmall>
           ) : (
             <div className="flex items-center gap-2">
               <Switch
@@ -123,9 +123,9 @@ export const useRoleColumns = ({ togglingRoles, canManage, onToggleStatus }: Use
                 onCheckedChange={(checked) => onToggleStatus(row, checked)}
                 aria-label={row.isActive ? "Vô hiệu hóa vai trò" : "Kích hoạt vai trò"}
               />
-              <span className={typography.body.muted.small}>
+              <TypographySpanSmallMuted>
                 {row.isActive ? "Hoạt động" : "Tạm khóa"}
-              </span>
+              </TypographySpanSmallMuted>
             </div>
           ),
       },
