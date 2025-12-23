@@ -1,6 +1,6 @@
 "use client"
 
-import { typography, iconSizes } from "@/lib/typography"
+import { IconSize } from "@/components/ui/typography"
 
 import { useCallback, useMemo, useState } from "react"
 import { useResourceRouter } from "@/hooks/use-resource-segment"
@@ -322,7 +322,9 @@ export const CategoriesTableClient = ({
                 onClick={() => executeBulk("delete", selectedIds, refresh, clearSelection)}
                 className="whitespace-nowrap"
               >
-                <Trash2 className={`mr-2 ${iconSizes.md} shrink-0`} />
+                <IconSize size="md" className="mr-2 shrink-0">
+                  <Trash2 />
+                </IconSize>
                 <span className="hidden sm:inline">
                   {CATEGORY_LABELS.DELETE_SELECTED(selectedIds.length)}
                 </span>
@@ -338,7 +340,9 @@ export const CategoriesTableClient = ({
                 onClick={() => executeBulk("hard-delete", selectedIds, refresh, clearSelection)}
                 className="whitespace-nowrap"
               >
-                <AlertTriangle className={`mr-2 ${iconSizes.md} shrink-0`} />
+                <IconSize size="md" className="mr-2 shrink-0">
+                  <AlertTriangle />
+                </IconSize>
                 <span className="hidden sm:inline">
                   {CATEGORY_LABELS.HARD_DELETE_SELECTED(selectedIds.length)}
                 </span>
@@ -384,7 +388,9 @@ export const CategoriesTableClient = ({
                 onClick={() => executeBulk("restore", selectedIds, refresh, clearSelection)}
                 className="whitespace-nowrap"
               >
-                <RotateCcw className={`mr-2 ${iconSizes.md} shrink-0`} />
+                <IconSize size="md" className="mr-2 shrink-0">
+                  <RotateCcw />
+                </IconSize>
                 <span className="hidden sm:inline">
                   {CATEGORY_LABELS.RESTORE_SELECTED(selectedIds.length)}
                 </span>
@@ -400,7 +406,9 @@ export const CategoriesTableClient = ({
                 onClick={() => executeBulk("hard-delete", selectedIds, refresh, clearSelection)}
                 className="whitespace-nowrap"
               >
-                <AlertTriangle className={`mr-2 ${iconSizes.md} shrink-0`} />
+                <IconSize size="md" className="mr-2 shrink-0">
+                  <AlertTriangle />
+                </IconSize>
                 <span className="hidden sm:inline">
                   {CATEGORY_LABELS.HARD_DELETE_SELECTED(selectedIds.length)}
                 </span>
@@ -505,9 +513,11 @@ export const CategoriesTableClient = ({
       type="button"
       size="sm"
       onClick={() => router.push("/admin/categories/new")}
-      className={`h-8 px-3 ${typography.body.small}`}
+      className="h-8 px-3"
     >
-      <Plus className={`mr-2 ${iconSizes.md}`} />
+      <IconSize size="md" className="mr-2">
+        <Plus />
+      </IconSize>
       {CATEGORY_LABELS.ADD_NEW}
     </Button>
   ) : undefined
