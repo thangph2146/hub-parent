@@ -36,7 +36,7 @@ import {
 import { resourceLogger } from "@/lib/config/resource-logger";
 import { usePermissions } from "@/hooks/use-permissions";
 import { PERMISSIONS } from "@/lib/permissions";
-import { typography, iconSizes, headerConfig } from "@/lib/typography";
+import { TypographyH2, TypographyP, TypographyPLarge, TypographyPMuted, TypographyPSmallMuted, TypographySpanSmall, IconSize } from "@/components/ui/typography";
 
 export interface PostDetailData {
   id: string;
@@ -139,32 +139,32 @@ export const PostDetailClient = ({
               )}
 
               <div className="space-y-2">
-                <h2 className={`${headerConfig.section.className} leading-tight`}>
+                <TypographyH2 className="leading-tight">
                   {postData.title || "Chưa có tiêu đề"}
-                </h2>
+                </TypographyH2>
                 {postData.excerpt && (
-                  <p className={`${typography.body.large} leading-relaxed text-muted-foreground whitespace-pre-wrap`}>
+                  <TypographyPLarge className="leading-relaxed text-muted-foreground whitespace-pre-wrap">
                     {postData.excerpt}
-                  </p>
+                  </TypographyPLarge>
                 )}
               </div>
             </div>
 
             <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
               <FieldItem icon={Hash} label="Slug">
-                <div className={`${typography.body.medium} font-medium text-foreground font-mono break-all`}>
+                <TypographyP className="font-medium text-foreground font-mono break-all">
                   {postData.slug || "---"}
-                </div>
+                </TypographyP>
               </FieldItem>
 
               <FieldItem icon={User} label="Tác giả">
                 <div className="space-y-0.5">
-                  <div className={`${typography.body.medium} font-medium text-foreground`}>
+                  <TypographyP className="font-medium text-foreground">
                     {postData.author.name || "Không rõ tên"}
-                  </div>
-                  <div className={`${typography.body.muted.small} line-clamp-1`}>
+                  </TypographyP>
+                  <TypographyPSmallMuted className="line-clamp-1">
                     {postData.author.email}
-                  </div>
+                  </TypographyPSmallMuted>
                 </div>
               </FieldItem>
 
@@ -172,12 +172,12 @@ export const PostDetailClient = ({
                 <FieldItem icon={Tag} label="Danh mục">
                   <div className="flex flex-wrap gap-1.5">
                     {postData.categories.map((category) => (
-                      <span
+                      <TypographySpanSmall
                         key={category.id}
-                        className={`inline-flex items-center rounded-md bg-primary/10 px-2 py-1 ${typography.body.small} font-medium text-primary`}
+                        className="inline-flex items-center rounded-md bg-primary/10 px-2 py-1 font-medium text-primary"
                       >
                         {category.name}
-                      </span>
+                      </TypographySpanSmall>
                     ))}
                   </div>
                 </FieldItem>
@@ -187,12 +187,12 @@ export const PostDetailClient = ({
                 <FieldItem icon={Tags} label="Thẻ tag">
                   <div className="flex flex-wrap gap-1.5">
                     {postData.tags.map((tag) => (
-                      <span
+                      <TypographySpanSmall
                         key={tag.id}
-                        className={`inline-flex items-center rounded-md bg-secondary/60 px-2 py-1 ${typography.body.small} font-medium text-secondary-foreground`}
+                        className="inline-flex items-center rounded-md bg-secondary/60 px-2 py-1 font-medium text-secondary-foreground"
                       >
                         {tag.name}
-                      </span>
+                      </TypographySpanSmall>
                     ))}
                   </div>
                 </FieldItem>
@@ -205,17 +205,21 @@ export const PostDetailClient = ({
                 <div className="flex items-center gap-2">
                   {postData.published ? (
                     <>
-                      <CheckCircle2 className={`${iconSizes.sm} text-green-600 dark:text-green-500`} />
-                      <span className={`${typography.body.medium} font-medium text-foreground`}>
+                      <IconSize size="sm">
+                        <CheckCircle2 className="text-green-600 dark:text-green-500" />
+                      </IconSize>
+                      <TypographyP className="font-medium text-foreground">
                         Đã xuất bản
-                      </span>
+                      </TypographyP>
                     </>
                   ) : (
                     <>
-                      <EyeOff className={`${iconSizes.sm} text-gray-600 dark:text-gray-400`} />
-                      <span className={`${typography.body.medium} font-medium text-foreground`}>
+                      <IconSize size="sm">
+                        <EyeOff className="text-gray-600 dark:text-gray-400" />
+                      </IconSize>
+                      <TypographyP className="font-medium text-foreground">
                         Bản nháp
-                      </span>
+                      </TypographyP>
                     </>
                   )}
                 </div>
@@ -223,31 +227,31 @@ export const PostDetailClient = ({
 
               {postData.publishedAt && (
                 <FieldItem icon={Calendar} label="Ngày xuất bản">
-                  <div className={`${typography.body.medium} font-medium text-foreground`}>
+                  <TypographyP className="font-medium text-foreground">
                     {formatDateVi(postData.publishedAt)}
-                  </div>
+                  </TypographyP>
                 </FieldItem>
               )}
             </div>
 
             <div className="grid gap-6 grid-cols-1 sm:grid-cols-3">
               <FieldItem icon={Clock} label="Ngày tạo">
-                <div className={`${typography.body.medium} font-medium text-foreground`}>
+                <TypographyP className="font-medium text-foreground">
                   {formatDateVi(postData.createdAt)}
-                </div>
+                </TypographyP>
               </FieldItem>
 
               <FieldItem icon={Clock} label="Cập nhật lần cuối">
-                <div className={`${typography.body.medium} font-medium text-foreground`}>
+                <TypographyP className="font-medium text-foreground">
                   {formatDateVi(postData.updatedAt)}
-                </div>
+                </TypographyP>
               </FieldItem>
 
               {postData.deletedAt && (
                 <FieldItem icon={Clock} label="Ngày xóa">
-                  <div className={`${typography.body.medium} font-medium text-rose-600 dark:text-rose-400`}>
+                  <TypographyP className="font-medium text-rose-600 dark:text-rose-400">
                     {formatDateVi(postData.deletedAt)}
-                  </div>
+                  </TypographyP>
                 </FieldItem>
               )}
             </div>
@@ -285,9 +289,9 @@ export const PostDetailClient = ({
               <Editor editorSerializedState={editorState} readOnly={true} />
             ) : (
               <Card className="border border-border/50 bg-card p-5">
-                <div className={typography.body.muted.medium}>
+                <TypographyPMuted>
                   Không có nội dung hoặc định dạng không hợp lệ
-                </div>
+                </TypographyPMuted>
               </Card>
             )}
           </div>
@@ -314,7 +318,9 @@ export const PostDetailClient = ({
             onClick={() => router.push(`/admin/posts/${detailData.id}/edit`)}
             className="gap-2"
           >
-            <Edit className={iconSizes.sm} />
+            <IconSize size="sm">
+              <Edit />
+            </IconSize>
             Chỉnh sửa
           </Button>
         ) : null

@@ -24,7 +24,6 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 import { useClientOnly } from "@/hooks/use-client-only"
-import { typography } from "@/lib/typography"
 import * as React from "react"
 
 
@@ -110,16 +109,16 @@ export function NavProjects({
                 >
                   <DropdownMenuItem>
                     <Folder className="text-muted-foreground" />
-                    <span className={typography.body.medium}>View Project</span>
+                    <span>View Project</span>
                   </DropdownMenuItem>
                   <DropdownMenuItem>
                     <Share className="text-muted-foreground" />
-                    <span className={typography.body.medium}>Share Project</span>
+                    <span>Share Project</span>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem>
                     <Trash2 className="text-muted-foreground" />
-                    <span className={typography.body.medium}>Delete Project</span>
+                    <span>Delete Project</span>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>

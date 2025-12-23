@@ -7,7 +7,7 @@
 
 import { PostCard } from "@/components/public/post/post-card"
 import { FileText } from "lucide-react"
-import { headerConfig, iconSizes } from "@/lib/typography"
+import { TypographyH2, IconSize } from "@/components/ui/typography"
 import type { Post } from "../types"
 
 interface RelatedPostsProps {
@@ -24,9 +24,11 @@ export const RelatedPosts = ({ posts, title = "Bài viết liên quan" }: Relate
     <section className="pt-12 border-t">
       <div className="flex items-center gap-3 mb-8">
         <div className="p-2 bg-primary/10 rounded-lg">
-          <FileText className={`${iconSizes.md} text-primary`} />
+          <IconSize size="md">
+            <FileText className="text-primary" />
+          </IconSize>
         </div>
-        <h2 className={headerConfig.section.className}>{title}</h2>
+        <TypographyH2>{title}</TypographyH2>
       </div>
 
       <div className="grid gap-6 sm:gap-8 md:grid-cols-2 lg:grid-cols-3">

@@ -4,7 +4,7 @@ import React, { useEffect, useRef, useCallback } from "react"
 import { motion, type Variants } from "framer-motion"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { typography, headerConfig } from "@/lib/typography"
+import { TypographyH1, TypographyPLargeMuted } from "@/components/ui/typography"
 
 interface Dot {
   x: number
@@ -267,23 +267,27 @@ export const HeroSection: React.FC = () => {
           variants={headlineVariants}
           initial="hidden"
           animate="visible"
-          className={`${headerConfig.main.className} leading-tight max-w-4xl mb-6`}
+          className="leading-tight max-w-4xl mb-6"
         >
-          Hệ thống quản trị{" "}
-          <span className="bg-gradient-to-r from-primary via-purple-500 to-primary bg-clip-text text-transparent">
-            nội dung thông minh
-          </span>
+          <TypographyH1>
+            Hệ thống quản trị{" "}
+            <span className="bg-gradient-to-r from-primary via-purple-500 to-primary bg-clip-text text-transparent">
+              nội dung thông minh
+            </span>
+          </TypographyH1>
         </motion.h1>
 
-        <motion.p
+        <motion.div
           variants={subHeadlineVariants}
           initial="hidden"
           animate="visible"
-          className={`${typography.description.large} max-w-2xl mx-auto mb-8`}
+          className="max-w-2xl mx-auto mb-8"
         >
-          Quản lý nội dung dễ dàng với giao diện trực quan, tính năng mạnh mẽ và khả năng tùy chỉnh linh hoạt. Tối
-          ưu hóa quy trình làm việc và nâng cao hiệu suất của đội ngũ.
-        </motion.p>
+          <TypographyPLargeMuted>
+            Quản lý nội dung dễ dàng với giao diện trực quan, tính năng mạnh mẽ và khả năng tùy chỉnh linh hoạt. Tối
+            ưu hóa quy trình làm việc và nâng cao hiệu suất của đội ngũ.
+          </TypographyPLargeMuted>
+        </motion.div>
 
         <motion.div
           variants={buttonGroupVariants}

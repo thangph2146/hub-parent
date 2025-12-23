@@ -1,6 +1,7 @@
 "use client"
 
-import { typography, headerConfig, iconSizes } from "@/lib/typography"
+import { iconSizes } from "@/lib/typography"
+import { TypographyDescriptionSmall, TypographyH1 } from "@/components/ui/typography"
 
 /**
  * Guide Client Component
@@ -159,17 +160,17 @@ export const GuideClient = () => {
     <div className="container mx-auto px-4 py-6">
       {/* Header */}
       <div className="mb-6">
-        <h1 className={`${headerConfig.main.className} mb-2`}>Hướng dẫn Sử dụng Hệ thống</h1>
-        <p className={typography.description.small}>
+        <TypographyH1 className="mb-2">Hướng dẫn Sử dụng Hệ thống</TypographyH1>
+        <TypographyDescriptionSmall>
           Khám phá các tính năng và cách sử dụng hệ thống
-        </p>
+        </TypographyDescriptionSmall>
       </div>
 
       {/* Tabs Navigation */}
       <Tabs defaultValue={defaultCategory} className="w-full">
         <TabsList className="sticky top-[60px] z-10 w-full mb-6 overflow-x-auto flex-wrap h-auto backdrop-blur supports-[backdrop-filter]:bg-primary/20">
           {categories.map((category) => (
-            <TabsTrigger key={category} value={category} className={`${typography.body.small} whitespace-nowrap`}>
+            <TabsTrigger key={category} value={category} className="whitespace-nowrap">
               {category}
             </TabsTrigger>
           ))}
@@ -186,8 +187,8 @@ export const GuideClient = () => {
                     <div className="flex items-center gap-3">
                       <Icon className={`${iconSizes.md} text-primary flex-shrink-0`} />
                       <div>
-                        <CardTitle className={typography.title.small}>{guide.title}</CardTitle>
-                        <CardDescription className={`${typography.description.small} mt-1`}>
+                        <CardTitle className="text-base">{guide.title}</CardTitle>
+                        <CardDescription className="mt-1">
                           {guide.description}
                         </CardDescription>
                       </div>
@@ -224,7 +225,7 @@ export const GuideClient = () => {
       </Tabs>
 
       {/* Additional Info */}
-      <div className={`text-center ${typography.body.muted.small} border-t pt-4 mt-6`}>
+      <div className="text-center border-t pt-4 mt-6">
         <p className="mb-2">Cần hỗ trợ thêm? Vui lòng liên hệ với chúng tôi</p>
         <div className="flex flex-wrap items-center justify-center gap-4">
           <span>📧 Email: support@hub.edu.vn</span>

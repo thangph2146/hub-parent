@@ -3,12 +3,8 @@ import Image from "next/image";
 import { ReactNode } from "react";
 import { ContentCard } from "./content-card";
 import type { ContentCardButton } from "./content-card";
-import { typography } from "@/lib/typography";
-
-// Cấu hình mặc định - sử dụng shared typography
+// Cấu hình mặc định
 const DEFAULT_MIN_HEIGHT = "min-h-[300px] sm:min-h-[350px] lg:min-h-[400px] xxl:min-h-[500px]";
-const DEFAULT_TITLE_CLASSES = `${typography.title.default} text-slate-900`;
-const DEFAULT_DESCRIPTION_CLASSES = `${typography.description.default} text-slate-700`;
 
 export type HeroButton = ContentCardButton;
 
@@ -76,11 +72,9 @@ export const HeroSection = ({
             overlayClassName
           )}
           headerClassName="px-0 pb-3 sm:pb-4 gap-0"
-          titleClassName={cn("mb-3 sm:mb-4", titleClassName || DEFAULT_TITLE_CLASSES)}
-          descriptionClassName={cn("mb-4 sm:mb-6", descriptionClassName || DEFAULT_DESCRIPTION_CLASSES)}
+          titleClassName={cn("mb-3 sm:mb-4 text-slate-900", titleClassName)}
+          descriptionClassName={cn("mb-4 sm:mb-6 text-slate-700", descriptionClassName)}
           contentClassName="px-0"
-          titleDefaultClasses={DEFAULT_TITLE_CLASSES}
-          descriptionDefaultClasses={DEFAULT_DESCRIPTION_CLASSES}
         >
           {children}
         </ContentCard>

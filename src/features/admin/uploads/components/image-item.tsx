@@ -9,7 +9,9 @@ import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Loader2, Trash2 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
-import { typography, iconSizes } from "@/lib/typography"
+import { iconSizes } from "@/lib/typography"
+import { TypographySpanSmall } from "@/components/ui/typography"
+import { cn } from "@/lib/utils"
 import type { ImageItem as ImageItemType } from "../types"
 
 interface ImageItemProps {
@@ -52,8 +54,8 @@ export const ImageItem = ({
         />
       </div>
       <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/60 to-transparent p-2 opacity-0 group-hover:opacity-100 transition-opacity">
-        <p className={`text-white ${typography.body.small} font-medium truncate`}>{image.originalName}</p>
-        <p className={`text-white/80 ${typography.body.small}`}>{(image.size / 1024).toFixed(1)} KB</p>
+        <TypographySpanSmall className="text-white font-medium truncate">{image.originalName}</TypographySpanSmall>
+        <TypographySpanSmall className="text-white/80">{(image.size / 1024).toFixed(1)} KB</TypographySpanSmall>
       </div>
       <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
         <button
@@ -64,7 +66,7 @@ export const ImageItem = ({
               description: "URL đã được copy vào clipboard",
             })
           }}
-          className={`bg-black/60 text-white ${typography.body.small} px-2 py-1 rounded hover:bg-black/80 transition-colors`}
+          className="bg-black/60 text-white px-2 py-1 rounded hover:bg-black/80 transition-colors"
           title="Copy URL"
         >
           Copy URL
@@ -72,13 +74,13 @@ export const ImageItem = ({
         <Button
           variant="destructive"
           size="icon"
-          className={`${iconSizes.xl} bg-red-600/80 hover:bg-red-600`}
+          className={cn(iconSizes.xl, "bg-red-600/80 hover:bg-red-600")}
           onClick={() => onDelete(image)}
           disabled={isDeleting}
           title="Xóa hình ảnh"
         >
           {isDeleting ? (
-            <Loader2 className={`${iconSizes.xs} animate-spin`} />
+            <Loader2 className={cn(iconSizes.xs, "animate-spin")} />
           ) : (
             <Trash2 className={iconSizes.xs} />
           )}

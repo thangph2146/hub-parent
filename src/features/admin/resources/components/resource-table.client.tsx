@@ -19,7 +19,7 @@ import {
 import { ChevronDown } from "lucide-react"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { useDebouncedCallback } from "@/hooks/use-debounced-callback"
-import { headerConfig, typography, iconSizes } from "@/lib/typography"
+import { TypographyH4, TypographySpanSmall, IconSize } from "@/components/ui/typography"
 import type {
   ResourceTableLoader,
   ResourceViewMode,
@@ -185,10 +185,12 @@ export const ResourceTableClient = <T extends object>({
               type="button"
               size="sm"
               variant="outline"
-              className={`h-8 px-3 ${typography.body.small} min-w-[100px] max-w-[180px] justify-between`}
+              className="h-8 px-3 min-w-[100px] max-w-[180px] justify-between"
             >
-              <span className="truncate">{currentView.label}</span>
-              <ChevronDown className={`ml-2 ${iconSizes.sm} shrink-0`} />
+              <TypographySpanSmall className="truncate">{currentView.label}</TypographySpanSmall>
+              <IconSize size="sm" className="ml-2 shrink-0">
+                <ChevronDown />
+              </IconSize>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="min-w-[120px]">
@@ -215,7 +217,7 @@ export const ResourceTableClient = <T extends object>({
             size="sm"
             variant={currentViewId === view.id ? "default" : "outline"}
             onClick={() => handleViewChange(view.id)}
-            className={`h-8 px-2 sm:px-3 ${typography.body.small} whitespace-nowrap`}
+            className="h-8 px-2 sm:px-3 whitespace-nowrap"
           >
             {view.label}
           </Button>
@@ -229,7 +231,7 @@ export const ResourceTableClient = <T extends object>({
       {(title || viewModes.length > 1 || headerActions) && (
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0">
           {title ? (
-            <h2 className={`${headerConfig.card.className} truncate`}>{title}</h2>
+            <TypographyH4 className="truncate">{title}</TypographyH4>
           ) : (
             <span />
           )}

@@ -1,6 +1,8 @@
 "use client"
 
-import { typography, iconSizes } from "@/lib/typography"
+import { iconSizes } from "@/lib/typography"
+import { TypographyTitleLarge, TypographyTitleSmall } from "@/components/ui/typography"
+import { cn } from "@/lib/utils"
 
 import { ContactForm } from "@/components/forms/contact-form"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -33,17 +35,17 @@ export const ContactClient = ({}: ContactClientProps) => {
                 <div className="space-y-6">
                   <Card className="border-border">
                     <CardHeader>
-                      <CardTitle className={`${typography.title.large} text-card-foreground flex items-center gap-3`}>
+                      <CardTitle className="text-card-foreground flex items-center gap-3">
                         <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                          <Phone className={`${iconSizes.md} text-primary`} />
+                          <Phone className={cn(iconSizes.md, "text-primary")} />
                         </div>
-                        Thông tin liên hệ
+                        <TypographyTitleLarge>Thông tin liên hệ</TypographyTitleLarge>
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
                       <div className="flex items-start gap-4">
                         <div className="w-10 h-10 rounded-lg bg-muted/50 dark:bg-muted flex items-center justify-center flex-shrink-0">
-                          <Phone className={`${iconSizes.md} text-primary`} />
+                          <Phone className={cn(iconSizes.md, "text-primary")} />
                         </div>
                         <div>
                           <p className="font-semibold text-card-foreground mb-1">Điện thoại</p>
@@ -53,7 +55,7 @@ export const ContactClient = ({}: ContactClientProps) => {
 
                       <div className="flex items-start gap-4">
                         <div className="w-10 h-10 rounded-lg bg-muted/50 dark:bg-muted flex items-center justify-center flex-shrink-0">
-                          <Mail className={`${iconSizes.md} text-primary`} />
+                          <Mail className={cn(iconSizes.md, "text-primary")} />
                         </div>
                         <div>
                           <p className="font-semibold text-card-foreground mb-1">Email</p>
@@ -63,7 +65,7 @@ export const ContactClient = ({}: ContactClientProps) => {
 
                       <div className="flex items-start gap-4">
                         <div className="w-10 h-10 rounded-lg bg-muted/50 dark:bg-muted flex items-center justify-center flex-shrink-0">
-                          <MapPin className={`${iconSizes.md} text-primary`} />
+                          <MapPin className={cn(iconSizes.md, "text-primary")} />
                         </div>
                         <div>
                           <p className="font-semibold text-card-foreground mb-1">Địa chỉ</p>
@@ -75,7 +77,7 @@ export const ContactClient = ({}: ContactClientProps) => {
 
                       <div className="flex items-start gap-4">
                         <div className="w-10 h-10 rounded-lg bg-muted/50 dark:bg-muted flex items-center justify-center flex-shrink-0">
-                          <Clock className={`${iconSizes.md} text-primary`} />
+                          <Clock className={cn(iconSizes.md, "text-primary")} />
                         </div>
                         <div>
                           <p className="font-semibold text-card-foreground mb-1">Giờ làm việc</p>
@@ -91,9 +93,9 @@ export const ContactClient = ({}: ContactClientProps) => {
 
                   <Card className="border-border bg-muted/30">
                     <CardHeader>
-                      <CardTitle className={`${typography.title.small} text-card-foreground flex items-center gap-2`}>
-                        <GraduationCap className={`${iconSizes.md} text-primary`} />
-                        Về chúng tôi
+                      <CardTitle className="text-card-foreground flex items-center gap-2">
+                        <GraduationCap className={cn(iconSizes.md, "text-primary")} />
+                        <TypographyTitleSmall>Về chúng tôi</TypographyTitleSmall>
                       </CardTitle>
                     </CardHeader>
                     <CardContent>

@@ -1,6 +1,6 @@
 "use client";
 
-import { typography, headerConfig, iconSizes } from "@/lib/typography";
+import { TypographyH1, TypographyH3, TypographyH4, TypographyDescription, TypographyP, TypographyPLarge, TypographyPMuted, TypographySpanSmall, IconSize } from "@/components/ui/typography";
 
 import * as React from "react";
 import {
@@ -105,23 +105,29 @@ export const AccountProfileClient = ({
                   crossOrigin="anonymous"
                   className="object-cover"
                 />
-                <AvatarFallback className={`${typography.heading.h4} font-bold bg-gradient-to-br from-primary via-primary/90 to-chart-1 text-primary-foreground`}>
-                  {getUserInitials(account.name, account.email)}
+                <AvatarFallback className="font-bold bg-gradient-to-br from-primary via-primary/90 to-chart-1 text-primary-foreground">
+                  <TypographyH4>
+                    {getUserInitials(account.name, account.email)}
+                  </TypographyH4>
                 </AvatarFallback>
               </Avatar>
               <div className="absolute -bottom-1 -right-1 h-7 w-7 rounded-full bg-green-500 border-[3px] border-background flex items-center justify-center shadow-md">
-                <CheckCircle2 className={`${iconSizes.sm} text-white`} />
+                <IconSize size="sm">
+                  <CheckCircle2 className="text-white" />
+                </IconSize>
               </div>
             </div>
             <div className="flex-1 min-w-0 space-y-3">
               <div>
-                <h3 className={`${typography.heading.h4} font-bold tracking-tight`}>
+                <TypographyH3 className="font-bold tracking-tight">
                   {account.name || "Chưa có tên"}
-                </h3>
-                <p className={`${typography.body.muted.medium} flex items-center gap-2 mt-1.5`}>
-                  <Mail className={`${iconSizes.sm} shrink-0`} />
+                </TypographyH3>
+                <TypographyPMuted className="flex items-center gap-2 mt-1.5">
+                  <IconSize size="sm" className="shrink-0">
+                    <Mail />
+                  </IconSize>
                   <span className="truncate">{account.email}</span>
-                </p>
+                </TypographyPMuted>
               </div>
               {account.roles && account.roles.length > 0 && (
                 <div className="flex flex-wrap items-center gap-2">
@@ -129,10 +135,12 @@ export const AccountProfileClient = ({
                     <Badge
                       key={role.id}
                       variant="secondary"
-                      className={`${typography.body.small} font-medium bg-primary/10 text-primary border-primary/20 hover:bg-primary/20 transition-colors`}
+                      className="font-medium bg-primary/10 text-primary border-primary/20 hover:bg-primary/20 transition-colors"
                     >
-                      <Shield className={`mr-1.5 ${iconSizes.xs}`} />
-                      {role.displayName || role.name}
+                      <IconSize size="xs" className="mr-1.5">
+                        <Shield />
+                      </IconSize>
+                      <TypographySpanSmall>{role.displayName || role.name}</TypographySpanSmall>
                     </Badge>
                   ))}
                 </div>
@@ -149,25 +157,25 @@ export const AccountProfileClient = ({
             <div className="grid gap-4 sm:grid-cols-2">
               <Card className="p-4 border-border/50 bg-card/50 hover:bg-card transition-colors">
                 <FieldItem icon={User} label="Tên">
-                  <div className={`${typography.body.large} font-semibold mt-1`}>
+                  <TypographyPLarge className="font-semibold mt-1">
                     {accountData.name || (
                       <span className="text-muted-foreground italic">
                         Chưa cập nhật
                       </span>
                     )}
-                  </div>
+                  </TypographyPLarge>
                 </FieldItem>
               </Card>
 
               <Card className="p-4 border-border/50 bg-card/50 hover:bg-card transition-colors">
                 <FieldItem icon={Phone} label="Số điện thoại">
-                  <div className={`${typography.body.large} font-semibold mt-1`}>
+                  <TypographyPLarge className="font-semibold mt-1">
                     {accountData.phone || (
                       <span className="text-muted-foreground italic">
                         Chưa cập nhật
                       </span>
                     )}
-                  </div>
+                  </TypographyPLarge>
                 </FieldItem>
               </Card>
             </div>
@@ -176,15 +184,17 @@ export const AccountProfileClient = ({
               <Card className="border-2 border-border/50 bg-gradient-to-br from-card to-muted/20 p-6 shadow-sm">
                 <div className="flex items-start gap-4">
                   <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 ring-2 ring-primary/5">
-                    <FileText className={`${iconSizes.md} text-primary`} />
+                    <IconSize size="md">
+                      <FileText className="text-primary" />
+                    </IconSize>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className={`${typography.body.medium} font-semibold mb-3 uppercase tracking-wide`}>
+                    <TypographyP className="font-semibold mb-3 uppercase tracking-wide">
                       Giới thiệu
-                    </h3>
-                    <div className={`${typography.body.medium} whitespace-pre-wrap text-foreground/90 break-words`}>
+                    </TypographyP>
+                    <TypographyP className="whitespace-pre-wrap text-foreground/90 break-words">
                       {accountData.bio}
-                    </div>
+                    </TypographyP>
                   </div>
                 </div>
               </Card>
@@ -203,10 +213,10 @@ export const AccountProfileClient = ({
                       <div className="space-y-3 mt-2">
                         {structuredAddress ? (
                           <div className="space-y-2">
-                            <div className={`${typography.body.large} font-semibold`}>
+                            <TypographyPLarge className="font-semibold">
                               {addressDisplay}
-                            </div>
-                            <div className={`grid gap-2 sm:grid-cols-2 ${typography.body.muted.medium}`}>
+                            </TypographyPLarge>
+                            <TypographyPMuted className="grid gap-2 sm:grid-cols-2">
                               {structuredAddress.address && (
                                 <div className="flex items-start gap-2">
                                   <span className="font-medium min-w-[80px]">
@@ -247,12 +257,12 @@ export const AccountProfileClient = ({
                                   <span>{structuredAddress.postalCode}</span>
                                 </div>
                               )}
-                            </div>
+                            </TypographyPMuted>
                           </div>
                         ) : (
-                          <div className={`${typography.body.medium} font-semibold`}>
+                          <TypographyP className="font-semibold">
                             {addressDisplay}
-                          </div>
+                          </TypographyP>
                         )}
                       </div>
                     </FieldItem>
@@ -275,24 +285,26 @@ export const AccountProfileClient = ({
             <Card className="p-5 border-2 border-border/50 bg-gradient-to-br from-card to-muted/10 shadow-sm">
               <FieldItem icon={Mail} label="Email">
                 <div className="space-y-3 mt-2">
-                  <div className={`${typography.body.medium} font-semibold text-foreground`}>
+                  <TypographyP className="font-semibold text-foreground">
                     {accountData.email}
-                  </div>
+                  </TypographyP>
                   {accountData.emailVerified && (
                     <Badge
-                      className={`bg-green-500/15 hover:bg-green-500/25 text-green-700 dark:text-green-400 border-green-500/30 ${typography.body.small} font-medium px-3 py-1`}
+                      className="bg-green-500/15 hover:bg-green-500/25 text-green-700 dark:text-green-400 border-green-500/30 font-medium px-3 py-1"
                       variant="outline"
                     >
-                      <CheckCircle2 className={`mr-1.5 ${iconSizes.xs}`} />
-                      Đã xác thực email
+                      <IconSize size="xs" className="mr-1.5">
+                        <CheckCircle2 />
+                      </IconSize>
+                      <TypographySpanSmall>Đã xác thực email</TypographySpanSmall>
                     </Badge>
                   )}
                   {!accountData.emailVerified && (
                     <Badge
-                      className={`bg-yellow-500/15 hover:bg-yellow-500/25 text-yellow-700 dark:text-yellow-400 border-yellow-500/30 ${typography.body.small} font-medium px-3 py-1`}
+                      className="bg-yellow-500/15 hover:bg-yellow-500/25 text-yellow-700 dark:text-yellow-400 border-yellow-500/30 font-medium px-3 py-1"
                       variant="outline"
                     >
-                      Chưa xác thực
+                      <TypographySpanSmall>Chưa xác thực</TypographySpanSmall>
                     </Badge>
                   )}
                 </div>
@@ -302,9 +314,9 @@ export const AccountProfileClient = ({
             {accountData.emailVerified && (
               <Card className="p-4 border-border/50 bg-card/50 hover:bg-card transition-colors">
                 <FieldItem icon={Clock} label="Ngày xác thực email">
-                  <div className={`${typography.body.large} font-semibold mt-1`}>
+                  <TypographyPLarge className="font-semibold mt-1">
                     {formatDateVi(accountData.emailVerified)}
-                  </div>
+                  </TypographyPLarge>
                 </FieldItem>
               </Card>
             )}
@@ -324,25 +336,25 @@ export const AccountProfileClient = ({
             <div className="grid gap-4 sm:grid-cols-2">
               <Card className="p-4 border-border/50 bg-card/50 hover:bg-card transition-colors">
                 <FieldItem icon={Calendar} label="Ngày tạo tài khoản">
-                  <div className={`${typography.body.large} font-semibold mt-1`}>
+                  <TypographyPLarge className="font-semibold mt-1">
                     {accountData.createdAt ? (
                       formatDateVi(accountData.createdAt)
                     ) : (
                       <span className="text-muted-foreground italic">—</span>
                     )}
-                  </div>
+                  </TypographyPLarge>
                 </FieldItem>
               </Card>
 
               <Card className="p-4 border-border/50 bg-card/50 hover:bg-card transition-colors">
                 <FieldItem icon={Clock} label="Cập nhật lần cuối">
-                  <div className={`${typography.body.large} font-semibold mt-1`}>
+                  <TypographyPLarge className="font-semibold mt-1">
                     {accountData.updatedAt ? (
                       formatDateVi(accountData.updatedAt)
                     ) : (
                       <span className="text-muted-foreground italic">—</span>
                     )}
-                  </div>
+                  </TypographyPLarge>
                 </FieldItem>
               </Card>
             </div>
@@ -356,12 +368,12 @@ export const AccountProfileClient = ({
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className={headerConfig.main.className}>
+          <TypographyH1>
             Thông tin tài khoản
-          </h1>
-          <p className={`${typography.description.default} mt-1.5`}>
+          </TypographyH1>
+          <TypographyDescription className="mt-1.5">
             Quản lý thông tin cá nhân và cài đặt tài khoản của bạn
-          </p>
+          </TypographyDescription>
         </div>
         {canUpdate && (
           <Button
@@ -370,7 +382,9 @@ export const AccountProfileClient = ({
             className="gap-2 shadow-sm"
             size="lg"
           >
-            <Edit className={iconSizes.sm} />
+            <IconSize size="sm">
+              <Edit />
+            </IconSize>
             Chỉnh sửa
           </Button>
         )}

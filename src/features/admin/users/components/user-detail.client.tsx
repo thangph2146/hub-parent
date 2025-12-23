@@ -21,7 +21,8 @@ import { logger } from "@/lib/config/logger"
 import { usePageLoadLogger } from "@/hooks/use-page-load-logger"
 import { usePermissions } from "@/hooks/use-permissions"
 import { PERMISSIONS } from "@/lib/permissions"
-import { typography, iconSizes } from "@/lib/typography"
+import { iconSizes } from "@/lib/typography"
+import { TypographyH3, TypographyH4, TypographyP, TypographySpanLarge, TypographySpanMuted, TypographySpanSmallMuted, TypographyPMuted } from "@/components/ui/typography"
 
 export interface UserDetailData {
   id: string
@@ -93,8 +94,8 @@ export const UserDetailClient = ({ userId, user, backUrl = "/admin/users" }: Use
                 referrerPolicy="no-referrer"
                 crossOrigin="anonymous"
               />
-              <AvatarFallback className={`${typography.body.large} font-bold bg-gradient-to-br from-primary to-chart-1 text-primary-foreground`}>
-                {getUserInitials(detailData.name, detailData.email)}
+              <AvatarFallback className="font-bold bg-gradient-to-br from-primary to-chart-1 text-primary-foreground">
+                <TypographySpanLarge className="font-bold">{getUserInitials(detailData.name, detailData.email)}</TypographySpanLarge>
               </AvatarFallback>
             </Avatar>
             {detailData.isActive && (
@@ -104,18 +105,18 @@ export const UserDetailClient = ({ userId, user, backUrl = "/admin/users" }: Use
             )}
           </div>
           <div className="flex-1">
-            <h3 className={`${typography.heading.h4} font-semibold`}>{detailData.name || "Chưa có tên"}</h3>
-            <p className={`${typography.body.muted.medium} flex items-center gap-2 mt-1`}>
+            <TypographyH4 className="font-semibold">{detailData.name || "Chưa có tên"}</TypographyH4>
+            <TypographyPMuted className="flex items-center gap-2 mt-1">
               <Mail className={iconSizes.sm} />
               {detailData.email}
-            </p>
+            </TypographyPMuted>
             {detailData.roles && detailData.roles.length > 0 && (
               <div className="flex flex-wrap items-center gap-2 mt-2">
                 {detailData.roles.map((role) => (
                   <Badge
                     key={role.name}
                     variant="outline"
-                    className={`inline-flex items-center gap-1.5 bg-primary/10 px-2 py-0.5 ${typography.body.small} font-semibold text-primary border-primary/20`}
+                    className="inline-flex items-center gap-1.5 bg-primary/10 px-2 py-0.5 font-semibold text-primary border-primary/20"
                   >
                     <Shield className={iconSizes.xs} />
                     {role.displayName || role.name}
@@ -134,16 +135,13 @@ export const UserDetailClient = ({ userId, user, backUrl = "/admin/users" }: Use
             {/* Email */}
             <FieldItem icon={Mail} label="Email">
               <div className="space-y-1">
-                <a
-                  href={`mailto:${userData.email}`}
-                  className={`${typography.body.medium} font-medium text-primary hover:underline truncate block transition-colors`}
-                >
+                <TypographySpanMuted>
                   {userData.email || "—"}
-                </a>
+                </TypographySpanMuted>
                 {userData.emailVerified && (
-                  <div className={`flex items-center gap-1.5 ${typography.body.muted.small}`}>
-                    <CheckCircle2 className={`${iconSizes.xs} text-green-600 dark:text-green-500`} />
-                    <span>Đã xác thực</span>
+                  <div className="flex items-center gap-1.5">
+                    <CheckCircle2 className={cn(iconSizes.xs, "text-green-600 dark:text-green-500")} />
+                    <TypographySpanSmallMuted>Đã xác thực</TypographySpanSmallMuted>
                   </div>
                 )}
               </div>
@@ -152,28 +150,25 @@ export const UserDetailClient = ({ userId, user, backUrl = "/admin/users" }: Use
             {/* Email Verified */}
             {userData.emailVerified && (
               <FieldItem icon={Clock} label="Email đã xác thực">
-                <div className={`${typography.body.medium} font-medium text-foreground`}>
+                <TypographySpanMuted className="font-medium text-foreground">
                   {formatDateVi(userData.emailVerified)}
-                </div>
+                </TypographySpanMuted>
               </FieldItem>
             )}
 
             {/* Name */}
             <FieldItem icon={User} label="Tên">
-              <div className={`${typography.body.medium} font-medium text-foreground`}>
+              <TypographySpanMuted className="font-medium text-foreground">
                 {userData.name || "—"}
-              </div>
+              </TypographySpanMuted>
             </FieldItem>
 
             {/* Phone */}
             {userData.phone && (
               <FieldItem icon={Phone} label="Số điện thoại">
-                <a
-                  href={`tel:${userData.phone}`}
-                  className={`${typography.body.medium} font-medium text-primary hover:underline transition-colors`}
-                >
+                <TypographySpanMuted>
                   {userData.phone}
-                </a>
+                </TypographySpanMuted>
               </FieldItem>
             )}
           </div>
@@ -197,10 +192,10 @@ export const UserDetailClient = ({ userId, user, backUrl = "/admin/users" }: Use
                     <FileText className={`${iconSizes.sm} text-muted-foreground`} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className={`${typography.body.medium} font-medium text-foreground mb-2`}>Giới thiệu</h3>
-                    <div className={`${typography.body.medium} leading-relaxed whitespace-pre-wrap text-foreground break-words`}>
+                    <TypographyH3 className="font-medium text-foreground mb-2">Giới thiệu</TypographyH3>
+                    <TypographyP className="leading-relaxed whitespace-pre-wrap text-foreground break-words">
                       {userData.bio || "—"}
-                    </div>
+                    </TypographyP>
                   </div>
                 </div>
               </Card>
@@ -209,9 +204,9 @@ export const UserDetailClient = ({ userId, user, backUrl = "/admin/users" }: Use
             {/* Address */}
             {userData.address && (
               <FieldItem icon={MapPin} label="Địa chỉ">
-                <div className={`${typography.body.medium} font-medium text-foreground`}>
+                <TypographySpanMuted className="font-medium text-foreground">
                   {userData.address}
-                </div>
+                </TypographySpanMuted>
               </FieldItem>
             )}
 
@@ -223,7 +218,7 @@ export const UserDetailClient = ({ userId, user, backUrl = "/admin/users" }: Use
                     <Badge
                       key={role.name}
                       variant="outline"
-                      className={`inline-flex items-center gap-1.5 bg-primary/10 px-2.5 py-1 ${typography.body.small} font-medium text-primary border-primary/20`}
+                      className="inline-flex items-center gap-1.5 bg-primary/10 px-2.5 py-1 font-medium text-primary border-primary/20"
                     >
                       <Shield className={iconSizes.xs} />
                       {role.displayName || role.name}
@@ -240,7 +235,7 @@ export const UserDetailClient = ({ userId, user, backUrl = "/admin/users" }: Use
             >
               <Badge
                 className={cn(
-                  `${typography.body.medium} font-medium px-2.5 py-1`,
+                  "font-medium px-2.5 py-1",
                   userData.isActive
                     ? "bg-green-500/10 hover:bg-green-500/20 text-green-700 dark:text-green-400 border-green-500/20"
                     : "bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 dark:text-amber-400 border-amber-500/20"
@@ -264,15 +259,15 @@ export const UserDetailClient = ({ userId, user, backUrl = "/admin/users" }: Use
             {/* Timestamps */}
             <div className="grid gap-6 grid-cols-1 sm:grid-cols-2">
               <FieldItem icon={Calendar} label="Ngày tạo">
-                <div className={`${typography.body.medium} font-medium text-foreground`}>
+                <TypographySpanMuted className="font-medium text-foreground">
                   {userData.createdAt ? formatDateVi(userData.createdAt) : "—"}
-                </div>
+                </TypographySpanMuted>
               </FieldItem>
 
               <FieldItem icon={Clock} label="Cập nhật lần cuối">
-                <div className={`${typography.body.medium} font-medium text-foreground`}>
+                <TypographySpanMuted className="font-medium text-foreground">
                   {userData.updatedAt ? formatDateVi(userData.updatedAt) : "—"}
-                </div>
+                </TypographySpanMuted>
               </FieldItem>
             </div>
           </div>

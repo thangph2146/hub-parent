@@ -1,11 +1,6 @@
 import { cn } from "@/lib/utils";
 import { ReactNode } from "react";
-import { typography } from "@/lib/typography";
-
-// Cấu hình mặc định cho text - sử dụng shared typography
-const DEFAULT_TITLE_CLASSES = `${typography.title.default} text-card-foreground`;
-const DEFAULT_CONTENT_CLASSES = `${typography.body.medium} leading-relaxed`;
-const DEFAULT_PARAGRAPH_CLASSES = "mb-2";
+import { TypographyH2, TypographyP } from "@/components/ui/typography";
 
 export interface ParagraphItem {
   text: string;
@@ -31,27 +26,27 @@ export const SectionText = ({
 }: SectionTextProps) => {
   return (
     <div className={className}>
-      <h2 className={cn("mb-2 sm:text-left", titleClassName || DEFAULT_TITLE_CLASSES)}>
+      <TypographyH2 className={cn("mb-2 sm:text-left text-card-foreground", titleClassName)}>
         {title}
-      </h2>
-      <div className={cn(contentClassName || DEFAULT_CONTENT_CLASSES)}>
+      </TypographyH2>
+      <div className={cn("leading-relaxed", contentClassName)}>
         {paragraphs && paragraphs.length > 0 && (
           <>
             {paragraphs.map((item, index) => {
               if (typeof item === "string") {
                 return (
-                  <p key={index} className={DEFAULT_PARAGRAPH_CLASSES}>
+                  <TypographyP key={index} className="mb-2">
                     {item}
-                  </p>
+                  </TypographyP>
                 );
               }
               return (
-                <p
+                <TypographyP
                   key={index}
-                  className={cn(DEFAULT_PARAGRAPH_CLASSES, item.className)}
+                  className={cn("mb-2", item.className)}
                 >
                   {item.text}
-                </p>
+                </TypographyP>
               );
             })}
           </>

@@ -1,6 +1,6 @@
 "use client"
 
-import { typography, headerConfig } from "@/lib/typography"
+import { TypographyH1, TypographyDescriptionLarge, TypographyPMuted } from "@/components/ui/typography"
 
 import { useState } from "react"
 import Link from "next/link"
@@ -171,12 +171,12 @@ export const NotFoundClient = () => {
 
           {/* Error Message */}
           <motion.div variants={itemVariants} className="space-y-4">
-            <h1 className={headerConfig.main.className}>
+            <TypographyH1>
               Trang không tìm thấy
-            </h1>
-            <p className={typography.description.large}>
+            </TypographyH1>
+            <TypographyDescriptionLarge>
               Xin lỗi, trang bạn đang tìm kiếm không tồn tại hoặc đã bị di chuyển.
-            </p>
+            </TypographyDescriptionLarge>
           </motion.div>
 
           {/* Action Buttons */}
@@ -199,13 +199,19 @@ export const NotFoundClient = () => {
           {/* Helpful Links */}
           <motion.div variants={itemVariants}>
             <div className="mt-8 p-6 bg-muted/50 rounded-lg border border-border/50">
-              <p className={`${typography.body.muted.medium} mb-4`}>
+              <TypographyPMuted className="mb-4">
                 Bạn có thể thử:
-              </p>
-              <ul className={`text-left space-y-2 ${typography.body.muted.medium}`}>
-                <li>• Kiểm tra lại URL đã nhập đúng chưa</li>
-                <li>• Quay lại trang trước đó</li>
-                <li>• Sử dụng menu điều hướng để tìm trang bạn cần</li>
+              </TypographyPMuted>
+              <ul className="text-left space-y-2">
+                <li>
+                  <TypographyPMuted>• Kiểm tra lại URL đã nhập đúng chưa</TypographyPMuted>
+                </li>
+                <li>
+                  <TypographyPMuted>• Quay lại trang trước đó</TypographyPMuted>
+                </li>
+                <li>
+                  <TypographyPMuted>• Sử dụng menu điều hướng để tìm trang bạn cần</TypographyPMuted>
+                </li>
               </ul>
             </div>
           </motion.div>

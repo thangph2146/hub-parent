@@ -5,7 +5,7 @@ import { signIn } from "next-auth/react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Eye, EyeOff } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { typography, headerConfig, iconSizes } from "@/lib/typography"
+import { TypographyH2, TypographyP, IconSize } from "@/components/ui/typography"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import {
@@ -166,12 +166,12 @@ export function SignInForm({
           <form onSubmit={handleSubmit} className="p-6 md:p-8">
             <FieldGroup>
               <div className="flex flex-col items-center gap-2 text-center">
-                <h1 className={headerConfig.section.className}>Đăng nhập vào hệ thống</h1>
+                <TypographyH2>Đăng nhập vào hệ thống</TypographyH2>
               </div>
               {error && (
-                <div className={`rounded-lg bg-destructive/10 p-3 ${typography.body.medium} text-destructive`}>
+                <TypographyP className="rounded-lg bg-destructive/10 p-3 text-destructive">
                   {error}
-                </div>
+                </TypographyP>
               )}
               <Field>
                 <FieldLabel htmlFor="email">Email</FieldLabel>
@@ -190,7 +190,7 @@ export function SignInForm({
                   <FieldLabel htmlFor="password">Mật khẩu</FieldLabel>
                   <Link
                     href="/auth/forgot-password"
-                    className={`ml-auto ${typography.body.medium} underline-offset-2 hover:underline`}
+                    className="ml-auto underline-offset-2 hover:underline"
                   >
                     Quên mật khẩu?
                   </Link>
@@ -215,9 +215,13 @@ export function SignInForm({
                     disabled={isLoading}
                   >
                     {showPassword ? (
-                      <EyeOff className={`${iconSizes.sm} text-muted-foreground`} />
+                      <IconSize size="sm">
+                        <EyeOff className="text-muted-foreground" />
+                      </IconSize>
                     ) : (
-                      <Eye className={`${iconSizes.sm} text-muted-foreground`} />
+                      <IconSize size="sm">
+                        <Eye className="text-muted-foreground" />
+                      </IconSize>
                     )}
                   </Button>
                 </div>
@@ -241,7 +245,7 @@ export function SignInForm({
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     viewBox="0 0 24 24"
-                    className={`mr-2 ${iconSizes.md}`}
+                    className="mr-2"
                   >
                     <path
                       d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z"

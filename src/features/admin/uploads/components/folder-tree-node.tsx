@@ -6,7 +6,9 @@
 import * as React from "react"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { Folder, ChevronRight } from "lucide-react"
-import { typography, iconSizes } from "@/lib/typography"
+import { iconSizes } from "@/lib/typography"
+import { TypographySpanSmallMuted } from "@/components/ui/typography"
+import { cn } from "@/lib/utils"
 import { ImageGrid } from "./image-grid"
 import type { FolderNode, ImageItem } from "../types"
 
@@ -58,13 +60,13 @@ export const FolderTreeNode = React.memo(function FolderTreeNode({
   return (
     <Collapsible key={folder.path} open={isOpen} onOpenChange={handleOpenChange} className="mb-2">
       <CollapsibleTrigger className="flex items-center gap-2 w-full px-3 py-2 hover:bg-muted rounded-md transition-colors text-left">
-        <ChevronRight className={`${iconSizes.sm} transition-transform ${isOpen ? "rotate-90" : ""}`} />
-        <Folder className={`${iconSizes.sm} text-muted-foreground`} />
+        <ChevronRight className={cn(iconSizes.sm, "transition-transform", isOpen && "rotate-90")} />
+        <Folder className={cn(iconSizes.sm, "text-muted-foreground")} />
         <span className="font-medium">{folder.name}</span>
-        <span className={`${typography.body.small} text-muted-foreground ml-auto`}>
+        <TypographySpanSmallMuted className="ml-auto">
           {folder.images.length} hình ảnh
           {folder.subfolders.length > 0 && `, ${folder.subfolders.length} thư mục`}
-        </span>
+        </TypographySpanSmallMuted>
       </CollapsibleTrigger>
       <CollapsibleContent className="ml-6 mt-2">
         {/* Render images in this folder */}

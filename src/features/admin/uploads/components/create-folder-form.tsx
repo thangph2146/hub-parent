@@ -26,7 +26,8 @@ import { FolderTreeSelectItem } from "./folder-tree-select-item"
 import { useFolderTree } from "../hooks/use-folder-tree"
 import { expandFolderTreeLevels } from "../utils/folder-utils"
 import { getTodayDatePath } from "../utils/date-utils"
-import { typography, iconSizes } from "@/lib/typography"
+import { iconSizes } from "@/lib/typography"
+import { TypographyPSmallMuted } from "@/components/ui/typography"
 import type { FolderItem } from "../types"
 
 interface CreateFolderFormProps {
@@ -177,7 +178,7 @@ export const CreateFolderForm = ({ availableFolders, isLoadingFolders }: CreateF
     return (
       <div className="space-y-2 border-b pb-4">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-          <Label className={typography.body.medium}>Tạo thư mục mới</Label>
+          <Label>Tạo thư mục mới</Label>
           <Button type="button" variant="default" size="sm" onClick={handleToggleForm} className="w-full sm:w-auto">
             Tạo thư mục
           </Button>
@@ -189,7 +190,7 @@ export const CreateFolderForm = ({ availableFolders, isLoadingFolders }: CreateF
   return (
     <div className="space-y-2 border-b pb-4">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-        <Label className={typography.body.medium}>Tạo thư mục mới</Label>
+        <Label>Tạo thư mục mới</Label>
         <Button type="button" variant="outline" size="sm" onClick={handleToggleForm} className="w-full sm:w-auto">
           Hủy
         </Button>
@@ -197,7 +198,7 @@ export const CreateFolderForm = ({ availableFolders, isLoadingFolders }: CreateF
       <div className="space-y-3 p-4 bg-muted/50 rounded-lg">
         {/* Mode Selection */}
         <div className="space-y-2">
-          <Label className={typography.body.medium}>Chế độ nhập</Label>
+          <Label>Chế độ nhập</Label>
           <div className="flex flex-col sm:flex-row sm:items-center gap-2">
             <Button
               type="button"
@@ -243,7 +244,7 @@ export const CreateFolderForm = ({ availableFolders, isLoadingFolders }: CreateF
                       ? availableFolders.find((f) => f.path === parentFolderForCreate)?.path ||
                         parentFolderForCreate
                       : "Root (tạo ở thư mục gốc)"}
-                    <ChevronsUpDown className={`ml-2 ${iconSizes.sm} shrink-0 opacity-50`} />
+                    <ChevronsUpDown className={cn("ml-2", iconSizes.sm, "shrink-0 opacity-50")} />
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent 
@@ -263,11 +264,11 @@ export const CreateFolderForm = ({ availableFolders, isLoadingFolders }: CreateF
                         >
                           <Check
                             className={cn(
-                              `mr-2 ${iconSizes.sm}`,
+                              "mr-2", iconSizes.sm,
                               !parentFolderForCreate ? "opacity-100" : "opacity-0"
                             )}
                           />
-                          <Folder className={`mr-2 ${iconSizes.sm} hover:text-foreground`} />
+                          <Folder className={cn("mr-2", iconSizes.sm, "hover:text-foreground")} />
                           Root (tạo ở thư mục gốc)
                         </CommandItem>
                         {folderTreeForSelect.map((node) => (
@@ -286,14 +287,14 @@ export const CreateFolderForm = ({ availableFolders, isLoadingFolders }: CreateF
                   </Command>
                 </PopoverContent>
               </Popover>
-              <p className={typography.body.muted.small}>
+              <TypographyPSmallMuted>
                 {parentFolderForCreate
                   ? `Thư mục mới sẽ được tạo trong: ${parentFolderForCreate}/`
                   : "Thư mục mới sẽ được tạo ở thư mục gốc"}
-              </p>
+              </TypographyPSmallMuted>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="new-folder-name" className={typography.body.medium}>Tên thư mục</Label>
+              <Label htmlFor="new-folder-name">Tên thư mục</Label>
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                 <Input
                   id="new-folder-name"
@@ -320,7 +321,7 @@ export const CreateFolderForm = ({ availableFolders, isLoadingFolders }: CreateF
                 >
                   {createFolderMutation.isPending ? (
                     <>
-                      <Loader2 className={`mr-2 ${iconSizes.sm} animate-spin`} />
+                      <Loader2 className={cn("mr-2", iconSizes.sm, "animate-spin")} />
                       <span className="hidden sm:inline">Đang tạo...</span>
                       <span className="sm:hidden">Đang tạo</span>
                     </>
@@ -354,7 +355,7 @@ export const CreateFolderForm = ({ availableFolders, isLoadingFolders }: CreateF
                       ? availableFolders.find((f) => f.path === rootFolderForString)?.path ||
                         rootFolderForString
                       : "Chọn thư mục (để trống để tạo ở root)"}
-                    <ChevronsUpDown className={`ml-2 ${iconSizes.sm} shrink-0 opacity-50`} />
+                    <ChevronsUpDown className={cn("ml-2", iconSizes.sm, "shrink-0 opacity-50")} />
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent 
@@ -375,11 +376,11 @@ export const CreateFolderForm = ({ availableFolders, isLoadingFolders }: CreateF
                         >
                           <Check
                             className={cn(
-                              `mr-2 ${iconSizes.sm}`,
+                              "mr-2", iconSizes.sm,
                               !rootFolderForString ? "opacity-100" : "opacity-0"
                             )}
                           />
-                          <Folder className={`mr-2 ${iconSizes.sm} hover:text-foreground`} />
+                          <Folder className={cn("mr-2", iconSizes.sm, "hover:text-foreground")} />
                           Root (tạo ở thư mục gốc)
                         </CommandItem>
                         {folderTreeForSelect.map((node) => (
@@ -398,14 +399,14 @@ export const CreateFolderForm = ({ availableFolders, isLoadingFolders }: CreateF
                   </Command>
                 </PopoverContent>
               </Popover>
-              <p className={typography.body.muted.small}>
+              <TypographyPSmallMuted>
                 {rootFolderForString
                   ? `Thư mục sẽ được tạo trong: ${rootFolderForString}/`
                   : "Thư mục sẽ được tạo ở thư mục gốc. Chọn bất kỳ folder nào để tạo folder con bên trong."}
-              </p>
+              </TypographyPSmallMuted>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="folder-path-string" className={typography.body.medium}>Đường dẫn thư mục</Label>
+              <Label htmlFor="folder-path-string">Đường dẫn thư mục</Label>
               <div className="space-y-2">
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                   <Input
@@ -448,11 +449,11 @@ export const CreateFolderForm = ({ availableFolders, isLoadingFolders }: CreateF
                     Hôm nay
                   </Button>
                 </div>
-                <p className={typography.body.muted.small}>
+                <TypographyPSmallMuted>
                   {rootFolderForString
                     ? `Nhập đường dẫn con. Ví dụ: 2025/12/04 sẽ tạo ${rootFolderForString}/2025/12/04`
                     : "Nhập đường dẫn đầy đủ. Ví dụ: products/2025/12/04 sẽ tạo folder 04 trong products/2025/12/"}
-                </p>
+                </TypographyPSmallMuted>
                 <Button
                   type="button"
                   onClick={handleCreateFolder}
@@ -464,7 +465,7 @@ export const CreateFolderForm = ({ availableFolders, isLoadingFolders }: CreateF
                 >
                   {createFolderMutation.isPending ? (
                     <>
-                      <Loader2 className={`mr-2 ${iconSizes.sm} animate-spin`} />
+                      <Loader2 className={cn("mr-2", iconSizes.sm, "animate-spin")} />
                       Đang tạo...
                     </>
                   ) : (
