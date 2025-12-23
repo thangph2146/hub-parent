@@ -26,8 +26,7 @@ import { FolderTreeSelectItem } from "./folder-tree-select-item"
 import { useFolderTree } from "../hooks/use-folder-tree"
 import { expandFolderTreeLevels } from "../utils/folder-utils"
 import { getTodayDatePath } from "../utils/date-utils"
-import { iconSizes } from "@/lib/typography"
-import { TypographyPSmallMuted } from "@/components/ui/typography"
+import { TypographyPSmallMuted, IconSize } from "@/components/ui/typography"
 import type { FolderItem } from "../types"
 
 interface CreateFolderFormProps {
@@ -244,7 +243,9 @@ export const CreateFolderForm = ({ availableFolders, isLoadingFolders }: CreateF
                       ? availableFolders.find((f) => f.path === parentFolderForCreate)?.path ||
                         parentFolderForCreate
                       : "Root (tạo ở thư mục gốc)"}
-                    <ChevronsUpDown className={cn("ml-2", iconSizes.sm, "shrink-0 opacity-50")} />
+                    <IconSize size="sm" className="ml-2 shrink-0 opacity-50">
+                      <ChevronsUpDown />
+                    </IconSize>
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent 
@@ -262,13 +263,12 @@ export const CreateFolderForm = ({ availableFolders, isLoadingFolders }: CreateF
                             setFolderTreeSelectOpen(false)
                           }}
                         >
-                          <Check
-                            className={cn(
-                              "mr-2", iconSizes.sm,
-                              !parentFolderForCreate ? "opacity-100" : "opacity-0"
-                            )}
-                          />
-                          <Folder className={cn("mr-2", iconSizes.sm, "hover:text-foreground")} />
+                          <IconSize size="sm" className={cn("mr-2", !parentFolderForCreate ? "opacity-100" : "opacity-0")}>
+                            <Check />
+                          </IconSize>
+                          <IconSize size="sm" className="mr-2 hover:text-foreground">
+                            <Folder />
+                          </IconSize>
                           Root (tạo ở thư mục gốc)
                         </CommandItem>
                         {folderTreeForSelect.map((node) => (
@@ -321,7 +321,9 @@ export const CreateFolderForm = ({ availableFolders, isLoadingFolders }: CreateF
                 >
                   {createFolderMutation.isPending ? (
                     <>
-                      <Loader2 className={cn("mr-2", iconSizes.sm, "animate-spin")} />
+                      <IconSize size="sm" className="mr-2">
+                        <Loader2 className="animate-spin" />
+                      </IconSize>
                       <span className="hidden sm:inline">Đang tạo...</span>
                       <span className="sm:hidden">Đang tạo</span>
                     </>
@@ -355,7 +357,9 @@ export const CreateFolderForm = ({ availableFolders, isLoadingFolders }: CreateF
                       ? availableFolders.find((f) => f.path === rootFolderForString)?.path ||
                         rootFolderForString
                       : "Chọn thư mục (để trống để tạo ở root)"}
-                    <ChevronsUpDown className={cn("ml-2", iconSizes.sm, "shrink-0 opacity-50")} />
+                    <IconSize size="sm" className="ml-2 shrink-0 opacity-50">
+                      <ChevronsUpDown />
+                    </IconSize>
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent 
@@ -374,13 +378,12 @@ export const CreateFolderForm = ({ availableFolders, isLoadingFolders }: CreateF
                             setFolderTreeSelectOpenString(false)
                           }}
                         >
-                          <Check
-                            className={cn(
-                              "mr-2", iconSizes.sm,
-                              !rootFolderForString ? "opacity-100" : "opacity-0"
-                            )}
-                          />
-                          <Folder className={cn("mr-2", iconSizes.sm, "hover:text-foreground")} />
+                          <IconSize size="sm" className={cn("mr-2", !rootFolderForString ? "opacity-100" : "opacity-0")}>
+                            <Check />
+                          </IconSize>
+                          <IconSize size="sm" className="mr-2 hover:text-foreground">
+                            <Folder />
+                          </IconSize>
                           Root (tạo ở thư mục gốc)
                         </CommandItem>
                         {folderTreeForSelect.map((node) => (
@@ -465,7 +468,9 @@ export const CreateFolderForm = ({ availableFolders, isLoadingFolders }: CreateF
                 >
                   {createFolderMutation.isPending ? (
                     <>
-                      <Loader2 className={cn("mr-2", iconSizes.sm, "animate-spin")} />
+                      <IconSize size="sm" className="mr-2">
+                        <Loader2 className="animate-spin" />
+                      </IconSize>
                       Đang tạo...
                     </>
                   ) : (

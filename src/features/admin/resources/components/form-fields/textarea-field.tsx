@@ -2,7 +2,6 @@
 
 import { FieldContent, FieldError } from "@/components/ui/field"
 import { cn } from "@/lib/utils"
-import { typography } from "@/lib/typography"
 import type { ResourceFormField } from "../resource-form"
 
 interface TextareaFieldProps<T> {
@@ -37,7 +36,7 @@ export const TextareaField = <T,>({
         aria-invalid={error ? "true" : "false"}
         aria-describedby={errorId || field.description ? `${fieldId}-description` : undefined}
         className={cn(
-          `flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 ${typography.body.medium} ring-offset-background`,
+          "flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 ring-offset-background",
           "placeholder:text-muted-foreground",
           "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
           "disabled:cursor-not-allowed disabled:opacity-50",
