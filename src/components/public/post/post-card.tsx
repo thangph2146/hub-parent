@@ -80,9 +80,7 @@ export function PostCard({ post, className, priority = false }: PostCardProps) {
           {/* Date */}
           {post.publishedAt && (
             <div className="flex items-center gap-1.5 mb-4">
-              <IconSize size="sm">
                 <Calendar />
-              </IconSize>
               <time dateTime={getPublishedAtISO()}>
                 <TypographyPMuted>{formatPostDate(post.publishedAt)}</TypographyPMuted>
               </time>

@@ -1,4 +1,4 @@
-import { typography } from "@/lib/typography"
+import { TypographyH2, TypographyPMuted } from "@/components/ui/typography"
 
 interface NotFoundMessageProps {
   title?: string
@@ -14,12 +14,12 @@ export const NotFoundMessage = ({
   return (
     <div className="flex flex-1 flex-col items-center justify-center gap-4 p-4 md:p-6 lg:p-8">
       <div className="text-center">
-        <h2 className={`mb-2 ${typography.heading.h2}`}>
+        <TypographyH2 className="mb-2">
           {title || `Không tìm thấy ${resourceName}`}
-        </h2>
-        <p className={typography.body.muted.medium}>
+        </TypographyH2>
+        <TypographyPMuted>
           {description || `${resourceName.charAt(0).toUpperCase() + resourceName.slice(1)} không tồn tại hoặc bạn không có quyền truy cập.`}
-        </p>
+        </TypographyPMuted>
       </div>
     </div>
   )
