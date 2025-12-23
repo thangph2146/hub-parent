@@ -105,7 +105,9 @@ export const ImageField = ({
         {!hasImage && (
           <div className="relative w-full rounded-lg border border-dashed border-border overflow-hidden bg-muted/30">
             <div className="aspect-video w-full flex flex-col items-center justify-center gap-2 text-muted-foreground">
-              <ImageIcon className={iconSizes["4xl"]} />
+              <IconSize size="4xl">
+                <ImageIcon />
+              </IconSize>
               <TypographySpanMuted>Chưa có hình ảnh</TypographySpanMuted>
             </div>
           </div>
