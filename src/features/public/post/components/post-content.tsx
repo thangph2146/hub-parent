@@ -1,8 +1,8 @@
 "use client"
 
 import dynamic from "next/dynamic"
-import { typography } from "@/lib/typography"
 import { Card } from "@/components/ui/card"
+import { TypographyPMuted } from "@/components/ui/typography"
 import type { SerializedEditorState } from "lexical"
 
 // Lazy load Editor component to reduce initial bundle size for mobile
@@ -13,9 +13,9 @@ const Editor = dynamic(
     ssr: true, // Keep SSR for SEO
     loading: () => (
       <Card className="border border-border/50 bg-card p-6">
-        <div className={`${typography.body.muted.medium} text-center`}>
+        <TypographyPMuted className="text-center">
           Đang tải nội dung...
-        </div>
+        </TypographyPMuted>
       </Card>
     ),
   }
@@ -40,9 +40,9 @@ export const PostContent = ({ content }: PostContentProps) => {
   if (!editorState) {
     return (
       <Card className="border border-border/50 bg-card p-6">
-        <div className={`${typography.body.muted.medium} text-center`}>
+        <TypographyPMuted className="text-center">
           Không có nội dung hoặc định dạng không hợp lệ
-        </div>
+        </TypographyPMuted>
       </Card>
     )
   }

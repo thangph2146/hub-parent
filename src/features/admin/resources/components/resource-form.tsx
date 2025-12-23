@@ -32,7 +32,8 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { cn } from "@/lib/utils"
 import { renderFieldInput } from "./form-fields"
 import { applyResourceSegmentToPath } from "@/lib/permissions"
-import { typography, iconSizes, headerConfig } from "@/lib/typography"
+import { iconSizes } from "@/lib/typography"
+import { TypographyH1, TypographyH4, TypographyPMuted, TypographySpanMuted } from "@/components/ui/typography"
 
 export interface ResourceFormField<T = unknown> {
   name: keyof T | string
@@ -491,10 +492,10 @@ export const ResourceForm = <T extends Record<string, unknown>>({
         {(sectionInfo?.title || sectionInfo?.description) && (
           <div className="space-y-1.5 pb-2 border-b border-border/50">
             {sectionInfo.title && (
-              <h3 className={`${headerConfig.card.className}`}>{sectionInfo.title}</h3>
+              <TypographyH4>{sectionInfo.title}</TypographyH4>
             )}
             {sectionInfo.description && (
-              <p className={typography.body.muted.medium}>{sectionInfo.description}</p>
+              <TypographyPMuted>{sectionInfo.description}</TypographyPMuted>
             )}
           </div>
         )}
@@ -513,8 +514,8 @@ export const ResourceForm = <T extends Record<string, unknown>>({
   const formContent = (
     <form id="resource-form" ref={formRef} onSubmit={handleSubmit} className={cn("space-y-6", formClassName)}>
       {submitError && (
-        <div className={`rounded-lg bg-destructive/10 p-3 ${typography.body.medium} text-destructive`}>
-          {submitError}
+        <div className="rounded-lg bg-destructive/10 p-3 text-destructive">
+          <TypographySpanMuted>{submitError}</TypographySpanMuted>
         </div>
       )}
 
@@ -650,10 +651,10 @@ export const ResourceForm = <T extends Record<string, unknown>>({
               </Button>
             )}
             {title && !showCard && (
-              <h1 className={`${typography.heading.h1} tracking-tight`}>{title}</h1>
+              <TypographyH1 className="tracking-tight">{title}</TypographyH1>
             )}
             {description && !showCard && (
-              <p className={`${typography.body.muted.medium} max-w-2xl`}>{description}</p>
+              <TypographyPMuted className="max-w-2xl">{description}</TypographyPMuted>
             )}
           </div>
         </div>

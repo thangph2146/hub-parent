@@ -1,7 +1,5 @@
 "use client"
 
-import { typography, iconSizes } from "@/lib/typography"
-
 import {
     Suspense,
     use,
@@ -32,6 +30,8 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
+import { TypographySpanSmallMuted, TypographyPMuted } from "@/components/ui/typography"
+import { iconSizes } from "@/lib/typography"
 import { useDebouncedCallback } from "@/hooks/use-debounced-callback"
 import { ColumnFilterControl, type ColumnFilterConfig } from "./filter-controls"
 
@@ -425,7 +425,7 @@ export function DataTable<T extends object>({
             <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-3">
                 <div className="w-full flex gap-2 sm:gap-3 sm:items-center justify-between">
                     <div className="flex items-center gap-2">
-                        <span className={`${typography.body.muted.small} whitespace-nowrap`}>Hiển thị</span>
+                        <TypographySpanSmallMuted className="whitespace-nowrap">Hiển thị</TypographySpanSmallMuted>
                         <Select
                             value={String(query.limit)}
                             onValueChange={(value) => handleLimitChange(Number(value))}
@@ -433,7 +433,7 @@ export function DataTable<T extends object>({
                         >
                             <SelectTrigger
                                 size="sm"
-                                className={`h-8 sm:h-9 w-fit min-w-[80px] ${typography.body.small}`}
+                                className="w-fit min-w-[80px]"
                                 aria-label="Chọn số bản ghi mỗi trang"
                             >
                                 <SelectValue />
@@ -456,16 +456,16 @@ export function DataTable<T extends object>({
                                 onClick={() => setShowFilters((prev) => !prev)}
                                 disabled={isPending}
                                 aria-label={showFilters ? "Ẩn bộ lọc" : "Hiện bộ lọc"}
-                                className="h-8 px-2 sm:px-3"
+                                className="px-2 sm:px-3"
                             >
                                 {showFilters ? (
                                     <>
-                                        <EyeOff className={`${iconSizes.md} sm:mr-2`} />
+                                        <EyeOff className={cn(iconSizes.md, "sm:mr-2")} />
                                         <span className="inline">Ẩn bộ lọc</span>
                                     </>
                                 ) : (
                                     <>
-                                        <Eye className={`${iconSizes.md} sm:mr-2`} />
+                                        <Eye className={cn(iconSizes.md, "sm:mr-2")} />
                                         <span className="inline">Hiện bộ lọc</span>
                                     </>
                                 )}
@@ -478,7 +478,7 @@ export function DataTable<T extends object>({
                                 size="sm"
                                 onClick={handleResetFilters}
                                 disabled={isPending}
-                                className={`h-8 px-2 sm:px-3 ${typography.body.small}`}
+                                className="px-2 sm:px-3"
                             >
                                 <span className="inline">Xóa bộ lọc</span>
                             </Button>
@@ -502,8 +502,8 @@ export function DataTable<T extends object>({
                 {isPending && (
                     <div className="absolute inset-0 bg-background/80 backdrop-blur-[2px] z-10 flex items-center justify-center rounded-md">
                         <div className="flex flex-col items-center gap-3">
-                            <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-                            <span className={`${typography.body.medium} font-medium`}>Đang tải dữ liệu...</span>
+                            <div className={cn(iconSizes["2xl"], "animate-spin rounded-full border-4 border-primary border-t-transparent")} />
+                            <TypographyPMuted className="font-medium">Đang tải dữ liệu...</TypographyPMuted>
                         </div>
                     </div>
                 )}
@@ -526,12 +526,12 @@ export function DataTable<T extends object>({
                                     key={`header-${column.accessorKey}`}
                                     className={cn("align-middle whitespace-nowrap px-2 sm:px-3 bg-primary text-primary-foreground", column.headerClassName)}
                                 >
-                                    <span className={`${typography.body.small} font-medium text-primary-foreground`}>{column.header}</span>
+                                    <span>{column.header}</span>
                                 </TableHead>
                             ))}
                             {actions ? (
                                 <TableHead className="min-w-[100px] text-center px-2 sm:px-3 sticky right-0 z-10 bg-primary text-primary-foreground border-l border-border">
-                                    <span className={`${typography.body.small} text-primary-foreground`}>Hành động</span>
+                                    <span>Hành động</span>
                                 </TableHead>
                             ) : null}
                         </TableRow>
@@ -662,7 +662,7 @@ function TableBodyContent<T extends object>({
         return (
             <TableBody>
                 <TableRow>
-                    <TableCell colSpan={totalColumns} className={`py-10 text-center ${typography.body.muted.medium}`}>
+                    <TableCell colSpan={totalColumns} className="py-10 text-center text-muted-foreground">
                         {emptyMessage}
                     </TableCell>
                 </TableRow>
@@ -731,10 +731,10 @@ function TableSummary<T extends object>({
     const totalPages = result.totalPages || 1
 
     return (
-        <div className={`flex flex-col sm:flex-row flex-wrap items-center justify-between gap-2 sm:gap-3 border-t border-border px-2 sm:px-4 py-3 sm:py-4 ${typography.body.muted.small}`}>
+        <div className="flex flex-col sm:flex-row flex-wrap items-center justify-between gap-2 sm:gap-3 border-t border-border px-2 sm:px-4 py-3 sm:py-4">
             <div className="text-center sm:text-left">
-                <span className="hidden sm:inline">Hiển thị {startIndex}-{endIndex} trong {result.total} kết quả</span>
-                <span className="sm:hidden">{startIndex}-{endIndex} / {result.total}</span>
+                <TypographySpanSmallMuted className="hidden sm:inline">Hiển thị {startIndex}-{endIndex} trong {result.total} kết quả</TypographySpanSmallMuted>
+                <TypographySpanSmallMuted className="sm:hidden">{startIndex}-{endIndex} / {result.total}</TypographySpanSmallMuted>
             </div>
             <div className="flex items-center gap-6 sm:gap-2">
                 <Button
@@ -743,25 +743,24 @@ function TableSummary<T extends object>({
                     size="sm"
                     onClick={() => onPageChange(result.page - 1, totalPages)}
                     disabled={isPending || result.page <= 1}
-                    className="h-8 px-2 sm:px-3"
                 >
-                    <ChevronLeft className={`${iconSizes.md} sm:mr-2`} />
+                    <ChevronLeft className={cn(iconSizes.md, "sm:mr-2")} />
                     <span className="hidden sm:inline">Trước</span>
                 </Button>
-                <span className={`min-w-[80px] sm:min-w-[100px] text-center ${typography.body.small}`}>
+                <TypographySpanSmallMuted className="min-w-[80px] sm:min-w-[100px] text-center">
                     <span className="hidden sm:inline">Trang </span>
                     {totalPages === 0 ? 0 : result.page} / {Math.max(totalPages, 1)}
-                </span>
+                </TypographySpanSmallMuted>
                 <Button
                     type="button"
                     variant="outline"
                     size="sm"
                     onClick={() => onPageChange(result.page + 1, totalPages)}
                     disabled={isPending || result.page >= totalPages}
-                    className="h-8 px-2 sm:px-3"
+                    className="px-2 sm:px-3"
                 >
                     <span className="hidden sm:inline">Sau</span>
-                    <ChevronRight className={`${iconSizes.md} sm:ml-2`} />
+                    <ChevronRight className={cn(iconSizes.md, "sm:ml-2")} />
                 </Button>
             </div>
         </div>

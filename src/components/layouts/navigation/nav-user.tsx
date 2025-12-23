@@ -1,7 +1,5 @@
 "use client";
 
-import { typography, iconSizes } from "@/lib/typography";
-
 import * as React from "react";
 import { useMemo } from "react";
 import Link from "next/link";
@@ -68,6 +66,9 @@ import {
 import {
   SidebarMenu,
   SidebarMenuButton,
+  SidebarMenuButtonContent,
+  SidebarMenuButtonDescription,
+  SidebarMenuButtonTitle,
   SidebarMenuItem,
   useSidebarOptional,
 } from "@/components/ui/sidebar";
@@ -79,6 +80,8 @@ import {
   getResourceSegmentForRoles,
 } from "@/lib/permissions";
 import { cn } from "@/lib/utils";
+import { iconSizes } from "@/lib/typography";
+import { TypographySpanSmallMuted, TypographySpanMuted } from "@/components/ui/typography";
 import { useClientOnly } from "@/hooks/use-client-only";
 import { useUnreadCounts } from "@/hooks/use-unread-counts";
 import { useNotificationsSocketBridge } from "@/hooks/use-notifications";
@@ -329,7 +332,7 @@ export function NavUser({ className }: { className?: string }) {
     if (!isInSidebar) {
       return (
         <div className="flex items-center gap-2">
-          <Avatar className={iconSizes["2xl"]}>
+          <Avatar className="h-8 w-8">
             <AvatarFallback>...</AvatarFallback>
           </Avatar>
         </div>
@@ -339,12 +342,12 @@ export function NavUser({ className }: { className?: string }) {
       <SidebarMenu>
         <SidebarMenuItem>
           <SidebarMenuButton size="lg" disabled>
-            <Avatar className={`${iconSizes["2xl"]} rounded-lg`}>
+            <Avatar className="h-8 w-8 rounded-lg">
               <AvatarFallback className="rounded-lg">...</AvatarFallback>
             </Avatar>
-            <div className={`grid flex-1 text-left ${typography.body.medium} leading-tight`} suppressHydrationWarning>
-              <span className={`truncate font-medium`}>Đang tải...</span>
-              <span className={`truncate ${typography.body.small}`}>Vui lòng chờ</span>
+            <div className="grid flex-1 text-left" suppressHydrationWarning>
+              <TypographySpanMuted className="truncate font-medium">Đang tải...</TypographySpanMuted>
+              <TypographySpanSmallMuted className="truncate">Vui lòng chờ</TypographySpanSmallMuted>
             </div>
           </SidebarMenuButton>
         </SidebarMenuItem>
@@ -360,7 +363,7 @@ export function NavUser({ className }: { className?: string }) {
       sideOffset={5}
     >
       <DropdownMenuLabel className="p-0 font-normal">
-        <div className={`flex items-center gap-2 px-1 py-1.5 text-left ${typography.body.medium}`}>
+        <div className="flex items-center gap-2 px-1 py-1.5 text-left">
           <Avatar className="h-8 w-8 rounded-lg">
             <AvatarImage
               src={user.image || "/avatars/default.jpg"}
@@ -370,18 +373,18 @@ export function NavUser({ className }: { className?: string }) {
               {getInitials(user.name)}
             </AvatarFallback>
           </Avatar>
-          <div className={`grid flex-1 text-left ${typography.body.medium} leading-tight`}>
-            <span className="truncate font-medium">
+          <div className="grid flex-1 text-left">
+            <TypographySpanMuted className="truncate font-medium">
               {user.name || user.email}
-            </span>
-            <span className={`truncate ${typography.body.small}`}>
+            </TypographySpanMuted>
+            <TypographySpanSmallMuted className="truncate">
               {user.email}
               {primaryRole && (
-                <span className={`ml-1 ${typography.body.muted.small}`}>
+                <span className="ml-1">
                   • {primaryRole.displayName || primaryRole.name}
                 </span>
               )}
-            </span>
+            </TypographySpanSmallMuted>
           </div>
         </div>
       </DropdownMenuLabel>
@@ -395,7 +398,7 @@ export function NavUser({ className }: { className?: string }) {
             )}
           >
             <div className="flex items-center gap-2">
-              <BadgeCheck className={!isInSidebar ? `mr-2 ${iconSizes.md}` : ""} />
+              <BadgeCheck className={cn(!isInSidebar && "mr-2", iconSizes.md)} />
               <span>Tài khoản</span>
             </div>
           </Link>
@@ -426,7 +429,7 @@ export function NavUser({ className }: { className?: string }) {
                       >
                         <div className="flex items-center gap-2">
                           <LayoutDashboard
-                            className={!isInSidebar ? `mr-2 ${iconSizes.md}` : ""}
+                            className={cn(!isInSidebar && "mr-2", iconSizes.md)}
                           />
                           <span>{item.title}</span>
                         </div>
@@ -492,7 +495,7 @@ export function NavUser({ className }: { className?: string }) {
         className="w-full text-destructive focus:text-destructive data-[highlighted]:text-destructive data-[highlighted]:bg-destructive/10 disabled:opacity-50"
       >
         <LogOut
-          className={cn("text-destructive", !isInSidebar ? `mr-2 ${iconSizes.md}` : "")}
+          className={cn("text-destructive", !isInSidebar && "mr-2", iconSizes.md)}
         />
         <span>Đăng xuất</span>
       </DropdownMenuItem>
@@ -504,16 +507,16 @@ export function NavUser({ className }: { className?: string }) {
     if (!isInSidebar) {
       return (
         <div className="flex items-center gap-2" suppressHydrationWarning>
-          <Avatar className={`${iconSizes["2xl"]}`} suppressHydrationWarning>
+          <Avatar className="h-8 w-8" suppressHydrationWarning>
             <AvatarImage
               src={user.image || "/avatars/default.jpg"}
               alt={user.name || ""}
             />
             <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
           </Avatar>
-          <span className={`inline-block ${typography.body.medium} font-medium truncate max-w-[120px]`} suppressHydrationWarning>
+          <TypographySpanMuted className="inline-block font-medium truncate max-w-[120px]" suppressHydrationWarning>
             {user.name || user.email}
-          </span>
+          </TypographySpanMuted>
         </div>
       );
     }
@@ -530,13 +533,13 @@ export function NavUser({ className }: { className?: string }) {
                 {getInitials(user.name)}
               </AvatarFallback>
             </Avatar>
-            <div className={`grid flex-1 text-left ${typography.body.medium} leading-tight`} suppressHydrationWarning>
-              <span className="truncate font-medium" suppressHydrationWarning>
+            <div className="grid flex-1 text-left" suppressHydrationWarning>
+              <TypographySpanMuted className="truncate font-medium" suppressHydrationWarning>
                 {user.name || user.email}
-              </span>
-              <span className={`truncate ${typography.body.small}`} suppressHydrationWarning>
+              </TypographySpanMuted>
+              <TypographySpanSmallMuted className="truncate" suppressHydrationWarning>
                 {primaryRole?.displayName || primaryRole?.name || user.email}
-              </span>
+              </TypographySpanSmallMuted>
             </div>
           </SidebarMenuButton>
         </SidebarMenuItem>
@@ -554,17 +557,17 @@ export function NavUser({ className }: { className?: string }) {
             className={cn("flex items-center gap-2 px-2", className)}
             suppressHydrationWarning
           >
-            <Avatar className={`${iconSizes["2xl"]}`} suppressHydrationWarning>
+            <Avatar className="h-8 w-8" suppressHydrationWarning>
               <AvatarImage
                 src={user.image || "/avatars/default.jpg"}
                 alt={user.name || ""}
               />
               <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
             </Avatar>
-            <span className={`inline-block ${typography.body.medium} font-medium truncate max-w-[120px]`} suppressHydrationWarning>
+            <TypographySpanMuted className="inline-block font-medium truncate max-w-[120px]" suppressHydrationWarning>
               {user.name || user.email}
-            </span>
-            <ChevronsUpDown className={`${iconSizes.md} opacity-50`} />
+            </TypographySpanMuted>
+            <ChevronsUpDown className={cn(iconSizes.md, "opacity-50")} />
           </Button>
         </DropdownMenuTrigger>
         {dropdownMenuContent}
@@ -582,7 +585,7 @@ export function NavUser({ className }: { className?: string }) {
               size="lg"
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
-              <Avatar className={`${iconSizes["2xl"]} rounded-lg`}>
+              <Avatar className="h-8 w-8 rounded-lg">
                 <AvatarImage
                   src={user.image || "/avatars/default.jpg"}
                   alt={user.name || ""}
@@ -591,15 +594,15 @@ export function NavUser({ className }: { className?: string }) {
                   {getInitials(user.name)}
                 </AvatarFallback>
               </Avatar>
-              <div className={`grid flex-1 text-left ${typography.body.medium} leading-tight`} suppressHydrationWarning>
-                <span className="truncate font-medium">
+              <SidebarMenuButtonContent>
+                <SidebarMenuButtonTitle>
                   {user.name || user.email}
-                </span>
-                <span className={`truncate ${typography.body.small}`}>
+                </SidebarMenuButtonTitle>
+                <SidebarMenuButtonDescription>
                   {primaryRole?.displayName || primaryRole?.name || user.email}
-                </span>
-              </div>
-              <ChevronsUpDown className={`ml-auto ${iconSizes.sm} opacity-50`} />
+                </SidebarMenuButtonDescription>
+              </SidebarMenuButtonContent>
+              <ChevronsUpDown className={cn("ml-auto", iconSizes.sm, "opacity-50")} />
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           {dropdownMenuContent}

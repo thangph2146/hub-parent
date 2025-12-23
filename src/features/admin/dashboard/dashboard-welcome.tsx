@@ -18,7 +18,7 @@ import { useClientOnly } from "@/hooks/use-client-only"
 import { usePermissions } from "@/hooks/use-permissions"
 import { PERMISSIONS, isSuperAdmin } from "@/lib/permissions"
 import { cn } from "@/lib/utils"
-import { typography, iconSizes, responsiveIconSizes, headerConfig } from "@/lib/typography"
+import { TypographyDescriptionLarge, TypographySpanMuted, TypographyTitleLarge, TypographyPSmallMuted, IconSize } from "@/components/ui/typography"
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -194,7 +194,7 @@ export const DashboardWelcome = () => {
             <div className="space-y-4">
               <div className="flex items-center gap-3 flex-wrap">
                 <motion.h1
-                  className={`${headerConfig.main.className} leading-tight`}
+                  className="leading-tight"
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.6 }}
@@ -210,15 +210,17 @@ export const DashboardWelcome = () => {
                   <span className="ml-2">👋</span>
                 </motion.h1>
               </div>
-              <motion.p
-                className={`${typography.description.large} flex items-center gap-2`}
+              <motion.div
+                className="flex items-center gap-2"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.3, duration: 0.6 }}
               >
-                <Calendar className={responsiveIconSizes.medium} />
-                {currentDate}
-              </motion.p>
+                <IconSize size="md" className="h-5 w-5 sm:h-6 sm:w-6">
+                  <Calendar />
+                </IconSize>
+                <TypographyDescriptionLarge>{currentDate}</TypographyDescriptionLarge>
+              </motion.div>
               <motion.div
                 className="flex flex-wrap items-center gap-3"
                 initial={{ opacity: 0, y: 10 }}
@@ -235,12 +237,14 @@ export const DashboardWelcome = () => {
                     "hover:scale-105 hover:shadow-xl transition-all duration-300"
                   )}
                 >
-                  <RoleIcon className={responsiveIconSizes.medium} />
+                  <IconSize size="md" className="h-5 w-5 sm:h-6 sm:w-6">
+                    <RoleIcon />
+                  </IconSize>
                   <span>{roleInfo.label}</span>
                 </Badge>
-                <span className={typography.body.muted.medium}>
+                <TypographySpanMuted>
                   {roleInfo.description}
-                </span>
+                </TypographySpanMuted>
               </motion.div>
             </div>
           </div>
@@ -255,11 +259,15 @@ export const DashboardWelcome = () => {
           <Card className="relative overflow-hidden backdrop-blur-md bg-card/80 border border-primary/20 shadow-xl">
             <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-primary/5 to-background" />
             <CardHeader className="relative z-10">
-              <CardTitle className={`flex items-center gap-2 ${typography.title.large}`}>
-                <CheckCircle2 className={`${iconSizes.lg} text-primary`} />
-                {isSuperAdminUser ? "Quyền truy cập đầy đủ" : "Quyền truy cập của bạn"}
+              <CardTitle>
+                <TypographyTitleLarge className="flex items-center gap-2">
+                  <IconSize size="lg">
+                    <CheckCircle2 className="text-primary" />
+                  </IconSize>
+                  {isSuperAdminUser ? "Quyền truy cập đầy đủ" : "Quyền truy cập của bạn"}
+                </TypographyTitleLarge>
               </CardTitle>
-              <CardDescription className={`${typography.body. medium} text-muted-foreground`}>
+              <CardDescription>
                 {isSuperAdminUser 
                   ? "Bạn có quyền truy cập đầy đủ vào tất cả các tính năng của hệ thống."
                   : "Danh sách các tính năng bạn có thể sử dụng với quyền hiện tại."}
@@ -276,16 +284,20 @@ export const DashboardWelcome = () => {
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: 0.1 * index }}
                     >
-                      <CheckCircle2 className={`${iconSizes.sm} text-[#00cc44] dark:text-[#00ff88] flex-shrink-0`} />
-                      <span className={typography.body.muted.medium}>{item.label}</span>
+                      <IconSize size="sm">
+                        <CheckCircle2 className="text-[#00cc44] dark:text-[#00ff88] flex-shrink-0" />
+                      </IconSize>
+                      <TypographySpanMuted>{item.label}</TypographySpanMuted>
                     </motion.div>
                   ))}
                 </div>
               ) : (
                 <div className="text-center py-4 text-muted-foreground">
-                  <AlertCircle className={`${iconSizes["2xl"]} mx-auto mb-2 opacity-50`} />
+                  <IconSize size="2xl">
+                    <AlertCircle className="mx-auto mb-2 opacity-50" />
+                  </IconSize>
                   <p>Bạn chưa có quyền truy cập vào bất kỳ tính năng nào.</p>
-                  <p className={`${typography.body.muted.small} mt-1`}>Vui lòng liên hệ quản trị viên để được cấp quyền.</p>
+                  <TypographyPSmallMuted className="mt-1">Vui lòng liên hệ quản trị viên để được cấp quyền.</TypographyPSmallMuted>
                 </div>
               )}
             </CardContent>

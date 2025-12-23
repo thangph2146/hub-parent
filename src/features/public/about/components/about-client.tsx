@@ -25,7 +25,8 @@ const Timeline = dynamic(() => import("@/components/ui/timeline").then(mod => ({
   loading: () => <div className="h-96 flex items-center justify-center">Đang tải...</div>,
 })
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import { typography, headerConfig, textColors, iconSizes, responsiveIconSizes } from "@/lib/typography";
+import { textColors, iconSizes, responsiveIconSizes } from "@/lib/typography";
+import { TypographyPLargeMuted, TypographyPSmallMuted, TypographyDescriptionLarge, TypographyH1, TypographyH2, TypographyH3, TypographyH4, TypographyH6, TypographySpanSmallMuted, TypographyDescription } from "@/components/ui/typography";
 
 /**
  * Helper function để highlight "HUB" trong text với màu secondary
@@ -665,13 +666,13 @@ export const AboutClient = () => {
         <div className="flex flex-col justify-center lg:col-span-1">
           <div className="prose prose-sm sm:prose-base md:prose-lg text-foreground leading-relaxed dark:prose-invert max-w-none">
             {item.description ? (
-              <p className={`${typography.body.muted.large} leading-relaxed`}>
+              <TypographyPLargeMuted className="leading-relaxed">
                 {item.description}
-              </p>
+              </TypographyPLargeMuted>
             ) : (
-              <p className={`${typography.body.muted.small} italic`}>
+              <TypographyPSmallMuted className="italic">
                 Đang cập nhật thông tin...
-              </p>
+              </TypographyPSmallMuted>
             )}
           </div>
         </div>
@@ -688,27 +689,27 @@ export const AboutClient = () => {
           <div className="border-b-2 border-primary mb-6 sm:mb-8 pb-6 sm:pb-8">
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 sm:gap-8">
               <div>
-                <h2 className={headerConfig.section.className}>
+                <TypographyH2>
                   Tổng quan về{" "}
                   <span className="text-secondary font-bold">HUB</span>
-                </h2>
+                </TypographyH2>
               </div>
               <div>
                 <div className="prose prose-sm sm:prose-base text-foreground leading-relaxed dark:prose-invert mb-4">
-                  <p className={typography.description.large}>
+                  <TypographyDescriptionLarge>
                     Trường Đại học Ngân hàng Thành phố Hồ Chí Minh (Ho Chi Minh
                     University of Banking -{" "}
                     <span className="font-bold text-secondary">HUB</span>) là
                     trường đại học công lập trực thuộc Ngân hàng Nhà nước Việt
                     Nam được thành lập từ ngày{" "}
                     <strong className="text-foreground">16/12/1976</strong>.
-                  </p>
+                  </TypographyDescriptionLarge>
                 </div>
-                <h3 className={`${headerConfig.subsection.className} mt-4`}>
+                <TypographyH3 className="mt-4">
                   <span className="text-secondary font-bold">H</span>EIGHTENING{" "}
                   <span className="text-secondary font-bold">U</span>NIQUE{" "}
                   <span className="text-secondary font-bold">B</span>RILLIANCE
-                </h3>
+                </TypographyH3>
               </div>
             </div>
           </div>
@@ -732,51 +733,51 @@ export const AboutClient = () => {
             {/* Statistics List */}
             <div className="space-y-4 sm:space-y-6">
               <div>
-                <h2 className={`${typography.heading.primary.h1} mb-2`}>
+                <TypographyH2 className="mb-2 text-primary">
                   49
-                  <span className={`${typography.heading.h4} ${textColors.primary}`}>
+                  <TypographyH4 className={textColors.primary}>
                     + năm
-                  </span>
-                </h2>
-                <p className={typography.body.muted.small}>
+                  </TypographyH4>
+                </TypographyH2>
+                <TypographyPSmallMuted>
                   Xây dựng và phát triển với 16 ngành và 03 cơ sở sở đào tạo!
-                </p>
+                </TypographyPSmallMuted>
               </div>
 
               <div>
-                <h2 className={`${typography.heading.primary.h1} mb-2`}>
+                <TypographyH2 className="mb-2 text-primary">
                   17.500
-                  <span className={`${typography.heading.h4} ${textColors.primary}`}>
+                  <TypographyH4 className={textColors.primary}>
                     +
-                  </span>
-                </h2>
-                <p className={typography.body.muted.small}>
+                  </TypographyH4>
+                </TypographyH2>
+                <TypographyPSmallMuted>
                   Sinh viên đang theo học ở các bậc đào tạo từ đại học, thạc sĩ,
                   tiến sĩ
-                </p>
+                </TypographyPSmallMuted>
               </div>
 
               <div>
-                <h2 className={`${typography.heading.primary.h1} mb-2`}>
+                <TypographyH2 className="mb-2 text-primary">
                   500
-                </h2>
-                <p className={typography.body.muted.small}>
+                </TypographyH2>
+                <TypographyPSmallMuted>
                   Cán bộ, giảng viên, nhân viên, trong đó có 38 Giáo sư, Phó
                   Giáo sư, 197 Tiến sĩ và 238 Thạc sĩ
-                </p>
+                </TypographyPSmallMuted>
               </div>
 
               <div>
-                <h2 className={`${typography.heading.primary.h1} mb-2`}>
+                <TypographyH2 className="mb-2 text-primary">
                   66.000
-                  <span className={`${typography.heading.h4} ${textColors.primary}`}>
+                  <TypographyH4 className={textColors.primary}>
                     +
-                  </span>
-                </h2>
-                <p className={typography.body.muted.small}>
+                  </TypographyH4>
+                </TypographyH2>
+                <TypographyPSmallMuted>
                   Cử nhân, thạc sĩ, tiến sĩ đã được{" "}
                   <span className="font-bold text-secondary">HUB</span> đào tạo
-                </p>
+                </TypographyPSmallMuted>
               </div>
             </div>
           </div>
@@ -786,13 +787,13 @@ export const AboutClient = () => {
       {/* About HUB Section */}
       <section className="py-12 sm:py-16 lg:py-20 bg-muted/30">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className={`${headerConfig.section.className} uppercase`}>
+          <TypographyH2 className="uppercase">
             Về <span className="text-secondary font-bold">HUB</span>
-          </h2>
+          </TypographyH2>
 
           <div className="mb-6 sm:mb-8">
             <div className="prose prose-sm sm:prose-base md:prose-lg text-foreground leading-relaxed dark:prose-invert">
-              <p className={`${typography.description.large} mb-4`}>
+              <TypographyDescriptionLarge className="mb-4">
                 Trường Đại học Ngân hàng TPHCM với truyền thống gần 50 năm hình
                 thành và phát triển và là Trường Đại học công lập trực thuộc
                 Ngân hàng nhà nước Việt Nam. Với đội ngũ Giáo sư – Phó giáo sư –
@@ -816,7 +817,7 @@ export const AboutClient = () => {
                 môi trường học tập – vui chơi – rèn luyện đầy đủ và an toàn cho
                 người học. Đảm bảo cho sinh viên 1 ngôi trường học tập hạnh
                 phúc!
-              </p>
+              </TypographyDescriptionLarge>
             </div>
             <button
               onClick={() => setShowMoreDialog(true)}
@@ -844,14 +845,14 @@ export const AboutClient = () => {
         <Dialog open={showMoreDialog} onOpenChange={setShowMoreDialog}>
           <DialogContent className="max-w-[90vw] lg:max-w-4xl">
             <DialogHeader>
-              <DialogTitle className={`${headerConfig.subsection.className} uppercase`}>
-                Về <span className="text-secondary">HUB</span>
+              <DialogTitle asChild>
+                <TypographyH3 className="uppercase">Về <span className="text-secondary">HUB</span></TypographyH3>
               </DialogTitle>
             </DialogHeader>
             <DialogDescription asChild>
               <ScrollArea className="max-h-[calc(70dvh)] px-2 overflow-y-auto">
               <div className="prose prose-sm sm:prose-base md:prose-lg text-foreground leading-relaxed dark:prose-invert max-w-none">
-                <p className={`${typography.description.large} mb-4`}>
+                <TypographyDescriptionLarge className="mb-4">
                   Trường Đại học Ngân hàng TP. Hồ Chí Minh đang đào tạo 16 ngành
                   đại học với hơn 16.000 sinh viên, 09 Chương trình Thạc sĩ với
                   gần 2000 học viên cao học và nghiên cứu sinh, 03 ngành Tiến sĩ
@@ -871,8 +872,8 @@ export const AboutClient = () => {
                   thành đạt. Mạng lưới cựu người học cửa Trường rộng khắp góp
                   phần tạo nên hệ giá trị sinh thái bền vững hỗ trợ nhiều hoạt
                   động thiết thực, mang lại giá trị thực tiễn cao.
-                </p>
-                <p className={`${typography.description.large} mb-4`}>
+                </TypographyDescriptionLarge>
+                <TypographyDescriptionLarge className="mb-4">
                   Đội ngũ nhân sự của{" "}
                   <span className="font-bold text-secondary">HUB</span> với trên
                   500 cán bộ, giảng viên, nhân viên. Trong đó, 235 giảng viên có
@@ -887,8 +888,8 @@ export const AboutClient = () => {
                   bậc nhất Việt Nam chuyên sâu về AI, Khoa học dữ liệu, Công
                   nghệ tài chính (38 GS-TS). Điều này giúp phục vụ hiệu quả quá
                   trình đào tạo chuyển đổi số cho đất nước và ngành Ngân hàng.
-                </p>
-                <p className={`${typography.description.large} mb-4`}>
+                </TypographyDescriptionLarge>
+                <TypographyDescriptionLarge className="mb-4">
                   <span className="font-bold text-secondary">HUB</span> có 03 cơ
                   sở đào tạo với 02 cơ sở tại trung tâm Q1 TP. HCM và 01 cơ sở
                   tại Thủ Đức có tổng diện tích lên đến hơn 11 hecta được đầu tư
@@ -900,8 +901,8 @@ export const AboutClient = () => {
                   viên trong đại học&quot; – sẵn sàng hướng tới là một trong
                   những Đại học đầu tiên thực hiện báo cáo quản trị theo chuẩn
                   ESG.
-                </p>
-                <p className={`${typography.description.large} mb-4`}>
+                </TypographyDescriptionLarge>
+                <TypographyDescriptionLarge className="mb-4">
                   Trường Đại học Ngân hàng TP. Hồ Chí Minh đã kiểm định 100%
                   chương trình đào tạo theo tiêu chuẩn quốc tế AUN – QA và MOET.
                   Không dừng lại ở kiểm định cấp CTĐT, Trường đã hoàn thành
@@ -910,15 +911,15 @@ export const AboutClient = () => {
                   kiểm định quốc tế cấp CSGD trong 224 Đại học tại Việt Nam. Đi
                   theo đúng định hướng &quot;đào tạo công dân chuẩn toàn cầu, am
                   hiểu Việt Nam&quot;. Chứng nhận Hệ thống quản lý chất lượng
-                  theo tiêu chuẩn ISO 9001:2015 của Tổ chức Afnor Cộng hòa Pháp.
-                </p>
-                <p className={typography.description.large}>
+                  theo tiêu chuẩn ISO 9001:2015 của Tổ chức Afnor Cộng hòa                   Pháp.
+                </TypographyDescriptionLarge>
+                <TypographyDescriptionLarge>
                   Trường Đại học Ngân hàng TP. Hồ Chí Minh tiếp tục khẳng định
                   vị thế là Trường Đại học lớn ở Việt Nam, đào tạo đa ngành, xây
                   dựng hệ sinh thái hạnh phúc trong cộng đồng người học và cung
                   ứng nguồn nhân lực chất lượng cao cho ngành Ngân hàng, doanh
                   nghiệp và xã hội.
-                </p>
+                </TypographyDescriptionLarge>
               </div>
               </ScrollArea>
             </DialogDescription>
@@ -933,17 +934,17 @@ export const AboutClient = () => {
           <div className="border-b-2 border-primary mb-6 sm:mb-8 pb-6 sm:pb-8">
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 sm:gap-8">
               <div>
-                <h2 className={headerConfig.section.className}>
+                <TypographyH2>
                   Tầm nhìn - Sứ mệnh
-                </h2>
+                </TypographyH2>
               </div>
               <div>
                 <div className="prose prose-sm sm:prose-base text-foreground leading-relaxed dark:prose-invert">
-                  <p className={typography.description.large}>
+                  <TypographyDescriptionLarge>
                     Đại học Ngân hàng hướng đến mục tiêu hiện thực hóa tầm nhìn
                     và sứ mệnh theo định hướng đề ra, góp phần xây dựng một
                     trường đại học uy tín trong khu vực và trường quốc tế.
-                  </p>
+                  </TypographyDescriptionLarge>
                 </div>
               </div>
             </div>
@@ -967,24 +968,24 @@ export const AboutClient = () => {
             {/* Content */}
             <div className="space-y-6 sm:space-y-8">
               <div>
-                <h3 className={`${headerConfig.subsection.className} mb-3 sm:mb-4`}>
+                <TypographyH3 className="mb-3 sm:mb-4">
                   Tầm nhìn
-                </h3>
-                <p className={`${typography.description.large} leading-relaxed`}>
+                </TypographyH3>
+                <TypographyDescriptionLarge className="leading-relaxed">
                   <span className="font-bold text-secondary">HUB</span> định
                   hướng trở thành đại học đa ngành và liên ngành nằm trong nhóm
                   các đại học có uy tín ở khu vực Đông Nam Á.{" "}
                   <span className="font-bold text-secondary">HUB</span> tiên
                   phong ứng dụng công nghệ số trong đào tạo, nghiên cứu và giải
                   quyết các vấn đề liên ngành.
-                </p>
+                </TypographyDescriptionLarge>
               </div>
 
               <div>
-                <h3 className={`${headerConfig.subsection.className} mb-3 sm:mb-4`}>
+                <TypographyH3 className="mb-3 sm:mb-4">
                   Sứ mệnh
-                </h3>
-                <p className={`${typography.description.large} leading-relaxed`}>
+                </TypographyH3>
+                <TypographyDescriptionLarge className="leading-relaxed">
                   <span className="font-bold text-secondary">HUB</span> cung cấp
                   cho xã hội và ngành ngân hàng nguồn nhân lực chất lượng cao,
                   các nghiên cứu có tầm ảnh hưởng, cùng với dịch vụ tư vấn và
@@ -992,7 +993,7 @@ export const AboutClient = () => {
                   <span className="font-bold text-secondary">HUB</span> kiến tạo
                   hệ sinh thái giáo dục, mang đến cơ hội học tập suốt đời, phát
                   triển con người toàn diện, sáng tạo, với tinh thần phụng sự.
-                </p>
+                </TypographyDescriptionLarge>
               </div>
             </div>
           </div>
@@ -1005,9 +1006,9 @@ export const AboutClient = () => {
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 sm:gap-8 lg:gap-12 items-end">
             {/* Content */}
             <div>
-              <h2 className={`${headerConfig.section.className} mb-4 sm:mb-6`}>
+              <TypographyH2 className="mb-4 sm:mb-6">
                 Hệ giá trị cốt lõi
-              </h2>
+              </TypographyH2>
               <div className="space-y-4 sm:space-y-6">
                 {coreValues.map((value, index) => (
                   <div
@@ -1018,15 +1019,15 @@ export const AboutClient = () => {
                         : ""
                     }
                   >
-                    <h3
-                      className={`${typography.heading.h4} mb-2 sm:mb-3`}
+                    <TypographyH3
+                      className="mb-2 sm:mb-3"
                       style={{ color: value.color }}
                     >
                       {value.title}
-                    </h3>
-                    <p className={`${typography.description.large} leading-relaxed`}>
+                    </TypographyH3>
+                    <TypographyDescriptionLarge className="leading-relaxed">
                       {highlightHUB(value.description)}
-                    </p>
+                    </TypographyDescriptionLarge>
                   </div>
                 ))}
               </div>
@@ -1054,9 +1055,9 @@ export const AboutClient = () => {
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 sm:gap-8 lg:gap-12 items-end">
             {/* Content */}
             <div>
-              <h2 className={`${headerConfig.section.className} mb-4 sm:mb-6`}>
+              <TypographyH2 className="mb-4 sm:mb-6">
                 Triết lý giáo dục
-              </h2>
+              </TypographyH2>
               <div className="space-y-4 sm:space-y-6">
                 {educationPhilosophy.map((philosophy, index) => (
                   <div
@@ -1067,15 +1068,15 @@ export const AboutClient = () => {
                         : ""
                     }
                   >
-                    <h3
-                      className={`${typography.heading.h4} mb-2 sm:mb-3`}
+                    <TypographyH3
+                      className="mb-2 sm:mb-3"
                       style={{ color: philosophy.color }}
                     >
                       {philosophy.title}
-                    </h3>
-                    <p className={`${typography.description.large} leading-relaxed`}>
+                    </TypographyH3>
+                    <TypographyDescriptionLarge className="leading-relaxed">
                       {highlightHUB(philosophy.description)}
-                    </p>
+                    </TypographyDescriptionLarge>
                   </div>
                 ))}
               </div>
@@ -1104,17 +1105,17 @@ export const AboutClient = () => {
           <div className="border-b-2 border-primary mb-6 sm:mb-8 pb-6 sm:pb-8">
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 sm:gap-8">
               <div>
-                <h2 className={headerConfig.section.className}>
+                <TypographyH2>
                   Bộ máy tổ chức
-                </h2>
+                </TypographyH2>
               </div>
               <div>
                 <div className="prose prose-sm sm:prose-base text-foreground leading-relaxed dark:prose-invert">
-                  <p className={typography.description.large}>
+                  <TypographyDescriptionLarge>
                     Bộ máy tổ chức của Đại học Ngân hàng TP.HCM được xây dựng
                     theo hướng tinh gọn, hiệu lực, hiệu quả, phù hợp với quy
                     định của pháp luật và điều kiện thực tiễn của trường.
-                  </p>
+                  </TypographyDescriptionLarge>
                 </div>
               </div>
             </div>
@@ -1142,25 +1143,25 @@ export const AboutClient = () => {
           <div className="border-b-2 border-primary mb-6 sm:mb-8 pb-6 sm:pb-8">
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 sm:gap-8">
               <div>
-                <h2 className={headerConfig.section.className}>
+                <TypographyH2>
                   Cơ sở vật chất
-                </h2>
+                </TypographyH2>
               </div>
               <div>
                 <div className="prose prose-sm sm:prose-base text-foreground leading-relaxed dark:prose-invert mb-4">
-                  <p className={typography.description.large}>
+                  <TypographyDescriptionLarge>
                     Trường Đại học Ngân hàng TP.HCM (
                     <span className="font-bold text-secondary">HUB</span>) có cơ
                     sở vật chất khang trang, hiện đại với không gian xanh,
                     thoáng mát, đáp ứng nhu cầu học tập, nghiên cứu, sinh hoạt,
                     rèn luyện thể thao… của hơn 12.000 người
-                  </p>
+                  </TypographyDescriptionLarge>
                 </div>
-                <h3 className={`${headerConfig.subsection.className} mt-4`}>
+                <TypographyH3 className="mt-4">
                   <span className="text-secondary font-bold">H</span>EIGHTENING{" "}
                   <span className="text-secondary font-bold">U</span>NIQUE{" "}
                   <span className="text-secondary font-bold">B</span>RILLIANCE
-                </h3>
+                </TypographyH3>
               </div>
             </div>
           </div>
@@ -1169,27 +1170,27 @@ export const AboutClient = () => {
           <div className="grid grid-cols-2 -3 sm:gap-4 md:gap-6 mb-6 sm:mb-8">
             {facilities.map((facility, index) => (
               <div key={index} className="text-center">
-                <div className={`${typography.heading.primary.h1} mb-1 sm:mb-2`}>
+                <TypographyH1 className="mb-1 sm:mb-2 text-primary">
                   {facility.number}
-                </div>
-                <div className={typography.body.muted.small}>
+                </TypographyH1>
+                <TypographySpanSmallMuted>
                   {facility.label}
-                </div>
+                </TypographySpanSmallMuted>
               </div>
             ))}
           </div>
 
           {/* Content */}
           <div className="prose prose-sm sm:prose-base md:prose-lg text-foreground leading-relaxed dark:prose-invert">
-            <p className={`${typography.description.large} mb-4`}>
+            <TypographyDescriptionLarge className="mb-4">
               Trường Đại học Ngân hàng TP.HCM (
               <span className="font-bold text-secondary">HUB</span>) có 3 cơ sở
               đào tạo, gồm 02 cơ sở tọa lạc tại Trung tâm Quận 1, Tp. Hồ Chí
               Minh và 01 cơ sở tại Quận Thủ Đức với tổng diện tích đất hơn 9,4
               ha, diện tích xây dựng hơn 52,000 m2 đảm bảo nhu cầu dạy và học
               của hơn 12.000 người.
-            </p>
-            <p className={`${typography.description.large} mb-4`}>
+            </TypographyDescriptionLarge>
+            <TypographyDescriptionLarge className="mb-4">
               <span className="font-bold text-secondary">HUB</span> tự hào về cơ
               sở vật chất khang trang, hiện đại với không gian xanh, sạch,
               thoáng mát, đáp ứng việc học tập, nghiên cứu, sinh hoạt, rèn luyện
@@ -1199,8 +1200,8 @@ export const AboutClient = () => {
               cường đầu tư theo hướng tích hợp, tăng tương tác giữa giáo viên
               với người học nhằm xây dựng không gian lớp học thân hiện và hiệu
               quả.
-            </p>
-            <p className={`${typography.description.large} mb-4`}>
+            </TypographyDescriptionLarge>
+            <TypographyDescriptionLarge className="mb-4">
               Ngoài không gian học tập, Nhà trường có hệ thống phụ trợ phục vụ
               công tác học tập, rèn luyện thể dục thể thao (cụm khu liên hợp thể
               dục thi thao, sân bóng đá, hồ bơi, tennis, cầu lông,
@@ -1208,15 +1209,15 @@ export const AboutClient = () => {
               đại tại cơ sở Thủ Đức với sức chứa 900 chỗ là nơi tổ chức các sự
               kiện lớn của Trường, các Khoa, các CLB, Trung tâm Thông tin Thư
               viện hiện đại, trẻ trung, Ký túc xá rộng rãi và tiện nghi.
-            </p>
-            <p className={typography.description.large}>
+            </TypographyDescriptionLarge>
+            <TypographyDescriptionLarge>
               Thư viện, trung tâm học liệu với diện tích sàn 6,666 m2 ; với gần
               47,000 đầu sách, giáo trình, tài liệu tham khảo tiếng Việt và
               tiếng nước ngoài, gần 359,000 bản sách các loại, 20 máy tính trang
               bị riêng cho Thư viện được nối mạng tốc độ cao dùng để tra cứu
               internet và truy cập các cơ sở dữ liệu, phục vụ 600 người đọc cùng
               một thời điểm.
-            </p>
+            </TypographyDescriptionLarge>
           </div>
 
           {/* Image Gallery/Carousel - 2 images per slide */}
@@ -1244,9 +1245,9 @@ export const AboutClient = () => {
                       />
                       {/* Caption for each image */}
                       <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/60 to-transparent p-3 sm:p-4">
-                        <h3 className={`${typography.heading.h6} font-semibold text-white line-clamp-2`}>
+                        <TypographyH6 className="font-semibold text-white line-clamp-2">
                           {image.title}
-                        </h3>
+                        </TypographyH6>
                       </div>
                     </div>
                   );
@@ -1303,9 +1304,9 @@ export const AboutClient = () => {
               >
                 <ChevronLeft className={iconSizes.md} />
               </button>
-              <span className={typography.body.muted.small}>
+              <TypographySpanSmallMuted>
                 {currentImageIndex + 1} / {facilityImages.length}
-              </span>
+              </TypographySpanSmallMuted>
               <button
                 onClick={nextImage}
                 className="bg-background border border-border hover:bg-muted text-foreground rounded-full p-2 shadow-md transition-all"
@@ -1325,13 +1326,13 @@ export const AboutClient = () => {
           <div className="border-b-2 border-primary mb-6 sm:mb-8 pb-6 sm:pb-8">
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 sm:gap-8">
               <div>
-                <h2 className={headerConfig.section.className}>
+                <TypographyH2>
                   Đội ngũ Giảng viên - Nhà khoa học
-                </h2>
+                </TypographyH2>
               </div>
               <div>
                 <div className="prose prose-sm sm:prose-base text-foreground leading-relaxed dark:prose-invert">
-                  <p className={typography.description.large}>
+                  <TypographyDescriptionLarge>
                     <span className="font-bold text-secondary">HUB</span> có gần
                     500 cán bộ, giảng viên, nhân viên. Đội ngũ giảng viên bao
                     gồm: 38 Giáo sư, Phó Giáo sư, 184 Tiến sĩ và 238 Thạc sĩ
@@ -1341,7 +1342,7 @@ export const AboutClient = () => {
                     có đội ngũ 100 giáo sư, tiến sĩ thỉnh giảng đến từ các
                     trường đại học, viện nghiên cứu, tổ chức tài chính, doanh
                     nghiệp trong và ngoài nước:
-                  </p>
+                  </TypographyDescriptionLarge>
                 </div>
               </div>
             </div>
@@ -1350,36 +1351,36 @@ export const AboutClient = () => {
           {/* Statistics */}
           <div className="grid grid-cols-2 -3 sm:gap-4 md:gap-6 mb-8 sm:mb-12 lg:mb-16">
             <div className="text-center">
-              <div className={`${typography.heading.primary.h1} mb-1 sm:mb-2`}>
+              <TypographyH1 className="mb-1 sm:mb-2 text-primary">
                 38
-              </div>
-              <div className={typography.body.muted.small}>
+              </TypographyH1>
+              <TypographySpanSmallMuted>
                 Giáo sư, Phó Giáo sư
-              </div>
+              </TypographySpanSmallMuted>
             </div>
             <div className="text-center">
-              <div className={`${typography.heading.primary.h1} mb-1 sm:mb-2`}>
+              <TypographyH1 className="mb-1 sm:mb-2 text-primary">
                 237
-              </div>
-              <div className={typography.body.muted.small}>
+              </TypographyH1>
+              <TypographySpanSmallMuted>
                 Tiến sĩ
-              </div>
+              </TypographySpanSmallMuted>
             </div>
             <div className="text-center">
-              <div className={`${typography.heading.primary.h1} mb-1 sm:mb-2`}>
+              <TypographyH1 className="mb-1 sm:mb-2 text-primary">
                 87
-              </div>
-              <div className={typography.body.muted.small}>
+              </TypographyH1>
+              <TypographySpanSmallMuted>
                 PGS- TS Thỉnh giảng
-              </div>
+              </TypographySpanSmallMuted>
             </div>
             <div className="text-center">
-              <div className={`${typography.heading.primary.h1} mb-1 sm:mb-2`}>
+              <TypographyH1 className="mb-1 sm:mb-2 text-primary">
                 500
-              </div>
-              <div className={typography.body.muted.small}>
+              </TypographyH1>
+              <TypographySpanSmallMuted>
                 Giảng viên cơ hữu
-              </div>
+              </TypographySpanSmallMuted>
             </div>
           </div>
 
@@ -1393,9 +1394,9 @@ export const AboutClient = () => {
                 rel="noopener noreferrer"
                 className="flex items-center justify-between p-4 sm:p-5 bg-card border border-border rounded-lg sm:rounded-xl hover:bg-muted/50 hover:border-primary/50 transition-all group"
               >
-                <span className={`${typography.description.large} font-medium group-hover:text-primary transition-colors`}>
+                <TypographyDescriptionLarge className="font-medium group-hover:text-primary transition-colors">
                   {department.name}
-                </span>
+                </TypographyDescriptionLarge>
                 <ArrowRight className={`${responsiveIconSizes.medium} text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all flex-shrink-0`} />
               </Link>
             ))}
@@ -1410,16 +1411,16 @@ export const AboutClient = () => {
           <div className="border-b-2 border-primary mb-6 sm:mb-8 pb-6 sm:pb-8">
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 sm:gap-8">
               <div className="mx-auto flex flex-col gap-4">
-                <h2 className={headerConfig.section.className}>
+                <TypographyH2>
                   Góc truyền thống
-                </h2>
+                </TypographyH2>
                 <div>
                   <div className="prose prose-sm sm:prose-base text-foreground leading-relaxed dark:prose-invert">
-                    <p className={typography.description.large}>
+                    <TypographyDescriptionLarge>
                       Đại học Ngân hàng có lịch sử hình thành và phát triển lâu
                       đời, với nhiều truyền thống quý báu được gìn giữ và phát
                       huy qua nhiều thế hệ.
-                    </p>
+                    </TypographyDescriptionLarge>
                   </div>
                 </div>
               </div>
@@ -1427,9 +1428,9 @@ export const AboutClient = () => {
 
             {/* History Timeline */}
             <div className="mt-8">
-              <h3 className={`${headerConfig.subsection.className} text-center mb-6 sm:mb-8`}>
+              <TypographyH3 className="text-center mb-6 sm:mb-8">
                 Lịch sử hình thành
-              </h3>
+              </TypographyH3>
 
               {/* Timeline Component */}
               <div className="[&>div]:bg-background [&>div]:dark:bg-background [&>div>div:first-child]:hidden [&_h3]:text-foreground [&_h3]:dark:text-foreground [&_p]:text-muted-foreground [&_p]:dark:text-muted-foreground [&>div]:px-2 [&>div]:sm:px-4 [&>div]:md:px-6 [&>div]:lg:px-8 [&>div>div]:py-4 [&>div>div]:sm:py-6 [&>div>div]:md:py-8 [&>div>div]:lg:py-12 [&>div>div>div]:pt-3 [&>div>div>div]:sm:pt-4 [&>div>div>div]:md:pt-6 [&>div>div>div]:lg:pt-10 [&>div>div>div]:pb-3 [&>div>div>div]:sm:pb-4 [&>div>div>div]:md:pb-6 [&>div>div>div]:lg:pb-10 [&>div>div>div>div]:gap-2 [&>div>div>div>div]:sm:gap-3 [&>div>div>div>div]:md:gap-4 [&>div>div>div>div]:lg:gap-6 [&>div>div>div>div>div]:pl-8 [&>div>div>div>div>div]:sm:pl-10 [&>div>div>div>div>div]:md:pl-12 [&>div>div>div>div>div]:pr-2 [&>div>div>div>div>div]:sm:pr-3 [&>div>div>div>div>div]:md:pr-4 [&>div>div>div>div>div>h3]:text-base [&>div>div>div>div>div>h3]:sm:text-lg [&>div>div>div>div>div>h3]:md:text-xl [&>div>div>div>div>div>h3]:lg:text-2xl [&>div>div>div>div>div>h3]:mb-2 [&>div>div>div>div>div>h3]:sm:mb-3 [&>div>div>div>div>div>h3]:md:mb-4 [&>div>div>div>div>div>div]:pl-0 [&>div>div>div>div>div>div]:sm:pl-0 [&>div>div>div>div>div>div]:md:pl-0 [&>div>div>div>div>div>div]:pr-0 [&>div>div>div>div>div>div]:sm:pr-0 [&>div>div>div>div>div>div]:md:pr-0">
@@ -1446,9 +1447,9 @@ export const AboutClient = () => {
           <div className="max-w-7xl mx-auto">
             {/* Header */}
             <div className="text-center mb-8 sm:mb-12">
-              <h2 className={headerConfig.section.className}>
+              <TypographyH2>
                 Các thế hệ lãnh đạo
-              </h2>
+              </TypographyH2>
             </div>
 
             {/* Horizontal Timeline Navigation */}
@@ -1471,15 +1472,15 @@ export const AboutClient = () => {
                           : "bg-primary"
                       }`}
                     />
-                    <h3
-                      className={`${typography.body.small} sm:${typography.body.medium} md:${typography.body.medium} font-semibold text-center ${
+                    <TypographyH3
+                      className={`font-semibold text-center ${
                         currentLeaderIndex === index
                           ? "text-primary-foreground"
                           : "text-foreground"
                       }`}
                     >
                       {generation.period}
-                    </h3>
+                    </TypographyH3>
                   </button>
                 ))}
               </div>
@@ -1550,13 +1551,13 @@ export const AboutClient = () => {
                                   />
                                 </div>
                                 {/* Leader Info */}
-                                <h4 className={`${typography.title.small} mb-2 sm:mb-3`}>
+                                <TypographyH4 className="mb-2 sm:mb-3">
                                   {leader.name}
-                                </h4>
+                                </TypographyH4>
                                 <div className="prose prose-sm sm:prose-base text-foreground dark:prose-invert">
-                                  <p className={`${typography.body.muted.small} whitespace-pre-line`}>
+                                  <TypographyPSmallMuted className="whitespace-pre-line">
                                     {leader.position}
-                                  </p>
+                                  </TypographyPSmallMuted>
                                 </div>
                               </div>
                             )
@@ -1567,9 +1568,9 @@ export const AboutClient = () => {
                     </>
                   ) : (
                     <div className="text-center py-8">
-                      <p className={typography.description.default}>
+                      <TypographyDescription>
                         Thông tin lãnh đạo sẽ được cập nhật...
-                      </p>
+                      </TypographyDescription>
                     </div>
                   )}
                 </div>

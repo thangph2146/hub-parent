@@ -16,7 +16,8 @@ import {
 } from "@/components/ui/command"
 import { Check, Folder, ChevronsUpDown, Trash2, Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { iconSizes, typography } from "@/lib/typography"
+import { iconSizes } from "@/lib/typography"
+import { TypographyPSmallMuted } from "@/components/ui/typography"
 import { useUploadsStore } from "../store/uploads-store"
 import { useDeleteFolder } from "../hooks/use-uploads-queries"
 import { FolderTreeSelectItem } from "./folder-tree-select-item"
@@ -95,7 +96,7 @@ export const FolderSelector = ({
                   ? "Đang tải..."
                   : "Chọn thư mục (để trống để lưu theo ngày)"}
               </span>
-              <ChevronsUpDown className={`ml-2 ${iconSizes.sm} shrink-0 opacity-50`} />
+              <ChevronsUpDown className={cn("ml-2", iconSizes.sm, "shrink-0 opacity-50")} />
             </Button>
           </PopoverTrigger>
           <PopoverContent 
@@ -115,11 +116,11 @@ export const FolderSelector = ({
                   >
                     <Check
                       className={cn(
-                        `mr-2 ${iconSizes.sm}`,
+                        "mr-2", iconSizes.sm,
                         !selectedFolder ? "opacity-100" : "opacity-0"
                       )}
                     />
-                    <Folder className={`mr-2 ${iconSizes.sm} hover:text-foreground`} />
+                    <Folder className={cn("mr-2", iconSizes.sm, "hover:text-foreground")} />
                     Theo ngày (mặc định)
                   </CommandItem>
                   {folderTreeForSelect.map((node) => (
@@ -153,18 +154,18 @@ export const FolderSelector = ({
           >
             {deleteFolderMutation.isPending &&
             deleteFolderMutation.variables === selectedFolder ? (
-              <Loader2 className={`${iconSizes.sm} animate-spin`} />
+              <Loader2 className={cn(iconSizes.sm, "animate-spin")} />
             ) : (
               <Trash2 className={iconSizes.sm} />
             )}
           </Button>
         )}
       </div>
-      <p className={typography.body.muted.small}>
+      <TypographyPSmallMuted>
         {selectedFolder
           ? `File sẽ được lưu vào: ${selectedFolder}/ (upload trực tiếp vào folder này)`
           : "File sẽ được lưu theo ngày tháng năm (YYYY/MM/DD)"}
-      </p>
+      </TypographyPSmallMuted>
     </div>
   )
 }

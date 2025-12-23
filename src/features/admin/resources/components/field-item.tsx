@@ -1,6 +1,7 @@
 import * as React from "react"
 import { cn } from "@/lib/utils"
-import { typography, iconSizes } from "@/lib/typography"
+import { iconSizes } from "@/lib/typography"
+import { TypographySpanSmallMuted } from "@/components/ui/typography"
 
 export interface FieldItemProps {
   icon: React.ComponentType<{ className?: string }>
@@ -22,7 +23,7 @@ export const FieldItem = ({
       <Icon className={`${iconSizes.sm} text-muted-foreground`} />
     </div>
     <div className="flex-1 min-w-0">
-      <div className={`${typography.body.muted.small} font-medium mb-1.5`}>{label}</div>
+      <TypographySpanSmallMuted className="font-medium mb-1.5">{label}</TypographySpanSmallMuted>
       {children}
     </div>
   </div>

@@ -1,6 +1,7 @@
 "use client";
 
-import { typography, headerConfig, responsiveIconSizes, iconSizes } from "@/lib/typography";
+import { responsiveIconSizes, iconSizes } from "@/lib/typography";
+import { TypographyDescriptionSmall, TypographyH2 } from "@/components/ui/typography";
 
 import {
   Users,
@@ -127,12 +128,12 @@ export const HomeClient = ({ featuredPosts = [] }: HomeClientProps) => {
             <div className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-3">
                 <div>
-                  <h2 className={`${headerConfig.section.className} tracking-tight`}>
+                  <TypographyH2 className="tracking-tight">
                     Bài viết nổi bật
-                  </h2>
-                  <p className={`${typography.description.small} mt-1`}>
+                  </TypographyH2>
+                  <TypographyDescriptionSmall className="mt-1">
                     Các bài viết mới nhất từ nhà trường
-                  </p>
+                  </TypographyDescriptionSmall>
                 </div>
               </div>
               <Link

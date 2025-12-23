@@ -32,7 +32,9 @@ import { useUserDeleteConfirm } from "@/features/admin/users/hooks/use-user-dele
 import { useUserColumns } from "@/features/admin/users/utils/columns"
 import { useUserRowActions } from "@/features/admin/users/utils/row-actions"
 import { resourceLogger } from "@/lib/config"
-import { typography, iconSizes } from "@/lib/typography"
+import { iconSizes } from "@/lib/typography"
+import { TypographySpanSmall, TypographySpanSmallMuted } from "@/components/ui/typography"
+import { cn } from "@/lib/utils"
 
 import type { AdminUsersListParams } from "@/lib/query-keys"
 import type { UserRow, UsersResponse, UsersTableClientProps } from "../types"
@@ -305,15 +307,15 @@ export const UsersTableClient = ({
               const hasSuperAdmin = selectedRows.some((row) => row.email === PROTECTED_SUPER_ADMIN_EMAIL)
               
               return (
-                <div className={`flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 ${typography.body.small}`}>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                   <div className="flex-shrink-0">
-                    <span className="block sm:inline">
+                    <TypographySpanSmall className="block sm:inline">
                       {USER_LABELS.SELECTED_USERS(selectedIds.length)}
-                    </span>
+                    </TypographySpanSmall>
                     {hasSuperAdmin && (
-                      <span className={`block sm:inline ml-0 sm:ml-2 mt-1 sm:mt-0 ${typography.body.muted.small}`}>
+                      <TypographySpanSmallMuted className="block sm:inline ml-0 sm:ml-2 mt-1 sm:mt-0">
                         (Tài khoản super admin không thể xóa)
-                      </span>
+                      </TypographySpanSmallMuted>
                     )}
                   </div>
                   <div className="flex items-center gap-2 flex-wrap">
@@ -516,9 +518,9 @@ export const UsersTableClient = ({
         })
         router.push("/admin/users/new")
       }}
-      className={`h-8 px-3 ${typography.body.small}`}
+      className="h-8 px-3"
     >
-      <Plus className={`mr-2 ${iconSizes.md}`} />
+      <Plus className={cn("mr-2", iconSizes.md)} />
       {USER_LABELS.ADD_NEW}
     </Button>
   ) : undefined

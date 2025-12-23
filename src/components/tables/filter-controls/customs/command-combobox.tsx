@@ -6,6 +6,7 @@
 import { useState, useId, useCallback } from "react"
 import { Check, ChevronsUpDown, X, Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { iconSizes } from "@/lib/typography"
 import { Button } from "@/components/ui/button"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import {
@@ -17,7 +18,6 @@ import {
     CommandList,
 } from "@/components/ui/command"
 import { useClientOnly } from "@/hooks/use-client-only"
-import { typography, iconSizes } from "@/lib/typography"
 import type { ColumnFilterControlProps } from "../types"
 
 export function CommandCombobox<T extends object = object>({
@@ -64,13 +64,13 @@ export function CommandCombobox<T extends object = object>({
             <Button
                 variant="outline"
                 role="combobox"
-                className={cn(`h-7 sm:h-8 w-full justify-between ${typography.body.small} font-normal`, !value && "text-muted-foreground")}
+                className={cn("h-7 sm:h-8 w-full justify-between font-normal", !value && "text-muted-foreground")}
                 disabled={true}
             >
-                <span className={`truncate ${typography.body.small}`}>
+                <span className="truncate">
                     {selectedOption ? selectedOption.label : column.filter.placeholder ?? "Chọn..."}
                 </span>
-                <ChevronsUpDown className={`ml-1 sm:ml-2 ${iconSizes.xs} shrink-0 opacity-50`} />
+                <ChevronsUpDown className={cn("ml-1 sm:ml-2 shrink-0 opacity-50", iconSizes.xs)} />
             </Button>
         )
     }
@@ -83,13 +83,13 @@ export function CommandCombobox<T extends object = object>({
                     role="combobox"
                     aria-expanded={open}
                     aria-controls={filterId}
-                    className={cn(`h-7 sm:h-8 w-full justify-between ${typography.body.small} font-normal`, !value && "text-muted-foreground")}
+                    className={cn("h-7 sm:h-8 w-full justify-between font-normal", !value && "text-muted-foreground")}
                     disabled={disabled}
                 >
-                    <span className={`truncate ${typography.body.small}`}>
+                    <span className="truncate">
                         {selectedOption ? selectedOption.label : column.filter.placeholder ?? "Chọn..."}
                     </span>
-                    <ChevronsUpDown className={`ml-1 sm:ml-2 ${iconSizes.xs} shrink-0 opacity-50`} />
+                    <ChevronsUpDown className={cn("ml-1 sm:ml-2 shrink-0 opacity-50", iconSizes.xs)} />
                 </Button>
             </PopoverTrigger>
             <PopoverContent id={filterId} className="w-[--radix-popover-trigger-width] p-0" align="start">
@@ -123,14 +123,14 @@ export function CommandCombobox<T extends object = object>({
                         )}
                         {isLoading && searchValue && (
                             <div className="absolute right-8 top-1/2 -translate-y-1/2">
-                                <Loader2 className={`${iconSizes.xs} animate-spin text-muted-foreground`} />
+                                <Loader2 className={cn(iconSizes.xs, "animate-spin text-muted-foreground")} />
                             </div>
                         )}
                     </div>
                     <CommandList>
                         {isLoading && options.length === 0 ? (
                             <div className="flex items-center justify-center py-6">
-                                <Loader2 className={`${iconSizes.sm} animate-spin text-muted-foreground`} />
+                                <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
                             </div>
                         ) : (
                             <CommandEmpty>{column.filter.emptyMessage ?? "Không tìm thấy."}</CommandEmpty>
@@ -146,7 +146,7 @@ export function CommandCombobox<T extends object = object>({
                                     setOpen(false)
                                 }}
                             >
-                                <Check className={cn(`mr-2 ${iconSizes.xs}`, value === "" ? "opacity-100" : "opacity-0")} />
+                                <Check className={cn("mr-2", iconSizes.xs, value === "" ? "opacity-100" : "opacity-0")} />
                                 {column.filter.placeholder ?? "Tất cả"}
                             </CommandItem>
                             {options.map((option) => (
@@ -161,7 +161,7 @@ export function CommandCombobox<T extends object = object>({
                                         setOpen(false)
                                     }}
                                 >
-                                    <Check className={cn(`mr-2 ${iconSizes.xs}`, value === option.value ? "opacity-100" : "opacity-0")} />
+                                    <Check className={cn("mr-2 h-3 w-3", value === option.value ? "opacity-100" : "opacity-0")} />
                                     {option.label}
                                 </CommandItem>
                             ))}

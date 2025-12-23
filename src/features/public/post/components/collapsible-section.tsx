@@ -1,7 +1,8 @@
 "use client"
 
 import { ChevronDown } from "lucide-react"
-import { typography, iconSizes } from "@/lib/typography"
+import { iconSizes } from "@/lib/typography"
+import { TypographySpanMuted } from "@/components/ui/typography"
 import { Button } from "@/components/ui/button"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { useState } from "react"
@@ -26,11 +27,11 @@ export const CollapsibleSection = ({ title, icon, children, defaultOpen = true }
         >
           <div className="flex items-center gap-2">
             {icon}
-            <span className={`${typography.body.muted.medium} font-medium`}>{title}</span>
+            <TypographySpanMuted className="font-medium">{title}</TypographySpanMuted>
           </div>
           <ChevronDown
             className={cn(
-              `${iconSizes.sm} text-muted-foreground transition-transform duration-200`,
+              iconSizes.sm, "text-muted-foreground transition-transform duration-200",
               isOpen && "rotate-180"
             )}
           />

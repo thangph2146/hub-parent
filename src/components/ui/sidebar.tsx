@@ -277,7 +277,7 @@ function SidebarTrigger({
       data-slot="sidebar-trigger"
       variant="ghost"
       size="icon"
-      className={cn(`h-7 w-7`, className)}
+      className={cn(iconSizes.xl, className)}
       onClick={(event) => {
         onClick?.(event)
         toggleSidebar()
@@ -487,14 +487,14 @@ function SidebarMenuItem({ className, ...props }: React.ComponentProps<"li">) {
     <li
       data-slot="sidebar-menu-item"
       data-sidebar="menu-item"
-      className={cn("group/menu-item relative", className)}
+      className={cn("group/menu-item relative w-full", className)}
       {...props}
     />
   )
 }
 
 const sidebarMenuButtonVariants = cva(
-  `peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded-md p-2 text-left ${typography.body.small} outline-hidden ring-sidebar-ring transition-[width,height,padding] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 group-has-data-[sidebar=menu-action]/menu-item:pr-8 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-sidebar-accent data-[active=true]:font-medium data-[active=true]:text-sidebar-accent-foreground data-[state=open]:hover:bg-sidebar-accent data-[state=open]:hover:text-sidebar-accent-foreground group-data-[collapsible=icon]:size-8! group-data-[collapsible=icon]:p-2! [&>span:last-child]:truncate [&>svg]:${iconSizes.sm} [&>svg]:shrink-0`,
+  `peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded-md p-2 text-left outline-hidden ring-sidebar-ring transition-[width,height,padding] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 group-has-data-[sidebar=menu-action]/menu-item:pr-8 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-sidebar-accent data-[active=true]:font-medium data-[active=true]:text-sidebar-accent-foreground data-[state=open]:hover:bg-sidebar-accent data-[state=open]:hover:text-sidebar-accent-foreground group-data-[collapsible=icon]:size-8! group-data-[collapsible=icon]:p-2! [&>span:last-child]:truncate [&>svg]:${iconSizes.sm} [&>svg]:shrink-0`,
   {
     variants: {
       variant: {
@@ -505,7 +505,7 @@ const sidebarMenuButtonVariants = cva(
       size: {
         default: `h-8 ${typography.body.small}`,
         sm: `h-7 ${typography.body.small}`,
-        lg: `h-12 ${typography.body.small} group-data-[collapsible=icon]:p-0!`,
+        lg: `h-12 group-data-[collapsible=icon]:p-0!`,
       },
     },
     defaultVariants: {
@@ -537,7 +537,7 @@ function SidebarMenuButton({
       data-sidebar="menu-button"
       data-size={size}
       data-active={isActive}
-      className={cn(sidebarMenuButtonVariants({ variant, size }), className)}
+      className={cn(sidebarMenuButtonVariants({ variant, size }), "w-full", className)}
       {...props}
     />
   )
@@ -680,7 +680,7 @@ function SidebarMenuSubItem({
     <li
       data-slot="sidebar-menu-sub-item"
       data-sidebar="menu-sub-item"
-      className={cn("group/menu-sub-item relative", className)}
+      className={cn("group/menu-sub-item relative w-full", className)}
       {...props}
     />
   )
@@ -711,8 +711,81 @@ function SidebarMenuSubButton({
         size === "sm" && typography.body.small,
         size === "md" && typography.body.small,
         "group-data-[collapsible=icon]:hidden",
+        "w-full",
         className
       )}
+      {...props}
+    />
+  )
+}
+
+function SidebarMenuButtonIcon({
+  className,
+  children,
+  ...props
+}: React.ComponentProps<"div">) {
+  return (
+    <div
+      data-slot="sidebar-menu-button-icon"
+      data-sidebar="menu-button-icon"
+      className={cn(
+        "bg-white flex aspect-square items-center justify-center rounded-lg p-1",
+        iconSizes["2xl"],
+        "[&>svg]:h-8 [&>svg]:w-8 [&>svg]:text-sidebar-primary-foreground",
+        className
+      )}
+      suppressHydrationWarning
+      {...props}
+    >
+      {children}
+    </div>
+  )
+}
+
+function SidebarMenuButtonContent({
+  className,
+  ...props
+}: React.ComponentProps<"div">) {
+  return (
+    <div
+      data-slot="sidebar-menu-button-content"
+      data-sidebar="menu-button-content"
+      className={cn(
+        "grid flex-1 min-w-0 text-left leading-tight",
+        typography.body.medium,
+        className
+      )}
+      suppressHydrationWarning
+      {...props}
+    />
+  )
+}
+
+function SidebarMenuButtonTitle({
+  className,
+  ...props
+}: React.ComponentProps<"span">) {
+  return (
+    <span
+      data-slot="sidebar-menu-button-title"
+      data-sidebar="menu-button-title"
+      className={cn("truncate font-medium", className)}
+      suppressHydrationWarning
+      {...props}
+    />
+  )
+}
+
+function SidebarMenuButtonDescription({
+  className,
+  ...props
+}: React.ComponentProps<"span">) {
+  return (
+    <span
+      data-slot="sidebar-menu-button-description"
+      data-sidebar="menu-button-description"
+      className={cn("truncate", typography.body.small, className)}
+      suppressHydrationWarning
       {...props}
     />
   )
@@ -733,6 +806,10 @@ export {
   SidebarMenuAction,
   SidebarMenuBadge,
   SidebarMenuButton,
+  SidebarMenuButtonContent,
+  SidebarMenuButtonDescription,
+  SidebarMenuButtonIcon,
+  SidebarMenuButtonTitle,
   SidebarMenuItem,
   SidebarMenuSkeleton,
   SidebarMenuSub,

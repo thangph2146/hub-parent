@@ -18,7 +18,8 @@ import { NotificationItem } from "./notification-item"
 import { Separator } from "@/components/ui/separator"
 import { isSuperAdmin } from "@/lib/permissions"
 import { logger } from "@/lib/config/logger"
-import { typography, headerConfig, iconSizes } from "@/lib/typography"
+import { typography, iconSizes } from "@/lib/typography"
+import { TypographyH3 } from "@/components/ui/typography"
 
 export function NotificationBell() {
   const router = useRouter()
@@ -268,7 +269,7 @@ export function NotificationBell() {
       >
         <div className="flex items-center justify-between border-b px-4 py-3">
           <div className="flex items-center gap-2">
-            <h2 className={headerConfig.subsection.className}>Thông báo</h2>
+            <TypographyH3>Thông báo</TypographyH3>
             {isSocketConnected ? (
               <Wifi className={`${iconSizes.sm} text-green-500`} />
             ) : (

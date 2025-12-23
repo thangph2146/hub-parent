@@ -18,7 +18,7 @@ import Link from "next/link";
 import { appConfig } from "@/lib/config";
 import { appFeatures } from "@/lib/config/app-features";
 import { getResourceMainRoute } from "@/lib/permissions/route-helpers";
-import { typography, headerConfig, iconSizes, responsiveIconSizes } from "@/lib/typography";
+import { TypographyH3, TypographyH4, TypographyP, TypographyPSmall, TypographySpan, IconSize } from "@/components/ui/typography";
 import { Logo } from "../../../../public/svg/Logo"
 
 /**
@@ -59,7 +59,7 @@ export function PublicFooter() {
       {/* Background Pattern */}
       <div className="absolute inset-0 bg-grid-white/[0.02] bg-[size:20px_20px] pointer-events-none" />
       <div className="absolute inset-0 bg-primary pointer-events-none" />
-      
+
       <div className="relative container mx-auto px-4 sm:px-6 lg:px-8 py-16">
         {/* Main Footer Content */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 mb-16">
@@ -71,15 +71,15 @@ export function PublicFooter() {
                 <Logo className="h-28 w-28 text-blue-100" />
               </div>
               <div className="space-y-2">
-                <h2 className={`${headerConfig.subsection.className}`}>
+                <TypographyH3>
                   Trường Đại học Ngân hàng
-                </h2>
-                <p className={`${typography.body.medium}`}>
+                </TypographyH3>
+                <TypographyP>
                   Thành Phố Hồ Chí Minh
-                </p>
-                <p className={`${typography.body.small}`}>
+                </TypographyP>
+                <TypographyPSmall>
                   {appConfig.description}
-                </p>
+                </TypographyPSmall>
               </div>
             </div>
 
@@ -87,32 +87,40 @@ export function PublicFooter() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {/* Locations */}
               <div className="space-y-2">
-                <h3 className={`${headerConfig.card.className} text-white flex items-center gap-2 mb-1`}>
-                  <Building2 className={`${responsiveIconSizes.medium} text-blue-400`} />
+                <TypographyH4 className="text-white flex items-center gap-2 mb-1">
+                  <IconSize size="md" className="h-5 w-5 sm:h-6 sm:w-6">
+                    <Building2 className="text-blue-400" />
+                  </IconSize>
                   Cơ sở đào tạo
-                </h3>
+                </TypographyH4>
                 <div className="space-y-4">
                   <div className="group mb-1">
-                    <h4 className={`${typography.body.medium} font-medium text-blue-200 mb-1`}>Trụ sở chính</h4>
+                    <TypographyP className="font-medium text-blue-200 mb-1">Trụ sở chính</TypographyP>
                     <div className="flex items-start gap-3 text-white/80 group-hover:text-white transition-colors">
-                      <MapPin className={`${iconSizes.sm} flex-shrink-0 mt-0.5 text-blue-400`} />
-                      <span className={`${typography.body.medium} leading-relaxed`}>36 Tôn Thất Đạm, Phường Sài Gòn, TP.Hồ Chí Minh</span>
+                      <IconSize size="sm" className="flex-shrink-0 mt-0.5">
+                        <MapPin className="text-blue-400" />
+                      </IconSize>
+                      <TypographyP className="leading-relaxed">36 Tôn Thất Đạm, Phường Sài Gòn, TP.Hồ Chí Minh</TypographyP>
                     </div>
                   </div>
-                  
+
                   <div className="group mb-1">
-                    <h4 className={`${typography.body.medium} font-medium text-blue-200 mb-1`}>Cơ sở Hàm Nghi</h4>
+                    <TypographyP className="font-medium text-blue-200 mb-1">Cơ sở Hàm Nghi</TypographyP>
                     <div className="flex items-start gap-3 text-white/80 group-hover:text-white transition-colors">
-                      <MapPin className={`${iconSizes.sm} flex-shrink-0 mt-0.5 text-blue-400`} />
-                      <span className={`${typography.body.medium} leading-relaxed`}>39 Hàm Nghi, Phường Sài Gòn, TP. Hồ Chí Minh</span>
+                      <IconSize size="sm" className="flex-shrink-0 mt-0.5">
+                        <MapPin className="text-blue-400" />
+                      </IconSize>
+                      <TypographyP className="leading-relaxed">39 Hàm Nghi, Phường Sài Gòn, TP. Hồ Chí Minh</TypographyP>
                     </div>
                   </div>
-                  
+
                   <div className="group mb-1">
-                    <h4 className={`${typography.body.medium} font-medium text-blue-200 mb-1`}>Cơ sở Hoàng Diệu</h4>
+                    <TypographyP className="font-medium text-blue-200 mb-1">Cơ sở Hoàng Diệu</TypographyP>
                     <div className="flex items-start gap-3 text-white/80 group-hover:text-white transition-colors">
-                      <MapPin className={`${iconSizes.sm} flex-shrink-0 mt-0.5 text-blue-400`} />
-                      <span className={`${typography.body.medium} leading-relaxed`}>56 Hoàng Diệu 2, Phường Thủ Đức, TP. Hồ Chí Minh</span>
+                      <IconSize size="sm" className="flex-shrink-0 mt-0.5">
+                        <MapPin className="text-blue-400" />
+                      </IconSize>
+                      <TypographyP className="leading-relaxed">56 Hoàng Diệu 2, Phường Thủ Đức, TP. Hồ Chí Minh</TypographyP>
                     </div>
                   </div>
                 </div>
@@ -120,47 +128,49 @@ export function PublicFooter() {
 
               {/* Contact Details */}
               <div className="space-y-2 mb-2">
-                <h3 className={`${headerConfig.card.className} text-white flex items-center gap-2 mb-1`}>
-                  <GraduationCap className={`${responsiveIconSizes.medium} text-blue-400`} />
+                <TypographyH4 className="text-white flex items-center gap-2 mb-1">
+                  <IconSize size="md" className="h-5 w-5 sm:h-6 sm:w-6">
+                    <GraduationCap className="text-blue-400" />
+                  </IconSize>
                   Liên hệ
-                </h3>
+                </TypographyH4>
                 <div className="space-y-2">
                   <Link
                     href="mailto:dhnhtphcm@hub.edu.vn"
                     className="flex items-center gap-3 text-white/80 hover:text-white transition-all duration-200 group mb-1"
                   >
-                    <div className={`${responsiveIconSizes.large} rounded-lg bg-white/10 flex items-center justify-center group-hover:bg-white/20 transition-colors`}>
-                      <Mail className={`${iconSizes.sm} text-blue-400`} />
-                    </div>
+                    <IconSize size="lg" className="h-6 w-6 sm:h-8 sm:w-8 rounded-lg bg-white/10 flex items-center justify-center group-hover:bg-white/20 transition-colors">
+                      <Mail className="text-blue-400" />
+                    </IconSize>
                     <div>
-                      <p className={`${typography.body.medium} font-medium`}>Email</p>
-                      <p className={typography.body.medium}>dhnhtphcm@hub.edu.vn</p>
+                      <TypographyP className="font-medium">Email</TypographyP>
+                      <TypographyP>dhnhtphcm@hub.edu.vn</TypographyP>
                     </div>
                   </Link>
-                  
+
                   <Link
                     href="tel:0888353488"
                     className="flex items-center gap-3 text-white/80 hover:text-white transition-all duration-200 group mb-1"
                   >
-                    <div className={`${responsiveIconSizes.large} rounded-lg bg-white/10 flex items-center justify-center group-hover:bg-white/20 transition-colors`}>
-                      <Phone className={`${iconSizes.sm} text-blue-400`} />
-                    </div>
+                    <IconSize size="lg" className="h-6 w-6 sm:h-8 sm:w-8 rounded-lg bg-white/10 flex items-center justify-center group-hover:bg-white/20 transition-colors">
+                      <Phone className="text-blue-400" />
+                    </IconSize>
                     <div>
-                      <p className={`${typography.body.medium} font-medium`}>Tuyển sinh</p>
-                      <p className={typography.body.medium}>0888353488</p>
+                      <TypographyP className="font-medium">Tuyển sinh</TypographyP>
+                      <TypographyP>0888353488</TypographyP>
                     </div>
                   </Link>
-                  
+
                   <Link
                     href="tel:02838212430"
                     className="flex items-center gap-3 text-white/80 hover:text-white transition-all duration-200 group mb-1"
                   >
-                    <div className={`${responsiveIconSizes.large} rounded-lg bg-white/10 flex items-center justify-center group-hover:bg-white/20 transition-colors`}>
-                      <Phone className={`${iconSizes.sm} text-blue-400`} />
-                    </div>
+                    <IconSize size="lg" className="h-6 w-6 sm:h-8 sm:w-8 rounded-lg bg-white/10 flex items-center justify-center group-hover:bg-white/20 transition-colors">
+                      <Phone className="text-blue-400" />
+                    </IconSize>
                     <div>
-                      <p className={`${typography.body.medium} font-medium`}>Đào tạo</p>
-                      <p className={typography.body.medium}>(028) 38 212 430</p>
+                      <TypographyP className="font-medium">Đào tạo</TypographyP>
+                      <TypographyP>(028) 38 212 430</TypographyP>
                     </div>
                   </Link>
                 </div>
@@ -172,79 +182,93 @@ export function PublicFooter() {
           <div className="space-y-2 mb-2">
             {/* Quick Links */}
             <div className="space-y-6">
-              <h3 className={`${headerConfig.card.className} text-white flex items-center gap-2 mb-1`}>
+              <TypographyH4 className="text-white flex items-center gap-2 mb-1">
                 <div className="h-1 w-8 rounded-full bg-white" />
                 Liên kết nhanh
-              </h3>
+              </TypographyH4>
               <nav className="space-y-3">
                 <Link
                   href={FOOTER_ROUTES.home}
                   className="flex items-center gap-2 text-white/80 hover:text-white transition-all duration-200 group mb-1"
                 >
-                  <ArrowRight className={`${iconSizes.sm} group-hover:translate-x-1 transition-transform`} />
-                  <span className={typography.body.medium}>Trang chủ</span>
+                  <IconSize size="sm" className="group-hover:translate-x-1 transition-transform">
+                    <ArrowRight />
+                  </IconSize>
+                  <TypographySpan>Trang chủ</TypographySpan>
                 </Link>
                 <Link
                   href={FOOTER_ROUTES.blog}
                   className="flex items-center gap-2 text-white/80 hover:text-white transition-all duration-200 group mb-1"
                 >
-                  <ArrowRight className={`${iconSizes.sm} group-hover:translate-x-1 transition-transform`} />
-                  <span className={typography.body.medium}>Blog</span>
+                  <IconSize size="sm" className="group-hover:translate-x-1 transition-transform">
+                    <ArrowRight />
+                  </IconSize>
+                  <TypographySpan>Blog</TypographySpan>
                 </Link>
                 <Link
                   href={FOOTER_ROUTES.categories}
                   className="flex items-center gap-2 text-white/80 hover:text-white transition-all duration-200 group mb-1"
                 >
-                  <ArrowRight className={`${iconSizes.sm} group-hover:translate-x-1 transition-transform`} />
-                  <span className={typography.body.medium}>Danh mục</span>
+                  <IconSize size="sm" className="group-hover:translate-x-1 transition-transform">
+                    <ArrowRight />
+                  </IconSize>
+                  <TypographySpan>Danh mục</TypographySpan>
                 </Link>
               </nav>
             </div>
 
             {/* Resources */}
             <div className="space-y-2 mb-2">
-              <h3 className={`${headerConfig.card.className} text-white flex items-center gap-2 mb-1`}>
+              <TypographyH4 className="text-white flex items-center gap-2 mb-1">
                 <div className="h-1 w-8 rounded-full bg-white" />
                 Tài nguyên
-              </h3>
+              </TypographyH4>
               <nav className="space-y-3">
                 <Link
                   href={FOOTER_ROUTES.admin}
                   className="flex items-center gap-2 text-white/80 hover:text-white transition-all duration-200 group mb-1"
                 >
-                  <ArrowRight className={`${iconSizes.sm} group-hover:translate-x-1 transition-transform`} />
-                  <span className={typography.body.medium}>Quản trị</span>
+                  <IconSize size="sm" className="group-hover:translate-x-1 transition-transform">
+                    <ArrowRight />
+                  </IconSize>
+                  <TypographySpan>Quản trị</TypographySpan>
                 </Link>
                 <Link
                   href="#"
                   className="flex items-center gap-2 text-white/80 hover:text-white transition-all duration-200 group mb-1"
                 >
-                  <ArrowRight className={`${iconSizes.sm} group-hover:translate-x-1 transition-transform`} />
-                  <span className={typography.body.medium}>Hướng dẫn sử dụng</span>
+                  <IconSize size="sm" className="group-hover:translate-x-1 transition-transform">
+                    <ArrowRight />
+                  </IconSize>
+                  <TypographySpan>Hướng dẫn sử dụng</TypographySpan>
                 </Link>
                 <Link
                   href="#"
                   className="flex items-center gap-2 text-white/80 hover:text-white transition-all duration-200 group mb-1"
                 >
-                  <ArrowRight className={`${iconSizes.sm} group-hover:translate-x-1 transition-transform`} />
-                  <span className={typography.body.medium}>Điều khoản dịch vụ</span>
+                  <IconSize size="sm" className="group-hover:translate-x-1 transition-transform">
+                    <ArrowRight />
+                  </IconSize>
+                  <TypographySpan>Điều khoản dịch vụ</TypographySpan>
                 </Link>
                 <Link
                   href="#"
                   className="flex items-center gap-2 text-white/80 hover:text-white transition-all duration-200 group mb-1"
                 >
-                  <ArrowRight className={`${iconSizes.sm} group-hover:translate-x-1 transition-transform`} />
-                  <span className={typography.body.medium}>Chính sách bảo mật</span>
+                  <IconSize size="sm" className="group-hover:translate-x-1 transition-transform">
+                    <ArrowRight />
+                  </IconSize>
+                  <TypographySpan>Chính sách bảo mật</TypographySpan>
                 </Link>
               </nav>
             </div>
 
             {/* Social Media */}
             <div className="space-y-2 mb-2">
-              <h3 className={`${headerConfig.card.className} text-white flex items-center gap-2 mb-1`}>
+              <TypographyH4 className="text-white flex items-center gap-2 mb-1">
                 <div className="h-1 w-8 rounded-full bg-white" />
                 Kết nối
-              </h3>
+              </TypographyH4>
               <div className="flex items-center gap-3">
                 {appConfig.social.facebook && (
                   <Link
@@ -254,7 +278,9 @@ export function PublicFooter() {
                     aria-label="Facebook - Trường Đại học Ngân hàng TP.HCM"
                     className="group flex items-center justify-center h-12 w-12 rounded-xl bg-white/10 hover:bg-blue-500/20 transition-all duration-300 hover:scale-110"
                   >
-                    <Facebook className={`${responsiveIconSizes.medium} text-white/80 group-hover:text-white`} />
+                    <IconSize size="md" className="h-5 w-5 sm:h-6 sm:w-6">
+                      <Facebook className="text-white/80 group-hover:text-white" />
+                    </IconSize>
                   </Link>
                 )}
                 {appConfig.social.twitter && (
@@ -265,7 +291,9 @@ export function PublicFooter() {
                     aria-label="Twitter - Trường Đại học Ngân hàng TP.HCM"
                     className="group flex items-center justify-center h-12 w-12 rounded-xl bg-white/10 hover:bg-sky-500/20 transition-all duration-300 hover:scale-110"
                   >
-                    <Twitter className={`${responsiveIconSizes.medium} text-white/80 group-hover:text-white`} />
+                    <IconSize size="md" className="h-5 w-5 sm:h-6 sm:w-6">
+                      <Twitter className="text-white/80 group-hover:text-white" />
+                    </IconSize>
                   </Link>
                 )}
                 {appConfig.social.linkedin && (
@@ -276,7 +304,9 @@ export function PublicFooter() {
                     aria-label="LinkedIn - Trường Đại học Ngân hàng TP.HCM"
                     className="group flex items-center justify-center h-12 w-12 rounded-xl bg-white/10 hover:bg-blue-600/20 transition-all duration-300 hover:scale-110"
                   >
-                    <Linkedin className={`${responsiveIconSizes.medium} text-white/80 group-hover:text-white`} />
+                    <IconSize size="md" className="h-5 w-5 sm:h-6 sm:w-6">
+                      <Linkedin className="text-white/80 group-hover:text-white" />
+                    </IconSize>
                   </Link>
                 )}
                 <Link
@@ -286,7 +316,9 @@ export function PublicFooter() {
                   aria-label="Instagram - Trường Đại học Ngân hàng TP.HCM"
                   className="group flex items-center justify-center h-12 w-12 rounded-xl bg-white/10 hover:bg-pink-500/20 transition-all duration-300 hover:scale-110"
                 >
-                  <Instagram className={`${responsiveIconSizes.medium} text-white/80 group-hover:text-white`} />
+                  <IconSize size="md" className="h-5 w-5 sm:h-6 sm:w-6">
+                    <Instagram className="text-white/80 group-hover:text-white" />
+                  </IconSize>
                 </Link>
                 <Link
                   href={appConfig.social.youtube}
@@ -295,7 +327,9 @@ export function PublicFooter() {
                   aria-label="YouTube - Trường Đại học Ngân hàng TP.HCM"
                   className="group flex items-center justify-center h-12 w-12 rounded-xl bg-white/10 hover:bg-red-500/20 transition-all duration-300 hover:scale-110"
                 >
-                  <Youtube className={`${responsiveIconSizes.medium} text-white/80 group-hover:text-white`} />
+                  <IconSize size="md" className="h-5 w-5 sm:h-6 sm:w-6">
+                    <Youtube className="text-white/80 group-hover:text-white" />
+                  </IconSize>
                 </Link>
               </div>
             </div>
@@ -307,31 +341,33 @@ export function PublicFooter() {
 
         {/* Bottom Footer */}
         <div className="flex flex-col lg:flex-row items-center justify-between gap-6 text-white/60">
-          <div className={`flex flex-col sm:flex-row items-center gap-2 ${typography.body.medium}`}>
-            <span>© {currentYear} {appConfig.namePublic}.</span>
-            <span className="hidden sm:inline">Được phát triển bởi</span>
-            <span className="font-semibold text-white hover:text-blue-300 transition-colors cursor-pointer">
+          <div className="flex flex-col sm:flex-row items-center gap-2">
+            <TypographySpan>© {currentYear} {appConfig.namePublic}.</TypographySpan>
+            <TypographySpan className="hidden sm:inline">Được phát triển bởi</TypographySpan>
+            <TypographySpan className="font-semibold text-white hover:text-blue-300 transition-colors cursor-pointer">
               {appConfig.company}
-            </span>
-            <span className="font-semibold text-white hover:text-blue-300 transition-colors cursor-pointer">Trường Đại học Ngân hàng TP.Hồ Chí Minh</span>
+            </TypographySpan>
+            <TypographySpan className="font-semibold text-white hover:text-blue-300 transition-colors cursor-pointer">Trường Đại học Ngân hàng TP.Hồ Chí Minh</TypographySpan>
           </div>
 
 
-          <div className={`flex items-center gap-6 ${typography.body.medium}`}>
-            <Link href={FOOTER_ROUTES.about} className={`hover:text-white transition-colors ${typography.body.medium}`}>
-              Về chúng tôi
+          <div className="flex items-center gap-6">
+            <Link href={FOOTER_ROUTES.about} className="hover:text-white transition-colors">
+              <TypographySpan>Về chúng tôi</TypographySpan>
             </Link>
             <span className="text-white/20">•</span>
-            <Link href={FOOTER_ROUTES.contact} className={`hover:text-white transition-colors ${typography.body.medium}`}>
-              Liên hệ
+            <Link href={FOOTER_ROUTES.contact} className="hover:text-white transition-colors">
+              <TypographySpan>Liên hệ</TypographySpan>
             </Link>
             <span className="text-white/20">•</span>
-            <Link 
+            <Link
               href={FOOTER_ROUTES.help}
-              className={`hover:text-white transition-colors flex items-center gap-1 ${typography.body.medium}`}
+              className="hover:text-white transition-colors flex items-center gap-1"
             >
-              Trợ giúp
-              <ExternalLink className={iconSizes.xs} />
+              <TypographySpan>Trợ giúp</TypographySpan>
+              <IconSize size="xs">
+                <ExternalLink />
+              </IconSize>
             </Link>
           </div>
         </div>

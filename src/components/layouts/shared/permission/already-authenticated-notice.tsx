@@ -10,9 +10,11 @@
 import { useRouter, useSearchParams } from "next/navigation"
 import { CheckCircle2, ArrowLeft, LayoutDashboard } from "lucide-react"
 import { motion } from "framer-motion"
-import { typography, headerConfig, iconSizes } from "@/lib/typography"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
+import { TypographyH1, TypographyPMuted } from "@/components/ui/typography"
+import { iconSizes } from "@/lib/typography"
+import { cn } from "@/lib/utils"
 
 interface AlreadyAuthenticatedNoticeProps {
   adminUrl?: string
@@ -144,7 +146,7 @@ export function AlreadyAuthenticatedNotice({ adminUrl = "/admin/dashboard" }: Al
                       repeatDelay: 1,
                     }}
                   >
-                    <CheckCircle2 className={`${iconSizes["3xl"]} text-green-600 dark:text-green-500`} strokeWidth={2.5} />
+                    <CheckCircle2 className={cn(iconSizes["3xl"], "text-green-600 dark:text-green-500")} strokeWidth={2.5} />
                   </motion.div>
                   
                   {/* Dashboard icon overlay */}
@@ -159,7 +161,7 @@ export function AlreadyAuthenticatedNotice({ adminUrl = "/admin/dashboard" }: Al
                     }}
                   >
                     <div className="rounded-full bg-background border-2 border-green-500/30 p-1.5 shadow-md">
-                      <LayoutDashboard className={`${iconSizes.sm} text-green-600 dark:text-green-500`} strokeWidth={2} />
+                      <LayoutDashboard className={cn(iconSizes.sm, "text-green-600 dark:text-green-500")} strokeWidth={2} />
                     </div>
                   </motion.div>
                 </div>
@@ -167,12 +169,12 @@ export function AlreadyAuthenticatedNotice({ adminUrl = "/admin/dashboard" }: Al
 
               {/* Title và Message */}
               <motion.div variants={itemVariants} className="space-y-4">
-                <h1 className={`${headerConfig.main.className} tracking-tight bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text`}>
+                <TypographyH1 className="tracking-tight bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text">
                   Đã đăng nhập
-                </h1>
-                <p className={`${typography.body.muted.medium} max-w-md leading-relaxed mx-auto`}>
+                </TypographyH1>
+                <TypographyPMuted className="max-w-md mx-auto">
                   Bạn đã đăng nhập. Vui lòng quay lại trang trước hoặc đi đến trang quản trị.
-                </p>
+                </TypographyPMuted>
               </motion.div>
 
               {/* Action Buttons */}
@@ -189,7 +191,7 @@ export function AlreadyAuthenticatedNotice({ adminUrl = "/admin/dashboard" }: Al
                     onClick={handleGoBack}
                     className="w-full sm:w-auto min-w-[160px] h-11 shadow-sm hover:shadow-md transition-shadow"
                   >
-                    <ArrowLeft className={`mr-2 ${iconSizes.sm}`} />
+                    <ArrowLeft className={cn(iconSizes.sm, "mr-2")} />
                     Quay lại
                   </Button>
                 </motion.div>
@@ -202,7 +204,7 @@ export function AlreadyAuthenticatedNotice({ adminUrl = "/admin/dashboard" }: Al
                     onClick={handleGoToAdmin}
                     className="w-full sm:w-auto min-w-[160px] h-11 shadow-md hover:shadow-lg transition-shadow bg-green-600 hover:bg-green-700 text-white"
                   >
-                    <LayoutDashboard className={`mr-2 ${iconSizes.sm}`} />
+                    <LayoutDashboard className={cn(iconSizes.sm, "mr-2")} />
                     Trang quản trị
                   </Button>
                 </motion.div>

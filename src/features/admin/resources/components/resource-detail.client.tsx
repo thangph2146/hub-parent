@@ -24,7 +24,8 @@ import { useResourceSegment } from "@/hooks/use-resource-segment";
 import { applyResourceSegmentToPath } from "@/lib/permissions";
 import { useResourceNavigation } from "../hooks";
 import { logger } from "@/lib/config/logger";
-import { typography, headerConfig, iconSizes } from "@/lib/typography";
+import { iconSizes } from "@/lib/typography";
+import { TypographySpanSmall, TypographySpanMuted, TypographyH1, TypographyPMuted } from "@/components/ui/typography";
 
 export interface ResourceDetailField<T = unknown> {
   name: keyof T | string;
@@ -149,16 +150,16 @@ export const ResourceDetailClient = <T extends Record<string, unknown>>({
         case "boolean": {
           const boolValue = Boolean(value);
           return (
-            <span
+            <TypographySpanSmall
               className={cn(
-                `inline-flex items-center rounded-full px-2 py-1 ${typography.body.small} font-medium`,
+                "inline-flex items-center rounded-full px-2 py-1 font-medium",
                 boolValue
                   ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
                   : "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300"
               )}
             >
               {boolValue ? "Có" : "Không"}
-            </span>
+            </TypographySpanSmall>
           );
         }
         case "date":
@@ -239,19 +240,19 @@ export const ResourceDetailClient = <T extends Record<string, unknown>>({
             !inSection && "border-b border-border/50 last:border-0"
           )}
         >
-          <FieldTitle className={`text-muted-foreground ${typography.body.small} font-medium mb-1`}>
+          <FieldTitle className="text-muted-foreground font-medium mb-1">
             {field.label}
           </FieldTitle>
           <FieldContent>
             {isCustomRender || isComplexNode ? (
               formattedValue
             ) : (
-              <div className={`${typography.body.medium} break-words break-all whitespace-pre-wrap`}>
+              <TypographySpanMuted className="break-words break-all whitespace-pre-wrap">
                 {formattedValue}
-              </div>
+              </TypographySpanMuted>
             )}
             {field.description && (
-              <FieldDescription className={`${typography.body.small} mt-1`}>
+              <FieldDescription className="mt-1">
                 {field.description}
               </FieldDescription>
             )}
@@ -321,11 +322,11 @@ export const ResourceDetailClient = <T extends Record<string, unknown>>({
       return (
         <Card key={sectionId} className="h-fit">
           <CardHeader className="pb-3">
-            <CardTitle className={`${headerConfig.card.className}`}>
+            <CardTitle>
               {sectionInfo?.title || "Thông tin chi tiết"}
             </CardTitle>
             {sectionInfo?.description && (
-              <CardDescription className={`mt-0.5 ${typography.body.small}`}>
+              <CardDescription className="mt-0.5">
                 {sectionInfo.description}
               </CardDescription>
             )}
@@ -413,14 +414,14 @@ export const ResourceDetailClient = <T extends Record<string, unknown>>({
               </Button>
             )}
             {title && (
-              <h1 className={`${typography.heading.h1} tracking-tight`}>
+              <TypographyH1 className="tracking-tight">
                 {title}
-              </h1>
+              </TypographyH1>
             )}
             {description && (
-              <p className={`${typography.body.muted.medium} max-w-2xl`}>
+              <TypographyPMuted className="max-w-2xl">
                 {description}
-              </p>
+              </TypographyPMuted>
             )}
           </div>
           {/* Actions right */}
@@ -470,11 +471,11 @@ export const ResourceDetailClient = <T extends Record<string, unknown>>({
               {ungrouped.length > 0 && (
                 <Card>
                   <CardHeader className="pb-3">
-                    <CardTitle className={`${typography.heading.h4} font-semibold`}>
+                    <CardTitle className="font-semibold">
                       {fieldsTitle}
                     </CardTitle>
                     {fieldsDesc && (
-                      <CardDescription className={`mt-0.5 ${typography.body.small}`}>
+                      <CardDescription className="mt-0.5">
                         {fieldsDesc}
                       </CardDescription>
                     )}
@@ -502,11 +503,11 @@ export const ResourceDetailClient = <T extends Record<string, unknown>>({
                   {sections.map((section, i) => (
                     <Card key={i} className="h-fit">
                       <CardHeader className="pb-3">
-                        <CardTitle className={`${typography.heading.h4} font-semibold`}>
+                        <CardTitle className="font-semibold">
                           {section.title}
                         </CardTitle>
                         {section.description && (
-                          <CardDescription className={`mt-0.5 ${typography.body.small}`}>
+                          <CardDescription className="mt-0.5">
                             {section.description}
                           </CardDescription>
                         )}
