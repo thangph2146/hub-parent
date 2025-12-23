@@ -298,7 +298,7 @@ export function TypographyDescriptionLarge({
 
 /**
  * Icon Size Helper Component
- * Wrapper để đảm bảo icon sử dụng đúng size từ typography config
+ * Clone element và merge className để đảm bảo icon sử dụng đúng size từ typography config
  */
 export interface IconSizeProps {
   size?: keyof typeof iconSizes
@@ -307,6 +307,14 @@ export interface IconSizeProps {
 }
 
 export function IconSize({ size = "md", className, children }: IconSizeProps) {
+  // Clone element và merge className trực tiếp vào icon component
+  if (React.isValidElement(children)) {
+    return React.cloneElement(children as React.ReactElement<{ className?: string }>, {
+      className: cn(iconSizes[size], className, (children as React.ReactElement<{ className?: string }>).props?.className),
+    })
+  }
+  
+  // Fallback: nếu không phải valid element, wrap trong span
   return (
     <span className={cn(iconSizes[size], className)}>
       {children}

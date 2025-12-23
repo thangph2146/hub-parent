@@ -11,7 +11,7 @@ import {
     useTransition,
     type ReactNode,
 } from "react"
-import { ChevronLeft, ChevronRight, Eye, EyeOff } from "lucide-react"
+import { ChevronLeft, ChevronRight, Eye, EyeOff, Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
@@ -30,8 +30,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
-import { TypographySpanSmallMuted, TypographyPMuted } from "@/components/ui/typography"
-import { iconSizes } from "@/lib/typography"
+import { TypographySpanSmallMuted, TypographyPMuted, IconSize } from "@/components/ui/typography"
 import { useDebouncedCallback } from "@/hooks/use-debounced-callback"
 import { ColumnFilterControl, type ColumnFilterConfig } from "./filter-controls"
 
@@ -460,12 +459,16 @@ export function DataTable<T extends object>({
                             >
                                 {showFilters ? (
                                     <>
-                                        <EyeOff className={cn(iconSizes.md, "sm:mr-2")} />
+                                        <IconSize size="md" className="sm:mr-2">
+                                          <EyeOff />
+                                        </IconSize>
                                         <span className="inline">Ẩn bộ lọc</span>
                                     </>
                                 ) : (
                                     <>
-                                        <Eye className={cn(iconSizes.md, "sm:mr-2")} />
+                                        <IconSize size="md" className="sm:mr-2">
+                                          <Eye />
+                                        </IconSize>
                                         <span className="inline">Hiện bộ lọc</span>
                                     </>
                                 )}
@@ -502,7 +505,9 @@ export function DataTable<T extends object>({
                 {isPending && (
                     <div className="absolute inset-0 bg-background/80 backdrop-blur-[2px] z-10 flex items-center justify-center rounded-md">
                         <div className="flex flex-col items-center gap-3">
-                            <div className={cn(iconSizes["2xl"], "animate-spin rounded-full border-4 border-primary border-t-transparent")} />
+                            <IconSize size="2xl" className="animate-spin rounded-full border-4 border-primary border-t-transparent">
+                                <Loader2 className="animate-spin" />
+                            </IconSize>
                             <TypographyPMuted className="font-medium">Đang tải dữ liệu...</TypographyPMuted>
                         </div>
                     </div>
@@ -744,7 +749,9 @@ function TableSummary<T extends object>({
                     onClick={() => onPageChange(result.page - 1, totalPages)}
                     disabled={isPending || result.page <= 1}
                 >
-                    <ChevronLeft className={cn(iconSizes.md, "sm:mr-2")} />
+                    <IconSize size="md" className="sm:mr-2">
+                      <ChevronLeft />
+                    </IconSize>
                     <span className="hidden sm:inline">Trước</span>
                 </Button>
                 <TypographySpanSmallMuted className="min-w-[80px] sm:min-w-[100px] text-center">
@@ -760,7 +767,9 @@ function TableSummary<T extends object>({
                     className="px-2 sm:px-3"
                 >
                     <span className="hidden sm:inline">Sau</span>
-                    <ChevronRight className={cn(iconSizes.md, "sm:ml-2")} />
+                    <IconSize size="md" className="sm:ml-2">
+                      <ChevronRight />
+                    </IconSize>
                 </Button>
             </div>
         </div>

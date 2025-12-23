@@ -48,9 +48,6 @@ const iconMap: Record<string, LucideIcon> = {
   support: LifeBuoy,
 };
 
-const createIcon = (Icon: LucideIcon) =>
-  React.createElement(Icon, { className: iconSizes.sm });
-
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -80,8 +77,7 @@ import {
   getResourceSegmentForRoles,
 } from "@/lib/permissions";
 import { cn } from "@/lib/utils";
-import { iconSizes } from "@/lib/typography";
-import { TypographySpanSmallMuted, TypographySpanMuted } from "@/components/ui/typography";
+import { TypographySpanSmallMuted, TypographySpanMuted, IconSize } from "@/components/ui/typography";
 import { useClientOnly } from "@/hooks/use-client-only";
 import { useUnreadCounts } from "@/hooks/use-unread-counts";
 import { useNotificationsSocketBridge } from "@/hooks/use-notifications";
@@ -283,7 +279,11 @@ export function NavUser({ className }: { className?: string }) {
       // Tạo lại icon dựa trên feature key
       const iconKey = item.key || "";
       const IconComponent = iconMap[iconKey];
-      const icon = IconComponent ? createIcon(IconComponent) : item.icon;
+      const icon = IconComponent ? (
+        <IconSize size="sm">
+          <IconComponent />
+        </IconSize>
+      ) : item.icon;
 
       let updatedItem = {
         ...item,
@@ -398,7 +398,9 @@ export function NavUser({ className }: { className?: string }) {
             )}
           >
             <div className="flex items-center gap-2">
-              <BadgeCheck className={cn(!isInSidebar && "mr-2", iconSizes.md)} />
+              <IconSize size="md" className={cn(!isInSidebar && "mr-2")}>
+                <BadgeCheck />
+              </IconSize>
               <span>Tài khoản</span>
             </div>
           </Link>
@@ -428,9 +430,9 @@ export function NavUser({ className }: { className?: string }) {
                         )}
                       >
                         <div className="flex items-center gap-2">
-                          <LayoutDashboard
-                            className={cn(!isInSidebar && "mr-2", iconSizes.md)}
-                          />
+                          <IconSize size="md" className={cn(!isInSidebar && "mr-2")}>
+                            <LayoutDashboard />
+                          </IconSize>
                           <span>{item.title}</span>
                         </div>
                         {showBadge && (
@@ -494,9 +496,9 @@ export function NavUser({ className }: { className?: string }) {
         }}
         className="w-full text-destructive focus:text-destructive data-[highlighted]:text-destructive data-[highlighted]:bg-destructive/10 disabled:opacity-50"
       >
-        <LogOut
-          className={cn("text-destructive", !isInSidebar && "mr-2", iconSizes.md)}
-        />
+        <IconSize size="md" className={cn("text-destructive", !isInSidebar && "mr-2")}>
+          <LogOut />
+        </IconSize>
         <span>Đăng xuất</span>
       </DropdownMenuItem>
     </DropdownMenuContent>
@@ -567,7 +569,9 @@ export function NavUser({ className }: { className?: string }) {
             <TypographySpanMuted className="inline-block font-medium truncate max-w-[120px]" suppressHydrationWarning>
               {user.name || user.email}
             </TypographySpanMuted>
-            <ChevronsUpDown className={cn(iconSizes.md, "opacity-50")} />
+            <IconSize size="md" className="opacity-50">
+              <ChevronsUpDown />
+            </IconSize>
           </Button>
         </DropdownMenuTrigger>
         {dropdownMenuContent}
@@ -602,7 +606,9 @@ export function NavUser({ className }: { className?: string }) {
                   {primaryRole?.displayName || primaryRole?.name || user.email}
                 </SidebarMenuButtonDescription>
               </SidebarMenuButtonContent>
-              <ChevronsUpDown className={cn("ml-auto", iconSizes.sm, "opacity-50")} />
+              <IconSize size="sm" className="ml-auto opacity-50">
+                <ChevronsUpDown />
+              </IconSize>
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           {dropdownMenuContent}

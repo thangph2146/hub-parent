@@ -21,8 +21,7 @@ import { logger } from "@/lib/config/logger"
 import { usePageLoadLogger } from "@/hooks/use-page-load-logger"
 import { usePermissions } from "@/hooks/use-permissions"
 import { PERMISSIONS } from "@/lib/permissions"
-import { iconSizes } from "@/lib/typography"
-import { TypographyH3, TypographyH4, TypographyP, TypographySpanLarge, TypographySpanMuted, TypographySpanSmallMuted, TypographyPMuted } from "@/components/ui/typography"
+import { TypographyH3, TypographyH4, TypographyP, TypographySpanLarge, TypographySpanMuted, TypographySpanSmallMuted, TypographyPMuted, IconSize } from "@/components/ui/typography"
 
 export interface UserDetailData {
   id: string
@@ -99,15 +98,21 @@ export const UserDetailClient = ({ userId, user, backUrl = "/admin/users" }: Use
               </AvatarFallback>
             </Avatar>
             {detailData.isActive && (
-              <div className={`absolute -bottom-1 -right-1 ${iconSizes.lg} rounded-full bg-green-500 border-2 border-background flex items-center justify-center`}>
-                <CheckCircle2 className={`${iconSizes.xs} text-white`} />
+              <div className="absolute -bottom-1 -right-1 rounded-full bg-green-500 border-2 border-background flex items-center justify-center">
+                <IconSize size="lg">
+                  <IconSize size="xs">
+                    <CheckCircle2 className="text-white" />
+                  </IconSize>
+                </IconSize>
               </div>
             )}
           </div>
           <div className="flex-1">
             <TypographyH4 className="font-semibold">{detailData.name || "Chưa có tên"}</TypographyH4>
             <TypographyPMuted className="flex items-center gap-2 mt-1">
-              <Mail className={iconSizes.sm} />
+              <IconSize size="sm">
+                <Mail />
+              </IconSize>
               {detailData.email}
             </TypographyPMuted>
             {detailData.roles && detailData.roles.length > 0 && (
@@ -118,7 +123,9 @@ export const UserDetailClient = ({ userId, user, backUrl = "/admin/users" }: Use
                     variant="outline"
                     className="inline-flex items-center gap-1.5 bg-primary/10 px-2 py-0.5 font-semibold text-primary border-primary/20"
                   >
-                    <Shield className={iconSizes.xs} />
+                    <IconSize size="xs">
+                      <Shield />
+                    </IconSize>
                     {role.displayName || role.name}
                   </Badge>
                 ))}
@@ -140,7 +147,9 @@ export const UserDetailClient = ({ userId, user, backUrl = "/admin/users" }: Use
                 </TypographySpanMuted>
                 {userData.emailVerified && (
                   <div className="flex items-center gap-1.5">
-                    <CheckCircle2 className={cn(iconSizes.xs, "text-green-600 dark:text-green-500")} />
+                    <IconSize size="xs">
+                      <CheckCircle2 className="text-green-600 dark:text-green-500" />
+                    </IconSize>
                     <TypographySpanSmallMuted>Đã xác thực</TypographySpanSmallMuted>
                   </div>
                 )}
@@ -189,7 +198,9 @@ export const UserDetailClient = ({ userId, user, backUrl = "/admin/users" }: Use
               <Card className="border border-border/50 bg-card p-5">
                 <div className="flex items-start gap-3">
                   <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted">
-                    <FileText className={`${iconSizes.sm} text-muted-foreground`} />
+                    <IconSize size="sm">
+                      <FileText className="text-muted-foreground" />
+                    </IconSize>
                   </div>
                   <div className="flex-1 min-w-0">
                     <TypographyH3 className="font-medium text-foreground mb-2">Giới thiệu</TypographyH3>
@@ -220,7 +231,9 @@ export const UserDetailClient = ({ userId, user, backUrl = "/admin/users" }: Use
                       variant="outline"
                       className="inline-flex items-center gap-1.5 bg-primary/10 px-2.5 py-1 font-medium text-primary border-primary/20"
                     >
-                      <Shield className={iconSizes.xs} />
+                      <IconSize size="xs">
+                      <Shield />
+                    </IconSize>
                       {role.displayName || role.name}
                     </Badge>
                   ))}
@@ -244,12 +257,16 @@ export const UserDetailClient = ({ userId, user, backUrl = "/admin/users" }: Use
               >
                 {userData.isActive ? (
                   <>
-                    <CheckCircle2 className={`mr-1.5 ${iconSizes.xs}`} />
+                    <IconSize size="xs" className="mr-1.5">
+                      <CheckCircle2 />
+                    </IconSize>
                     Đang hoạt động
                   </> 
                 ) : (
                   <>
-                    <XCircle className={`mr-1.5 ${iconSizes.xs}`} />
+                    <IconSize size="xs" className="mr-1.5">
+                      <XCircle />
+                    </IconSize>
                     Đã vô hiệu hóa
                   </>
                 )}
@@ -303,7 +320,9 @@ export const UserDetailClient = ({ userId, user, backUrl = "/admin/users" }: Use
             }}
             className="gap-2"
           >
-            <Edit className={iconSizes.sm} />
+            <IconSize size="sm">
+              <Edit />
+            </IconSize>
             Chỉnh sửa
           </Button>
         ) : null

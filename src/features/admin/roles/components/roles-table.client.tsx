@@ -1,6 +1,6 @@
 "use client"
 
-import { typography, iconSizes } from "@/lib/typography"
+import { IconSize } from "@/components/ui/typography"
 
 import { useCallback, useMemo, useState } from "react"
 import { useResourceRouter } from "@/hooks/use-resource-segment"
@@ -397,7 +397,9 @@ export const RolesTableClient = ({
                 }
                 className="whitespace-nowrap"
               >
-                <Trash2 className={`mr-2 ${iconSizes.md} shrink-0`} />
+                <IconSize size="md" className="mr-2 shrink-0">
+                  <Trash2 />
+                </IconSize>
                 <span className="hidden sm:inline">
                   {ROLE_LABELS.DELETE_SELECTED(deletableRows.length)}
                 </span>
@@ -419,7 +421,9 @@ export const RolesTableClient = ({
                   }
                   className="whitespace-nowrap"
                 >
-                  <AlertTriangle className={`mr-2 ${iconSizes.md} shrink-0`} />
+                  <IconSize size="md" className="mr-2 shrink-0">
+                    <AlertTriangle />
+                  </IconSize>
                   <span className="hidden sm:inline">
                     {ROLE_LABELS.HARD_DELETE_SELECTED(deletableRows.length)}
                   </span>
@@ -475,7 +479,9 @@ export const RolesTableClient = ({
                   onClick={() => executeBulk("restore", selectedIds, refresh, clearSelection)}
                   className="whitespace-nowrap"
                 >
-                  <RotateCcw className={`mr-2 ${iconSizes.md} shrink-0`} />
+                  <IconSize size="md" className="mr-2 shrink-0">
+                    <RotateCcw />
+                  </IconSize>
                   <span className="hidden sm:inline">
                     {ROLE_LABELS.RESTORE_SELECTED(selectedIds.length)}
                   </span>
@@ -498,7 +504,9 @@ export const RolesTableClient = ({
                   }
                   className="whitespace-nowrap"
                 >
-                  <AlertTriangle className={`mr-2 ${iconSizes.md} shrink-0`} />
+                  <IconSize size="md" className="mr-2 shrink-0">
+                    <AlertTriangle />
+                  </IconSize>
                   <span className="hidden sm:inline">
                     {ROLE_LABELS.HARD_DELETE_SELECTED(deletableRows.length)}
                   </span>
@@ -606,9 +614,11 @@ export const RolesTableClient = ({
       type="button"
       size="sm"
       onClick={() => router.push("/admin/roles/new")}
-      className={`h-8 px-3 ${typography.body.small}`}
+      className="h-8 px-3"
     >
-      <Plus className={`mr-2 ${iconSizes.md}`} />
+      <IconSize size="md" className="mr-2">
+        <Plus />
+      </IconSize>
       {ROLE_LABELS.ADD_NEW}
     </Button>
   ) : undefined
