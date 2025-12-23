@@ -181,8 +181,7 @@ export function NotificationItem({
           <div className="flex items-start justify-between gap-2">
             <TypographyP
               className={cn(
-                "font-medium leading-none",
-                !notification.isRead && "font-semibold"
+                "leading-none"
               )}
             >
               {notification.title}

@@ -1,7 +1,6 @@
 "use client"
 
-import { IconSize } from "@/components/ui/typography"
-import { TypographyTitleLarge, TypographyTitleSmall } from "@/components/ui/typography"
+import { IconSize, TypographyTitleLarge, TypographyTitleSmall, TypographyPSmall, TypographyPMuted } from "@/components/ui/typography"
 
 import { ContactForm } from "@/components/forms/contact-form"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -44,8 +43,8 @@ export const ContactClient = ({}: ContactClientProps) => {
                           </IconSize>
                         </div>
                         <div>
-                          <p className="font-semibold text-card-foreground mb-1">Điện thoại</p>
-                          <p className="text-muted-foreground">(028) 38 212 430</p>
+                          <TypographyPSmall className="text-card-foreground mb-1">Điện thoại</TypographyPSmall>
+                          <TypographyPMuted>(028) 38 212 430</TypographyPMuted>
                         </div>
                       </div>
 
@@ -56,8 +55,8 @@ export const ContactClient = ({}: ContactClientProps) => {
                           </IconSize>
                         </div>
                         <div>
-                          <p className="font-semibold text-card-foreground mb-1">Email</p>
-                          <p className="text-muted-foreground">dhnhtphcm@hub.edu.vn</p>
+                          <TypographyPSmall className="text-card-foreground mb-1">Email</TypographyPSmall>
+                          <TypographyPMuted>dhnhtphcm@hub.edu.vn</TypographyPMuted>
                         </div>
                       </div>
 
@@ -68,7 +67,7 @@ export const ContactClient = ({}: ContactClientProps) => {
                           </IconSize>
                         </div>
                         <div>
-                          <p className="font-semibold text-card-foreground mb-1">Địa chỉ</p>
+                          <TypographyPSmall className="text-card-foreground mb-1">Địa chỉ</TypographyPSmall>
                           <p className="text-muted-foreground">
                             Trường Đại học Ngân hàng TP.HCM
                           </p>
@@ -82,12 +81,12 @@ export const ContactClient = ({}: ContactClientProps) => {
                           </IconSize>
                         </div>
                         <div>
-                          <p className="font-semibold text-card-foreground mb-1">Giờ làm việc</p>
-                          <p className="text-muted-foreground">
+                          <TypographyPSmall className="text-card-foreground mb-1">Giờ làm việc</TypographyPSmall>
+                          <TypographyPMuted>
                             Thứ 2 - Thứ 6: 7:30 - 17:00
                             <br />
                             Thứ 7: 7:30 - 12:00
-                          </p>
+                          </TypographyPMuted>
                         </div>
                       </div>
                     </CardContent>

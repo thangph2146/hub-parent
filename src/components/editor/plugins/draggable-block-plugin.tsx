@@ -3,6 +3,7 @@
 import { JSX, useRef } from "react"
 import { DraggableBlockPlugin_EXPERIMENTAL } from "@lexical/react/LexicalDraggableBlockPlugin"
 import { GripVerticalIcon } from "lucide-react"
+import { IconSize } from "@/components/ui/typography"
 
 const DRAGGABLE_BLOCK_MENU_CLASSNAME = "draggable-block-menu"
 
@@ -32,7 +33,9 @@ export function DraggableBlockPlugin({
           ref={menuRef}
           className="draggable-block-menu absolute top-0 left-0 cursor-grab rounded-sm px-[1px] py-0.5 opacity-0 will-change-transform hover:bg-gray-100 active:cursor-grabbing"
         >
-          <GripVerticalIcon className="size-4 opacity-30" />
+          <IconSize size="sm" className="opacity-30">
+            <GripVerticalIcon />
+          </IconSize>
         </div>
       }
       targetLineComponent={

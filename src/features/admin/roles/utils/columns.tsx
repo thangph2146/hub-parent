@@ -112,7 +112,7 @@ export const useRoleColumns = ({ togglingRoles, canManage, onToggleStatus }: Use
         headerClassName: "w-[120px]",
         cell: (row) =>
           row.deletedAt ? (
-            <TypographySpanSmall className="inline-flex min-w-[88px] items-center justify-center rounded-full bg-rose-100 px-2 py-1 font-medium text-rose-700">
+            <TypographySpanSmall className="inline-flex min-w-[88px] items-center justify-center rounded-full bg-rose-100 px-2 py-1 text-rose-700">
               Đã xóa
             </TypographySpanSmall>
           ) : (

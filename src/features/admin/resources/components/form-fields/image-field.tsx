@@ -95,7 +95,7 @@ export const ImageField = ({
               <IconSize size="2xl">
                 <ImageIcon />
               </IconSize>
-              <TypographySpanMuted className="font-medium">Không thể tải hình ảnh</TypographySpanMuted>
+              <TypographySpanMuted>Không thể tải hình ảnh</TypographySpanMuted>
               <TypographySpanSmallMuted>Vui lòng kiểm tra lại URL</TypographySpanSmallMuted>
             </div>
           </div>

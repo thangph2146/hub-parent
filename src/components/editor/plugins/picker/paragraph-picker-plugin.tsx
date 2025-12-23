@@ -3,10 +3,11 @@ import { $createParagraphNode, $getSelection, $isRangeSelection } from "lexical"
 import { TextIcon } from "lucide-react"
 
 import { ComponentPickerOption } from "@/components/editor/plugins/picker/component-picker-option"
+import { IconSize } from "@/components/ui/typography"
 
 export function ParagraphPickerPlugin() {
   return new ComponentPickerOption("Paragraph", {
-    icon: <TextIcon className="size-4" />,
+    icon: <IconSize size="sm"><TextIcon /></IconSize>,
     keywords: ["normal", "paragraph", "p", "text"],
     onSelect: (_, editor) =>
       editor.update(() => {

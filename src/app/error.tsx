@@ -1,7 +1,7 @@
 "use client"
 
 import { AlertCircle, RefreshCw, Home } from "lucide-react"
-import { TypographyH2, TypographyDescription, TypographyPSmallMuted, TypographyPMuted } from "@/components/ui/typography"
+import { TypographyH2, TypographyDescription, TypographyPSmallMuted, TypographyPMuted, TypographySpanSmall, IconSize } from "@/components/ui/typography"
 import Link from "next/link"
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
@@ -73,7 +73,9 @@ export default function Error({ error, reset }: ErrorProps) {
           <CardHeader className="text-center space-y-4 pb-4">
             <motion.div variants={itemVariants} className="flex justify-center">
               <div className="rounded-full bg-destructive/10 p-3">
-                <AlertCircle className="h-8 w-8 text-destructive" />
+                <IconSize size="2xl" className="text-destructive">
+                  <AlertCircle />
+                </IconSize>
               </div>
             </motion.div>
             <motion.div variants={itemVariants} className="space-y-2">
@@ -95,7 +97,7 @@ export default function Error({ error, reset }: ErrorProps) {
                 className="rounded-lg bg-muted p-3 border"
               >
                 <TypographyPSmallMuted className="font-mono">
-                  <span className="font-semibold">Error ID:</span> {error.digest}
+                  <TypographySpanSmall>Error ID:</TypographySpanSmall> {error.digest}
                 </TypographyPSmallMuted>
               </motion.div>
             )}
@@ -119,7 +121,9 @@ export default function Error({ error, reset }: ErrorProps) {
                 className="w-full sm:w-auto"
                 variant="default"
               >
-                <RefreshCw className="mr-2 h-4 w-4" />
+                <IconSize size="sm" className="mr-2">
+                  <RefreshCw />
+                </IconSize>
                 Thử lại
               </Button>
             </motion.div>
@@ -131,7 +135,9 @@ export default function Error({ error, reset }: ErrorProps) {
                 className="w-full sm:w-auto"
               >
                 <Link href="/">
-                  <Home className="mr-2 h-4 w-4" />
+                  <IconSize size="sm" className="mr-2">
+                    <Home />
+                  </IconSize>
                   Về trang chủ
                 </Link>
               </Button>

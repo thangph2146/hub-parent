@@ -74,13 +74,13 @@ export const CategoryDetailClient = ({ categoryId, category, backUrl = "/admin/c
             {/* Name & Slug */}
             <div className="grid gap-6 grid-cols-1 sm:grid-cols-2">
               <FieldItem icon={Tag} label="Tên danh mục">
-                <TypographyP className="font-medium text-foreground">
+                <TypographyP className="text-foreground">
                   {categoryData.name || "—"}
                 </TypographyP>
               </FieldItem>
 
               <FieldItem icon={Hash} label="Slug">
-                <TypographyP className="font-medium text-foreground font-mono">
+                <TypographyP className="text-foreground font-mono">
                   {categoryData.slug || "—"}
                 </TypographyP>
               </FieldItem>
@@ -96,7 +96,7 @@ export const CategoryDetailClient = ({ categoryId, category, backUrl = "/admin/c
                     </IconSize>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <TypographyP className="font-medium text-foreground mb-2">Mô tả</TypographyP>
+                    <TypographyP className="text-foreground mb-2">Mô tả</TypographyP>
                     <TypographyP className="leading-relaxed whitespace-pre-wrap text-foreground break-words">
                       {categoryData.description || "—"}
                     </TypographyP>
@@ -108,13 +108,13 @@ export const CategoryDetailClient = ({ categoryId, category, backUrl = "/admin/c
             {/* Timestamps */}
             <div className="grid gap-6 grid-cols-1 sm:grid-cols-2">
               <FieldItem icon={Calendar} label="Ngày tạo">
-                <TypographyP className="font-medium text-foreground">
+                <TypographyP className="text-foreground">
                   {categoryData.createdAt ? formatDateVi(categoryData.createdAt) : "—"}
                 </TypographyP>
               </FieldItem>
 
               <FieldItem icon={Clock} label="Cập nhật lần cuối">
-                <TypographyP className="font-medium text-foreground">
+                <TypographyP className="text-foreground">
                   {categoryData.updatedAt ? formatDateVi(categoryData.updatedAt) : "—"}
                 </TypographyP>
               </FieldItem>

@@ -21,7 +21,7 @@ import { logger } from "@/lib/config/logger"
 import { usePageLoadLogger } from "@/hooks/use-page-load-logger"
 import { usePermissions } from "@/hooks/use-permissions"
 import { PERMISSIONS } from "@/lib/permissions"
-import { TypographyH3, TypographyH4, TypographyP, TypographySpanLarge, TypographySpanMuted, TypographySpanSmallMuted, TypographyPMuted, IconSize } from "@/components/ui/typography"
+import { TypographyH3, TypographyH4, TypographyP, TypographySpanLarge, TypographySpanMuted, TypographySpanSmallMuted, TypographyPMuted, TypographySpanSmall, IconSize } from "@/components/ui/typography"
 
 export interface UserDetailData {
   id: string
@@ -93,8 +93,8 @@ export const UserDetailClient = ({ userId, user, backUrl = "/admin/users" }: Use
                 referrerPolicy="no-referrer"
                 crossOrigin="anonymous"
               />
-              <AvatarFallback className="font-bold bg-gradient-to-br from-primary to-chart-1 text-primary-foreground">
-                <TypographySpanLarge className="font-bold">{getUserInitials(detailData.name, detailData.email)}</TypographySpanLarge>
+              <AvatarFallback className="bg-gradient-to-br from-primary to-chart-1 text-primary-foreground">
+                <TypographySpanLarge>{getUserInitials(detailData.name, detailData.email)}</TypographySpanLarge>
               </AvatarFallback>
             </Avatar>
             {detailData.isActive && (
@@ -108,7 +108,7 @@ export const UserDetailClient = ({ userId, user, backUrl = "/admin/users" }: Use
             )}
           </div>
           <div className="flex-1">
-            <TypographyH4 className="font-semibold">{detailData.name || "Chưa có tên"}</TypographyH4>
+            <TypographyH4>{detailData.name || "Chưa có tên"}</TypographyH4>
             <TypographyPMuted className="flex items-center gap-2 mt-1">
               <IconSize size="sm">
                 <Mail />
@@ -121,12 +121,12 @@ export const UserDetailClient = ({ userId, user, backUrl = "/admin/users" }: Use
                   <Badge
                     key={role.name}
                     variant="outline"
-                    className="inline-flex items-center gap-1.5 bg-primary/10 px-2 py-0.5 font-semibold text-primary border-primary/20"
+                    className="inline-flex items-center gap-1.5 bg-primary/10 px-2 py-0.5 border-primary/20"
                   >
                     <IconSize size="xs">
                       <Shield />
                     </IconSize>
-                    {role.displayName || role.name}
+                    <TypographySpanSmall className="text-primary">{role.displayName || role.name}</TypographySpanSmall>
                   </Badge>
                 ))}
               </div>
@@ -159,7 +159,7 @@ export const UserDetailClient = ({ userId, user, backUrl = "/admin/users" }: Use
             {/* Email Verified */}
             {userData.emailVerified && (
               <FieldItem icon={Clock} label="Email đã xác thực">
-                <TypographySpanMuted className="font-medium text-foreground">
+                <TypographySpanMuted className="text-foreground">
                   {formatDateVi(userData.emailVerified)}
                 </TypographySpanMuted>
               </FieldItem>
@@ -167,7 +167,7 @@ export const UserDetailClient = ({ userId, user, backUrl = "/admin/users" }: Use
 
             {/* Name */}
             <FieldItem icon={User} label="Tên">
-              <TypographySpanMuted className="font-medium text-foreground">
+              <TypographySpanMuted className="text-foreground">
                 {userData.name || "—"}
               </TypographySpanMuted>
             </FieldItem>
@@ -203,7 +203,7 @@ export const UserDetailClient = ({ userId, user, backUrl = "/admin/users" }: Use
                     </IconSize>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <TypographyH3 className="font-medium text-foreground mb-2">Giới thiệu</TypographyH3>
+                    <TypographyH3 className="text-foreground mb-2">Giới thiệu</TypographyH3>
                     <TypographyP className="leading-relaxed whitespace-pre-wrap text-foreground break-words">
                       {userData.bio || "—"}
                     </TypographyP>
@@ -215,7 +215,7 @@ export const UserDetailClient = ({ userId, user, backUrl = "/admin/users" }: Use
             {/* Address */}
             {userData.address && (
               <FieldItem icon={MapPin} label="Địa chỉ">
-                <TypographySpanMuted className="font-medium text-foreground">
+                <TypographySpanMuted className="text-foreground">
                   {userData.address}
                 </TypographySpanMuted>
               </FieldItem>
@@ -229,7 +229,7 @@ export const UserDetailClient = ({ userId, user, backUrl = "/admin/users" }: Use
                     <Badge
                       key={role.name}
                       variant="outline"
-                      className="inline-flex items-center gap-1.5 bg-primary/10 px-2.5 py-1 font-medium text-primary border-primary/20"
+                      className="inline-flex items-center gap-1.5 bg-primary/10 px-2.5 py-1 text-primary border-primary/20"
                     >
                       <IconSize size="xs">
                       <Shield />
@@ -248,7 +248,7 @@ export const UserDetailClient = ({ userId, user, backUrl = "/admin/users" }: Use
             >
               <Badge
                 className={cn(
-                  "font-medium px-2.5 py-1",
+                  "px-2.5 py-1",
                   userData.isActive
                     ? "bg-green-500/10 hover:bg-green-500/20 text-green-700 dark:text-green-400 border-green-500/20"
                     : "bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 dark:text-amber-400 border-amber-500/20"
@@ -276,13 +276,13 @@ export const UserDetailClient = ({ userId, user, backUrl = "/admin/users" }: Use
             {/* Timestamps */}
             <div className="grid gap-6 grid-cols-1 sm:grid-cols-2">
               <FieldItem icon={Calendar} label="Ngày tạo">
-                <TypographySpanMuted className="font-medium text-foreground">
+                <TypographySpanMuted className="text-foreground">
                   {userData.createdAt ? formatDateVi(userData.createdAt) : "—"}
                 </TypographySpanMuted>
               </FieldItem>
 
               <FieldItem icon={Clock} label="Cập nhật lần cuối">
-                <TypographySpanMuted className="font-medium text-foreground">
+                <TypographySpanMuted className="text-foreground">
                   {userData.updatedAt ? formatDateVi(userData.updatedAt) : "—"}
                 </TypographySpanMuted>
               </FieldItem>

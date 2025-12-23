@@ -184,7 +184,7 @@ export const useContactRequestColumns = ({
         headerClassName: "min-w-[140px] max-w-[180px]",
         cell: (row) =>
           row.deletedAt ? (
-            <TypographySpanSmall className="inline-flex min-w-[88px] items-center justify-center rounded-full bg-rose-100 px-2 py-1 font-medium text-rose-700">
+            <TypographySpanSmall className="inline-flex min-w-[88px] items-center justify-center rounded-full bg-rose-100 px-2 py-1 text-rose-700">
               {CONTACT_REQUEST_LABELS.DELETED}
             </TypographySpanSmall>
           ) : (

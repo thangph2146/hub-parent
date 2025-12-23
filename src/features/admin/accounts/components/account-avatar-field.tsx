@@ -57,7 +57,7 @@ export const AccountAvatarField = ({
                 onLoad={() => setImageError(false)}
               />
               <AvatarFallback asChild>
-                <TypographyH4 className="font-bold bg-gradient-to-br from-primary via-primary/90 to-chart-1 text-primary-foreground">
+                <TypographyH4 className="bg-gradient-to-br from-primary via-primary/90 to-chart-1 text-primary-foreground">
                   {getUserInitials(name, "")}
                 </TypographyH4>
               </AvatarFallback>

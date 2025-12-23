@@ -46,7 +46,7 @@ export const PostDetailClient = ({ post }: PostDetailClientProps) => {
               <IconSize size="sm">
                 <User />
               </IconSize>
-              <TypographySpanSmallMuted className="font-medium">{post.author.name ?? post.author.email}</TypographySpanSmallMuted>
+              <TypographySpanSmallMuted>{post.author.name ?? post.author.email}</TypographySpanSmallMuted>
             </div>
             {post.publishedAt && (
               <div className="flex items-center gap-2">
@@ -83,7 +83,7 @@ export const PostDetailClient = ({ post }: PostDetailClientProps) => {
         </header>
 
         {/* Content */}
-        <div className="prose prose-lg dark:prose-invert max-w-none prose-headings:font-bold prose-p:leading-relaxed prose-a:text-primary prose-a:no-underline hover:prose-a:underline">
+        <div className="prose prose-lg dark:prose-invert max-w-none prose-p:leading-relaxed prose-a:text-primary prose-a:no-underline hover:prose-a:underline">
           <PostContent content={post.content} />
         </div>
 

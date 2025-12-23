@@ -63,7 +63,7 @@ export const PostCategoryNav = ({ categories }: PostCategoryNavProps) => {
           <Link
             href={clearAllCategories()}
             className={cn(
-              "group flex items-center gap-2 px-3 sm:px-4 py-2 rounded-md font-medium whitespace-nowrap transition-all border",
+              "group flex items-center gap-2 px-3 sm:px-4 py-2 rounded-md whitespace-nowrap transition-all border",
               selectedCategories.size === 0
                 ? "bg-accent/10 hover:bg-accent/10 text-primary border-primary/20 shadow-sm"
                 : "hover:bg-accent/10 text-muted-foreground border-transparent hover:border-border"
@@ -86,7 +86,7 @@ export const PostCategoryNav = ({ categories }: PostCategoryNavProps) => {
                 key={category.id}
                 href={toggleCategory(category.slug)}
                 className={cn(
-                  "group flex items-center gap-2 px-3 sm:px-4 py-2 rounded-md font-medium whitespace-nowrap transition-all border",
+                  "group flex items-center gap-2 px-3 sm:px-4 py-2 rounded-md whitespace-nowrap transition-all border",
                   isActive
                     ? "bg-accent/10 hover:bg-accent/10 text-primary border-primary/20 shadow-sm"
                     : "hover:bg-accent/10 text-muted-foreground border-transparent hover:border-border"
@@ -114,7 +114,7 @@ export const PostCategoryNav = ({ categories }: PostCategoryNavProps) => {
             <Link
               href={clearAllCategories()}
               className={cn(
-                "group flex items-center gap-2 px-4 py-2 rounded-md font-medium whitespace-nowrap transition-all border w-full",
+                "group flex items-center gap-2 px-4 py-2 rounded-md whitespace-nowrap transition-all border w-full",
                 selectedCategories.size === 0
                   ? "bg-primary/10 text-primary border-primary/20 shadow-sm"
                   : "hover:bg-accent/10 text-muted-foreground border-transparent hover:border-border"
@@ -137,7 +137,7 @@ export const PostCategoryNav = ({ categories }: PostCategoryNavProps) => {
                   key={category.id}
                   href={toggleCategory(category.slug)}
                   className={cn(
-                    "group flex items-center gap-2 px-4 py-2 rounded-md font-medium whitespace-nowrap transition-all border w-full",
+                    "group flex items-center gap-2 px-4 py-2 rounded-md whitespace-nowrap transition-all border w-full",
                     isActive
                       ? "bg-primary/10 text-primary border-primary/20 shadow-sm"
                       : "hover:bg-accent/10 text-muted-foreground border-transparent hover:border-border"

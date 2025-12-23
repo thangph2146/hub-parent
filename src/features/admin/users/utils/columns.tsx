@@ -121,7 +121,7 @@ export const useUserColumns = ({
           const isDisabled = togglingUsers.has(row.id) || !canManage || (isSuperAdmin && row.isActive)
 
           return row.deletedAt ? (
-            <TypographySpanSmall className="inline-flex min-w-[88px] items-center justify-center rounded-full bg-rose-100 px-2 py-1 font-medium text-rose-700">
+            <TypographySpanSmall className="inline-flex min-w-[88px] items-center justify-center rounded-full bg-rose-100 px-2 py-1 text-rose-700">
               Đã xóa
             </TypographySpanSmall>
           ) : (

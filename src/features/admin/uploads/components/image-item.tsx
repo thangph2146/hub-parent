@@ -52,7 +52,7 @@ export const ImageItem = ({
         />
       </div>
       <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/60 to-transparent p-2 opacity-0 group-hover:opacity-100 transition-opacity">
-        <TypographySpanSmall className="text-white font-medium truncate">{image.originalName}</TypographySpanSmall>
+        <TypographySpanSmall className="text-white truncate">{image.originalName}</TypographySpanSmall>
         <TypographySpanSmall className="text-white/80">{(image.size / 1024).toFixed(1)} KB</TypographySpanSmall>
       </div>
       <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">

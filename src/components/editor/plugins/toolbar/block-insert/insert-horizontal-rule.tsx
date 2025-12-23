@@ -5,6 +5,7 @@ import { ScissorsIcon } from "lucide-react"
 
 import { useToolbarContext } from "@/components/editor/context/toolbar-context"
 import { SelectItem } from "@/components/ui/select"
+import { IconSize } from "@/components/ui/typography"
 
 export function InsertHorizontalRule() {
   const { activeEditor } = useToolbarContext()
@@ -18,7 +19,9 @@ export function InsertHorizontalRule() {
       className=""
     >
       <div className="flex items-center gap-1">
-        <ScissorsIcon className="size-4" />
+        <IconSize size="sm">
+          <ScissorsIcon />
+        </IconSize>
         <span>Horizontal Rule</span>
       </div>
     </SelectItem>

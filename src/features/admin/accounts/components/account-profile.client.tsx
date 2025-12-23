@@ -105,7 +105,7 @@ export const AccountProfileClient = ({
                   crossOrigin="anonymous"
                   className="object-cover"
                 />
-                <AvatarFallback className="font-bold bg-gradient-to-br from-primary via-primary/90 to-chart-1 text-primary-foreground">
+                <AvatarFallback className="bg-gradient-to-br from-primary via-primary/90 to-chart-1 text-primary-foreground">
                   <TypographyH4>
                     {getUserInitials(account.name, account.email)}
                   </TypographyH4>
@@ -119,7 +119,7 @@ export const AccountProfileClient = ({
             </div>
             <div className="flex-1 min-w-0 space-y-3">
               <div>
-                <TypographyH3 className="font-bold tracking-tight">
+                <TypographyH3 className="tracking-tight">
                   {account.name || "Chưa có tên"}
                 </TypographyH3>
                 <TypographyPMuted className="flex items-center gap-2 mt-1.5">
@@ -135,7 +135,7 @@ export const AccountProfileClient = ({
                     <Badge
                       key={role.id}
                       variant="secondary"
-                      className="font-medium bg-primary/10 text-primary border-primary/20 hover:bg-primary/20 transition-colors"
+                      className="bg-primary/10 text-primary border-primary/20 hover:bg-primary/20 transition-colors"
                     >
                       <IconSize size="xs" className="mr-1.5">
                         <Shield />
@@ -157,7 +157,7 @@ export const AccountProfileClient = ({
             <div className="grid gap-4 sm:grid-cols-2">
               <Card className="p-4 border-border/50 bg-card/50 hover:bg-card transition-colors">
                 <FieldItem icon={User} label="Tên">
-                  <TypographyPLarge className="font-semibold mt-1">
+                  <TypographyPLarge className="mt-1">
                     {accountData.name || (
                       <span className="text-muted-foreground italic">
                         Chưa cập nhật
@@ -169,7 +169,7 @@ export const AccountProfileClient = ({
 
               <Card className="p-4 border-border/50 bg-card/50 hover:bg-card transition-colors">
                 <FieldItem icon={Phone} label="Số điện thoại">
-                  <TypographyPLarge className="font-semibold mt-1">
+                  <TypographyPLarge className="mt-1">
                     {accountData.phone || (
                       <span className="text-muted-foreground italic">
                         Chưa cập nhật
@@ -189,7 +189,7 @@ export const AccountProfileClient = ({
                     </IconSize>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <TypographyP className="font-semibold mb-3 uppercase tracking-wide">
+                    <TypographyP className="mb-3 uppercase tracking-wide">
                       Giới thiệu
                     </TypographyP>
                     <TypographyP className="whitespace-pre-wrap text-foreground/90 break-words">
@@ -213,54 +213,54 @@ export const AccountProfileClient = ({
                       <div className="space-y-3 mt-2">
                         {structuredAddress ? (
                           <div className="space-y-2">
-                            <TypographyPLarge className="font-semibold">
+                            <TypographyPLarge>
                               {addressDisplay}
                             </TypographyPLarge>
                             <TypographyPMuted className="grid gap-2 sm:grid-cols-2">
                               {structuredAddress.address && (
                                 <div className="flex items-start gap-2">
-                                  <span className="font-medium min-w-[80px]">
+                                  <TypographySpanSmall className="min-w-[80px]">
                                     Số nhà:
-                                  </span>
+                                  </TypographySpanSmall>
                                   <span>{structuredAddress.address}</span>
                                 </div>
                               )}
                               {structuredAddress.ward && (
                                 <div className="flex items-start gap-2">
-                                  <span className="font-medium min-w-[80px]">
+                                  <TypographySpanSmall className="min-w-[80px]">
                                     Phường/Xã:
-                                  </span>
+                                  </TypographySpanSmall>
                                   <span>{structuredAddress.ward}</span>
                                 </div>
                               )}
                               {structuredAddress.district && (
                                 <div className="flex items-start gap-2">
-                                  <span className="font-medium min-w-[80px]">
+                                  <TypographySpanSmall className="min-w-[80px]">
                                     Quận/Huyện:
-                                  </span>
+                                  </TypographySpanSmall>
                                   <span>{structuredAddress.district}</span>
                                 </div>
                               )}
                               {structuredAddress.city && (
                                 <div className="flex items-start gap-2">
-                                  <span className="font-medium min-w-[80px]">
+                                  <TypographySpanSmall className="min-w-[80px]">
                                     Thành phố:
-                                  </span>
+                                  </TypographySpanSmall>
                                   <span>{structuredAddress.city}</span>
                                 </div>
                               )}
                               {structuredAddress.postalCode && (
                                 <div className="flex items-start gap-2">
-                                  <span className="font-medium min-w-[80px]">
+                                  <TypographySpanSmall className="min-w-[80px]">
                                     Mã bưu điện:
-                                  </span>
+                                  </TypographySpanSmall>
                                   <span>{structuredAddress.postalCode}</span>
                                 </div>
                               )}
                             </TypographyPMuted>
                           </div>
                         ) : (
-                          <TypographyP className="font-semibold">
+                          <TypographyP>
                             {addressDisplay}
                           </TypographyP>
                         )}
@@ -285,12 +285,12 @@ export const AccountProfileClient = ({
             <Card className="p-5 border-2 border-border/50 bg-gradient-to-br from-card to-muted/10 shadow-sm">
               <FieldItem icon={Mail} label="Email">
                 <div className="space-y-3 mt-2">
-                  <TypographyP className="font-semibold text-foreground">
+                  <TypographyP className="text-foreground">
                     {accountData.email}
                   </TypographyP>
                   {accountData.emailVerified && (
                     <Badge
-                      className="bg-green-500/15 hover:bg-green-500/25 text-green-700 dark:text-green-400 border-green-500/30 font-medium px-3 py-1"
+                      className="bg-green-500/15 hover:bg-green-500/25 text-green-700 dark:text-green-400 border-green-500/30 px-3 py-1"
                       variant="outline"
                     >
                       <IconSize size="xs" className="mr-1.5">
@@ -301,7 +301,7 @@ export const AccountProfileClient = ({
                   )}
                   {!accountData.emailVerified && (
                     <Badge
-                      className="bg-yellow-500/15 hover:bg-yellow-500/25 text-yellow-700 dark:text-yellow-400 border-yellow-500/30 font-medium px-3 py-1"
+                      className="bg-yellow-500/15 hover:bg-yellow-500/25 text-yellow-700 dark:text-yellow-400 border-yellow-500/30 px-3 py-1"
                       variant="outline"
                     >
                       <TypographySpanSmall>Chưa xác thực</TypographySpanSmall>
@@ -314,7 +314,7 @@ export const AccountProfileClient = ({
             {accountData.emailVerified && (
               <Card className="p-4 border-border/50 bg-card/50 hover:bg-card transition-colors">
                 <FieldItem icon={Clock} label="Ngày xác thực email">
-                  <TypographyPLarge className="font-semibold mt-1">
+                  <TypographyPLarge className="mt-1">
                     {formatDateVi(accountData.emailVerified)}
                   </TypographyPLarge>
                 </FieldItem>
@@ -336,7 +336,7 @@ export const AccountProfileClient = ({
             <div className="grid gap-4 sm:grid-cols-2">
               <Card className="p-4 border-border/50 bg-card/50 hover:bg-card transition-colors">
                 <FieldItem icon={Calendar} label="Ngày tạo tài khoản">
-                  <TypographyPLarge className="font-semibold mt-1">
+                  <TypographyPLarge className="mt-1">
                     {accountData.createdAt ? (
                       formatDateVi(accountData.createdAt)
                     ) : (
@@ -348,7 +348,7 @@ export const AccountProfileClient = ({
 
               <Card className="p-4 border-border/50 bg-card/50 hover:bg-card transition-colors">
                 <FieldItem icon={Clock} label="Cập nhật lần cuối">
-                  <TypographyPLarge className="font-semibold mt-1">
+                  <TypographyPLarge className="mt-1">
                     {accountData.updatedAt ? (
                       formatDateVi(accountData.updatedAt)
                     ) : (

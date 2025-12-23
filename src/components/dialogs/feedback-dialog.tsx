@@ -53,10 +53,10 @@ export function FeedbackDialog({
 
           {details ? (
             <div className="mt-4">
-              <TypographyP className="text-foreground mb-2 block font-medium">
+              <TypographyP className="text-foreground mb-2 block">
                 Chi tiết
               </TypographyP>
-              <ScrollArea className="max-h-48 rounded-md border border-border/60 bg-muted/30 p-3 text-muted-foreground">
+              <ScrollArea className="max-h-48 rounded-md border border-border/60 bg-muted/30 p-3">
                 <TypographyPSmall className="whitespace-pre-wrap break-words">{details}</TypographyPSmall>
               </ScrollArea>
             </div>

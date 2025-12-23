@@ -6,7 +6,7 @@
 import * as React from "react"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { Folder, ChevronRight } from "lucide-react"
-import { TypographySpanSmallMuted, IconSize } from "@/components/ui/typography"
+import { TypographySpanSmallMuted, IconSize, TypographyP } from "@/components/ui/typography"
 import { cn } from "@/lib/utils"
 import { ImageGrid } from "./image-grid"
 import type { FolderNode, ImageItem } from "../types"
@@ -65,7 +65,7 @@ export const FolderTreeNode = React.memo(function FolderTreeNode({
         <IconSize size="sm">
           <Folder className="text-muted-foreground" />
         </IconSize>
-        <span className="font-medium">{folder.name}</span>
+        <TypographyP>{folder.name}</TypographyP>
         <TypographySpanSmallMuted className="ml-auto">
           {folder.images.length} hình ảnh
           {folder.subfolders.length > 0 && `, ${folder.subfolders.length} thư mục`}

@@ -39,6 +39,7 @@ import { setFloatingElemPositionForLinkEditor } from "@/components/editor/utils/
 import { sanitizeUrl, validateUrl } from "@/components/editor/utils/url"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { TypographyPSmall } from "@/components/ui/typography"
 import { $isImageNode } from "@/components/editor/nodes/image-node"
 
 function FloatingLinkEditor({
@@ -424,9 +425,9 @@ function FloatingLinkEditor({
             href={sanitizeUrl(linkUrl)}
             target="_blank"
             rel="noopener noreferrer"
-            className="overflow-hidden text-sm text-ellipsis whitespace-nowrap"
+            className="overflow-hidden text-ellipsis whitespace-nowrap"
           >
-            {linkUrl}
+            <TypographyPSmall className="truncate">{linkUrl}</TypographyPSmall>
           </a>
           <div className="flex">
             <Button

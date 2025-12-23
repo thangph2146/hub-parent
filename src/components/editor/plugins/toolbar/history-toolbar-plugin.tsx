@@ -15,6 +15,7 @@ import { RedoIcon, UndoIcon } from "lucide-react"
 import { useToolbarContext } from "@/components/editor/context/toolbar-context"
 import { Button } from "@/components/ui/button"
 import { ButtonGroup } from "@/components/ui/button-group"
+import { IconSize } from "@/components/ui/typography"
 
 export function HistoryToolbarPlugin() {
   const [editor] = useLexicalComposerContext()
@@ -66,7 +67,9 @@ export function HistoryToolbarPlugin() {
         className="!h-8 !w-8"
         variant={"outline"}
       >
-        <UndoIcon className="size-4" />
+        <IconSize size="sm">
+          <UndoIcon />
+        </IconSize>
       </Button>
       <Button
         disabled={!canRedo || !isEditable}
@@ -80,7 +83,9 @@ export function HistoryToolbarPlugin() {
         size="icon"
         className="!h-8 !w-8"
       >
-        <RedoIcon className="size-4" />
+        <IconSize size="sm">
+          <RedoIcon />
+        </IconSize>
       </Button>
     </ButtonGroup>
   )

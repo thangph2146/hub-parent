@@ -15,6 +15,7 @@ import { useUpdateToolbarHandler } from "@/components/editor/editor-hooks/use-up
 import { getSelectedNode } from "@/components/editor/utils/get-selected-node"
 import { sanitizeUrl } from "@/components/editor/utils/url"
 import { Toggle } from "@/components/ui/toggle"
+import { IconSize } from "@/components/ui/typography"
 
 export function LinkToolbarPlugin({
   setIsLinkEditMode,
@@ -81,7 +82,9 @@ export function LinkToolbarPlugin({
       aria-label="Toggle link"
       onClick={insertLink}
     >
-      <LinkIcon className="h-4 w-4" />
+      <IconSize size="sm">
+        <LinkIcon />
+      </IconSize>
     </Toggle>
   )
 }

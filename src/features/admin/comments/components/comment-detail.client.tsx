@@ -57,7 +57,7 @@ const StatusField = ({ approved, canApprove, onToggle, isToggling }: StatusField
         </IconSize>
       </div>
       <div className="flex-1 min-w-0">
-        <TypographyPSmallMuted className="font-medium mb-1.5">Trạng thái duyệt</TypographyPSmallMuted>
+        <TypographyPSmallMuted className="mb-1.5">Trạng thái duyệt</TypographyPSmallMuted>
         <div className="flex items-center gap-2">
           <Switch
             checked={approved}
@@ -172,7 +172,7 @@ export const CommentDetailClient = ({ commentId, comment, backUrl = "/admin/comm
         </IconSize>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <TypographyP className="font-medium text-foreground mb-2">Nội dung</TypographyP>
+                  <TypographyP className="text-foreground mb-2">Nội dung</TypographyP>
                   <TypographyP className="leading-relaxed whitespace-pre-wrap text-foreground break-words">
                     {commentData.content || "—"}
                   </TypographyP>
@@ -191,7 +191,7 @@ export const CommentDetailClient = ({ commentId, comment, backUrl = "/admin/comm
             {/* Author Info */}
             <div className="grid gap-6 grid-cols-1 sm:grid-cols-2">
               <FieldItem icon={User} label="Người bình luận">
-                <TypographyP className="font-medium text-foreground truncate">
+                <TypographyP className="text-foreground truncate">
                   {commentData.authorName || commentData.authorEmail || "—"}
                 </TypographyP>
               </FieldItem>
@@ -199,9 +199,9 @@ export const CommentDetailClient = ({ commentId, comment, backUrl = "/admin/comm
               <FieldItem icon={Mail} label="Email">
                 <a
                   href={`mailto:${commentData.authorEmail}`}
-                  className="font-medium text-primary hover:underline truncate block transition-colors"
+                  className="text-primary hover:underline truncate block transition-colors"
                 >
-                  {commentData.authorEmail || "—"}
+                  <TypographyP>{commentData.authorEmail || "—"}</TypographyP>
                 </a>
               </FieldItem>
             </div>
@@ -213,28 +213,28 @@ export const CommentDetailClient = ({ commentId, comment, backUrl = "/admin/comm
                   href={`/admin/posts/${commentData.postId}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group inline-flex items-center gap-1.5 font-medium text-primary hover:text-primary/80 hover:underline transition-colors"
+                  className="group inline-flex items-center gap-1.5 hover:underline transition-colors"
                 >
-                  <span className="truncate">{commentData.postTitle || "—"}</span>
+                  <TypographyP className="truncate text-primary hover:text-primary/80">{commentData.postTitle || "—"}</TypographyP>
                   <IconSize size="xs" className="shrink-0 opacity-50 group-hover:opacity-100 transition-opacity">
                     <ExternalLink />
                   </IconSize>
                 </a>
               ) : (
-                <TypographyP className="font-medium text-foreground truncate">{commentData.postTitle || "—"}</TypographyP>
+                <TypographyP className="text-foreground truncate">{commentData.postTitle || "—"}</TypographyP>
               )}
             </FieldItem>
 
             {/* Timestamps */}
             <div className="grid gap-6 grid-cols-1 sm:grid-cols-2">
               <FieldItem icon={Calendar} label="Ngày tạo">
-                <TypographyP className="font-medium text-foreground">
+                <TypographyP className="text-foreground">
                   {commentData.createdAt ? formatDateVi(commentData.createdAt) : "—"}
                 </TypographyP>
               </FieldItem>
 
               <FieldItem icon={Clock} label="Cập nhật lần cuối">
-                <TypographyP className="font-medium text-foreground">
+                <TypographyP className="text-foreground">
                   {commentData.updatedAt ? formatDateVi(commentData.updatedAt) : "—"}
                 </TypographyP>
               </FieldItem>

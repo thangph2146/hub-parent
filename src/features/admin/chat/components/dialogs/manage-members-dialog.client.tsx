@@ -221,7 +221,7 @@ export const ManageMembersDialog = ({
                             </AvatarFallback>
                           </Avatar>
                           <div className="flex flex-col flex-1 min-w-0">
-                            <TypographyP className="font-medium truncate">{user.name || user.email}</TypographyP>
+                            <TypographyP className="truncate">{user.name || user.email}</TypographyP>
                             {user.name && <TypographyPSmallMuted className="truncate">{user.email}</TypographyPSmallMuted>}
                           </div>
                           <Button size="sm" variant="secondary" disabled={isProcessing === user.id} onClick={() => handleAddMember(user.id)}>
@@ -262,7 +262,7 @@ export const ManageMembersDialog = ({
                           </AvatarFallback>
                         </Avatar>
                         <div className="flex flex-col flex-1 min-w-0">
-                          <TypographyP className="font-medium truncate">{member.user?.name || member.user?.email}</TypographyP>
+                          <TypographyP className="truncate">{member.user?.name || member.user?.email}</TypographyP>
                           <TypographyPSmallMuted className="truncate">{member.role}</TypographyPSmallMuted>
                         </div>
                         <div className="flex items-center gap-2">

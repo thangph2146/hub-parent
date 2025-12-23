@@ -10,6 +10,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import { IconSize } from "@/components/ui/typography"
 
 export function ImportExportPlugin() {
   const [editor] = useLexicalComposerContext()
@@ -25,7 +26,9 @@ export function ImportExportPlugin() {
             size={"sm"}
             className="p-2"
           >
-            <UploadIcon className="size-4" />
+            <IconSize size="sm">
+              <UploadIcon />
+            </IconSize>
           </Button>
         </TooltipTrigger>
         <TooltipContent>Import Content</TooltipContent>
@@ -46,7 +49,9 @@ export function ImportExportPlugin() {
             size={"sm"}
             className="p-2"
           >
-            <DownloadIcon className="size-4" />
+            <IconSize size="sm">
+              <DownloadIcon />
+            </IconSize>
           </Button>
         </TooltipTrigger>
         <TooltipContent>Export Content</TooltipContent>

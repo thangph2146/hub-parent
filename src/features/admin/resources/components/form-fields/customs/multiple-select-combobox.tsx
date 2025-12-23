@@ -124,14 +124,13 @@ export const MultipleSelectCombobox = <T,>({
                   <Badge
                     key={option.value}
                     variant="secondary"
-                    className="mr-0"
                     onClick={(e) => {
                       e.stopPropagation()
                       handleToggle(option.value)
                     }}
                   >
                     {option.label}
-                    <IconSize size="xs" className="ml-1.5">
+                    <IconSize size="xs">
                       <X />
                     </IconSize>
                   </Badge>
@@ -153,16 +152,16 @@ export const MultipleSelectCombobox = <T,>({
                 onKeyDown={(e) => {
                   if (e.key === "Enter" || e.key === " ") {
                     e.preventDefault()
-                    handleClear(e as any)
+                    handleClear(e as unknown as React.MouseEvent)
                   }
                 }}
               >
-                <IconSize size="md" className="shrink-0 opacity-50">
+                <IconSize size="md">
                   <X />
                 </IconSize>
               </div>
             )}
-            <IconSize size="md" className="shrink-0 opacity-50">
+            <IconSize size="md">
               <ChevronsUpDown />
             </IconSize>
           </div>
@@ -188,12 +187,12 @@ export const MultipleSelectCombobox = <T,>({
                         }
                       }}
                       className={cn(
-                        "font-medium border rounded-md",
+                        "border rounded-md",
                         allSelected && "text-primary"
                       )}
                     >
-                      <IconSize size="md" className={cn("mr-2", allSelected ? "opacity-100" : "opacity-0")}>
-                        <Check />
+                      <IconSize size="md">
+                        <Check className={cn(allSelected ? "opacity-100" : "opacity-0")} />
                       </IconSize>
                       {allSelected ? "Bỏ chọn tất cả" : "Chọn tất cả"}
                     </CommandItem>
@@ -209,8 +208,8 @@ export const MultipleSelectCombobox = <T,>({
                           value={String(option.value)}
                           onSelect={() => handleToggle(option.value)}
                         >
-                          <IconSize size="md" className={cn("mr-2", isSelected ? "opacity-100" : "opacity-0")}>
-                            <Check />
+                          <IconSize size="md">
+                            <Check className={cn(isSelected ? "opacity-100" : "opacity-0")} />
                           </IconSize>
                           {option.label}
                         </CommandItem>
@@ -233,16 +232,12 @@ export const MultipleSelectCombobox = <T,>({
                       }
                     }}
                     className={cn(
-                      "font-medium",
                       allSelected && "text-primary"
                     )}
                   >
-                    <Check
-                      className={cn(
-                        "mr-2 h-5 w-5",
-                        allSelected ? "opacity-100" : "opacity-0"
-                      )}
-                    />
+                    <IconSize size="md">
+                      <Check className={cn(allSelected ? "opacity-100" : "opacity-0")} />
+                    </IconSize>
                     {allSelected ? "Bỏ chọn tất cả" : "Chọn tất cả"}
                   </CommandItem>
                 )}
@@ -254,12 +249,9 @@ export const MultipleSelectCombobox = <T,>({
                       value={String(option.value)}
                       onSelect={() => handleToggle(option.value)}
                     >
-                      <Check
-                        className={cn(
-                          "mr-2 h-5 w-5",
-                          isSelected ? "opacity-100" : "opacity-0"
-                        )}
-                      />
+                      <IconSize size="md">
+                        <Check className={cn(isSelected ? "opacity-100" : "opacity-0")} />
+                      </IconSize>
                       {option.label}
                     </CommandItem>
                   )

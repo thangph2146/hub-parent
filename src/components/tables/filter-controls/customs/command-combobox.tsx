@@ -64,7 +64,7 @@ export function CommandCombobox<T extends object = object>({
             <Button
                 variant="outline"
                 role="combobox"
-                className={cn("h-7 sm:h-8 w-full justify-between font-normal", !value && "text-muted-foreground")}
+                className={cn("h-7 sm:h-8 w-full justify-between", !value && "text-muted-foreground")}
                 disabled={true}
             >
                 <span className="truncate">
@@ -85,7 +85,7 @@ export function CommandCombobox<T extends object = object>({
                     role="combobox"
                     aria-expanded={open}
                     aria-controls={filterId}
-                    className={cn("h-7 sm:h-8 w-full justify-between font-normal", !value && "text-muted-foreground")}
+                    className={cn("h-7 sm:h-8 w-full justify-between", !value && "text-muted-foreground")}
                     disabled={disabled}
                 >
                     <span className="truncate">

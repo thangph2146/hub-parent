@@ -1,7 +1,6 @@
 "use client";
 
-import { IconSize } from "@/components/ui/typography";
-import { TypographyDescriptionSmall, TypographyH2 } from "@/components/ui/typography";
+import { IconSize, TypographyDescriptionSmall, TypographyH2, TypographySpan } from "@/components/ui/typography";
 
 import {
   Users,
@@ -90,7 +89,7 @@ export const HomeClient = ({ featuredPosts = [] }: HomeClientProps) => {
             "Thông qua nền tảng này, phụ huynh có thể theo dõi tiến độ học tập, điểm số, lịch học và lịch thi của sinh viên. Đồng thời, phụ huynh có thể trao đổi thông tin trực tiếp với giảng viên, cố vấn học tập và nhận thông báo quan trọng từ nhà trường.",
             {
               text: "Chúng tôi mong muốn được quý phụ huynh đồng hành trong hành trình học tập, sáng tạo và trưởng thành của các em.",
-              className: "text-secondary font-bold",
+              className: "text-secondary",
             },
           ]}
         />
@@ -150,9 +149,9 @@ export const HomeClient = ({ featuredPosts = [] }: HomeClientProps) => {
               </div>
               <Link
                 href="/bai-viet"
-                className="hidden sm:flex items-center gap-2 text-primary hover:text-primary/80 font-medium transition-colors"
+                className="hidden sm:flex items-center gap-2 text-primary hover:text-primary/80 transition-colors"
               >
-                Xem tất cả
+                <TypographySpan>Xem tất cả</TypographySpan>
                 <IconSize size="sm">
                   <ArrowRight />
                 </IconSize>
@@ -174,9 +173,9 @@ export const HomeClient = ({ featuredPosts = [] }: HomeClientProps) => {
             <div className="flex sm:hidden justify-center">
               <Link
                 href="/bai-viet"
-                className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors font-medium"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
               >
-                Xem tất cả bài viết
+                <TypographySpan>Xem tất cả bài viết</TypographySpan>
                 <IconSize size="sm">
                   <ArrowRight />
                 </IconSize>

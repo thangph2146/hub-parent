@@ -44,7 +44,7 @@ export const useSessionColumns = ({
         headerClassName: "min-w-[150px] max-w-[200px]",
         cell: (row) => (
           <div>
-            <div className="font-medium">{row.userName || row.userEmail || "-"}</div>
+            <TypographyP>{row.userName || row.userEmail || "-"}</TypographyP>
             {row.userEmail && row.userName && (
               <TypographyPSmallMuted>{row.userEmail}</TypographyPSmallMuted>
             )}

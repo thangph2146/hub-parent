@@ -346,7 +346,7 @@ export function NavUser({ className }: { className?: string }) {
               <AvatarFallback className="rounded-lg">...</AvatarFallback>
             </Avatar>
             <div className="grid flex-1 text-left" suppressHydrationWarning>
-              <TypographySpanMuted className="truncate font-medium">Đang tải...</TypographySpanMuted>
+              <TypographySpanMuted className="truncate">Đang tải...</TypographySpanMuted>
               <TypographySpanSmallMuted className="truncate">Vui lòng chờ</TypographySpanSmallMuted>
             </div>
           </SidebarMenuButton>
@@ -362,7 +362,7 @@ export function NavUser({ className }: { className?: string }) {
       align="end"
       sideOffset={5}
     >
-      <DropdownMenuLabel className="p-0 font-normal">
+      <DropdownMenuLabel className="p-0">
         <div className="flex items-center gap-2 px-1 py-1.5 text-left">
           <Avatar className="h-8 w-8 rounded-lg">
             <AvatarImage
@@ -374,7 +374,7 @@ export function NavUser({ className }: { className?: string }) {
             </AvatarFallback>
           </Avatar>
           <div className="grid flex-1 text-left">
-            <TypographySpanMuted className="truncate font-medium">
+            <TypographySpanMuted className="truncate">
               {user.name || user.email}
             </TypographySpanMuted>
             <TypographySpanSmallMuted className="truncate">
@@ -516,7 +516,7 @@ export function NavUser({ className }: { className?: string }) {
             />
             <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
           </Avatar>
-          <TypographySpanMuted className="inline-block font-medium truncate max-w-[120px]" suppressHydrationWarning>
+          <TypographySpanMuted className="inline-block truncate max-w-[120px]" suppressHydrationWarning>
             {user.name || user.email}
           </TypographySpanMuted>
         </div>
@@ -536,7 +536,7 @@ export function NavUser({ className }: { className?: string }) {
               </AvatarFallback>
             </Avatar>
             <div className="grid flex-1 text-left" suppressHydrationWarning>
-              <TypographySpanMuted className="truncate font-medium" suppressHydrationWarning>
+              <TypographySpanMuted className="truncate" suppressHydrationWarning>
                 {user.name || user.email}
               </TypographySpanMuted>
               <TypographySpanSmallMuted className="truncate" suppressHydrationWarning>
@@ -566,7 +566,7 @@ export function NavUser({ className }: { className?: string }) {
               />
               <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
             </Avatar>
-            <TypographySpanMuted className="inline-block font-medium truncate max-w-[120px]" suppressHydrationWarning>
+            <TypographySpanMuted className="inline-block truncate max-w-[120px]" suppressHydrationWarning>
               {user.name || user.email}
             </TypographySpanMuted>
             <IconSize size="md" className="opacity-50">

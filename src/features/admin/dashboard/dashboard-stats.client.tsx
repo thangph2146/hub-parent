@@ -112,7 +112,7 @@ const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
         exit={{ opacity: 0, scale: 0.95 }}
         className="bg-background/95 backdrop-blur-md border border-border/50 rounded-xl shadow-2xl p-4 min-w-[200px]"
       >
-        <TypographyP className="font-bold mb-3 border-b border-border/50 pb-2">
+        <TypographyP className="mb-3 border-b border-border/50 pb-2">
           {label}
         </TypographyP>
         <div className="space-y-2">
@@ -133,13 +133,12 @@ const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
                       style={{ backgroundColor: entry.color, width: "100%", height: "100%" }}
                     />
                   </IconSize>
-                  <TypographySpanSmall className="font-medium truncate">
+                  <TypographySpanSmall className="truncate">
                     {entry.name ?? ""}
                   </TypographySpanSmall>
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0">
                   <TypographyP
-                    className="font-bold"
                     style={{ color: entry.color }}
                   >
                     {entry.value?.toLocaleString("vi-VN") ?? "0"}
@@ -156,8 +155,8 @@ const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
         </div>
         {payload.length > 1 && (
           <div className="mt-3 pt-2 border-t border-border/50 flex items-center justify-between">
-            <TypographySpanSmall className="font-semibold">Tổng cộng</TypographySpanSmall>
-            <TypographyP className="font-bold">
+            <TypographySpanSmall>Tổng cộng</TypographySpanSmall>
+            <TypographyP>
               {total.toLocaleString("vi-VN")}
             </TypographyP>
           </div>
@@ -194,11 +193,11 @@ const CustomPieTooltip = ({ active, payload }: CustomPieTooltipProps) => {
             className="w-3 h-3 rounded-full"
             style={{ backgroundColor: data.color }}
           />
-          <TypographyP className="font-bold">{data.name}</TypographyP>
+          <TypographyP>{data.name}</TypographyP>
         </div>
         <div className="space-y-1">
           <TypographyPSmallMuted>
-            Tỷ lệ: <span className="font-semibold text-foreground">{value}%</span>
+            Tỷ lệ: <TypographySpanSmall className="text-foreground">{value}%</TypographySpanSmall>
           </TypographyPSmallMuted>
         </div>
       </motion.div>
@@ -527,7 +526,7 @@ export const DashboardStatsClient = ({ stats }: DashboardStatsClientProps) => {
                       <div>
                         <CardTitle>
                           <TypographyTitleLarge className="flex items-center gap-2">
-                            <IconSize size="md" className="h-5 w-5 sm:h-6 sm:w-6">
+                            <IconSize size="md">
                               <LineChart className="text-primary" />
                             </IconSize>
                             Xu hướng theo tháng
@@ -555,7 +554,7 @@ export const DashboardStatsClient = ({ stats }: DashboardStatsClientProps) => {
                         <PopoverContent className="w-64" align="end">
                           <div className="space-y-3">
                             <div className="flex items-center justify-between">
-                              <TypographyP className="font-semibold">
+                              <TypographyP>
                                 Chọn resources
                               </TypographyP>
                               <div className="flex gap-1">
@@ -595,7 +594,7 @@ export const DashboardStatsClient = ({ stats }: DashboardStatsClientProps) => {
                                   />
                                   <label
                                     htmlFor={resource.key}
-                                    className="font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center gap-2 flex-1 cursor-pointer"
+                                    className="leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center gap-2 flex-1 cursor-pointer"
                                   >
                                     <IconSize size="xs">
                                       <div
@@ -665,7 +664,7 @@ export const DashboardStatsClient = ({ stats }: DashboardStatsClientProps) => {
                       >
                         <div className="text-center">
                           <BarChart3 className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                          <TypographyP className="font-medium">Vui lòng chọn ít nhất một resource để hiển thị</TypographyP>
+                          <TypographyP>Vui lòng chọn ít nhất một resource để hiển thị</TypographyP>
                         </div>
                       </motion.div>
                     ) : (
@@ -1004,7 +1003,7 @@ export const DashboardStatsClient = ({ stats }: DashboardStatsClientProps) => {
                   <CardHeader className="relative z-10">
                     <CardTitle>
                       <TypographyH4 className="flex items-center gap-2">
-                        <IconSize size="md" className="h-5 w-5 sm:h-6 sm:w-6">
+                        <IconSize size="md">
                           <PieChart className="text-primary" />
                         </IconSize>
                         Phân bố danh mục
@@ -1023,7 +1022,7 @@ export const DashboardStatsClient = ({ stats }: DashboardStatsClientProps) => {
                       >
                         <div className="text-center">
                           <PieChart className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                          <TypographyP className="font-medium">Chưa có dữ liệu danh mục</TypographyP>
+                          <TypographyP>Chưa có dữ liệu danh mục</TypographyP>
                         </div>
                       </motion.div>
                     ) : (
@@ -1087,10 +1086,10 @@ export const DashboardStatsClient = ({ stats }: DashboardStatsClientProps) => {
                           {/* Center label showing total */}
                           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                             <div className="text-center">
-                              <TypographyH2 className="font-bold">
+                              <TypographyH2>
                                 {stats.overview.totalPosts}
                               </TypographyH2>
-                              <TypographyPSmallMuted className="font-medium">
+                              <TypographyPSmallMuted>
                                 Tổng bài viết
                               </TypographyPSmallMuted>
                             </div>
@@ -1121,21 +1120,21 @@ export const DashboardStatsClient = ({ stats }: DashboardStatsClientProps) => {
                                     />
                                   </IconSize>
                                   <div className="flex-1 min-w-0">
-                                    <TypographyP className="font-semibold truncate">
+                                    <TypographyP className="truncate">
                                       {item.name}
                                     </TypographyP>
                                     <div className="flex items-center gap-2 mt-0.5">
-                                      <TypographySpanSmall className="text-muted-foreground font-medium">
+                                      <TypographySpanSmall className="text-muted-foreground">
                                         {item.value}%
                                       </TypographySpanSmall>
                                       <span className="text-muted-foreground">•</span>
-                                      <TypographySpanSmall className="font-semibold text-foreground">
+                                      <TypographySpanSmall className="text-foreground">
                                         {count.toLocaleString("vi-VN")} bài viết
                                       </TypographySpanSmall>
                                     </div>
                                   </div>
                                   <div className="flex items-center gap-2 flex-shrink-0">
-                                    <TypographySpanSmall className="font-bold bg-muted/50 px-2 py-1 rounded">
+                                    <TypographySpanSmall className="bg-muted/50 px-2 py-1 rounded">
                                       #{index + 1}
                                     </TypographySpanSmall>
                                   </div>

@@ -4,10 +4,11 @@ import { $getSelection, $isRangeSelection } from "lexical"
 import { QuoteIcon } from "lucide-react"
 
 import { ComponentPickerOption } from "@/components/editor/plugins/picker/component-picker-option"
+import { IconSize } from "@/components/ui/typography"
 
 export function QuotePickerPlugin() {
   return new ComponentPickerOption("Quote", {
-    icon: <QuoteIcon className="size-4" />,
+    icon: <IconSize size="sm"><QuoteIcon /></IconSize>,
     keywords: ["block quote"],
     onSelect: (_, editor) =>
       editor.update(() => {

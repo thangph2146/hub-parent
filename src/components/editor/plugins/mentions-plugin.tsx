@@ -27,6 +27,7 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command"
+import { IconSize } from "@/components/ui/typography"
 
 const LexicalTypeaheadMenuPlugin = dynamic(
   () =>
@@ -612,7 +613,9 @@ export function MentionsPlugin(): JSX.Element | null {
           (result) =>
             new MentionTypeaheadOption(
               result,
-              <CircleUserRoundIcon className="size-4" />
+              <IconSize size="sm">
+                <CircleUserRoundIcon />
+              </IconSize>
             )
         )
         .slice(0, SUGGESTION_LIST_LENGTH_LIMIT),

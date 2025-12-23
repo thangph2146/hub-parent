@@ -406,7 +406,7 @@ export function MultipleImageUpload({
 
   return (
     <div className={cn("w-full space-y-4", className)}>
-      {label && <label className="font-medium block"><TypographyP>{label}</TypographyP></label>}
+      {label && <label className="block"><TypographyP>{label}</TypographyP></label>}
 
       <div
         className={cn(
@@ -439,8 +439,10 @@ export function MultipleImageUpload({
         >
           {isProcessing ? (
             <>
-              <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
-              <TypographyP className="font-medium mb-1">Đang xử lý {pendingCount} hình ảnh...</TypographyP>
+              <IconSize size="4xl" className="animate-spin text-primary mb-4">
+                <Loader2 />
+              </IconSize>
+              <TypographyP className="mb-1">Đang xử lý {pendingCount} hình ảnh...</TypographyP>
               <TypographyPSmallMuted>
                 {successCount} hình ảnh đã upload thành công
               </TypographyPSmallMuted>
@@ -450,7 +452,7 @@ export function MultipleImageUpload({
               <div className="rounded-full bg-muted p-4 mb-4">
                 <IconSize size="2xl" className="text-muted-foreground"><Upload /></IconSize>
               </div>
-              <TypographyP className="font-medium mb-1">
+              <TypographyP className="mb-1">
                 Kéo thả hình ảnh vào đây hoặc click để chọn
               </TypographyP>
               <TypographyPSmallMuted>
@@ -464,7 +466,7 @@ export function MultipleImageUpload({
       {uploadItems.length > 0 && (
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <TypographyP className="font-medium">
+            <TypographyP>
               {uploadItems.length} hình ảnh ({successCount} thành công)
             </TypographyP>
             {uploadItems.length > 0 && (
@@ -500,7 +502,7 @@ export function MultipleImageUpload({
 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
-                    <TypographyP className="font-medium truncate">{item.file.name}</TypographyP>
+                    <TypographyP className="truncate">{item.file.name}</TypographyP>
                     {item.status === "success" && (
                       <IconSize size="sm" className="text-green-500 flex-shrink-0"><CheckCircle2 /></IconSize>
                     )}

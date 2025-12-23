@@ -104,13 +104,13 @@ export const RoleDetailClient = ({ roleId, role, backUrl = "/admin/roles" }: Rol
             {/* Name & Display Name */}
             <div className="grid gap-6 grid-cols-1 sm:grid-cols-2">
               <FieldItem icon={Shield} label="Tên vai trò">{" "}
-                <TypographySpanMuted className="font-medium text-foreground">
+                <TypographySpanMuted className="text-foreground">
                   {roleData.name || "—"}
                 </TypographySpanMuted>
               </FieldItem>
 
               <FieldItem icon={FileText} label="Tên hiển thị">{" "}
-                <TypographySpanMuted className="font-medium text-foreground">
+                <TypographySpanMuted className="text-foreground">
                   {roleData.displayName || "—"}
                 </TypographySpanMuted>
               </FieldItem>
@@ -126,7 +126,7 @@ export const RoleDetailClient = ({ roleId, role, backUrl = "/admin/roles" }: Rol
                     </IconSize>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <TypographyH3 className="font-medium text-foreground mb-2">Mô tả</TypographyH3>
+                    <TypographyH3 className="text-foreground mb-2">Mô tả</TypographyH3>
                     <TypographyP className="leading-relaxed whitespace-pre-wrap text-foreground break-words">
                       {roleData.description || "—"}
                     </TypographyP>
@@ -154,7 +154,7 @@ export const RoleDetailClient = ({ roleId, role, backUrl = "/admin/roles" }: Rol
                 </IconSize>
               </div>
               <div className="flex-1 min-w-0">
-                <TypographySpanSmallMuted className="font-medium mb-1.5">Quyền</TypographySpanSmallMuted>
+                <TypographySpanSmallMuted className="mb-1.5">Quyền</TypographySpanSmallMuted>
                 <TypographySpanMuted>—</TypographySpanMuted>
               </div>
             </div>
@@ -185,7 +185,7 @@ export const RoleDetailClient = ({ roleId, role, backUrl = "/admin/roles" }: Rol
               </div>
               <div className="flex-1 min-w-0 space-y-3">
                 <div>
-                  <TypographySpanSmallMuted className="font-medium mb-1.5">Quyền</TypographySpanSmallMuted>
+                  <TypographySpanSmallMuted className="mb-1.5">Quyền</TypographySpanSmallMuted>
                   <Popover open={permissionsOpen} onOpenChange={setPermissionsOpen}>
                     <PopoverTrigger asChild>
                       <Button
@@ -274,7 +274,7 @@ export const RoleDetailClient = ({ roleId, role, backUrl = "/admin/roles" }: Rol
             >
               <Badge
                   className={cn(
-                  "font-medium px-2.5 py-1",
+                  "px-2.5 py-1",
                   roleData.isActive
                     ? "bg-green-500/10 hover:bg-green-500/20 text-green-700 dark:text-green-400 border-green-500/20"
                     : "bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 dark:text-amber-400 border-amber-500/20"
@@ -302,13 +302,13 @@ export const RoleDetailClient = ({ roleId, role, backUrl = "/admin/roles" }: Rol
             {/* Timestamps */}
             <div className="grid gap-6 grid-cols-1 sm:grid-cols-2">
               <FieldItem icon={Calendar} label="Ngày tạo">
-                <TypographySpanMuted className="font-medium text-foreground">
+                <TypographySpanMuted className="text-foreground">
                   {roleData.createdAt ? formatDateVi(roleData.createdAt) : "—"}
                 </TypographySpanMuted>
               </FieldItem>
 
               <FieldItem icon={Clock} label="Cập nhật lần cuối">
-                <TypographySpanMuted className="font-medium text-foreground">
+                <TypographySpanMuted className="text-foreground">
                   {roleData.updatedAt ? formatDateVi(roleData.updatedAt) : "—"}
                 </TypographySpanMuted>
               </FieldItem>

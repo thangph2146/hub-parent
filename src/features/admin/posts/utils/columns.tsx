@@ -54,7 +54,7 @@ export const usePostColumns = ({
         headerClassName: "min-w-[200px]",
         cell: (row) => (
           <div className="flex flex-col gap-1.5">
-            <span className="font-medium">{row.title}</span>
+            <TypographyP>{row.title}</TypographyP>
             {row.excerpt && (
               <TypographySpanSmallMuted className="line-clamp-1">{row.excerpt}</TypographySpanSmallMuted>
             )}
@@ -65,7 +65,7 @@ export const usePostColumns = ({
                     {row.categories.slice(0, 2).map((category) => (
                       <TypographySpanSmall
                         key={category.id}
-                        className="inline-flex items-center rounded-md bg-primary/10 px-1.5 py-0.5 font-medium text-primary"
+                        className="inline-flex items-center rounded-md bg-primary/10 px-1.5 py-0.5 text-primary"
                       >
                         {category.name}
                       </TypographySpanSmall>
@@ -82,7 +82,7 @@ export const usePostColumns = ({
                     {row.tags.slice(0, 2).map((tag) => (
                       <TypographySpanSmall
                         key={tag.id}
-                        className="inline-flex items-center rounded-md bg-secondary/50 px-1.5 py-0.5 font-medium text-secondary-foreground"
+                        className="inline-flex items-center rounded-md bg-secondary/50 px-1.5 py-0.5 text-secondary-foreground"
                       >
                         {tag.name}
                       </TypographySpanSmall>
@@ -147,7 +147,7 @@ export const usePostColumns = ({
         cell: (row) => {
           if (row.deletedAt) {
             return (
-              <TypographySpanSmall className="inline-flex min-w-[88px] items-center justify-center rounded-full bg-rose-100 px-2 py-1 font-medium text-rose-700">
+              <TypographySpanSmall className="inline-flex min-w-[88px] items-center justify-center rounded-full bg-rose-100 px-2 py-1 text-rose-700">
                 Đã xóa
               </TypographySpanSmall>
             )
@@ -175,7 +175,7 @@ export const usePostColumns = ({
         header: "Ngày xuất bản",
         filter: {
           type: "date",
-          placeholder: "Chọn ngày xuất bản",
+          placeholder: "Chọn ngày",
           dateFormat: "dd/MM/yyyy",
         },
         className: "min-w-[140px] max-w-[180px]",
@@ -194,7 +194,7 @@ export const usePostColumns = ({
         header: "Ngày tạo",
         filter: {
           type: "date",
-          placeholder: "Chọn ngày tạo",
+          placeholder: "Chọn ngày",
           dateFormat: "dd/MM/yyyy",
         },
         className: "min-w-[140px] max-w-[180px]",

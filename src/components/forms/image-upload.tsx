@@ -285,7 +285,7 @@ export function ImageUpload({
   return (
     <div className={cn("w-full", className)}>
       {label && (
-        <label className="font-medium mb-2 block"><TypographyP>{label}</TypographyP></label>
+        <label className="mb-2 block"><TypographyP>{label}</TypographyP></label>
       )}
       
       <div
@@ -348,7 +348,9 @@ export function ImageUpload({
           >
             {isUploading ? (
               <>
-                <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
+                <IconSize size="4xl" className="animate-spin text-primary mb-4">
+                  <Loader2 />
+                </IconSize>
                 <TypographyPMuted>Đang upload...</TypographyPMuted>
               </>
             ) : (
@@ -356,7 +358,7 @@ export function ImageUpload({
                 <div className="rounded-full bg-muted p-4 mb-4">
                   <IconSize size="2xl" className="text-muted-foreground"><Upload /></IconSize>
                 </div>
-                <TypographyP className="font-medium mb-1">
+                <TypographyP className="mb-1">
                   Kéo thả hình ảnh vào đây hoặc click để chọn
                 </TypographyP>
                 <TypographyPSmallMuted>

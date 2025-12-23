@@ -83,13 +83,13 @@ export const StudentDetailClient = ({ studentId, student, backUrl = "/admin/stud
           <div className="grid gap-6 grid-cols-1 sm:grid-cols-2">
             {/* Student Code & Name */}
             <FieldItem icon={Hash} label="Mã sinh viên">
-              <TypographyP className="font-medium font-mono">
+              <TypographyP className="font-mono">
                 {studentData.studentCode || "—"}
               </TypographyP>
             </FieldItem>
 
             <FieldItem icon={User} label="Tên sinh viên">
-              <TypographyP className="font-medium">
+              <TypographyP>
                 {studentData.name || "—"}
               </TypographyP>
             </FieldItem>
@@ -99,7 +99,7 @@ export const StudentDetailClient = ({ studentId, student, backUrl = "/admin/stud
               <FieldItem icon={Mail} label="Email">
                 <a
                   href={`mailto:${studentData.email}`}
-                  className="font-medium text-primary hover:underline truncate block transition-colors"
+                  className="text-primary hover:underline truncate block transition-colors"
                 >
                   {studentData.email}
                 </a>
@@ -110,7 +110,7 @@ export const StudentDetailClient = ({ studentId, student, backUrl = "/admin/stud
             {studentData.userId && studentData.userName && (
               <FieldItem icon={User} label="Tài khoản liên kết">
                 <div className="space-y-0.5">
-                  <TypographyP className="font-medium">
+                  <TypographyP>
                     {studentData.userName}
                   </TypographyP>
                   {studentData.userEmail && (

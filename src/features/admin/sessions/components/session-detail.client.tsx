@@ -80,7 +80,7 @@ export const SessionDetailClient = ({ sessionId, session, backUrl = "/admin/sess
           <div className="space-y-6">
             <FieldItem icon={User} label="Người dùng" iconColor="bg-primary/10">
               <div>
-                <TypographyP className="font-medium text-foreground">
+                <TypographyP className="text-foreground">
                   {sessionData.userName || sessionData.userEmail || "—"}
                 </TypographyP>
                 {sessionData.userEmail && sessionData.userName && (
@@ -123,7 +123,7 @@ export const SessionDetailClient = ({ sessionId, session, backUrl = "/admin/sess
               </FieldItem>
 
               <FieldItem icon={MapPin} label="IP Address" iconColor="bg-chart-4/10">
-                <TypographyP className="font-medium text-foreground">
+                <TypographyP className="text-foreground">
                   {sessionData.ipAddress || "—"}
                 </TypographyP>
               </FieldItem>
@@ -160,19 +160,19 @@ export const SessionDetailClient = ({ sessionId, session, backUrl = "/admin/sess
 
             <div className="grid gap-6 grid-cols-1 sm:grid-cols-2">
               <FieldItem icon={Calendar} label="Thời gian hết hạn">
-                <TypographyP className="font-medium text-foreground">
+                <TypographyP className="text-foreground">
                   {sessionData.expiresAt ? formatDateVi(sessionData.expiresAt) : "—"}
                 </TypographyP>
               </FieldItem>
 
               <FieldItem icon={Clock} label="Hoạt động cuối">
-                <TypographyP className="font-medium text-foreground">
+                <TypographyP className="text-foreground">
                   {sessionData.lastActivity ? formatDateVi(sessionData.lastActivity) : "—"}
                 </TypographyP>
               </FieldItem>
 
               <FieldItem icon={Calendar} label="Ngày tạo">
-                <TypographyP className="font-medium text-foreground">
+                <TypographyP className="text-foreground">
                   {sessionData.createdAt ? formatDateVi(sessionData.createdAt) : "—"}
                 </TypographyP>
               </FieldItem>

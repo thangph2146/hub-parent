@@ -88,14 +88,14 @@ export function PublicFooter() {
               {/* Locations */}
               <div className="space-y-2">
                 <TypographyH4 className="text-white flex items-center gap-2 mb-1">
-                  <IconSize size="md" className="h-5 w-5 sm:h-6 sm:w-6">
+                  <IconSize size="md">
                     <Building2 className="text-blue-400" />
                   </IconSize>
                   Cơ sở đào tạo
                 </TypographyH4>
                 <div className="space-y-4">
                   <div className="group mb-1">
-                    <TypographyP className="font-medium text-blue-200 mb-1">Trụ sở chính</TypographyP>
+                    <TypographyP className="text-blue-200 mb-1">Trụ sở chính</TypographyP>
                     <div className="flex items-start gap-3 text-white/80 group-hover:text-white transition-colors">
                       <IconSize size="sm" className="flex-shrink-0 mt-0.5">
                         <MapPin className="text-blue-400" />
@@ -105,7 +105,7 @@ export function PublicFooter() {
                   </div>
 
                   <div className="group mb-1">
-                    <TypographyP className="font-medium text-blue-200 mb-1">Cơ sở Hàm Nghi</TypographyP>
+                    <TypographyP className="text-blue-200 mb-1">Cơ sở Hàm Nghi</TypographyP>
                     <div className="flex items-start gap-3 text-white/80 group-hover:text-white transition-colors">
                       <IconSize size="sm" className="flex-shrink-0 mt-0.5">
                         <MapPin className="text-blue-400" />
@@ -115,7 +115,7 @@ export function PublicFooter() {
                   </div>
 
                   <div className="group mb-1">
-                    <TypographyP className="font-medium text-blue-200 mb-1">Cơ sở Hoàng Diệu</TypographyP>
+                    <TypographyP className="text-blue-200 mb-1">Cơ sở Hoàng Diệu</TypographyP>
                     <div className="flex items-start gap-3 text-white/80 group-hover:text-white transition-colors">
                       <IconSize size="sm" className="flex-shrink-0 mt-0.5">
                         <MapPin className="text-blue-400" />
@@ -145,7 +145,7 @@ export function PublicFooter() {
                       </IconSize>
                     </div>
                     <div>
-                      <TypographyP className="font-medium text-blue-200 mb-1">Email</TypographyP>
+                      <TypographyP className="text-blue-200 mb-1">Email</TypographyP>
                       <TypographyP className="leading-relaxed">dhnhtphcm@hub.edu.vn</TypographyP>
                     </div>
                   </Link>
@@ -160,7 +160,7 @@ export function PublicFooter() {
                       </IconSize>
                     </div>
                     <div>
-                      <TypographyP className="font-medium text-blue-200 mb-1">Tuyển sinh</TypographyP>
+                      <TypographyP className="text-blue-200 mb-1">Tuyển sinh</TypographyP>
                       <TypographyP className="leading-relaxed">0888353488</TypographyP>
                     </div>
                   </Link>
@@ -175,7 +175,7 @@ export function PublicFooter() {
                       </IconSize>
                     </div>
                     <div>
-                      <TypographyP className="font-medium text-blue-200 mb-1">Đào tạo</TypographyP>
+                      <TypographyP className="text-blue-200 mb-1">Đào tạo</TypographyP>
                       <TypographyP className="leading-relaxed">(028) 38 212 430</TypographyP>
                     </div>
                   </Link>
@@ -284,7 +284,7 @@ export function PublicFooter() {
                     aria-label="Facebook - Trường Đại học Ngân hàng TP.HCM"
                     className="group flex items-center justify-center h-12 w-12 rounded-xl bg-white/10 hover:bg-blue-500/20 transition-all duration-300 hover:scale-110"
                   >
-                    <IconSize size="md" className="h-5 w-5 sm:h-6 sm:w-6">
+                    <IconSize size="md">
                       <Facebook className="text-white/80 group-hover:text-white" />
                     </IconSize>
                   </Link>
@@ -297,7 +297,7 @@ export function PublicFooter() {
                     aria-label="Twitter - Trường Đại học Ngân hàng TP.HCM"
                     className="group flex items-center justify-center h-12 w-12 rounded-xl bg-white/10 hover:bg-sky-500/20 transition-all duration-300 hover:scale-110"
                   >
-                    <IconSize size="md" className="h-5 w-5 sm:h-6 sm:w-6">
+                    <IconSize size="md">
                       <Twitter className="text-white/80 group-hover:text-white" />
                     </IconSize>
                   </Link>
@@ -310,7 +310,7 @@ export function PublicFooter() {
                     aria-label="LinkedIn - Trường Đại học Ngân hàng TP.HCM"
                     className="group flex items-center justify-center h-12 w-12 rounded-xl bg-white/10 hover:bg-blue-600/20 transition-all duration-300 hover:scale-110"
                   >
-                    <IconSize size="md" className="h-5 w-5 sm:h-6 sm:w-6">
+                    <IconSize size="md">
                       <Linkedin className="text-white/80 group-hover:text-white" />
                     </IconSize>
                   </Link>
@@ -322,9 +322,9 @@ export function PublicFooter() {
                   aria-label="Instagram - Trường Đại học Ngân hàng TP.HCM"
                   className="group flex items-center justify-center h-12 w-12 rounded-xl bg-white/10 hover:bg-pink-500/20 transition-all duration-300 hover:scale-110"
                 >
-                  <IconSize size="md" className="h-5 w-5 sm:h-6 sm:w-6">
-                    <Instagram className="text-white/80 group-hover:text-white" />
-                  </IconSize>
+                    <IconSize size="md">
+                      <Instagram className="text-white/80 group-hover:text-white" />
+                    </IconSize>
                 </Link>
                 <Link
                   href={appConfig.social.youtube}
@@ -333,9 +333,9 @@ export function PublicFooter() {
                   aria-label="YouTube - Trường Đại học Ngân hàng TP.HCM"
                   className="group flex items-center justify-center h-12 w-12 rounded-xl bg-white/10 hover:bg-red-500/20 transition-all duration-300 hover:scale-110"
                 >
-                  <IconSize size="md" className="h-5 w-5 sm:h-6 sm:w-6">
-                    <Youtube className="text-white/80 group-hover:text-white" />
-                  </IconSize>
+                    <IconSize size="md">
+                      <Youtube className="text-white/80 group-hover:text-white" />
+                    </IconSize>
                 </Link>
               </div>
             </div>
@@ -350,10 +350,10 @@ export function PublicFooter() {
           <div className="flex flex-col sm:flex-row items-center gap-2">
             <TypographySpan>© {currentYear} {appConfig.namePublic}.</TypographySpan>
             <TypographySpan className="hidden sm:inline">Được phát triển bởi</TypographySpan>
-            <TypographySpan className="font-semibold text-white hover:text-blue-300 transition-colors cursor-pointer">
+            <TypographySpan className="text-white hover:text-blue-300 transition-colors cursor-pointer">
               {appConfig.company}
             </TypographySpan>
-            <TypographySpan className="font-semibold text-white hover:text-blue-300 transition-colors cursor-pointer">Trường Đại học Ngân hàng TP.Hồ Chí Minh</TypographySpan>
+            <TypographySpan className="text-white hover:text-blue-300 transition-colors cursor-pointer">Trường Đại học Ngân hàng TP.Hồ Chí Minh</TypographySpan>
           </div>
 
 

@@ -107,7 +107,7 @@ export const useStudentColumns = ({ togglingStudents, canToggleStatus, onToggleS
         headerClassName: "w-[120px]",
         cell: (row) =>
           row.deletedAt ? (
-            <TypographySpanSmall className="inline-flex min-w-[88px] items-center justify-center rounded-full bg-rose-100 px-2 py-1 font-medium text-rose-700">
+            <TypographySpanSmall className="inline-flex min-w-[88px] items-center justify-center rounded-full bg-rose-100 px-2 py-1 text-rose-700">
               {STUDENT_LABELS.DELETED}
             </TypographySpanSmall>
           ) : (
@@ -160,7 +160,7 @@ export const useStudentColumns = ({ togglingStudents, canToggleStatus, onToggleS
                 <IconSize size="sm" className="text-green-600 dark:text-green-400">
                   <CheckCircle2 />
                 </IconSize>
-                <AlertTitle className="font-semibold text-green-800 dark:text-green-200">
+                <AlertTitle className="text-green-800 dark:text-green-200">
                   {STUDENT_LABELS.APPROVED_TITLE}
                 </AlertTitle>
                 <AlertDescription className="text-green-700 dark:text-green-300 mt-1">
@@ -176,7 +176,7 @@ export const useStudentColumns = ({ togglingStudents, canToggleStatus, onToggleS
                 <IconSize size="sm" className="text-yellow-600 dark:text-yellow-400">
                   <AlertCircle />
                 </IconSize>
-                <AlertTitle className="font-semibold text-yellow-800 dark:text-yellow-200">
+                <AlertTitle className="text-yellow-800 dark:text-yellow-200">
                   {STUDENT_LABELS.PENDING_APPROVAL_TITLE}
                 </AlertTitle>
                 <AlertDescription className="text-yellow-700 dark:text-yellow-300 mt-1">

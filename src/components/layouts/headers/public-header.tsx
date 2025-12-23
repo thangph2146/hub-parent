@@ -181,7 +181,7 @@ export function PublicHeader() {
             <TypographyH6 className="text-center">
               Trường Đại học Ngân hàng
             </TypographyH6>
-            <TypographyPSmall className="font-medium">Thành Phố Hồ Chí Minh</TypographyPSmall>
+            <TypographyPSmall>Thành Phố Hồ Chí Minh</TypographyPSmall>
           </div>
           <Separator orientation="vertical" className={`h-6 w-px bg-border`} />
           {mounted ? (
@@ -198,7 +198,7 @@ export function PublicHeader() {
                         <NavigationMenuLink asChild>
                           <Link
                             href={link.href}
-                            className="group inline-flex h-10 w-max items-center justify-center rounded-md bg-transparent px-4 py-2 font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50"
+                            className="group inline-flex h-10 w-max items-center justify-center rounded-md bg-transparent px-4 py-2 transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50"
                           >
                             {link.href === PUBLIC_ROUTES.home && (
                               <IconSize size="sm" className="mr-2"><link.icon /></IconSize>
@@ -281,7 +281,9 @@ export function PublicHeader() {
               aria-controls="mobile-menu"
               aria-label="Toggle menu"
             >
-              <MenuToggleIcon open={open} className="h-5 w-5" duration={300} />
+              <IconSize size="md">
+                <MenuToggleIcon open={open} duration={300} />
+              </IconSize>
             </Button>
           </div>
         ) : (
@@ -314,7 +316,7 @@ export function PublicHeader() {
                       <IconSize size="md" className="text-primary text-primary-foreground"><LogIn /></IconSize>
                     </div>
                     <div className="flex flex-col items-start">
-                      <span className="font-semibold">Đăng nhập</span>
+                      <TypographyP>Đăng nhập</TypographyP>
                       <TypographyPSmallMuted>
                         Đăng nhập vào tài khoản của bạn
                       </TypographyPSmallMuted>
@@ -332,7 +334,7 @@ export function PublicHeader() {
                       <IconSize size="md" className="text-foreground text-foreground-primary"><UserPlus /></IconSize>
                     </div>
                     <div className="flex flex-col items-start">
-                      <span className="font-semibold">Đăng ký</span>
+                      <TypographyP>Đăng ký</TypographyP>
                       <TypographyPSmallMuted>
                         Tạo tài khoản mới
                       </TypographyPSmallMuted>
@@ -383,7 +385,7 @@ export function PublicHeader() {
                     link.href !== PUBLIC_ROUTES.blog
                 ).length > 0 && (
                     <>
-                      <TypographyPSmallMuted className="px-2 py-2 font-semibold uppercase tracking-wider">
+                      <TypographyPSmallMuted className="px-2 py-2 uppercase tracking-wider">
                         Hỗ trợ
                       </TypographyPSmallMuted>
                       {publicLinks
@@ -491,7 +493,7 @@ function ListItem({
           <IconSize size="md" className="text-foreground group-hover:text-accent-foreground group-focus:text-accent-foreground group-data-[active]:text-accent-foreground"><Icon /></IconSize>
         </div>
         <div className="flex flex-col items-start justify-center">
-          <TypographyP className="font-medium">{title}</TypographyP>
+          <TypographyP>{title}</TypographyP>
           {description && <TypographyPSmall>{description}</TypographyPSmall>}
         </div>
       </Link>

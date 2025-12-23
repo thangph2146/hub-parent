@@ -39,7 +39,7 @@ export function ContactItem({ contact, isSelected, onClick }: ContactItemProps) 
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2 flex-1 min-w-0">
                 <CardTitle>
-                  <TypographyP className="font-medium truncate">{contact.name}</TypographyP>
+                  <TypographyP className="truncate">{contact.name}</TypographyP>
                 </CardTitle>
                 {contact.isDeleted && (
                   <IconSize size="xs" className="text-destructive shrink-0"><Trash2 aria-label="Deleted" /></IconSize>
@@ -54,7 +54,7 @@ export function ContactItem({ contact, isSelected, onClick }: ContactItemProps) 
                 <TypographyPSmallMuted className="truncate flex-1">{contact.lastMessage}</TypographyPSmallMuted>
               </CardDescription>
               {contact.unreadCount > 0 && (
-                <TypographyPSmall className="h-5 min-w-5 px-1.5 flex items-center justify-center rounded-full bg-primary text-primary-foreground font-medium shrink-0">
+                <TypographyPSmall className="h-5 min-w-5 px-1.5 flex items-center justify-center rounded-full bg-primary text-primary-foreground shrink-0">
                   {contact.unreadCount > 99 ? "99+" : contact.unreadCount}
                 </TypographyPSmall>
               )}

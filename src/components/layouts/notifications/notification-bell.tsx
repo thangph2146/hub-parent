@@ -18,7 +18,7 @@ import { NotificationItem } from "./notification-item"
 import { Separator } from "@/components/ui/separator"
 import { isSuperAdmin } from "@/lib/permissions"
 import { logger } from "@/lib/config/logger"
-import { TypographyH3, TypographyP, TypographyPSmall, TypographyPSmallMuted, TypographySpanSmall, IconSize } from "@/components/ui/typography"
+import { TypographyH3, TypographyP, TypographyPSmall, TypographyPSmallMuted, TypographySpanSmall, TypographySpanSmallMuted, IconSize } from "@/components/ui/typography"
 
 export function NotificationBell() {
   const router = useRouter()
@@ -257,8 +257,10 @@ export function NotificationBell() {
             <Bell />
           </IconSize>
           {data && data.unreadCount > 0 && (
-            <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground">
-              {data.unreadCount > 99 ? "99+" : data.unreadCount}
+            <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-destructive-foreground">
+              <TypographySpanSmallMuted>
+                {data.unreadCount > 99 ? "99+" : data.unreadCount}
+              </TypographySpanSmallMuted>
             </span>
           )}
         </Button>
@@ -360,7 +362,7 @@ export function NotificationBell() {
               <IconSize size="4xl">
                 <Bell className="mb-2 text-muted-foreground opacity-50" />
               </IconSize>
-              <TypographyP className="font-medium">Không có thông báo</TypographyP>
+              <TypographyP>Không có thông báo</TypographyP>
               <TypographyPSmallMuted className="mt-1">
                 Bạn sẽ nhận thông báo tại đây khi có cập nhật mới
               </TypographyPSmallMuted>

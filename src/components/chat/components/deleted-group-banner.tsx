@@ -58,11 +58,11 @@ export function DeletedGroupBanner({
               />
             </svg>
           </IconSize>
-          <TypographyP className="font-medium">Nhóm này đã bị xóa</TypographyP>
+          <TypographyP>Nhóm này đã bị xóa</TypographyP>
         </div>
         {canHardDelete && (
           <Button variant="destructive" size="sm" onClick={handleHardDeleteClick} className="h-7">
-            <IconSize size="xs" className="mr-1"><Trash2 /></IconSize>
+            <IconSize size="xs"><Trash2 /></IconSize>
             Xóa vĩnh viễn
           </Button>
         )}

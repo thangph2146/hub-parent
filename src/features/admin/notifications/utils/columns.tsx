@@ -6,7 +6,7 @@ import { useDynamicFilterOptions } from "@/features/admin/resources/hooks/use-dy
 import { apiRoutes } from "@/lib/api/routes"
 import type { NotificationRow } from "../types"
 import { NOTIFICATION_KINDS, NOTIFICATION_LABELS } from "../constants"
-import { TypographyPMuted, TypographySpanSmallMuted } from "@/components/ui/typography"
+import { TypographyPMuted, TypographySpanSmallMuted, TypographyP } from "@/components/ui/typography"
 
 interface UseNotificationColumnsOptions {
   togglingNotifications: Set<string>
@@ -53,10 +53,10 @@ export const useNotificationColumns = ({
           return (
             <div className="flex items-center gap-2">
               <div>
-                <div className="font-medium">{row.userEmail || "-"}</div>
+                <TypographyP>{row.userEmail || "-"}</TypographyP>
                 {row.userName && <TypographyPMuted>{row.userName}</TypographyPMuted>}
                 {isOwner && (
-                  <Badge variant="outline" className="text-xs">
+                  <Badge variant="outline">
                     {NOTIFICATION_LABELS.OWN_NOTIFICATION}
                   </Badge>
                 )}
@@ -91,10 +91,10 @@ export const useNotificationColumns = ({
         cell: (row) => (
           <a
             href={`/admin/notifications/${row.id}`}
-            className="font-medium text-primary hover:underline break-words"
+            className="text-primary hover:underline break-words"
             title={row.title}
           >
-            {row.title}
+            <TypographyP>{row.title}</TypographyP>
           </a>
         ),
       },

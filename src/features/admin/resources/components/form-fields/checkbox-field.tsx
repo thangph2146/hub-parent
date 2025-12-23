@@ -43,7 +43,7 @@ export const CheckboxField = <T,>({
           )}
         />
         <Label htmlFor={fieldId} asChild>
-          <TypographyP className="font-normal">{field.label}</TypographyP>
+          <TypographyP>{field.label}</TypographyP>
         </Label>
       </div>
       {error && <FieldError id={errorId}>{error}</FieldError>}

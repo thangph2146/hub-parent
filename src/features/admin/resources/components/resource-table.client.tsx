@@ -198,7 +198,7 @@ export const ResourceTableClient = <T extends object>({
               <DropdownMenuItem
                 key={view.id}
                 onClick={() => handleViewChange(view.id)}
-                className={currentViewId === view.id ? "bg-accent/10 font-medium" : ""}
+                className={currentViewId === view.id ? "bg-accent/10" : ""}
               >
                 {view.label}
               </DropdownMenuItem>

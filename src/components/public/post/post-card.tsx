@@ -5,7 +5,7 @@ import Image from "next/image"
 import { Calendar, Tag, ArrowRight, FolderOpen } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
-import { TypographyH4, TypographySpanSmall, TypographyPMuted, IconSize } from "@/components/ui/typography"
+import { TypographyH4, TypographySpanSmall, TypographyPMuted, IconSize, TypographyPSmall } from "@/components/ui/typography"
 import type { Post } from "@/features/public/post/types"
 import { formatPostDate } from "@/features/public/post/utils/date-formatter"
 
@@ -67,20 +67,22 @@ export function PostCard({ post, className, priority = false }: PostCardProps) {
         <div className="flex flex-col flex-1 p-6">
           {/* Category Badge */}
           {primaryCategory && primaryCategory.name && (
-            <Badge variant="secondary" className="w-fit mb-3 font-medium">
+            <Badge variant="secondary" className="w-fit mb-3">
               <TypographySpanSmall>{primaryCategory.name}</TypographySpanSmall>
             </Badge>
           )}
 
           {/* Title */}
-          <TypographyH4 className="font-semibold mb-3 line-clamp-2 group-hover:text-primary transition-colors">
+          <TypographyH4 className="mb-3 line-clamp-2 group-hover:text-primary transition-colors">
             {post.title}
           </TypographyH4>
 
           {/* Date */}
           {post.publishedAt && (
             <div className="flex items-center gap-1.5 mb-4">
+              <IconSize size="sm">
                 <Calendar />
+              </IconSize>
               <time dateTime={getPublishedAtISO()}>
                 <TypographyPMuted>{formatPostDate(post.publishedAt)}</TypographyPMuted>
               </time>
@@ -88,8 +90,8 @@ export function PostCard({ post, className, priority = false }: PostCardProps) {
           )}
 
           {/* Read Now Button */}
-          <div className="mt-auto flex items-center gap-2 text-primary font-medium group-hover:gap-3 transition-all">
-            <span>Đọc ngay</span>
+          <div className="mt-auto flex items-center gap-2 text-primary group-hover:gap-3 transition-all">
+            <TypographyPSmall>Đọc ngay</TypographyPSmall>
             <IconSize size="sm" className="transition-transform group-hover:translate-x-1">
               <ArrowRight />
             </IconSize>

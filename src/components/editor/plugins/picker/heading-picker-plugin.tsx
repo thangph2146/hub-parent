@@ -4,6 +4,7 @@ import { $getSelection, $isRangeSelection } from "lexical"
 import { Heading1Icon, Heading2Icon, Heading3Icon } from "lucide-react"
 
 import { ComponentPickerOption } from "@/components/editor/plugins/picker/component-picker-option"
+import { IconSize } from "@/components/ui/typography"
 
 export function HeadingPickerPlugin({ n }: { n: 1 | 2 | 3 }) {
   return new ComponentPickerOption(`Heading ${n}`, {
@@ -22,10 +23,10 @@ export function HeadingPickerPlugin({ n }: { n: 1 | 2 | 3 }) {
 function HeadingIcons({ n }: { n: number }) {
   switch (n) {
     case 1:
-      return <Heading1Icon className="size-4" />
+      return <IconSize size="sm"><Heading1Icon /></IconSize>
     case 2:
-      return <Heading2Icon className="size-4" />
+      return <IconSize size="sm"><Heading2Icon /></IconSize>
     case 3:
-      return <Heading3Icon className="size-4" />
+      return <IconSize size="sm"><Heading3Icon /></IconSize>
   }
 }

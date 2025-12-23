@@ -493,7 +493,7 @@ export const ChatTemplate = ({
                     <Menu />
                   </IconSize>
                 </Button>
-                <TypographyH4 className="font-semibold">Chats</TypographyH4>
+                <TypographyH4>Chats</TypographyH4>
               </div>
               <div className="flex-1 flex items-center justify-center">
                 <EmptyState variant="no-chat" />

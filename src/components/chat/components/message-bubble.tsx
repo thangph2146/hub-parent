@@ -5,7 +5,7 @@ import { formatMessageTime } from "../utils"
 import { highlightText } from "../utils/text-helpers"
 import { isMessageReadByUser } from "../utils/message-helpers"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { TypographyPSmall, TypographyP } from "@/components/ui/typography"
+import { TypographyPSmall, TypographyP, TypographySpanSmallMuted } from "@/components/ui/typography"
 
 interface MessageBubbleProps {
   message: Message
@@ -84,7 +84,7 @@ export function MessageBubble({
           }}
         >
           {showSenderInfo && (
-            <TypographyPSmall className={`font-medium mb-1 ${
+            <TypographyPSmall className={`mb-1 ${
               isOwnMessage ? "text-primary-foreground/80" : "text-muted-foreground"
             }`}>
               {senderName}
@@ -112,7 +112,7 @@ export function MessageBubble({
                 }
               }}
             >
-              <TypographyPSmall className={`font-medium ${
+              <TypographyPSmall className={`${
                 isOwnMessage ? "text-primary-foreground/80" : "text-muted-foreground"
               }`}>
                 {isParentOwnMessage ? "You" : "Reply"}
@@ -134,9 +134,9 @@ export function MessageBubble({
               {formatMessageTime(message.timestamp)}
             </TypographyPSmall>
             {isOwnMessage && message.status === "sending" && (
-              <span className="text-[10px] text-primary-foreground/70">
+              <TypographySpanSmallMuted className="text-primary-foreground/70">
                 Đang gửi...
-              </span>
+              </TypographySpanSmallMuted>
             )}
             {canMarkRead && (
               <button
@@ -161,15 +161,17 @@ export function MessageBubble({
           {message.readers.slice(0, 5).map((reader) => (
             <Avatar key={reader.id} className="h-5 w-5 border-2 border-background">
               <AvatarImage src={reader.avatar || undefined} alt={reader.name || reader.email} />
-              <AvatarFallback className="text-[10px]">
-                {(reader.name || reader.email).charAt(0).toUpperCase()}
+              <AvatarFallback>
+                <TypographySpanSmallMuted>
+                  {(reader.name || reader.email).charAt(0).toUpperCase()}
+                </TypographySpanSmallMuted>
               </AvatarFallback>
             </Avatar>
           ))}
           {message.readers.length > 5 && (
-            <span className="text-[10px] text-muted-foreground ml-1">
+            <TypographySpanSmallMuted className="ml-1">
               +{message.readers.length - 5}
-            </span>
+            </TypographySpanSmallMuted>
           )}
         </div>
       )}

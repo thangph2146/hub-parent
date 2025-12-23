@@ -11,6 +11,7 @@ import {
   unlockImageBoundaries,
 } from "@/components/editor/editor-ui/image-sizing"
 import { useEditorContainer } from "@/components/editor/context/editor-container-context"
+import { IconSize } from "@/components/ui/typography"
 
 function clamp(value: number, min: number, max: number) {
   // Nếu max là Infinity, chỉ giới hạn min
@@ -405,12 +406,16 @@ export function MediaResizer({
           >
             {showCaption ? (
               <>
-                <ImageMinus className="mr-1.5 size-4" />
+                <IconSize size="sm" className="mr-1.5">
+                  <ImageMinus />
+                </IconSize>
                 Remove Caption
               </>
             ) : (
               <>
-                <ImagePlus className="mr-1.5 size-4" />
+                <IconSize size="sm" className="mr-1.5">
+                  <ImagePlus />
+                </IconSize>
                 Add Caption
               </>
             )}

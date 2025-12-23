@@ -12,6 +12,7 @@ import { $createTextNode, $getRoot } from "lexical"
 import { FileTextIcon } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
+import { IconSize } from "@/components/ui/typography"
 
 export function MarkdownTogglePlugin({
   shouldPreserveNewLinesInMarkdown,
@@ -59,7 +60,9 @@ export function MarkdownTogglePlugin({
       size={"sm"}
       className="p-2"
     >
-      <FileTextIcon className="size-4" />
+      <IconSize size="sm">
+        <FileTextIcon />
+      </IconSize>
     </Button>
   )
 }

@@ -24,7 +24,7 @@ export function FormatHeading({ levels = [] }: { levels: HeadingTagType[] }) {
       value={level}
       onPointerDown={() => formatHeading(level)}
     >
-      <div className="flex items-center gap-1 font-normal">
+      <div className="flex items-center gap-1">
         {blockTypeToBlockName[level].icon}
         {blockTypeToBlockName[level].label}
       </div>

@@ -34,7 +34,7 @@ import { ImageGrid } from "./image-grid"
 import { Pagination } from "./pagination"
 import { ViewModeToggle } from "./view-mode-toggle"
 import { DeleteDialogs } from "./delete-dialogs"
-import { TypographySpanSmall, IconSize } from "@/components/ui/typography"
+import { TypographySpanSmall, IconSize, TypographyPSmall } from "@/components/ui/typography"
 
 export const UploadsPageClient = () => {
   const queryClient = useQueryClient()
@@ -297,9 +297,9 @@ export const UploadsPageClient = () => {
                         }}
                       >
                         {isIndeterminate ? (
-                          <span className="font-medium text-foreground">
+                          <TypographyPSmall className="text-foreground">
                             Đã chọn {selectedImages.size}/{allImages.length}
-                          </span>
+                          </TypographyPSmall>
                         ) : (
                           "Chọn tất cả"
                         )}
@@ -316,7 +316,7 @@ export const UploadsPageClient = () => {
                             : `Chọn tất cả ${allImages.length} hình ảnh`}
                       </TypographySpanSmall>
                       <TypographySpanSmall>
-                        Nhấn <kbd className="px-1.5 py-0.5 font-semibold rounded border">Ctrl+A</kbd> để chọn/bỏ chọn
+                        Nhấn <kbd className="px-1.5 py-0.5 rounded border">Ctrl+A</kbd> để chọn/bỏ chọn
                       </TypographySpanSmall>
                     </div>
                   </TooltipContent>

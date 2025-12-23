@@ -68,7 +68,7 @@ export const PostSort = () => {
               onClick={() => handleSortChange(option.value)}
               className={cn(
                 "w-full flex items-center gap-2 cursor-pointer",
-                isActive && "bg-accent/10 font-medium"
+                isActive && "bg-accent/10"
               )}
             >
               <IconSize size="sm">

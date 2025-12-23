@@ -182,13 +182,13 @@ export const NotificationDetailClient = ({
             {/* Kind & Title */}
             <div className="grid gap-6 grid-cols-1 sm:grid-cols-2">
               <FieldItem icon={Bell} label="Loại thông báo">
-                <Badge variant={kindConfigData.variant} className="text-xs">
+                <Badge variant={kindConfigData.variant}>
                   {kindConfigData.label}
                 </Badge>
               </FieldItem>
 
               <FieldItem icon={FileText} label="Tiêu đề">
-                <TypographyP className="font-medium">
+                <TypographyP>
                   {notificationData.title || "—"}
                 </TypographyP>
               </FieldItem>
@@ -204,7 +204,7 @@ export const NotificationDetailClient = ({
                     </IconSize>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <TypographyP className="font-medium mb-2">
+                    <TypographyP className="mb-2">
                       Mô tả
                     </TypographyP>
                     <TypographyP className="whitespace-pre-wrap break-words">
@@ -218,7 +218,7 @@ export const NotificationDetailClient = ({
             {/* User */}
             <FieldItem icon={User} label="Người dùng">
               <div className="space-y-0.5">
-                <TypographyP className="font-medium">
+                <TypographyP>
                   {notificationData.user?.email || "—"}
                 </TypographyP>
                 {notificationData.user?.name && (
@@ -283,7 +283,6 @@ export const NotificationDetailClient = ({
                     </IconSize>
                     <time
                       dateTime={notificationData.readAt}
-                      className="font-medium"
                       title={new Date(notificationData.readAt).toLocaleString(
                         "vi-VN",
                         {
@@ -292,7 +291,9 @@ export const NotificationDetailClient = ({
                         }
                       )}
                     >
-                      {formatDateVi(notificationData.readAt)}
+                      <TypographyPSmallMuted>
+                        {formatDateVi(notificationData.readAt)}
+                      </TypographyPSmallMuted>
                     </time>
                   </div>
                 </FieldItem>
@@ -330,12 +331,12 @@ export const NotificationDetailClient = ({
                     href={notificationData.actionUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="group inline-flex items-center gap-2 font-medium text-primary hover:text-primary/80 hover:underline transition-colors w-full min-w-0"
+                    className="group inline-flex items-center gap-2 text-primary hover:text-primary/80 hover:underline transition-colors w-full min-w-0"
                     title={notificationData.actionUrl}
                   >
-                    <span className="truncate flex-1 min-w-0">
+                    <TypographyP className="truncate flex-1 min-w-0">
                       {notificationData.actionUrl}
-                    </span>
+                    </TypographyP>
                   </a>
                 </FieldItem>
               )}
@@ -349,7 +350,6 @@ export const NotificationDetailClient = ({
                     </IconSize>
                     <time
                       dateTime={notificationData.createdAt}
-                      className="font-medium"
                       title={new Date(
                         notificationData.createdAt
                       ).toLocaleString("vi-VN", {
@@ -357,7 +357,9 @@ export const NotificationDetailClient = ({
                         timeStyle: "long",
                       })}
                     >
-                      {formatDateVi(notificationData.createdAt)}
+                      <TypographyPSmallMuted>
+                        {formatDateVi(notificationData.createdAt)}
+                      </TypographyPSmallMuted>
                     </time>
                   </div>
                 ) : (
@@ -404,7 +406,7 @@ export const NotificationDetailClient = ({
                       </time>
                     </div>
                     {new Date(notificationData.expiresAt) < new Date() && (
-                      <Badge variant="destructive" className="text-xs w-fit">
+                      <Badge variant="destructive" className="w-fit">
                         <IconSize size="xs" className="mr-1">
                           <AlertCircle />
                         </IconSize>

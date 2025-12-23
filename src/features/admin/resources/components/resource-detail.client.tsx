@@ -151,7 +151,7 @@ export const ResourceDetailClient = <T extends Record<string, unknown>>({
           return (
             <TypographySpanSmall
               className={cn(
-                "inline-flex items-center rounded-full px-2 py-1 font-medium",
+                "inline-flex items-center rounded-full px-2 py-1",
                 boolValue
                   ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
                   : "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300"
@@ -239,7 +239,7 @@ export const ResourceDetailClient = <T extends Record<string, unknown>>({
             !inSection && "border-b border-border/50 last:border-0"
           )}
         >
-          <FieldTitle className="text-muted-foreground font-medium mb-1">
+          <FieldTitle className="text-muted-foreground mb-1">
             {field.label}
           </FieldTitle>
           <FieldContent>
@@ -474,7 +474,7 @@ export const ResourceDetailClient = <T extends Record<string, unknown>>({
               {ungrouped.length > 0 && (
                 <Card>
                   <CardHeader className="pb-3">
-                    <CardTitle className="font-semibold">
+                    <CardTitle>
                       {fieldsTitle}
                     </CardTitle>
                     {fieldsDesc && (
@@ -506,7 +506,7 @@ export const ResourceDetailClient = <T extends Record<string, unknown>>({
                   {sections.map((section, i) => (
                     <Card key={i} className="h-fit">
                       <CardHeader className="pb-3">
-                        <CardTitle className="font-semibold">
+                        <CardTitle>
                           {section.title}
                         </CardTitle>
                         {section.description && (

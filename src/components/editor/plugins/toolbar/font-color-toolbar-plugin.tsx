@@ -22,6 +22,7 @@ import {
   ColorPickerTrigger,
 } from "@/components/editor/editor-ui/color-picker"
 import { Button } from "@/components/ui/button"
+import { IconSize } from "@/components/ui/typography"
 
 export function FontColorToolbarPlugin() {
   const { activeEditor } = useToolbarContext()
@@ -73,7 +74,9 @@ export function FontColorToolbarPlugin() {
     >
       <ColorPickerTrigger asChild>
         <Button variant="outline" size="icon">
-          <BaselineIcon className="h-4 w-4" />
+          <IconSize size="sm">
+            <BaselineIcon />
+          </IconSize>
         </Button>
       </ColorPickerTrigger>
       <ColorPickerContent>

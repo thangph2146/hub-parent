@@ -51,6 +51,7 @@ import { useImagesList } from "@/features/admin/uploads/hooks/use-uploads-querie
 import { Loader2, Folder, ChevronRight } from "lucide-react"
 import Image from "next/image"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
+import { TypographyP, TypographySpanSmallMuted, IconSize } from "@/components/ui/typography"
 import type { FolderNode } from "@/features/admin/uploads/types"
 
 export type InsertImagePayload = Readonly<ImagePayload>
@@ -206,13 +207,17 @@ function ImagePickerFolderTree({
 
   return (
     <Collapsible key={folder.path} open={isOpen} onOpenChange={handleOpenChange} className="mb-2">
-      <CollapsibleTrigger className="flex items-center gap-2 w-full px-2 py-1.5 hover:bg-muted rounded-md transition-colors text-left text-sm">
-        <ChevronRight className={`h-3.5 w-3.5 transition-transform shrink-0 ${isOpen ? "rotate-90" : ""}`} />
-        <Folder className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-        <span className="font-medium truncate">{folder.name}</span>
-        <span className="text-xs text-muted-foreground ml-auto shrink-0">
+      <CollapsibleTrigger className="flex items-center gap-2 w-full px-2 py-1.5 hover:bg-muted rounded-md transition-colors text-left">
+        <IconSize size="xs" className={`transition-transform shrink-0 ${isOpen ? "rotate-90" : ""}`}>
+          <ChevronRight />
+        </IconSize>
+        <IconSize size="xs" className="text-muted-foreground shrink-0">
+          <Folder />
+        </IconSize>
+        <TypographyP className="truncate">{folder.name}</TypographyP>
+        <TypographySpanSmallMuted className="ml-auto shrink-0">
           {`${folder.images.length} hình${folder.subfolders.length > 0 ? `, ${folder.subfolders.length} thư mục` : ""}`}
-        </span>
+        </TypographySpanSmallMuted>
       </CollapsibleTrigger>
       <CollapsibleContent className="ml-4 mt-1">
         {/* Render images in this folder */}
@@ -335,15 +340,15 @@ export function InsertImageUploadsDialogBody({
             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
           </div>
         ) : !folderTree || (folderTree.subfolders.length === 0 && folderTree.images.length === 0) ? (
-          <div className="text-center py-8 text-muted-foreground text-sm">
-            Chưa có hình ảnh nào được upload
+          <div className="text-center py-8">
+            <TypographySpanSmallMuted>Chưa có hình ảnh nào được upload</TypographySpanSmallMuted>
           </div>
         ) : (
           <div className="max-h-[350px] overflow-y-auto p-2 border rounded-md">
             {/* Render root level images if any */}
             {folderTree.images.length > 0 && (
               <div className="mb-3">
-                <div className="text-xs font-medium text-muted-foreground mb-2 px-1">Root</div>
+                <TypographySpanSmallMuted className="mb-2 px-1">Root</TypographySpanSmallMuted>
                 <div className="grid grid-cols-4 gap-2">
                   {folderTree.images.map((image) => (
                     <button

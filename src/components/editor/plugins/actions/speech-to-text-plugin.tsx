@@ -28,6 +28,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import { IconSize } from "@/components/ui/typography"
 
 export const SPEECH_TO_TEXT_COMMAND: LexicalCommand<boolean> = createCommand(
   "SPEECH_TO_TEXT_COMMAND"
@@ -141,7 +142,9 @@ function SpeechToTextPluginImpl() {
           className="p-2"
           size={"sm"}
         >
-          <MicIcon className="size-4" />
+          <IconSize size="sm">
+            <MicIcon />
+          </IconSize>
         </Button>
       </TooltipTrigger>
       <TooltipContent>Speech To Text</TooltipContent>

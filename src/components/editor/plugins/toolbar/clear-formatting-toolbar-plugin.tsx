@@ -15,6 +15,7 @@ import { EraserIcon } from "lucide-react"
 
 import { useToolbarContext } from "@/components/editor/context/toolbar-context"
 import { Button } from "@/components/ui/button"
+import { IconSize } from "@/components/ui/typography"
 
 export function ClearFormattingToolbarPlugin() {
   const { activeEditor } = useToolbarContext()
@@ -83,7 +84,9 @@ export function ClearFormattingToolbarPlugin() {
       size={"icon"}
       onClick={clearFormatting}
     >
-      <EraserIcon className="h-4 w-4" />
+      <IconSize size="sm">
+        <EraserIcon />
+      </IconSize>
     </Button>
   )
 }

@@ -49,7 +49,7 @@ export function ForgotPasswordForm({
                     <IconSize size="md" className="text-primary"><Info /></IconSize>
                   </div>
                   <div className="flex-1 space-y-2">
-                    <TypographyP className="font-semibold">
+                    <TypographyP>
                       Vui lòng liên hệ phòng QLCTT
                     </TypographyP>
                     <TypographyPMuted className="leading-relaxed">
@@ -64,7 +64,7 @@ export function ForgotPasswordForm({
                     <div className="rounded-md bg-primary/10 p-1.5 dark:bg-primary/20 ring-1 ring-primary/20">
                       <IconSize size="sm" className="text-primary"><MapPin /></IconSize>
                     </div>
-                    <TypographyP className="text-foreground font-medium">
+                    <TypographyP className="text-foreground">
                       Trường Đại học Ngân hàng TP.HCM
                     </TypographyP>
                   </div>
@@ -72,7 +72,7 @@ export function ForgotPasswordForm({
                     <div className="rounded-md bg-secondary/10 p-1.5 dark:bg-secondary/20 ring-1 ring-secondary/20">
                       <IconSize size="sm" className="text-secondary"><Phone /></IconSize>
                     </div>
-                    <TypographyP className="text-foreground font-medium">
+                    <TypographyP className="text-foreground">
                       Phòng Quản lý Công tác Tuyển sinh (QLCTT)
                     </TypographyP>
                   </div>

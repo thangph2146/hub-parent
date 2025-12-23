@@ -6,7 +6,7 @@
 
 "use client"
 
-import { TypographyP, TypographyPSmall, TypographyPSmallMuted, TypographyPMuted, IconSize } from "@/components/ui/typography"
+import { TypographyP, TypographyPSmall, TypographyPSmallMuted, TypographyPMuted, IconSize, TypographySpanSmall } from "@/components/ui/typography"
 
 import { useCallback, useMemo, useState } from "react"
 import { 
@@ -126,7 +126,7 @@ const YearAveragesList = ({ averages, isLoading }: { averages?: YearAverage[]; i
       {
         accessorKey: "yearStudy",
         header: "Năm học",
-        cell: (row) => <div className="font-medium">{row.yearStudy}</div>,
+        cell: (row) => <TypographyP>{row.yearStudy}</TypographyP>,
         className: "min-w-[120px]",
         filter: {
           type: "select",
@@ -139,7 +139,7 @@ const YearAveragesList = ({ averages, isLoading }: { averages?: YearAverage[]; i
         header: "Điểm hệ 10",
         cell: (row) => {
           const score10 = formatScore(row.averageScore10, "10")
-          return <div className={cn("font-semibold", score10.color)}>{score10.text}</div>
+          return <TypographyP className={score10.color}>{score10.text}</TypographyP>
         },
         className: "min-w-[100px]",
       },
@@ -148,7 +148,7 @@ const YearAveragesList = ({ averages, isLoading }: { averages?: YearAverage[]; i
         header: "Điểm hệ 4",
         cell: (row) => {
           const score4 = formatScore(row.averageScore4, "4")
-          return <div className={cn("font-semibold", score4.color)}>{score4.text}</div>
+          return <TypographyP className={cn(score4.color)}>{score4.text}</TypographyP>
         },
         className: "min-w-[100px]",
       },
@@ -295,7 +295,7 @@ const YearTermAveragesDataTable = ({ termAverages }: { termAverages: TermAverage
         header: "Điểm hệ 10",
         cell: (row) => {
           const score10 = formatScore(row.averageScore10, "10")
-          return <div className={cn("font-semibold", score10.color)}>{score10.text}</div>
+          return <TypographyP className={score10.color}>{score10.text}</TypographyP>
         },
         className: "min-w-[100px]",
       },
@@ -304,7 +304,7 @@ const YearTermAveragesDataTable = ({ termAverages }: { termAverages: TermAverage
         header: "Điểm hệ 4",
         cell: (row) => {
           const score4 = formatScore(row.averageScore4, "4")
-          return <div className={cn("font-semibold", score4.color)}>{score4.text}</div>
+          return <TypographyP className={cn(score4.color)}>{score4.text}</TypographyP>
         },
         className: "min-w-[100px]",
       },
@@ -516,7 +516,7 @@ const TermAveragesList = ({ averages, isLoading }: { averages?: TermAverage[]; i
                       <IconSize size="sm" className="text-muted-foreground">
                         <Calendar />
                       </IconSize>
-                      <span className="font-semibold">Năm học ({yearStudy})</span>
+                      <TypographySpanSmall>Năm học ({yearStudy})</TypographySpanSmall>
                       <Badge variant="secondary" className="ml-auto">
                         {termAverages.length} học kỳ
                       </Badge>
@@ -552,7 +552,7 @@ const TermScoresDataTable = ({ termScores }: { termScores: DetailedScore[] }) =>
         header: "Môn học",
         cell: (row) => (
           <div className="space-y-0.5 min-w-0">
-            <div className="font-medium truncate">{row.curriculumName}</div>
+            <TypographyP className="truncate">{row.curriculumName}</TypographyP>
           </div>
         ),
         className: "min-w-[250px] sm:min-w-[300px]",
@@ -579,9 +579,9 @@ const TermScoresDataTable = ({ termScores }: { termScores: DetailedScore[] }) =>
         cell: (row) => {
           const mark10 = formatScore(row.mark10, "10")
           return (
-            <div className={cn("font-semibold whitespace-nowrap", mark10.color)}>
+            <TypographyP className={cn("whitespace-nowrap", mark10.color)}>
               {mark10.text}
-            </div>
+            </TypographyP>
           )
         },
         className: "min-w-[90px]",
@@ -592,9 +592,9 @@ const TermScoresDataTable = ({ termScores }: { termScores: DetailedScore[] }) =>
         cell: (row) => {
           const mark4 = formatScore(row.mark4, "4")
           return (
-            <div className={cn("font-semibold whitespace-nowrap", mark4.color)}>
+            <TypographyP className={cn("whitespace-nowrap", mark4.color)}>
               {mark4.text}
-            </div>
+            </TypographyP>
           )
         },
         className: "min-w-[90px]",
@@ -606,7 +606,7 @@ const TermScoresDataTable = ({ termScores }: { termScores: DetailedScore[] }) =>
           if (!row.markLetter) return <span className="text-muted-foreground">—</span>
           const grade = formatGrade(row.markLetter)
           return (
-            <Badge variant="outline" className={cn("font-semibold whitespace-nowrap", grade.color)}>
+            <Badge variant="outline" className={cn("whitespace-nowrap", grade.color)}>
               {grade.text}
             </Badge>
           )
@@ -864,7 +864,7 @@ const DetailedScoresTable = ({ scores, isLoading }: { scores?: DetailedScore[]; 
                       <IconSize size="sm" className="text-muted-foreground">
                         <Calendar />
                       </IconSize>
-                      <span className="font-semibold">Năm học ({yearStudy})</span>
+                      <TypographySpanSmall>Năm học ({yearStudy})</TypographySpanSmall>
                       <Badge variant="secondary" className="ml-auto">
                         {Object.keys(terms).length} học kỳ
                       </Badge>
@@ -895,7 +895,7 @@ const DetailedScoresTable = ({ scores, isLoading }: { scores?: DetailedScore[]; 
                                   <IconSize size="sm" className="text-muted-foreground">
                                     <TrendingUp />
                                   </IconSize>
-                                  <span className="font-medium">Học kỳ ({termID})</span>
+                                  <TypographySpanSmall>Học kỳ ({termID})</TypographySpanSmall>
                                 </CollapsibleTrigger>
                                 <CollapsibleContent className="ml-6 mt-2">
                                   <TermScoresDataTable termScores={termScores} />

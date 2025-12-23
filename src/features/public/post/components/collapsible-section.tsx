@@ -26,7 +26,7 @@ export const CollapsibleSection = ({ title, icon, children, defaultOpen = true }
         >
           <div className="flex items-center gap-2">
             {icon}
-            <TypographySpanMuted className="font-medium">{title}</TypographySpanMuted>
+            <TypographySpanMuted>{title}</TypographySpanMuted>
           </div>
           <IconSize size="sm" className={cn("text-muted-foreground transition-transform duration-200", isOpen && "rotate-180")}>
             <ChevronDown />

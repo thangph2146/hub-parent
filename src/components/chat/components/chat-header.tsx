@@ -85,7 +85,7 @@ function ChatHeader(
         </Avatar>
         <div className="flex-1 min-w-0">
           <CardTitle>
-            <TypographyP className="font-semibold truncate">{contact.name}</TypographyP>
+            <TypographyP className="truncate">{contact.name}</TypographyP>
           </CardTitle>
           <CardDescription>
             <TypographyPSmall className="truncate">

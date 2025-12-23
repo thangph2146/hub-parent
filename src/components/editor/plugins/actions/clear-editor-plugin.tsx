@@ -20,6 +20,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import { IconSize } from "@/components/ui/typography"
 
 export function ClearEditorActionPlugin() {
   const [editor] = useLexicalComposerContext()
@@ -30,7 +31,9 @@ export function ClearEditorActionPlugin() {
         <TooltipTrigger asChild>
           <DialogTrigger asChild>
             <Button size={"sm"} variant={"ghost"} className="p-2">
-              <Trash2Icon className="h-4 w-4" />
+              <IconSize size="sm">
+                <Trash2Icon />
+              </IconSize>
             </Button>
           </DialogTrigger>
         </TooltipTrigger>

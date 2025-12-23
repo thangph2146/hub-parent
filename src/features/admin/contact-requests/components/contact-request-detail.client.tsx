@@ -174,7 +174,7 @@ export const ContactRequestDetailClient = ({ contactRequestId, contactRequest, b
             {/* Contact Info */}
             <div className="grid gap-6 grid-cols-1 sm:grid-cols-2">
               <FieldItem icon={User} label="Tên người liên hệ">
-                <TypographyP className="font-medium text-foreground">
+                <TypographyP className="text-foreground">
                   {requestData.name || "—"}
                 </TypographyP>
               </FieldItem>
@@ -182,7 +182,7 @@ export const ContactRequestDetailClient = ({ contactRequestId, contactRequest, b
               <FieldItem icon={Mail} label="Email">
                 <a
                   href={`mailto:${requestData.email}`}
-                  className="font-medium text-primary hover:underline truncate block transition-colors"
+                  className="text-primary hover:underline truncate block transition-colors"
                 >
                   {requestData.email || "—"}
                 </a>
@@ -193,7 +193,7 @@ export const ContactRequestDetailClient = ({ contactRequestId, contactRequest, b
               <FieldItem icon={Phone} label="Số điện thoại">
                 <a
                   href={`tel:${requestData.phone}`}
-                  className="font-medium text-primary hover:underline transition-colors"
+                  className="text-primary hover:underline transition-colors"
                 >
                   {requestData.phone}
                 </a>
@@ -202,7 +202,7 @@ export const ContactRequestDetailClient = ({ contactRequestId, contactRequest, b
 
             {/* Subject */}
             <FieldItem icon={FileText} label="Tiêu đề">
-              <TypographyP className="font-medium text-foreground">
+              <TypographyP className="text-foreground">
                 {requestData.subject || "—"}
               </TypographyP>
             </FieldItem>
@@ -216,7 +216,7 @@ export const ContactRequestDetailClient = ({ contactRequestId, contactRequest, b
                   </IconSize>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <TypographyP className="font-medium text-foreground mb-2">Nội dung</TypographyP>
+                  <TypographyP className="text-foreground mb-2">Nội dung</TypographyP>
                   <TypographyP className="leading-relaxed whitespace-pre-wrap text-foreground break-words">
                     {requestData.content || "—"}
                   </TypographyP>
@@ -285,7 +285,7 @@ export const ContactRequestDetailClient = ({ contactRequestId, contactRequest, b
             {/* Assigned To */}
             {requestData.assignedTo && (
               <FieldItem icon={UserCheck} label="Người được giao">
-                <TypographyP className="font-medium text-foreground">
+                <TypographyP className="text-foreground">
                   {requestData.assignedTo.name || requestData.assignedTo.email || "—"}
                 </TypographyP>
               </FieldItem>
@@ -305,13 +305,13 @@ export const ContactRequestDetailClient = ({ contactRequestId, contactRequest, b
           <div className="space-y-6">
             <div className="grid gap-6 grid-cols-1 sm:grid-cols-2">
               <FieldItem icon={Calendar} label="Ngày tạo">
-                <TypographyP className="font-medium text-foreground">
+                <TypographyP className="text-foreground">
                   {requestData.createdAt ? formatDateVi(requestData.createdAt) : "—"}
                 </TypographyP>
               </FieldItem>
 
               <FieldItem icon={Clock} label="Cập nhật lần cuối">
-                <TypographyP className="font-medium text-foreground">
+                <TypographyP className="text-foreground">
                   {requestData.updatedAt ? formatDateVi(requestData.updatedAt) : "—"}
                 </TypographyP>
               </FieldItem>

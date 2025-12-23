@@ -189,7 +189,7 @@ export const GuideClient = () => {
                         <Icon />
                       </IconSize>
                       <div>
-                        <CardTitle className="text-base">{guide.title}</CardTitle>
+                        <CardTitle>{guide.title}</CardTitle>
                         <CardDescription className="mt-1">
                           {guide.description}
                         </CardDescription>

@@ -508,7 +508,7 @@ export function DataTable<T extends object>({
                             <IconSize size="2xl" className="animate-spin rounded-full border-4 border-primary border-t-transparent">
                                 <Loader2 className="animate-spin" />
                             </IconSize>
-                            <TypographyPMuted className="font-medium">Đang tải dữ liệu...</TypographyPMuted>
+                            <TypographyPMuted>Đang tải dữ liệu...</TypographyPMuted>
                         </div>
                     </div>
                 )}

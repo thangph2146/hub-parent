@@ -258,7 +258,7 @@ export const NewGroupDialog = ({ onSelectGroup }: NewGroupDialogProps) => {
                             </AvatarFallback>
                           </Avatar>
                           <div className="flex flex-col flex-1 min-w-0">
-                            <TypographyP className="font-medium truncate">{user.name || user.email}</TypographyP>
+                            <TypographyP className="truncate">{user.name || user.email}</TypographyP>
                             {user.name && <TypographyPSmall className="truncate">{user.email}</TypographyPSmall>}
                           </div>
                           {selected && <TypographyPSmall>Đã chọn</TypographyPSmall>}

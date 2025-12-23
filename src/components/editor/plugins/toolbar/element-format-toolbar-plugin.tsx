@@ -29,6 +29,7 @@ import {
   ToggleGroup,
   ToggleGroupItem,
 } from "@/components/ui/toggle-group"
+import { IconSize } from "@/components/ui/typography"
 
 const ELEMENT_FORMAT_OPTIONS: {
   [key in Exclude<ElementFormatType, "start" | "end" | "">]: {
@@ -38,22 +39,22 @@ const ELEMENT_FORMAT_OPTIONS: {
   }
 } = {
   left: {
-    icon: <AlignLeftIcon className="size-4" />,
+    icon: <IconSize size="sm"><AlignLeftIcon /></IconSize>,
     iconRTL: "left-align",
     name: "Left Align",
   },
   center: {
-    icon: <AlignCenterIcon className="size-4" />,
+    icon: <IconSize size="sm"><AlignCenterIcon /></IconSize>,
     iconRTL: "center-align",
     name: "Center Align",
   },
   right: {
-    icon: <AlignRightIcon className="size-4" />,
+    icon: <IconSize size="sm"><AlignRightIcon /></IconSize>,
     iconRTL: "right-align",
     name: "Right Align",
   },
   justify: {
-    icon: <AlignJustifyIcon className="size-4" />,
+    icon: <IconSize size="sm"><AlignJustifyIcon /></IconSize>,
     iconRTL: "justify-align",
     name: "Justify Align",
   },
@@ -144,7 +145,9 @@ export function ElementFormatToolbarPlugin({
           variant={"outline"}
           size="sm"
         >
-          <IndentDecreaseIcon className="size-4" />
+          <IconSize size="sm">
+            <IndentDecreaseIcon />
+          </IconSize>
         </ToggleGroupItem>
 
         <ToggleGroupItem
@@ -153,7 +156,9 @@ export function ElementFormatToolbarPlugin({
           aria-label="Indent"
           size="sm"
         >
-          <IndentIncreaseIcon className="size-4" />
+          <IconSize size="sm">
+            <IndentIncreaseIcon />
+          </IconSize>
         </ToggleGroupItem>
       </ToggleGroup>
     </>

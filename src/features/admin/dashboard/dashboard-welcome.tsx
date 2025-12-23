@@ -216,7 +216,7 @@ export const DashboardWelcome = () => {
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.3, duration: 0.6 }}
               >
-                <IconSize size="md" className="h-5 w-5 sm:h-6 sm:w-6">
+                <IconSize size="md">
                   <Calendar />
                 </IconSize>
                 <TypographyDescriptionLarge>{currentDate}</TypographyDescriptionLarge>
@@ -230,14 +230,14 @@ export const DashboardWelcome = () => {
                 <Badge
                   variant="outline"
                   className={cn(
-                    "px-4 py-2 border-2 gap-2 font-semibold shadow-lg backdrop-blur-sm",
+                    "px-4 py-2 border-2 gap-2 shadow-lg backdrop-blur-sm",
                     roleInfo.bgColor,
                     roleInfo.textColor,
                     roleInfo.borderColor,
                     "hover:scale-105 hover:shadow-xl transition-all duration-300"
                   )}
                 >
-                  <IconSize size="md" className="h-5 w-5 sm:h-6 sm:w-6">
+                  <IconSize size="md">
                     <RoleIcon />
                   </IconSize>
                   <span>{roleInfo.label}</span>
