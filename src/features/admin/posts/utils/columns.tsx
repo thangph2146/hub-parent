@@ -4,7 +4,7 @@ import { useDynamicFilterOptions } from "@/features/admin/resources/hooks/use-dy
 import { apiRoutes } from "@/lib/api/routes"
 import { Switch } from "@/components/ui/switch"
 import type { PostRow } from "../types"
-import { typography } from "@/lib/typography"
+import { TypographySpanSmall, TypographySpanSmallMuted, TypographyP } from "@/components/ui/typography"
 
 interface UsePostColumnsOptions {
   togglingPosts: Set<string>
@@ -56,41 +56,41 @@ export const usePostColumns = ({
           <div className="flex flex-col gap-1.5">
             <span className="font-medium">{row.title}</span>
             {row.excerpt && (
-              <span className={`${typography.body.muted.small} line-clamp-1`}>{row.excerpt}</span>
+              <TypographySpanSmallMuted className="line-clamp-1">{row.excerpt}</TypographySpanSmallMuted>
             )}
             {(row.categories && row.categories.length > 0) || (row.tags && row.tags.length > 0) ? (
               <div className="flex flex-wrap gap-1 mt-0.5">
                 {row.categories && row.categories.length > 0 && (
                   <>
                     {row.categories.slice(0, 2).map((category) => (
-                      <span
+                      <TypographySpanSmall
                         key={category.id}
-                        className={`inline-flex items-center rounded-md bg-primary/10 px-1.5 py-0.5 ${typography.body.small} font-medium text-primary`}
+                        className="inline-flex items-center rounded-md bg-primary/10 px-1.5 py-0.5 font-medium text-primary"
                       >
                         {category.name}
-                      </span>
+                      </TypographySpanSmall>
                     ))}
                     {row.categories.length > 2 && (
-                      <span className={typography.body.muted.small}>
+                      <TypographySpanSmallMuted>
                         +{row.categories.length - 2}
-                      </span>
+                      </TypographySpanSmallMuted>
                     )}
                   </>
                 )}
                 {row.tags && row.tags.length > 0 && (
                   <>
                     {row.tags.slice(0, 2).map((tag) => (
-                      <span
+                      <TypographySpanSmall
                         key={tag.id}
-                        className={`inline-flex items-center rounded-md bg-secondary/50 px-1.5 py-0.5 ${typography.body.small} font-medium text-secondary-foreground`}
+                        className="inline-flex items-center rounded-md bg-secondary/50 px-1.5 py-0.5 font-medium text-secondary-foreground"
                       >
                         {tag.name}
-                      </span>
+                      </TypographySpanSmall>
                     ))}
                     {row.tags.length > 2 && (
-                      <span className={typography.body.muted.small}>
+                      <TypographySpanSmallMuted>
                         +{row.tags.length - 2}
-                      </span>
+                      </TypographySpanSmallMuted>
                     )}
                   </>
                 )}
@@ -114,7 +114,7 @@ export const usePostColumns = ({
         className: "min-w-[150px]",
         headerClassName: "min-w-[150px]",
         cell: (row) => (
-          <span className={`${typography.body.muted.small} font-mono`}>{row.slug}</span>
+          <TypographySpanSmallMuted className="font-mono">{row.slug}</TypographySpanSmallMuted>
         ),
       },
       {
@@ -124,8 +124,8 @@ export const usePostColumns = ({
         headerClassName: "min-w-[150px]",
         cell: (row) => (
           <div className="flex flex-col gap-0.5">
-            <span className={typography.body.medium}>{row.author.name || "N/A"}</span>
-            <span className={typography.body.muted.small}>{row.author.email}</span>
+            <TypographyP>{row.author.name || "N/A"}</TypographyP>
+            <TypographySpanSmallMuted>{row.author.email}</TypographySpanSmallMuted>
           </div>
         ),
       },
@@ -147,9 +147,9 @@ export const usePostColumns = ({
         cell: (row) => {
           if (row.deletedAt) {
             return (
-              <span className={`inline-flex min-w-[88px] items-center justify-center rounded-full bg-rose-100 px-2 py-1 ${typography.body.small} font-medium text-rose-700`}>
+              <TypographySpanSmall className="inline-flex min-w-[88px] items-center justify-center rounded-full bg-rose-100 px-2 py-1 font-medium text-rose-700">
                 Đã xóa
-              </span>
+              </TypographySpanSmall>
             )
           }
 
@@ -163,9 +163,9 @@ export const usePostColumns = ({
                 }}
                 aria-label={row.published ? "Chuyển thành bản nháp" : "Xuất bản bài viết"}
               />
-              <span className={typography.body.muted.small}>
+              <TypographySpanSmallMuted>
                 {row.published ? "Đã xuất bản" : "Bản nháp"}
-              </span>
+              </TypographySpanSmallMuted>
             </div>
           )
         },

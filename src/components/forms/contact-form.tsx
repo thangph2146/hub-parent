@@ -2,7 +2,7 @@
 
 import { useForm } from "react-hook-form";
 import { cn } from "@/lib/utils";
-import { typography, responsiveIconSizes } from "@/lib/typography";
+import { TypographySpanSmall, IconSize } from "@/components/ui/typography";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -115,9 +115,11 @@ export function ContactForm({ onSubmit, className, apiUrl = "/api/contact" }: Co
           <FieldGroup>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
               <Field data-invalid={Boolean(errors.name)}>
-                <FieldLabel htmlFor="name" className={`flex items-center gap-1.5 sm:gap-2 ${typography.body.small} text-foreground`}>
-                  <User className={`${responsiveIconSizes.small} text-primary flex-shrink-0`} />
-                  Họ tên <span className="text-destructive">*</span>  
+                <FieldLabel htmlFor="name" className="flex items-center gap-1.5 sm:gap-2 text-foreground">
+                  <IconSize size="sm">
+                    <User className="text-primary flex-shrink-0" />
+                  </IconSize>
+                  <TypographySpanSmall>Họ tên <span className="text-destructive">*</span></TypographySpanSmall>
                 </FieldLabel>
                 <FieldContent>
                   <Input
@@ -148,9 +150,11 @@ export function ContactForm({ onSubmit, className, apiUrl = "/api/contact" }: Co
               </Field>
 
               <Field data-invalid={Boolean(errors.email)}>
-                <FieldLabel htmlFor="email" className={`flex items-center gap-1.5 sm:gap-2 ${typography.body.small} text-foreground`}>
-                  <Mail className={`${responsiveIconSizes.small} text-primary flex-shrink-0`} />
-                  Email <span className="text-destructive">*</span>
+                <FieldLabel htmlFor="email" className="flex items-center gap-1.5 sm:gap-2 text-foreground">
+                  <IconSize size="sm">
+                    <Mail className="text-primary flex-shrink-0" />
+                  </IconSize>
+                  <TypographySpanSmall>Email <span className="text-destructive">*</span></TypographySpanSmall>
                 </FieldLabel>
                 <FieldContent>
                   <Input
@@ -183,9 +187,11 @@ export function ContactForm({ onSubmit, className, apiUrl = "/api/contact" }: Co
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
               <Field data-invalid={Boolean(errors.phone)}>
-                <FieldLabel htmlFor="phone" className={`flex items-center gap-1.5 sm:gap-2 ${typography.body.small} text-foreground`}>
-                  <Phone className={`${responsiveIconSizes.small} text-primary flex-shrink-0`} />
-                  Số điện thoại
+                <FieldLabel htmlFor="phone" className="flex items-center gap-1.5 sm:gap-2 text-foreground">
+                  <IconSize size="sm">
+                    <Phone className="text-primary flex-shrink-0" />
+                  </IconSize>
+                  <TypographySpanSmall>Số điện thoại</TypographySpanSmall>
                 </FieldLabel>
                 <FieldContent>
                   <Input
@@ -210,9 +216,11 @@ export function ContactForm({ onSubmit, className, apiUrl = "/api/contact" }: Co
               </Field>
 
               <Field data-invalid={Boolean(errors.subject)}>
-                <FieldLabel htmlFor="subject" className={`flex items-center gap-1.5 sm:gap-2 ${typography.body.small} text-foreground`}>
-                  <FileText className={`${responsiveIconSizes.small} text-primary flex-shrink-0`} />
-                  Tiêu đề <span className="text-destructive">*</span>
+                <FieldLabel htmlFor="subject" className="flex items-center gap-1.5 sm:gap-2 text-foreground">
+                  <IconSize size="sm">
+                    <FileText className="text-primary flex-shrink-0" />
+                  </IconSize>
+                  <TypographySpanSmall>Tiêu đề <span className="text-destructive">*</span></TypographySpanSmall>
                 </FieldLabel>
                 <FieldContent>
                   <Input
@@ -244,9 +252,11 @@ export function ContactForm({ onSubmit, className, apiUrl = "/api/contact" }: Co
             </div>
 
             <Field data-invalid={Boolean(errors.message)}>
-              <FieldLabel htmlFor="message" className={`flex items-center gap-1.5 sm:gap-2 ${typography.body.small} text-foreground`}>
-                <MessageSquare className={`${responsiveIconSizes.small} text-primary flex-shrink-0`} />
-                Nội dung tin nhắn <span className="text-destructive">*</span>
+              <FieldLabel htmlFor="message" className="flex items-center gap-1.5 sm:gap-2 text-foreground">
+                <IconSize size="sm">
+                  <MessageSquare className="text-primary flex-shrink-0" />
+                </IconSize>
+                <TypographySpanSmall>Nội dung tin nhắn <span className="text-destructive">*</span></TypographySpanSmall>
               </FieldLabel>
               <FieldContent>
                 <Textarea
@@ -283,13 +293,17 @@ export function ContactForm({ onSubmit, className, apiUrl = "/api/contact" }: Co
           <Button type="submit" className="w-full" disabled={isSubmitting}>
             {isSubmitting ? (
               <>
-                <Loader2 className={`mr-1.5 sm:mr-2 ${responsiveIconSizes.small} animate-spin`} />
-                <span className={typography.body.small}>Đang gửi...</span>
+                <IconSize size="sm" className="mr-1.5 sm:mr-2">
+                  <Loader2 className="animate-spin" />
+                </IconSize>
+                <TypographySpanSmall>Đang gửi...</TypographySpanSmall>
               </>
             ) : (
               <>
-                <Send className={`mr-1.5 sm:mr-2 ${responsiveIconSizes.small}`} />
-                <span className={`${typography.body.small}`}>Gửi tin nhắn</span>
+                <IconSize size="sm" className="mr-1.5 sm:mr-2">
+                  <Send />
+                </IconSize>
+                <TypographySpanSmall>Gửi tin nhắn</TypographySpanSmall>
               </>
             )}
           </Button>

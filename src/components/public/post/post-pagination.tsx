@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
-import { iconSizes } from "@/lib/typography"
+import { IconSize } from "@/components/ui/typography"
 
 interface PostPaginationProps {
   currentPage: number
@@ -50,7 +50,9 @@ export function PostPagination({ currentPage, totalPages }: PostPaginationProps)
         className={cn(currentPage === 1 && "opacity-50 cursor-not-allowed")}
       >
         <Link href={getPageUrl(currentPage - 1)} aria-label="Previous page">
-          <ChevronLeft className={iconSizes.sm} />
+          <IconSize size="sm">
+            <ChevronLeft />
+          </IconSize>
         </Link>
       </Button>
 
@@ -90,7 +92,9 @@ export function PostPagination({ currentPage, totalPages }: PostPaginationProps)
         className={cn(currentPage === totalPages && "opacity-50 cursor-not-allowed")}
       >
         <Link href={getPageUrl(currentPage + 1)} aria-label="Next page">
-          <ChevronRight className={iconSizes.sm} />
+          <IconSize size="sm">
+            <ChevronRight />
+          </IconSize>
         </Link>
       </Button>
     </nav>

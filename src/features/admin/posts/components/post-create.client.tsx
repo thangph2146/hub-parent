@@ -160,6 +160,7 @@ export const PostCreateClient = ({
       label: "",
       type: "editor",
       section: "content",
+      className: "w-full max-w-5xl mx-auto",
     },
     {
       name: "image",
@@ -204,7 +205,7 @@ export const PostCreateClient = ({
       onBack={handleBack}
       variant="page"
       showCard={false}
-      className="max-w-[100%]"
+      className="w-full"
       resourceName="posts"
       action="create"
     />
