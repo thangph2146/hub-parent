@@ -358,14 +358,14 @@ export function NavUser({ className }: { className?: string }) {
 
   const dropdownMenuContent = (
     <DropdownMenuContent
-      className={"w-(--radix-dropdown-menu-trigger-width) min-w-62 rounded-lg"}
+      className={"w-[300px] rounded-lg"}
       side={!isInSidebar ? "bottom" : isMobile ? "bottom" : "right"}
       align="end"
       sideOffset={5}
     >
       <DropdownMenuLabel className="p-0">
-        <Flex align="center" gap={2} className="px-1 py-1.5 text-left">
-          <Avatar className="h-8 w-8 rounded-lg">
+        <Flex align="center" gap={2} className="px-1 py-1.5 text-left min-w-0">
+          <Avatar className="h-8 w-8 rounded-lg shrink-0">
             <AvatarImage
               src={user.image || "/avatars/default.jpg"}
               alt={user.name || ""}
@@ -374,22 +374,14 @@ export function NavUser({ className }: { className?: string }) {
               {getInitials(user.name)}
             </AvatarFallback>
           </Avatar>
-          <Flex direction="col" className="flex-1 text-left">
+          <Flex direction="col" className="flex-1 min-w-0 text-left">
             <TypographySpanMuted className="truncate">
               {user.name || user.email}
             </TypographySpanMuted>
-            <Flex align="center" gap={1} className="truncate">
+            <Flex align="center" gap={1} className="min-w-0">
               <TypographySpanSmallMuted className="truncate">
                 {user.email}
               </TypographySpanSmallMuted>
-              {primaryRole && (
-                <>
-                  <TypographySpanSmallMuted>•</TypographySpanSmallMuted>
-                  <TypographySpanSmallMuted>
-                    {primaryRole.displayName || primaryRole.name}
-                  </TypographySpanSmallMuted>
-                </>
-              )}
             </Flex>
           </Flex>
         </Flex>

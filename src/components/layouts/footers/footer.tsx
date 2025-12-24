@@ -142,11 +142,11 @@ export function PublicFooter() {
                     className="group text-white/80 hover:text-white transition-all duration-200"
                   >
                     <Flex align="start" gap={3}>
-                      <Flex align="center" justify="center" className="flex-shrink-0 rounded-lg bg-white/10 p-2 group-hover:bg-white/20 transition-colors">
+                      <div className="flex-shrink-0 rounded-lg bg-white/10 p-2 group-hover:bg-white/20 transition-colors">
                         <IconSize size="md">
                           <Mail />
                         </IconSize>
-                      </Flex>
+                      </div>
                       <Flex direction="col" gap={1}>
                         <TypographyP>Email</TypographyP>
                         <TypographyP>dhnhtphcm@hub.edu.vn</TypographyP>
@@ -159,11 +159,11 @@ export function PublicFooter() {
                     className="group text-white/80 hover:text-white transition-all duration-200"
                   >
                     <Flex align="start" gap={3}>
-                      <Flex align="center" justify="center" className="flex-shrink-0 rounded-lg bg-white/10 p-2 group-hover:bg-white/20 transition-colors">
+                      <div className="flex-shrink-0 rounded-lg bg-white/10 p-2 group-hover:bg-white/20 transition-colors">
                         <IconSize size="md">
                           <Phone />
                         </IconSize>
-                      </Flex>
+                      </div>
                       <Flex direction="col" gap={1}>
                         <TypographyP>Tuyển sinh</TypographyP>
                         <TypographyP>0888353488</TypographyP>
@@ -176,11 +176,11 @@ export function PublicFooter() {
                     className="group text-white/80 hover:text-white transition-all duration-200"
                   >
                     <Flex align="start" gap={3}>
-                      <Flex align="center" justify="center" className="flex-shrink-0 rounded-lg bg-white/10 p-2 group-hover:bg-white/20 transition-colors">
+                      <div className="flex-shrink-0 rounded-lg bg-white/10 p-2 group-hover:bg-white/20 transition-colors">
                         <IconSize size="md">
                           <Phone />
                         </IconSize>
-                      </Flex>
+                      </div>
                       <Flex direction="col" gap={1}>
                         <TypographyP>Đào tạo</TypographyP>
                         <TypographyP>(028) 38 212 430</TypographyP>
@@ -352,7 +352,7 @@ export function PublicFooter() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="Instagram - Trường Đại học Ngân hàng TP.HCM"
-                    className="group h-12 w-12 rounded-xl bg-white/10 hover:bg-pink-500/20 transition-all duration-300 hover:scale-110"
+                  className="group h-12 w-12 rounded-xl bg-white/10 hover:bg-pink-500/20 transition-all duration-300 hover:scale-110"
                 >
                   <Flex align="center" justify="center" className="h-full w-full">
                     <IconSize size="md">
@@ -365,7 +365,7 @@ export function PublicFooter() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="YouTube - Trường Đại học Ngân hàng TP.HCM"
-                    className="group h-12 w-12 rounded-xl bg-white/10 hover:bg-red-500/20 transition-all duration-300 hover:scale-110"
+                  className="group h-12 w-12 rounded-xl bg-white/10 hover:bg-red-500/20 transition-all duration-300 hover:scale-110"
                 >
                   <Flex align="center" justify="center" className="h-full w-full">
                     <IconSize size="md">
@@ -382,37 +382,63 @@ export function PublicFooter() {
         <div className="h-px bg-gradient-to-r from-transparent via-white/20 to-transparent mb-8" />
 
         {/* Bottom Footer */}
-        <Flex direction="col" align="center" justify="between" gap={6} className="lg:flex-row lg:items-center lg:justify-between">
-          <Flex direction="col" align="center" gap={2} className="sm:flex-row sm:items-center">
-            <TypographySpan>© {currentYear} {appConfig.namePublic}.</TypographySpan>
-            <TypographySpan className="hidden sm:inline">Được phát triển bởi</TypographySpan>
-            <TypographySpan className="text-white hover:text-blue-300 transition-colors cursor-pointer">
+        <Flex 
+          direction="col" 
+          align="center" 
+          justify="between" 
+          gap={4} 
+          className="w-full lg:flex-row lg:items-center lg:justify-between"
+        >
+          <Flex 
+            direction="col" 
+            align="center" 
+            gap={2} 
+            className="text-center sm:flex-row sm:items-center sm:text-left"
+          >
+            <TypographySpan className="whitespace-nowrap">
+              © {currentYear} {appConfig.namePublic}.
+            </TypographySpan>
+            <TypographySpan className="hidden sm:inline whitespace-nowrap">
+              Được phát triển bởi
+            </TypographySpan>
+            <TypographySpan className="text-white hover:text-blue-300 transition-colors cursor-pointer whitespace-nowrap">
               {appConfig.company}
             </TypographySpan>
-            <TypographySpan className="text-white hover:text-blue-300 transition-colors cursor-pointer">Trường Đại học Ngân hàng TP.Hồ Chí Minh</TypographySpan>
+            <TypographySpan className="text-white hover:text-blue-300 transition-colors cursor-pointer whitespace-nowrap">
+              Trường Đại học Ngân hàng TP.Hồ Chí Minh
+            </TypographySpan>
           </Flex>
 
-
-          <Flex align="center" gap={6}>
-            <Link href={FOOTER_ROUTES.about} className="hover:text-white transition-colors">
+          <Flex 
+            align="center" 
+            gap={4} 
+            className="flex-wrap justify-center lg:justify-end"
+          >
+            <Link 
+              href={FOOTER_ROUTES.about} 
+              className="text-white/80 hover:text-white transition-colors whitespace-nowrap"
+            >
               <TypographySpan>Về chúng tôi</TypographySpan>
             </Link>
-            <span className="text-white/20">•</span>
-            <Link href={FOOTER_ROUTES.contact} className="hover:text-white transition-colors">
+            <span className="text-white/20 shrink-0">•</span>
+            <Link 
+              href={FOOTER_ROUTES.contact} 
+              className="text-white/80 hover:text-white transition-colors whitespace-nowrap"
+            >
               <TypographySpan>Liên hệ</TypographySpan>
             </Link>
-            <span className="text-white/20">•</span>
-                  <Link
-                    href={FOOTER_ROUTES.help}
-                    className="hover:text-white transition-colors"
-                  >
-                    <Flex align="center" gap={1}>
-                      <TypographySpan>Trợ giúp</TypographySpan>
-                      <IconSize size="xs">
-                        <ExternalLink />
-                      </IconSize>
-                    </Flex>
-                  </Link>
+            <span className="text-white/20 shrink-0">•</span>
+            <Link
+              href={FOOTER_ROUTES.help}
+              className="text-white/80 hover:text-white transition-colors whitespace-nowrap"
+            >
+              <Flex align="center" gap={1}>
+                <TypographySpan>Trợ giúp</TypographySpan>
+                <IconSize size="xs">
+                  <ExternalLink />
+                </IconSize>
+              </Flex>
+            </Link>
           </Flex>
         </Flex>
       </Flex>
