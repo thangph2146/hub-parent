@@ -25,7 +25,7 @@ const Timeline = dynamic(() => import("@/components/ui/timeline").then(mod => ({
   loading: () => <div className="h-96 flex items-center justify-center">Đang tải...</div>,
 })
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import { IconSize } from "@/components/ui/typography";
+import { IconSize, TypographySpanLarge } from "@/components/ui/typography";
 import { TypographyPLargeMuted, TypographyPSmallMuted, TypographyPSmall, TypographyDescriptionLarge, TypographyH1, TypographyH2, TypographyH3, TypographyH4, TypographyH6, TypographySpanSmallMuted, TypographyDescription, TypographySpanSmall } from "@/components/ui/typography";
 import { Flex } from "@/components/ui/flex";
 
@@ -36,9 +36,9 @@ const highlightHUB = (text: string): React.ReactNode => {
   const parts = text.split(/(HUB)/gi);
   return parts.map((part, index) =>
     part.toUpperCase() === "HUB" ? (
-      <TypographySpanSmall key={index} className="text-secondary">
+      <span key={index} className="text-secondary font-bold text-lg sm:text-xl md:text-2xl">
         {part}
-      </TypographySpanSmall>
+      </span>
     ) : (
       part
     )
@@ -692,7 +692,7 @@ export const AboutClient = () => {
               <div>
                 <TypographyH2>
                   Tổng quan về{" "}
-                  <TypographySpanSmall className="text-secondary">HUB</TypographySpanSmall>
+                  <span className="text-secondary font-bold text-2xl sm:text-3xl md:text-4xl">HUB</span>
                 </TypographyH2>
               </div>
               <div>
@@ -700,16 +700,16 @@ export const AboutClient = () => {
                   <TypographyDescriptionLarge>
                     Trường Đại học Ngân hàng Thành phố Hồ Chí Minh (Ho Chi Minh
                     University of Banking -{" "}
-                    <TypographySpanSmall className="text-secondary">HUB</TypographySpanSmall>) là
+                    <span className="text-secondary font-bold text-lg sm:text-xl">HUB</span>) là
                     trường đại học công lập trực thuộc Ngân hàng Nhà nước Việt
                     Nam được thành lập từ ngày{" "}
                     <strong className="text-foreground">16/12/1976</strong>.
                   </TypographyDescriptionLarge>
                 </div>
                 <TypographyH3 className="mt-4">
-                  <TypographySpanSmall className="text-secondary">H</TypographySpanSmall>EIGHTENING{" "}
-                  <TypographySpanSmall className="text-secondary">U</TypographySpanSmall>NIQUE{" "}
-                  <TypographySpanSmall className="text-secondary">B</TypographySpanSmall>RILLIANCE
+                  <span className="text-secondary font-bold text-xl sm:text-2xl">H</span>EIGHTENING{" "}
+                  <span className="text-secondary font-bold text-xl sm:text-2xl">U</span>NIQUE{" "}
+                  <span className="text-secondary font-bold text-xl sm:text-2xl">B</span>RILLIANCE
                 </TypographyH3>
               </div>
             </div>
@@ -736,9 +736,9 @@ export const AboutClient = () => {
               <div>
                 <TypographyH2 className="mb-2 text-primary">
                   49
-                  <TypographyH4 className="text-primary">
+                  <TypographySpanSmall className="text-primary">
                     + năm
-                  </TypographyH4>
+                  </TypographySpanSmall>
                 </TypographyH2>
                 <TypographyPSmallMuted>
                   Xây dựng và phát triển với 16 ngành và 03 cơ sở sở đào tạo!
@@ -748,9 +748,9 @@ export const AboutClient = () => {
               <div>
                 <TypographyH2 className="mb-2 text-primary">
                   17.500
-                  <TypographyH4 className="text-primary">
+                  <TypographySpanSmall className="text-primary">
                     +
-                  </TypographyH4>
+                  </TypographySpanSmall>
                 </TypographyH2>
                 <TypographyPSmallMuted>
                   Sinh viên đang theo học ở các bậc đào tạo từ đại học, thạc sĩ,
@@ -771,13 +771,13 @@ export const AboutClient = () => {
               <div>
                 <TypographyH2 className="mb-2 text-primary">
                   66.000
-                  <TypographyH4 className="text-primary">
+                  <TypographySpanSmall className="text-primary">
                     +
-                  </TypographyH4>
+                  </TypographySpanSmall>
                 </TypographyH2>
                 <TypographyPSmallMuted>
                   Cử nhân, thạc sĩ, tiến sĩ đã được{" "}
-                  <TypographySpanSmall className="text-secondary">HUB</TypographySpanSmall> đào tạo
+                  <span className="text-secondary font-bold text-lg sm:text-xl">HUB</span> đào tạo
                 </TypographyPSmallMuted>
               </div>
             </div>
@@ -789,7 +789,7 @@ export const AboutClient = () => {
       <section className="py-12 sm:py-16 lg:py-20 bg-muted/30">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <TypographyH2 className="uppercase">
-            Về <TypographySpanSmall className="text-secondary">HUB</TypographySpanSmall>
+            Về <span className="text-secondary font-bold text-xl sm:text-2xl">HUB</span>
           </TypographyH2>
 
           <div className="mb-6 sm:mb-8">
@@ -803,12 +803,12 @@ export const AboutClient = () => {
                 tiến sĩ. Đặc biệt, 100% CTĐT của Trường Đại học Ngân hàng Tp.HCM
                 đã được kiểm định chất lượng giáo dục theo chuẩn trong nước và
                 quốc tế ( MOET, AUN - QA).{" "}
-                <TypographySpanSmall className="text-secondary">HUB</TypographySpanSmall> đã ký kết
+                <span className="text-secondary font-bold text-lg sm:text-xl">HUB</span> đã ký kết
                 hợp tác chiến lược về đào tạo và liên kết quốc tế với hơn 80
                 trường danh tiếng trên thế giới như ĐH Quốc gia Singapore, ĐH
                 Bolton (Anh), Adelaide (Úc), Toulon Pháp, City U (Mỹ)…. và hơn
                 200 doanh nghiệp, hiệp hội nghề nghiệp trong nước.{" "}
-                <TypographySpanSmall className="text-secondary">HUB</TypographySpanSmall> đầu tư 03
+                <span className="text-secondary font-bold text-lg sm:text-xl">HUB</span> đầu tư 03
                 cơ sở đào tạo (02 tại trung tâm Q1, 01 tại Thủ Đức) rộng hơn
                 11ha đã hoàn thiện cơ sở vật chất để phục vụ người học bao gồm:
                 131 giảng đường, 328 phòng KTX và hệ sinh thái sân thi đấu bóng
@@ -849,7 +849,7 @@ export const AboutClient = () => {
           <DialogContent className="max-w-[90vw] lg:max-w-4xl">
             <DialogHeader>
               <DialogTitle asChild>
-                <TypographyH3 className="uppercase">Về <span className="text-secondary">HUB</span></TypographyH3>
+                <TypographyH3 className="uppercase">Về <span className="text-secondary font-bold text-xl sm:text-2xl">HUB</span></TypographyH3>
               </DialogTitle>
             </DialogHeader>
             <DialogDescription asChild>
@@ -871,18 +871,18 @@ export const AboutClient = () => {
                   chain, Logistics, Internet, Thương mại điện tử cũng như hệ
                   thống Ngân hàng – doanh nghiệp rộng lớn và hơn 60.000 cựu
                   người học trong mạng lưới{" "}
-                  <TypographySpanSmall className="text-secondary">HUB</TypographySpanSmall> Alumni
+                  <span className="text-secondary font-bold text-lg sm:text-xl">HUB</span> Alumni
                   thành đạt. Mạng lưới cựu người học cửa Trường rộng khắp góp
                   phần tạo nên hệ giá trị sinh thái bền vững hỗ trợ nhiều hoạt
                   động thiết thực, mang lại giá trị thực tiễn cao.
                 </TypographyDescriptionLarge>
                 <TypographyDescriptionLarge className="mb-4">
                   Đội ngũ nhân sự của{" "}
-                  <TypographySpanSmall className="text-secondary">HUB</TypographySpanSmall> với trên
+                  <span className="text-secondary font-bold text-lg sm:text-xl">HUB</span> với trên
                   500 cán bộ, giảng viên, nhân viên. Trong đó, 235 giảng viên có
                   chức danh Giáo sư/Phó Giáo sư/Tiến sĩ, thuộc Top 3 trường khối
                   kinh tế về số lượng Giáo sư/Phó Giáo sư/Tiến sĩ. Đội ngũ Giảng
-                  viên <TypographySpanSmall className="text-secondary">HUB</TypographySpanSmall> vừa
+                  viên <span className="text-secondary font-bold text-lg sm:text-xl">HUB</span> vừa
                   là các chuyên gia, nhà nghiên cứu, nhà quản lý giàu kinh
                   nghiệm, vừa là những thầy cô tận tâm với sinh viên. Quan trọng
                   hơn là đội ngũ chất lượng cao này được phát triển đồng đều ở
@@ -893,7 +893,7 @@ export const AboutClient = () => {
                   trình đào tạo chuyển đổi số cho đất nước và ngành Ngân hàng.
                 </TypographyDescriptionLarge>
                 <TypographyDescriptionLarge className="mb-4">
-                  <TypographySpanSmall className="text-secondary">HUB</TypographySpanSmall> có 03 cơ
+                  <span className="text-secondary font-bold text-lg sm:text-xl">HUB</span> có 03 cơ
                   sở đào tạo với 02 cơ sở tại trung tâm Q1 TP. HCM và 01 cơ sở
                   tại Thủ Đức có tổng diện tích lên đến hơn 11 hecta được đầu tư
                   xây dựng khang trang – hiện đại theo chiến lược Xanh – Hiện
@@ -975,10 +975,10 @@ export const AboutClient = () => {
                   Tầm nhìn
                 </TypographyH3>
                 <TypographyDescriptionLarge className="leading-relaxed">
-                  <TypographySpanSmall className="text-secondary">HUB</TypographySpanSmall> định
+                  <span className="text-secondary font-bold text-lg sm:text-xl">HUB</span> định
                   hướng trở thành đại học đa ngành và liên ngành nằm trong nhóm
                   các đại học có uy tín ở khu vực Đông Nam Á.{" "}
-                  <TypographySpanSmall className="text-secondary">HUB</TypographySpanSmall> tiên
+                  <span className="text-secondary font-bold text-lg sm:text-xl">HUB</span> tiên
                   phong ứng dụng công nghệ số trong đào tạo, nghiên cứu và giải
                   quyết các vấn đề liên ngành.
                 </TypographyDescriptionLarge>
@@ -989,11 +989,11 @@ export const AboutClient = () => {
                   Sứ mệnh
                 </TypographyH3>
                 <TypographyDescriptionLarge className="leading-relaxed">
-                  <TypographySpanSmall className="text-secondary">HUB</TypographySpanSmall> cung cấp
+                  <span className="text-secondary font-bold text-lg sm:text-xl">HUB</span> cung cấp
                   cho xã hội và ngành ngân hàng nguồn nhân lực chất lượng cao,
                   các nghiên cứu có tầm ảnh hưởng, cùng với dịch vụ tư vấn và
                   hoạt động phục vụ cộng đồng.{" "}
-                  <TypographySpanSmall className="text-secondary">HUB</TypographySpanSmall> kiến tạo
+                  <span className="text-secondary font-bold text-lg sm:text-xl">HUB</span> kiến tạo
                   hệ sinh thái giáo dục, mang đến cơ hội học tập suốt đời, phát
                   triển con người toàn diện, sáng tạo, với tinh thần phụng sự.
                 </TypographyDescriptionLarge>
@@ -1154,16 +1154,16 @@ export const AboutClient = () => {
                 <div className="prose prose-sm sm:prose-base text-foreground leading-relaxed dark:prose-invert mb-4">
                   <TypographyDescriptionLarge>
                     Trường Đại học Ngân hàng TP.HCM (
-                    <TypographySpanSmall className="text-secondary">HUB</TypographySpanSmall>) có cơ
+                    <span className="text-secondary font-bold text-lg sm:text-xl">HUB</span>) có cơ
                     sở vật chất khang trang, hiện đại với không gian xanh,
                     thoáng mát, đáp ứng nhu cầu học tập, nghiên cứu, sinh hoạt,
-                    rèn luyện thể thao… của hơn 12.000 người
+                    rèn luyện thể thao… của                     hơn 12.000 người
                   </TypographyDescriptionLarge>
                 </div>
                 <TypographyH3 className="mt-4">
-                  <TypographySpanSmall className="text-secondary">H</TypographySpanSmall>EIGHTENING{" "}
-                  <TypographySpanSmall className="text-secondary">U</TypographySpanSmall>NIQUE{" "}
-                  <TypographySpanSmall className="text-secondary">B</TypographySpanSmall>RILLIANCE
+                  <span className="text-secondary font-bold text-xl sm:text-2xl">H</span>EIGHTENING{" "}
+                  <span className="text-secondary font-bold text-xl sm:text-2xl">U</span>NIQUE{" "}
+                  <span className="text-secondary font-bold text-xl sm:text-2xl">B</span>RILLIANCE
                 </TypographyH3>
               </div>
             </div>
@@ -1187,14 +1187,14 @@ export const AboutClient = () => {
           <div className="prose prose-sm sm:prose-base md:prose-lg text-foreground leading-relaxed dark:prose-invert">
             <TypographyDescriptionLarge className="mb-4">
               Trường Đại học Ngân hàng TP.HCM (
-              <TypographySpanSmall className="text-secondary">HUB</TypographySpanSmall>) có 3 cơ sở
+              <span className="text-secondary font-bold text-lg sm:text-xl">HUB</span>) có 3 cơ sở
               đào tạo, gồm 02 cơ sở tọa lạc tại Trung tâm Quận 1, Tp. Hồ Chí
               Minh và 01 cơ sở tại Quận Thủ Đức với tổng diện tích đất hơn 9,4
               ha, diện tích xây dựng hơn 52,000 m2 đảm bảo nhu cầu dạy và học
               của hơn 12.000 người.
             </TypographyDescriptionLarge>
             <TypographyDescriptionLarge className="mb-4">
-              <TypographySpanSmall className="text-secondary">HUB</TypographySpanSmall> tự hào về cơ
+              <span className="text-secondary font-bold text-lg sm:text-xl">HUB</span> tự hào về cơ
               sở vật chất khang trang, hiện đại với không gian xanh, sạch,
               thoáng mát, đáp ứng việc học tập, nghiên cứu, sinh hoạt, rèn luyện
               văn thể mỹ. Với gần 150 phòng học, phòng máy giảng đường đều được
@@ -1344,7 +1344,7 @@ export const AboutClient = () => {
               <div>
                 <div className="prose prose-sm sm:prose-base text-foreground leading-relaxed dark:prose-invert">
                   <TypographyDescriptionLarge>
-                    <TypographySpanSmall className="text-secondary">HUB</TypographySpanSmall> có gần
+                    <span className="text-secondary font-bold text-lg sm:text-xl">HUB</span> có gần
                     500 cán bộ, giảng viên, nhân viên. Đội ngũ giảng viên bao
                     gồm: 38 Giáo sư, Phó Giáo sư, 184 Tiến sĩ và 238 Thạc sĩ
                     được đào tạo tại các trường đại học có uy tín trong và ngoài
