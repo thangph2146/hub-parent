@@ -2,7 +2,7 @@ import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
-const gridVariants = cva("w-full grid [&>*]:min-w-0 [&>*]:w-full", {
+const gridVariants = cva("grid [&>*]:min-w-0 [&>*]:w-full", {
   variants: {
     cols: {
       1: "grid-cols-1",
@@ -37,12 +37,41 @@ const gridVariants = cva("w-full grid [&>*]:min-w-0 [&>*]:w-full", {
       around: "justify-around",
       evenly: "justify-evenly",
     },
+    fullWidth: {
+      true: "w-full",
+      false: "",
+    },
+    container: {
+      true: "container mx-auto",
+      false: "",
+    },
+    padding: {
+      none: "",
+      xs: "p-1",
+      sm: "p-2",
+      md: "p-4",
+      lg: "p-6",
+      xl: "p-8",
+      "responsive": "px-4 sm:px-6 lg:px-8",
+      "responsive-y": "py-4 sm:py-6 lg:py-8",
+      "responsive-full": "px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8",
+      "responsive-lg": "px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16",
+    },
+    margin: {
+      none: "",
+      auto: "mx-auto",
+      "y-auto": "my-auto",
+    },
   },
   defaultVariants: {
     cols: 1,
     gap: 0,
     align: "stretch",
     justify: "start",
+    fullWidth: false,
+    container: false,
+    padding: "none",
+    margin: "none",
   },
 })
 
@@ -51,11 +80,11 @@ export interface GridProps
     VariantProps<typeof gridVariants> {}
 
 export const Grid = React.forwardRef<HTMLDivElement, GridProps>(
-  ({ className, cols, gap, align, justify, ...props }, ref) => {
+  ({ className, cols, gap, align, justify, fullWidth, container, padding, margin, ...props }, ref) => {
     return (
       <div
         ref={ref}
-        className={cn(gridVariants({ cols, gap, align, justify }), className)}
+        className={cn(gridVariants({ cols, gap, align, justify, fullWidth, container, padding, margin }), className)}
         {...props}
       />
     )

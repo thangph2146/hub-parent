@@ -1,19 +1,45 @@
 import * as React from "react"
-
+import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils/index"
 import { headingSizes, fontWeights, responsiveTextSizes, fontWeights as fw, lineHeights } from "@/lib/typography"
 
 const cardTitleDefault = `${headingSizes.h4} ${fontWeights.bold}`
 const cardBodySmall = `${responsiveTextSizes.small} ${fw.normal} ${lineHeights.relaxed}`
 
-function Card({ className, ...props }: React.ComponentProps<"div">) {
+const cardVariants = cva(
+  "bg-card text-card-foreground flex flex-col gap-6 rounded-xl border shadow-sm",
+  {
+    variants: {
+      padding: {
+        none: "",
+        xs: "p-1",
+        sm: "p-2",
+        md: "p-4",
+        lg: "p-6",
+        xl: "p-8",
+        default: "py-6",
+      },
+      fullWidth: {
+        true: "w-full",
+        false: "",
+      },
+    },
+    defaultVariants: {
+      padding: "default",
+      fullWidth: true,
+    },
+  }
+)
+
+export interface CardProps
+  extends React.ComponentProps<"div">,
+    VariantProps<typeof cardVariants> {}
+
+function Card({ className, padding, fullWidth, ...props }: CardProps) {
   return (
     <div
       data-slot="card"
-      className={cn(
-        "w-full bg-card text-card-foreground flex flex-col gap-6 rounded-xl border py-6 shadow-sm",
-        className
-      )}
+      className={cn(cardVariants({ padding, fullWidth }), className)}
       {...props}
     />
   )

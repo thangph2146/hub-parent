@@ -39,9 +39,9 @@ export const ContactSection = ({
   descriptionClassName,
 }: ContactSectionProps) => {
   return (
-    <Flex direction="col" gap={6} className="w-full lg:flex-row lg:gap-8">
+    <Flex direction="col" gap={6} fullWidth className="lg:flex-row lg:gap-8">
       {/* Left Side - Features & Contact Info - 1/3 */}
-      <Flex direction="col" gap={6} className="w-full lg:w-1/3">
+      <Flex direction="col" gap={6} fullWidth className="lg:w-1/3">
         <Flex direction="col" gap={4}>
           <TypographyH3 className={titleClassName}>
             {title}
@@ -52,7 +52,7 @@ export const ContactSection = ({
         </Flex>
         {/* Contact Info */}
         {contactInfo && (
-          <Card className="w-full">
+          <Card>
             <CardContent>
               <Flex direction="col" gap={3}>
                 {contactInfo.items.map((item, index) => (
@@ -69,7 +69,7 @@ export const ContactSection = ({
 
       {/* Right Side - Form - 2/3 */}
       {formComponent && (
-        <Flex direction="col" className="w-full lg:w-2/3">
+        <Flex direction="col" fullWidth className="lg:w-2/3">
           {formComponent}
         </Flex>
       )}

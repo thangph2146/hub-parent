@@ -5,7 +5,7 @@ import { Flex } from "@/components/ui/flex";
 export interface SectionProps {
   children: ReactNode;
   className?: string;
-  padding?: string;
+  padding?: "none" | "xs" | "sm" | "md" | "lg" | "xl" | "responsive" | "responsive-y" | "responsive-full" | "responsive-lg";
   background?: string;
   containerClassName?: string;
 }
@@ -13,19 +13,18 @@ export interface SectionProps {
 export const Section = ({
   children,
   className,
-  padding = "py-6",
+  padding: _padding = "responsive-y",
   background = "bg-card",
   containerClassName,
 }: SectionProps) => {
   return (
-    <section className={cn("w-full", padding, background, className)}>
+    <section className={cn("w-full", background, className)}>
       <Flex
         direction="col"
         gap={12}
-        className={cn(
-          "container mx-auto px-4 sm:px-6 lg:px-8",
-          containerClassName
-        )}
+        container
+        padding="responsive"
+        className={containerClassName}
       >
         {children}
       </Flex>

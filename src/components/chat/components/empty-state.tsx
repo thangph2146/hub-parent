@@ -9,7 +9,15 @@ interface EmptyStateProps {
 export function EmptyState({ variant = "messages" }: EmptyStateProps) {
   if (variant === "no-chat") {
     return (
-      <Flex direction="col" align="center" justify="center" gap={4} className="h-full bg-background p-4">
+      <Flex 
+        direction="col" 
+        align="center" 
+        justify="center" 
+        gap={4} 
+        padding="md"
+        fullWidth
+        className="h-full bg-background"
+      >
         <Flex direction="col" align="center" gap={1}>
           <IconSize size="4xl" className="opacity-30">
             <MessageCircle />
@@ -22,7 +30,15 @@ export function EmptyState({ variant = "messages" }: EmptyStateProps) {
   }
 
   return (
-    <Flex direction="col" align="center" justify="center" gap={4} className="min-h-full">
+    <Flex 
+      direction="col" 
+      align="center" 
+      justify="center" 
+      gap={4} 
+      padding="responsive-lg"
+      fullWidth
+      className="min-h-full"
+    >
       <Flex direction="col" align="center" gap={1}>
         <IconSize size="3xl" className="opacity-50">
           <MessageCircle />

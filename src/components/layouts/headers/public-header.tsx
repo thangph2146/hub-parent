@@ -164,142 +164,143 @@ export function PublicHeader() {
   }, [open]);
 
   return (
-    <header
-      className={cn("sticky top-0 z-50 w-full border-b border-transparent", {
+    <Flex
+      as="header"
+      position="sticky"
+      fullWidth
+      className={cn("top-0 z-50 border-b border-transparent h-14", {
         "bg-background/95 supports-[backdrop-filter]:bg-background/70 border-border backdrop-blur-lg":
           scrolled,
       })}
     >
-      <nav className="container mx-auto h-14 w-full">
-        <Flex align="center" justify="between" className="h-full">
-          <Flex align="center" gap={4}>
-            <Link
-              href={PUBLIC_ROUTES.home}
-              className="dark:bg-foreground rounded-md p-1"
-              aria-label="Trang chủ - Trường Đại học Ngân hàng TP.HCM"
-            >
-              <Flex align="center" gap={2}>
-                <Logo className="h-8 w-8 sm:h-10 sm:w-10 text-blue-100" />
-              </Flex>
-            </Link>
-            {/* <Flex direction="col">
+      <Flex as="nav" container fullWidth align="center" justify="between" className="h-full">
+        <Flex align="center" gap={4}>
+          <Link
+            href={PUBLIC_ROUTES.home}
+            className="dark:bg-foreground rounded-md p-1"
+            aria-label="Trang chủ - Trường Đại học Ngân hàng TP.HCM"
+          >
+            <Flex align="center" gap={2}>
+              <Logo className="h-8 w-8 sm:h-10 sm:w-10 text-blue-100" />
+            </Flex>
+          </Link>
+          {/* <Flex direction="col">
             <TypographyH6>
               Trường Đại học Ngân hàng
             </TypographyH6>
             <TypographyPSmall>Thành Phố Hồ Chí Minh</TypographyPSmall>
           </Flex> */}
-            <Separator orientation="vertical" className={`h-6 w-px bg-border`} />
-            {mounted ? (
-              <NavigationMenu className="hidden md:flex">
-                <NavigationMenuList>
-                  {publicLinks.map((link) => {
-                    // Hiển thị "Trang chủ" và "Bài viết" trực tiếp
-                    if (
-                      link.href === PUBLIC_ROUTES.home ||
-                      link.href === PUBLIC_ROUTES.blog
-                    ) {
-                      return (
-                        <NavigationMenuItem key={link.href}>
-                          <NavigationMenuLink asChild>
-                            <Link
-                              href={link.href}
-                              className="group inline-flex h-10 w-max items-center justify-center rounded-md bg-transparent px-4 py-2 transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50"
-                            >
-                              {link.href === PUBLIC_ROUTES.home && (
-                                <Flex align="center" gap={2}>
-                                  <IconSize size="sm"><link.icon /></IconSize>
-                                  {link.title}
-                                </Flex>
-                              )}
-                              {link.href !== PUBLIC_ROUTES.home && link.title}
-                            </Link>
-                          </NavigationMenuLink>
-                        </NavigationMenuItem>
-                      );
-                    }
-                    return null;
-                  })}
-                  {/* Support menu với các links còn lại */}
-                  {publicLinks.filter(
-                    (link) =>
-                      link.href !== PUBLIC_ROUTES.home &&
-                      link.href !== PUBLIC_ROUTES.blog
-                  ).length > 0 && (
-                      <NavigationMenuItem>
-                        <NavigationMenuTrigger className="bg-transparent">
-                          Hỗ trợ
-                        </NavigationMenuTrigger>
-                        <NavigationMenuContent className="bg-background p-1 pr-1.5 pb-1.5">
-                          <Grid cols={2} gap={2} className="bg-popover w-lg">
-                            {publicLinks
-                              .filter(
-                                (link) =>
-                                  link.href !== PUBLIC_ROUTES.home &&
-                                  link.href !== PUBLIC_ROUTES.blog
-                              )
-                              .map((item, i) => (
-                                <ListItem key={i} {...item} />
-                              ))}
-                          </Grid>
-                        </NavigationMenuContent>
-                      </NavigationMenuItem>
-                    )}
-                </NavigationMenuList>
-              </NavigationMenu>
-            ) : (
-              <Flex align="center" gap={4} className="hidden md:flex">
-                {publicLinks.slice(0, 2).map((link) => (
-                  <Button
-                    key={link.href}
-                    variant="ghost"
-                    className="bg-transparent"
-                    asChild
-                  >
-                    <Link href={link.href}>{link.title}</Link>
-                  </Button>
-                ))}
-              </Flex>
-            )}
-          </Flex>
+          <Separator orientation="vertical" className={`h-6 w-px bg-border`} />
           {mounted ? (
-            <Flex align="end" justify="end" gap={2} className="w-[400px]">
-              <ModeToggle />
-              {isAuthenticated ? (
-                <Flex>
-                  <NavUser />
-                </Flex>
-              ) : (
-                <>
-                  <Button variant="outline" asChild className="hidden md:flex">
-                    <Link href={PUBLIC_ROUTES.auth.signIn}>Đăng nhập</Link>
-                  </Button>
-                  <Button asChild className="hidden md:flex">
-                    <Link href={PUBLIC_ROUTES.auth.signUp}>Đăng ký</Link>
-                  </Button>
-                </>
-              )}
-              <Button
-                size="icon"
-                variant="outline"
-                onClick={() => setOpen(!open)}
-                className="md:hidden"
-                aria-expanded={open}
-                aria-controls="mobile-menu"
-                aria-label="Toggle menu"
-              >
-                <IconSize size="md">
-                  <MenuToggleIcon open={open} duration={300} />
-                </IconSize>
-              </Button>
-            </Flex>
+            <NavigationMenu className="hidden md:flex">
+              <NavigationMenuList>
+                {publicLinks.map((link) => {
+                  // Hiển thị "Trang chủ" và "Bài viết" trực tiếp
+                  if (
+                    link.href === PUBLIC_ROUTES.home ||
+                    link.href === PUBLIC_ROUTES.blog
+                  ) {
+                    return (
+                      <NavigationMenuItem key={link.href}>
+                        <NavigationMenuLink asChild>
+                          <Link
+                            href={link.href}
+                            className="group inline-flex h-10 w-max items-center justify-center rounded-md bg-transparent px-4 py-2 transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50"
+                          >
+                            {link.href === PUBLIC_ROUTES.home && (
+                              <Flex align="center" gap={2}>
+                                <IconSize size="sm"><link.icon /></IconSize>
+                                {link.title}
+                              </Flex>
+                            )}
+                            {link.href !== PUBLIC_ROUTES.home && link.title}
+                          </Link>
+                        </NavigationMenuLink>
+                      </NavigationMenuItem>
+                    );
+                  }
+                  return null;
+                })}
+                {/* Support menu với các links còn lại */}
+                {publicLinks.filter(
+                  (link) =>
+                    link.href !== PUBLIC_ROUTES.home &&
+                    link.href !== PUBLIC_ROUTES.blog
+                ).length > 0 && (
+                    <NavigationMenuItem>
+                      <NavigationMenuTrigger className="bg-transparent">
+                        Hỗ trợ
+                      </NavigationMenuTrigger>
+                      <NavigationMenuContent className="bg-background p-1 pr-1.5 pb-1.5">
+                        <Grid cols={2} gap={2} className="bg-popover w-lg">
+                          {publicLinks
+                            .filter(
+                              (link) =>
+                                link.href !== PUBLIC_ROUTES.home &&
+                                link.href !== PUBLIC_ROUTES.blog
+                            )
+                            .map((item, i) => (
+                              <ListItem key={i} {...item} />
+                            ))}
+                        </Grid>
+                      </NavigationMenuContent>
+                    </NavigationMenuItem>
+                  )}
+              </NavigationMenuList>
+            </NavigationMenu>
           ) : (
-            <Flex align="center" gap={2}>
-              <Skeleton className="w-10 h-10 rounded-md" />
-              <Skeleton className="w-10 h-10 rounded-md" />
+            <Flex align="center" gap={4} className="hidden md:flex">
+              {publicLinks.slice(0, 2).map((link) => (
+                <Button
+                  key={link.href}
+                  variant="ghost"
+                  className="bg-transparent"
+                  asChild
+                >
+                  <Link href={link.href}>{link.title}</Link>
+                </Button>
+              ))}
             </Flex>
           )}
         </Flex>
-      </nav>
+        {mounted ? (
+          <Flex align="end" justify="end" gap={2} className="w-[400px] max-w-full">
+            <ModeToggle />
+            {isAuthenticated ? (
+              <Flex>
+                <NavUser />
+              </Flex>
+            ) : (
+              <>
+                <Button variant="outline" asChild className="hidden md:flex">
+                  <Link href={PUBLIC_ROUTES.auth.signIn}>Đăng nhập</Link>
+                </Button>
+                <Button asChild className="hidden md:flex">
+                  <Link href={PUBLIC_ROUTES.auth.signUp}>Đăng ký</Link>
+                </Button>
+              </>
+            )}
+            <Button
+              size="icon"
+              variant="outline"
+              onClick={() => setOpen(!open)}
+              className="md:hidden"
+              aria-expanded={open}
+              aria-controls="mobile-menu"
+              aria-label="Toggle menu"
+            >
+              <IconSize size="md">
+                <MenuToggleIcon open={open} duration={300} />
+              </IconSize>
+            </Button>
+          </Flex>
+        ) : (
+          <Flex align="center" gap={2}>
+            <Skeleton className="w-10 h-10 rounded-md" />
+            <Skeleton className="w-10 h-10 rounded-md" />
+          </Flex>
+        )}
+      </Flex>
       {mounted && (
         <MobileMenu open={open} onClose={() => setOpen(false)}>
           <Flex direction="col" className="h-full">
@@ -434,7 +435,7 @@ export function PublicHeader() {
           </Flex>
         </MobileMenu>
       )}
-    </header>
+    </Flex>
   );
 }
 

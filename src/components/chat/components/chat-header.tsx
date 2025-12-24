@@ -72,19 +72,28 @@ function ChatHeader(
 
   return (
     <>
-      <Flex ref={ref} align="center" gap={3} className="h-16 px-4 border-b shrink-0">
+      <Flex 
+        ref={ref} 
+        align="center" 
+        gap={3} 
+        padding="md"
+        fullWidth
+        className="h-16 border-b shrink-0"
+      >
         {showBackButton && onBack && (
-          <Button variant="ghost" size="icon" className="h-10 w-10" onClick={onBack}>
+          <Button variant="ghost" size="icon" className="h-10 w-10 shrink-0" onClick={onBack}>
             <IconSize size="sm"><ArrowLeft /></IconSize>
           </Button>
         )}
-        <Avatar size="xl" className="shrink-0">
-          <AvatarImage src={contact.image || undefined} alt={contact.name} />
-          <AvatarFallback asChild>
-            <TypographyPSmall>{contact.name[0]}</TypographyPSmall>
-          </AvatarFallback>
-        </Avatar>
-        <Flex direction="col" className="flex-1 min-w-0">
+        <Flex className="shrink-0">
+          <Avatar size="xl">
+            <AvatarImage src={contact.image || undefined} alt={contact.name} />
+            <AvatarFallback asChild>
+              <TypographyPSmall>{contact.name[0]}</TypographyPSmall>
+            </AvatarFallback>
+          </Avatar>
+        </Flex>
+        <Flex direction="col" fullWidth className="flex-1 min-w-0" gap={0.5}>
           <CardTitle>
             <TypographyP className="truncate">{contact.name}</TypographyP>
           </CardTitle>

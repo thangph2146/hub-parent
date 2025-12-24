@@ -20,9 +20,17 @@ export function ChatListHeader({
   existingContactIds: _existingContactIds, 
   newConversationDialog,
   newGroupDialog,
+  filterType,
+  onFilterChange,
 }: ChatListHeaderProps) {
   return (
-    <Flex align="center" justify="between" className="h-16 px-4 border-b shrink-0">
+    <Flex 
+      align="center" 
+      justify="between" 
+      padding="md"
+      fullWidth
+      className="h-16 border-b shrink-0"
+    >
       <TypographyH3>Chats</TypographyH3>
       <Flex align="center" gap={2} className="shrink-0">
         {newConversationDialog}

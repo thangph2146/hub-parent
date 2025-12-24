@@ -14,7 +14,7 @@ interface MessagesAreaProps {
   currentUserId: string
   messagesMaxHeight?: number
   messagesMinHeight?: number
-  scrollAreaRef: React.RefObject<HTMLDivElement | null>
+  scrollAreaRef?: React.RefObject<HTMLDivElement | null>
   messagesEndRef: React.RefObject<HTMLDivElement | null>
   onReply?: (message: Message) => void
   onMarkAsRead?: (messageId: string) => void
@@ -55,19 +55,29 @@ export function MessagesArea({
 
   return (
     <ScrollArea
+      ref={scrollAreaRef}
+      className="flex-1 w-full"
       style={{
         height: messagesMaxHeight ? `${messagesMaxHeight}px` : undefined,
         maxHeight: messagesMaxHeight ? `${messagesMaxHeight}px` : "calc(100dvh - 13rem)",
         minHeight: messagesMinHeight ? `${messagesMinHeight}px` : "calc(100dvh - 13rem)",
       }}
     >
-      <Flex direction="col" gap={2} className="p-4" ref={scrollAreaRef}>
+      <Flex 
+        direction="col" 
+        gap={2} 
+        padding="md"
+        fullWidth
+        className="min-w-0"
+      >
         {filteredMessages.length > 0 ? (
           <>
             {searchQuery.trim() && (
-              <TypographyPSmallMuted className="text-center py-2">
-                Tìm thấy {filteredMessages.length} tin nhắn
-              </TypographyPSmallMuted>
+              <Flex justify="center" padding="responsive-y">
+                <TypographyPSmallMuted className="text-center">
+                  Tìm thấy {filteredMessages.length} tin nhắn
+                </TypographyPSmallMuted>
+              </Flex>
             )}
             {filteredMessages.map((message) => (
               <MessageBubble
@@ -96,12 +106,20 @@ export function MessagesArea({
             )}
           </>
         ) : searchQuery.trim() ? (
-          <Flex direction="col" align="center" justify="center" gap={1} className="py-8 text-center">
+          <Flex 
+            direction="col" 
+            align="center" 
+            justify="center" 
+            gap={1} 
+            padding="responsive-lg"
+            fullWidth
+            className="text-center"
+          >
             <TypographyPMuted>Không tìm thấy tin nhắn nào</TypographyPMuted>
             <TypographyPSmallMuted>Thử tìm kiếm với từ khóa khác</TypographyPSmallMuted>
           </Flex>
         ) : isGroupDeleted ? (
-          <>
+          <Flex direction="col" gap={2} fullWidth>
             <EmptyState variant="messages" />
             <DeletedGroupBanner
               currentUserRole={currentUserRole}
@@ -111,7 +129,7 @@ export function MessagesArea({
               role={role}
               setContactsState={setContactsState}
             />
-          </>
+          </Flex>
         ) : (
           <EmptyState variant="messages" />
         )}

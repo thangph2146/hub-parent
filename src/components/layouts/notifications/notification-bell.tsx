@@ -274,7 +274,7 @@ export function NotificationBell() {
         className="w-[380px] p-0 sm:w-[420px]"
         sideOffset={8}
       >
-        <Flex align="center" justify="between" className="border-b px-4 py-3">
+        <Flex align="center" justify="between" padding="md" className="border-b">
           <Flex align="center" gap={2}>
             <TypographyH3>Thông báo</TypographyH3>
             {isSocketConnected ? (
@@ -348,23 +348,23 @@ export function NotificationBell() {
 
         <div className="max-h-[400px] overflow-y-auto">
           {connectionError && !isSocketConnected && (
-            <div className="border-b bg-yellow-50/50 px-4 py-2 text-yellow-700 dark:bg-yellow-950/20 dark:text-yellow-300">
+            <Flex padding="sm" className="border-b bg-yellow-50/50 text-yellow-700 dark:bg-yellow-950/20 dark:text-yellow-300">
               <Flex align="center" gap={2}>
                 <IconSize size="xs">
                   <WifiOff />
                 </IconSize>
                 <TypographyPSmall>Đang sử dụng chế độ offline. Thông báo có thể không cập nhật real-time.</TypographyPSmall>
               </Flex>
-            </div>
+            </Flex>
           )}
           {isLoading ? (
-            <Flex align="center" justify="center" className="p-8">
+            <Flex align="center" justify="center" padding="xl">
               <IconSize size="lg">
                 <Loader2 className="animate-spin text-muted-foreground" />
               </IconSize>
             </Flex>
           ) : ownedNotifications.length === 0 ? (
-            <Flex direction="col" align="center" justify="center" className="p-8 text-center">
+            <Flex direction="col" align="center" justify="center" padding="xl" className="text-center">
               <Flex direction="col" align="center" gap={2}>
                 <IconSize size="4xl">
                   <Bell className="text-muted-foreground opacity-50" />
@@ -452,7 +452,7 @@ export function NotificationBell() {
         {!isLoading && ownedNotifications.length > 0 && isProtectedSuperAdmin && (
           <>
             <Separator />
-            <div className="p-2">
+            <Flex padding="sm">
               <Button
                 variant="ghost"
                 size="sm"
@@ -470,7 +470,7 @@ export function NotificationBell() {
                   </IconSize>
                 </Flex>
               </Button>
-            </div>
+            </Flex>
           </>
         )}
       </DropdownMenuContent>

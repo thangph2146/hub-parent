@@ -44,14 +44,15 @@ export const SectionWithImage = ({
       direction="col"
       align="center"
       gap={8}
+      fullWidth
       className={cn(
-        "w-full lg:flex-row lg:gap-16",
+        "lg:flex-row lg:gap-16",
         reverse && "lg:flex-row-reverse",
         className
       )}
     >
       {/* Content */}
-      <Flex direction="col" className="flex-1 w-full lg:max-w-lg xl:max-w-xl">
+      <Flex direction="col" fullWidth className="flex-1 lg:max-w-lg xl:max-w-xl">
         <ContentCard
           title={title}
           description={description}

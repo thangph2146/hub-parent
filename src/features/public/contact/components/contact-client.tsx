@@ -17,7 +17,7 @@ export type ContactClientProps = Record<string, never>
 
 export const ContactClient = ({ }: ContactClientProps) => {
   return (
-    <Section padding="py-12" background="bg-background">
+    <Section padding="responsive-lg" background="bg-background">
       <Flex direction="col" gap={6} className="w-full lg:flex-row lg:gap-8">
         {/* Left Side - Contact Information - 1/3 */}
         <Flex direction="col" gap={6} className="w-full lg:w-1/3">

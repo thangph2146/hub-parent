@@ -63,7 +63,7 @@ export const HeroSection = ({
       </Flex>
 
       {/* Text Overlay Box */}
-      <Flex align="center" justify="start" className="absolute inset-0 container mx-auto z-30 px-4 sm:px-6 lg:px-8">
+      <Flex align="center" justify="start" position="absolute" container padding="responsive" className="inset-0 z-30">
         <ContentCard
           title={title}
           description={description}

@@ -146,9 +146,11 @@ export function NotificationItem({
   })
 
   return (
-    <div
+    <Flex
+      direction="col"
+      padding="md"
       className={cn(
-        "group relative border-l-4 p-4 transition-colors hover:bg-accent/10 cursor-pointer",
+        "group relative border-l-4 transition-colors hover:bg-accent/10 cursor-pointer",
         styleClass,
         !notification.isRead && "bg-accent/10"
       )}
@@ -239,7 +241,7 @@ export function NotificationItem({
           </Flex>
         </Flex>
       </Flex>
-    </div>
+    </Flex>
   )
 }
 

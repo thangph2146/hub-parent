@@ -37,7 +37,7 @@ export interface HomeClientProps {
 
 export const HomeClient = ({ featuredPosts = [] }: HomeClientProps) => {
   return (
-    <Flex direction="col" className="relative isolate bg-background">
+    <Flex direction="col" position="relative" fullWidth className="isolate bg-background">
       {/* Hero Section */}
       <HeroSection
         title="Hệ thống Kết nối Phụ huynh"
@@ -136,10 +136,10 @@ export const HomeClient = ({ featuredPosts = [] }: HomeClientProps) => {
 
       {/* Featured Posts Section */}
       {featuredPosts.length > 0 && (
-        <Section padding="py-12" background="bg-background">
+        <Section padding="responsive-lg" background="bg-background">
           <Flex direction="col" gap={8}>
             {/* Header */}
-            <Flex align="center" justify="between" gap={4} className="w-full">
+            <Flex align="center" justify="between" gap={4} fullWidth>
               <Flex direction="col" gap={1}>
                 <TypographyH2>
                   Bài viết nổi bật
@@ -192,7 +192,7 @@ export const HomeClient = ({ featuredPosts = [] }: HomeClientProps) => {
       )}
 
       {/* Registration Form Section */}
-      <Section padding="py-12" background="bg-background">
+      <Section padding="responsive-lg" background="bg-background">
         <ContactSection
           title="Tại sao chọn chúng tôi?"
           description="Chúng tôi cam kết mang đến trải nghiệm tốt nhất cho phụ huynh và sinh viên."

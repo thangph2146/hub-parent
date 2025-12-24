@@ -19,7 +19,7 @@ export const PostList = ({ posts, currentPage, totalPages }: PostListProps) => {
 
   return (
     <>
-      <Grid cols={3} gap={8}>
+      <Grid cols={2} gap={8}>
         {posts.map((post, index) => (
           <PostCard 
             key={post.id} 
@@ -30,7 +30,7 @@ export const PostList = ({ posts, currentPage, totalPages }: PostListProps) => {
       </Grid>
       
       {totalPages > 1 && (
-        <Flex justify="center" className="pt-12">
+        <Flex justify="center" padding="responsive-y" className="pt-12">
           <PostPagination currentPage={currentPage} totalPages={totalPages} />
         </Flex>
       )}

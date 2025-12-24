@@ -19,7 +19,6 @@ interface ChatInputProps {
   currentChat: Contact | null
   replyingTo: Message | null
   onCancelReply: () => void
-  replyBannerRef?: React.RefObject<HTMLDivElement | null>
   deletedBannerRef?: React.RefObject<HTMLDivElement | null>
   isGroupDeleted?: boolean
 }
@@ -35,7 +34,6 @@ function ChatInput(
     currentChat,
     replyingTo,
     onCancelReply,
-    replyBannerRef,
     deletedBannerRef,
     isGroupDeleted = false,
   }: ChatInputProps,
@@ -44,14 +42,23 @@ function ChatInput(
   const isDisabled = !currentChat || isGroupDeleted
 
   return (
-    <Flex ref={ref} direction="col" className="border-t shrink-0">
+    <Flex 
+      ref={ref} 
+      direction="col" 
+      fullWidth
+      className="border-t shrink-0"
+    >
       {replyingTo && !isGroupDeleted && (
-        <div ref={replyBannerRef}>
           <ReplyBanner replyingTo={replyingTo} onCancel={onCancelReply} />
-        </div>
       )}
       {isGroupDeleted && <GroupDeletedBanner ref={deletedBannerRef} />}
-      <Flex align="end" gap={1} className="min-h-[64px] max-h-[152px] px-4 py-2">
+      <Flex 
+        align="end" 
+        gap={1} 
+        padding="sm"
+        fullWidth
+        className="min-h-[64px] max-h-[152px]"
+      >
         <Textarea
           ref={inputRef}
           className="flex-1 resize-none overflow-y-auto"

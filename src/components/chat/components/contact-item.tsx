@@ -18,18 +18,18 @@ interface ContactItemProps {
 
 export function ContactItem({ contact, isSelected, onClick }: ContactItemProps) {
   return (
-    <div className="w-full">
+    <Flex fullWidth>
       <button
         onClick={onClick}
         className={cn(
-          "w-full px-4 py-3 hover:bg-accent/10 transition-colors text-left relative",
+          "w-full hover:bg-accent/10 transition-colors text-left relative",
           isSelected && "bg-accent/10",
           contact.isDeleted && "opacity-60"
         )}
         aria-label={`Chat with ${contact.name}`}
       >
-        <Flex align="center" gap={3}>
-          <div className="relative shrink-0">
+        <Flex align="center" gap={3} fullWidth padding="md">
+          <Flex position="relative" className="shrink-0">
             <Avatar size="xl" className="sm:h-12 sm:w-12">
               <AvatarImage src={contact.image || undefined} alt={contact.name} />
               <AvatarFallback asChild>
@@ -37,26 +37,30 @@ export function ContactItem({ contact, isSelected, onClick }: ContactItemProps) 
               </AvatarFallback>
             </Avatar>
             {contact.isOnline && (
-              <span className="absolute bottom-0 right-0 h-2 w-2 rounded-full bg-green-500 border-2 border-background" />
+              <Flex position="absolute" className="bottom-0 right-0 h-2 w-2 rounded-full bg-green-500 border-2 border-background" />
             )}
-          </div>
-          <div className="flex-1 min-w-0">
-            <Flex align="center" justify="between" gap={2}>
-              <Flex align="center" gap={2} className="flex-1 min-w-0">
+          </Flex>
+          <Flex direction="col" fullWidth className="flex-1 min-w-0" gap={1}>
+            <Flex align="center" justify="between" gap={2} fullWidth>
+              <Flex align="center" gap={2} fullWidth className="flex-1 min-w-0">
                 <CardTitle>
                   <TypographyP className="truncate">{contact.name}</TypographyP>
                 </CardTitle>
                 {contact.isDeleted && (
-                  <IconSize size="xs" className="text-destructive shrink-0"><Trash2 aria-label="Deleted" /></IconSize>
+                  <IconSize size="xs" className="text-destructive shrink-0">
+                    <Trash2 aria-label="Deleted" />
+                  </IconSize>
                 )}
               </Flex>
               <TypographyPSmallMuted className="shrink-0">
                 {formatTime(contact.lastMessageTime)}
               </TypographyPSmallMuted>
             </Flex>
-            <Flex align="center" justify="between" gap={2}>
+            <Flex align="center" justify="between" gap={2} fullWidth>
               <CardDescription>
-                <TypographyPSmallMuted className="truncate flex-1">{contact.lastMessage}</TypographyPSmallMuted>
+                <TypographyPSmallMuted className="truncate flex-1">
+                  {contact.lastMessage}
+                </TypographyPSmallMuted>
               </CardDescription>
               {contact.unreadCount > 0 && (
                 <Badge variant="default" className="shrink-0">
@@ -64,10 +68,10 @@ export function ContactItem({ contact, isSelected, onClick }: ContactItemProps) 
                 </Badge>
               )}
             </Flex>
-          </div>
+          </Flex>
         </Flex>
       </button>
-    </div>
+    </Flex>
   )
 }
 

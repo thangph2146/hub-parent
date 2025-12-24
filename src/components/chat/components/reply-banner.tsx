@@ -17,8 +17,15 @@ interface ReplyBannerProps {
 
 export function ReplyBanner({ replyingTo, onCancel }: ReplyBannerProps) {
   return (
-    <Flex align="center" justify="between" gap={2} className="px-4 py-2 bg-muted/50 border-b">
-      <Flex direction="col" className="flex-1 min-w-0">
+    <Flex 
+      align="center" 
+      justify="between" 
+      gap={2} 
+      padding="sm"
+      fullWidth
+      className="bg-muted/50 border-b"
+    >
+      <Flex direction="col" fullWidth className="flex-1 min-w-0" gap={0.5}>
         <TypographyPSmallMuted>Replying to:</TypographyPSmallMuted>
         <TypographyPSmall className="truncate">{replyingTo.content}</TypographyPSmall>
       </Flex>

@@ -42,7 +42,14 @@ export function DeletedGroupBanner({
 
   return (
     <>
-      <Flex align="center" justify="between" className="py-4 px-4 bg-destructive/10 border border-destructive/20 rounded-lg mb-2">
+      <Flex 
+        align="center" 
+        justify="between" 
+        gap={2}
+        padding="md"
+        fullWidth
+        className="bg-destructive/10 border border-destructive/20 rounded-lg mb-2"
+      >
         <Flex align="center" gap={2} className="text-destructive">
           <IconSize size="sm">
             <svg
@@ -62,7 +69,7 @@ export function DeletedGroupBanner({
           <TypographyP>Nhóm này đã bị xóa</TypographyP>
         </Flex>
         {canHardDelete && (
-          <Button variant="destructive" size="sm" onClick={handleHardDeleteClick} className="h-7">
+          <Button variant="destructive" size="sm" onClick={handleHardDeleteClick} className="h-7 shrink-0">
             <IconSize size="xs"><Trash2 /></IconSize>
             Xóa vĩnh viễn
           </Button>

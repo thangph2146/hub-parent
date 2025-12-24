@@ -30,27 +30,29 @@ export function MessageSearchSheet({
   onMessageClick,
 }: MessageSearchSheetProps) {
   return (
-    <Flex direction="col" gap={4} className="mt-4 p-4">
-      <div className="relative">
-        <IconSize size="sm" className="absolute left-2 top-1/2 transform -translate-y-1/2 text-muted-foreground"><Search /></IconSize>
+    <Flex direction="col" gap={4} padding="md" className="mt-4">
+      <Flex position="relative" align="center" fullWidth>
+        <IconSize size="sm" className="absolute left-2 top-1/2 transform -translate-y-1/2 text-muted-foreground z-10">
+          <Search />
+        </IconSize>
         <Input
           placeholder="Nhập từ khóa để tìm kiếm..."
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
-          className="pl-9 pr-9"
+          className="pl-9 pr-9 w-full"
           autoFocus
         />
         {searchQuery && (
           <Button
             variant="ghost"
             size="icon"
-            className="absolute right-1 top-1/2 transform -translate-y-1/2 h-8 w-8"
+            className="absolute right-1 top-1/2 transform -translate-y-1/2 h-8 w-8 shrink-0"
             onClick={onClose}
           >
             <IconSize size="sm"><X /></IconSize>
           </Button>
         )}
-      </div>
+      </Flex>
       {searchQuery && (
         <TypographyPMuted>
           Tìm thấy {messages.length} tin nhắn
@@ -58,32 +60,37 @@ export function MessageSearchSheet({
       )}
       {searchQuery && messages.length > 0 && (
         <ScrollArea className="h-[calc(100vh-200px)]">
-          <div className="space-y-2 pr-4">
+          <Flex direction="col" gap={2} padding="responsive" className="pr-4">
             {messages.map((message) => (
               <button
                 key={message.id}
                 onClick={() => onMessageClick(message.id)}
-                className="w-full text-left p-3 rounded-lg border hover:bg-accent/10 transition-colors"
+                className="w-full text-left rounded-lg border hover:bg-accent/10 transition-colors"
               >
-                <Flex align="start" gap={2}>
-                  <div className="flex-1 min-w-0">
-                    <TypographyPSmallMuted className="mb-1">
-                      {formatMessageTime(message.timestamp)}
-                    </TypographyPSmallMuted>
-                    <TypographyP className="break-words">
-                      {highlightText(message.content, searchQuery)}
-                    </TypographyP>
-                  </div>
+                <Flex direction="col" gap={1} align="start" padding="md">
+                  <TypographyPSmallMuted>
+                    {formatMessageTime(message.timestamp)}
+                  </TypographyPSmallMuted>
+                  <TypographyP className="break-words">
+                    {highlightText(message.content, searchQuery)}
+                  </TypographyP>
                 </Flex>
               </button>
             ))}
-          </div>
+          </Flex>
         </ScrollArea>
       )}
       {searchQuery && messages.length === 0 && (
-        <Flex direction="col" align="center" justify="center" className="py-8 text-center">
+        <Flex 
+          direction="col" 
+          align="center" 
+          justify="center" 
+          gap={1}
+          padding="responsive-lg"
+          className="text-center"
+        >
           <TypographyPMuted>Không tìm thấy tin nhắn nào</TypographyPMuted>
-          <TypographyPSmallMuted className="mt-1">Thử tìm kiếm với từ khóa khác</TypographyPSmallMuted>
+          <TypographyPSmallMuted>Thử tìm kiếm với từ khóa khác</TypographyPSmallMuted>
         </Flex>
       )}
     </Flex>

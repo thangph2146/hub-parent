@@ -8,10 +8,10 @@ import { Flex } from "@/components/ui/flex"
 
 export const PostEmptyState = () => {
   return (
-    <Flex direction="col" align="center" justify="center" gap={6} className="py-20 text-center">
-      <Flex className="relative">
+    <Flex direction="col" align="center" justify="center" gap={6} padding="responsive-lg" className="text-center">
+      <Flex position="relative">
         <Flex className="absolute inset-0 bg-primary/10 rounded-full blur-2xl" />
-        <Flex className="relative bg-muted rounded-full p-6">
+        <Flex position="relative" className="bg-muted rounded-full" padding="lg">
           <IconSize size="4xl">
             <FileText />
           </IconSize>

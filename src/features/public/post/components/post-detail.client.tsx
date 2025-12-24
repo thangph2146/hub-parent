@@ -31,18 +31,17 @@ export const PostDetailClient = ({ post }: PostDetailClientProps) => {
   }
 
   return (
-    <article className="py-8 sm:py-12">
+    <Flex direction="col" padding="responsive-lg">
       <Flex direction="col" gap={8}>
         {/* Header */}
-        <header>
-          <Flex direction="col" gap={6}>
-            {/* Title */}
-            <TypographyH1 className="tracking-tight leading-tight">
-              {post.title}
-            </TypographyH1>
+        <Flex direction="col" gap={6}>
+          {/* Title */}
+          <TypographyH1 className="tracking-tight leading-tight">
+            {post.title}
+          </TypographyH1>
 
-            {/* Meta Info */}
-            <Flex align="center" gap={4} wrap={true} className="sm:gap-6 pt-2 border-t">
+          {/* Meta Info */}
+          <Flex align="center" gap={4} wrap className="sm:gap-6 pt-2 border-t">
               <Flex align="center" gap={2}>
                 <IconSize size="sm">
                   <User />
@@ -81,8 +80,7 @@ export const PostDetailClient = ({ post }: PostDetailClientProps) => {
                 </Flex>
               )}
             </Flex>
-          </Flex>
-        </header>
+        </Flex>
 
         {/* Content */}
         <div className="prose prose-lg dark:prose-invert max-w-none prose-p:leading-relaxed prose-a:text-primary prose-a:no-underline hover:prose-a:underline">
@@ -91,11 +89,11 @@ export const PostDetailClient = ({ post }: PostDetailClientProps) => {
 
         {/* Tags */}
         {post.tags.length > 0 && (
-          <Flex align="center" gap={3} wrap={true} className="pt-8 border-t">
+          <Flex align="center" gap={3} wrap className="pt-8 border-t">
             <IconSize size="md">
               <Tag />
             </IconSize>
-            <Flex gap={2} wrap={true}>
+            <Flex gap={2} wrap>
               {post.tags.map((tag) => (
                 <Badge key={tag.id} variant="outline">
                   {tag.name}
@@ -105,6 +103,6 @@ export const PostDetailClient = ({ post }: PostDetailClientProps) => {
           </Flex>
         )}
       </Flex>
-    </article>
+    </Flex>
   )
 }

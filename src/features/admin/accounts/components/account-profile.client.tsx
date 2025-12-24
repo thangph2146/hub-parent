@@ -96,7 +96,7 @@ export const AccountProfileClient = ({
       description: "Thông tin đăng nhập và cá nhân",
       fieldHeader: (
         <Card className="overflow-hidden border-2 bg-gradient-to-br from-card via-card to-muted/20 shadow-sm">
-          <Flex direction="col" align="start" gap={6} className="sm:flex-row sm:items-center p-6">
+          <Flex direction="col" align="start" gap={6} padding="lg" className="sm:flex-row sm:items-center">
             <div className="relative group">
               <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 via-primary/10 to-transparent rounded-full blur opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               <Avatar className="relative h-28 w-28 border-4 border-background shadow-lg ring-2 ring-primary/10">
@@ -157,7 +157,7 @@ export const AccountProfileClient = ({
         return (
           <Flex direction="col" gap={6}>
             <Grid cols={2} gap={4}>
-              <Card className="p-4 border-border/50 bg-card/50 hover:bg-card transition-colors">
+              <Card padding="md" className="border-border/50 bg-card/50 hover:bg-card transition-colors">
                 <FieldItem icon={User} label="Tên">
                   <TypographyPLarge className="mt-1">
                     {accountData.name || (
@@ -169,7 +169,7 @@ export const AccountProfileClient = ({
                 </FieldItem>
               </Card>
 
-              <Card className="p-4 border-border/50 bg-card/50 hover:bg-card transition-colors">
+              <Card padding="md" className="border-border/50 bg-card/50 hover:bg-card transition-colors">
                 <FieldItem icon={Phone} label="Số điện thoại">
                   <TypographyPLarge className="mt-1">
                     {accountData.phone || (
@@ -183,7 +183,7 @@ export const AccountProfileClient = ({
             </Grid>
 
             {accountData.bio && (
-              <Card className="border-2 border-border/50 bg-gradient-to-br from-card to-muted/20 p-6 shadow-sm">
+              <Card padding="lg" className="border-2 border-border/50 bg-gradient-to-br from-card to-muted/20 shadow-sm">
                 <Flex align="start" gap={4}>
                   <Flex align="center" justify="center" className="h-10 w-10 shrink-0 rounded-xl bg-primary/10 ring-2 ring-primary/5">
                     <IconSize size="md">
@@ -210,7 +210,7 @@ export const AccountProfileClient = ({
                   : accountData.address
 
                 return (
-                  <Card className="p-5 border-2 border-border/50 bg-gradient-to-br from-card to-muted/10 shadow-sm">
+                  <Card padding="lg" className="border-2 border-border/50 bg-gradient-to-br from-card to-muted/10 shadow-sm">
                     <FieldItem icon={MapPin} label="Địa chỉ">
                       <Flex direction="col" gap={3} className="mt-2">
                         {structuredAddress ? (
@@ -284,7 +284,7 @@ export const AccountProfileClient = ({
 
         return (
           <Flex direction="col" gap={6}>
-            <Card className="p-5 border-2 border-border/50 bg-gradient-to-br from-card to-muted/10 shadow-sm">
+            <Card padding="lg" className="border-2 border-border/50 bg-gradient-to-br from-card to-muted/10 shadow-sm">
               <FieldItem icon={Mail} label="Email">
                 <Flex direction="col" gap={3} className="mt-2">
                   <TypographyP className="text-foreground">
@@ -314,7 +314,7 @@ export const AccountProfileClient = ({
             </Card>
 
             {accountData.emailVerified && (
-              <Card className="p-4 border-border/50 bg-card/50 hover:bg-card transition-colors">
+              <Card padding="md" className="border-border/50 bg-card/50 hover:bg-card transition-colors">
                 <FieldItem icon={Clock} label="Ngày xác thực email">
                   <TypographyPLarge className="mt-1">
                     {formatDateVi(accountData.emailVerified)}
@@ -336,7 +336,7 @@ export const AccountProfileClient = ({
         return (
           <Flex direction="col" gap={6}>
             <Grid cols={2} gap={4}>
-              <Card className="p-4 border-border/50 bg-card/50 hover:bg-card transition-colors">
+              <Card padding="md" className="border-border/50 bg-card/50 hover:bg-card transition-colors">
                 <FieldItem icon={Calendar} label="Ngày tạo tài khoản">
                   <TypographyPLarge className="mt-1">
                     {accountData.createdAt ? (
@@ -348,7 +348,7 @@ export const AccountProfileClient = ({
                 </FieldItem>
               </Card>
 
-              <Card className="p-4 border-border/50 bg-card/50 hover:bg-card transition-colors">
+              <Card padding="md" className="border-border/50 bg-card/50 hover:bg-card transition-colors">
                 <FieldItem icon={Clock} label="Cập nhật lần cuối">
                   <TypographyPLarge className="mt-1">
                     {accountData.updatedAt ? (
