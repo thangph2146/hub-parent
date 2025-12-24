@@ -72,6 +72,7 @@ const flexVariants = cva("flex", {
       none: "",
       auto: "mx-auto",
       "y-auto": "my-auto",
+      "r-6-sm-0": "mr-6 sm:mr-0",
     },
     position: {
       relative: "relative",
@@ -79,6 +80,99 @@ const flexVariants = cva("flex", {
       fixed: "fixed",
       sticky: "sticky",
       static: "static",
+      "absolute-bottom-right": "absolute bottom-0 right-0",
+      "absolute-left-center": "absolute left-6 top-1/2 transform -translate-y-1/2",
+    },
+    border: {
+      none: "",
+      all: "border",
+      top: "border-t",
+      bottom: "border-b",
+      left: "border-l",
+      right: "border-r",
+      x: "border-x",
+      y: "border-y",
+    },
+    height: {
+      auto: "",
+      full: "h-full",
+      screen: "h-screen",
+      "16": "h-16",
+      "64": "h-64",
+      "12": "h-12",
+      "2": "h-2",
+      "min-full": "min-h-full",
+    },
+    shrink: {
+      true: "shrink-0",
+      false: "",
+    },
+    overflow: {
+      none: "",
+      hidden: "overflow-hidden",
+      auto: "overflow-auto",
+      scroll: "overflow-scroll",
+    },
+    minWidth: {
+      none: "",
+      "0": "min-w-0",
+      full: "min-w-full",
+      "120": "min-w-[120px]",
+      "140": "min-w-[140px]",
+    },
+    maxWidth: {
+      none: "",
+      full: "max-w-full",
+      screen: "max-w-screen",
+      "100vw": "max-w-[100dvw]",
+      "75": "max-w-[75%]",
+      "70": "max-w-[70%]",
+      "32": "max-w-[32px]",
+    },
+    rounded: {
+      none: "",
+      sm: "rounded-sm",
+      md: "rounded-md",
+      lg: "rounded-lg",
+      xl: "rounded-xl",
+      full: "rounded-full",
+    },
+    bg: {
+      none: "",
+      primary: "bg-primary text-primary-foreground",
+      muted: "bg-muted text-foreground",
+      "muted-50": "bg-muted/50",
+      "white-10": "bg-white/10",
+      white: "bg-white",
+      background: "bg-background",
+      destructive: "bg-destructive/10",
+      "accent-10": "bg-accent/10",
+      "green-500": "bg-green-500",
+    },
+    hover: {
+      none: "",
+      default: "hover:bg-primary/10",
+      destructive: "hover:bg-destructive/10",
+    },
+    opacity: {
+      none: "",
+      "60": "opacity-60",
+      "80": "opacity-80",
+    },
+    width: {
+      none: "",
+      full: "w-full",
+      "2": "w-2",
+      "100": "min-w-[100px]",
+    },
+    cursor: {
+      none: "",
+      pointer: "cursor-pointer",
+    },
+    textAlign: {
+      none: "",
+      center: "text-center",
+      left: "text-left",
     },
   },
   defaultVariants: {
@@ -92,6 +186,19 @@ const flexVariants = cva("flex", {
     padding: "none",
     margin: "none",
     position: "static",
+    border: "none",
+    height: "auto",
+    shrink: false,
+    overflow: "none",
+    minWidth: "none",
+    maxWidth: "none",
+    rounded: "none",
+    bg: "none",
+    hover: "none",
+    opacity: "none",
+    width: "none",
+    cursor: "none",
+    textAlign: "none",
   },
 })
 
@@ -102,11 +209,11 @@ export interface FlexProps
 }
 
 export const Flex = React.forwardRef<HTMLDivElement, FlexProps>(
-  ({ className, direction, align, justify, gap, wrap, fullWidth, container, padding, margin, position, as: Component = "div", ...props }, ref) => {
+  ({ className, direction, align, justify, gap, wrap, fullWidth, container, padding, margin, position, border, height, shrink, overflow, minWidth, maxWidth, rounded, bg, hover, opacity, width, cursor, textAlign, as: Component = "div", ...props }, ref) => {
     return (
       <Component
         ref={ref}
-        className={cn(flexVariants({ direction, align, justify, gap, wrap, fullWidth, container, padding, margin, position }), className)}
+        className={cn(flexVariants({ direction, align, justify, gap, wrap, fullWidth, container, padding, margin, position, border, height, shrink, overflow, minWidth, maxWidth, rounded, bg, hover, opacity, width, cursor, textAlign }), className)}
         {...props}
       />
     )

@@ -585,8 +585,6 @@ export const ChatTemplate = ({
         newGroupDialog={
           <NewGroupDialog onSelectGroup={handleNewGroup} />
         }
-        filterType={filterType}
-        onFilterChange={setFilterType}
       />
       <ContactList
         contacts={filteredContacts}

@@ -37,7 +37,7 @@ export interface HomeClientProps {
 
 export const HomeClient = ({ featuredPosts = [] }: HomeClientProps) => {
   return (
-    <Flex direction="col" position="relative" fullWidth className="isolate bg-background">
+    <Flex direction="col" gap={8} position="relative" fullWidth bg="background" className="isolate">
       {/* Hero Section */}
       <HeroSection
         title="Hệ thống Kết nối Phụ huynh"
@@ -148,11 +148,8 @@ export const HomeClient = ({ featuredPosts = [] }: HomeClientProps) => {
                   Các bài viết mới nhất từ nhà trường
                 </TypographyDescriptionSmall>
               </Flex>
-              <Flex className="hidden sm:flex">
-                <Link
-                  href="/bai-viet"
-                  className="text-primary hover:text-primary/80 transition-colors"
-                >
+              <Flex>
+                <Link href="/bai-viet">
                   <Flex align="center" gap={2}>
                     <TypographySpan>Xem tất cả</TypographySpan>
                     <IconSize size="sm">
@@ -175,7 +172,7 @@ export const HomeClient = ({ featuredPosts = [] }: HomeClientProps) => {
             </Grid>
 
             {/* Mobile View All Button */}
-            <Flex justify="center" className="sm:hidden">
+            <Flex justify="center">
               <Button asChild variant="default" size="sm">
                 <Link href="/bai-viet">
                   <Flex align="center" gap={2}>

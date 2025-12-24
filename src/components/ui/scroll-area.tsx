@@ -2,18 +2,36 @@
 
 import * as React from "react"
 import * as ScrollAreaPrimitive from "@radix-ui/react-scroll-area"
+import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "@/lib/utils/index"
+
+const scrollAreaVariants = cva("relative", {
+  variants: {
+    fullWidth: {
+      true: "w-full flex-1",
+      false: "",
+    },
+  },
+  defaultVariants: {
+    fullWidth: false,
+  },
+})
+
+export interface ScrollAreaProps
+  extends React.ComponentProps<typeof ScrollAreaPrimitive.Root>,
+    VariantProps<typeof scrollAreaVariants> {}
 
 function ScrollArea({
   className,
   children,
+  fullWidth,
   ...props
-}: React.ComponentProps<typeof ScrollAreaPrimitive.Root>) {
+}: ScrollAreaProps) {
   return (
     <ScrollAreaPrimitive.Root
       data-slot="scroll-area"
-      className={cn("relative", className)}
+      className={cn(scrollAreaVariants({ fullWidth }), className)}
       suppressHydrationWarning
       {...props}
     >

@@ -9,22 +9,22 @@ export function AttachmentMenu() {
   return (
     <DropdownMenuContent side="top" align="start">
       <DropdownMenuItem>
-        <IconSize size="sm" className="mr-2"><Image aria-label="Photos & Videos" /></IconSize> Photos & Videos
+        <IconSize size="sm"><Image aria-label="Photos & Videos" /></IconSize> Photos & Videos
       </DropdownMenuItem>
       <DropdownMenuItem>
-        <IconSize size="sm" className="mr-2"><Camera /></IconSize> Camera
+        <IconSize size="sm"><Camera /></IconSize> Camera
       </DropdownMenuItem>
       <DropdownMenuItem>
-        <IconSize size="sm" className="mr-2"><File /></IconSize> Document
+        <IconSize size="sm"><File /></IconSize> Document
       </DropdownMenuItem>
       <DropdownMenuItem>
-        <IconSize size="sm" className="mr-2"><UserRound /></IconSize> Contact
+        <IconSize size="sm"><UserRound /></IconSize> Contact
       </DropdownMenuItem>
       <DropdownMenuItem>
-        <IconSize size="sm" className="mr-2"><ChartBarIncreasing /></IconSize> Poll
+        <IconSize size="sm"><ChartBarIncreasing /></IconSize> Poll
       </DropdownMenuItem>
       <DropdownMenuItem>
-        <IconSize size="sm" className="mr-2"><Brush /></IconSize> Drawing
+        <IconSize size="sm"><Brush /></IconSize> Drawing
       </DropdownMenuItem>
     </DropdownMenuContent>
   )

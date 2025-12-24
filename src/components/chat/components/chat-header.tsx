@@ -78,14 +78,16 @@ function ChatHeader(
         gap={3} 
         padding="md"
         fullWidth
-        className="h-16 border-b shrink-0"
+        height="16"
+        border="bottom"
+        shrink
       >
         {showBackButton && onBack && (
-          <Button variant="ghost" size="icon" className="h-10 w-10 shrink-0" onClick={onBack}>
+          <Button variant="ghost" size="icon" onClick={onBack}>
             <IconSize size="sm"><ArrowLeft /></IconSize>
           </Button>
         )}
-        <Flex className="shrink-0">
+        <Flex shrink>
           <Avatar size="xl">
             <AvatarImage src={contact.image || undefined} alt={contact.name} />
             <AvatarFallback asChild>
@@ -93,22 +95,21 @@ function ChatHeader(
             </AvatarFallback>
           </Avatar>
         </Flex>
-        <Flex direction="col" fullWidth className="flex-1 min-w-0" gap={0.5}>
+        <Flex direction="col" fullWidth minWidth="0" gap={0.5}>
           <CardTitle>
-            <TypographyP className="truncate">{contact.name}</TypographyP>
+            <TypographyP>{contact.name}</TypographyP>
           </CardTitle>
           <CardDescription>
-            <TypographyPSmall className="truncate">
+            <TypographyPSmall>
               {contact.type === "GROUP" ? `${contact.group?.memberCount || 0} thành viên` : "Contact Info"}
             </TypographyPSmall>
           </CardDescription>
         </Flex>
-        <Flex align="center" gap={1} className="shrink-0">
+        <Flex align="center" gap={1} shrink>
           {contact.type === "GROUP" && groupManagementMenu}
           <Button 
             variant="ghost" 
-            size="icon" 
-            className="h-10 w-10"
+            size="icon"
             onClick={() => setIsSearchOpen(true)}
           >
             <IconSize size="sm"><Search /></IconSize>
@@ -116,7 +117,7 @@ function ChatHeader(
         </Flex>
       </Flex>
       <Sheet open={isSearchOpen} onOpenChange={setIsSearchOpen}>
-        <SheetContent side="right" className="w-full sm:max-w-md">
+        <SheetContent side="right">
           <SheetHeader>
             <SheetTitle>Tìm kiếm tin nhắn</SheetTitle>
           </SheetHeader>

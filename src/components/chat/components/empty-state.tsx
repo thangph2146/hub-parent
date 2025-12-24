@@ -16,10 +16,10 @@ export function EmptyState({ variant = "messages" }: EmptyStateProps) {
         gap={4} 
         padding="md"
         fullWidth
-        className="h-full bg-background"
+        height="full"
       >
         <Flex direction="col" align="center" gap={1}>
-          <IconSize size="4xl" className="opacity-30">
+          <IconSize size="4xl">
             <MessageCircle />
           </IconSize>
           <TypographyP>Chọn một cuộc trò chuyện</TypographyP>
@@ -37,10 +37,10 @@ export function EmptyState({ variant = "messages" }: EmptyStateProps) {
       gap={4} 
       padding="responsive-lg"
       fullWidth
-      className="min-h-full"
+      height="min-full"
     >
       <Flex direction="col" align="center" gap={1}>
-        <IconSize size="3xl" className="opacity-50">
+        <IconSize size="3xl">
           <MessageCircle />
         </IconSize>
         <TypographyP>Chưa có tin nhắn nào</TypographyP>

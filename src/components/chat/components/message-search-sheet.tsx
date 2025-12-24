@@ -30,23 +30,21 @@ export function MessageSearchSheet({
   onMessageClick,
 }: MessageSearchSheetProps) {
   return (
-    <Flex direction="col" gap={4} padding="md" className="mt-4">
+    <Flex direction="col" gap={4} padding="md">
       <Flex position="relative" align="center" fullWidth>
-        <IconSize size="sm" className="absolute left-2 top-1/2 transform -translate-y-1/2 text-muted-foreground z-10">
+        <IconSize size="sm">
           <Search />
         </IconSize>
         <Input
           placeholder="Nhập từ khóa để tìm kiếm..."
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
-          className="pl-9 pr-9 w-full"
           autoFocus
         />
         {searchQuery && (
           <Button
             variant="ghost"
             size="icon"
-            className="absolute right-1 top-1/2 transform -translate-y-1/2 h-8 w-8 shrink-0"
             onClick={onClose}
           >
             <IconSize size="sm"><X /></IconSize>
@@ -59,23 +57,29 @@ export function MessageSearchSheet({
         </TypographyPMuted>
       )}
       {searchQuery && messages.length > 0 && (
-        <ScrollArea className="h-[calc(100vh-200px)]">
-          <Flex direction="col" gap={2} padding="responsive" className="pr-4">
+        <ScrollArea>
+          <Flex direction="col" gap={2} padding="responsive">
             {messages.map((message) => (
-              <button
+              <Flex
                 key={message.id}
+                as="button"
                 onClick={() => onMessageClick(message.id)}
-                className="w-full text-left rounded-lg border hover:bg-accent/10 transition-colors"
+                fullWidth
+                textAlign="left"
+                rounded="lg"
+                border="all"
+                hover="accent-10"
+                cursor="pointer"
               >
                 <Flex direction="col" gap={1} align="start" padding="md">
                   <TypographyPSmallMuted>
                     {formatMessageTime(message.timestamp)}
                   </TypographyPSmallMuted>
-                  <TypographyP className="break-words">
+                  <TypographyP>
                     {highlightText(message.content, searchQuery)}
                   </TypographyP>
                 </Flex>
-              </button>
+              </Flex>
             ))}
           </Flex>
         </ScrollArea>
@@ -87,7 +91,6 @@ export function MessageSearchSheet({
           justify="center" 
           gap={1}
           padding="responsive-lg"
-          className="text-center"
         >
           <TypographyPMuted>Không tìm thấy tin nhắn nào</TypographyPMuted>
           <TypographyPSmallMuted>Thử tìm kiếm với từ khóa khác</TypographyPSmallMuted>

@@ -92,7 +92,8 @@ export function ChatWindow({
     <Flex 
       direction="col" 
       fullWidth
-      className="h-full overflow-hidden"
+      height="full"
+      overflow="hidden"
     >
       <ChatHeader 
         ref={chatHeaderRef}

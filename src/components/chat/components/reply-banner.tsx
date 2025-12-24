@@ -23,13 +23,13 @@ export function ReplyBanner({ replyingTo, onCancel }: ReplyBannerProps) {
       gap={2} 
       padding="sm"
       fullWidth
-      className="bg-muted/50 border-b"
+      border="bottom"
     >
-      <Flex direction="col" fullWidth className="flex-1 min-w-0" gap={0.5}>
+      <Flex direction="col" fullWidth minWidth="0" gap={0.5}>
         <TypographyPSmallMuted>Replying to:</TypographyPSmallMuted>
-        <TypographyPSmall className="truncate">{replyingTo.content}</TypographyPSmall>
+        <TypographyPSmall>{replyingTo.content}</TypographyPSmall>
       </Flex>
-      <Button variant="ghost" size="icon" className="h-10 w-10 shrink-0" onClick={onCancel}>
+      <Button variant="ghost" size="icon" onClick={onCancel}>
         <IconSize size="xs"><X /></IconSize>
       </Button>
     </Flex>

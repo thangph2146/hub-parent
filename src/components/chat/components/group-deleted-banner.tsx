@@ -6,7 +6,7 @@
 
 import { forwardRef } from "react"
 import { Flex } from "@/components/ui/flex"
-import { TypographyPSmall } from "@/components/ui/typography"
+import { TypographyPSmallMuted } from "@/components/ui/typography"
 
 export const GroupDeletedBanner = forwardRef<HTMLDivElement>(
   (props, ref) => {
@@ -16,11 +16,11 @@ export const GroupDeletedBanner = forwardRef<HTMLDivElement>(
         align="center" 
         justify="center"
         padding="sm"
-        className="bg-muted/50 border-b"
+        border="bottom"
       >
-        <TypographyPSmall className="text-muted-foreground text-center">
+        <TypographyPSmallMuted>
           Không thể gửi tin nhắn vì nhóm đã bị xóa
-        </TypographyPSmall>
+        </TypographyPSmallMuted>
       </Flex>
     )
   }

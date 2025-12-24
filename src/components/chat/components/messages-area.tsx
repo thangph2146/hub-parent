@@ -68,13 +68,13 @@ export function MessagesArea({
         gap={2} 
         padding="md"
         fullWidth
-        className="min-w-0"
+        minWidth="0"
       >
         {filteredMessages.length > 0 ? (
           <>
             {searchQuery.trim() && (
               <Flex justify="center" padding="responsive-y">
-                <TypographyPSmallMuted className="text-center">
+                <TypographyPSmallMuted>
                   Tìm thấy {filteredMessages.length} tin nhắn
                 </TypographyPSmallMuted>
               </Flex>
@@ -113,7 +113,7 @@ export function MessagesArea({
             gap={1} 
             padding="responsive-lg"
             fullWidth
-            className="text-center"
+            textAlign="center"
           >
             <TypographyPMuted>Không tìm thấy tin nhắn nào</TypographyPMuted>
             <TypographyPSmallMuted>Thử tìm kiếm với từ khóa khác</TypographyPSmallMuted>

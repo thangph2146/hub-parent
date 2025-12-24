@@ -11,8 +11,6 @@ interface ChatListHeaderProps {
   existingContactIds?: string[] // Deprecated: sử dụng newConversationDialog thay thế
   newConversationDialog?: React.ReactNode // Cho phép inject business component từ bên ngoài
   newGroupDialog?: React.ReactNode // Cho phép inject group dialog từ bên ngoài
-  filterType?: ChatFilterType
-  onFilterChange?: (filter: ChatFilterType) => void
 }
 
 export function ChatListHeader({ 
@@ -20,8 +18,6 @@ export function ChatListHeader({
   existingContactIds: _existingContactIds, 
   newConversationDialog,
   newGroupDialog,
-  filterType,
-  onFilterChange,
 }: ChatListHeaderProps) {
   return (
     <Flex 
@@ -29,10 +25,12 @@ export function ChatListHeader({
       justify="between" 
       padding="md"
       fullWidth
-      className="h-16 border-b shrink-0"
+      height="16"
+      border="bottom"
+      shrink
     >
       <TypographyH3>Chats</TypographyH3>
-      <Flex align="center" gap={2} className="shrink-0">
+      <Flex align="center" gap={2} shrink margin="r-6-sm-0">
         {newConversationDialog}
         {newGroupDialog}
       </Flex>

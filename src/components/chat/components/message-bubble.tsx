@@ -90,7 +90,6 @@ export function MessageBubble({
       direction="col"
       justify={isOwnMessage ? "end" : "start"}
       gap={2}
-      className="group"
       fullWidth
       data-message-id={message.id}
       id={`message-${message.id}`}
@@ -103,7 +102,7 @@ export function MessageBubble({
       >
         {/* Avatar chỉ hiển thị cho messages của người khác, đặt bên trái */}
         {!isOwnMessage && showSenderInfo && message.sender && (
-          <Flex className="shrink-0">
+          <Flex shrink>
             <Avatar size="2xl">
               <AvatarImage src={message.sender.avatar || undefined} alt={senderName} />
               <AvatarFallback>
@@ -119,24 +118,20 @@ export function MessageBubble({
           fullWidth
           padding="md"
           position="relative"
-          className={[
-            "max-w-[75%] sm:max-w-[70%] min-w-[140px] sm:min-w-[120px] rounded-lg cursor-pointer hover:opacity-90 transition-opacity",
-            isOwnMessage ? "bg-primary text-primary-foreground" : "bg-muted text-foreground",
-            message.status === "sending" ? "opacity-80" : "",
-          ].join(" ")}
+          maxWidth="75"
+          minWidth="140"
+          rounded="lg"
+          bg={isOwnMessage ? "primary" : "muted"}
           style={{
-            // Đảm bảo bubble không shrink quá nhỏ nhưng vẫn có thể shrink khi cần
             flexShrink: 1,
             flexGrow: 0,
-            // Tối ưu width dựa trên content nhưng không vượt quá max-width
             width: "auto",
-            // Đẩy own message về bên phải
             ...(isOwnMessage ? { marginLeft: "auto" } : {}),
+            ...(message.status === "sending" ? { opacity: 0.8 } : {}),
           }}
           data-role="bubble"
           onClick={() => {
             if (parentMessage?.id && onScrollToMessage) {
-              // If this message is a reply, clicking the bubble scrolls to the original message
               onScrollToMessage(parentMessage.id)
               return
             }
@@ -166,9 +161,7 @@ export function MessageBubble({
               gap={1}
               padding="sm-x"
               fullWidth={false}
-              className={`border-l-2 ${
-                isOwnMessage ? "border-primary-foreground/30" : "border-muted-foreground/40"
-              }`}
+              border="left"
               onClick={(e) => {
                 e.stopPropagation()
                 if (parentMessage?.id) {
@@ -189,12 +182,12 @@ export function MessageBubble({
               <TypographyPSmall>
                 {isParentOwnMessage ? "You" : "Reply"}
               </TypographyPSmall>
-              <TypographyPSmall className="truncate">
+              <TypographyPSmall>
                 {searchQuery ? highlightText(parentMessage.content, searchQuery) : parentMessage.content}
               </TypographyPSmall>
             </Flex>
           )}
-          <TypographyP className="break-words">
+          <TypographyP>
             {searchQuery ? highlightText(message.content, searchQuery) : message.content}
           </TypographyP>
           <Flex align="center" justify="between" gap={1.5} fullWidth>
@@ -218,7 +211,7 @@ export function MessageBubble({
       {message.groupId && message.readers && message.readers.length > 0 && (
         <Flex align="center" justify={isOwnMessage ? "end" : "start"} gap={1}>
           {message.readers.slice(0, 5).map((reader) => (
-            <Avatar key={reader.id} size="xs" className="border-2 border-background">
+            <Avatar key={reader.id} size="xs">
               <AvatarImage src={reader.avatar || undefined} alt={reader.name || reader.email} />
               <AvatarFallback>
                 <TypographySpanSmallMuted>

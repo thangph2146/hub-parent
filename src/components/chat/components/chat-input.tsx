@@ -46,7 +46,8 @@ function ChatInput(
       ref={ref} 
       direction="col" 
       fullWidth
-      className="border-t shrink-0"
+      border="top"
+      shrink
     >
       {replyingTo && !isGroupDeleted && (
           <ReplyBanner replyingTo={replyingTo} onCancel={onCancelReply} />
@@ -57,11 +58,9 @@ function ChatInput(
         gap={1} 
         padding="sm"
         fullWidth
-        className="min-h-[64px] max-h-[152px]"
       >
         <Textarea
           ref={inputRef}
-          className="flex-1 resize-none overflow-y-auto"
           style={{ maxHeight: "120px" , minHeight: "64px" }}
           placeholder={isGroupDeleted ? "Nhóm đã bị xóa" : "Type a message (Enter to send, Shift+Enter for new line)"}
           value={messageInput}
@@ -73,7 +72,6 @@ function ChatInput(
         <Button
           variant="ghost"
           size="icon"
-          className="shrink-0"
           onClick={handleSendMessage}
           disabled={!messageInput.trim() || isDisabled}
         >

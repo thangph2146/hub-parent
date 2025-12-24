@@ -48,9 +48,10 @@ export function DeletedGroupBanner({
         gap={2}
         padding="md"
         fullWidth
-        className="bg-destructive/10 border border-destructive/20 rounded-lg mb-2"
+        border="all"
+        rounded="lg"
       >
-        <Flex align="center" gap={2} className="text-destructive">
+        <Flex align="center" gap={2}>
           <IconSize size="sm">
             <svg
               fill="none"
@@ -69,7 +70,7 @@ export function DeletedGroupBanner({
           <TypographyP>Nhóm này đã bị xóa</TypographyP>
         </Flex>
         {canHardDelete && (
-          <Button variant="destructive" size="sm" onClick={handleHardDeleteClick} className="h-7 shrink-0">
+          <Button variant="destructive" size="sm" onClick={handleHardDeleteClick}>
             <IconSize size="xs"><Trash2 /></IconSize>
             Xóa vĩnh viễn
           </Button>
