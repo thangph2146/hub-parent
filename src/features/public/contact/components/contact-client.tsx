@@ -1,14 +1,13 @@
 "use client"
 
-import { IconSize, TypographyH3, TypographyPSmallMuted, TypographyTitleLarge, TypographyTitleSmall, TypographyPSmall, TypographyPMuted, TypographySpanSmall } from "@/components/ui/typography"
+import { IconSize, TypographyH3, TypographyPSmallMuted, TypographyTitleLarge, TypographyPSmall, TypographyPMuted } from "@/components/ui/typography"
 import { Flex } from "@/components/ui/flex"
 
 import { ContactForm } from "@/components/forms/contact-form"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   Mail,
   Phone,
-  GraduationCap,
   MapPin,
   Clock,
 } from "lucide-react"

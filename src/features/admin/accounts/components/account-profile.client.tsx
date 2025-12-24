@@ -1,6 +1,6 @@
 "use client";
 
-import { TypographyH1, TypographyH3, TypographyH4, TypographyDescription, TypographyP, TypographyPLarge, TypographyPMuted, TypographySpanSmall, IconSize } from "@/components/ui/typography";
+import { TypographyH1, TypographyH3, TypographyH4, TypographyDescription, TypographyP, TypographyPLarge, TypographySpanSmall, IconSize } from "@/components/ui/typography";
 import { Flex } from "@/components/ui/flex";
 import { Grid } from "@/components/ui/grid";
 

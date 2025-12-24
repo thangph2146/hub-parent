@@ -25,7 +25,7 @@ const Timeline = dynamic(() => import("@/components/ui/timeline").then(mod => ({
   loading: () => <div className="h-96 flex items-center justify-center">Đang tải...</div>,
 })
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import { IconSize, TypographySpanLarge } from "@/components/ui/typography";
+import { IconSize } from "@/components/ui/typography";
 import { TypographyPLargeMuted, TypographyPSmallMuted, TypographyPSmall, TypographyDescriptionLarge, TypographyH1, TypographyH2, TypographyH3, TypographyH4, TypographyH6, TypographySpanSmallMuted, TypographyDescription, TypographySpanSmall } from "@/components/ui/typography";
 import { Flex } from "@/components/ui/flex";
 
