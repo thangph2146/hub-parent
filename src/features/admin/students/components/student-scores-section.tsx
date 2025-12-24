@@ -7,6 +7,8 @@
 "use client"
 
 import { TypographyP, TypographyPSmall, TypographyPSmallMuted, TypographyPMuted, IconSize, TypographySpanSmall } from "@/components/ui/typography"
+import { Flex } from "@/components/ui/flex"
+import { Grid } from "@/components/ui/grid"
 
 import { useCallback, useMemo, useState } from "react"
 import { 
@@ -224,11 +226,11 @@ const YearAveragesList = ({ averages, isLoading }: { averages?: YearAverage[]; i
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-8">
+      <Flex align="center" justify="center" className="py-8">
         <IconSize size="lg" className="animate-spin text-muted-foreground">
           <Loader2 />
         </IconSize>
-      </div>
+      </Flex>
     )
   }
 
@@ -270,7 +272,7 @@ const YearTermAveragesDataTable = ({ termAverages }: { termAverages: TermAverage
         accessorKey: "termID",
         header: "Học kỳ",
         cell: (row) => (
-          <div className="flex items-center gap-2 flex-wrap">
+          <Flex align="center" gap={2} wrap={true}>
             <Badge variant="outline" className="whitespace-nowrap">
               <TypographyPSmall>
                 {row.termID}
@@ -281,7 +283,7 @@ const YearTermAveragesDataTable = ({ termAverages }: { termAverages: TermAverage
                 Học kỳ {row.orderTerm}
               </TypographyPSmallMuted>
             )}
-          </div>
+          </Flex>
         ),
         className: "min-w-[140px]",
         filter: {
@@ -453,11 +455,11 @@ const TermAveragesList = ({ averages, isLoading }: { averages?: TermAverage[]; i
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-8">
+      <Flex align="center" justify="center" className="py-8">
         <IconSize size="lg" className="animate-spin text-muted-foreground">
           <Loader2 />
         </IconSize>
-      </div>
+      </Flex>
     )
   }
 
@@ -474,7 +476,7 @@ const TermAveragesList = ({ averages, isLoading }: { averages?: TermAverage[]; i
   return (
     <div className="space-y-4">
       {/* Filter */}
-      <div className="flex flex-col sm:flex-row gap-3">
+      <Flex gap={3} direction="col">
         <Select value={filterYear} onValueChange={setFilterYear}>
           <SelectTrigger className="w-full sm:w-[180px]">
             <IconSize size="sm" className="mr-2">
@@ -491,7 +493,7 @@ const TermAveragesList = ({ averages, isLoading }: { averages?: TermAverage[]; i
             ))}
           </SelectContent>
         </Select>
-      </div>
+      </Flex>
 
       {/* Tree Structure: Năm học -> DataTable học kỳ */}
       {hasData ? (
@@ -503,23 +505,25 @@ const TermAveragesList = ({ averages, isLoading }: { averages?: TermAverage[]; i
               return (
                 <Collapsible key={yearStudy} open={isYearOpen} onOpenChange={() => toggleYear(yearStudy)}>
                   <div className="rounded-md border overflow-hidden">
-                    <CollapsibleTrigger className="flex items-center gap-2 w-full p-3 hover:bg-muted transition-colors">
-                      {isYearOpen ? (
+                    <CollapsibleTrigger asChild>
+                      <Flex align="center" gap={2} className="w-full p-3 hover:bg-muted transition-colors">
+                        {isYearOpen ? (
+                          <IconSize size="sm" className="text-muted-foreground">
+                            <ChevronDown />
+                          </IconSize>
+                        ) : (
+                          <IconSize size="sm" className="text-muted-foreground">
+                            <ChevronRight />
+                          </IconSize>
+                        )}
                         <IconSize size="sm" className="text-muted-foreground">
-                          <ChevronDown />
+                          <Calendar />
                         </IconSize>
-                      ) : (
-                        <IconSize size="sm" className="text-muted-foreground">
-                          <ChevronRight />
-                        </IconSize>
-                      )}
-                      <IconSize size="sm" className="text-muted-foreground">
-                        <Calendar />
-                      </IconSize>
-                      <TypographySpanSmall>Năm học ({yearStudy})</TypographySpanSmall>
-                      <Badge variant="secondary" className="ml-auto">
-                        {termAverages.length} học kỳ
-                      </Badge>
+                        <TypographySpanSmall>Năm học ({yearStudy})</TypographySpanSmall>
+                        <Badge variant="secondary" className="ml-auto">
+                          {termAverages.length} học kỳ
+                        </Badge>
+                      </Flex>
                     </CollapsibleTrigger>
                     <CollapsibleContent>
                       <div className="p-4 border-t">
@@ -788,11 +792,11 @@ const DetailedScoresTable = ({ scores, isLoading }: { scores?: DetailedScore[]; 
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-8">
+      <Flex align="center" justify="center" className="py-8">
         <IconSize size="lg" className="animate-spin text-muted-foreground">
           <Loader2 />
         </IconSize>
-      </div>
+      </Flex>
     )
   }
 
@@ -809,7 +813,7 @@ const DetailedScoresTable = ({ scores, isLoading }: { scores?: DetailedScore[]; 
   return (
     <div className="space-y-4">
       {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-3">
+      <Flex direction="col" gap={3} className="sm:flex-row">
         <Select value={filterYear} onValueChange={setFilterYear}>
           <SelectTrigger className="w-full sm:w-[180px]">
             <IconSize size="sm" className="mr-2">
@@ -839,7 +843,7 @@ const DetailedScoresTable = ({ scores, isLoading }: { scores?: DetailedScore[]; 
             ))}
           </SelectContent>
         </Select>
-      </div>
+      </Flex>
 
       {/* Tree Structure */}
       {hasData ? (
@@ -851,23 +855,25 @@ const DetailedScoresTable = ({ scores, isLoading }: { scores?: DetailedScore[]; 
               return (
                 <Collapsible key={yearStudy} open={isYearOpen} onOpenChange={() => toggleYear(yearStudy)}>
                   <div className="rounded-md border overflow-hidden">
-                    <CollapsibleTrigger className="flex items-center gap-2 w-full p-3 hover:bg-muted transition-colors">
-                      {isYearOpen ? (
+                    <CollapsibleTrigger asChild>
+                      <Flex align="center" gap={2} className="w-full p-3 hover:bg-muted transition-colors">
+                        {isYearOpen ? (
+                          <IconSize size="sm" className="text-muted-foreground">
+                            <ChevronDown />
+                          </IconSize>
+                        ) : (
+                          <IconSize size="sm" className="text-muted-foreground">
+                            <ChevronRight />
+                          </IconSize>
+                        )}
                         <IconSize size="sm" className="text-muted-foreground">
-                          <ChevronDown />
+                          <Calendar />
                         </IconSize>
-                      ) : (
-                        <IconSize size="sm" className="text-muted-foreground">
-                          <ChevronRight />
-                        </IconSize>
-                      )}
-                      <IconSize size="sm" className="text-muted-foreground">
-                        <Calendar />
-                      </IconSize>
-                      <TypographySpanSmall>Năm học ({yearStudy})</TypographySpanSmall>
-                      <Badge variant="secondary" className="ml-auto">
-                        {Object.keys(terms).length} học kỳ
-                      </Badge>
+                        <TypographySpanSmall>Năm học ({yearStudy})</TypographySpanSmall>
+                        <Badge variant="secondary" className="ml-auto">
+                          {Object.keys(terms).length} học kỳ
+                        </Badge>
+                      </Flex>
                     </CollapsibleTrigger>
                     <CollapsibleContent>
                       <div className="px-2 border-t space-y-2">
@@ -882,20 +888,22 @@ const DetailedScoresTable = ({ scores, isLoading }: { scores?: DetailedScore[]; 
                                 open={isTermOpen}
                                 onOpenChange={() => toggleTerm(yearStudy, termID)}
                               >
-                                <CollapsibleTrigger className="flex items-center gap-2 w-full p-2 hover:bg-muted rounded-md transition-colors">
-                                  {isTermOpen ? (
+                                <CollapsibleTrigger asChild>
+                                  <Flex align="center" gap={2} className="w-full p-2 hover:bg-muted rounded-md transition-colors">
+                                    {isTermOpen ? (
+                                      <IconSize size="sm" className="text-muted-foreground">
+                                        <ChevronDown />
+                                      </IconSize>
+                                    ) : (
+                                      <IconSize size="sm" className="text-muted-foreground">
+                                        <ChevronRight />
+                                      </IconSize>
+                                    )}
                                     <IconSize size="sm" className="text-muted-foreground">
-                                      <ChevronDown />
+                                      <TrendingUp />
                                     </IconSize>
-                                  ) : (
-                                    <IconSize size="sm" className="text-muted-foreground">
-                                      <ChevronRight />
-                                    </IconSize>
-                                  )}
-                                  <IconSize size="sm" className="text-muted-foreground">
-                                    <TrendingUp />
-                                  </IconSize>
-                                  <TypographySpanSmall>Học kỳ ({termID})</TypographySpanSmall>
+                                    <TypographySpanSmall>Học kỳ ({termID})</TypographySpanSmall>
+                                  </Flex>
                                 </CollapsibleTrigger>
                                 <CollapsibleContent className="ml-6 mt-2">
                                   <TermScoresDataTable termScores={termScores} />
@@ -972,7 +980,8 @@ export const StudentScoresSection = ({ studentId, isActive }: StudentScoresSecti
 
       {/* Tabs để tổ chức các sections */}
       <Tabs defaultValue="year" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList asChild>
+          <Grid cols={3} className="w-full">
           <TabsTrigger value="year" className="flex items-center gap-2">
             <IconSize size="sm">
               <Calendar />
@@ -994,16 +1003,19 @@ export const StudentScoresSection = ({ studentId, isActive }: StudentScoresSecti
             <span className="hidden sm:inline">Điểm chi tiết</span>
             <span className="sm:hidden">Chi tiết</span>
           </TabsTrigger>
+          </Grid>
         </TabsList>
 
         <TabsContent value="year" className="mt-6">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <IconSize size="md">
-                  <Calendar />
-                </IconSize>
-                Điểm trung bình theo năm học
+              <CardTitle>
+                <Flex align="center" gap={2}>
+                  <IconSize size="md">
+                    <Calendar />
+                  </IconSize>
+                  Điểm trung bình theo năm học
+                </Flex>
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -1015,11 +1027,13 @@ export const StudentScoresSection = ({ studentId, isActive }: StudentScoresSecti
         <TabsContent value="term" className="mt-6">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <IconSize size="md">
-                  <TrendingUp />
-                </IconSize>
-                Điểm trung bình tích lũy theo học kỳ
+              <CardTitle>
+                <Flex align="center" gap={2}>
+                  <IconSize size="md">
+                    <TrendingUp />
+                  </IconSize>
+                  Điểm trung bình tích lũy theo học kỳ
+                </Flex>
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -1031,11 +1045,13 @@ export const StudentScoresSection = ({ studentId, isActive }: StudentScoresSecti
         <TabsContent value="detailed" className="mt-6">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <IconSize size="md">
-                  <BookOpen />
-                </IconSize>
-                Điểm chi tiết các môn học
+              <CardTitle>
+                <Flex align="center" gap={2}>
+                  <IconSize size="md">
+                    <BookOpen />
+                  </IconSize>
+                  Điểm chi tiết các môn học
+                </Flex>
               </CardTitle>
             </CardHeader>
             <CardContent>

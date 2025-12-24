@@ -12,7 +12,7 @@ import { queryKeys } from "@/lib/query-keys"
 import { isSuperAdmin } from "@/lib/permissions"
 import { useRoles } from "../hooks/use-roles"
 import { normalizeRoleIds, type Role } from "../utils"
-import { getBaseUserFields, getPasswordEditField } from "../form-fields"
+import { getBaseUserFields, getPasswordEditField, getUserFormSections } from "../form-fields"
 import { PROTECTED_SUPER_ADMIN_EMAIL } from "../constants"
 import type { UserRow } from "../types"
 
@@ -153,6 +153,7 @@ export const UserEditClient = ({
     <ResourceForm<UserEditData>
       data={user}
       fields={finalEditFields}
+      sections={getUserFormSections()}
       onSubmit={handleSubmitWrapper}
       open={open}
       onOpenChange={onOpenChange}

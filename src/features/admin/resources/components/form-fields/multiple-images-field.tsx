@@ -12,6 +12,8 @@ import { MultipleImageUpload } from "@/components/forms"
 import type { UploadResponse } from "@/features/admin/uploads/types"
 import { logger } from "@/lib/config/logger"
 import { TypographyPSmall, TypographyPSmallMuted, TypographyPMuted, IconSize } from "@/components/ui/typography"
+import { Flex } from "@/components/ui/flex"
+import { Grid } from "@/components/ui/grid"
 
 export interface ProductImage {
   url: string
@@ -64,8 +66,8 @@ const ImageItem = ({
           className="object-cover"
           unoptimized
         />
-        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center gap-2">
-          <div className="flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        <Flex align="center" justify="center" className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors gap-2">
+          <Flex direction="col" gap={1} className="opacity-0 group-hover:opacity-100 transition-opacity">
             <Button
               type="button"
               variant="secondary"
@@ -90,7 +92,7 @@ const ImageItem = ({
                 <ArrowDown />
               </IconSize>
             </Button>
-          </div>
+          </Flex>
           <Button
             type="button"
             variant="secondary"
@@ -117,14 +119,14 @@ const ImageItem = ({
               <X />
             </IconSize>
           </Button>
-        </div>
+        </Flex>
         {image.isPrimary && (
-          <div className="absolute top-2 left-2 bg-primary text-primary-foreground px-2 py-1 rounded flex items-center gap-1">
+          <Flex align="center" className="absolute top-2 left-2 bg-primary text-primary-foreground px-2 py-1 rounded gap-1">
             <IconSize size="xs" className="fill-current">
               <Star />
             </IconSize>
             <TypographyPSmall>Chính</TypographyPSmall>
-          </div>
+          </Flex>
         )}
       </div>
       <div className="p-2">
@@ -361,7 +363,7 @@ export const MultipleImagesField = ({ value, onChange, error, disabled = false }
             disabled={disabled}
             className="w-full"
           />
-          <div className="flex gap-2">
+          <Flex gap={2}>
             <Input
               type="text"
               placeholder="Hoặc nhập URL ảnh"
@@ -389,12 +391,12 @@ export const MultipleImagesField = ({ value, onChange, error, disabled = false }
             >
               Thêm URL
             </Button>
-          </div>
+          </Flex>
         </div>
 
         {/* Images grid */}
         {images.length > 0 ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 -4">
+          <Grid cols={3} gap={4}>
             {images.map((image, index) => (
               <ImageItem
                 key={image.id || image.url}
@@ -409,7 +411,7 @@ export const MultipleImagesField = ({ value, onChange, error, disabled = false }
                 disabled={disabled}
               />
             ))}
-          </div>
+          </Grid>
         ) : (
           <div className="border-2 border-dashed border-border rounded-lg p-8 text-center">
             <IconSize size="4xl" className="mx-auto text-muted-foreground mb-2">

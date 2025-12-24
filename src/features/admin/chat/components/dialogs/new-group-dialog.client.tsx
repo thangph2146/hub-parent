@@ -30,6 +30,7 @@ import { requestJson, toJsonBody } from "@/lib/api/client"
 import { withApiBase } from "@/lib/config/api-paths"
 import { logger } from "@/lib/config"
 import { TypographyP, TypographyPSmall, TypographyPMuted, IconSize } from "@/components/ui/typography"
+import { Flex } from "@/components/ui/flex"
 
 interface UserOption {
   id: string
@@ -228,12 +229,12 @@ export const NewGroupDialog = ({ onSelectGroup }: NewGroupDialogProps) => {
               <CommandInput placeholder="Tìm kiếm theo tên hoặc email..." value={searchValue} onValueChange={handleSearchChange} />
               <CommandList>
                 {isLoading && (
-                  <div className="flex items-center justify-center py-6">
+                  <Flex align="center" justify="center" className="py-6">
                     <IconSize size="sm" className="animate-spin text-muted-foreground">
                       <Loader2 />
                     </IconSize>
                     <TypographyPMuted className="ml-2">Đang tải...</TypographyPMuted>
-                  </div>
+                  </Flex>
                 )}
                 {!isLoading && users.length === 0 && searchValue.length >= 2 && (
                   <CommandEmpty>Không tìm thấy người dùng nào</CommandEmpty>
@@ -257,10 +258,10 @@ export const NewGroupDialog = ({ onSelectGroup }: NewGroupDialogProps) => {
                               </TypographyPSmall>
                             </AvatarFallback>
                           </Avatar>
-                          <div className="flex flex-col flex-1 min-w-0">
+                          <Flex direction="col" className="flex-1 min-w-0">
                             <TypographyP className="truncate">{user.name || user.email}</TypographyP>
                             {user.name && <TypographyPSmall className="truncate">{user.email}</TypographyPSmall>}
-                          </div>
+                          </Flex>
                           {selected && <TypographyPSmall>Đã chọn</TypographyPSmall>}
                         </CommandItem>
                       )
@@ -270,7 +271,7 @@ export const NewGroupDialog = ({ onSelectGroup }: NewGroupDialogProps) => {
               </CommandList>
             </Command>
           </div>
-          <div className="flex items-center justify-end gap-2 pt-2">
+          <Flex align="center" justify="end" gap={2} className="pt-2">
             <Button variant="outline" onClick={() => setOpen(false)} disabled={isCreating}>Hủy</Button>
             <Button onClick={handleCreateGroup} disabled={isCreating || !groupName.trim() || selectedUsers.length === 0}>
               {isCreating && (
@@ -280,7 +281,7 @@ export const NewGroupDialog = ({ onSelectGroup }: NewGroupDialogProps) => {
               )}
               Tạo nhóm
             </Button>
-          </div>
+          </Flex>
         </div>
       </DialogContent>
     </Dialog>

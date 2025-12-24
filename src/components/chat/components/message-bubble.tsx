@@ -6,6 +6,7 @@ import { highlightText } from "../utils/text-helpers"
 import { isMessageReadByUser } from "../utils/message-helpers"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { TypographyPSmall, TypographyP, TypographySpanSmallMuted } from "@/components/ui/typography"
+import { Flex } from "@/components/ui/flex"
 
 interface MessageBubbleProps {
   message: Message
@@ -41,14 +42,17 @@ export function MessageBubble({
   const isReadByCurrentUser = isMessageReadByUser(message, currentUserId)
 
   return (
-    <div 
-      className={`flex ${isOwnMessage ? "justify-end" : "justify-start"} group gap-2 flex-col`}
+    <Flex 
+      direction="col"
+      justify={isOwnMessage ? "end" : "start"}
+      gap={2}
+      className="group"
       data-message-id={message.id}
       id={`message-${message.id}`}
     >
-      <div className={`flex ${isOwnMessage ? "justify-end" : "justify-start"} gap-2`}>
+      <Flex justify={isOwnMessage ? "end" : "start"} gap={2}>
         {showSenderInfo && message.sender && (
-          <Avatar className="h-8 w-8 flex-shrink-0">
+          <Avatar size="2xl">
             <AvatarImage src={message.sender.avatar || undefined} alt={senderName} />
             <AvatarFallback>
               {senderName.charAt(0).toUpperCase()}
@@ -84,15 +88,15 @@ export function MessageBubble({
           }}
         >
           {showSenderInfo && (
-            <TypographyPSmall className={`mb-1 ${
-              isOwnMessage ? "text-primary-foreground/80" : "text-muted-foreground"
-            }`}>
+            <TypographyPSmall>
               {senderName}
             </TypographyPSmall>
           )}
           {parentMessage && (
-            <div
-              className={`mb-2 pb-2 border-l-2 pl-2 ${
+            <Flex
+              direction="col"
+              gap={2}
+              className={`pb-2 border-l-2 pl-2 ${
                 isOwnMessage ? "border-primary-foreground/30" : "border-muted-foreground/40"
               }`}
               onClick={(e) => {
@@ -112,29 +116,23 @@ export function MessageBubble({
                 }
               }}
             >
-              <TypographyPSmall className={`${
-                isOwnMessage ? "text-primary-foreground/80" : "text-muted-foreground"
-              }`}>
+              <TypographyPSmall>
                 {isParentOwnMessage ? "You" : "Reply"}
               </TypographyPSmall>
-              <TypographyPSmall className={`truncate ${
-                isOwnMessage ? "text-primary-foreground/60" : "text-muted-foreground/80"
-              }`}>
+              <TypographyPSmall className="truncate">
                 {searchQuery ? highlightText(parentMessage.content, searchQuery) : parentMessage.content}
               </TypographyPSmall>
-            </div>
+            </Flex>
           )}
           <TypographyP className="break-words">
             {searchQuery ? highlightText(message.content, searchQuery) : message.content}
           </TypographyP>
-          <div className="flex items-center justify-between gap-2 mt-1">
-            <TypographyPSmall className={`${
-              isOwnMessage ? "text-primary-foreground/70" : "text-muted-foreground"
-            }`}>
+          <Flex align="center" justify="between" gap={2}>
+            <TypographyPSmall>
               {formatMessageTime(message.timestamp)}
             </TypographyPSmall>
             {isOwnMessage && message.status === "sending" && (
-              <TypographySpanSmallMuted className="text-primary-foreground/70">
+              <TypographySpanSmallMuted>
                 Đang gửi...
               </TypographySpanSmallMuted>
             )}
@@ -152,14 +150,14 @@ export function MessageBubble({
                 </TypographyPSmall>
               </button>
             )}
-          </div>
+          </Flex>
         </div>
-      </div>
+      </Flex>
       {/* Hiển thị avatar list của readers cho group messages - nằm ngoài message bubble */}
       {message.groupId && message.readers && message.readers.length > 0 && (
-        <div className={`flex items-center gap-1 ${isOwnMessage ? "justify-end" : "justify-start"} mt-1`}>
+        <Flex align="center" justify={isOwnMessage ? "end" : "start"} gap={1}>
           {message.readers.slice(0, 5).map((reader) => (
-            <Avatar key={reader.id} className="h-5 w-5 border-2 border-background">
+            <Avatar key={reader.id} size="xs" className="border-2 border-background">
               <AvatarImage src={reader.avatar || undefined} alt={reader.name || reader.email} />
               <AvatarFallback>
                 <TypographySpanSmallMuted>
@@ -169,12 +167,12 @@ export function MessageBubble({
             </Avatar>
           ))}
           {message.readers.length > 5 && (
-            <TypographySpanSmallMuted className="ml-1">
+            <TypographySpanSmallMuted>
               +{message.readers.length - 5}
             </TypographySpanSmallMuted>
           )}
-        </div>
+        </Flex>
       )}
-    </div>
+    </Flex>
   )
 }

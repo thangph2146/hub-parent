@@ -2,6 +2,7 @@ import { useMemo } from "react"
 import { TypographyPSmallMuted, TypographyP } from "@/components/ui/typography"
 import { Switch } from "@/components/ui/switch"
 import type { DataTableColumn } from "@/components/tables"
+import { Flex } from "@/components/ui/flex"
 import { useDynamicFilterOptions } from "@/features/admin/resources/hooks/use-dynamic-filter-options"
 import { apiRoutes } from "@/lib/api/routes"
 import type { SessionRow } from "../types"
@@ -103,7 +104,7 @@ export const useSessionColumns = ({
         className: "w-[120px]",
         headerClassName: "w-[120px]",
         cell: (row) => (
-          <div className="flex items-center gap-2">
+          <Flex align="center" gap={2}>
             <Switch
               checked={row.isActive}
               disabled={togglingSessions.has(row.id) || !canManage}
@@ -115,7 +116,7 @@ export const useSessionColumns = ({
             <TypographyPSmallMuted>
               {row.isActive ? SESSION_LABELS.ACTIVE : SESSION_LABELS.INACTIVE}
             </TypographyPSmallMuted>
-          </div>
+          </Flex>
         ),
       },
       {

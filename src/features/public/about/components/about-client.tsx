@@ -27,6 +27,7 @@ const Timeline = dynamic(() => import("@/components/ui/timeline").then(mod => ({
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { IconSize } from "@/components/ui/typography";
 import { TypographyPLargeMuted, TypographyPSmallMuted, TypographyPSmall, TypographyDescriptionLarge, TypographyH1, TypographyH2, TypographyH3, TypographyH4, TypographyH6, TypographySpanSmallMuted, TypographyDescription, TypographySpanSmall } from "@/components/ui/typography";
+import { Flex } from "@/components/ui/flex";
 
 /**
  * Helper function để highlight "HUB" trong text với màu secondary
@@ -663,7 +664,7 @@ export const AboutClient = () => {
         </div>
 
         {/* Description - Chiếm 1/3 trên desktop */}
-        <div className="flex flex-col justify-center lg:col-span-1">
+        <Flex direction="col" justify="center" className="lg:col-span-1">
           <div className="prose prose-sm sm:prose-base md:prose-lg text-foreground leading-relaxed dark:prose-invert max-w-none">
             {item.description ? (
               <TypographyPLargeMuted className="leading-relaxed">
@@ -675,7 +676,7 @@ export const AboutClient = () => {
               </TypographyPSmallMuted>
             )}
           </div>
-        </div>
+        </Flex>
       </div>
     ),
   }));
@@ -1280,7 +1281,7 @@ export const AboutClient = () => {
             </div>
 
             {/* Pagination Dots */}
-            <div className="flex justify-center items-center gap-2 mt-4 sm:mt-6">
+            <Flex align="center" justify="center" gap={2} className="mt-4 sm:mt-6">
               {Array.from({ length: totalSlides }).map((_, slideIndex) => {
                 const isActive = isMobile
                   ? currentImageIndex === slideIndex
@@ -1299,7 +1300,7 @@ export const AboutClient = () => {
                   />
                 );
               })}
-            </div>
+            </Flex>
 
             {/* Mobile/Tablet Navigation Buttons */}
             <div className="xl:hidden flex justify-center items-center gap-4 mt-4">
@@ -1402,14 +1403,16 @@ export const AboutClient = () => {
                 href={department.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center justify-between p-4 sm:p-5 bg-card border border-border rounded-lg sm:rounded-xl hover:bg-muted/50 hover:border-primary/50 transition-all group"
+                className="p-4 sm:p-5 bg-card border border-border rounded-lg sm:rounded-xl hover:bg-muted/50 hover:border-primary/50 transition-all group"
               >
-                <TypographyDescriptionLarge className="group-hover:text-primary transition-colors">
-                  {department.name}
-                </TypographyDescriptionLarge>
-                <IconSize size="md" className="text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all flex-shrink-0">
-                  <ArrowRight />
-                </IconSize>
+                <Flex align="center" justify="between" className="w-full">
+                  <TypographyDescriptionLarge className="group-hover:text-primary transition-colors">
+                    {department.name}
+                  </TypographyDescriptionLarge>
+                  <IconSize size="md" className="text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all flex-shrink-0">
+                    <ArrowRight />
+                  </IconSize>
+                </Flex>
               </Link>
             ))}
           </div>
@@ -1466,7 +1469,7 @@ export const AboutClient = () => {
 
             {/* Horizontal Timeline Navigation */}
             <div className="relative overflow-hidden mb-6 sm:mb-8">
-              <div className="flex gap-2 sm:gap-3 md:gap-4 overflow-x-auto pb-4 scrollbar-hide">
+              <Flex gap={2} className="gap-2 sm:gap-3 md:gap-4 overflow-x-auto pb-4 scrollbar-hide">
                 {leaderGenerations.map((generation, index) => (
                   <button
                     key={index}
@@ -1495,7 +1498,7 @@ export const AboutClient = () => {
                     </TypographyH3>
                   </button>
                 ))}
-              </div>
+              </Flex>
             </div>
 
             {/* Leader Carousel */}
@@ -1522,9 +1525,11 @@ export const AboutClient = () => {
                         >
                           {leaderGenerations[currentLeaderIndex].leaders.map(
                             (leader, idx) => (
-                              <div
+                              <Flex
                                 key={idx}
-                                className="flex flex-col items-center text-center flex-shrink-0"
+                                direction="col"
+                                align="center"
+                                className="text-center flex-shrink-0"
                                 style={{
                                   width:
                                     leadersPerSlide === 1
@@ -1571,7 +1576,7 @@ export const AboutClient = () => {
                                     {leader.position}
                                   </TypographyPSmallMuted>
                                 </div>
-                              </div>
+                              </Flex>
                             )
                           )}
                         </div>

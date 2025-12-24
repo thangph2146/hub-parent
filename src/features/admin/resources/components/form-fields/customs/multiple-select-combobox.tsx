@@ -20,6 +20,7 @@ import {
 import { cn } from "@/lib/utils"
 import { TypographyPMuted, TypographyP, IconSize } from "@/components/ui/typography"
 import type { ResourceFormField } from "../../resource-form"
+import { Flex } from "@/components/ui/flex"
 
 interface MultipleSelectComboboxProps<T> {
   field: ResourceFormField<T>
@@ -55,9 +56,9 @@ export const MultipleSelectCombobox = <T,>({
 
   if (allOptions.length === 0) {
     return (
-      <div className="flex h-10 w-full items-center rounded-md border border-input bg-background px-3 py-2">
+      <Flex align="center" className="h-10 w-full rounded-md border border-input bg-background px-3 py-2">
         <TypographyPMuted>Không có tùy chọn</TypographyPMuted>
-      </div>
+      </Flex>
     )
   }
 
@@ -116,7 +117,7 @@ export const MultipleSelectCombobox = <T,>({
           )}
           disabled={field.disabled || isPending}
         >
-          <div className="flex flex-1 flex-wrap gap-1.5 items-center min-w-0">
+          <Flex wrap={true} align="center" gap={1.5} className="flex-1 min-w-0">
             {selectedOptions.length > 0 ? (
               selectedOptions.length <= 3 ? (
                 // Show badges if <= 3 items
@@ -142,8 +143,8 @@ export const MultipleSelectCombobox = <T,>({
             ) : (
               <TypographyP>{displayText}</TypographyP>
             )}
-          </div>
-          <div className="flex items-center gap-1 ml-2 flex-shrink-0">
+          </Flex>
+          <Flex align="center" gap={1} className="ml-2 flex-shrink-0">
             {selectedValues.length > 0 && (
               <div
                 role="button"
@@ -164,7 +165,7 @@ export const MultipleSelectCombobox = <T,>({
             <IconSize size="md">
               <ChevronsUpDown />
             </IconSize>
-          </div>
+          </Flex>
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">

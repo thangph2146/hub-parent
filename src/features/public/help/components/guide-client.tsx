@@ -2,6 +2,7 @@
 
 import { IconSize } from "@/components/ui/typography"
 import { TypographyDescriptionSmall, TypographyH1 } from "@/components/ui/typography"
+import { Flex } from "@/components/ui/flex"
 
 /**
  * Guide Client Component
@@ -157,14 +158,14 @@ export const GuideClient = () => {
   const defaultCategory = categories[0] || ""
 
   return (
-    <div className="container mx-auto px-4 py-6">
+    <Flex direction="col" className="container mx-auto px-4 py-6">
       {/* Header */}
-      <div className="mb-6">
-        <TypographyH1 className="mb-2">Hướng dẫn Sử dụng Hệ thống</TypographyH1>
+      <Flex direction="col" gap={2} className="mb-6">
+        <TypographyH1>Hướng dẫn Sử dụng Hệ thống</TypographyH1>
         <TypographyDescriptionSmall>
           Khám phá các tính năng và cách sử dụng hệ thống
         </TypographyDescriptionSmall>
-      </div>
+      </Flex>
 
       {/* Tabs Navigation */}
       <Tabs defaultValue={defaultCategory} className="w-full">
@@ -178,25 +179,27 @@ export const GuideClient = () => {
 
         {/* Guide Cards by Category */}
         {categories.map((category) => (
-          <TabsContent key={category} value={category} className="space-y-4">
+          <TabsContent key={category} value={category}>
+            <Flex direction="col" gap={4}>
             {groupedGuides[category].map((guide) => {
               const Icon = guide.icon
               return (
                 <Card key={guide.id} className="border">
                   <CardHeader className="pb-3">
-                    <div className="flex items-center gap-3">
-                      <IconSize size="md" className="text-primary flex-shrink-0">
+                    <Flex align="center" gap={3}>
+                      <IconSize size="md">
                         <Icon />
                       </IconSize>
-                      <div>
+                      <Flex direction="col" gap={1}>
                         <CardTitle>{guide.title}</CardTitle>
-                        <CardDescription className="mt-1">
+                        <CardDescription>
                           {guide.description}
                         </CardDescription>
-                      </div>
-                    </div>
+                      </Flex>
+                    </Flex>
                   </CardHeader>
-                  <CardContent className="space-y-3">
+                  <CardContent>
+                    <Flex direction="col" gap={3}>
                     {/* Image Preview */}
                     <div className="relative w-full aspect-video rounded border bg-muted overflow-hidden">
                       <Image
@@ -212,30 +215,34 @@ export const GuideClient = () => {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="w-full gap-2"
+                      className="w-full"
                       onClick={() => handleDownload(guide.imagePath, guide.title)}
                     >
-                      <IconSize size="sm">
-                        <Download />
-                      </IconSize>
-                      Tải xuống
+                      <Flex align="center" gap={2}>
+                        <IconSize size="sm">
+                          <Download />
+                        </IconSize>
+                        <span>Tải xuống</span>
+                      </Flex>
                     </Button>
+                    </Flex>
                   </CardContent>
                 </Card>
               )
             })}
+            </Flex>
           </TabsContent>
         ))}
       </Tabs>
 
       {/* Additional Info */}
-      <div className="text-center border-t pt-4 mt-6">
-        <p className="mb-2">Cần hỗ trợ thêm? Vui lòng liên hệ với chúng tôi</p>
-        <div className="flex flex-wrap items-center justify-center gap-4">
+      <Flex direction="col" align="center" gap={4} className="text-center border-t pt-4 mt-6">
+        <p>Cần hỗ trợ thêm? Vui lòng liên hệ với chúng tôi</p>
+        <Flex wrap={true} align="center" justify="center" gap={4}>
           <span>📧 Email: support@hub.edu.vn</span>
           <span>📞 Hotline: 1900-xxxx</span>
-        </div>
-      </div>
-    </div>
+        </Flex>
+      </Flex>
+    </Flex>
   )
 }

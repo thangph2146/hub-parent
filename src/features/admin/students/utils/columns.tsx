@@ -4,6 +4,7 @@ import { Switch } from "@/components/ui/switch"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { AlertCircle, CheckCircle2 } from "lucide-react"
 import type { DataTableColumn } from "@/components/tables"
+import { Flex } from "@/components/ui/flex"
 import { useDynamicFilterOptions } from "@/features/admin/resources/hooks/use-dynamic-filter-options"
 import { apiRoutes } from "@/lib/api/routes"
 import type { StudentRow } from "../types"
@@ -111,7 +112,7 @@ export const useStudentColumns = ({ togglingStudents, canToggleStatus, onToggleS
               {STUDENT_LABELS.DELETED}
             </TypographySpanSmall>
           ) : (
-            <div className="flex items-center gap-2">
+            <Flex align="center" gap={2}>
               <Switch
                 checked={row.isActive}
                 disabled={togglingStudents.has(row.id) || !canToggleStatus}
@@ -121,7 +122,7 @@ export const useStudentColumns = ({ togglingStudents, canToggleStatus, onToggleS
               <TypographySpanSmallMuted>
                 {row.isActive ? STUDENT_LABELS.ACTIVE : STUDENT_LABELS.INACTIVE}
               </TypographySpanSmallMuted>
-            </div>
+            </Flex>
           ),
       })
     }

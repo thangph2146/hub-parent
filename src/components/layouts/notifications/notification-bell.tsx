@@ -16,9 +16,11 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { NotificationItem } from "./notification-item"
 import { Separator } from "@/components/ui/separator"
+import { Flex } from "@/components/ui/flex"
+import { Badge } from "@/components/ui/badge"
 import { isSuperAdmin } from "@/lib/permissions"
 import { logger } from "@/lib/config/logger"
-import { TypographyH3, TypographyP, TypographyPSmall, TypographyPSmallMuted, TypographySpanSmall, TypographySpanSmallMuted, IconSize } from "@/components/ui/typography"
+import { TypographyH3, TypographyP, TypographyPSmall, TypographyPSmallMuted, TypographySpanSmall, IconSize } from "@/components/ui/typography"
 
 export function NotificationBell() {
   const router = useRouter()
@@ -248,7 +250,7 @@ export function NotificationBell() {
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
         <Button
-          variant="ghost"
+          variant="outline"
           size="icon"
           className="relative"
           aria-label="Thông báo"
@@ -257,11 +259,13 @@ export function NotificationBell() {
             <Bell />
           </IconSize>
           {data && data.unreadCount > 0 && (
-            <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-destructive-foreground">
-              <TypographySpanSmallMuted>
-                {data.unreadCount > 99 ? "99+" : data.unreadCount}
-              </TypographySpanSmallMuted>
-            </span>
+            <Badge variant="destructive" className="absolute -top-1 -right-1 h-5 w-5 p-0">
+              <Flex align="center" justify="center" className="h-full w-full">
+                <TypographySpanSmall>
+                  {data.unreadCount > 99 ? "99+" : data.unreadCount}
+                </TypographySpanSmall>
+              </Flex>
+            </Badge>
           )}
         </Button>
       </DropdownMenuTrigger>
@@ -270,8 +274,8 @@ export function NotificationBell() {
         className="w-[380px] p-0 sm:w-[420px]"
         sideOffset={8}
       >
-        <div className="flex items-center justify-between border-b px-4 py-3">
-          <div className="flex items-center gap-2">
+        <Flex align="center" justify="between" className="border-b px-4 py-3">
+          <Flex align="center" gap={2}>
             <TypographyH3>Thông báo</TypographyH3>
             {isSocketConnected ? (
               <IconSize size="sm">
@@ -282,8 +286,8 @@ export function NotificationBell() {
                 <WifiOff className="text-muted-foreground" />
               </IconSize>
             )}
-          </div>
-          <div className="flex items-center gap-2">
+          </Flex>
+          <Flex align="center" gap={2}>
             {data && data.unreadCount > 0 && (
               <Button
                 variant="ghost"
@@ -325,48 +329,52 @@ export function NotificationBell() {
                 disabled={markAllAsRead.isPending}
                 className="h-8"
               >
-                {markAllAsRead.isPending ? (
-                  <IconSize size="xs" className="mr-1">
-                    <Loader2 className="animate-spin" />
-                  </IconSize>
-                ) : (
-                  <IconSize size="xs" className="mr-1">
-                    <CheckCheck />
-                  </IconSize>
-                )}
-                <TypographySpanSmall>Đánh dấu tất cả đã đọc</TypographySpanSmall>
+                <Flex align="center" gap={1}>
+                  {markAllAsRead.isPending ? (
+                    <IconSize size="xs">
+                      <Loader2 className="animate-spin" />
+                    </IconSize>
+                  ) : (
+                    <IconSize size="xs">
+                      <CheckCheck />
+                    </IconSize>
+                  )}
+                  <TypographySpanSmall>Đánh dấu tất cả đã đọc</TypographySpanSmall>
+                </Flex>
               </Button>
             )}
-          </div>
-        </div>
+          </Flex>
+        </Flex>
 
         <div className="max-h-[400px] overflow-y-auto">
           {connectionError && !isSocketConnected && (
             <div className="border-b bg-yellow-50/50 px-4 py-2 text-yellow-700 dark:bg-yellow-950/20 dark:text-yellow-300">
-              <div className="flex items-center gap-2">
+              <Flex align="center" gap={2}>
                 <IconSize size="xs">
                   <WifiOff />
                 </IconSize>
                 <TypographyPSmall>Đang sử dụng chế độ offline. Thông báo có thể không cập nhật real-time.</TypographyPSmall>
-              </div>
+              </Flex>
             </div>
           )}
           {isLoading ? (
-            <div className="flex items-center justify-center p-8">
+            <Flex align="center" justify="center" className="p-8">
               <IconSize size="lg">
                 <Loader2 className="animate-spin text-muted-foreground" />
               </IconSize>
-            </div>
+            </Flex>
           ) : ownedNotifications.length === 0 ? (
-            <div className="flex flex-col items-center justify-center p-8 text-center">
-              <IconSize size="4xl">
-                <Bell className="mb-2 text-muted-foreground opacity-50" />
-              </IconSize>
-              <TypographyP>Không có thông báo</TypographyP>
-              <TypographyPSmallMuted className="mt-1">
-                Bạn sẽ nhận thông báo tại đây khi có cập nhật mới
-              </TypographyPSmallMuted>
-            </div>
+            <Flex direction="col" align="center" justify="center" className="p-8 text-center">
+              <Flex direction="col" align="center" gap={2}>
+                <IconSize size="4xl">
+                  <Bell className="text-muted-foreground opacity-50" />
+                </IconSize>
+                <TypographyP>Không có thông báo</TypographyP>
+                <TypographyPSmallMuted>
+                  Bạn sẽ nhận thông báo tại đây khi có cập nhật mới
+                </TypographyPSmallMuted>
+              </Flex>
+            </Flex>
           ) : (
             <div className="divide-y">
               {/* Chỉ hiển thị tối đa 10 thông báo đầu tiên của chính user (owner) */}
@@ -455,10 +463,12 @@ export function NotificationBell() {
                   setOpen(false)
                 }}
               >
-                <span>Xem tất cả thông báo</span>
-                <IconSize size="md" className="ml-2">
-                  <ArrowRight />
-                </IconSize>
+                <Flex align="center" gap={2}>
+                  <span>Xem tất cả thông báo</span>
+                  <IconSize size="md">
+                    <ArrowRight />
+                  </IconSize>
+                </Flex>
               </Button>
             </div>
           </>

@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Send } from "lucide-react"
 import { IconSize } from "@/components/ui/typography"
+import { Flex } from "@/components/ui/flex"
 import type { Contact, Message } from "../types"
 import { ReplyBanner } from "./reply-banner"
 import { GroupDeletedBanner } from "./group-deleted-banner"
@@ -43,25 +44,14 @@ function ChatInput(
   const isDisabled = !currentChat || isGroupDeleted
 
   return (
-    <div ref={ref} className="flex flex-col border-t shrink-0">
+    <Flex ref={ref} direction="col" className="border-t shrink-0">
       {replyingTo && !isGroupDeleted && (
         <div ref={replyBannerRef}>
           <ReplyBanner replyingTo={replyingTo} onCancel={onCancelReply} />
         </div>
       )}
       {isGroupDeleted && <GroupDeletedBanner ref={deletedBannerRef} />}
-      <div className="flex items-end gap-1 min-h-[64px] max-h-[152px] px-4 py-2">
-        {/* <Button variant="ghost" size="icon" className="h-9 w-9 shrink-0 mb-0.5" disabled={isDisabled}>
-          <Smile className="h-4 w-4" />
-        </Button>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-9 w-9 shrink-0 mb-0.5" disabled={isDisabled}>
-              <Paperclip className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <AttachmentMenu />
-        </DropdownMenu> */}
+      <Flex align="end" gap={1} className="min-h-[64px] max-h-[152px] px-4 py-2">
         <Textarea
           ref={inputRef}
           className="flex-1 resize-none overflow-y-auto"
@@ -76,7 +66,7 @@ function ChatInput(
         <Button
           variant="ghost"
           size="icon"
-          className="shrink-0 mb-0.5"
+          className="shrink-0"
           onClick={handleSendMessage}
           disabled={!messageInput.trim() || isDisabled}
         >
@@ -84,8 +74,8 @@ function ChatInput(
             <Send />
           </IconSize>
         </Button>
-      </div>
-    </div>
+      </Flex>
+    </Flex>
   )
 })
 

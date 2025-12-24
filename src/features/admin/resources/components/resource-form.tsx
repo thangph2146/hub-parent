@@ -33,6 +33,8 @@ import { cn } from "@/lib/utils"
 import { renderFieldInput } from "./form-fields"
 import { applyResourceSegmentToPath } from "@/lib/permissions"
 import { TypographyH1, TypographyH4, TypographyPMuted, TypographySpanMuted, IconSize } from "@/components/ui/typography"
+import { Flex } from "@/components/ui/flex"
+import { Grid } from "@/components/ui/grid"
 
 export interface ResourceFormField<T = unknown> {
   name: keyof T | string
@@ -483,120 +485,125 @@ export const ResourceForm = <T extends Record<string, unknown>>({
   const renderSection = (sectionId: string, sectionFields: ResourceFormField<T>[]) => {
     const sectionInfo = sections?.find((s) => s.id === sectionId)
     const fieldCount = sectionFields.length
-    const gridClass = fieldCount === 2 ? "grid-cols-1 @md:grid-cols-2" : "grid-cols-1"
-    const gridResponsiveAttr = fieldCount > 2 ? "auto-fit" : "true"
+    
+    // Determine grid columns based on field count
+    // For address section with 5 fields, use 2 columns
+    // For other sections, use 2 columns if fieldCount >= 2, otherwise 1
+    const gridCols: 1 | 2 = fieldCount >= 2 ? 2 : 1
 
     return (
-      <div key={sectionId} className="space-y-4">
+      <Flex key={sectionId} direction="col" gap={6}>
         {(sectionInfo?.title || sectionInfo?.description) && (
-          <div className="space-y-1.5 pb-2 border-b border-border/50">
+          <Flex direction="col" gap={2} className="pb-2 border-b border-border/50">
             {sectionInfo.title && (
               <TypographyH4>{sectionInfo.title}</TypographyH4>
             )}
             {sectionInfo.description && (
               <TypographyPMuted>{sectionInfo.description}</TypographyPMuted>
             )}
-          </div>
+          </Flex>
         )}
-        <div
-          className={cn("grid gap-6", gridClass)}
-          data-grid-responsive={gridResponsiveAttr}
-        >
+        <Grid cols={gridCols} gap={6}>
           {sectionFields.map(renderField)}
-        </div>
-      </div>
+        </Grid>
+      </Flex>
     )
   }
 
   const { grouped, ungrouped } = groupFieldsBySection()
 
   const formContent = (
-    <form id="resource-form" ref={formRef} onSubmit={handleSubmit} className={cn("space-y-6", formClassName)}>
-      {submitError && (
-        <div className="rounded-lg bg-destructive/10 p-3 text-destructive">
-          <TypographySpanMuted>{submitError}</TypographySpanMuted>
-        </div>
-      )}
-
-      <div className={cn("space-y-6", contentClassName)}>
-        {/* Render sections */}
-        {Object.entries(grouped).map(([sectionId, sectionFields]) =>
-          renderSection(sectionId, sectionFields)
-        )}
-
-        {/* Render ungrouped fields */}
-        {ungrouped.length > 0 && (
-          <div
-            className={cn("grid gap-6", contentClassName)}
-            data-grid-responsive="true"
+    <form id="resource-form" ref={formRef} onSubmit={handleSubmit} className={formClassName}>
+      <Flex direction="col" gap={6} className="w-full">
+        {submitError && (
+          <Flex 
+            align="center" 
+            className="rounded-lg bg-destructive/10 border border-destructive/20 p-4 text-destructive"
           >
-            {ungrouped.map(renderField)}
-          </div>
+            <TypographySpanMuted className="font-medium">{submitError}</TypographySpanMuted>
+          </Flex>
         )}
-      </div>
+
+        <Flex direction="col" gap={8} className={contentClassName}>
+          {/* Render sections */}
+          {Object.entries(grouped).map(([sectionId, sectionFields]) =>
+            renderSection(sectionId, sectionFields)
+          )}
+
+          {/* Render ungrouped fields */}
+          {ungrouped.length > 0 && (
+            <Grid cols={2} gap={6}>
+              {ungrouped.map(renderField)}
+            </Grid>
+          )}
+        </Flex>
+      </Flex>
     </form>
   )
 
 
   const footer = (
-    <>
+    <Flex align="center" gap={3} wrap={true} className="w-full sm:w-auto">
       <Button
         type="button"
         variant="outline"
         onClick={handleCancel}
         disabled={isPending}
+        className="h-9"
       >
-        {variant === "page" && resolvedBackUrl ? (
-          <>
-            <IconSize size="md" className="mr-2">
-              <ArrowLeft />
-            </IconSize>
-            {cancelLabel}
-          </>
-        ) : (
-          <>
-            <IconSize size="md" className="mr-2">
-              <X />
-            </IconSize>
-            {cancelLabel}
-          </>
-        )}
+        <Flex align="center" gap={2}>
+          <IconSize size="sm">
+            {variant === "page" && resolvedBackUrl ? <ArrowLeft /> : <X />}
+          </IconSize>
+          {cancelLabel}
+        </Flex>
       </Button>
-      <Button type="submit" form="resource-form" disabled={isPending}>
-        {isPending ? (
-          <>
-            <IconSize size="md" className="mr-2">
-              <Loader2 className="animate-spin" />
-            </IconSize>
-            Đang lưu...
-          </>
-        ) : (
-          <>
-            <IconSize size="md" className="mr-2">
-              <Save />
-            </IconSize>
-            {submitLabel}
-          </>
-        )}
+      <Button 
+        type="submit" 
+        form="resource-form" 
+        disabled={isPending}
+        className="h-9"
+      >
+        <Flex align="center" gap={2}>
+          {isPending ? (
+            <>
+              <IconSize size="sm">
+                <Loader2 className="animate-spin" />
+              </IconSize>
+              <span>Đang lưu...</span>
+            </>
+          ) : (
+            <>
+              <IconSize size="sm">
+                <Save />
+              </IconSize>
+              <span>{submitLabel || "Lưu"}</span>
+            </>
+          )}
+        </Flex>
       </Button>
-    </>
+    </Flex>
   )
 
   // Dialog mode
   if (variant === "dialog") {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-2xl w-full flex flex-col p-0">
-          <DialogHeader className="px-6 pt-6 pb-4">
-            <DialogTitle>{title}</DialogTitle>
-            {description && <DialogDescription>{description}</DialogDescription>}
-          </DialogHeader>
-          <ScrollArea className="max-h-[calc(60dvh)] overflow-y-auto">
-            <div className="px-6 py-4">
-              {formContent}
-            </div>
-          </ScrollArea>
-          <DialogFooter className="px-6 pb-6 pt-4 border-t">{footer}</DialogFooter>
+        <DialogContent className="max-w-2xl w-full p-0">
+          <Flex direction="col" className="h-full">
+            <DialogHeader className="px-6 pt-6 pb-4 border-b border-border/50">
+              <DialogTitle>{title}</DialogTitle>
+              {description && <DialogDescription className="mt-2">{description}</DialogDescription>}
+            </DialogHeader>
+            <ScrollArea className="max-h-[calc(60dvh)] overflow-y-auto flex-1">
+              <Flex direction="col" className="px-6 py-6">
+                {formContent}
+              </Flex>
+            </ScrollArea>
+            <DialogFooter className="px-6 pb-6 pt-4 border-t border-border/50">
+              {footer}
+            </DialogFooter>
+          </Flex>
         </DialogContent>
       </Dialog>
     )
@@ -606,17 +613,23 @@ export const ResourceForm = <T extends Record<string, unknown>>({
   if (variant === "sheet") {
     return (
       <Sheet open={open} onOpenChange={onOpenChange}>
-        <SheetContent className="flex flex-col">
-          <SheetHeader>
-            <SheetTitle>{title}</SheetTitle>
-            {description && <SheetDescription>{description}</SheetDescription>}
-          </SheetHeader>
-          <ScrollArea className="flex-1 -mx-6 px-6 mt-6">
-            <div className="pr-4">
-              {formContent}
-            </div>
-          </ScrollArea>
-          <SheetFooter className="mt-6 border-t pt-4">{footer}</SheetFooter>
+        <SheetContent>
+          <Flex direction="col" className="h-full">
+            <SheetHeader className="pb-4 border-b border-border/50">
+              <SheetTitle>{title}</SheetTitle>
+              {description && (
+                <SheetDescription className="mt-2">{description}</SheetDescription>
+              )}
+            </SheetHeader>
+            <ScrollArea className="flex-1 -mx-6 px-6 mt-6">
+              <Flex direction="col" className="pr-4">
+                {formContent}
+              </Flex>
+            </ScrollArea>
+            <SheetFooter className="mt-6 border-t border-border/50 pt-4">
+              {footer}
+            </SheetFooter>
+          </Flex>
         </SheetContent>
       </Sheet>
     )
@@ -641,42 +654,63 @@ export const ResourceForm = <T extends Record<string, unknown>>({
   )
 
   return (
-    <div className={cn("flex flex-1 flex-col gap-6 mx-auto w-full max-w-[100%]", className)}>
+    <Flex direction="col" gap={4} className={cn("flex-1 mx-auto w-full max-w-[100%] p-4", className)}>
       {/* Header */}
-      {(title || resolvedBackUrl) && (
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-border/50">
-          <div className="space-y-1.5 flex-1 min-w-0">
+      {(title || resolvedBackUrl) && !showCard && (
+        <Flex 
+          direction="col" 
+          align="start" 
+          justify="between" 
+          gap={4} 
+          className="w-full pb-6 border-b border-border lg:flex-row lg:items-center"
+        >
+          <Flex direction="col" gap={3} className="w-full lg:w-auto flex-1 min-w-0">
             {resolvedBackUrl && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleBack}
-                className="-ml-2"
-              >
-                <IconSize size="sm" className="mr-2">
-                  <ArrowLeft />
-                </IconSize>
-                {backLabel}
-              </Button>
+              <Flex>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleBack}
+                  className="h-8"
+                >
+                  <Flex align="center" gap={2}>
+                    <IconSize size="sm">
+                      <ArrowLeft />
+                    </IconSize>
+                    {backLabel}
+                  </Flex>
+                </Button>
+              </Flex>
             )}
-            {title && !showCard && (
-              <TypographyH1 className="tracking-tight">{title}</TypographyH1>
-            )}
-            {description && !showCard && (
-              <TypographyPMuted className="max-w-2xl">{description}</TypographyPMuted>
-            )}
-          </div>
-        </div>
+            <Flex direction="col" gap={2} className="min-w-0">
+              {title && (
+                <TypographyH1 className="truncate">{title}</TypographyH1>
+              )}
+              {description && (
+                <TypographyPMuted className="line-clamp-2">
+                  {description}
+                </TypographyPMuted>
+              )}
+            </Flex>
+          </Flex>
+        </Flex>
       )}
 
       {/* Form */}
-      {formElement}
+      <Flex className="flex-1 mx-auto w-full max-w-[100%] p-4">
+        {formElement}
+      </Flex>
 
       {/* Footer Actions */}
-      <div className="sticky bottom-0 flex items-center justify-end gap-3 py-2 border-t bg-background z-10">
+      <Flex 
+        align="center" 
+        justify="end" 
+        gap={3} 
+        className="sticky bottom-0 py-4 -mx-4 px-4 border-t border-border bg-background/95 backdrop-blur-sm z-10"
+      >
         {footer}
-      </div>
-    </div>
+      </Flex>
+    </Flex>
   )
 }
 

@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button"
 import Image from "next/image"
 import { cn } from "@/lib/utils"
 import { TypographySpanMuted, TypographySpanSmallMuted, IconSize } from "@/components/ui/typography"
+import { Flex } from "@/components/ui/flex"
 
 export interface ImageFieldProps {
   value: unknown
@@ -37,8 +38,8 @@ export const ImageField = ({
 
   return (
     <FieldContent>
-      <div className="space-y-4">
-        <div className="flex gap-2">
+      <Flex direction="col" gap={4}>
+        <Flex gap={2}>
           <Input
             id={fieldId}
             type="text"
@@ -71,11 +72,11 @@ export const ImageField = ({
               </IconSize>
             </Button>
           )}
-        </div>
+        </Flex>
 
         {/* Image preview */}
         {hasImage && !imageError && (
-          <div className="aspect-video w-full flex items-center justify-center relative">
+          <Flex align="center" justify="center" className="aspect-video w-full relative">
             <Image
               src={imageUrl}
               alt="Preview"
@@ -85,36 +86,36 @@ export const ImageField = ({
               onError={() => setImageError(true)}
               onLoad={() => setImageError(false)}
             />
-          </div>
+          </Flex>
         )}
 
         {/* Error state */}
         {hasImage && imageError && (
           <div className="relative w-full rounded-lg border border-destructive/50 overflow-hidden bg-destructive/5">
-            <div className="aspect-video w-full flex flex-col items-center justify-center gap-2 p-4 text-destructive">
+            <Flex direction="col" align="center" justify="center" className="aspect-video w-full gap-2 p-4 text-destructive">
               <IconSize size="2xl">
                 <ImageIcon />
               </IconSize>
               <TypographySpanMuted>Không thể tải hình ảnh</TypographySpanMuted>
               <TypographySpanSmallMuted>Vui lòng kiểm tra lại URL</TypographySpanSmallMuted>
-            </div>
+            </Flex>
           </div>
         )}
 
         {/* Placeholder when no image */}
         {!hasImage && (
           <div className="relative w-full rounded-lg border border-dashed border-border overflow-hidden bg-muted/30">
-            <div className="aspect-video w-full flex flex-col items-center justify-center gap-2 text-muted-foreground">
+            <Flex direction="col" align="center" justify="center" className="aspect-video w-full gap-2 text-muted-foreground">
               <IconSize size="4xl">
                 <ImageIcon />
               </IconSize>
               <TypographySpanMuted>Chưa có hình ảnh</TypographySpanMuted>
-            </div>
+            </Flex>
           </div>
         )}
 
         {error && <FieldError id={errorId}>{error}</FieldError>}
-      </div>
+      </Flex>
     </FieldContent>
   )
 }

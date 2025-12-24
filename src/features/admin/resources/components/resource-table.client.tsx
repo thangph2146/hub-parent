@@ -19,6 +19,7 @@ import {
 import { ChevronDown } from "lucide-react"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { useDebouncedCallback } from "@/hooks/use-debounced-callback"
+import { Flex } from "@/components/ui/flex"
 import { TypographyH4, TypographySpanSmall, IconSize } from "@/components/ui/typography"
 import type {
   ResourceTableLoader,
@@ -174,72 +175,86 @@ export const ResourceTableClient = <T extends object>({
   }, [hasViewChanged, initialDataByView, activeView.id])
 
   const viewModeButtons = useMemo(() => {
-    if (viewModes.length <= 1) return null
+    const hasViewModes = viewModes.length > 1
+    const hasHeaderActions = !!headerActions
 
-    if (isMobile) {
-      const currentView = viewModes.find((v) => v.id === currentViewId) ?? viewModes[0]
-      return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              type="button"
-              size="sm"
-              variant="outline"
-              className="h-8 px-3 min-w-[100px] max-w-[180px] justify-between"
-            >
-              <TypographySpanSmall className="truncate">{currentView.label}</TypographySpanSmall>
-              <IconSize size="sm" className="ml-2 shrink-0">
-                <ChevronDown />
-              </IconSize>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="min-w-[120px]">
-            {viewModes.map((view) => (
-              <DropdownMenuItem
-                key={view.id}
-                onClick={() => handleViewChange(view.id)}
-                className={currentViewId === view.id ? "bg-accent/10" : ""}
-              >
-                {view.label}
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
-      )
+    if (!hasViewModes && !hasHeaderActions) return null
+
+    // Chỉ có headerActions, không có view modes
+    if (!hasViewModes && hasHeaderActions) {
+      return headerActions
     }
 
-    return (
-      <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
-        {viewModes.map((view) => (
-          <Button
-            key={view.id}
-            type="button"
-            size="sm"
-            variant={currentViewId === view.id ? "default" : "outline"}
-            onClick={() => handleViewChange(view.id)}
-            className="h-8 px-2 sm:px-3 whitespace-nowrap"
-          >
-            {view.label}
-          </Button>
-        ))}
-      </div>
+    // Có view modes - gắn headerActions vào viewModeSection
+    const viewModeSection = (
+      <Flex align="center" gap={2} wrap={true}>
+        {isMobile ? (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                className="h-8 px-3 min-w-[100px] max-w-[180px] justify-between"
+              >
+                <TypographySpanSmall className="truncate">
+                  {viewModes.find((v) => v.id === currentViewId)?.label ?? viewModes[0].label}
+                </TypographySpanSmall>
+                <IconSize size="sm">
+                  <ChevronDown />
+                </IconSize>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="min-w-[120px]">
+              {viewModes.map((view) => (
+                <DropdownMenuItem
+                  key={view.id}
+                  onClick={() => handleViewChange(view.id)}
+                  className={currentViewId === view.id ? "bg-accent/10" : ""}
+                >
+                  {view.label}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        ) : (
+          <>
+            {viewModes.map((view) => (
+              <Button
+                key={view.id}
+                type="button"
+                size="sm"
+                variant={currentViewId === view.id ? "default" : "outline"}
+                onClick={() => handleViewChange(view.id)}
+                className="whitespace-nowrap"
+              >
+                {view.label}
+              </Button>
+            ))}
+          </>
+        )}
+        {hasHeaderActions && headerActions}
+      </Flex>
     )
-  }, [viewModes, currentViewId, isMobile, handleViewChange])
+
+    return viewModeSection
+  }, [viewModes, currentViewId, isMobile, handleViewChange, headerActions])
 
   return (
-    <div className="flex flex-col gap-3 sm:gap-4">
-      {(title || viewModes.length > 1 || headerActions) && (
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0">
+    <Flex direction="col" gap={4}>
+      {(title || viewModeButtons) && (
+        <Flex direction="col" align="start" justify="between" gap={2} className="w-full sm:flex-row sm:items-center">
           {title ? (
             <TypographyH4 className="truncate">{title}</TypographyH4>
           ) : (
-            <span />
+            <Flex />
           )}
-          <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap w-full sm:w-auto justify-end sm:justify-start">
-            {viewModeButtons}
-            {headerActions}
-          </div>
-        </div>
+          {viewModeButtons && (
+            <Flex align="center" gap={2} wrap={true} className="w-full sm:w-auto sm:justify-end">
+              {viewModeButtons}
+            </Flex>
+          )}
+        </Flex>
       )}
 
       <DataTable<T>
@@ -254,6 +269,6 @@ export const ResourceTableClient = <T extends object>({
         refreshKey={refreshKey}
         initialData={initialData}
       />
-    </div>
+    </Flex>
   )
 }

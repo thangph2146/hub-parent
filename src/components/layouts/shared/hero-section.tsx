@@ -5,6 +5,7 @@ import { motion, type Variants } from "framer-motion"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { TypographyH1, TypographyPLargeMuted } from "@/components/ui/typography"
+import { Flex } from "@/components/ui/flex"
 
 interface Dot {
   x: number
@@ -251,18 +252,20 @@ export const HeroSection: React.FC = () => {
   }
 
   return (
-    <div className="relative bg-background text-foreground min-h-screen flex flex-col overflow-x-hidden">
-      <canvas ref={canvasRef} className="absolute inset-0 z-0 pointer-events-none opacity-60" />
+    <div className="relative bg-background text-foreground min-h-screen overflow-x-hidden">
+      <Flex direction="col" className="min-h-screen">
+        <canvas ref={canvasRef} className="absolute inset-0 z-0 pointer-events-none opacity-60" />
 
-      <div
-        className="absolute inset-0 z-[1] pointer-events-none"
-        style={{
-          background:
-            "linear-gradient(to bottom, transparent 0%, hsl(var(--background)) 90%), radial-gradient(ellipse at center, transparent 40%, hsl(var(--background)) 95%)",
-        }}
-      />
+        <div
+          className="absolute inset-0 z-[1] pointer-events-none"
+          style={{
+            background:
+              "linear-gradient(to bottom, transparent 0%, hsl(var(--background)) 90%), radial-gradient(ellipse at center, transparent 40%, hsl(var(--background)) 95%)",
+          }}
+        />
 
-      <main className="flex-grow flex flex-col items-center justify-center text-center px-4 pt-32 pb-16 relative z-10">
+        <main className="flex-grow px-4 pt-32 pb-16 relative z-10">
+          <Flex direction="col" align="center" justify="center" gap={6} className="text-center h-full">
         <motion.h1
           variants={headlineVariants}
           initial="hidden"
@@ -289,20 +292,24 @@ export const HeroSection: React.FC = () => {
           </TypographyPLargeMuted>
         </motion.div>
 
-        <motion.div
-          variants={buttonGroupVariants}
-          initial="hidden"
-          animate="visible"
-          className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full max-w-md mx-auto"
-        >
-          <Button size="lg" className="w-full sm:w-auto shadow-lg" asChild>
-            <Link href="/auth/sign-up">Đăng ký ngay</Link>
-          </Button>
-          <Button variant="outline" size="lg" className="w-full sm:w-auto" asChild>
-            <Link href="/auth/sign-in">Đăng nhập</Link>
-          </Button>
-        </motion.div>
-      </main>
+            <motion.div
+              variants={buttonGroupVariants}
+              initial="hidden"
+              animate="visible"
+              className="w-full max-w-md mx-auto"
+            >
+              <Flex direction="col" align="center" justify="center" gap={4} className="sm:flex-row">
+                <Button size="lg" className="w-full sm:w-auto shadow-lg" asChild>
+                  <Link href="/auth/sign-up">Đăng ký ngay</Link>
+                </Button>
+                <Button variant="outline" size="lg" className="w-full sm:w-auto" asChild>
+                  <Link href="/auth/sign-in">Đăng nhập</Link>
+                </Button>
+              </Flex>
+            </motion.div>
+          </Flex>
+        </main>
+      </Flex>
     </div>
   )
 }

@@ -1,6 +1,7 @@
 "use client"
 
 import { TypographyH1, TypographyDescriptionLarge, TypographyPMuted } from "@/components/ui/typography"
+import { Flex } from "@/components/ui/flex"
 
 import { useState } from "react"
 import Link from "next/link"
@@ -138,7 +139,7 @@ export const NotFoundClient = () => {
   }
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center p-4 overflow-hidden">
+    <Flex align="center" justify="center" className="relative min-h-screen p-4 overflow-hidden">
       {/* Animated gradient background */}
       <motion.div
         className="absolute inset-0 bg-gradient-to-br from-background via-muted/30 to-background"
@@ -163,25 +164,27 @@ export const NotFoundClient = () => {
         initial="hidden"
         animate="visible"
       >
-        <div className="text-center space-y-8">
+        <Flex direction="col" align="center" gap={8} className="text-center">
           {/* 404 Animation */}
           <motion.div variants={itemVariants}>
             <Animated404 />
           </motion.div>
 
           {/* Error Message */}
-          <motion.div variants={itemVariants} className="space-y-4">
-            <TypographyH1>
-              Trang không tìm thấy
-            </TypographyH1>
-            <TypographyDescriptionLarge>
-              Xin lỗi, trang bạn đang tìm kiếm không tồn tại hoặc đã bị di chuyển.
-            </TypographyDescriptionLarge>
+          <motion.div variants={itemVariants}>
+            <Flex direction="col" align="center" gap={4}>
+              <TypographyH1>
+                Trang không tìm thấy
+              </TypographyH1>
+              <TypographyDescriptionLarge>
+                Xin lỗi, trang bạn đang tìm kiếm không tồn tại hoặc đã bị di chuyển.
+              </TypographyDescriptionLarge>
+            </Flex>
           </motion.div>
 
           {/* Action Buttons */}
           <motion.div variants={itemVariants}>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Flex direction="col" align="center" justify="center" gap={4} className="sm:flex-row sm:items-center">
               <Button asChild size="lg" className="min-w-[160px]">
                 <Link href="/">Về trang chủ</Link>
               </Button>
@@ -193,31 +196,27 @@ export const NotFoundClient = () => {
               >
                 <Link href="/admin/dashboard">Về Dashboard</Link>
               </Button>
-            </div>
+            </Flex>
           </motion.div>
 
           {/* Helpful Links */}
           <motion.div variants={itemVariants}>
-            <div className="mt-8 p-6 bg-muted/50 rounded-lg border border-border/50">
-              <TypographyPMuted className="mb-4">
-                Bạn có thể thử:
-              </TypographyPMuted>
-              <ul className="text-left space-y-2">
-                <li>
+            <Flex className="p-6 bg-muted/50 rounded-lg border border-border/50">
+              <Flex direction="col" gap={4}>
+                <TypographyPMuted>
+                  Bạn có thể thử:
+                </TypographyPMuted>
+                <Flex direction="col" gap={2} align="start" className="text-left">
                   <TypographyPMuted>• Kiểm tra lại URL đã nhập đúng chưa</TypographyPMuted>
-                </li>
-                <li>
                   <TypographyPMuted>• Quay lại trang trước đó</TypographyPMuted>
-                </li>
-                <li>
                   <TypographyPMuted>• Sử dụng menu điều hướng để tìm trang bạn cần</TypographyPMuted>
-                </li>
-              </ul>
-            </div>
+                </Flex>
+              </Flex>
+            </Flex>
           </motion.div>
-        </div>
+        </Flex>
       </motion.div>
-    </div>
+    </Flex>
   )
 }
 

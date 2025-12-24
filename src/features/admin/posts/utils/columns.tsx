@@ -5,6 +5,7 @@ import { apiRoutes } from "@/lib/api/routes"
 import { Switch } from "@/components/ui/switch"
 import type { PostRow } from "../types"
 import { TypographySpanSmall, TypographySpanSmallMuted, TypographyP } from "@/components/ui/typography"
+import { Flex } from "@/components/ui/flex"
 
 interface UsePostColumnsOptions {
   togglingPosts: Set<string>
@@ -53,13 +54,13 @@ export const usePostColumns = ({
         className: "min-w-[200px]",
         headerClassName: "min-w-[200px]",
         cell: (row) => (
-          <div className="flex flex-col gap-1.5">
+          <Flex direction="col" gap={1.5}>
             <TypographyP>{row.title}</TypographyP>
             {row.excerpt && (
               <TypographySpanSmallMuted className="line-clamp-1">{row.excerpt}</TypographySpanSmallMuted>
             )}
             {(row.categories && row.categories.length > 0) || (row.tags && row.tags.length > 0) ? (
-              <div className="flex flex-wrap gap-1 mt-0.5">
+              <Flex wrap={true} gap={1} className="mt-0.5">
                 {row.categories && row.categories.length > 0 && (
                   <>
                     {row.categories.slice(0, 2).map((category) => (
@@ -94,9 +95,9 @@ export const usePostColumns = ({
                     )}
                   </>
                 )}
-              </div>
+              </Flex>
             ) : null}
-          </div>
+          </Flex>
         ),
       },
       {
@@ -123,10 +124,10 @@ export const usePostColumns = ({
         className: "min-w-[150px]",
         headerClassName: "min-w-[150px]",
         cell: (row) => (
-          <div className="flex flex-col gap-0.5">
+          <Flex direction="col" gap={0.5}>
             <TypographyP>{row.author.name || "N/A"}</TypographyP>
             <TypographySpanSmallMuted>{row.author.email}</TypographySpanSmallMuted>
-          </div>
+          </Flex>
         ),
       },
       {
@@ -154,7 +155,7 @@ export const usePostColumns = ({
           }
 
           return (
-            <div className="flex items-center gap-2">
+            <Flex align="center" gap={2}>
               <Switch
                 checked={row.published}
                 disabled={togglingPosts.has(row.id) || !canToggleStatus}
@@ -166,7 +167,7 @@ export const usePostColumns = ({
               <TypographySpanSmallMuted>
                 {row.published ? "Đã xuất bản" : "Bản nháp"}
               </TypographySpanSmallMuted>
-            </div>
+            </Flex>
           )
         },
       },

@@ -8,6 +8,8 @@
 import { PostCard } from "@/components/public/post/post-card"
 import { FileText } from "lucide-react"
 import { TypographyH2, IconSize } from "@/components/ui/typography"
+import { Flex } from "@/components/ui/flex"
+import { Grid } from "@/components/ui/grid"
 import type { Post } from "../types"
 
 interface RelatedPostsProps {
@@ -22,20 +24,20 @@ export const RelatedPosts = ({ posts, title = "Bài viết liên quan" }: Relate
 
   return (
     <section className="pt-12 border-t">
-      <div className="flex items-center gap-3 mb-8">
-        <div className="p-2 bg-primary/10 rounded-lg">
+      <Flex align="center" gap={3} className="mb-8">
+        <Flex align="center" justify="center" className="p-2 bg-primary/10 rounded-lg">
           <IconSize size="md">
-            <FileText className="text-primary" />
+            <FileText />
           </IconSize>
-        </div>
+        </Flex>
         <TypographyH2>{title}</TypographyH2>
-      </div>
+      </Flex>
 
-      <div className="grid gap-6 sm:gap-8 md:grid-cols-2 lg:grid-cols-3">
+      <Grid cols={3} gap={8}>
         {posts.map((post) => (
           <PostCard key={post.id} post={post} />
         ))}
-      </div>
+      </Grid>
     </section>
   )
 }

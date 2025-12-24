@@ -25,6 +25,8 @@ import { applyResourceSegmentToPath } from "@/lib/permissions";
 import { useResourceNavigation } from "../hooks";
 import { logger } from "@/lib/config/logger";
 import { TypographySpanSmall, TypographySpanMuted, TypographyH1, TypographyPMuted, IconSize } from "@/components/ui/typography";
+import { Flex } from "@/components/ui/flex";
+import { Grid } from "@/components/ui/grid";
 
 export interface ResourceDetailField<T = unknown> {
   name: keyof T | string;
@@ -142,23 +144,26 @@ export const ResourceDetailClient = <T extends Record<string, unknown>>({
     (field: ResourceDetailField<T>, value: unknown): React.ReactNode => {
       if (field.render) return field.render(value, data!);
       if (value == null)
-        return <span className="text-muted-foreground">—</span>;
+        return <TypographySpanMuted>—</TypographySpanMuted>;
       if (field.format) return field.format(value);
 
       switch (field.type) {
         case "boolean": {
           const boolValue = Boolean(value);
           return (
-            <TypographySpanSmall
+            <Flex
+              align="center"
               className={cn(
-                "inline-flex items-center rounded-full px-2 py-1",
+                "rounded-full px-2 py-1",
                 boolValue
                   ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
                   : "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300"
               )}
             >
-              {boolValue ? "Có" : "Không"}
-            </TypographySpanSmall>
+              <TypographySpanSmall>
+                {boolValue ? "Có" : "Không"}
+              </TypographySpanSmall>
+            </Flex>
           );
         }
         case "date":
@@ -182,9 +187,9 @@ export const ResourceDetailClient = <T extends Record<string, unknown>>({
             : String(value);
         default:
           return (
-            <span className="break-words break-all whitespace-pre-wrap">
+            <TypographySpanMuted>
               {String(value)}
-            </span>
+            </TypographySpanMuted>
           );
       }
     },
@@ -239,19 +244,19 @@ export const ResourceDetailClient = <T extends Record<string, unknown>>({
             !inSection && "border-b border-border/50 last:border-0"
           )}
         >
-          <FieldTitle className="text-muted-foreground mb-1">
+          <FieldTitle>
             {field.label}
           </FieldTitle>
           <FieldContent>
             {isCustomRender || isComplexNode ? (
               formattedValue
             ) : (
-              <TypographySpanMuted className="break-words break-all whitespace-pre-wrap">
+              <TypographySpanMuted>
                 {formattedValue}
               </TypographySpanMuted>
             )}
             {field.description && (
-              <FieldDescription className="mt-1">
+              <FieldDescription>
                 {field.description}
               </FieldDescription>
             )}
@@ -267,7 +272,7 @@ export const ResourceDetailClient = <T extends Record<string, unknown>>({
       if (fieldsToRender.length === 0) return null;
 
       return (
-        <FieldGroup className="gap-0">
+        <FieldGroup>
           {fieldsToRender.map((field) => (
             <React.Fragment key={String(field.name)}>
               {renderField(field, false)}
@@ -279,47 +284,42 @@ export const ResourceDetailClient = <T extends Record<string, unknown>>({
     [renderField]
   );
 
-  const getGridClasses = React.useCallback((fieldCount: number) => {
+  const getGridProps = React.useCallback((fieldCount: number) => {
     if (fieldCount === 1) {
-      return { gridClass: "grid-cols-1", gridResponsiveAttr: "true" as const };
+      return { cols: 1 as const, gap: 6 as const };
     }
     if (fieldCount === 2) {
       return {
-        gridClass: "grid-cols-1 sm:grid-cols-2",
-        gridResponsiveAttr: "true" as const,
+        cols: 2 as const,
+        gap: 6 as const,
       };
     }
     return {
-      gridClass: "grid-cols-1 sm:grid-cols-2",
-      gridResponsiveAttr: "auto-fit" as const,
+      cols: 2 as const,
+      gap: 6 as const,
     };
   }, []);
 
   const renderSection = React.useCallback(
     (sectionId: string, sectionFields: ResourceDetailField<T>[]) => {
       const sectionInfo = detailSections?.find((s) => s.id === sectionId);
-      const { gridClass, gridResponsiveAttr } = getGridClasses(
-        sectionFields.length
-      );
+      const gridProps = getGridProps(sectionFields.length);
 
       const fieldsContent =
         sectionInfo?.fieldsContent && data ? (
           sectionInfo.fieldsContent(sectionFields, data)
         ) : (
-          <div
-            className={cn("grid gap-6", gridClass)}
-            data-grid-responsive={gridResponsiveAttr}
-          >
+          <Grid {...gridProps}>
             {sectionFields.map((field) => (
-              <div key={String(field.name)} className="min-w-0">
+              <Flex key={String(field.name)} className="min-w-0">
                 {renderField(field, true)}
-              </div>
+              </Flex>
             ))}
-          </div>
+          </Grid>
         );
 
       return (
-        <Card key={sectionId} className="h-fit">
+        <Card key={sectionId}>
           <CardHeader className="pb-3">
             <CardTitle>
               {sectionInfo?.title || "Thông tin chi tiết"}
@@ -331,110 +331,129 @@ export const ResourceDetailClient = <T extends Record<string, unknown>>({
             )}
           </CardHeader>
           <CardContent className="pt-0 pb-4">
-            {sectionInfo?.fieldHeader && (
-              <div className="mb-6">{sectionInfo.fieldHeader}</div>
-            )}
-            {fieldsContent}
-            {sectionInfo?.fieldFooter && (
-              <div className="mt-6">{sectionInfo.fieldFooter}</div>
-            )}
+            <Flex direction="col" gap={6}>
+              {sectionInfo?.fieldHeader && (
+                <Flex>{sectionInfo.fieldHeader}</Flex>
+              )}
+              {fieldsContent}
+              {sectionInfo?.fieldFooter && (
+                <Flex>{sectionInfo.fieldFooter}</Flex>
+              )}
+            </Flex>
           </CardContent>
         </Card>
       );
     },
-    [detailSections, data, getGridClasses, renderField]
+    [detailSections, data, getGridProps, renderField]
   );
 
   if (isLoading) {
     return (
-      <div className="flex flex-1 flex-col gap-6 p-4 md:p-6 lg:p-8">
-        <div className="flex items-center justify-between">
-          <div className="space-y-2">
+      <Flex direction="col" gap={6}>
+        <Flex align="center" justify="between">
+          <Flex direction="col" gap={2}>
             <Skeleton className="h-8 w-64" />
             <Skeleton className="h-4 w-96" />
-          </div>
+          </Flex>
           <Skeleton className="h-10 w-32" />
-        </div>
+        </Flex>
         <Card>
           <CardHeader>
             <Skeleton className="h-6 w-48" />
           </CardHeader>
-          <CardContent className="space-y-4">
-            {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="flex items-center justify-between">
-                <Skeleton className="h-4 w-32" />
-                <Skeleton className="h-5 w-58" />
-              </div>
-            ))}
+          <CardContent>
+            <Flex direction="col" gap={4}>
+              {[1, 2, 3, 4].map((i) => (
+                <Flex key={i} align="center" justify="between">
+                  <Skeleton className="h-4 w-32" />
+                  <Skeleton className="h-5 w-58" />
+                </Flex>
+              ))}
+            </Flex>
           </CardContent>
         </Card>
-      </div>
+      </Flex>
     );
   }
 
   if (!data) {
     return (
-      <div className="flex flex-1 flex-col items-center justify-center gap-4 p-4 md:p-6 lg:p-8">
-        <Card className="w-full max-w-md">
+      <Flex direction="col" align="center" justify="center" gap={4}>
+        <Card>
           <CardContent className="pt-6">
-            <div className="text-center">
-              <p className="text-muted-foreground">Không tìm thấy dữ liệu</p>
+            <Flex direction="col" align="center" gap={4}>
+              <TypographyPMuted>Không tìm thấy dữ liệu</TypographyPMuted>
               {resolvedBackUrl && (
                 <Button
                   variant="outline"
                   onClick={() => navigateBack(resolvedBackUrl, onBack)}
-                  className="mt-4"
                 >
-                  <IconSize size="md" className="mr-2">
-                    <ArrowLeft />
-                  </IconSize>
-                  {backLabel}
+                  <Flex align="center" gap={2}>
+                    <IconSize size="md">
+                      <ArrowLeft />
+                    </IconSize>
+                    {backLabel}
+                  </Flex>
                 </Button>
               )}
-            </div>
+            </Flex>
           </CardContent>
         </Card>
-      </div>
+      </Flex>
     );
   }
 
   return (
-    <div className="flex flex-1 flex-col gap-6 mx-auto w-full max-w-[100%]">
+    <Flex direction="col" gap={6}>
+      {/* Header */}
       {(title || resolvedBackUrl || actions) && (
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-border/50">
-          <div className="space-y-1.5 flex-1 min-w-0">
+        <Flex 
+          direction="col" 
+          align="start" 
+          justify="between" 
+          gap={4} 
+          className="w-full pb-6 border-b border-border lg:flex-row lg:items-center"
+        >
+          <Flex direction="col" gap={3} className="w-full lg:w-auto flex-1 min-w-0">
             {resolvedBackUrl && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleBack}
-                className="-ml-2"
-              >
-                <IconSize size="sm" className="mr-2">
-                  <ArrowLeft />
-                </IconSize>
-                {backLabel}
-              </Button>
+              <Flex>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleBack}
+                  className="h-8"
+                >
+                  <Flex align="center" gap={2}>
+                    <IconSize size="sm">
+                      <ArrowLeft />
+                    </IconSize>
+                    {backLabel}
+                  </Flex>
+                </Button>
+              </Flex>
             )}
-            {title && (
-              <TypographyH1 className="tracking-tight">
-                {title}
-              </TypographyH1>
-            )}
-            {description && (
-              <TypographyPMuted className="max-w-2xl">
-                {description}
-              </TypographyPMuted>
-            )}
-          </div>
-          {/* Actions right */}
-          <div className="flex items-center gap-2 flex-shrink-0 bg-background py-2 -my-2 -mr-2 px-2 rounded-lg">
-            {actions}
-          </div>
-        </div>
+            <Flex direction="col" gap={2} className="min-w-0">
+              {title && (
+                <TypographyH1 className="truncate">
+                  {title}
+                </TypographyH1>
+              )}
+              {description && (
+                <TypographyPMuted className="line-clamp-2">
+                  {description}
+                </TypographyPMuted>
+              )}
+            </Flex>
+          </Flex>
+          {actions && (
+            <Flex align="center" gap={2} wrap={true} className="w-full lg:w-auto flex-shrink-0 justify-start lg:justify-end">
+              {actions}
+            </Flex>
+          )}
+        </Flex>
       )}
 
-      <div className="space-y-6">
+      <Flex direction="col" gap={6}>
         {(() => {
           const { grouped, ungrouped } = groupFieldsBySection;
           const fieldsTitle = Array.isArray(fields)
@@ -488,12 +507,12 @@ export const ResourceDetailClient = <T extends Record<string, unknown>>({
                       ? (() => {
                           const mid = Math.ceil(ungrouped.length / 2);
                           return (
-                            <div className="grid gap-6 lg:grid-cols-2">
-                              <div>{renderFields(ungrouped.slice(0, mid))}</div>
+                            <Grid cols="2-lg" gap={6}>
+                              <Flex>{renderFields(ungrouped.slice(0, mid))}</Flex>
                               {ungrouped.slice(mid).length > 0 && (
-                                <div>{renderFields(ungrouped.slice(mid))}</div>
+                                <Flex>{renderFields(ungrouped.slice(mid))}</Flex>
                               )}
-                            </div>
+                            </Grid>
                           );
                         })()
                       : renderFields(ungrouped)}
@@ -502,9 +521,9 @@ export const ResourceDetailClient = <T extends Record<string, unknown>>({
               )}
 
               {sections && sections.length > 0 && (
-                <div className="grid gap-6 lg:grid-cols-2">
+                <Grid cols="2-lg" gap={6}>
                   {sections.map((section, i) => (
-                    <Card key={i} className="h-fit">
+                    <Card key={i}>
                       <CardHeader className="pb-3">
                         <CardTitle>
                           {section.title}
@@ -520,15 +539,15 @@ export const ResourceDetailClient = <T extends Record<string, unknown>>({
                       </CardContent>
                     </Card>
                   ))}
-                  {sections.length % 2 === 1 && <div />}
-                </div>
+                  {sections.length % 2 === 1 && <Flex />}
+                </Grid>
               )}
 
-              {afterSections && <div>{afterSections}</div>}
+              {afterSections && <Flex>{afterSections}</Flex>}
             </>
           );
         })()}
-      </div>
-    </div>
+      </Flex>
+    </Flex>
   );
 }

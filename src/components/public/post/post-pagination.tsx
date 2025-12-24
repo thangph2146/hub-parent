@@ -4,6 +4,7 @@ import Link from "next/link"
 import { useSearchParams } from "next/navigation"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Flex } from "@/components/ui/flex"
 import { cn } from "@/lib/utils"
 import { IconSize } from "@/components/ui/typography"
 
@@ -41,7 +42,8 @@ export function PostPagination({ currentPage, totalPages }: PostPaginationProps)
   const pages = Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i)
 
   return (
-    <nav className="flex items-center justify-center gap-2" aria-label="Pagination">
+    <nav aria-label="Pagination">
+      <Flex align="center" justify="center" gap={2}>
       <Button
         variant="outline"
         size="icon"
@@ -97,6 +99,7 @@ export function PostPagination({ currentPage, totalPages }: PostPaginationProps)
           </IconSize>
         </Link>
       </Button>
+      </Flex>
     </nav>
   )
 }

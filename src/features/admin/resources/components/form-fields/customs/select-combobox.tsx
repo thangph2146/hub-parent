@@ -19,6 +19,7 @@ import {
 import { cn } from "@/lib/utils"
 import { TypographyPMuted, IconSize } from "@/components/ui/typography"
 import type { ResourceFormField } from "../../resource-form"
+import { Flex } from "@/components/ui/flex"
 
 interface SelectComboboxProps<T> {
   field: ResourceFormField<T>
@@ -43,9 +44,9 @@ export const SelectCombobox = <T,>({
 
   if (!field.options || field.options.length === 0) {
     return (
-      <div className="flex h-10 w-full items-center rounded-md border border-input bg-background px-3 py-2">
+      <Flex align="center" className="h-10 w-full rounded-md border border-input bg-background px-3 py-2">
         <TypographyPMuted>Không có tùy chọn</TypographyPMuted>
-      </div>
+      </Flex>
     )
   }
 

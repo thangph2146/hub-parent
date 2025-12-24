@@ -3,6 +3,7 @@ import Image from "next/image";
 import { ReactNode } from "react";
 import { ContentCard } from "./content-card";
 import type { ContentCardButton } from "./content-card";
+import { Flex } from "@/components/ui/flex";
 // Cấu hình mặc định
 const DEFAULT_MIN_HEIGHT = "min-h-[300px] sm:min-h-[350px] lg:min-h-[400px] xxl:min-h-[500px]";
 
@@ -41,13 +42,13 @@ export const HeroSection = ({
   return (
     <section
       className={cn(
-        "relative flex items-center justify-center overflow-hidden",
+        "w-full relative overflow-hidden",
         minHeight,
         className
       )}
     >
       {/* Background Image */}
-      <div className="absolute inset-0 z-0">
+      <Flex className="absolute inset-0 z-0">
         <Image
           src={backgroundImage.src}
           alt={backgroundImage.alt}
@@ -59,27 +60,26 @@ export const HeroSection = ({
           sizes="100vw"
           quality={75}
         />
-      </div>
+      </Flex>
 
       {/* Text Overlay Box */}
-      <div className="container mx-auto relative z-30 px-4 sm:px-6 lg:px-8">
+      <Flex align="center" justify="start" className="absolute inset-0 container mx-auto z-30 px-4 sm:px-6 lg:px-8">
         <ContentCard
           title={title}
           description={description}
           buttons={buttons}
           cardClassName={cn(
-            "gap-0 bg-white/90 backdrop-blur-md rounded-xl p-4 sm:p-6 lg:p-8 max-w-sm md:max-w-md lg:max-w-lg shadow-xl border border-white/20",
+            "w-full bg-white/90 backdrop-blur-md rounded-xl p-4 sm:p-6 lg:p-8 gap-0 max-w-sm md:max-w-md lg:max-w-lg shadow-xl border border-white/20",
             overlayClassName
           )}
-          headerClassName="px-0 pb-3 sm:pb-4 gap-0"
+          headerClassName="px-0"
           titleClassName={cn("mb-3 sm:mb-4 text-slate-900", titleClassName)}
           descriptionClassName={cn("mb-4 sm:mb-6 text-slate-700", descriptionClassName)}
           contentClassName="px-0"
         >
           {children}
         </ContentCard>
-      </div>
+      </Flex>
     </section>
   );
 }
-

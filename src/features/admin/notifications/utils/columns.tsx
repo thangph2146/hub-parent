@@ -7,6 +7,7 @@ import { apiRoutes } from "@/lib/api/routes"
 import type { NotificationRow } from "../types"
 import { NOTIFICATION_KINDS, NOTIFICATION_LABELS } from "../constants"
 import { TypographyPMuted, TypographySpanSmallMuted, TypographyP } from "@/components/ui/typography"
+import { Flex } from "@/components/ui/flex"
 
 interface UseNotificationColumnsOptions {
   togglingNotifications: Set<string>
@@ -51,8 +52,8 @@ export const useNotificationColumns = ({
         cell: (row) => {
           const isOwner = sessionUserId === row.userId
           return (
-            <div className="flex items-center gap-2">
-              <div>
+            <Flex align="center" gap={2}>
+              <Flex direction="col" gap={1}>
                 <TypographyP>{row.userEmail || "-"}</TypographyP>
                 {row.userName && <TypographyPMuted>{row.userName}</TypographyPMuted>}
                 {isOwner && (
@@ -60,8 +61,8 @@ export const useNotificationColumns = ({
                     {NOTIFICATION_LABELS.OWN_NOTIFICATION}
                   </Badge>
                 )}
-              </div>
-            </div>
+              </Flex>
+            </Flex>
           )
         },
       },
@@ -118,7 +119,7 @@ export const useNotificationColumns = ({
           const isOwner = sessionUserId === row.userId
           
           return (
-            <div className="flex items-center gap-2">
+            <Flex align="center" gap={2}>
               <Switch
                 checked={row.isRead}
                 disabled={togglingNotifications.has(row.id) || !isOwner}
@@ -132,15 +133,15 @@ export const useNotificationColumns = ({
               <TypographySpanSmallMuted>
                 {row.isRead ? NOTIFICATION_LABELS.READ : NOTIFICATION_LABELS.UNREAD}
               </TypographySpanSmallMuted>
-            </div>
+            </Flex>
           )
         },
       },
       {
         accessorKey: "createdAt",
         header: "Ngày tạo",
-        className: "min-w-[150px]",
-        headerClassName: "min-w-[150px]",
+        className: "min-w-[200px]",
+        headerClassName: "min-w-[200px]",
         cell: (row) => dateFormatter.format(new Date(row.createdAt)),
       },
     ],

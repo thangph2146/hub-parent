@@ -15,6 +15,8 @@ import { queryKeys } from "@/lib/query-keys"
 import { usePermissions } from "@/hooks/use-permissions"
 import { PERMISSIONS } from "@/lib/permissions"
 import { TypographyP, IconSize } from "@/components/ui/typography"
+import { Flex } from "@/components/ui/flex"
+import { Grid } from "@/components/ui/grid"
 
 export interface CategoryDetailData {
   id: string
@@ -70,56 +72,56 @@ export const CategoryDetailClient = ({ categoryId, category, backUrl = "/admin/c
         const categoryData = data as CategoryDetailData
         
         return (
-          <div className="space-y-6">
+          <Flex direction="col" gap={6}>
             {/* Name & Slug */}
-            <div className="grid gap-6 grid-cols-1 sm:grid-cols-2">
+            <Grid cols={2} gap={6}>
               <FieldItem icon={Tag} label="Tên danh mục">
-                <TypographyP className="text-foreground">
+                <TypographyP>
                   {categoryData.name || "—"}
                 </TypographyP>
               </FieldItem>
 
               <FieldItem icon={Hash} label="Slug">
-                <TypographyP className="text-foreground font-mono">
+                <TypographyP className="font-mono">
                   {categoryData.slug || "—"}
                 </TypographyP>
               </FieldItem>
-            </div>
+            </Grid>
 
             {/* Description */}
             {categoryData.description && (
               <Card className="border border-border/50 bg-card p-5">
-                <div className="flex items-start gap-3">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted">
-                    <IconSize size="sm" className="text-muted-foreground">
+                <Flex align="start" gap={3}>
+                  <Flex align="center" justify="center" className="h-9 w-9 shrink-0 rounded-lg bg-muted">
+                    <IconSize size="sm">
                       <AlignLeft />
                     </IconSize>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <TypographyP className="text-foreground mb-2">Mô tả</TypographyP>
-                    <TypographyP className="leading-relaxed whitespace-pre-wrap text-foreground break-words">
+                  </Flex>
+                  <Flex direction="col" gap={2} className="flex-1 min-w-0">
+                    <TypographyP>Mô tả</TypographyP>
+                    <TypographyP>
                       {categoryData.description || "—"}
                     </TypographyP>
-                  </div>
-                </div>
+                  </Flex>
+                </Flex>
               </Card>
             )}
 
             {/* Timestamps */}
-            <div className="grid gap-6 grid-cols-1 sm:grid-cols-2">
+            <Grid cols={2} gap={6}>
               <FieldItem icon={Calendar} label="Ngày tạo">
-                <TypographyP className="text-foreground">
+                <TypographyP>
                   {categoryData.createdAt ? formatDateVi(categoryData.createdAt) : "—"}
                 </TypographyP>
               </FieldItem>
 
               <FieldItem icon={Clock} label="Cập nhật lần cuối">
-                <TypographyP className="text-foreground">
+                <TypographyP>
                   {categoryData.updatedAt ? formatDateVi(categoryData.updatedAt) : "—"}
                 </TypographyP>
               </FieldItem>
-            </div>
-          </div>
+            </Grid>
+          </Flex>
         )
       },
     },
@@ -142,12 +144,13 @@ export const CategoryDetailClient = ({ categoryId, category, backUrl = "/admin/c
           <Button
             variant="outline"
             onClick={() => router.push(`/admin/categories/${categoryId}/edit`)}
-            className="gap-2"
           >
-            <IconSize size="sm">
-              <Edit />
-            </IconSize>
-            Chỉnh sửa
+            <Flex align="center" gap={2}>
+              <IconSize size="sm">
+                <Edit />
+              </IconSize>
+              Chỉnh sửa
+            </Flex>
           </Button>
         ) : null
       }

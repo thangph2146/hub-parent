@@ -10,6 +10,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet"
+import { Flex } from "@/components/ui/flex"
 import { ArrowLeft, Search } from "lucide-react"
 import { TypographyPSmall, TypographyP, IconSize } from "@/components/ui/typography"
 import type { Contact, Message } from "../types"
@@ -71,19 +72,19 @@ function ChatHeader(
 
   return (
     <>
-      <div ref={ref} className="flex items-center gap-3 h-16 px-4 border-b shrink-0">
+      <Flex ref={ref} align="center" gap={3} className="h-16 px-4 border-b shrink-0">
         {showBackButton && onBack && (
           <Button variant="ghost" size="icon" className="h-10 w-10" onClick={onBack}>
             <IconSize size="sm"><ArrowLeft /></IconSize>
           </Button>
         )}
-        <Avatar className="h-10 w-10 shrink-0">
+        <Avatar size="xl" className="shrink-0">
           <AvatarImage src={contact.image || undefined} alt={contact.name} />
           <AvatarFallback asChild>
             <TypographyPSmall>{contact.name[0]}</TypographyPSmall>
           </AvatarFallback>
         </Avatar>
-        <div className="flex-1 min-w-0">
+        <Flex direction="col" className="flex-1 min-w-0">
           <CardTitle>
             <TypographyP className="truncate">{contact.name}</TypographyP>
           </CardTitle>
@@ -92,8 +93,8 @@ function ChatHeader(
               {contact.type === "GROUP" ? `${contact.group?.memberCount || 0} thành viên` : "Contact Info"}
             </TypographyPSmall>
           </CardDescription>
-        </div>
-        <div className="flex items-center gap-1 shrink-0">
+        </Flex>
+        <Flex align="center" gap={1} className="shrink-0">
           {contact.type === "GROUP" && groupManagementMenu}
           <Button 
             variant="ghost" 
@@ -103,8 +104,8 @@ function ChatHeader(
           >
             <IconSize size="sm"><Search /></IconSize>
           </Button>
-        </div>
-      </div>
+        </Flex>
+      </Flex>
       <Sheet open={isSearchOpen} onOpenChange={setIsSearchOpen}>
         <SheetContent side="right" className="w-full sm:max-w-md">
           <SheetHeader>

@@ -7,9 +7,10 @@ import {
   CardDescription,
   CardContent,
 } from "@/components/ui/card";
+import { Flex } from "@/components/ui/flex";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { IconSize } from "@/components/ui/typography";
+import { IconSize, TypographySpanSmall } from "@/components/ui/typography";
 import { cn } from "@/lib/utils"; 
 
 export interface ContentCardButton {
@@ -74,10 +75,7 @@ export const ContentCard = ({
       {(buttonsToRender.length > 0 || children) && (
         <CardContent className={contentClassName}>
           {buttonsToRender.length > 0 && (
-            <div className={cn(
-              "flex gap-2 sm:gap-3",
-              buttonsToRender.length > 1 ? "flex-col sm:flex-row" : ""
-            )}>
+            <Flex gap={3}>
               {buttonsToRender.map((btn, index) => (
                 <Button
                   key={index}
@@ -87,33 +85,31 @@ export const ContentCard = ({
                   asChild
                 >
                   <Link href={btn.href}>
-                    {btn.leftIcon && (
-                      <span className="mr-1 sm:mr-2">{btn.leftIcon}</span>
-                    )}
-                    {btn.responsiveText ? (
-                      <>
-                        <span className="hidden xs:inline">
-                          {btn.responsiveText.desktop}
-                        </span>
-                        <span className="xs:hidden">
-                          {btn.responsiveText.mobile}
-                        </span>
-                      </>
-                    ) : (
-                      btn.text
-                    )}
-                    {btn.rightIcon && (
-                      <span className="ml-1 sm:ml-2">{btn.rightIcon}</span>
-                    )}
-                    {btn.showArrowRight && !btn.rightIcon && (
-                      <IconSize size="sm" className="ml-2">
-                        <ArrowRight />
-                      </IconSize>
-                    )}
+                    <Flex align="center" gap={2}>
+                      {btn.leftIcon}
+                      {btn.responsiveText ? (
+                        <>
+                          <TypographySpanSmall className="hidden xs:inline">
+                            {btn.responsiveText.desktop}
+                          </TypographySpanSmall>
+                          <TypographySpanSmall className="xs:hidden">
+                            {btn.responsiveText.mobile}
+                          </TypographySpanSmall>
+                        </>
+                      ) : (
+                        <TypographySpanSmall>{btn.text}</TypographySpanSmall>
+                      )}
+                      {btn.rightIcon}
+                      {btn.showArrowRight && !btn.rightIcon && (
+                        <IconSize size="sm">
+                          <ArrowRight />
+                        </IconSize>
+                      )}
+                    </Flex>
                   </Link>
                 </Button>
               ))}
-            </div>
+            </Flex>
           )}
           {children}
         </CardContent>

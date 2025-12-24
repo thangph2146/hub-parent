@@ -2,6 +2,7 @@ import { useMemo } from "react"
 import { TypographySpanSmall, TypographySpanSmallMuted } from "@/components/ui/typography"
 import { Switch } from "@/components/ui/switch"
 import type { DataTableColumn } from "@/components/tables"
+import { Flex } from "@/components/ui/flex"
 import { useDynamicFilterOptions } from "@/features/admin/resources/hooks/use-dynamic-filter-options"
 import { apiRoutes } from "@/lib/api/routes"
 import type { CommentRow } from "../types"
@@ -81,7 +82,7 @@ export const useCommentColumns = ({ togglingComments, canApprove, onToggleApprov
               Đã xóa
             </TypographySpanSmall>
           ) : (
-            <div className="flex items-center gap-2">
+            <Flex align="center" gap={2}>
               <Switch
                 checked={row.approved}
                 disabled={togglingComments.has(row.id) || !canApprove}
@@ -91,7 +92,7 @@ export const useCommentColumns = ({ togglingComments, canApprove, onToggleApprov
               <TypographySpanSmallMuted>
                 {row.approved ? "Đã duyệt" : "Chờ duyệt"}
               </TypographySpanSmallMuted>
-            </div>
+            </Flex>
           ),
       },
       {

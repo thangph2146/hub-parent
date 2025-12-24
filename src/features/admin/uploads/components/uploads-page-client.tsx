@@ -35,6 +35,7 @@ import { Pagination } from "./pagination"
 import { ViewModeToggle } from "./view-mode-toggle"
 import { DeleteDialogs } from "./delete-dialogs"
 import { TypographySpanSmall, IconSize, TypographyPSmall } from "@/components/ui/typography"
+import { Flex } from "@/components/ui/flex"
 
 export const UploadsPageClient = () => {
   const queryClient = useQueryClient()
@@ -213,18 +214,21 @@ export const UploadsPageClient = () => {
     <>
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <IconSize size="md" className="shrink-0">
-              <Upload />
-            </IconSize>
-            <span>Upload hình ảnh mới</span>
+          <CardTitle>
+            <Flex align="center" gap={2}>
+              <IconSize size="md" className="shrink-0">
+                <Upload />
+              </IconSize>
+              <span>Upload hình ảnh mới</span>
+            </Flex>
           </CardTitle>
           <CardDescription>
             Kéo thả hoặc chọn nhiều file hình ảnh để upload. Tự động resize và compress nếu cần.
             Hỗ trợ JPG, PNG, GIF, WEBP, SVG (tối đa 5MB mỗi file)
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent>
+          <Flex direction="col" gap={4}>
           <CreateFolderForm
             availableFolders={availableFolders}
             isLoadingFolders={isLoadingFolders}
@@ -249,18 +253,21 @@ export const UploadsPageClient = () => {
             folderPath={getFolderPath().path}
             isExistingFolder={getFolderPath().isExistingFolder}
           />
+          </Flex>
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader>
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div className="min-w-0 flex-1">
-              <CardTitle className="flex items-center gap-2">
-                <IconSize size="md" className="shrink-0">
-                  <ImageIcon />
-                </IconSize>
-                <span className="truncate">Tất cả hình ảnh</span>
+          <Flex direction="col" gap={4} className="w-full">
+            <Flex direction="col" gap={2} className="w-full">
+              <CardTitle>
+                <Flex align="center" gap={2}>
+                  <IconSize size="md" className="shrink-0">
+                    <ImageIcon />
+                  </IconSize>
+                  <span className="truncate">Tất cả hình ảnh</span>
+                </Flex>
               </CardTitle>
               <CardDescription>
                 <TypographySpanSmall>
@@ -269,17 +276,21 @@ export const UploadsPageClient = () => {
                   : "Danh sách tất cả hình ảnh đã upload"}
                 </TypographySpanSmall>
               </CardDescription>
-            </div>
+            </Flex>
             {!isLoading && allImages.length > 0 && (
-              <div className="flex items-center justify-between gap-2 sm:gap-4 shrink-0">
+              <Flex 
+                direction="col" 
+                gap={3} 
+                className="w-full sm:flex-row sm:items-center sm:justify-between"
+              >
                 <ViewModeToggle viewMode={viewMode} onViewModeChange={setViewMode} />
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <div className="flex items-center gap-2 group cursor-pointer">
+                    <Flex align="center" gap={2} className="group cursor-pointer w-full sm:w-auto justify-start sm:justify-end">
                       <Checkbox
                         checked={isIndeterminate ? "indeterminate" : isAllSelected}
                         onCheckedChange={handleSelectAll}
-                        className="w-5 h-5 transition-all duration-200 group-hover:scale-110"
+                        className="w-5 h-5 transition-all duration-200 group-hover:scale-110 shrink-0"
                         aria-label={
                           isAllSelected
                             ? "Bỏ chọn tất cả hình ảnh"
@@ -290,7 +301,7 @@ export const UploadsPageClient = () => {
                       />
                       <label
                         htmlFor="select-all-checkbox"
-                        className="text-muted-foreground whitespace-nowrap cursor-pointer select-none transition-colors hover:text-foreground"
+                        className="text-muted-foreground whitespace-nowrap cursor-pointer select-none transition-colors hover:text-foreground text-sm"
                         onClick={(e) => {
                           e.preventDefault()
                           handleSelectAll(isAllSelected ? false : true)
@@ -304,10 +315,10 @@ export const UploadsPageClient = () => {
                           "Chọn tất cả"
                         )}
                       </label>
-                    </div>
+                    </Flex>
                   </TooltipTrigger>
                   <TooltipContent side="bottom">
-                    <div className="flex flex-col gap-1">
+                    <Flex direction="col" gap={1}>
                       <TypographySpanSmall>
                         {isAllSelected
                           ? "Bỏ chọn tất cả hình ảnh"
@@ -318,31 +329,38 @@ export const UploadsPageClient = () => {
                       <TypographySpanSmall>
                         Nhấn <kbd className="px-1.5 py-0.5 rounded border">Ctrl+A</kbd> để chọn/bỏ chọn
                       </TypographySpanSmall>
-                    </div>
+                    </Flex>
                   </TooltipContent>
                 </Tooltip>
-              </div>
+              </Flex>
             )}
-          </div>
+          </Flex>
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <div className="flex items-center justify-center py-12">
+            <Flex align="center" justify="center" className="py-12">
               <IconSize size="2xl">
                 <Loader2 className="animate-spin text-primary" />
               </IconSize>
-            </div>
+            </Flex>
           ) : allImages.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground">
-              <IconSize size="4xl" className="mx-auto mb-4">
-                <ImageIcon className="opacity-50" />
+            <Flex direction="col" align="center" justify="center" gap={4} className="py-16">
+              <IconSize size="4xl" className="text-muted-foreground/50">
+                <ImageIcon />
               </IconSize>
-              <p>Chưa có hình ảnh nào được upload</p>
-            </div>
+              <Flex direction="col" align="center" gap={2}>
+                <TypographyPSmall className="text-muted-foreground font-medium">
+                  Chưa có hình ảnh nào được upload
+                </TypographyPSmall>
+                <TypographySpanSmall className="text-muted-foreground/70 text-center max-w-md">
+                  Sử dụng form upload phía trên để bắt đầu upload hình ảnh
+                </TypographySpanSmall>
+              </Flex>
+            </Flex>
           ) : (
             <>
               {selectedImages.size > 0 && (
-                <div className="mb-4">
+                <div className="mb-6">
                   <SelectionActionsWrapper
                     label={`Đã chọn ${selectedImages.size} hình ảnh`}
                     actions={
@@ -353,7 +371,7 @@ export const UploadsPageClient = () => {
                           variant="destructive"
                           disabled={bulkDeleteImagesMutation.isPending || selectedImages.size === 0}
                           onClick={() => openBulkDelete(selectedImages.size)}
-                          className="whitespace-nowrap"
+                          className="whitespace-nowrap shrink-0"
                         >
                           {bulkDeleteImagesMutation.isPending ? (
                             <IconSize size="sm" className="mr-2">
@@ -374,7 +392,7 @@ export const UploadsPageClient = () => {
                           size="sm"
                           variant="outline"
                           onClick={() => clearSelection()}
-                          className="whitespace-nowrap"
+                          className="whitespace-nowrap shrink-0"
                         >
                           Bỏ chọn
                         </Button>
@@ -384,7 +402,7 @@ export const UploadsPageClient = () => {
                 </div>
               )}
               {viewMode === "tree" && folderTree ? (
-                <div className="space-y-2">
+                <Flex direction="col" gap={3}>
                   {folderTree.subfolders.map((subfolder) => (
                     <FolderTreeNode
                       key={subfolder.path}
@@ -407,7 +425,7 @@ export const UploadsPageClient = () => {
                       onDelete={openSingleDelete}
                     />
                   )}
-                </div>
+                </Flex>
               ) : (
                 <ImageGrid
                   images={allImages}

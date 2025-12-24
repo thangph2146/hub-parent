@@ -6,6 +6,7 @@ import type { UserRow } from "../types"
 import { Switch } from "@/components/ui/switch"
 import { USER_MESSAGES, PROTECTED_SUPER_ADMIN_EMAIL } from "../constants"
 import { TypographySpanSmallMuted, TypographySpanSmall } from "@/components/ui/typography"
+import { Flex } from "@/components/ui/flex"
 
 interface UseUserColumnsOptions {
   rolesOptions: Array<{ label: string; value: string }>
@@ -86,7 +87,7 @@ export const useUserColumns = ({
         headerClassName: "min-w-[120px] max-w-[200px]",
         cell: (row) =>
           row.roles.length > 0 ? (
-            <div className="flex flex-wrap gap-2">
+            <Flex wrap={true} gap={2}>
               {row.roles.map((role) => (
                 <TypographySpanSmallMuted
                   key={role.id}
@@ -95,7 +96,7 @@ export const useUserColumns = ({
                   {role.displayName}
                 </TypographySpanSmallMuted>
               ))}
-            </div>
+            </Flex>
           ) : (
             <span className="text-muted-foreground">-</span>
           ),
@@ -125,7 +126,7 @@ export const useUserColumns = ({
               Đã xóa
             </TypographySpanSmall>
           ) : (
-            <div className="flex items-center gap-2">
+            <Flex align="center" gap={2}>
               <Switch
                 checked={row.isActive}
                 disabled={isDisabled}
@@ -146,7 +147,7 @@ export const useUserColumns = ({
                   <TypographySpanSmallMuted className="ml-1">(Super Admin)</TypographySpanSmallMuted>
                 )}
               </TypographySpanSmallMuted>
-            </div>
+            </Flex>
           )
         },
       },

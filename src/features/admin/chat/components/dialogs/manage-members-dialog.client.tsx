@@ -1,6 +1,7 @@
 "use client"
 
 import { TypographyP, TypographyPSmall, TypographyPSmallMuted, TypographyPMuted, IconSize } from "@/components/ui/typography"
+import { Flex } from "@/components/ui/flex"
 
 import { useState, useCallback } from "react"
 import { useAuth } from "@/hooks/use-session"
@@ -197,12 +198,12 @@ export const ManageMembersDialog = ({
               <CommandInput placeholder="Tìm kiếm theo tên hoặc email..." value={searchValue} onValueChange={handleSearchChange} />
               <CommandList>
                 {isLoading && (
-                  <div className="flex items-center justify-center py-6">
+                  <Flex align="center" justify="center" className="py-6">
                     <IconSize size="sm" className="animate-spin text-muted-foreground">
                       <Loader2 />
                     </IconSize>
                     <TypographyPMuted className="ml-2">Đang tải...</TypographyPMuted>
-                  </div>
+                  </Flex>
                 )}
                 {!isLoading && users.length === 0 && searchValue.length >= 2 && (
                   <CommandEmpty>Không tìm thấy người dùng nào</CommandEmpty>
@@ -211,7 +212,8 @@ export const ManageMembersDialog = ({
                   <CommandGroup heading="Kết quả">
                     <ScrollArea className="h-[180px] pr-2">
                       {users.map((user) => (
-                        <CommandItem key={user.id} value={user.id} className="flex items-center gap-3 cursor-pointer">
+                        <CommandItem key={user.id} value={user.id} asChild>
+                          <Flex align="center" gap={3} className="cursor-pointer">
                           <Avatar className="h-12 w-12">
                             <AvatarImage src={user.avatar || undefined} alt={user.name || user.email} />
                             <AvatarFallback>
@@ -220,10 +222,10 @@ export const ManageMembersDialog = ({
                               </TypographyPSmall>
                             </AvatarFallback>
                           </Avatar>
-                          <div className="flex flex-col flex-1 min-w-0">
+                          <Flex direction="col" className="flex-1 min-w-0">
                             <TypographyP className="truncate">{user.name || user.email}</TypographyP>
                             {user.name && <TypographyPSmallMuted className="truncate">{user.email}</TypographyPSmallMuted>}
-                          </div>
+                          </Flex>
                           <Button size="sm" variant="secondary" disabled={isProcessing === user.id} onClick={() => handleAddMember(user.id)}>
                             {isProcessing === user.id ? (
                               <IconSize size="sm" className="mr-2 animate-spin">
@@ -236,6 +238,7 @@ export const ManageMembersDialog = ({
                             )}
                             Thêm
                           </Button>
+                          </Flex>
                         </CommandItem>
                       ))}
                     </ScrollArea>
@@ -252,7 +255,7 @@ export const ManageMembersDialog = ({
                 <ScrollArea className="h-[240px] pr-2">
                   <div className="space-y-2">
                     {group?.members?.map((member) => (
-                      <div key={member.id} className="flex items-center gap-3 rounded border p-2">
+                      <Flex key={member.id} align="center" gap={3} className="rounded border p-2">
                         <Avatar className="h-12 w-12">
                           <AvatarImage src={member.user?.avatar || undefined} alt={member.user?.name || member.user?.email || ""} />
                           <AvatarFallback>
@@ -261,11 +264,11 @@ export const ManageMembersDialog = ({
                             </TypographyPSmall>
                           </AvatarFallback>
                         </Avatar>
-                        <div className="flex flex-col flex-1 min-w-0">
+                        <Flex direction="col" className="flex-1 min-w-0">
                           <TypographyP className="truncate">{member.user?.name || member.user?.email}</TypographyP>
                           <TypographyPSmallMuted className="truncate">{member.role}</TypographyPSmallMuted>
-                        </div>
-                        <div className="flex items-center gap-2">
+                        </Flex>
+                        <Flex align="center" gap={2}>
                           {canPromoteAdmin && (
                             <Button size="sm" variant="secondary" disabled={isProcessing === member.id} onClick={() => handleUpdateRole(member.userId, member.role === "ADMIN" ? "MEMBER" : "ADMIN")}>
                               <IconSize size="sm" className="mr-2">
@@ -288,8 +291,8 @@ export const ManageMembersDialog = ({
                               Xóa
                             </Button>
                           )}
-                        </div>
-                      </div>
+                        </Flex>
+                      </Flex>
                     ))}
                   </div>
                 </ScrollArea>

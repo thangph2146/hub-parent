@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label"
 import { cn } from "@/lib/utils"
 import { TypographyP } from "@/components/ui/typography"
 import type { ResourceFormField } from "../resource-form"
+import { Flex } from "@/components/ui/flex"
 
 interface CheckboxFieldProps<T> {
   field: ResourceFormField<T>
@@ -27,7 +28,7 @@ export const CheckboxField = <T,>({
 
   return (
     <FieldContent>
-      <div className="flex items-center gap-2">
+      <Flex align="center" gap={2}>
         <input
           type="checkbox"
           id={fieldId}
@@ -45,7 +46,7 @@ export const CheckboxField = <T,>({
         <Label htmlFor={fieldId} asChild>
           <TypographyP>{field.label}</TypographyP>
         </Label>
-      </div>
+      </Flex>
       {error && <FieldError id={errorId}>{error}</FieldError>}
     </FieldContent>
   )

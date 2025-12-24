@@ -1,6 +1,8 @@
 "use client";
 
 import { TypographyH1, TypographyH2, TypographyH4, TypographyP, TypographyPSmallMuted, TypographySpanSmall, TypographySpanSmallMuted, TypographyPMuted, TypographyTitleLarge, IconSize } from "@/components/ui/typography";
+import { Flex } from "@/components/ui/flex";
+import { Grid } from "@/components/ui/grid";
 
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -115,7 +117,7 @@ const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
         <TypographyP className="mb-3 border-b border-border/50 pb-2">
           {label}
         </TypographyP>
-        <div className="space-y-2">
+        <Flex direction="col" gap={2}>
           {payload.map((entry, index) => {
             const percentage = total > 0 ? ((entry.value || 0) / total) * 100 : 0;
             return (
@@ -124,20 +126,20 @@ const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: index * 0.05 }}
-                className="flex items-center justify-between gap-3"
               >
-                <div className="flex items-center gap-2 flex-1 min-w-0">
-                  <IconSize size="xs">
-                    <div
-                      className="rounded-full flex-shrink-0"
-                      style={{ backgroundColor: entry.color, width: "100%", height: "100%" }}
-                    />
-                  </IconSize>
-                  <TypographySpanSmall className="truncate">
-                    {entry.name ?? ""}
-                  </TypographySpanSmall>
-                </div>
-                <div className="flex items-center gap-2 flex-shrink-0">
+                <Flex align="center" justify="between" gap={3}>
+                  <Flex align="center" gap={2} className="flex-1 min-w-0">
+                    <IconSize size="xs">
+                      <div
+                        className="rounded-full flex-shrink-0"
+                        style={{ backgroundColor: entry.color, width: "100%", height: "100%" }}
+                      />
+                    </IconSize>
+                    <TypographySpanSmall className="truncate">
+                      {entry.name ?? ""}
+                    </TypographySpanSmall>
+                  </Flex>
+                  <Flex align="center" gap={2} className="flex-shrink-0">
                   <TypographyP
                     style={{ color: entry.color }}
                   >
@@ -148,18 +150,19 @@ const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
                       ({percentage.toFixed(1)}%)
                     </TypographySpanSmallMuted>
                   )}
-                </div>
+                  </Flex>
+                </Flex>
               </motion.div>
             );
           })}
-        </div>
+        </Flex>
         {payload.length > 1 && (
-          <div className="mt-3 pt-2 border-t border-border/50 flex items-center justify-between">
+          <Flex align="center" justify="between" gap={2} className="mt-3 pt-2 border-t border-border/50">
             <TypographySpanSmall>Tổng cộng</TypographySpanSmall>
             <TypographyP>
               {total.toLocaleString("vi-VN")}
             </TypographyP>
-          </div>
+          </Flex>
         )}
       </motion.div>
     );
@@ -188,13 +191,13 @@ const CustomPieTooltip = ({ active, payload }: CustomPieTooltipProps) => {
         animate={{ opacity: 1, scale: 1 }}
         className="bg-background/95 backdrop-blur-md border border-border/50 rounded-xl shadow-2xl p-4"
       >
-        <div className="flex items-center gap-2 mb-2">
+        <Flex align="center" gap={2} className="mb-2">
           <div
             className="w-3 h-3 rounded-full"
             style={{ backgroundColor: data.color }}
           />
           <TypographyP>{data.name}</TypographyP>
-        </div>
+        </Flex>
         <div className="space-y-1">
           <TypographyPSmallMuted>
             Tỷ lệ: <TypographySpanSmall className="text-foreground">{value}%</TypographySpanSmall>
@@ -428,15 +431,15 @@ export const DashboardStatsClient = ({ stats }: DashboardStatsClientProps) => {
 
   if (!isMounted) {
     return (
-      <div className="flex flex-1 flex-col gap-4 p-4 md:p-6">
+      <Flex direction="col" gap={4} className="flex-1 p-4 md:p-6">
         <div className="h-64 bg-muted/50 rounded-xl animate-pulse" />
-      </div>
+      </Flex>
     );
   }
 
   if (!hasAnyStatsPermission) {
     return (
-      <div className="flex flex-1 flex-col items-center justify-center p-4 md:p-6 lg:p-8">
+      <Flex direction="col" align="center" justify="center" className="flex-1 p-4 md:p-6 lg:p-8">
         <Card className="max-w-md w-full">
           <CardHeader>
             <CardTitle className="text-center">
@@ -448,12 +451,12 @@ export const DashboardStatsClient = ({ stats }: DashboardStatsClientProps) => {
             </CardDescription>
           </CardHeader>
         </Card>
-      </div>
+      </Flex>
     );
   }
 
   return (
-    <div className="flex flex-1 flex-col gap-6 p-4 md:p-6 lg:p-8 relative overflow-hidden">
+    <Flex direction="col" gap={6} className="flex-1 p-4 md:p-6 lg:p-8 relative overflow-hidden">
       {/* Background gradient effects */}
       <div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none">
         <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
@@ -467,31 +470,37 @@ export const DashboardStatsClient = ({ stats }: DashboardStatsClientProps) => {
         animate="visible"
       >
         {/* Header */}
-        <motion.div variants={itemVariants} className="space-y-2">
-          <div className="flex items-center justify-between">
+        <Flex direction="col" gap={2}>
+          <motion.div variants={itemVariants}>
+          <Flex align="center" justify="between">
             <div>
-              <TypographyH1 className="flex items-center gap-3">
-                <IconSize size="2xl">
-                  <BarChart3 className="text-primary" />
-                </IconSize>
-                <span className="bg-gradient-to-r from-primary via-primary/90 to-primary/70 bg-clip-text text-transparent">
-                  Thống kê chi tiết
-                </span>
+              <TypographyH1>
+                <Flex align="center" gap={3}>
+                  <IconSize size="2xl">
+                    <BarChart3 className="text-primary" />
+                  </IconSize>
+                  <span className="bg-gradient-to-r from-primary via-primary/90 to-primary/70 bg-clip-text text-transparent">
+                    Thống kê chi tiết
+                  </span>
+                </Flex>
               </TypographyH1>
-              <TypographyPMuted className="mt-2 flex items-center gap-2">
-                <IconSize size="md">
-                  <Calendar />
-                </IconSize>
-                {new Date().toLocaleDateString("vi-VN", {
-                  weekday: "long",
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
-                })}
+              <TypographyPMuted className="mt-2">
+                <Flex align="center" gap={2}>
+                  <IconSize size="md">
+                    <Calendar />
+                  </IconSize>
+                  {new Date().toLocaleDateString("vi-VN", {
+                    weekday: "long",
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  })}
+                </Flex>
               </TypographyPMuted>
             </div>
-          </div>
-        </motion.div>
+          </Flex>
+          </motion.div>
+        </Flex>
 
         {/* Main Charts Row */}
         {(canViewUsers ||
@@ -505,7 +514,7 @@ export const DashboardStatsClient = ({ stats }: DashboardStatsClientProps) => {
           canViewStudents ||
           canViewSessions ||
           canViewRoles) && (
-          <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-3">
+          <Grid cols={3} gap={6} className="lg:grid-cols-2 xl:grid-cols-3">
             {/* Line Chart - Monthly Trends */}
             {(canViewUsers ||
               canViewPosts ||
@@ -522,14 +531,16 @@ export const DashboardStatsClient = ({ stats }: DashboardStatsClientProps) => {
                 <Card className="relative overflow-hidden backdrop-blur-md bg-card/80 border border-border shadow-lg">
                   <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-background" />
                   <CardHeader className="relative z-10">
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <Flex direction="col" align="center" justify="between" gap={4} className="sm:flex-row sm:items-center">
                       <div>
                         <CardTitle>
-                          <TypographyTitleLarge className="flex items-center gap-2">
-                            <IconSize size="md">
-                              <LineChart className="text-primary" />
-                            </IconSize>
-                            Xu hướng theo tháng
+                          <TypographyTitleLarge>
+                            <Flex align="center" gap={2}>
+                              <IconSize size="md">
+                                <LineChart className="text-primary" />
+                              </IconSize>
+                              Xu hướng theo tháng
+                            </Flex>
                           </TypographyTitleLarge>
                         </CardTitle>
                         <CardDescription>
@@ -553,11 +564,11 @@ export const DashboardStatsClient = ({ stats }: DashboardStatsClientProps) => {
                         </PopoverTrigger>
                         <PopoverContent className="w-64" align="end">
                           <div className="space-y-3">
-                            <div className="flex items-center justify-between">
+                            <Flex align="center" justify="between">
                               <TypographyP>
                                 Chọn resources
                               </TypographyP>
-                              <div className="flex gap-1">
+                              <Flex gap={1}>
                                 <Button
                                   variant="ghost"
                                   size="sm"
@@ -574,28 +585,30 @@ export const DashboardStatsClient = ({ stats }: DashboardStatsClientProps) => {
                                 >
                                   <TypographySpanSmall>Bỏ chọn</TypographySpanSmall>
                                 </Button>
-                              </div>
-                            </div>
+                              </Flex>
+                            </Flex>
                             <div className="space-y-2 max-h-64 overflow-y-auto">
                               {availableResources.map((resource) => (
                                 <div
                                   key={resource.key}
-                                  className="flex items-center space-x-2 cursor-pointer hover:bg-muted/50 rounded-md p-2 -mx-2"
+                                  className="cursor-pointer hover:bg-muted/50 rounded-md p-2 -mx-2"
                                   onClick={() => toggleResource(resource.key)}
                                 >
-                                  <Checkbox
-                                    id={resource.key}
-                                    checked={selectedResources.has(
-                                      resource.key
-                                    )}
-                                    onCheckedChange={() =>
-                                      toggleResource(resource.key)
-                                    }
-                                  />
-                                  <label
-                                    htmlFor={resource.key}
-                                    className="leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center gap-2 flex-1 cursor-pointer"
-                                  >
+                                  <Flex align="center" gap={2} className="space-x-2">
+                                    <Checkbox
+                                      id={resource.key}
+                                      checked={selectedResources.has(
+                                        resource.key
+                                      )}
+                                      onCheckedChange={() =>
+                                        toggleResource(resource.key)
+                                      }
+                                    />
+                                    <label
+                                      htmlFor={resource.key}
+                                      className="leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex-1 cursor-pointer"
+                                    >
+                                      <Flex align="center" gap={2}>
                                     <IconSize size="xs">
                                       <div
                                         className="rounded-full"
@@ -607,19 +620,21 @@ export const DashboardStatsClient = ({ stats }: DashboardStatsClientProps) => {
                                       />
                                     </IconSize>
                                     <TypographyP>{resource.label}</TypographyP>
-                                  </label>
+                                      </Flex>
+                                    </label>
+                                  </Flex>
                                 </div>
                               ))}
                             </div>
                           </div>
                         </PopoverContent>
                       </Popover>
-                    </div>
+                    </Flex>
                   </CardHeader>
                   <CardContent className="relative z-10">
                     {/* Chart Type Selector */}
-                    <div className="flex items-center justify-end gap-2 mb-4">
-                      <div className="inline-flex rounded-lg border border-border bg-muted/50 p-1">
+                    <Flex align="center" justify="end" gap={2} className="mb-4">
+                      <Flex className="inline-flex rounded-lg border border-border bg-muted/50 p-1">
                         <Button
                           variant={chartType === "line" ? "default" : "ghost"}
                           size="sm"
@@ -653,19 +668,19 @@ export const DashboardStatsClient = ({ stats }: DashboardStatsClientProps) => {
                           </IconSize>
                           <TypographySpanSmall>Kết hợp</TypographySpanSmall>
                         </Button>
-                      </div>
-                    </div>
+                      </Flex>
+                    </Flex>
 
                     {selectedResources.size === 0 ? (
                       <motion.div
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        className="h-80 flex items-center justify-center text-muted-foreground"
+                        className="h-80"
                       >
-                        <div className="text-center">
-                          <BarChart3 className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                        <Flex align="center" justify="center" direction="col" gap={2} className="h-full text-muted-foreground text-center">
+                          <BarChart3 className="h-12 w-12 opacity-50" />
                           <TypographyP>Vui lòng chọn ít nhất một resource để hiển thị</TypographyP>
-                        </div>
+                        </Flex>
                       </motion.div>
                     ) : (
                       <div className="h-64 sm:h-80">
@@ -1002,12 +1017,12 @@ export const DashboardStatsClient = ({ stats }: DashboardStatsClientProps) => {
                   <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-background" />
                   <CardHeader className="relative z-10">
                     <CardTitle>
-                      <TypographyH4 className="flex items-center gap-2">
+                      <Flex align="center" gap={2}>
                         <IconSize size="md">
                           <PieChart className="text-primary" />
                         </IconSize>
-                        Phân bố danh mục
-                      </TypographyH4>
+                        <TypographyH4>Phân bố danh mục</TypographyH4>
+                      </Flex>
                     </CardTitle>
                     <CardDescription>
                       Tỷ lệ bài viết theo từng danh mục
@@ -1018,42 +1033,44 @@ export const DashboardStatsClient = ({ stats }: DashboardStatsClientProps) => {
                       <motion.div
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        className="h-64 sm:h-80 flex items-center justify-center text-muted-foreground"
+                        className="h-64 sm:h-80 text-muted-foreground"
                       >
-                        <div className="text-center">
-                          <PieChart className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                          <TypographyP>Chưa có dữ liệu danh mục</TypographyP>
-                        </div>
+                        <Flex align="center" justify="center">
+                          <div className="text-center">
+                            <PieChart className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                            <TypographyP>Chưa có dữ liệu danh mục</TypographyP>
+                          </div>
+                        </Flex>
                       </motion.div>
                     ) : (
                       <div className="space-y-6">
                         {/* Enhanced Donut Chart */}
-                        <div className="flex items-center justify-center relative">
-                          <ResponsiveContainer width="100%" height={280}>
-                            <RechartsPieChart>
-                              <defs>
-                                {categoryDataWithColors.map((entry, index) => (
-                                  <linearGradient
-                                    key={`pie-gradient-${index}`}
-                                    id={`pie-gradient-${index}`}
-                                    x1="0"
-                                    y1="0"
-                                    x2="1"
-                                    y2="1"
-                                  >
-                                    <stop
-                                      offset="0%"
-                                      stopColor={entry.color}
-                                      stopOpacity={1}
-                                    />
-                                    <stop
-                                      offset="100%"
-                                      stopColor={entry.color}
-                                      stopOpacity={0.7}
-                                    />
-                                  </linearGradient>
-                                ))}
-                              </defs>
+                        <Flex align="center" justify="center" className="relative">
+                            <ResponsiveContainer width="100%" height={280}>
+                              <RechartsPieChart>
+                                <defs>
+                                  {categoryDataWithColors.map((entry, index) => (
+                                    <linearGradient
+                                      key={`pie-gradient-${index}`}
+                                      id={`pie-gradient-${index}`}
+                                      x1="0"
+                                      y1="0"
+                                      x2="1"
+                                      y2="1"
+                                    >
+                                      <stop
+                                        offset="0%"
+                                        stopColor={entry.color}
+                                        stopOpacity={1}
+                                      />
+                                      <stop
+                                        offset="100%"
+                                        stopColor={entry.color}
+                                        stopOpacity={0.7}
+                                      />
+                                    </linearGradient>
+                                  ))}
+                                </defs>
                               <Pie
                                 data={categoryDataWithColors}
                                 cx="50%"
@@ -1084,7 +1101,7 @@ export const DashboardStatsClient = ({ stats }: DashboardStatsClientProps) => {
                             </RechartsPieChart>
                           </ResponsiveContainer>
                           {/* Center label showing total */}
-                          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                          <Flex align="center" justify="center" className="absolute inset-0 pointer-events-none">
                             <div className="text-center">
                               <TypographyH2>
                                 {stats.overview.totalPosts}
@@ -1093,12 +1110,12 @@ export const DashboardStatsClient = ({ stats }: DashboardStatsClientProps) => {
                                 Tổng bài viết
                               </TypographyPSmallMuted>
                             </div>
-                          </div>
-                        </div>
+                          </Flex>
+                        </Flex>
 
                         {/* Enhanced Legend with values and animations */}
                         <ScrollArea className="h-[200px]">
-                        <div className="flex flex-col gap-3 px-4">
+                        <Flex direction="col" gap={3} className="px-4">
                           <AnimatePresence>
                             {categoryDataWithColors.map((item, index) => {
                               const count = Math.round(
@@ -1111,38 +1128,40 @@ export const DashboardStatsClient = ({ stats }: DashboardStatsClientProps) => {
                                   animate={{ opacity: 1, y: 0 }}
                                   exit={{ opacity: 0, y: -10 }}
                                   transition={{ delay: index * 0.05 }}
-                                  className="flex items-center gap-3 p-3 rounded-lg bg-background/50 border border-border/50 hover:bg-background/80 hover:border-border transition-all group cursor-pointer"
+                                  className="p-3 rounded-lg bg-background/50 border border-border/50 hover:bg-background/80 hover:border-border transition-all group cursor-pointer"
                                 >
-                                  <IconSize size="sm">
-                                    <div
-                                      className="rounded-full flex-shrink-0 shadow-sm"
-                                      style={{ backgroundColor: item.color, width: "100%", height: "100%" }}
-                                    />
-                                  </IconSize>
-                                  <div className="flex-1 min-w-0">
-                                    <TypographyP className="truncate">
-                                      {item.name}
-                                    </TypographyP>
-                                    <div className="flex items-center gap-2 mt-0.5">
-                                      <TypographySpanSmall className="text-muted-foreground">
-                                        {item.value}%
+                                  <Flex align="center" gap={3}>
+                                    <IconSize size="sm">
+                                      <div
+                                        className="rounded-full flex-shrink-0 shadow-sm"
+                                        style={{ backgroundColor: item.color, width: "100%", height: "100%" }}
+                                      />
+                                    </IconSize>
+                                    <Flex className="flex-1 min-w-0">
+                                      <TypographyP className="truncate">
+                                        {item.name}
+                                      </TypographyP>
+                                      <Flex align="center" gap={2} className="mt-0.5">
+                                        <TypographySpanSmall className="text-muted-foreground">
+                                          {item.value}%
+                                        </TypographySpanSmall>
+                                        <span className="text-muted-foreground">•</span>
+                                        <TypographySpanSmall className="text-foreground">
+                                          {count.toLocaleString("vi-VN")} bài viết
+                                        </TypographySpanSmall>
+                                      </Flex>
+                                    </Flex>
+                                    <Flex align="center" gap={2} className="flex-shrink-0">
+                                      <TypographySpanSmall className="bg-muted/50 px-2 py-1 rounded">
+                                        #{index + 1}
                                       </TypographySpanSmall>
-                                      <span className="text-muted-foreground">•</span>
-                                      <TypographySpanSmall className="text-foreground">
-                                        {count.toLocaleString("vi-VN")} bài viết
-                                      </TypographySpanSmall>
-                                    </div>
-                                  </div>
-                                  <div className="flex items-center gap-2 flex-shrink-0">
-                                    <TypographySpanSmall className="bg-muted/50 px-2 py-1 rounded">
-                                      #{index + 1}
-                                    </TypographySpanSmall>
-                                  </div>
+                                    </Flex>
+                                  </Flex>
                                 </motion.div>
                               );
                               })}
                             </AnimatePresence>
-                          </div>
+                          </Flex>
                           </ScrollArea>
                       </div>
                     )}
@@ -1150,9 +1169,9 @@ export const DashboardStatsClient = ({ stats }: DashboardStatsClientProps) => {
                 </Card>
               </motion.div>
             )}
-          </div>
+          </Grid>
         )}
       </motion.div>
-    </div>
+    </Flex>
   );
 }

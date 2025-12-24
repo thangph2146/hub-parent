@@ -1,5 +1,6 @@
 import type { ReactNode } from "react"
 import { TypographySpanSmall, TypographySpanSmallMuted } from "@/components/ui/typography"
+import { Flex } from "@/components/ui/flex"
 
 interface SelectionActionsWrapperProps {
   label: ReactNode
@@ -13,17 +14,19 @@ export const SelectionActionsWrapper = ({
   actions,
 }: SelectionActionsWrapperProps) => {
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-      <div className="flex-shrink-0">
+    <Flex direction="col" align="start" justify="between" gap={3} className="w-full sm:flex-row sm:items-center">
+      <Flex direction="col" gap={1}>
         <TypographySpanSmall className="block sm:inline">{label}</TypographySpanSmall>
         {labelSuffix && (
-          <TypographySpanSmallMuted className="block sm:inline ml-0 sm:ml-2 mt-1 sm:mt-0">
+          <TypographySpanSmallMuted className="block sm:inline sm:ml-0">
             {labelSuffix}
           </TypographySpanSmallMuted>
         )}
-      </div>
-      <div className="flex items-center gap-2 flex-wrap">{actions}</div>
-    </div>
+      </Flex>
+      <Flex align="center" gap={2} className="w-full sm:w-auto flex-wrap sm:flex-nowrap shrink-0">
+        {actions}
+      </Flex>
+    </Flex>
   )
 }
 

@@ -11,6 +11,7 @@ import {
   CONTACT_REQUEST_PRIORITY_COLORS 
 } from "../constants"
 import { TypographySpanSmall, TypographySpanSmallMuted } from "@/components/ui/typography"
+import { Flex } from "@/components/ui/flex"
 
 interface UseContactRequestColumnsOptions {
   togglingRequests: Set<string>
@@ -188,7 +189,7 @@ export const useContactRequestColumns = ({
               {CONTACT_REQUEST_LABELS.DELETED}
             </TypographySpanSmall>
           ) : (
-            <div className="flex items-center gap-2">
+            <Flex align="center" gap={2}>
               <Switch
                 checked={row.isRead}
                 disabled={togglingRequests.has(row.id) || !canUpdate}
@@ -198,7 +199,7 @@ export const useContactRequestColumns = ({
               <TypographySpanSmallMuted>
                 {row.isRead ? CONTACT_REQUEST_LABELS.READ : CONTACT_REQUEST_LABELS.UNREAD}
               </TypographySpanSmallMuted>
-            </div>
+            </Flex>
           ),
       },
       {

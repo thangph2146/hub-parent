@@ -33,6 +33,7 @@ import { logger } from "@/lib/config"
 import { requestJson } from "@/lib/api/client"
 import { withApiBase } from "@/lib/config/api-paths"
 import { TypographyP, TypographyPSmall, TypographyPMuted, IconSize } from "@/components/ui/typography"
+import { Flex } from "@/components/ui/flex"
 import type { Contact } from "@/components/chat/types"
 
 interface UserOption {
@@ -145,12 +146,12 @@ export const NewConversationDialog = ({ onSelectUser, existingContactIds = [] }:
           />
           <CommandList>
             {isLoading && (
-              <div className="flex items-center justify-center py-6">
+              <Flex align="center" justify="center" className="py-6">
                 <IconSize size="sm" className="animate-spin text-muted-foreground">
                   <Loader2 />
                 </IconSize>
                 <TypographyPMuted className="ml-2">Đang tải...</TypographyPMuted>
-              </div>
+              </Flex>
             )}
             {!isLoading && users.length === 0 && searchValue.length >= 2 && (
               <CommandEmpty>Không tìm thấy người dùng nào</CommandEmpty>
@@ -165,20 +166,22 @@ export const NewConversationDialog = ({ onSelectUser, existingContactIds = [] }:
                     key={user.id}
                     value={user.id}
                     onSelect={() => handleSelectUser(user)}
-                    className="flex items-center gap-3 cursor-pointer"
+                    asChild
                   >
+                    <Flex align="center" gap={3} className="cursor-pointer">
                     <Avatar className="h-12 w-12">
                       <AvatarImage src={user.avatar || undefined} alt={user.name || user.email} />
-                      <AvatarFallback>
-                        <TypographyPSmall>
-                          {(user.name || user.email).substring(0, 2).toUpperCase()}
-                        </TypographyPSmall>
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex flex-col flex-1 min-w-0">
+                    <AvatarFallback>
+                      <TypographyPSmall>
+                        {(user.name || user.email).substring(0, 2).toUpperCase()}
+                      </TypographyPSmall>
+                    </AvatarFallback>
+                  </Avatar>
+                  <Flex direction="col" className="flex-1 min-w-0">
                       <TypographyP className="truncate">{user.name || user.email}</TypographyP>
                       {user.name && <TypographyPSmall className="truncate">{user.email}</TypographyPSmall>}
-                    </div>
+                    </Flex>
+                    </Flex>
                   </CommandItem>
                 ))}
               </CommandGroup>

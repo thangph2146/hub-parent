@@ -14,6 +14,8 @@ import {
 } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { Flex } from "@/components/ui/flex"
+import { Grid } from "@/components/ui/grid"
 import { useClientOnly } from "@/hooks/use-client-only"
 import { usePermissions } from "@/hooks/use-permissions"
 import { PERMISSIONS, isSuperAdmin } from "@/lib/permissions"
@@ -166,21 +168,21 @@ export const DashboardWelcome = () => {
 
   if (!isMounted) {
     return (
-      <div className="flex flex-1 flex-col gap-4 p-4 md:p-6">
-        <div className="h-64 bg-muted/50 rounded-xl animate-pulse" />
-      </div>
+      <Flex direction="col" gap={4} className="flex-1 p-4 md:p-6">
+        <Flex className="h-64 bg-muted/50 rounded-xl animate-pulse" />
+      </Flex>
     )
   }
 
   const RoleIcon = roleInfo.icon
 
   return (
-    <div className="flex flex-1 flex-col gap-6 p-4 md:p-6 lg:p-8 relative overflow-hidden">
+    <Flex direction="col" gap={6} className="flex-1 p-4 md:p-6 lg:p-8 relative overflow-hidden">
       {/* Background gradient effects */}
-      <div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 left-0 w-96 h-96 bg-[#00cc44]/5 dark:bg-[#00ff88]/5 rounded-full blur-3xl" />
-      </div>
+      <Flex className="absolute inset-0 -z-10 overflow-hidden pointer-events-none">
+        <Flex className="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
+        <Flex className="absolute bottom-0 left-0 w-96 h-96 bg-[#00cc44]/5 dark:bg-[#00ff88]/5 rounded-full blur-3xl" />
+      </Flex>
 
       <motion.div
         className="flex flex-1 flex-col gap-8 relative z-10"
@@ -189,10 +191,10 @@ export const DashboardWelcome = () => {
         animate="visible"
       >
         {/* Welcome Header with Role Badge */}
-        <motion.div variants={itemVariants} className="space-y-4">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-            <div className="space-y-4">
-              <div className="flex items-center gap-3 flex-wrap">
+        <motion.div variants={itemVariants}>
+          <Flex direction="col" align="center" justify="between" gap={6} className="md:flex-row md:items-center">
+            <Flex direction="col" gap={4}>
+              <Flex align="center" gap={3} wrap={true}>
                 <motion.h1
                   className="leading-tight"
                   initial={{ opacity: 0, x: -20 }}
@@ -209,24 +211,25 @@ export const DashboardWelcome = () => {
                   )}
                   <span className="ml-2">👋</span>
                 </motion.h1>
-              </div>
+              </Flex>
               <motion.div
-                className="flex items-center gap-2"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.3, duration: 0.6 }}
               >
-                <IconSize size="md">
-                  <Calendar />
-                </IconSize>
-                <TypographyDescriptionLarge>{currentDate}</TypographyDescriptionLarge>
+                <Flex align="center" gap={2}>
+                  <IconSize size="md">
+                    <Calendar />
+                  </IconSize>
+                  <TypographyDescriptionLarge>{currentDate}</TypographyDescriptionLarge>
+                </Flex>
               </motion.div>
               <motion.div
-                className="flex flex-wrap items-center gap-3"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4, duration: 0.6 }}
               >
+                <Flex wrap={true} align="center" gap={3}>
                 <Badge
                   variant="outline"
                   className={cn(
@@ -245,9 +248,10 @@ export const DashboardWelcome = () => {
                 <TypographySpanMuted>
                   {roleInfo.description}
                 </TypographySpanMuted>
+              </Flex>
               </motion.div>
-            </div>
-          </div>
+            </Flex>
+          </Flex>
         </motion.div>
 
         {/* Welcome Message with Permissions */}
@@ -260,11 +264,13 @@ export const DashboardWelcome = () => {
             <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-primary/5 to-background" />
             <CardHeader className="relative z-10">
               <CardTitle>
-                <TypographyTitleLarge className="flex items-center gap-2">
-                  <IconSize size="lg">
-                    <CheckCircle2 className="text-primary" />
-                  </IconSize>
-                  {isSuperAdminUser ? "Quyền truy cập đầy đủ" : "Quyền truy cập của bạn"}
+                <TypographyTitleLarge>
+                  <Flex align="center" gap={2}>
+                    <IconSize size="lg">
+                      <CheckCircle2 className="text-primary" />
+                    </IconSize>
+                    {isSuperAdminUser ? "Quyền truy cập đầy đủ" : "Quyền truy cập của bạn"}
+                  </Flex>
                 </TypographyTitleLarge>
               </CardTitle>
               <CardDescription>
@@ -275,35 +281,37 @@ export const DashboardWelcome = () => {
             </CardHeader>
             <CardContent className="relative z-10">
               {availablePermissions.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                <Grid cols={2} gap={2}>
                   {availablePermissions.map((item, index) => (
                     <motion.div
                       key={index}
-                      className="flex items-center gap-2 p-2 rounded-md bg-background/50 border border-border/50"
+                      className="p-2 rounded-md bg-background/50 border border-border/50"
                       initial={{ opacity: 0, x: -10 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: 0.1 * index }}
                     >
-                      <IconSize size="sm">
-                        <CheckCircle2 className="text-[#00cc44] dark:text-[#00ff88] flex-shrink-0" />
-                      </IconSize>
-                      <TypographySpanMuted>{item.label}</TypographySpanMuted>
+                      <Flex align="center" gap={2}>
+                        <IconSize size="sm">
+                          <CheckCircle2 className="text-[#00cc44] dark:text-[#00ff88]" />
+                        </IconSize>
+                        <TypographySpanMuted>{item.label}</TypographySpanMuted>
+                      </Flex>
                     </motion.div>
                   ))}
-                </div>
+                </Grid>
               ) : (
-                <div className="text-center py-4 text-muted-foreground">
+                <Flex direction="col" align="center" gap={2} className="text-center py-4">
                   <IconSize size="2xl">
-                    <AlertCircle className="mx-auto mb-2 opacity-50" />
+                    <AlertCircle className="opacity-50" />
                   </IconSize>
-                  <p>Bạn chưa có quyền truy cập vào bất kỳ tính năng nào.</p>
-                  <TypographyPSmallMuted className="mt-1">Vui lòng liên hệ quản trị viên để được cấp quyền.</TypographyPSmallMuted>
-                </div>
+                  <TypographyPSmallMuted>Bạn chưa có quyền truy cập vào bất kỳ tính năng nào.</TypographyPSmallMuted>
+                  <TypographyPSmallMuted>Vui lòng liên hệ quản trị viên để được cấp quyền.</TypographyPSmallMuted>
+                </Flex>
               )}
             </CardContent>
           </Card>
         </motion.div>
       </motion.div>
-    </div>
+    </Flex>
   )
 }

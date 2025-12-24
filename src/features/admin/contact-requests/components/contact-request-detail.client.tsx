@@ -28,6 +28,8 @@ import {
   CONTACT_REQUEST_PRIORITY_COLORS 
 } from "../constants"
 import { TypographyP, TypographyPMuted, TypographyPSmallMuted, IconSize } from "@/components/ui/typography"
+import { Flex } from "@/components/ui/flex"
+import { Grid } from "@/components/ui/grid"
 import type { ContactRequestRow, ContactStatus, ContactPriority } from "../types"
 
 export interface ContactRequestDetailData {
@@ -170,9 +172,9 @@ export const ContactRequestDetailClient = ({ contactRequestId, contactRequest, b
         const requestData = data as ContactRequestDetailData
         
         return (
-          <div className="space-y-6">
+          <Flex direction="col" gap={6}>
             {/* Contact Info */}
-            <div className="grid gap-6 grid-cols-1 sm:grid-cols-2">
+            <Grid cols={2} gap={6}>
               <FieldItem icon={User} label="Tên người liên hệ">
                 <TypographyP className="text-foreground">
                   {requestData.name || "—"}
@@ -187,7 +189,7 @@ export const ContactRequestDetailClient = ({ contactRequestId, contactRequest, b
                   {requestData.email || "—"}
                 </a>
               </FieldItem>
-            </div>
+            </Grid>
 
             {requestData.phone && (
               <FieldItem icon={Phone} label="Số điện thoại">
@@ -209,21 +211,21 @@ export const ContactRequestDetailClient = ({ contactRequestId, contactRequest, b
 
             {/* Content */}
             <Card className="border border-border/50 bg-card p-5">
-              <div className="flex items-start gap-3">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted">
+              <Flex align="start" gap={3}>
+                <Flex align="center" justify="center" className="h-9 w-9 shrink-0 rounded-lg bg-muted">
                   <IconSize size="sm" className="text-muted-foreground">
                     <MessageSquare />
                   </IconSize>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <TypographyP className="text-foreground mb-2">Nội dung</TypographyP>
+                </Flex>
+                <Flex direction="col" gap={2} className="flex-1 min-w-0">
+                  <TypographyP className="text-foreground">Nội dung</TypographyP>
                   <TypographyP className="leading-relaxed whitespace-pre-wrap text-foreground break-words">
                     {requestData.content || "—"}
                   </TypographyP>
-                </div>
-              </div>
+                </Flex>
+              </Flex>
             </Card>
-          </div>
+          </Flex>
         )
       },
     },
@@ -235,9 +237,9 @@ export const ContactRequestDetailClient = ({ contactRequestId, contactRequest, b
         const requestData = data as ContactRequestDetailData
         
         return (
-          <div className="space-y-6">
+          <Flex direction="col" gap={6}>
             {/* Status & Priority */}
-            <div className="grid gap-6 grid-cols-1 sm:grid-cols-2">
+            <Grid cols={2} gap={6}>
               <FieldItem icon={AlertCircle} label="Trạng thái">
                 <Badge variant={CONTACT_REQUEST_STATUS_COLORS[requestData.status] || "default"}>
                   {(requestData.status === "NEW" && CONTACT_REQUEST_LABELS.NEW) ||
@@ -257,14 +259,14 @@ export const ContactRequestDetailClient = ({ contactRequestId, contactRequest, b
                    requestData.priority}
                 </Badge>
               </FieldItem>
-            </div>
+            </Grid>
 
             {/* Read Status */}
             <FieldItem 
               icon={requestData.isRead ? CheckCircle2 : XCircle} 
               label="Đã đọc"
             >
-              <div className="flex items-center gap-3">
+              <Flex align="center" gap={3}>
                 <Switch
                   checked={requestData.isRead}
                   disabled={isToggling || togglingRequests.has(contactRequestId) || !canUpdate}
@@ -274,7 +276,7 @@ export const ContactRequestDetailClient = ({ contactRequestId, contactRequest, b
                 <TypographyPMuted>
                   {requestData.isRead ? CONTACT_REQUEST_LABELS.READ : CONTACT_REQUEST_LABELS.UNREAD}
                 </TypographyPMuted>
-              </div>
+              </Flex>
               {!canUpdate && (
                 <TypographyPSmallMuted className="mt-1.5">
                   Bạn không có quyền thay đổi trạng thái đọc
@@ -290,7 +292,7 @@ export const ContactRequestDetailClient = ({ contactRequestId, contactRequest, b
                 </TypographyP>
               </FieldItem>
             )}
-          </div>
+          </Flex>
         )
       },
     },
@@ -302,8 +304,8 @@ export const ContactRequestDetailClient = ({ contactRequestId, contactRequest, b
         const requestData = data as ContactRequestDetailData
         
         return (
-          <div className="space-y-6">
-            <div className="grid gap-6 grid-cols-1 sm:grid-cols-2">
+          <Flex direction="col" gap={6}>
+            <Grid cols={2} gap={6}>
               <FieldItem icon={Calendar} label="Ngày tạo">
                 <TypographyP className="text-foreground">
                   {requestData.createdAt ? formatDateVi(requestData.createdAt) : "—"}
@@ -315,8 +317,8 @@ export const ContactRequestDetailClient = ({ contactRequestId, contactRequest, b
                   {requestData.updatedAt ? formatDateVi(requestData.updatedAt) : "—"}
                 </TypographyP>
               </FieldItem>
-            </div>
-          </div>
+            </Grid>
+          </Flex>
         )
       },
     },

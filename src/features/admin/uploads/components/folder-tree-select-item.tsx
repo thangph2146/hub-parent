@@ -10,6 +10,7 @@ import { Folder, ChevronRight, Check } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { TypographySpanSmall, IconSize } from "@/components/ui/typography"
 import type { FolderTreeSelectNode } from "../utils/folder-utils"
+import { Flex } from "@/components/ui/flex"
 
 interface FolderTreeSelectItemProps {
   node: FolderTreeSelectNode
@@ -42,41 +43,45 @@ export const FolderTreeSelectItem = ({
           onSelect(node.path)
           onClose()
         }}
-        className={cn("flex items-center gap-2", level > 0 && "ml-4")}
+        className={cn(level > 0 && "ml-4")}
       >
-        <IconSize size="sm" className={cn("rounded-sm hover:text-foreground", isSelected ? "opacity-100" : "opacity-0")}>
-          <Check />
-        </IconSize>
-        {!hasChildren && <div className="w-4" />}
-        <IconSize size="sm">
-          <Folder className="hover:text-foreground" />
-        </IconSize>
-        <span className="flex-1">{node.name}</span>
+        <Flex align="center" gap={2} className="w-full">
+          <IconSize size="sm" className={cn("rounded-sm hover:text-foreground", isSelected ? "opacity-100" : "opacity-0")}>
+            <Check />
+          </IconSize>
+          {!hasChildren && <div className="w-4" />}
+          <IconSize size="sm">
+            <Folder className="hover:text-foreground" />
+          </IconSize>
+          <span className="flex-1">{node.name}</span>
 
-        {hasChildren && (
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={(e) => {
-              e.stopPropagation()
-              setOpenPaths((prev) => {
-                const newSet = new Set(prev)
-                if (isOpen) {
-                  newSet.delete(node.path)
-                } else {
-                  newSet.add(node.path)
-                }
-                return newSet
-              })
-            }}
-            className="w-fit px-2 flex items-center justify-end gap-2 hover:bg-muted/10 rounded-sm"
-          >
-            <TypographySpanSmall>{node.path}</TypographySpanSmall>
-            <IconSize size="lg" className={cn("transition-transform hover:text-foreground", isOpen && "rotate-90")}>
-              <ChevronRight />
-            </IconSize>
-          </Button>
-        )}
+          {hasChildren && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={(e) => {
+                e.stopPropagation()
+                setOpenPaths((prev) => {
+                  const newSet = new Set(prev)
+                  if (isOpen) {
+                    newSet.delete(node.path)
+                  } else {
+                    newSet.add(node.path)
+                  }
+                  return newSet
+                })
+              }}
+              className="w-fit px-2 hover:bg-muted/10 rounded-sm"
+            >
+              <Flex align="center" justify="end" gap={2}>
+                <TypographySpanSmall>{node.path}</TypographySpanSmall>
+                <IconSize size="lg" className={cn("transition-transform hover:text-foreground", isOpen && "rotate-90")}>
+                  <ChevronRight />
+                </IconSize>
+              </Flex>
+            </Button>
+          )}
+        </Flex>
       </CommandItem>
       {hasChildren && isOpen && (
         <div className="ml-4">

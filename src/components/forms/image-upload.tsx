@@ -9,6 +9,7 @@ import * as React from "react"
 import NextImage from "next/image"
 import { Upload, X, Image as ImageIcon, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Flex } from "@/components/ui/flex"
 import { cn } from "@/lib/utils/index"
 import { apiClient } from "@/lib/api/axios"
 import { apiRoutes } from "@/lib/api/routes"
@@ -333,40 +334,44 @@ export function ImageUpload({
               )}
             </div>
             {isUploading && (
-              <div className="absolute inset-0 flex items-center justify-center bg-background/80 rounded-md">
+              <Flex align="center" justify="center" className="absolute inset-0 bg-background/80 rounded-md">
                 <IconSize size="2xl" className="animate-spin text-primary"><Loader2 /></IconSize>
-              </div>
+              </Flex>
             )}
           </div>
         ) : (
-          <div
+          <Flex
+            direction="col"
+            align="center"
+            justify="center"
+            gap={4}
             className={cn(
-              "flex flex-col items-center justify-center p-8 cursor-pointer",
+              "p-8 cursor-pointer",
               disabled && "cursor-not-allowed"
             )}
             onClick={handleClick}
           >
             {isUploading ? (
-              <>
-                <IconSize size="4xl" className="animate-spin text-primary mb-4">
+              <Flex direction="col" align="center" gap={2}>
+                <IconSize size="4xl" className="animate-spin text-primary">
                   <Loader2 />
                 </IconSize>
                 <TypographyPMuted>Đang upload...</TypographyPMuted>
-              </>
+              </Flex>
             ) : (
-              <>
-                <div className="rounded-full bg-muted p-4 mb-4">
+              <Flex direction="col" align="center" gap={2}>
+                <Flex align="center" justify="center" className="rounded-full bg-muted p-4">
                   <IconSize size="2xl" className="text-muted-foreground"><Upload /></IconSize>
-                </div>
-                <TypographyP className="mb-1">
+                </Flex>
+                <TypographyP>
                   Kéo thả hình ảnh vào đây hoặc click để chọn
                 </TypographyP>
                 <TypographyPSmallMuted>
                   JPG, PNG, GIF, WEBP, SVG (tối đa {maxSizeMB}MB)
                 </TypographyPSmallMuted>
-              </>
+              </Flex>
             )}
-          </div>
+          </Flex>
         )}
 
         {error && (
@@ -377,19 +382,20 @@ export function ImageUpload({
       </div>
 
       {!previewUrl && !isUploading && (
-        <div className="mt-2 flex items-center gap-2">
+        <Flex align="center" gap={2} className="mt-2">
           <Button
             type="button"
             variant="outline"
             size="sm"
             onClick={handleClick}
             disabled={disabled}
-            className="mt-2"
           >
-            <IconSize size="sm" className="mr-2"><ImageIcon /></IconSize>
-            Chọn hình ảnh
+            <Flex align="center" gap={2}>
+              <IconSize size="sm"><ImageIcon /></IconSize>
+              <span>Chọn hình ảnh</span>
+            </Flex>
           </Button>
-        </div>
+        </Flex>
       )}
     </div>
   )

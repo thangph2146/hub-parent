@@ -26,6 +26,7 @@ import {
   ColorPickerTrigger,
 } from "@/components/editor/editor-ui/color-picker"
 import { Button } from "@/components/ui/button"
+import { Flex } from "@/components/ui/flex"
 import { IconSize } from "@/components/ui/typography"
 
 export function FontBackgroundToolbarPlugin() {
@@ -92,17 +93,17 @@ export function FontBackgroundToolbarPlugin() {
       </ColorPickerTrigger>
       <ColorPickerContent>
         <ColorPickerArea />
-        <div className="flex items-center gap-2">
+        <Flex align="center" gap={2}>
           <ColorPickerEyeDropper />
-          <div className="flex flex-1 flex-col gap-2">
+          <Flex direction="col" gap={2} className="flex-1">
             <ColorPickerHueSlider />
             <ColorPickerAlphaSlider />
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
+          </Flex>
+        </Flex>
+        <Flex align="center" gap={2}>
           <ColorPickerFormatSelect />
           <ColorPickerInput />
-        </div>
+        </Flex>
       </ColorPickerContent>
     </ColorPicker>
   )

@@ -1,6 +1,7 @@
 "use client"
 
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { Flex } from "@/components/ui/flex"
 import { TypographyPSmallMuted, TypographyPMuted } from "@/components/ui/typography"
 import type { Message, GroupRole, Contact } from "../types"
 import { EmptyState } from "./empty-state"
@@ -60,7 +61,7 @@ export function MessagesArea({
         minHeight: messagesMinHeight ? `${messagesMinHeight}px` : "calc(100dvh - 13rem)",
       }}
     >
-      <div className="flex flex-col p-4 gap-2" ref={scrollAreaRef}>
+      <Flex direction="col" gap={2} className="p-4" ref={scrollAreaRef}>
         {filteredMessages.length > 0 ? (
           <>
             {searchQuery.trim() && (
@@ -95,10 +96,10 @@ export function MessagesArea({
             )}
           </>
         ) : searchQuery.trim() ? (
-          <div className="flex flex-col items-center justify-center py-8 text-center">
+          <Flex direction="col" align="center" justify="center" gap={1} className="py-8 text-center">
             <TypographyPMuted>Không tìm thấy tin nhắn nào</TypographyPMuted>
-            <TypographyPSmallMuted className="mt-1">Thử tìm kiếm với từ khóa khác</TypographyPSmallMuted>
-          </div>
+            <TypographyPSmallMuted>Thử tìm kiếm với từ khóa khác</TypographyPSmallMuted>
+          </Flex>
         ) : isGroupDeleted ? (
           <>
             <EmptyState variant="messages" />
@@ -114,7 +115,7 @@ export function MessagesArea({
         ) : (
           <EmptyState variant="messages" />
         )}
-      </div>
+      </Flex>
     </ScrollArea>
   )
 }

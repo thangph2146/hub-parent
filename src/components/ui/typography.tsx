@@ -303,7 +303,7 @@ export function TypographyDescriptionLarge({
 export interface IconSizeProps {
   size?: keyof typeof iconSizes
   className?: string
-  children: React.ReactNode
+  children?: React.ReactNode
 }
 
 export function IconSize({ size = "md", className, children }: IconSizeProps) {

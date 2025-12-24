@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
 import { ReactNode } from "react";
+import { Flex } from "@/components/ui/flex";
 
 export interface SectionProps {
   children: ReactNode;
@@ -17,15 +18,17 @@ export const Section = ({
   containerClassName,
 }: SectionProps) => {
   return (
-    <section className={cn(padding, background, className)}>
-      <div
+    <section className={cn("w-full", padding, background, className)}>
+      <Flex
+        direction="col"
+        gap={12}
         className={cn(
-          "container mx-auto flex flex-col gap-12 px-4 sm:px-6 lg:px-8",
+          "container mx-auto px-4 sm:px-6 lg:px-8",
           containerClassName
         )}
       >
         {children}
-      </div>
+      </Flex>
     </section>
   );
 }

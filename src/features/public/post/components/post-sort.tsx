@@ -12,6 +12,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { IconSize } from "@/components/ui/typography"
+import { Flex } from "@/components/ui/flex"
 
 const sortOptions = [
   { 
@@ -48,36 +49,42 @@ export const PostSort = () => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" className="gap-2">
-          <IconSize size="sm">
-            <CurrentIcon />
-          </IconSize>
-          <span>{currentOption.label}</span>
-          <IconSize size="sm" className="opacity-50">
-            <ChevronDown />
-          </IconSize>
+        <Button variant="outline">
+          <Flex align="center" gap={2}>
+            <IconSize size="sm">
+              <CurrentIcon />
+            </IconSize>
+            <span>{currentOption.label}</span>
+            <IconSize size="sm" className="opacity-50">
+              <ChevronDown />
+            </IconSize>
+          </Flex>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-40 space-y-1">
-        {sortOptions.map((option) => {
-          const OptionIcon = option.icon
-          const isActive = currentSort === option.value
-          return (
-            <DropdownMenuItem
-              key={option.value}
-              onClick={() => handleSortChange(option.value)}
-              className={cn(
-                "w-full flex items-center gap-2 cursor-pointer",
-                isActive && "bg-accent/10"
-              )}
-            >
-              <IconSize size="sm">
-                <OptionIcon />
-              </IconSize>
-              <span className="transition-colors">{option.label}</span>
-            </DropdownMenuItem>
-          )
-        })}
+      <DropdownMenuContent align="end" className="w-40">
+        <Flex direction="col" gap={1}>
+          {sortOptions.map((option) => {
+            const OptionIcon = option.icon
+            const isActive = currentSort === option.value
+            return (
+              <DropdownMenuItem
+                key={option.value}
+                onClick={() => handleSortChange(option.value)}
+                className={cn(
+                  "w-full cursor-pointer",
+                  isActive && "bg-accent/10"
+                )}
+              >
+                <Flex align="center" gap={2}>
+                  <IconSize size="sm">
+                    <OptionIcon />
+                  </IconSize>
+                  <span className="transition-colors">{option.label}</span>
+                </Flex>
+              </DropdownMenuItem>
+            )
+          })}
+        </Flex>
       </DropdownMenuContent>
     </DropdownMenu>
   )

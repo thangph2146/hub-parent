@@ -2,10 +2,13 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { CardDescription, CardTitle } from "@/components/ui/card"
+import { Flex } from "@/components/ui/flex"
+import { Badge } from "@/components/ui/badge"
 import { Trash2 } from "lucide-react"
-import { TypographyP, TypographyPSmall, TypographyPSmallMuted, IconSize } from "@/components/ui/typography"
+import { TypographyP, TypographyPSmallMuted, IconSize } from "@/components/ui/typography"
 import type { Contact } from "../types"
 import { formatTime } from "../utils"
+import { cn } from "@/lib/utils"
 
 interface ContactItemProps {
   contact: Contact
@@ -18,14 +21,16 @@ export function ContactItem({ contact, isSelected, onClick }: ContactItemProps) 
     <div className="w-full">
       <button
         onClick={onClick}
-        className={`w-full px-4 py-3 hover:bg-accent/10 transition-colors text-left relative ${
-          isSelected ? "bg-accent/10" : ""
-        } ${contact.isDeleted ? "opacity-60" : ""}`}
+        className={cn(
+          "w-full px-4 py-3 hover:bg-accent/10 transition-colors text-left relative",
+          isSelected && "bg-accent/10",
+          contact.isDeleted && "opacity-60"
+        )}
         aria-label={`Chat with ${contact.name}`}
       >
-        <div className="flex items-center gap-3">
+        <Flex align="center" gap={3}>
           <div className="relative shrink-0">
-            <Avatar className="h-10 w-10 sm:h-12 sm:w-12">
+            <Avatar size="xl" className="sm:h-12 sm:w-12">
               <AvatarImage src={contact.image || undefined} alt={contact.name} />
               <AvatarFallback asChild>
                 <TypographyP>{contact.name[0]}</TypographyP>
@@ -36,31 +41,31 @@ export function ContactItem({ contact, isSelected, onClick }: ContactItemProps) 
             )}
           </div>
           <div className="flex-1 min-w-0">
-            <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-2 flex-1 min-w-0">
+            <Flex align="center" justify="between" gap={2}>
+              <Flex align="center" gap={2} className="flex-1 min-w-0">
                 <CardTitle>
                   <TypographyP className="truncate">{contact.name}</TypographyP>
                 </CardTitle>
                 {contact.isDeleted && (
                   <IconSize size="xs" className="text-destructive shrink-0"><Trash2 aria-label="Deleted" /></IconSize>
                 )}
-              </div>
+              </Flex>
               <TypographyPSmallMuted className="shrink-0">
                 {formatTime(contact.lastMessageTime)}
               </TypographyPSmallMuted>
-            </div>
-            <div className="flex items-center justify-between gap-2 mt-0.5">
+            </Flex>
+            <Flex align="center" justify="between" gap={2}>
               <CardDescription>
                 <TypographyPSmallMuted className="truncate flex-1">{contact.lastMessage}</TypographyPSmallMuted>
               </CardDescription>
               {contact.unreadCount > 0 && (
-                <TypographyPSmall className="h-5 min-w-5 px-1.5 flex items-center justify-center rounded-full bg-primary text-primary-foreground shrink-0">
+                <Badge variant="default" className="shrink-0">
                   {contact.unreadCount > 99 ? "99+" : contact.unreadCount}
-                </TypographyPSmall>
+                </Badge>
               )}
-            </div>
+            </Flex>
           </div>
-        </div>
+        </Flex>
       </button>
     </div>
   )

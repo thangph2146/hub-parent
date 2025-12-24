@@ -10,6 +10,7 @@ import { TypographySpanSmallMuted, IconSize, TypographyP } from "@/components/ui
 import { cn } from "@/lib/utils"
 import { ImageGrid } from "./image-grid"
 import type { FolderNode, ImageItem } from "../types"
+import { Flex } from "@/components/ui/flex"
 
 interface FolderTreeNodeProps {
   folder: FolderNode
@@ -57,47 +58,57 @@ export const FolderTreeNode = React.memo(function FolderTreeNode({
   if (!hasContent) return null
 
   return (
-    <Collapsible key={folder.path} open={isOpen} onOpenChange={handleOpenChange} className="mb-2">
-      <CollapsibleTrigger className="flex items-center gap-2 w-full px-3 py-2 hover:bg-muted rounded-md transition-colors text-left">
-        <IconSize size="sm" className={cn("transition-transform", isOpen && "rotate-90")}>
-          <ChevronRight />
-        </IconSize>
-        <IconSize size="sm">
-          <Folder className="text-muted-foreground" />
-        </IconSize>
-        <TypographyP>{folder.name}</TypographyP>
-        <TypographySpanSmallMuted className="ml-auto">
-          {folder.images.length} hình ảnh
-          {folder.subfolders.length > 0 && `, ${folder.subfolders.length} thư mục`}
-        </TypographySpanSmallMuted>
+    <Collapsible key={folder.path} open={isOpen} onOpenChange={handleOpenChange} className="w-full mb-3">
+      <CollapsibleTrigger asChild>
+        <Flex 
+          align="center" 
+          gap={2} 
+          className="w-full px-3 py-2.5 hover:bg-muted/80 rounded-lg transition-colors text-left cursor-pointer border border-transparent hover:border-border"
+        >
+          <IconSize size="sm" className={cn("transition-transform duration-200 text-muted-foreground", isOpen && "rotate-90")}>
+            <ChevronRight />
+          </IconSize>
+          <IconSize size="sm" className="text-primary">
+            <Folder />
+          </IconSize>
+          <TypographyP className="font-medium">{folder.name}</TypographyP>
+          <TypographySpanSmallMuted className="ml-auto whitespace-nowrap">
+            {folder.images.length} hình ảnh
+            {folder.subfolders.length > 0 && `, ${folder.subfolders.length} thư mục`}
+          </TypographySpanSmallMuted>
+        </Flex>
       </CollapsibleTrigger>
-      <CollapsibleContent className="ml-6 mt-2">
-        {/* Render images in this folder */}
-        {folder.images.length > 0 && (
-          <div className="mb-4 p-2">
-            <ImageGrid
-              images={folder.images}
-              selectedImages={selectedImages}
-              deletingIds={deletingIds}
-              onToggleSelect={onToggleSelect}
-              onDelete={onDelete}
-            />
-          </div>
-        )}
-        {/* Render subfolders */}
-        {folder.subfolders.map((subfolder) => (
-          <FolderTreeNode
-            key={subfolder.path}
-            folder={subfolder}
-            level={level + 1}
-            openFolders={openFolders}
-            setOpenFolders={setOpenFolders}
-            selectedImages={selectedImages}
-            deletingIds={deletingIds}
-            onToggleSelect={onToggleSelect}
-            onDelete={onDelete}
-          />
-        ))}
+      <CollapsibleContent className="w-full mt-3">
+        <Flex direction="col" gap={3}>
+          {/* Render images in this folder */}
+          {folder.images.length > 0 && (
+              <ImageGrid
+                images={folder.images}
+                selectedImages={selectedImages}
+                deletingIds={deletingIds}
+                onToggleSelect={onToggleSelect}
+                onDelete={onDelete}
+              />
+          )}
+          {/* Render subfolders */}
+          {folder.subfolders.length > 0 && (
+            <div className="ml-4">
+              {folder.subfolders.map((subfolder) => (
+                <FolderTreeNode
+                  key={subfolder.path}
+                  folder={subfolder}
+                  level={level + 1}
+                  openFolders={openFolders}
+                  setOpenFolders={setOpenFolders}
+                  selectedImages={selectedImages}
+                  deletingIds={deletingIds}
+                  onToggleSelect={onToggleSelect}
+                  onDelete={onDelete}
+                />
+              ))}
+            </div>
+          )}
+        </Flex>
       </CollapsibleContent>
     </Collapsible>
   )

@@ -1,6 +1,7 @@
 "use client"
 
 import { TypographyH4, IconSize } from "@/components/ui/typography"
+import { Flex } from "@/components/ui/flex"
 
 import { useIsMobile } from "@/hooks/use-mobile"
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable"
@@ -407,7 +408,7 @@ export const ChatTemplate = ({
 
   // Chat List Content Component (reusable for both desktop and mobile)
   const chatListContent = (
-    <div ref={chatListRef} className="flex flex-col h-full bg-background" id="chat-list">
+    <Flex ref={chatListRef} direction="col" className="h-full bg-background" id="chat-list">
       <ChatListHeader
         onNewConversation={handleNewConversation}
         existingContactIds={contactsState.map((c) => c.id)}
@@ -431,11 +432,11 @@ export const ChatTemplate = ({
         onSearchChange={setContactSearch}
         width={chatListWidth}
       />
-    </div>
+    </Flex>
   )
 
   return (
-    <div className="flex flex-1 flex-col h-full overflow-hidden">
+    <Flex direction="col" className="flex-1 h-full overflow-hidden">
       {/* Desktop: ResizablePanelGroup */}
       {!isMobile ? (
         <ResizablePanelGroup direction="horizontal" className="flex-1 h-full">
@@ -446,9 +447,9 @@ export const ChatTemplate = ({
             maxSize={50}
             className="flex flex-col min-w-0"
           >
-            <div className="flex flex-col h-full border-r bg-background">
+            <Flex direction="col" className="h-full border-r bg-background"            >
               {chatListContent}
-            </div>
+            </Flex>
           </ResizablePanel>
 
           <ResizableHandle withHandle />
@@ -460,9 +461,9 @@ export const ChatTemplate = ({
             className="flex flex-col min-w-0"
           >
             {chatWindowProps ? (
-              <div className="flex flex-col h-full bg-background">
+              <Flex direction="col" className="h-full bg-background">
                 <ChatWindow {...chatWindowProps} groupManagementMenu={groupMenu} />
-              </div>
+              </Flex>
             ) : (
               <EmptyState variant="no-chat" />
             )}
@@ -481,8 +482,8 @@ export const ChatTemplate = ({
 
           {/* Mobile: Show Chat List Button when no chat is selected */}
           {!showMobileChatWindow && (
-            <div className="flex flex-1 flex-col h-full">
-              <div className="flex items-center gap-2 h-14 px-4 border-b shrink-0">
+            <Flex direction="col" className="flex-1 h-full">
+              <Flex align="center" gap={2} className="h-14 px-4 border-b shrink-0">
                 <Button
                   variant="ghost"
                   size="icon"
@@ -494,16 +495,16 @@ export const ChatTemplate = ({
                   </IconSize>
                 </Button>
                 <TypographyH4>Chats</TypographyH4>
-              </div>
-              <div className="flex-1 flex items-center justify-center">
+              </Flex>
+              <Flex align="center" justify="center" className="flex-1">
                 <EmptyState variant="no-chat" />
-              </div>
-            </div>
+              </Flex>
+            </Flex>
           )}
 
           {/* Mobile Chat Window */}
           {showMobileChatWindow && chatWindowProps && (
-            <div className="fixed top-16 bottom-0 left-0 right-0 z-30 flex flex-col bg-background md:hidden">
+            <Flex direction="col" className="fixed top-16 bottom-0 left-0 right-0 z-30 bg-background md:hidden">
               <ChatWindow
                 {...chatWindowProps}
                 groupManagementMenu={groupMenu}
@@ -513,11 +514,11 @@ export const ChatTemplate = ({
                 }}
                 showBackButton
               />
-            </div>
+            </Flex>
           )}
         </>
       )}
-    </div>
+    </Flex>
   )
 }
 

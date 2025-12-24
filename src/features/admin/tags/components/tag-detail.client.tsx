@@ -14,6 +14,7 @@ import { useResourceNavigation, useResourceDetailData, useResourceDetailLogger }
 import { usePermissions } from "@/hooks/use-permissions"
 import { PERMISSIONS } from "@/lib/permissions"
 import { TypographyP, IconSize } from "@/components/ui/typography"
+import { Grid } from "@/components/ui/grid"
 
 export interface TagDetailData {
   id: string
@@ -68,7 +69,7 @@ export const TagDetailClient = ({ tagId, tag, backUrl = "/admin/tags" }: TagDeta
         const tagData = data as TagDetailData
         
         return (
-          <div className="grid gap-6 grid-cols-1 sm:grid-cols-2">
+          <Grid cols={2} gap={6}>
             {/* Name & Slug */}
             <FieldItem icon={Tag} label="Tên thẻ tag">
               <TypographyP>
@@ -94,7 +95,7 @@ export const TagDetailClient = ({ tagId, tag, backUrl = "/admin/tags" }: TagDeta
                 {tagData.updatedAt ? formatDateVi(tagData.updatedAt) : "—"}
               </TypographyP>
             </FieldItem>
-          </div>
+          </Grid>
         )
       },
     },

@@ -2,21 +2,42 @@
 
 import * as React from "react"
 import * as AvatarPrimitive from "@radix-ui/react-avatar"
+import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "@/lib/utils/index"
-import { iconSizes } from "@/lib/typography"
+import { iconSizes, responsiveIconSizes } from "@/lib/typography"
+
+const avatarVariants = cva(
+  "relative flex shrink-0 overflow-hidden rounded-full",
+  {
+    variants: {
+      size: {
+        xs: iconSizes.xs,
+        sm: iconSizes.sm,
+        md: iconSizes.md,
+        lg: iconSizes.lg,
+        xl: iconSizes.xl,
+        "2xl": iconSizes["2xl"],
+        "3xl": iconSizes["3xl"],
+        "4xl": iconSizes["4xl"],
+        responsive: responsiveIconSizes.medium,
+      },
+    },
+    defaultVariants: {
+      size: "2xl",
+    },
+  }
+)
 
 function Avatar({
   className,
+  size,
   ...props
-}: React.ComponentProps<typeof AvatarPrimitive.Root>) {
+}: React.ComponentProps<typeof AvatarPrimitive.Root> & VariantProps<typeof avatarVariants>) {
   return (
     <AvatarPrimitive.Root
       data-slot="avatar"
-      className={cn(
-        `relative flex ${iconSizes["2xl"]} shrink-0 overflow-hidden rounded-full`,
-        className
-      )}
+      className={cn(avatarVariants({ size }), className)}
       {...props}
     />
   )

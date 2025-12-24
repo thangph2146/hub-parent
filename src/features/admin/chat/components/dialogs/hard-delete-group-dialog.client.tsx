@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dialog"
 import { Loader2, AlertTriangle } from "lucide-react"
 import { IconSize } from "@/components/ui/typography"
+import { Flex } from "@/components/ui/flex"
 import type { Contact, Group } from "@/components/chat/types"
 import { useGroupDeleteConfirm } from "../../hooks/use-group-delete-confirm"
 import { useGroupDialogActions } from "../../hooks/use-group-dialog-actions"
@@ -77,11 +78,13 @@ export const HardDeleteGroupDialog = ({
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="sm:max-w-[460px]">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
+            <DialogTitle asChild>
+              <Flex align="center" gap={2}>
               <IconSize size="md" className="text-destructive">
                 <AlertTriangle />
               </IconSize>
               {GROUP_CONFIRM_MESSAGES.HARD_DELETE_TITLE(group?.name)}
+              </Flex>
             </DialogTitle>
             <DialogDescription>
               {GROUP_CONFIRM_MESSAGES.HARD_DELETE_DESCRIPTION(group?.name)}
@@ -110,11 +113,13 @@ export const HardDeleteGroupDialog = ({
         }}>
           <DialogContent className="sm:max-w-[460px]">
             <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                <IconSize size="md" className="text-destructive">
-                <AlertTriangle />
-              </IconSize>
-                {GROUP_CONFIRM_MESSAGES.HARD_DELETE_TITLE(deleteConfirm.row?.name)}
+              <DialogTitle asChild>
+                <Flex align="center" gap={2}>
+                  <IconSize size="md" className="text-destructive">
+                    <AlertTriangle />
+                  </IconSize>
+                  {GROUP_CONFIRM_MESSAGES.HARD_DELETE_TITLE(deleteConfirm.row?.name)}
+                </Flex>
               </DialogTitle>
               <DialogDescription>
                 {GROUP_CONFIRM_MESSAGES.HARD_DELETE_DESCRIPTION(deleteConfirm.row?.name)}

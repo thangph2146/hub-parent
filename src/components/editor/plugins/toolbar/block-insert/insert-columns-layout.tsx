@@ -5,6 +5,7 @@ import { Columns3Icon } from "lucide-react"
 import { useToolbarContext } from "@/components/editor/context/toolbar-context"
 import { InsertLayoutDialog } from "@/components/editor/plugins/layout-plugin"
 import { SelectItem } from "@/components/ui/select"
+import { Flex } from "@/components/ui/flex"
 import { IconSize } from "@/components/ui/typography"
 
 export function InsertColumnsLayout() {
@@ -20,12 +21,12 @@ export function InsertColumnsLayout() {
       }
       className=""
     >
-      <div className="flex items-center gap-1">
+      <Flex align="center" gap={1}>
         <IconSize size="sm">
           <Columns3Icon />
         </IconSize>
         <span>Columns Layout</span>
-      </div>
+      </Flex>
     </SelectItem>
   )
 }

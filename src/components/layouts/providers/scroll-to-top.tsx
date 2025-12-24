@@ -24,7 +24,7 @@ export function ScrollToTop() {
         onClick={scrollToTop}
         size="icon"
         className={cn(
-          "fixed bottom-14 right-2 z-50 h-12 w-12 rounded-full shadow-lg transition-all duration-300",
+          "fixed bottom-20 right-2 z-50 h-12 w-12 rounded-full shadow-lg transition-all duration-300",
           "bg-secondary text-secondary-foreground hover:bg-secondary/90",
           "hover:scale-110 active:scale-95",
           isVisible 

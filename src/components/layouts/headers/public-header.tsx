@@ -34,7 +34,9 @@ import { appFeatures } from "@/lib/config/app-features";
 import { getResourceMainRoute } from "@/lib/permissions/route-helpers";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
-import { TypographyH6, TypographyPSmall, TypographyP, TypographyPSmallMuted, IconSize } from "@/components/ui/typography";
+import { TypographyPSmall, TypographyP, TypographyPSmallMuted, IconSize } from "@/components/ui/typography";
+import { Flex } from "@/components/ui/flex";
+import { Grid } from "@/components/ui/grid";
 
 /**
  * Helper functions để lấy routes từ appFeatures
@@ -168,100 +170,104 @@ export function PublicHeader() {
           scrolled,
       })}
     >
-      <nav className="container mx-auto flex h-14 w-full items-center justify-between px-4">
-        <div className="flex items-center gap-5">
-          <Link
-            href={PUBLIC_ROUTES.home}
-            className="dark:bg-foreground rounded-md p-1 flex items-center gap-2"
-            aria-label="Trang chủ - Trường Đại học Ngân hàng TP.HCM"
-          >
-            <Logo className="h-8 w-8 sm:h-10 sm:w-10 text-blue-100" />  
-          </Link>
-          <div>
-            <TypographyH6 className="text-center">
+      <nav className="container mx-auto h-14 w-full">
+        <Flex align="center" justify="between" className="h-full">
+          <Flex align="center" gap={4}>
+            <Link
+              href={PUBLIC_ROUTES.home}
+              className="dark:bg-foreground rounded-md p-1"
+              aria-label="Trang chủ - Trường Đại học Ngân hàng TP.HCM"
+            >
+              <Flex align="center" gap={2}>
+                <Logo className="h-8 w-8 sm:h-10 sm:w-10 text-blue-100" />
+              </Flex>
+            </Link>
+          {/* <Flex direction="col">
+            <TypographyH6>
               Trường Đại học Ngân hàng
             </TypographyH6>
             <TypographyPSmall>Thành Phố Hồ Chí Minh</TypographyPSmall>
-          </div>
-          <Separator orientation="vertical" className={`h-6 w-px bg-border`} />
-          {mounted ? (
-            <NavigationMenu className="hidden md:flex">
-              <NavigationMenuList>
-                {publicLinks.map((link) => {
-                  // Hiển thị "Trang chủ" và "Bài viết" trực tiếp
-                  if (
-                    link.href === PUBLIC_ROUTES.home ||
-                    link.href === PUBLIC_ROUTES.blog
-                  ) {
-                    return (
-                      <NavigationMenuItem key={link.href}>
-                        <NavigationMenuLink asChild>
-                          <Link
-                            href={link.href}
-                            className="group inline-flex h-10 w-max items-center justify-center rounded-md bg-transparent px-4 py-2 transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50"
-                          >
-                            {link.href === PUBLIC_ROUTES.home && (
-                              <IconSize size="sm" className="mr-2"><link.icon /></IconSize>
-                            )}
-                            {link.title}
-                          </Link>
-                        </NavigationMenuLink>
+          </Flex> */}
+            <Separator orientation="vertical" className={`h-6 w-px bg-border`} />
+            {mounted ? (
+              <NavigationMenu className="hidden md:flex">
+                <NavigationMenuList>
+                  {publicLinks.map((link) => {
+                    // Hiển thị "Trang chủ" và "Bài viết" trực tiếp
+                    if (
+                      link.href === PUBLIC_ROUTES.home ||
+                      link.href === PUBLIC_ROUTES.blog
+                    ) {
+                      return (
+                        <NavigationMenuItem key={link.href}>
+                          <NavigationMenuLink asChild>
+                            <Link
+                              href={link.href}
+                              className="group inline-flex h-10 w-max items-center justify-center rounded-md bg-transparent px-4 py-2 transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50"
+                            >
+                              {link.href === PUBLIC_ROUTES.home && (
+                                <Flex align="center" gap={2}>
+                                  <IconSize size="sm"><link.icon /></IconSize>
+                                  {link.title}
+                                </Flex>
+                              )}
+                              {link.href !== PUBLIC_ROUTES.home && link.title}
+                            </Link>
+                          </NavigationMenuLink>
+                        </NavigationMenuItem>
+                      );
+                    }
+                    return null;
+                  })}
+                  {/* Support menu với các links còn lại */}
+                  {publicLinks.filter(
+                    (link) =>
+                      link.href !== PUBLIC_ROUTES.home &&
+                      link.href !== PUBLIC_ROUTES.blog
+                  ).length > 0 && (
+                      <NavigationMenuItem>
+                        <NavigationMenuTrigger className="bg-transparent">
+                          Hỗ trợ
+                        </NavigationMenuTrigger>
+                        <NavigationMenuContent className="bg-background p-1 pr-1.5 pb-1.5">
+                          <Grid cols={2} gap={2} className="bg-popover w-lg">
+                            {publicLinks
+                              .filter(
+                                (link) =>
+                                  link.href !== PUBLIC_ROUTES.home &&
+                                  link.href !== PUBLIC_ROUTES.blog
+                              )
+                              .map((item, i) => (
+                                <ListItem key={i} {...item} />
+                              ))}
+                          </Grid>
+                        </NavigationMenuContent>
                       </NavigationMenuItem>
-                    );
-                  }
-                  return null;
-                })}
-                {/* Support menu với các links còn lại */}
-                {publicLinks.filter(
-                  (link) =>
-                    link.href !== PUBLIC_ROUTES.home &&
-                    link.href !== PUBLIC_ROUTES.blog
-                ).length > 0 && (
-                    <NavigationMenuItem>
-                      <NavigationMenuTrigger className="bg-transparent">
-                        Hỗ trợ
-                      </NavigationMenuTrigger>
-                      <NavigationMenuContent className="bg-background p-1 pr-1.5 pb-1.5">
-                        <ul className="bg-popover grid w-lg grid-cols-2 gap-2">
-                          {publicLinks
-                            .filter(
-                              (link) =>
-                                link.href !== PUBLIC_ROUTES.home &&
-                                link.href !== PUBLIC_ROUTES.blog
-                            )
-                            .map((item, i) => (
-                              <li key={i}>
-                                <ListItem {...item} />
-                              </li>
-                            ))}
-                        </ul>
-                      </NavigationMenuContent>
-                    </NavigationMenuItem>
-                  )}
-              </NavigationMenuList>
-            </NavigationMenu>
-          ) : (
-            <div className="hidden md:flex items-center gap-4">
-              {publicLinks.slice(0, 2).map((link) => (
-                <Button
-                  key={link.href}
-                  variant="ghost"
-                  className="bg-transparent"
-                  asChild
-                >
-                  <Link href={link.href}>{link.title}</Link>
-                </Button>
-              ))}
-            </div>
-          )}
-        </div>
+                    )}
+                </NavigationMenuList>
+              </NavigationMenu>
+            ) : (
+              <Flex align="center" gap={4} className="hidden md:flex">
+                {publicLinks.slice(0, 2).map((link) => (
+                  <Button
+                    key={link.href}
+                    variant="ghost"
+                    className="bg-transparent"
+                    asChild
+                  >
+                    <Link href={link.href}>{link.title}</Link>
+                  </Button>
+                ))}
+              </Flex>
+            )}
+          </Flex>
         {mounted ? (
-          <div className="flex items-center gap-2"> 
+          <Flex align="center" gap={2}> 
             <ModeToggle />
             {isAuthenticated ? (
-              <div className="hidden md:flex">
+              <Flex className="hidden md:flex">
                 <NavUser />
-              </div>
+              </Flex>
             ) : (
               <>
                 <Button variant="outline" asChild className="hidden md:flex">
@@ -285,68 +291,70 @@ export function PublicHeader() {
                 <MenuToggleIcon open={open} duration={300} />
               </IconSize>
             </Button>
-          </div>
+          </Flex>
         ) : (
-          <div className="flex items-center gap-2">
+          <Flex align="center" gap={2}>
             <Skeleton className="w-10 h-10 rounded-md" />
             <Skeleton className="w-10 h-10 rounded-md" />
-          </div>
+          </Flex>
         )}
+        </Flex>
       </nav>
       {mounted && (
         <MobileMenu open={open} onClose={() => setOpen(false)}>
-          <div className="flex flex-col h-full">
+          <Flex direction="col" className="h-full">
             {/* User Section - Top */}
             {isAuthenticated ? (
-              <div className="border-b pb-4 mb-4">
-                <div className="w-full">
-                  <NavUser className="w-full" />
-                </div>
-              </div>
+              <Flex direction="col" className="border-b pb-4 mb-4 w-full">
+                <NavUser className="w-full" />
+              </Flex>
             ) : (
-              <div className="border-b pb-4 mb-4 space-y-2">
+              <Flex direction="col" gap={2} className="border-b pb-4 mb-4">
                 <Button
                   variant="default"
-                  className="w-full justify-start gap-3 h-auto py-3"
+                  className="w-full h-auto py-3"
                   asChild
                   onClick={() => setOpen(false)}
                 >
                   <Link href="/auth/sign-in">
-                    <div className="bg-primary/10 flex aspect-square h-12 w-12 items-center justify-center rounded-md">
-                      <IconSize size="md" className="text-primary text-primary-foreground"><LogIn /></IconSize>
-                    </div>
-                    <div className="flex flex-col items-start">
-                      <TypographyP>Đăng nhập</TypographyP>
-                      <TypographyPSmallMuted>
-                        Đăng nhập vào tài khoản của bạn
-                      </TypographyPSmallMuted>
-                    </div>
+                    <Flex align="center" gap={3} className="justify-start">
+                      <Flex align="center" justify="center" className="bg-primary/10 aspect-square h-12 w-12 rounded-md">
+                        <IconSize size="md"><LogIn /></IconSize>
+                      </Flex>
+                      <Flex direction="col" align="start">
+                        <TypographyP>Đăng nhập</TypographyP>
+                        <TypographyPSmallMuted>
+                          Đăng nhập vào tài khoản của bạn
+                        </TypographyPSmallMuted>
+                      </Flex>
+                    </Flex>
                   </Link>
                 </Button>
                 <Button
                   variant="outline"
-                  className="w-full justify-start gap-3 h-auto py-3"
+                  className="w-full h-auto py-3"
                   asChild
                   onClick={() => setOpen(false)}
                 >
                   <Link href="/auth/sign-up">
-                    <div className="bg-muted flex aspect-square h-12 w-12 items-center justify-center rounded-md">
-                      <IconSize size="md" className="text-foreground text-foreground-primary"><UserPlus /></IconSize>
-                    </div>
-                    <div className="flex flex-col items-start">
-                      <TypographyP>Đăng ký</TypographyP>
-                      <TypographyPSmallMuted>
-                        Tạo tài khoản mới
-                      </TypographyPSmallMuted>
-                    </div>
+                    <Flex align="center" gap={3} className="justify-start">
+                      <Flex align="center" justify="center" className="bg-muted aspect-square h-12 w-12 rounded-md">
+                        <IconSize size="md"><UserPlus /></IconSize>
+                      </Flex>
+                      <Flex direction="col" align="start">
+                        <TypographyP>Đăng ký</TypographyP>
+                        <TypographyPSmallMuted>
+                          Tạo tài khoản mới
+                        </TypographyPSmallMuted>
+                      </Flex>
+                    </Flex>
                   </Link>
                 </Button>
-              </div>
+              </Flex>
             )}
 
             {/* Navigation Links - Scrollable */}
-            <div className="flex-1 overflow-y-auto">
-              <div className="flex w-full flex-col gap-y-1">
+            <Flex direction="col" gap={1} className="flex-1 overflow-y-auto w-full">
                 {publicLinks.map((link) => {
                   // Hiển thị "Trang chủ" và "Bài viết" trực tiếp
                   if (
@@ -357,22 +365,24 @@ export function PublicHeader() {
                       <Link
                         key={link.href}
                         href={link.href}
-                        className="group w-full flex flex-row gap-x-3 hover:bg-accent hover:text-accent-foreground focus-visible:bg-accent focus-visible:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-lg p-3 transition-colors active:bg-accent/80"
+                        className="group w-full hover:bg-accent hover:text-accent-foreground focus-visible:bg-accent focus-visible:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-lg p-3 transition-colors active:bg-accent/80"
                         onClick={() => setOpen(false)}
                       >
-                        <div className="bg-background/40 flex aspect-square size-11 items-center justify-center rounded-lg border shadow-sm shrink-0 group-hover:bg-background/60 transition-colors">
-                          <IconSize size="md" className="text-foreground group-hover:text-accent-foreground group-focus-visible:text-accent-foreground transition-colors"><link.icon /></IconSize>
-                        </div>
-                        <div className="flex flex-col items-start justify-center min-w-0 flex-1">
-                          <TypographyP className="group-hover:text-accent-foreground group-focus-visible:text-accent-foreground transition-colors">
-                            {link.title}
-                          </TypographyP>
-                          {link.description && (
-                            <TypographyPSmall className="group-hover:text-accent-foreground/80 group-focus-visible:text-accent-foreground transition-colors">
-                              {link.description}
-                            </TypographyPSmall>
-                          )}
-                        </div>
+                        <Flex align="center" gap={3} className="flex-row">
+                          <Flex align="center" justify="center" className="bg-background/40 aspect-square size-11 rounded-lg border shadow-sm shrink-0 group-hover:bg-background/60 transition-colors">
+                            <IconSize size="md"><link.icon /></IconSize>
+                          </Flex>
+                          <Flex direction="col" align="start" justify="center" className="min-w-0 flex-1">
+                            <TypographyP className="group-hover:text-accent-foreground group-focus-visible:text-accent-foreground transition-colors">
+                              {link.title}
+                            </TypographyP>
+                            {link.description && (
+                              <TypographyPSmall className="group-hover:text-accent-foreground/80 group-focus-visible:text-accent-foreground transition-colors">
+                                {link.description}
+                              </TypographyPSmall>
+                            )}
+                          </Flex>
+                        </Flex>
                       </Link>
                     );
                   }
@@ -398,29 +408,30 @@ export function PublicHeader() {
                           <Link
                             key={link.href}
                             href={link.href}
-                            className="group w-full flex flex-row gap-x-3 hover:bg-accent hover:text-accent-foreground focus-visible:bg-accent focus-visible:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-lg p-3 transition-colors active:bg-accent/80"
+                            className="group w-full hover:bg-accent hover:text-accent-foreground focus-visible:bg-accent focus-visible:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-lg p-3 transition-colors active:bg-accent/80"
                             onClick={() => setOpen(false)}
                           >
-                            <div className="bg-background/40 flex aspect-square size-11 items-center justify-center rounded-lg border shadow-sm shrink-0 group-hover:bg-background/60 transition-colors">
-                              <IconSize size="md" className="text-foreground group-hover:text-accent-foreground group-focus-visible:text-accent-foreground transition-colors"><link.icon /></IconSize>
-                            </div>
-                            <div className="flex flex-col items-start justify-center min-w-0 flex-1">
-                              <TypographyP className="group-hover:text-accent-foreground group-focus-visible:text-accent-foreground transition-colors">
-                                {link.title}
-                              </TypographyP>
-                              {link.description && (
-                                <TypographyPSmall className="group-hover:text-accent-foreground/80 group-focus-visible:text-accent-foreground transition-colors">
-                                  {link.description}
-                                </TypographyPSmall>
-                              )}
-                            </div>
+                            <Flex align="center" gap={3} className="flex-row">
+                              <Flex align="center" justify="center" className="bg-background/40 aspect-square size-11 rounded-lg border shadow-sm shrink-0 group-hover:bg-background/60 transition-colors">
+                                <IconSize size="md"><link.icon /></IconSize>
+                              </Flex>
+                              <Flex direction="col" align="start" justify="center" className="min-w-0 flex-1">
+                                <TypographyP className="group-hover:text-accent-foreground group-focus-visible:text-accent-foreground transition-colors">
+                                  {link.title}
+                                </TypographyP>
+                                {link.description && (
+                                  <TypographyPSmall className="group-hover:text-accent-foreground/80 group-focus-visible:text-accent-foreground transition-colors">
+                                    {link.description}
+                                  </TypographyPSmall>
+                                )}
+                              </Flex>
+                            </Flex>
                           </Link>
                         ))}
                     </>
                   )}
-              </div>
-            </div>
-          </div>
+              </Flex>
+          </Flex>
         </MobileMenu>
       )}
     </header>
@@ -489,13 +500,15 @@ function ListItem({
       asChild
     >
       <Link href={href}>
-        <div className="bg-background/40 flex aspect-square size-12 items-center justify-center rounded-md border shadow-sm">
-          <IconSize size="md" className="text-foreground group-hover:text-accent-foreground group-focus:text-accent-foreground group-data-[active]:text-accent-foreground"><Icon /></IconSize>
-        </div>
-        <div className="flex flex-col items-start justify-center">
-          <TypographyP>{title}</TypographyP>
-          {description && <TypographyPSmall>{description}</TypographyPSmall>}
-        </div>
+        <Flex align="center" gap={2} className="flex-row">
+          <Flex align="center" justify="center" className="bg-background/40 aspect-square size-12 rounded-md border shadow-sm">
+            <IconSize size="md"><Icon /></IconSize>
+          </Flex>
+          <Flex direction="col" align="start" justify="center">
+            <TypographyP>{title}</TypographyP>
+            {description && <TypographyPSmall>{description}</TypographyPSmall>}
+          </Flex>
+        </Flex>
       </Link>
     </NavigationMenuLink>
   );

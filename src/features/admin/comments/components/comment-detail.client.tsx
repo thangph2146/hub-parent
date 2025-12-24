@@ -18,6 +18,8 @@ import { useResourceNavigation, useResourceDetailData, useResourceDetailLogger }
 import { queryKeys } from "@/lib/query-keys"
 import { resourceLogger } from "@/lib/config/resource-logger"
 import { TypographyP, TypographyPSmallMuted, IconSize } from "@/components/ui/typography"
+import { Flex } from "@/components/ui/flex"
+import { Grid } from "@/components/ui/grid"
 
 export interface CommentDetailData {
   id: string
@@ -50,15 +52,15 @@ interface StatusFieldProps {
 
 const StatusField = ({ approved, canApprove, onToggle, isToggling }: StatusFieldProps) => {
   return (
-    <div className="flex items-center gap-3">
-      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted">
-        <IconSize size="sm" className="text-muted-foreground">
+    <Flex align="center" gap={3}>
+      <Flex align="center" justify="center" className="h-9 w-9 shrink-0 rounded-lg bg-muted">
+        <IconSize size="sm">
           <MessageSquare />
         </IconSize>
-      </div>
-      <div className="flex-1 min-w-0">
-        <TypographyPSmallMuted className="mb-1.5">Trạng thái duyệt</TypographyPSmallMuted>
-        <div className="flex items-center gap-2">
+      </Flex>
+      <Flex direction="col" gap={1} className="flex-1 min-w-0">
+        <TypographyPSmallMuted>Trạng thái duyệt</TypographyPSmallMuted>
+        <Flex align="center" gap={2}>
           <Switch
             checked={approved}
             disabled={isToggling || !canApprove}
@@ -68,9 +70,9 @@ const StatusField = ({ approved, canApprove, onToggle, isToggling }: StatusField
           <TypographyP>
             {approved ? "Đã duyệt" : "Chờ duyệt"}
           </TypographyP>
-        </div>
-      </div>
-    </div>
+        </Flex>
+      </Flex>
+    </Flex>
   )
 }
 
@@ -162,22 +164,22 @@ export const CommentDetailClient = ({ commentId, comment, backUrl = "/admin/comm
         const commentData = (data || detailData) as CommentDetailData
         
         return (
-          <div className="space-y-6">
+          <Flex direction="col" gap={6}>
             {/* Content Card */}
             <Card className="border border-border/50 bg-card p-5">
-              <div className="flex items-start gap-3">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted">
-                  <IconSize size="sm" className="text-muted-foreground">
-          <MessageSquare />
-        </IconSize>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <TypographyP className="text-foreground mb-2">Nội dung</TypographyP>
-                  <TypographyP className="leading-relaxed whitespace-pre-wrap text-foreground break-words">
+                <Flex align="start" gap={3}>
+                <Flex align="center" justify="center" className="h-9 w-9 shrink-0 rounded-lg bg-muted">
+                  <IconSize size="sm">
+                    <MessageSquare />
+                  </IconSize>
+                </Flex>
+                <Flex direction="col" gap={2} className="flex-1 min-w-0">
+                  <TypographyP>Nội dung</TypographyP>
+                  <TypographyP>
                     {commentData.content || "—"}
                   </TypographyP>
-                </div>
-              </div>
+                </Flex>
+              </Flex>
             </Card>
 
             {/* Status */}
@@ -189,9 +191,9 @@ export const CommentDetailClient = ({ commentId, comment, backUrl = "/admin/comm
             />
 
             {/* Author Info */}
-            <div className="grid gap-6 grid-cols-1 sm:grid-cols-2">
+            <Grid cols={2} gap={6}>
               <FieldItem icon={User} label="Người bình luận">
-                <TypographyP className="text-foreground truncate">
+                <TypographyP className="truncate">
                   {commentData.authorName || commentData.authorEmail || "—"}
                 </TypographyP>
               </FieldItem>
@@ -204,7 +206,7 @@ export const CommentDetailClient = ({ commentId, comment, backUrl = "/admin/comm
                   <TypographyP>{commentData.authorEmail || "—"}</TypographyP>
                 </a>
               </FieldItem>
-            </div>
+            </Grid>
 
             {/* Post Info */}
             <FieldItem icon={FileText} label="Bài viết">
@@ -221,25 +223,25 @@ export const CommentDetailClient = ({ commentId, comment, backUrl = "/admin/comm
                   </IconSize>
                 </a>
               ) : (
-                <TypographyP className="text-foreground truncate">{commentData.postTitle || "—"}</TypographyP>
+                <TypographyP className="truncate">{commentData.postTitle || "—"}</TypographyP>
               )}
             </FieldItem>
 
             {/* Timestamps */}
-            <div className="grid gap-6 grid-cols-1 sm:grid-cols-2">
+            <Grid cols={2} gap={6}>
               <FieldItem icon={Calendar} label="Ngày tạo">
-                <TypographyP className="text-foreground">
+                <TypographyP>
                   {commentData.createdAt ? formatDateVi(commentData.createdAt) : "—"}
                 </TypographyP>
               </FieldItem>
 
               <FieldItem icon={Clock} label="Cập nhật lần cuối">
-                <TypographyP className="text-foreground">
+                <TypographyP>
                   {commentData.updatedAt ? formatDateVi(commentData.updatedAt) : "—"}
                 </TypographyP>
               </FieldItem>
-            </div>
-          </div>
+            </Grid>
+          </Flex>
         )
       },
     },

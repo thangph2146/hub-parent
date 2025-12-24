@@ -2,6 +2,7 @@ import { useMemo } from "react"
 import { TypographySpanSmall, TypographySpanSmallMuted } from "@/components/ui/typography"
 import { Switch } from "@/components/ui/switch"
 import type { DataTableColumn } from "@/components/tables"
+import { Flex } from "@/components/ui/flex"
 import { useDynamicFilterOptions } from "@/features/admin/resources/hooks/use-dynamic-filter-options"
 import { apiRoutes } from "@/lib/api/routes"
 import type { RoleRow } from "../types"
@@ -76,7 +77,7 @@ export const useRoleColumns = ({ togglingRoles, canManage, onToggleStatus }: Use
         headerClassName: "min-w-[150px] max-w-[300px]",
         cell: (row) =>
           row.permissions.length > 0 ? (
-            <div className="flex flex-wrap gap-1">
+            <Flex wrap={true} gap={1}>
               {row.permissions.slice(0, 3).map((perm) => (
                 <TypographySpanSmallMuted
                   key={perm}
@@ -90,7 +91,7 @@ export const useRoleColumns = ({ togglingRoles, canManage, onToggleStatus }: Use
                   +{row.permissions.length - 3}
                 </TypographySpanSmallMuted>
               )}
-            </div>
+            </Flex>
           ) : (
             <span className="text-muted-foreground">-</span>
           ),
@@ -116,7 +117,7 @@ export const useRoleColumns = ({ togglingRoles, canManage, onToggleStatus }: Use
               Đã xóa
             </TypographySpanSmall>
           ) : (
-            <div className="flex items-center gap-2">
+            <Flex align="center" gap={2}>
               <Switch
                 checked={row.isActive}
                 disabled={togglingRoles.has(row.id) || !canManage || row.name === "super_admin"}
@@ -126,7 +127,7 @@ export const useRoleColumns = ({ togglingRoles, canManage, onToggleStatus }: Use
               <TypographySpanSmallMuted>
                 {row.isActive ? "Hoạt động" : "Tạm khóa"}
               </TypographySpanSmallMuted>
-            </div>
+            </Flex>
           ),
       },
       {

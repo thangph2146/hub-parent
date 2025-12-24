@@ -1,6 +1,7 @@
 "use client"
 
 import { TypographyH4, TypographyPMuted, IconSize } from "@/components/ui/typography"
+import { Flex } from "@/components/ui/flex"
 
 import * as React from "react"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
@@ -41,9 +42,9 @@ export const AccountAvatarField = ({
   }, [])
 
   return (
-    <div className="space-y-6">
+    <Flex direction="col" gap={6}>
       <Card className="overflow-hidden border-2 bg-gradient-to-br from-card via-card to-muted/20 shadow-sm">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 p-6">
+        <Flex direction="col" align="start" gap={6} className="sm:flex-row sm:items-center p-6">
           <div className="relative group">
             <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 via-primary/10 to-transparent rounded-full blur opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             <Avatar className="relative h-28 w-28 border-4 border-background shadow-lg ring-2 ring-primary/10">
@@ -63,13 +64,13 @@ export const AccountAvatarField = ({
               </AvatarFallback>
             </Avatar>
             {hasAvatar && !imageError && (
-              <div className="absolute -bottom-1 -right-1 h-7 w-7 rounded-full bg-green-500 border-[3px] border-background flex items-center justify-center shadow-md">
+              <Flex align="center" justify="center" className="absolute -bottom-1 -right-1 h-7 w-7 rounded-full bg-green-500 border-[3px] border-background shadow-md">
                 <CheckCircle2 className="h-4 w-4 text-white" />
-              </div>
+              </Flex>
             )}
           </div>
-          <div className="flex-1 min-w-0 space-y-4">
-            <div className="space-y-2">
+          <Flex direction="col" gap={4} className="flex-1 min-w-0">
+            <Flex direction="col" gap={2}>
               <Input
                 type="text"
                 value={avatarUrl}
@@ -97,14 +98,14 @@ export const AccountAvatarField = ({
                   Xóa ảnh đại diện
                 </Button>
               )}
-            </div>
+            </Flex>
             <TypographyPMuted>
               Nhập URL của ảnh đại diện hoặc để trống để sử dụng chữ cái đầu
             </TypographyPMuted>
-          </div>
-        </div>
+          </Flex>
+        </Flex>
       </Card>
-    </div>
+    </Flex>
   )
 }
 

@@ -2,6 +2,7 @@ import { cn } from "@/lib/utils";
 import Image from "next/image";
 import { ReactNode } from "react";
 import { ContentCard } from "./content-card";
+import { Flex } from "@/components/ui/flex";
 
 const DEFAULT_IMAGE_HEIGHT = "h-[200px] sm:h-[250px] lg:h-[350px] xl:h-[400px]";
 
@@ -39,15 +40,18 @@ export const SectionWithImage = ({
   children,
 }: SectionWithImageProps) => {
   return (
-    <div
+    <Flex
+      direction="col"
+      align="center"
+      gap={8}
       className={cn(
-        "flex flex-col lg:flex-row gap-8 lg:gap-16 items-center",
+        "w-full lg:flex-row lg:gap-16",
         reverse && "lg:flex-row-reverse",
         className
       )}
     >
       {/* Content */}
-      <div className="flex-1 w-full lg:max-w-lg xl:max-w-xl">
+      <Flex direction="col" className="flex-1 w-full lg:max-w-lg xl:max-w-xl">
         <ContentCard
           title={title}
           description={description}
@@ -60,7 +64,7 @@ export const SectionWithImage = ({
         >
           {children}
         </ContentCard>
-      </div>
+      </Flex>
 
       {/* Image */}
       <div
@@ -80,7 +84,7 @@ export const SectionWithImage = ({
           quality={75}
         />
       </div>
-    </div>
+    </Flex>
   );
 }
 

@@ -1,6 +1,7 @@
 import { CharacterLimitPlugin as LexicalCharacterLimitPlugin } from "@lexical/react/LexicalCharacterLimitPlugin"
 import { TypographySpanSmallMuted } from "@/components/ui/typography"
 import { cn } from "@/lib/utils"
+import { textColors } from "@/lib/typography"
 
 export function CharacterLimitPlugin({
   maxLength,
@@ -16,8 +17,7 @@ export function CharacterLimitPlugin({
       renderer={(number) => (
         <TypographySpanSmallMuted
           className={cn(
-            "px-1",
-            number.remainingCharacters <= 0 ? "text-destructive" : ""
+            number.remainingCharacters <= 0 ? textColors.destructive : ""
           )}
         >
           {number.remainingCharacters}

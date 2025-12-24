@@ -38,6 +38,8 @@ import { resourceLogger } from "@/lib/config/resource-logger";
 import { usePermissions } from "@/hooks/use-permissions";
 import { PERMISSIONS } from "@/lib/permissions";
 import { TypographyH2, TypographyP, TypographyPLargeMuted, TypographyPMuted, TypographyPSmallMuted, IconSize } from "@/components/ui/typography";
+import { Flex } from "@/components/ui/flex";
+import { Grid } from "@/components/ui/grid";
 
 export interface PostDetailData {
   id: string;
@@ -123,23 +125,23 @@ export const PostDetailClient = ({
         const postData = data as PostDetailData;
 
         return (
-          <div className="space-y-8">
-            <div className="space-y-4">
+          <Flex direction="col" gap={8}>
+            <Flex direction="col" gap={4}>
+              {/* Featured Image */}
               {postData.image && (
-                <div className="relative aspect-[16/9]  max-w-5xl mx-auto">
+                <Flex align="center" justify="center" className="relative aspect-[16/9] max-w-2xl mx-auto w-full overflow-hidden rounded-lg">
                   <Image
                     src={postData.image}
                     alt={postData.title || "Ảnh bài viết"}
-                    width={1920}
-                    height={1080}
+                    fill
                     className="object-cover"
                     sizes="(min-width: 1280px) 1000px, 90vw"
                     priority
                   />
-                </div>
+                </Flex>
               )}
 
-              <div className="space-y-2">
+              <Flex direction="col" gap={2}>
                 <TypographyH2>
                   {postData.title || "Chưa có tiêu đề"}
                 </TypographyH2>
@@ -148,10 +150,10 @@ export const PostDetailClient = ({
                     {postData.excerpt}
                   </TypographyPLargeMuted>
                 )}
-              </div>
-            </div>
+              </Flex>
+            </Flex>
 
-            <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+            <Grid cols={3} gap={6}>
               <FieldItem icon={Hash} label="Slug">
                 <TypographyP className="font-mono break-all">
                   {postData.slug || "---"}
@@ -159,37 +161,37 @@ export const PostDetailClient = ({
               </FieldItem>
 
               <FieldItem icon={User} label="Tác giả">
-                <div className="space-y-0.5">
+                <Flex direction="col" gap={0.5}>
                   <TypographyP>
                     {postData.author.name || "Không rõ tên"}
                   </TypographyP>
                   <TypographyPSmallMuted className="line-clamp-1">
                     {postData.author.email}
                   </TypographyPSmallMuted>
-                </div>
+                </Flex>
               </FieldItem>
 
               {postData.categories && postData.categories.length > 0 && (
                 <FieldItem icon={Tag} label="Danh mục">
-                  <div className="flex flex-wrap gap-1.5">
+                  <Flex wrap={true} gap={1.5}>
                     {postData.categories.map((category) => (
                       <Badge key={category.id} variant="default">
                         {category.name}
                       </Badge>
                     ))}
-                  </div>
+                  </Flex>
                 </FieldItem>
               )}
 
               {postData.tags && postData.tags.length > 0 && (
                 <FieldItem icon={Tags} label="Thẻ tag">
-                  <div className="flex flex-wrap gap-1.5">
+                  <Flex wrap={true} gap={1.5}>
                     {postData.tags.map((tag) => (
                       <Badge key={tag.id} variant="secondary">
                         {tag.name}
                       </Badge>
                     ))}
-                  </div>
+                  </Flex>
                 </FieldItem>
               )}
 
@@ -197,7 +199,7 @@ export const PostDetailClient = ({
                 icon={postData.published ? Eye : EyeOff}
                 label="Trạng thái"
               >
-                <div className="flex items-center gap-2">
+                <Flex align="center" gap={2}>
                   {postData.published ? (
                     <>
                       <IconSize size="sm">
@@ -217,7 +219,7 @@ export const PostDetailClient = ({
                       </TypographyP>
                     </>
                   )}
-                </div>
+                </Flex>
               </FieldItem>
 
               {postData.publishedAt && (
@@ -227,9 +229,9 @@ export const PostDetailClient = ({
                   </TypographyP>
                 </FieldItem>
               )}
-            </div>
+            </Grid>
 
-            <div className="grid gap-6 grid-cols-1 sm:grid-cols-3">
+            <Grid cols={3} gap={6}>
               <FieldItem icon={Clock} label="Ngày tạo">
                 <TypographyP>
                   {formatDateVi(postData.createdAt)}
@@ -249,8 +251,8 @@ export const PostDetailClient = ({
                   </TypographyP>
                 </FieldItem>
               )}
-            </div>
-          </div>
+            </Grid>
+          </Flex>
         );
       },
     },
@@ -279,7 +281,7 @@ export const PostDetailClient = ({
         }
 
         return (
-          <div className="w-full max-w-5xl mx-auto space-y-4 ">
+          <Flex direction="col" gap={4} className="w-full max-w-5xl mx-auto">
             {editorState ? (
               <Editor editorSerializedState={editorState} readOnly={true} />
             ) : (
@@ -289,7 +291,7 @@ export const PostDetailClient = ({
                 </TypographyPMuted>
               </Card>
             )}
-          </div>
+          </Flex>
         );
       },
     },

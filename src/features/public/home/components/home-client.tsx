@@ -1,6 +1,7 @@
 "use client";
 
 import { IconSize, TypographyDescriptionSmall, TypographyH2, TypographySpan } from "@/components/ui/typography";
+import { Button } from "@/components/ui/button";
 
 import {
   Users,
@@ -20,6 +21,8 @@ import { ContactSection } from "./contact-section";
 import { PostCard } from "@/components/public/post/post-card";
 import Link from "next/link";
 import type { Post } from "@/features/public/post/types";
+import { Flex } from "@/components/ui/flex";
+import { Grid } from "@/components/ui/grid";
 
 // Routes constants - Lấy từ appFeatures
 const HOME_ROUTES = {
@@ -34,7 +37,7 @@ export interface HomeClientProps {
 
 export const HomeClient = ({ featuredPosts = [] }: HomeClientProps) => {
   return (
-    <div className="relative isolate bg-background">
+    <Flex direction="col" className="relative isolate bg-background">
       {/* Hero Section */}
       <HeroSection
         title="Hệ thống Kết nối Phụ huynh"
@@ -96,7 +99,7 @@ export const HomeClient = ({ featuredPosts = [] }: HomeClientProps) => {
       </Section>
 
       {/* Guide & Register Section */}
-      <Section padding="py-0">
+      <Section>
         {/* Top Row - Guide Section */}
         <SectionWithImage
           title="Hướng dẫn cho Phụ huynh"
@@ -134,32 +137,34 @@ export const HomeClient = ({ featuredPosts = [] }: HomeClientProps) => {
       {/* Featured Posts Section */}
       {featuredPosts.length > 0 && (
         <Section padding="py-12" background="bg-background">
-          <div className="flex flex-col gap-8">
+          <Flex direction="col" gap={8}>
             {/* Header */}
-            <div className="flex items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <div>
-                  <TypographyH2 className="tracking-tight">
-                    Bài viết nổi bật
-                  </TypographyH2>
-                  <TypographyDescriptionSmall className="mt-1">
-                    Các bài viết mới nhất từ nhà trường
-                  </TypographyDescriptionSmall>
-                </div>
-              </div>
-              <Link
-                href="/bai-viet"
-                className="hidden sm:flex items-center gap-2 text-primary hover:text-primary/80 transition-colors"
-              >
-                <TypographySpan>Xem tất cả</TypographySpan>
-                <IconSize size="sm">
-                  <ArrowRight />
-                </IconSize>
-              </Link>
-            </div>
+            <Flex align="center" justify="between" gap={4} className="w-full">
+              <Flex direction="col" gap={1}>
+                <TypographyH2>
+                  Bài viết nổi bật
+                </TypographyH2>
+                <TypographyDescriptionSmall>
+                  Các bài viết mới nhất từ nhà trường
+                </TypographyDescriptionSmall>
+              </Flex>
+              <Flex className="hidden sm:flex">
+                <Link
+                  href="/bai-viet"
+                  className="text-primary hover:text-primary/80 transition-colors"
+                >
+                  <Flex align="center" gap={2}>
+                    <TypographySpan>Xem tất cả</TypographySpan>
+                    <IconSize size="sm">
+                      <ArrowRight />
+                    </IconSize>
+                  </Flex>
+                </Link>
+              </Flex>
+            </Flex>
 
             {/* Posts Grid */}
-            <div className="grid gap-6 sm:gap-8 md:grid-cols-2 lg:grid-cols-3">
+            <Grid cols={3} gap={8}>
               {featuredPosts.map((post, index) => (
                 <PostCard
                   key={post.id}
@@ -167,21 +172,22 @@ export const HomeClient = ({ featuredPosts = [] }: HomeClientProps) => {
                   priority={index < 3}
                 />
               ))}
-            </div>
+            </Grid>
 
             {/* Mobile View All Button */}
-            <div className="flex sm:hidden justify-center">
-              <Link
-                href="/bai-viet"
-                className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
-              >
-                <TypographySpan>Xem tất cả bài viết</TypographySpan>
-                <IconSize size="sm">
-                  <ArrowRight />
-                </IconSize>
-              </Link>
-            </div>
-          </div>
+            <Flex justify="center" className="sm:hidden">
+              <Button asChild variant="default" size="sm">
+                <Link href="/bai-viet">
+                  <Flex align="center" gap={2}>
+                    <TypographySpan>Xem tất cả bài viết</TypographySpan>
+                    <IconSize size="sm">
+                      <ArrowRight />
+                    </IconSize>
+                  </Flex>
+                </Link>
+              </Button>
+            </Flex>
+          </Flex>
         </Section>
       )}
 
@@ -195,7 +201,7 @@ export const HomeClient = ({ featuredPosts = [] }: HomeClientProps) => {
             items: [
               {
                 icon: (
-                  <IconSize size="md" className="text-primary">
+                  <IconSize size="md">
                     <Phone />
                   </IconSize>
                 ),
@@ -203,7 +209,7 @@ export const HomeClient = ({ featuredPosts = [] }: HomeClientProps) => {
               },
               {
                 icon: (
-                  <IconSize size="md" className="text-primary">
+                  <IconSize size="md">
                     <Mail />
                   </IconSize>
                 ),
@@ -211,7 +217,7 @@ export const HomeClient = ({ featuredPosts = [] }: HomeClientProps) => {
               },
               {
                 icon: (
-                  <IconSize size="md" className="text-primary">
+                  <IconSize size="md">
                     <GraduationCap />
                   </IconSize>
                 ),
@@ -222,6 +228,6 @@ export const HomeClient = ({ featuredPosts = [] }: HomeClientProps) => {
           formComponent={<ContactForm />}
         />
       </Section>
-    </div>
+    </Flex>
   );
 }

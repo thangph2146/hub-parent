@@ -5,6 +5,7 @@ import { $getSelection } from "lexical"
 import { useToolbarContext } from "@/components/editor/context/toolbar-context"
 import { blockTypeToBlockName } from "@/components/editor/plugins/toolbar/block-format/block-format-data"
 import { SelectItem } from "@/components/ui/select"
+import { Flex } from "@/components/ui/flex"
 
 export function FormatHeading({ levels = [] }: { levels: HeadingTagType[] }) {
   const { activeEditor, blockType } = useToolbarContext()
@@ -24,10 +25,10 @@ export function FormatHeading({ levels = [] }: { levels: HeadingTagType[] }) {
       value={level}
       onPointerDown={() => formatHeading(level)}
     >
-      <div className="flex items-center gap-1">
+      <Flex align="center" gap={1}>
         {blockTypeToBlockName[level].icon}
         {blockTypeToBlockName[level].label}
-      </div>
+      </Flex>
     </SelectItem>
   ))
 }

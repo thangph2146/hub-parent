@@ -16,6 +16,7 @@ import {
 import { useMarkNotificationRead } from "@/hooks/use-notifications"
 import type { Notification } from "@/hooks/use-notifications"
 import { Button } from "@/components/ui/button"
+import { Flex } from "@/components/ui/flex"
 import { cn } from "@/lib/utils"
 import { logger } from "@/lib/config/logger"
 import { useSession } from "@/lib/auth"
@@ -160,7 +161,7 @@ export function NotificationItem({
         }
       }}
     >
-      <div className="flex items-start gap-3">
+      <Flex align="start" gap={3}>
         <div className="mt-0.5 flex-shrink-0">
           <IconSize
             size="md"
@@ -177,19 +178,15 @@ export function NotificationItem({
           </IconSize>
         </div>
 
-        <div className="flex-1 space-y-1">
-          <div className="flex items-start justify-between gap-2">
-            <TypographyP
-              className={cn(
-                "leading-none"
-              )}
-            >
+        <Flex direction="col" gap={1} className="w-full flex-1">
+          <Flex align="start" justify="between" gap={2}>
+            <TypographyP className="leading-none">
               {notification.title}
             </TypographyP>
             {!notification.isRead && (
               <div className="h-2 w-2 flex-shrink-0 rounded-full bg-primary" />
             )}
-          </div>
+          </Flex>
 
           {notification.description && (
             <TypographyPMuted
@@ -202,9 +199,9 @@ export function NotificationItem({
             </TypographyPMuted>
           )}
 
-          <div className="flex items-center justify-between pt-2">
-            <TypographyPSmallMuted>{timeAgo}</TypographyPSmallMuted>
-            <div className="flex items-center gap-2">
+          <Flex align="center" justify="between" gap={2} className="w-full">
+            <TypographyPSmallMuted className="w-full">{timeAgo}</TypographyPSmallMuted>
+            <Flex align="end" justify="end" gap={2} className="w-full">
               <Button
                 variant={notification.isRead ? "outline" : "default"}
                 size="sm"
@@ -238,10 +235,10 @@ export function NotificationItem({
                 )}
               </Button>
            
-            </div>
-          </div>
-        </div>
-      </div>
+            </Flex>
+          </Flex>
+        </Flex>
+      </Flex>
     </div>
   )
 }

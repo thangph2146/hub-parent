@@ -3,6 +3,7 @@
 import { AlertTriangle } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
+import { Flex } from "@/components/ui/flex"
 import { IconSize } from "@/components/ui/typography"
 import {
   Dialog,
@@ -45,11 +46,13 @@ export function ConfirmDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+          <DialogTitle asChild>
+            <Flex align="center" gap={2}>
             <IconSize size="md">
-              <AlertTriangle className="text-destructive" />
+              <AlertTriangle />
             </IconSize>
-            {title}
+              <span>{title}</span>
+            </Flex>
           </DialogTitle>
           {description && (
             <DialogDescription className="pt-2">{description}</DialogDescription>

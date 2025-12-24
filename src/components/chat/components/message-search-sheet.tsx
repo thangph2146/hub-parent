@@ -7,6 +7,7 @@
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Button } from "@/components/ui/button"
+import { Flex } from "@/components/ui/flex"
 import { Search, X } from "lucide-react"
 import { TypographyP, TypographyPSmallMuted, TypographyPMuted, IconSize } from "@/components/ui/typography"
 import type { Message } from "../types"
@@ -29,7 +30,7 @@ export function MessageSearchSheet({
   onMessageClick,
 }: MessageSearchSheetProps) {
   return (
-    <div className="space-y-4 mt-4 p-4">
+    <Flex direction="col" gap={4} className="mt-4 p-4">
       <div className="relative">
         <IconSize size="sm" className="absolute left-2 top-1/2 transform -translate-y-1/2 text-muted-foreground"><Search /></IconSize>
         <Input
@@ -64,7 +65,7 @@ export function MessageSearchSheet({
                 onClick={() => onMessageClick(message.id)}
                 className="w-full text-left p-3 rounded-lg border hover:bg-accent/10 transition-colors"
               >
-                <div className="flex items-start gap-2">
+                <Flex align="start" gap={2}>
                   <div className="flex-1 min-w-0">
                     <TypographyPSmallMuted className="mb-1">
                       {formatMessageTime(message.timestamp)}
@@ -73,18 +74,18 @@ export function MessageSearchSheet({
                       {highlightText(message.content, searchQuery)}
                     </TypographyP>
                   </div>
-                </div>
+                </Flex>
               </button>
             ))}
           </div>
         </ScrollArea>
       )}
       {searchQuery && messages.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-8 text-center">
+        <Flex direction="col" align="center" justify="center" className="py-8 text-center">
           <TypographyPMuted>Không tìm thấy tin nhắn nào</TypographyPMuted>
           <TypographyPSmallMuted className="mt-1">Thử tìm kiếm với từ khóa khác</TypographyPSmallMuted>
-        </div>
+        </Flex>
       )}
-    </div>
+    </Flex>
   )
 }
