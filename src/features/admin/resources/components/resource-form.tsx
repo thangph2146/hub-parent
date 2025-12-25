@@ -454,7 +454,7 @@ export const ResourceForm = <T extends Record<string, unknown>>({
         id={fieldName}
         direction="col"
         minWidth={isFullWidth ? "full" : "120"}
-        className={cn(isEditorField ? "col-span-full" : (isFullWidth && "@md:col-span-full"))}
+        className={cn(isEditorField ? "col-span-full" : (isFullWidth && "@md:col-span-full"), field.className)}
       >
         <Field orientation={isCheckbox ? undefined : "responsive"}>
           {(!isCheckbox || field.icon) && (

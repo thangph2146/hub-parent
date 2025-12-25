@@ -3,11 +3,11 @@
 import * as React from "react"
 import { useCallback, useState } from "react"
 import { User, Mail, Phone, FileText, MessageSquare, AlertCircle, UserCheck, Calendar, Clock, Edit, CheckCircle2, XCircle } from "lucide-react"
-import { 
-  ResourceDetailClient, 
+import {
+  ResourceDetailClient,
   FieldItem,
-  type ResourceDetailField, 
-  type ResourceDetailSection 
+  type ResourceDetailField,
+  type ResourceDetailSection
 } from "@/features/admin/resources/components"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -22,10 +22,10 @@ import { PERMISSIONS } from "@/lib/permissions"
 import { useToast } from "@/hooks/use-toast"
 import { useContactRequestActions } from "../hooks/use-contact-request-actions"
 import { useContactRequestFeedback } from "../hooks/use-contact-request-feedback"
-import { 
-  CONTACT_REQUEST_LABELS, 
-  CONTACT_REQUEST_STATUS_COLORS, 
-  CONTACT_REQUEST_PRIORITY_COLORS 
+import {
+  CONTACT_REQUEST_LABELS,
+  CONTACT_REQUEST_STATUS_COLORS,
+  CONTACT_REQUEST_PRIORITY_COLORS
 } from "../constants"
 import { TypographyP, TypographyPMuted, TypographyPSmallMuted, IconSize } from "@/components/ui/typography"
 import { Flex } from "@/components/ui/flex"
@@ -65,7 +65,7 @@ export const ContactRequestDetailClient = ({ contactRequestId, contactRequest, b
   const { hasAnyPermission } = usePermissions()
   const { showFeedback } = useContactRequestFeedback()
   const { toast } = useToast()
-  
+
   // Check permissions
   const canUpdate = hasAnyPermission([PERMISSIONS.CONTACT_REQUESTS_UPDATE, PERMISSIONS.CONTACT_REQUESTS_MANAGE])
   const canDelete = hasAnyPermission([PERMISSIONS.CONTACT_REQUESTS_MANAGE])
@@ -151,8 +151,8 @@ export const ContactRequestDetailClient = ({ contactRequestId, contactRequest, b
           description: error instanceof Error
             ? error.message
             : checked
-            ? "Không thể đánh dấu đã đọc yêu cầu liên hệ."
-            : "Không thể đánh dấu chưa đọc yêu cầu liên hệ.",
+              ? "Không thể đánh dấu đã đọc yêu cầu liên hệ."
+              : "Không thể đánh dấu chưa đọc yêu cầu liên hệ.",
         })
       } finally {
         setIsToggling(false)
@@ -170,11 +170,11 @@ export const ContactRequestDetailClient = ({ contactRequestId, contactRequest, b
       description: "Thông tin liên hệ và nội dung yêu cầu",
       fieldsContent: (_fields, data) => {
         const requestData = data as ContactRequestDetailData
-        
+
         return (
           <Flex direction="col" gap={6}>
             {/* Contact Info */}
-            <Grid cols="2-lg" gap={6} fullWidth>
+            <Grid cols="3-lg" gap={6} fullWidth>
               <FieldItem icon={User} label="Tên người liên hệ">
                 <TypographyP>
                   {requestData.name || "—"}
@@ -189,18 +189,17 @@ export const ContactRequestDetailClient = ({ contactRequestId, contactRequest, b
                   {requestData.email || "—"}
                 </a>
               </FieldItem>
+              {requestData.phone && (
+                <FieldItem icon={Phone} label="Số điện thoại">
+                  <a
+                    href={`tel:${requestData.phone}`}
+                    className="text-primary hover:underline transition-colors"
+                  >
+                    {requestData.phone}
+                  </a>
+                </FieldItem>
+              )}
             </Grid>
-
-            {requestData.phone && (
-              <FieldItem icon={Phone} label="Số điện thoại">
-                <a
-                  href={`tel:${requestData.phone}`}
-                  className="text-primary hover:underline transition-colors"
-                >
-                  {requestData.phone}
-                </a>
-              </FieldItem>
-            )}
 
             {/* Subject */}
             <FieldItem icon={FileText} label="Tiêu đề">
@@ -210,21 +209,13 @@ export const ContactRequestDetailClient = ({ contactRequestId, contactRequest, b
             </FieldItem>
 
             {/* Content */}
-            <Card className="border border-border/50" padding="lg">
-              <Flex align="start" gap={3} fullWidth>
-                <Flex align="center" justify="center" shrink rounded="lg" bg="muted" className="h-9 w-9">
-                  <IconSize size="sm" className="text-muted-foreground">
-                    <MessageSquare />
-                  </IconSize>
-                </Flex>
-                <Flex direction="col" gap={2} fullWidth flex="1" minWidth="0">
-                  <TypographyP>Nội dung</TypographyP>
-                  <TypographyP className="leading-relaxed whitespace-pre-wrap break-words">
-                    {requestData.content || "—"}
-                  </TypographyP>
-                </Flex>
-              </Flex>
-            </Card>
+            <FieldItem icon={MessageSquare} label="Nội dung">
+              <Card className="border border-border/50" padding="lg">
+                <TypographyP>
+                  {requestData.content || "—"}
+                </TypographyP>
+              </Card>
+            </FieldItem>
           </Flex>
         )
       },
@@ -235,35 +226,35 @@ export const ContactRequestDetailClient = ({ contactRequestId, contactRequest, b
       description: "Trạng thái xử lý, độ ưu tiên và người được giao",
       fieldsContent: (_fields, data) => {
         const requestData = data as ContactRequestDetailData
-        
+
         return (
-          <Flex direction="col" gap={6}>
+            <Flex direction="col" gap={6}>
             {/* Status & Priority */}
             <Grid cols="2-lg" gap={6} fullWidth>
               <FieldItem icon={AlertCircle} label="Trạng thái">
-                <Badge variant={CONTACT_REQUEST_STATUS_COLORS[requestData.status] || "default"}>
+                <Badge variant={CONTACT_REQUEST_STATUS_COLORS[requestData.status] || "default"} className="w-fit">
                   {(requestData.status === "NEW" && CONTACT_REQUEST_LABELS.NEW) ||
-                   (requestData.status === "IN_PROGRESS" && CONTACT_REQUEST_LABELS.IN_PROGRESS) ||
-                   (requestData.status === "RESOLVED" && CONTACT_REQUEST_LABELS.RESOLVED) ||
-                   (requestData.status === "CLOSED" && CONTACT_REQUEST_LABELS.CLOSED) ||
-                   requestData.status}
+                    (requestData.status === "IN_PROGRESS" && CONTACT_REQUEST_LABELS.IN_PROGRESS) ||
+                    (requestData.status === "RESOLVED" && CONTACT_REQUEST_LABELS.RESOLVED) ||
+                    (requestData.status === "CLOSED" && CONTACT_REQUEST_LABELS.CLOSED) ||
+                    requestData.status}
                 </Badge>
               </FieldItem>
 
               <FieldItem icon={AlertCircle} label="Độ ưu tiên">
-                <Badge variant={CONTACT_REQUEST_PRIORITY_COLORS[requestData.priority] || "default"}>
+                <Badge variant={CONTACT_REQUEST_PRIORITY_COLORS[requestData.priority] || "default"} className="w-fit">
                   {(requestData.priority === "LOW" && CONTACT_REQUEST_LABELS.LOW) ||
-                   (requestData.priority === "MEDIUM" && CONTACT_REQUEST_LABELS.MEDIUM) ||
-                   (requestData.priority === "HIGH" && CONTACT_REQUEST_LABELS.HIGH) ||
-                   (requestData.priority === "URGENT" && CONTACT_REQUEST_LABELS.URGENT) ||
-                   requestData.priority}
+                    (requestData.priority === "MEDIUM" && CONTACT_REQUEST_LABELS.MEDIUM) ||
+                    (requestData.priority === "HIGH" && CONTACT_REQUEST_LABELS.HIGH) ||
+                    (requestData.priority === "URGENT" && CONTACT_REQUEST_LABELS.URGENT) ||
+                    requestData.priority}
                 </Badge>
               </FieldItem>
             </Grid>
 
             {/* Read Status */}
-            <FieldItem 
-              icon={requestData.isRead ? CheckCircle2 : XCircle} 
+            <FieldItem
+              icon={requestData.isRead ? CheckCircle2 : XCircle}
               label="Đã đọc"
             >
               <Flex align="center" gap={3}>
@@ -278,9 +269,11 @@ export const ContactRequestDetailClient = ({ contactRequestId, contactRequest, b
                 </TypographyPMuted>
               </Flex>
               {!canUpdate && (
-                <TypographyPSmallMuted className="mt-1.5">
-                  Bạn không có quyền thay đổi trạng thái đọc
-                </TypographyPSmallMuted>
+                <Flex className="mt-1.5">
+                  <TypographyPSmallMuted>
+                    Bạn không có quyền thay đổi trạng thái đọc
+                  </TypographyPSmallMuted>
+                </Flex>
               )}
             </FieldItem>
 
@@ -302,23 +295,21 @@ export const ContactRequestDetailClient = ({ contactRequestId, contactRequest, b
       description: "Ngày tạo và cập nhật lần cuối",
       fieldsContent: (_fields, data) => {
         const requestData = data as ContactRequestDetailData
-        
-        return (
-          <Flex direction="col" gap={6}>
-            <Grid cols="2-lg" gap={6} fullWidth>
-              <FieldItem icon={Calendar} label="Ngày tạo">
-                <TypographyP>
-                  {requestData.createdAt ? formatDateVi(requestData.createdAt) : "—"}
-                </TypographyP>
-              </FieldItem>
 
-              <FieldItem icon={Clock} label="Cập nhật lần cuối">
-                <TypographyP>
-                  {requestData.updatedAt ? formatDateVi(requestData.updatedAt) : "—"}
-                </TypographyP>
-              </FieldItem>
-            </Grid>
-          </Flex>
+        return (
+          <Grid cols="2-lg" gap={6} fullWidth>
+            <FieldItem icon={Calendar} label="Ngày tạo">
+              <TypographyP>
+                {requestData.createdAt ? formatDateVi(requestData.createdAt) : "—"}
+              </TypographyP>
+            </FieldItem>
+
+            <FieldItem icon={Clock} label="Cập nhật lần cuối">
+              <TypographyP>
+                {requestData.updatedAt ? formatDateVi(requestData.updatedAt) : "—"}
+              </TypographyP>
+            </FieldItem>
+          </Grid>
         )
       },
     },
