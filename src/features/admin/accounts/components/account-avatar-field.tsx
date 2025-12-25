@@ -10,7 +10,6 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { CheckCircle2, X } from "lucide-react"
 import { getUserInitials } from "@/features/admin/resources/utils"
-import { cn } from "@/lib/utils"
 
 interface AccountAvatarFieldProps {
   value: unknown
@@ -44,9 +43,9 @@ export const AccountAvatarField = ({
   return (
     <Flex direction="col" gap={6}>
       <Card className="overflow-hidden border-2 bg-gradient-to-br from-card via-card to-muted/20 shadow-sm">
-        <Flex direction="col" align="start" gap={6} className="sm:flex-row sm:items-center p-6">
-          <div className="relative group">
-            <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 via-primary/10 to-transparent rounded-full blur opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        <Flex direction="col" align="start" gap={6} padding="lg" fullWidth className="sm:flex-row">
+          <Flex position="relative" className="group">
+            <Flex position="absolute" className="-inset-1 bg-gradient-to-r from-primary/20 via-primary/10 to-transparent rounded-full blur opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             <Avatar className="relative h-28 w-28 border-4 border-background shadow-lg ring-2 ring-primary/10">
               <AvatarImage
                 src={hasAvatar && !imageError ? avatarUrl : undefined}
@@ -64,12 +63,12 @@ export const AccountAvatarField = ({
               </AvatarFallback>
             </Avatar>
             {hasAvatar && !imageError && (
-              <Flex align="center" justify="center" className="absolute -bottom-1 -right-1 h-7 w-7 rounded-full bg-green-500 border-[3px] border-background shadow-md">
+              <Flex align="center" justify="center" position="absolute" className="-bottom-1 -right-1 h-7 w-7 rounded-full bg-green-500 border-[3px] border-background shadow-md">
                 <CheckCircle2 className="h-4 w-4 text-white" />
               </Flex>
             )}
-          </div>
-          <Flex direction="col" gap={4} className="flex-1 min-w-0">
+          </Flex>
+          <Flex direction="col" gap={4} flex="1" minWidth="0" fullWidth>
             <Flex direction="col" gap={2}>
               <Input
                 type="text"
@@ -79,7 +78,7 @@ export const AccountAvatarField = ({
                   setImageError(false)
                 }}
                 placeholder={placeholder}
-                className={cn("w-full")}
+                className="w-full"
               />
               {hasAvatar && (
                 <Button

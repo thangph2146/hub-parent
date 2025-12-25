@@ -32,7 +32,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { cn } from "@/lib/utils"
 import { renderFieldInput } from "./form-fields"
 import { applyResourceSegmentToPath } from "@/lib/permissions"
-import { TypographyH1, TypographyH4, TypographyPMuted, TypographySpanMuted, TypographySpanSmall, IconSize } from "@/components/ui/typography"
+import { TypographyH1, TypographyH4, TypographyPMuted, TypographySpanMuted, TypographySpanDestructive, IconSize } from "@/components/ui/typography"
 import { Flex } from "@/components/ui/flex"
 import { Grid } from "@/components/ui/grid"
 
@@ -449,34 +449,35 @@ export const ResourceForm = <T extends Record<string, unknown>>({
     })
 
     return (
-      <div
+      <Flex
         key={fieldName}
         id={fieldName}
-        className={cn("min-w-0", isEditorField ? "col-span-full" : (isFullWidth && "@md:col-span-full"))}
-        style={isFullWidth ? undefined : { minWidth: "200px" }}
+        direction="col"
+        minWidth={isFullWidth ? "full" : "120"}
+        className={cn(isEditorField ? "col-span-full" : (isFullWidth && "@md:col-span-full"))}
       >
         <Field orientation={isCheckbox ? undefined : "responsive"}>
           {(!isCheckbox || field.icon) && (
             <FieldLabel htmlFor={fieldName}>
               {field.icon}
               {field.label}
-              {field.required && <TypographySpanSmall className="text-destructive">*</TypographySpanSmall>}
+              {field.required && <TypographySpanDestructive>*</TypographySpanDestructive>}
             </FieldLabel>
           )}
           {fieldInput}
           {field.description && <FieldDescription>{field.description}</FieldDescription>}
         </Field>
-      </div>
+      </Flex>
     )
   }
 
   const renderSection = (sectionId: string, sectionFields: ResourceFormField<T>[]) => {
     const sectionInfo = sections?.find((s) => s.id === sectionId)
-    const gridCols: 1 | 2 = sectionFields.length >= 2 ? 2 : 1
+    const gridCols = sectionFields.length >= 2 ? ("2-lg" as const) : (1 as const)
 
     return (
       <Flex key={sectionId} direction="col" gap={6} fullWidth>
-        {(sectionInfo?.title || sectionInfo?.description) && (
+        {sectionInfo && (sectionInfo.title || sectionInfo.description) && (
           <Flex direction="col" gap={2} paddingBottom={2} border="b-border-50">
             {sectionInfo.title && <TypographyH4>{sectionInfo.title}</TypographyH4>}
             {sectionInfo.description && <TypographyPMuted>{sectionInfo.description}</TypographyPMuted>}
@@ -492,18 +493,18 @@ export const ResourceForm = <T extends Record<string, unknown>>({
   const { grouped, ungrouped } = groupFieldsBySection()
 
   const formContent = (
-    <form id="resource-form" ref={formRef} onSubmit={handleSubmit} className={cn("w-full", formClassName)}>
+    <form id="resource-form" ref={formRef} onSubmit={handleSubmit} className={formClassName}>
       <Flex direction="col" fullWidth gap={6}>
         {submitError && (
-          <Flex align="center" fullWidth rounded="lg" bg="destructive-text" border="all" padding="md" className="border-destructive/20">
+          <Flex align="center" gap={2} fullWidth rounded="lg" bg="destructive-text" border="all" padding="md" className="border-destructive/20">
             <TypographySpanMuted className="font-medium">{submitError}</TypographySpanMuted>
           </Flex>
         )}
 
-        <Flex direction="col" fullWidth gap={8} className={contentClassName}>
+        <Flex direction="col" gap={8} fullWidth className={contentClassName}>
           {Object.entries(grouped).map(([sectionId, sectionFields]) => renderSection(sectionId, sectionFields))}
           {ungrouped.length > 0 && (
-            <Grid cols={2} fullWidth gap={6}>
+            <Grid cols="2-lg" fullWidth gap={6}>
               {ungrouped.map(renderField)}
             </Grid>
           )}
@@ -513,8 +514,8 @@ export const ResourceForm = <T extends Record<string, unknown>>({
   )
 
 
-  const footer = (
-    <Flex align="center" fullWidth gap={3} wrap className="sm:w-auto">
+  const footerButtons = (
+    <>
       <Button type="button" variant="outline" onClick={handleCancel} disabled={isPending} className="h-9">
         <Flex align="center" gap={2}>
           <IconSize size="sm">{variant === "page" && resolvedBackUrl ? <ArrowLeft /> : <X />}</IconSize>
@@ -526,35 +527,37 @@ export const ResourceForm = <T extends Record<string, unknown>>({
           {isPending ? (
             <>
               <IconSize size="sm"><Loader2 className="animate-spin" /></IconSize>
-              Đang lưu...
+              <span>Đang lưu...</span>
             </>
           ) : (
             <>
               <IconSize size="sm"><Save /></IconSize>
-              {submitLabel || "Lưu"}
+              <span>{submitLabel || "Lưu"}</span>
             </>
           )}
         </Flex>
       </Button>
-    </Flex>
+    </>
   )
 
   if (variant === "dialog") {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="max-w-2xl w-full p-0">
-          <Flex direction="col" fullWidth className="h-full">
+          <Flex direction="col" align="start" justify="start" gap={0} fullWidth height="full">
             <DialogHeader className="px-6 pt-6 pb-4 border-b border-border/50">
               <DialogTitle>{title}</DialogTitle>
               {description && <DialogDescription className="mt-2">{description}</DialogDescription>}
             </DialogHeader>
             <ScrollArea className="max-h-[calc(60dvh)] overflow-y-auto flex-1">
-              <Flex direction="col" fullWidth padding="lg">
+              <Flex direction="col" align="start" justify="start" gap={0} fullWidth padding="lg">
                 {formContent}
               </Flex>
             </ScrollArea>
             <DialogFooter className="px-6 pb-6 pt-4 border-t border-border/50">
-              {footer}
+              <Flex align="center" gap={3}>
+                {footerButtons}
+              </Flex>
             </DialogFooter>
           </Flex>
         </DialogContent>
@@ -562,12 +565,11 @@ export const ResourceForm = <T extends Record<string, unknown>>({
     )
   }
 
-  // Sheet mode
   if (variant === "sheet") {
     return (
       <Sheet open={open} onOpenChange={onOpenChange}>
         <SheetContent>
-          <Flex direction="col" fullWidth className="h-full">
+          <Flex direction="col" fullWidth height="full">
             <SheetHeader className="pb-4 border-b border-border/50">
               <SheetTitle>{title}</SheetTitle>
               {description && <SheetDescription className="mt-2">{description}</SheetDescription>}
@@ -578,7 +580,9 @@ export const ResourceForm = <T extends Record<string, unknown>>({
               </Flex>
             </ScrollArea>
             <SheetFooter className="mt-6 border-t border-border/50 pt-4">
-              {footer}
+              <Flex align="center" gap={3}>
+                {footerButtons}
+              </Flex>
             </SheetFooter>
           </Flex>
         </SheetContent>
@@ -599,13 +603,13 @@ export const ResourceForm = <T extends Record<string, unknown>>({
       </CardContent>
     </Card>
   ) : (
-    <Flex direction="col" fullWidth flex="1" marginX="auto" padding="md" gap={4} className={className}>
+    <Flex direction="col" gap={4} fullWidth flex="1" marginX="auto" padding="md" className={className}>
       {formContent}
     </Flex>
   )
 
   return (
-    <Flex direction="col" fullWidth flex="1" marginX="auto" padding="md" gap={4}>
+    <>
       {(title || resolvedBackUrl) && !showCard && (
         <Flex
           direction="col-lg-row-items-center"
@@ -616,7 +620,7 @@ export const ResourceForm = <T extends Record<string, unknown>>({
           paddingBottom={6}
           border="b-border"
         >
-          <Flex direction="col" fullWidth width="1/3" flex="1" minWidth="0" gap={3}>
+          <Flex direction="col" gap={3} fullWidth flex="1" minWidth="0" className="lg:w-1/3">
             {resolvedBackUrl && (
               <Button variant="outline" size="sm" onClick={handleBack} className="h-8">
                 <Flex align="center" gap={2}>
@@ -642,11 +646,14 @@ export const ResourceForm = <T extends Record<string, unknown>>({
         justify="end"
         gap={3}
         fullWidth
-        className="sticky bottom-0 py-4 -mx-4 px-4 border-t border-border bg-background/95 backdrop-blur-sm z-10"
+        paddingY={4}
+        paddingX={4}
+        border="top"
+        className="sticky bottom-0 bg-background/95 backdrop-blur-sm z-10"
       >
-        {footer}
+        {footerButtons}
       </Flex>
-    </Flex>
+    </>
   )
 }
 

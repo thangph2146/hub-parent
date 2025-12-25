@@ -56,7 +56,7 @@ export const MultipleSelectCombobox = <T,>({
 
   if (allOptions.length === 0) {
     return (
-      <Flex align="center" fullWidth className="h-10 rounded-md border border-input bg-background" paddingX={3} paddingY={2}>
+      <Flex align="center" fullWidth height="10" rounded="md" border="all" bg="background" paddingX={3} paddingY={2}>
         <TypographyPMuted>Không có tùy chọn</TypographyPMuted>
       </Flex>
     )
@@ -146,18 +146,29 @@ export const MultipleSelectCombobox = <T,>({
           </Flex>
           <Flex align="center" gap={1} marginLeft={2} shrink>
             {selectedValues.length > 0 && (
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
+              <Flex
+                as="span"
+                role="button"
+                tabIndex={0}
+                align="center"
+                justify="center"
+                rounded="md"
+                height="auto"
+                cursor="pointer"
+                className="text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-auto w-auto p-0 hover:opacity-70"
                 onClick={handleClear}
-                className="h-auto w-auto p-0 hover:opacity-70"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault()
+                    handleClear(e as unknown as React.MouseEvent<HTMLButtonElement>)
+                  }
+                }}
                 aria-label="Xóa tất cả"
               >
                 <IconSize size="md">
                   <X />
                 </IconSize>
-              </Button>
+              </Flex>
             )}
             <IconSize size="md">
               <ChevronsUpDown />

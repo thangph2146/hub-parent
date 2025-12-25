@@ -602,7 +602,6 @@ export const ChatTemplate = ({
       {/* Desktop: Flex Layout */}
       {!isMobile ? (
         <Flex 
-          direction="row" 
           fullWidth
           className="flex-1 h-full"
           gap={0}

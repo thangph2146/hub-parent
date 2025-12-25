@@ -56,9 +56,9 @@ export const useCommentColumns = ({ togglingComments, canApprove, onToggleApprov
         className: "min-w-[200px] max-w-[400px]",
         headerClassName: "min-w-[200px] max-w-[400px]",
         cell: (row) => (
-          <div className="max-w-[400px] truncate" title={row.content}>
+          <Flex truncate className="max-w-[400px]" title={row.content}>
             {row.content}
-          </div>
+          </Flex>
         ),
       },
       {
@@ -78,9 +78,9 @@ export const useCommentColumns = ({ togglingComments, canApprove, onToggleApprov
         headerClassName: "min-w-[140px] max-w-[180px]",
         cell: (row) =>
           row.deletedAt ? (
-            <TypographySpanSmall className="inline-flex min-w-[88px] items-center justify-center rounded-full bg-rose-100 px-2 py-1 text-rose-700">
-              Đã xóa
-            </TypographySpanSmall>
+            <Flex align="center" justify="center" rounded="full" paddingX={2} paddingY={1} className="inline-flex min-w-[88px] bg-rose-100 text-rose-700">
+              <TypographySpanSmall>Đã xóa</TypographySpanSmall>
+            </Flex>
           ) : (
             <Flex align="center" gap={2}>
               <Switch
@@ -141,9 +141,9 @@ export const useCommentColumns = ({ togglingComments, canApprove, onToggleApprov
         className: "min-w-[150px] max-w-[250px]",
         headerClassName: "min-w-[150px] max-w-[250px]",
         cell: (row) => (
-          <div className="max-w-[250px] truncate" title={row.postTitle}>
+          <Flex truncate className="max-w-[250px]" title={row.postTitle || undefined}>
             {row.postTitle}
-          </div>
+          </Flex>
         ),
       },
       {

@@ -241,12 +241,12 @@ export const ResourceTableClient = <T extends object>({
   }, [viewModes, currentViewId, isMobile, handleViewChange, headerActions])
 
   return (
-    <Flex direction="col" gap={4}>
+    <Flex direction="col" gap={4} fullWidth>
       {(title || viewModeButtons) && (
-        <Flex direction="col-sm-row" align="start" justify="between" gap={2} fullWidth className="sm:items-center">
-          {title ? <TypographyH4 className="truncate">{title}</TypographyH4> : <Flex />}
+        <Flex direction="col" align="start" justify="between" gap={2} fullWidth className="sm:flex-row sm:items-center">
+          {title && <TypographyH4 className="truncate">{title}</TypographyH4>}
           {viewModeButtons && (
-            <Flex align="center" gap={2} wrap className="w-full sm:w-auto sm:justify-end">
+            <Flex align="center" justify="end" gap={2} wrap fullWidth className="sm:w-auto sm:justify-end">
               {viewModeButtons}
             </Flex>
           )}

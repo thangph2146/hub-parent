@@ -125,11 +125,11 @@ export const PostDetailClient = ({
         const postData = data as PostDetailData;
 
         return (
-          <Flex direction="col" gap={8}>
-            <Flex direction="col" gap={4}>
+          <Flex direction="col" gap={8} fullWidth>
+            <Flex direction="col" gap={4} fullWidth className="lg:flex-row">
               {/* Featured Image */}
               {postData.image && (
-                <Flex align="center" justify="center" className="relative aspect-[16/9] max-w-2xl mx-auto w-full overflow-hidden rounded-lg">
+                <Flex align="center" justify="center" position="relative" className="aspect-[16/9] max-w-2xl mx-auto w-full overflow-hidden rounded-lg">
                   <Image
                     src={postData.image}
                     alt={postData.title || "Ảnh bài viết"}
@@ -141,7 +141,7 @@ export const PostDetailClient = ({
                 </Flex>
               )}
 
-              <Flex direction="col" gap={2}>
+              <Flex direction="col" gap={2} fullWidth>
                 <TypographyH2>
                   {postData.title || "Chưa có tiêu đề"}
                 </TypographyH2>
@@ -150,15 +150,16 @@ export const PostDetailClient = ({
                     {postData.excerpt}
                   </TypographyPLargeMuted>
                 )}
-              </Flex>
-            </Flex>
-
-            <Grid cols={3} gap={6}>
-              <FieldItem icon={Hash} label="Slug">
+                  <FieldItem icon={Hash} label="Slug">
                 <TypographyP className="font-mono break-all">
                   {postData.slug || "---"}
                 </TypographyP>
               </FieldItem>
+              </Flex>
+            </Flex>
+
+            <Grid cols="responsive-2" gap={6} fullWidth>
+            
 
               <FieldItem icon={User} label="Tác giả">
                 <Flex direction="col" gap={0.5}>
@@ -229,10 +230,7 @@ export const PostDetailClient = ({
                   </TypographyP>
                 </FieldItem>
               )}
-            </Grid>
-
-            <Grid cols={3} gap={6}>
-              <FieldItem icon={Clock} label="Ngày tạo">
+               <FieldItem icon={Clock} label="Ngày tạo">
                 <TypographyP>
                   {formatDateVi(postData.createdAt)}
                 </TypographyP>
@@ -281,11 +279,11 @@ export const PostDetailClient = ({
         }
 
         return (
-          <Flex direction="col" gap={4} className="w-full max-w-5xl mx-auto">
+          <Flex direction="col" gap={4} fullWidth className="max-w-5xl mx-auto">
             {editorState ? (
               <Editor editorSerializedState={editorState} readOnly={true} />
             ) : (
-              <Card className="border border-border/50 bg-card p-5">
+              <Card className="border border-border/50" padding="lg">
                 <TypographyPMuted>
                   Không có nội dung hoặc định dạng không hợp lệ
                 </TypographyPMuted>
@@ -315,12 +313,13 @@ export const PostDetailClient = ({
           <Button
             variant="outline"
             onClick={() => router.push(`/admin/posts/${detailData.id}/edit`)}
-            className="gap-2"
           >
-            <IconSize size="sm">
-              <Edit />
-            </IconSize>
-            Chỉnh sửa
+            <Flex align="center" gap={2}>
+              <IconSize size="sm">
+                <Edit />
+              </IconSize>
+              Chỉnh sửa
+            </Flex>
           </Button>
         ) : null
       }

@@ -35,7 +35,7 @@ const defaultTableSkeleton: Required<TableSkeletonConfig> = {
 }
 
 const LoadingPlaceholder = () => (
-  <Flex align="center" justify="center" className="min-h-[200px]">
+  <Flex align="center" fullWidth>
     <TypographyPSmallMuted>Loading...</TypographyPSmallMuted>
   </Flex>
 )

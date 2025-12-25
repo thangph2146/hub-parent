@@ -34,7 +34,7 @@ import { ImageGrid } from "./image-grid"
 import { Pagination } from "./pagination"
 import { ViewModeToggle } from "./view-mode-toggle"
 import { DeleteDialogs } from "./delete-dialogs"
-import { TypographySpanSmall, IconSize, TypographyPSmall } from "@/components/ui/typography"
+import { TypographySpanSmall, TypographySpanSmallMuted, IconSize, TypographyPSmall, TypographyPSmallMuted } from "@/components/ui/typography"
 import { Flex } from "@/components/ui/flex"
 
 export const UploadsPageClient = () => {
@@ -259,8 +259,8 @@ export const UploadsPageClient = () => {
 
       <Card>
         <CardHeader>
-          <Flex direction="col" gap={4} className="w-full">
-            <Flex direction="col" gap={2} className="w-full">
+          <Flex direction="col" gap={4} fullWidth>
+            <Flex direction="col" gap={2} fullWidth>
               <CardTitle>
                 <Flex align="center" gap={2}>
                   <IconSize size="md" className="shrink-0">
@@ -279,9 +279,12 @@ export const UploadsPageClient = () => {
             </Flex>
             {!isLoading && allImages.length > 0 && (
               <Flex 
-                direction="col" 
-                gap={3} 
-                className="w-full sm:flex-row sm:items-center sm:justify-between"
+                direction="col"
+                className="sm:flex-row" 
+                gap={3}
+                align="center"
+                justify="between"
+                fullWidth
               >
                 <ViewModeToggle viewMode={viewMode} onViewModeChange={setViewMode} />
                 <Tooltip>
@@ -338,29 +341,29 @@ export const UploadsPageClient = () => {
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <Flex align="center" justify="center" className="py-12">
+            <Flex align="center" className="py-12">
               <IconSize size="2xl">
                 <Loader2 className="animate-spin text-primary" />
               </IconSize>
             </Flex>
           ) : allImages.length === 0 ? (
-            <Flex direction="col" align="center" justify="center" gap={4} className="py-16">
+            <Flex direction="col" align="center" gap={4} className="py-16">
               <IconSize size="4xl" className="text-muted-foreground/50">
                 <ImageIcon />
               </IconSize>
               <Flex direction="col" align="center" gap={2}>
-                <TypographyPSmall className="text-muted-foreground font-medium">
+                <TypographyPSmallMuted className="font-medium">
                   Chưa có hình ảnh nào được upload
-                </TypographyPSmall>
-                <TypographySpanSmall className="text-muted-foreground/70 text-center max-w-md">
+                </TypographyPSmallMuted>
+                <TypographySpanSmallMuted className="text-muted-foreground/70 text-center max-w-md">
                   Sử dụng form upload phía trên để bắt đầu upload hình ảnh
-                </TypographySpanSmall>
+                </TypographySpanSmallMuted>
               </Flex>
             </Flex>
           ) : (
             <>
               {selectedImages.size > 0 && (
-                <div className="mb-6">
+                <Flex direction="col" marginBottom={6} fullWidth>
                   <SelectionActionsWrapper
                     label={`Đã chọn ${selectedImages.size} hình ảnh`}
                     actions={
@@ -399,7 +402,7 @@ export const UploadsPageClient = () => {
                       </>
                     }
                   />
-                </div>
+                </Flex>
               )}
               {viewMode === "tree" && folderTree ? (
                 <Flex direction="col" gap={3}>

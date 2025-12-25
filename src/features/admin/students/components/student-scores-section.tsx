@@ -226,7 +226,7 @@ const YearAveragesList = ({ averages, isLoading }: { averages?: YearAverage[]; i
 
   if (isLoading) {
     return (
-      <Flex align="center" justify="center" paddingY={8}>
+      <Flex align="center" paddingY={8}>
         <IconSize size="lg" className="animate-spin text-muted-foreground">
           <Loader2 />
         </IconSize>
@@ -236,7 +236,7 @@ const YearAveragesList = ({ averages, isLoading }: { averages?: YearAverage[]; i
 
   if (!averages || averages.length === 0) {
     return (
-      <Flex paddingY={8} align="center" justify="center" className="text-muted-foreground">
+      <Flex paddingY={8} align="center" className="text-muted-foreground">
         Chưa có dữ liệu điểm trung bình theo năm học
       </Flex>
     )
@@ -455,7 +455,7 @@ const TermAveragesList = ({ averages, isLoading }: { averages?: TermAverage[]; i
 
   if (isLoading) {
     return (
-      <Flex align="center" justify="center" paddingY={8}>
+      <Flex align="center" paddingY={8}>
         <IconSize size="lg" className="animate-spin text-muted-foreground">
           <Loader2 />
         </IconSize>
@@ -536,7 +536,7 @@ const TermAveragesList = ({ averages, isLoading }: { averages?: TermAverage[]; i
             })}
         </Flex>
       ) : (
-        <Flex paddingY={8} align="center" justify="center" fullWidth className="text-muted-foreground">
+        <Flex paddingY={8} align="center" fullWidth className="text-muted-foreground">
           Không tìm thấy dữ liệu phù hợp
         </Flex>
       )}
@@ -792,7 +792,7 @@ const DetailedScoresTable = ({ scores, isLoading }: { scores?: DetailedScore[]; 
 
   if (isLoading) {
     return (
-      <Flex align="center" justify="center" className="py-8" fullWidth>
+      <Flex align="center" className="py-8" fullWidth>
         <IconSize size="lg" className="animate-spin text-muted-foreground">
           <Loader2 />
         </IconSize>
@@ -802,7 +802,7 @@ const DetailedScoresTable = ({ scores, isLoading }: { scores?: DetailedScore[]; 
 
   if (!scores || scores.length === 0) {
     return (
-      <Flex paddingY={8} align="center" justify="center" fullWidth className="text-muted-foreground">
+      <Flex paddingY={8} align="center" fullWidth className="text-muted-foreground">
         Chưa có dữ liệu điểm chi tiết
       </Flex>
     )
@@ -920,7 +920,7 @@ const DetailedScoresTable = ({ scores, isLoading }: { scores?: DetailedScore[]; 
             })}
         </Flex>
       ) : (
-        <Flex paddingY={8} align="center" justify="center" fullWidth className="text-muted-foreground">
+        <Flex paddingY={8} align="center" fullWidth className="text-muted-foreground">
           Không tìm thấy dữ liệu phù hợp
         </Flex>
       )}

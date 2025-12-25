@@ -169,11 +169,11 @@ export const UserDetailClient = ({ userId, user, backUrl = "/admin/users" }: Use
               </AvatarFallback>
             </Avatar>
             {detailData.isActive && (
-              <div className="absolute bottom-0 right-0 rounded-full bg-green-500 border-2 border-background">
+              <Flex position="absolute" className="bottom-0 right-0 rounded-full bg-green-500 border-2 border-background" align="center" justify="center">
                 <IconSize size="md">
                   <CheckCircle2 className="text-white" />
                 </IconSize>
-              </div>
+              </Flex>
             )}
           </Flex>
           <Flex direction="col" gap={1} flex="1" fullWidth>
@@ -273,7 +273,7 @@ export const UserDetailClient = ({ userId, user, backUrl = "/admin/users" }: Use
                       <FileText />
                     </IconSize>
                   </Flex>
-                  <Flex direction="col" gap={2} flex="1" minWidth="0">
+                  <Flex direction="col" gap={2} flex="1" minWidth="0" fullWidth>
                     <TypographyH3>Giới thiệu</TypographyH3>
                     <TypographyP>
                       {userData.bio || "—"}
@@ -306,7 +306,7 @@ export const UserDetailClient = ({ userId, user, backUrl = "/admin/users" }: Use
                 <Card className="border border-border/50 bg-card p-5">
                   <Flex direction="col" gap={4}>
                     <Flex align="start" gap={3}>
-                      <Flex align="center" justify="center" shrink className="h-9 w-9" rounded="lg" bg="muted">
+                      <Flex align="center" shrink className="h-9 w-9" rounded="lg" bg="muted">
                         <IconSize size="sm">
                           <MapPin />
                         </IconSize>

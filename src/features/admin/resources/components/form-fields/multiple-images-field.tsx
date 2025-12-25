@@ -52,13 +52,19 @@ const ImageItem = ({
   disabled?: boolean
 }) => {
   return (
-    <div
+    <Flex
+      direction="col"
+      position="relative"
+      border="all"
+      rounded="lg"
+      overflow="hidden"
+      bg="muted-50"
       className={cn(
-        "group relative border rounded-lg overflow-hidden bg-muted/30",
+        "group",
         image.isPrimary && "ring-2 ring-primary ring-offset-2"
       )}
     >
-      <div className="aspect-square relative">
+      <Flex align="center" justify="center" position="relative" className="aspect-square" fullWidth>
         <Image
           src={image.url}
           alt={image.alt || `Image ${index + 1}`}
@@ -66,7 +72,7 @@ const ImageItem = ({
           className="object-cover"
           unoptimized
         />
-        <Flex align="center" justify="center" gap={2} className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors">
+        <Flex align="center" justify="center" gap={2} position="absolute-inset" className="bg-black/0 group-hover:bg-black/40 transition-colors">
           <Flex direction="col" gap={1} className="opacity-0 group-hover:opacity-100 transition-opacity">
             <Button
               type="button"
@@ -121,14 +127,14 @@ const ImageItem = ({
           </Button>
         </Flex>
         {image.isPrimary && (
-          <Flex align="center" gap={1} className="absolute top-2 left-2 bg-primary text-primary-foreground" paddingX={2} paddingY={1} rounded="md">
+          <Flex align="center" gap={1} position="absolute" className="top-2 left-2 z-30" bg="primary" paddingX={2} paddingY={1} rounded="md">
             <IconSize size="xs" className="fill-current">
               <Star />
             </IconSize>
             <TypographyPSmall>Chính</TypographyPSmall>
           </Flex>
         )}
-      </div>
+      </Flex>
       <Flex padding="sm">
         <Input
           type="text"
@@ -138,7 +144,7 @@ const ImageItem = ({
           disabled={disabled}
         />
       </Flex>
-    </div>
+    </Flex>
   )
 }
 
@@ -395,7 +401,7 @@ export const MultipleImagesField = ({ value, onChange, error, disabled = false }
 
         {/* Images grid */}
         {images.length > 0 ? (
-          <Grid cols={3} gap={4}>
+          <Grid cols="responsive-3" fullWidth gap={4}>
             {images.map((image, index) => (
               <ImageItem
                 key={image.id || image.url}
@@ -412,7 +418,7 @@ export const MultipleImagesField = ({ value, onChange, error, disabled = false }
             ))}
           </Grid>
         ) : (
-          <Flex direction="col" align="center" gap={2} className="border-2 border-dashed border-border" rounded="lg" padding="xl">
+          <Flex direction="col" align="center" gap={2} fullWidth border="all" rounded="lg" padding="xl" className="border-dashed">
             <IconSize size="4xl" className="text-muted-foreground">
               <ImageIcon />
             </IconSize>

@@ -214,26 +214,28 @@ export const NewGroupDialog = ({ onSelectGroup }: NewGroupDialogProps) => {
           <DialogTitle>Tạo nhóm mới</DialogTitle>
           <DialogDescription>Đặt tên, thêm mô tả và chọn thành viên</DialogDescription>
         </DialogHeader>
-        <div className="space-y-4 py-2">
-          <div className="space-y-2">
+        <Flex direction="col" gap={4} paddingY={2}>
+          <Flex direction="col" gap={2}>
             <Label htmlFor="group-name">Tên nhóm</Label>
             <Input id="group-name" value={groupName} onChange={(e) => setGroupName(e.target.value)} />
-          </div>
-          <div className="space-y-2">
+          </Flex>
+          <Flex direction="col" gap={2}>
             <Label htmlFor="group-description">Mô tả</Label>
             <Textarea id="group-description" value={groupDescription} onChange={(e) => setGroupDescription(e.target.value)} />
-          </div>
-          <div className="space-y-2">
+          </Flex>
+          <Flex direction="col" gap={2}>
             <Label>Thêm thành viên</Label>
             <Command shouldFilter={false}>
               <CommandInput placeholder="Tìm kiếm theo tên hoặc email..." value={searchValue} onValueChange={handleSearchChange} />
               <CommandList>
                 {isLoading && (
-                  <Flex align="center" justify="center" className="py-6">
+                  <Flex align="center" justify="center" paddingY={6}>
                     <IconSize size="sm" className="animate-spin text-muted-foreground">
                       <Loader2 />
                     </IconSize>
-                    <TypographyPMuted className="ml-2">Đang tải...</TypographyPMuted>
+                    <Flex marginLeft={2}>
+                      <TypographyPMuted>Đang tải...</TypographyPMuted>
+                    </Flex>
                   </Flex>
                 )}
                 {!isLoading && users.length === 0 && searchValue.length >= 2 && (
@@ -270,8 +272,8 @@ export const NewGroupDialog = ({ onSelectGroup }: NewGroupDialogProps) => {
                 )}
               </CommandList>
             </Command>
-          </div>
-          <Flex align="center" justify="end" gap={2} className="pt-2">
+          </Flex>
+          <Flex align="center" justify="end" gap={2} paddingTop={2}>
             <Button variant="outline" onClick={() => setOpen(false)} disabled={isCreating}>Hủy</Button>
             <Button onClick={handleCreateGroup} disabled={isCreating || !groupName.trim() || selectedUsers.length === 0}>
               {isCreating && (
@@ -282,7 +284,7 @@ export const NewGroupDialog = ({ onSelectGroup }: NewGroupDialogProps) => {
               Tạo nhóm
             </Button>
           </Flex>
-        </div>
+        </Flex>
       </DialogContent>
     </Dialog>
   )

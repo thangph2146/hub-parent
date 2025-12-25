@@ -184,7 +184,7 @@ export const NotificationDetailClient = ({
             {/* Kind & Title */}
             <Grid cols={2} gap={6}>
               <FieldItem icon={Bell} label="Loại thông báo">
-                <Badge variant={kindConfigData.variant}>
+                <Badge variant={kindConfigData.variant} className="w-fit">
                   {kindConfigData.label}
                 </Badge>
               </FieldItem>
@@ -198,14 +198,14 @@ export const NotificationDetailClient = ({
 
             {/* Description */}
             {notificationData.description && (
-              <Card className="border border-border/50 bg-card p-5">
-                <Flex align="start" gap={3}>
-                  <Flex align="center" justify="center" className="h-9 w-9 shrink-0 rounded-lg bg-muted">
-                    <IconSize size="sm" className="text-muted-foreground">
+              <Card className="border border-border/50" padding="lg">
+                <Flex align="start" gap={3} fullWidth>
+                  <Flex align="center" justify="center" shrink className="h-9 w-9" rounded="lg" bg="muted">
+                    <IconSize size="sm">
                       <FileText />
                     </IconSize>
                   </Flex>
-                  <Flex direction="col" gap={2} className="flex-1 min-w-0">
+                  <Flex direction="col" gap={2} flex="1" minWidth="0" fullWidth>
                     <TypographyP>
                       Mô tả
                     </TypographyP>
@@ -219,7 +219,7 @@ export const NotificationDetailClient = ({
 
             {/* User */}
             <FieldItem icon={User} label="Người dùng">
-              <div className="space-y-0.5">
+              <Flex direction="col" gap={0.5}>
                 <TypographyP>
                   {notificationData.user?.email || "—"}
                 </TypographyP>
@@ -228,7 +228,7 @@ export const NotificationDetailClient = ({
                     {notificationData.user.name}
                   </TypographyPSmallMuted>
                 )}
-              </div>
+              </Flex>
             </FieldItem>
           </Flex> 
         );
@@ -270,9 +270,11 @@ export const NotificationDetailClient = ({
                   
                 </Flex>
                 {!isNotificationOwner && (
-                  <TypographyPSmallMuted className="mt-1.5">
-                    Chỉ có thể thay đổi trạng thái thông báo của chính mình
-                  </TypographyPSmallMuted>
+                  <Flex className="mt-1.5">
+                    <TypographyPSmallMuted>
+                      Chỉ có thể thay đổi trạng thái thông báo của chính mình
+                    </TypographyPSmallMuted>
+                  </Flex>
                 )}
               </FieldItem>
 
@@ -320,7 +322,7 @@ export const NotificationDetailClient = ({
         return (
           <Flex direction="col" gap={6}>
             {/* Action URL & Timestamps - Grid layout */}
-            <Grid cols={fieldCount === 1 ? 1 : 2} gap={6}>
+            <Grid cols={fieldCount === 1 ? 1 : "2-lg"} gap={6} fullWidth>
               {/* Action URL */}
               {notificationData.actionUrl && (
                 <FieldItem icon={ExternalLink} label="URL hành động">
@@ -404,10 +406,12 @@ export const NotificationDetailClient = ({
                     </Flex>
                     {new Date(notificationData.expiresAt) < new Date() && (
                       <Badge variant="destructive" className="w-fit">
-                        <IconSize size="xs" className="mr-1">
-                          <AlertCircle />
-                        </IconSize>
-                        Đã hết hạn
+                        <Flex align="center" gap={1}>
+                          <IconSize size="xs">
+                            <AlertCircle />
+                          </IconSize>
+                          <span>Đã hết hạn</span>
+                        </Flex>
                       </Badge>
                     )}
                   </Flex>

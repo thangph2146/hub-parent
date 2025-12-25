@@ -174,9 +174,9 @@ export const ContactRequestDetailClient = ({ contactRequestId, contactRequest, b
         return (
           <Flex direction="col" gap={6}>
             {/* Contact Info */}
-            <Grid cols={2} gap={6}>
+            <Grid cols="2-lg" gap={6} fullWidth>
               <FieldItem icon={User} label="Tên người liên hệ">
-                <TypographyP className="text-foreground">
+                <TypographyP>
                   {requestData.name || "—"}
                 </TypographyP>
               </FieldItem>
@@ -184,7 +184,7 @@ export const ContactRequestDetailClient = ({ contactRequestId, contactRequest, b
               <FieldItem icon={Mail} label="Email">
                 <a
                   href={`mailto:${requestData.email}`}
-                  className="text-primary hover:underline truncate block transition-colors"
+                  className="text-primary hover:underline truncate block transition-colors w-full"
                 >
                   {requestData.email || "—"}
                 </a>
@@ -204,22 +204,22 @@ export const ContactRequestDetailClient = ({ contactRequestId, contactRequest, b
 
             {/* Subject */}
             <FieldItem icon={FileText} label="Tiêu đề">
-              <TypographyP className="text-foreground">
+              <TypographyP>
                 {requestData.subject || "—"}
               </TypographyP>
             </FieldItem>
 
             {/* Content */}
-            <Card className="border border-border/50 bg-card p-5">
-              <Flex align="start" gap={3}>
-                <Flex align="center" justify="center" className="h-9 w-9 shrink-0 rounded-lg bg-muted">
+            <Card className="border border-border/50" padding="lg">
+              <Flex align="start" gap={3} fullWidth>
+                <Flex align="center" justify="center" shrink rounded="lg" bg="muted" className="h-9 w-9">
                   <IconSize size="sm" className="text-muted-foreground">
                     <MessageSquare />
                   </IconSize>
                 </Flex>
-                <Flex direction="col" gap={2} className="flex-1 min-w-0">
-                  <TypographyP className="text-foreground">Nội dung</TypographyP>
-                  <TypographyP className="leading-relaxed whitespace-pre-wrap text-foreground break-words">
+                <Flex direction="col" gap={2} fullWidth flex="1" minWidth="0">
+                  <TypographyP>Nội dung</TypographyP>
+                  <TypographyP className="leading-relaxed whitespace-pre-wrap break-words">
                     {requestData.content || "—"}
                   </TypographyP>
                 </Flex>
@@ -239,7 +239,7 @@ export const ContactRequestDetailClient = ({ contactRequestId, contactRequest, b
         return (
           <Flex direction="col" gap={6}>
             {/* Status & Priority */}
-            <Grid cols={2} gap={6}>
+            <Grid cols="2-lg" gap={6} fullWidth>
               <FieldItem icon={AlertCircle} label="Trạng thái">
                 <Badge variant={CONTACT_REQUEST_STATUS_COLORS[requestData.status] || "default"}>
                   {(requestData.status === "NEW" && CONTACT_REQUEST_LABELS.NEW) ||
@@ -287,7 +287,7 @@ export const ContactRequestDetailClient = ({ contactRequestId, contactRequest, b
             {/* Assigned To */}
             {requestData.assignedTo && (
               <FieldItem icon={UserCheck} label="Người được giao">
-                <TypographyP className="text-foreground">
+                <TypographyP>
                   {requestData.assignedTo.name || requestData.assignedTo.email || "—"}
                 </TypographyP>
               </FieldItem>
@@ -305,15 +305,15 @@ export const ContactRequestDetailClient = ({ contactRequestId, contactRequest, b
         
         return (
           <Flex direction="col" gap={6}>
-            <Grid cols={2} gap={6}>
+            <Grid cols="2-lg" gap={6} fullWidth>
               <FieldItem icon={Calendar} label="Ngày tạo">
-                <TypographyP className="text-foreground">
+                <TypographyP>
                   {requestData.createdAt ? formatDateVi(requestData.createdAt) : "—"}
                 </TypographyP>
               </FieldItem>
 
               <FieldItem icon={Clock} label="Cập nhật lần cuối">
-                <TypographyP className="text-foreground">
+                <TypographyP>
                   {requestData.updatedAt ? formatDateVi(requestData.updatedAt) : "—"}
                 </TypographyP>
               </FieldItem>
@@ -340,12 +340,13 @@ export const ContactRequestDetailClient = ({ contactRequestId, contactRequest, b
           <Button
             variant="outline"
             onClick={() => router.push(`/admin/contact-requests/${contactRequestId}/edit`)}
-            className="gap-2"
           >
-            <IconSize size="sm">
-              <Edit />
-            </IconSize>
-            Chỉnh sửa
+            <Flex align="center" gap={2}>
+              <IconSize size="sm">
+                <Edit />
+              </IconSize>
+              Chỉnh sửa
+            </Flex>
           </Button>
         ) : null
       }

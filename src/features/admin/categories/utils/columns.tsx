@@ -41,7 +41,7 @@ export const useCategoryColumns = () => {
         className: "min-w-[150px] max-w-[250px]",
         headerClassName: "min-w-[150px] max-w-[250px]",
         cell: (row) => (
-          <Flex className="break-words max-w-[250px]" title={row.name}>
+          <Flex maxWidth="75" className="break-words" title={row.name}>
             {row.name}
           </Flex>
         ),
@@ -61,7 +61,7 @@ export const useCategoryColumns = () => {
         className: "min-w-[150px] max-w-[250px]",
         headerClassName: "min-w-[150px] max-w-[250px]",
         cell: (row) => (
-          <Flex className="break-words max-w-[250px]" title={row.slug}>
+          <Flex maxWidth="75" className="break-words truncate" title={row.slug}>
             {row.slug}
           </Flex>
         ),

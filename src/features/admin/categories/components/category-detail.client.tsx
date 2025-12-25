@@ -1,10 +1,10 @@
 "use client"
 
 import { Tag, Hash, AlignLeft, Calendar, Clock, Edit } from "lucide-react"
-import { 
-  ResourceDetailClient, 
+import {
+  ResourceDetailClient,
   FieldItem,
-  type ResourceDetailSection 
+  type ResourceDetailSection
 } from "@/features/admin/resources/components"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -13,7 +13,7 @@ import { formatDateVi } from "../utils"
 import { queryKeys } from "@/lib/query-keys"
 import { usePermissions } from "@/hooks/use-permissions"
 import { PERMISSIONS } from "@/lib/permissions"
-import { TypographyP, IconSize } from "@/components/ui/typography"
+import { TypographyP, TypographyPMuted, IconSize } from "@/components/ui/typography"
 import { Flex } from "@/components/ui/flex"
 import { Grid } from "@/components/ui/grid"
 
@@ -67,7 +67,7 @@ export const CategoryDetailClient = ({ categoryId, category, backUrl = "/admin/c
         const cat = data as CategoryDetailData
         return (
           <Flex direction="col" fullWidth gap={6}>
-            <Grid cols={2} fullWidth gap={6}>
+            <Grid cols="2-lg" fullWidth gap={6}>
               <FieldItem icon={Tag} label="Tên danh mục">
                 <TypographyP>{cat.name || "—"}</TypographyP>
               </FieldItem>
@@ -77,20 +77,20 @@ export const CategoryDetailClient = ({ categoryId, category, backUrl = "/admin/c
             </Grid>
 
             {cat.description && (
-              <Card className="border-border/50" padding="lg">
-                <Flex align="start" fullWidth gap={3}>
-                  <Flex align="center" justify="center" shrink className="h-9 w-9" rounded="lg" bg="muted">
+              <Card className="border border-border/50">
+                <Flex align="start" gap={3} fullWidth padding="lg">
+                  <Flex align="center" justify="center" shrink rounded="lg" bg="muted" className="h-10 w-10">
                     <IconSize size="sm"><AlignLeft /></IconSize>
                   </Flex>
-                  <Flex direction="col" fullWidth gap={2} flex="1" minWidth="0">
-                    <TypographyP>Mô tả</TypographyP>
-                    <TypographyP>{cat.description}</TypographyP>
+                  <Flex direction="col" gap={2} fullWidth flex="1" minWidth="0">
+                    <TypographyP className="font-medium">Mô tả</TypographyP>
+                    <TypographyPMuted>{cat.description}</TypographyPMuted>
                   </Flex>
                 </Flex>
               </Card>
             )}
 
-            <Grid cols={2} fullWidth gap={6}>
+            <Grid cols="2-lg" fullWidth gap={6}>
               <FieldItem icon={Calendar} label="Ngày tạo">
                 <TypographyP>{formatDateVi(cat.createdAt)}</TypographyP>
               </FieldItem>

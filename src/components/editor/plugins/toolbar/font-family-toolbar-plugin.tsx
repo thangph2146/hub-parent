@@ -68,7 +68,7 @@ export function FontFamilyToolbarPlugin() {
       }}
       aria-label={buttonAriaLabel}
     >
-      <SelectTrigger className="!h-8 w-min gap-1">
+      <SelectTrigger className="!min-h-11 w-min gap-1">
         <IconSize size="sm">
           <TypeIcon />
         </IconSize>

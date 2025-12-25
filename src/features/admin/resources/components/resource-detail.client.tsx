@@ -53,12 +53,12 @@ export interface ResourceDetailClientProps<T extends Record<string, unknown>> {
   isLoading?: boolean;
 
   fields:
-    | ResourceDetailField<T>[]
-    | {
-        title?: string;
-        description?: string;
-        fields: ResourceDetailField<T>[];
-      };
+  | ResourceDetailField<T>[]
+  | {
+    title?: string;
+    description?: string;
+    fields: ResourceDetailField<T>[];
+  };
 
   // UI
   title?: string;
@@ -114,7 +114,7 @@ export const ResourceDetailClient = <T extends Record<string, unknown>>({
     await navigateBack(resolvedBackUrl, onBack)
   }
 
-  const allFields = React.useMemo(() => 
+  const allFields = React.useMemo(() =>
     Array.isArray(fields) ? fields : fields.fields,
     [fields]
   )
@@ -174,12 +174,12 @@ export const ResourceDetailClient = <T extends Record<string, unknown>>({
   const isComplexReactNode = (node: React.ReactNode): boolean => {
     if (!node || typeof node === "string" || typeof node === "number") return false
     if (!React.isValidElement(node)) return false
-    
+
     const element = node as React.ReactElement<{ className?: string }>
     if (element.type === Card || (typeof element.type === "string" && ["div", "section", "article"].includes(element.type))) {
       return true
     }
-    
+
     const className = element.props?.className
     if (className && typeof className === "string") {
       return ["flex", "grid", "card", "border", "p-", "gap-", "shadow"].some((lc) => className.includes(lc))
@@ -190,7 +190,7 @@ export const ResourceDetailClient = <T extends Record<string, unknown>>({
   const renderField = React.useCallback(
     (field: ResourceDetailField<T>, inSection = false) => {
       const value = data?.[field.name as keyof T]
-      const formattedValue = isLoading 
+      const formattedValue = isLoading
         ? <Skeleton className="h-4 w-32" />
         : formatValue(field, value)
       const isCustomRender = !!field.render
@@ -227,7 +227,7 @@ export const ResourceDetailClient = <T extends Record<string, unknown>>({
   )
 
   const getGridProps = React.useCallback((fieldCount: number) => ({
-    cols: (fieldCount === 1 ? 1 : 2) as 1 | 2,
+    cols: (fieldCount === 1 ? 1 : "2-lg") as 1 | "2-lg",
     gap: 6 as const,
   }), [])
 
@@ -258,9 +258,9 @@ export const ResourceDetailClient = <T extends Record<string, unknown>>({
           </CardHeader>
           <CardContent className="pt-0 pb-4">
             <Flex direction="col" gap={6} fullWidth>
-              {sectionInfo?.fieldHeader && sectionInfo.fieldHeader}
+              {sectionInfo?.fieldHeader}
               {fieldsContent}
-              {sectionInfo?.fieldFooter && sectionInfo.fieldFooter}
+              {sectionInfo?.fieldFooter}
             </Flex>
           </CardContent>
         </Card>
@@ -271,9 +271,9 @@ export const ResourceDetailClient = <T extends Record<string, unknown>>({
 
   if (isLoading) {
     return (
-      <Flex direction="col" fullWidth gap={6}>
-        <Flex align="center" fullWidth justify="between">
-          <Flex fullWidth direction="col" gap={2}>
+      <Flex direction="col" gap={6} fullWidth>
+        <Flex align="center" justify="between" gap={2} fullWidth>
+          <Flex direction="col" gap={2} fullWidth>
             <Skeleton className="h-8 w-64" />
             <Skeleton className="h-4 w-96" />
           </Flex>
@@ -284,9 +284,9 @@ export const ResourceDetailClient = <T extends Record<string, unknown>>({
             <Skeleton className="h-6 w-48" />
           </CardHeader>
           <CardContent>
-            <Flex fullWidth direction="col" gap={4}>
+            <Flex direction="col" gap={4} fullWidth>
               {[1, 2, 3, 4].map((i) => (
-                <Flex fullWidth key={i} align="center" justify="between">
+                <Flex key={i} align="center" justify="between" fullWidth>
                   <Skeleton className="h-4 w-32" />
                   <Skeleton className="h-5 w-58" />
                 </Flex>
@@ -302,8 +302,8 @@ export const ResourceDetailClient = <T extends Record<string, unknown>>({
     return (
       <Flex direction="col" fullWidth align="center" justify="center" gap={4}>
         <Card>
-          <CardContent className="pt-6">
-            <Flex direction="col" fullWidth align="center" gap={4}>
+          <CardContent>
+            <Flex direction="col" align="center" gap={4} fullWidth paddingTop={6}>
               <TypographyPMuted>Không tìm thấy dữ liệu</TypographyPMuted>
               {resolvedBackUrl && (
                 <Button variant="outline" onClick={() => navigateBack(resolvedBackUrl, onBack)}>
@@ -321,40 +321,40 @@ export const ResourceDetailClient = <T extends Record<string, unknown>>({
   }
 
   return (
-    <Flex direction="col" fullWidth gap={6}>
+    <Flex direction="col" gap={6} fullWidth>
+      {resolvedBackUrl && (
+        <Button variant="outline" size="sm" onClick={handleBack} fullWidth>
+          <Flex align="center" gap={2}>
+            <IconSize size="sm"><ArrowLeft /></IconSize>
+            {backLabel}
+          </Flex>
+        </Button>
+      )}
       {(title || resolvedBackUrl || actions) && (
-        <Flex 
-          direction="col-lg-row-items-center" 
-          fullWidth 
-          align="start" 
-          justify="between" 
-          gap={4} 
+        <Flex
+          direction="col-lg-row-items-center"
+          fullWidth
+          align="start"
+          justify="between"
+          gap={4}
           paddingBottom={6}
           border="b-border"
         >
           <Flex direction="col" gap={3} fullWidth width="1/3" flex="1" minWidth="0">
-            {resolvedBackUrl && (
-              <Button variant="outline" size="sm" onClick={handleBack}>
-                <Flex align="center" gap={2}>
-                  <IconSize size="sm"><ArrowLeft /></IconSize>
-                  {backLabel}
-                </Flex>
-              </Button>
-            )}
             <Flex direction="col" gap={2} minWidth="0">
               {title && <TypographyH1 className="truncate">{title}</TypographyH1>}
               {description && <TypographyPMuted className="line-clamp-2">{description}</TypographyPMuted>}
             </Flex>
           </Flex>
           {actions && (
-            <Flex align="center" gap={2} wrap fullWidth width="2/3" shrink justify="start-lg-end">
+            <Flex align="center" justify="start-lg-end" gap={2} wrap fullWidth width="2/3" shrink>
               {actions}
             </Flex>
           )}
         </Flex>
       )}
 
-      <Flex direction="col" fullWidth gap={6}>
+      <Flex direction="col" gap={6} fullWidth>
         {(() => {
           const { grouped, ungrouped } = groupFieldsBySection
           const fieldsTitle = Array.isArray(fields) ? "Thông tin chi tiết" : fields.title || "Thông tin chi tiết"
@@ -392,7 +392,9 @@ export const ResourceDetailClient = <T extends Record<string, unknown>>({
                         {renderFields(ungrouped.slice(Math.ceil(ungrouped.length / 2)))}
                       </Grid>
                     ) : (
-                      renderFields(ungrouped)
+                      <Flex direction="col" fullWidth>
+                        {renderFields(ungrouped)}
+                      </Flex>
                     )}
                   </CardContent>
                 </Card>
@@ -408,10 +410,14 @@ export const ResourceDetailClient = <T extends Record<string, unknown>>({
                           {section.description && <CardDescription>{section.description}</CardDescription>}
                         </Flex>
                       </CardHeader>
-                      <CardContent className="pt-0 pb-4">{renderFields(section.fields)}</CardContent>
+                      <CardContent>
+                        <Flex direction="col" paddingTop={0} paddingBottom={4}>
+                          {renderFields(section.fields)}
+                        </Flex>
+                      </CardContent>
                     </Card>
                   ))}
-                  {sections.length % 2 === 1 && <Flex fullWidth />}
+                  {sections.length % 2 === 1 && <div />}
                 </Grid>
               )}
 

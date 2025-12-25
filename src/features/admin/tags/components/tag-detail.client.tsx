@@ -15,6 +15,7 @@ import { usePermissions } from "@/hooks/use-permissions"
 import { PERMISSIONS } from "@/lib/permissions"
 import { TypographyP, IconSize } from "@/components/ui/typography"
 import { Grid } from "@/components/ui/grid"
+import { Flex } from "@/components/ui/flex"
 
 export interface TagDetailData {
   id: string
@@ -118,12 +119,13 @@ export const TagDetailClient = ({ tagId, tag, backUrl = "/admin/tags" }: TagDeta
           <Button
             variant="outline"
             onClick={() => router.push(`/admin/tags/${tagId}/edit`)}
-            className="gap-2"
           >
-            <IconSize size="sm">
-              <Edit />
-            </IconSize>
-            Chỉnh sửa
+            <Flex align="center" gap={2}>
+              <IconSize size="sm">
+                <Edit />
+              </IconSize>
+              Chỉnh sửa
+            </Flex>
           </Button>
         ) : null
       }

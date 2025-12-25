@@ -82,7 +82,7 @@ export const SessionDetailClient = ({ sessionId, session, backUrl = "/admin/sess
           <Flex direction="col" gap={6}>
             <FieldItem icon={User} label="Người dùng" iconColor="bg-primary/10">
               <Flex direction="col" gap={0.5}>
-                <TypographyP className="text-foreground">
+                <TypographyP>
                   {sessionData.userName || sessionData.userEmail || "—"}
                 </TypographyP>
                 {sessionData.userEmail && sessionData.userName && (
@@ -112,20 +112,20 @@ export const SessionDetailClient = ({ sessionId, session, backUrl = "/admin/sess
             </FieldItem>
 
             <FieldItem icon={RefreshCw} label="Refresh Token" iconColor="bg-chart-2/10">
-              <TypographyPSmall className="font-mono break-all text-foreground">
+              <TypographyPSmall className="font-mono break-all">
                 {sessionData.refreshToken || "—"}
               </TypographyPSmall>
             </FieldItem>
 
             <Grid cols={2} gap={6}>
               <FieldItem icon={Globe} label="User Agent" iconColor="bg-chart-3/10">
-                <TypographyP className="break-all text-foreground">
+                <TypographyP className="break-all">
                   {sessionData.userAgent || "—"}
                 </TypographyP>
               </FieldItem>
 
               <FieldItem icon={MapPin} label="IP Address" iconColor="bg-chart-4/10">
-                <TypographyP className="text-foreground">
+                <TypographyP>
                   {sessionData.ipAddress || "—"}
                 </TypographyP>
               </FieldItem>
@@ -162,19 +162,19 @@ export const SessionDetailClient = ({ sessionId, session, backUrl = "/admin/sess
 
             <Grid cols={2} gap={6}>
               <FieldItem icon={Calendar} label="Thời gian hết hạn">
-                <TypographyP className="text-foreground">
+                <TypographyP>
                   {sessionData.expiresAt ? formatDateVi(sessionData.expiresAt) : "—"}
                 </TypographyP>
               </FieldItem>
 
               <FieldItem icon={Clock} label="Hoạt động cuối">
-                <TypographyP className="text-foreground">
+                <TypographyP>
                   {sessionData.lastActivity ? formatDateVi(sessionData.lastActivity) : "—"}
                 </TypographyP>
               </FieldItem>
 
               <FieldItem icon={Calendar} label="Ngày tạo">
-                <TypographyP className="text-foreground">
+                <TypographyP>
                   {sessionData.createdAt ? formatDateVi(sessionData.createdAt) : "—"}
                 </TypographyP>
               </FieldItem>
@@ -201,12 +201,13 @@ export const SessionDetailClient = ({ sessionId, session, backUrl = "/admin/sess
           <Button
             variant="outline"
             onClick={() => router.push(`/admin/sessions/${sessionId}/edit`)}
-            className="gap-2"
           >
-            <IconSize size="sm">
-              <Edit />
-            </IconSize>
-            Chỉnh sửa
+            <Flex align="center" gap={2}>
+              <IconSize size="sm">
+                <Edit />
+              </IconSize>
+              Chỉnh sửa
+            </Flex>
           </Button>
         ) : null
       }

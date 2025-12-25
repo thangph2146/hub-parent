@@ -23,15 +23,15 @@ export const FieldItem = ({
   const bgClassName = isBgClass ? iconColor : undefined
   
   return (
-    <Flex align="start" fullWidth gap={3} className={className}>
-      <Flex align="center" justify="center" shrink className={cn("h-9 w-9", bgClassName)} rounded="lg" bg={bgProp}>
+    <Flex align="start" gap={3} fullWidth className={className}>
+      <Flex align="center" justify="center" shrink rounded="lg" bg={bgProp} className={cn("h-10 w-10", bgClassName)}>
         <IconSize size="sm"><Icon /></IconSize>
+      </Flex>
+      <Flex direction="col" gap={1} fullWidth flex="1" minWidth="0">
+        <TypographySpanSmallMuted>{label}</TypographySpanSmallMuted>
+        {children}
+      </Flex>
     </Flex>
-      <Flex direction="col" fullWidth gap={1} flex="1" minWidth="0">
-      <TypographySpanSmallMuted>{label}</TypographySpanSmallMuted>
-      {children}
-    </Flex>
-  </Flex>
-)
+  )
 }
 

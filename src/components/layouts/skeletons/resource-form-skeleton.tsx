@@ -36,9 +36,9 @@ export function ResourceFormSkeleton({
   showCard = true,
 }: ResourceFormSkeletonProps) {
   const formFields = (
-    <Grid cols={2} fullWidth gap={6}>
+    <Grid cols="2-lg" fullWidth gap={6}>
       {Array.from({ length: fieldCount }).map((_, index) => (
-        <Flex key={index} direction="col" fullWidth gap={2}>
+        <Flex key={index} direction="col" gap={2} fullWidth>
           <Skeleton className="h-4 w-24" />
           <Skeleton className="h-10 w-full" />
         </Flex>
@@ -46,31 +46,38 @@ export function ResourceFormSkeleton({
     </Grid>
   )
 
+  const headerContent = title ? (
+    <Flex direction="col" gap={2} fullWidth>
+      <Skeleton className="h-6 w-48" />
+      <Skeleton className="h-4 w-64" />
+    </Flex>
+  ) : (
+    <Skeleton className="h-4 w-64" />
+  )
+
+  const footerContent = (
+    <Flex align="center" gap={3} fullWidth>
+      <Skeleton className="h-10 w-24" />
+      <Skeleton className="h-10 w-20" />
+    </Flex>
+  )
+
   if (variant === "dialog") {
     return (
       <Dialog open={true}>
         <DialogContent className="max-w-2xl w-full p-0">
           <Flex direction="col" fullWidth>
-          <DialogHeader className="px-6 pt-6 pb-4">
-              {title && (
-                <Flex direction="col" gap={2}>
-                  <Skeleton className="h-6 w-48" />
-                  <Skeleton className="h-4 w-64" />
-                </Flex>
-              )}
-              {!title && <Skeleton className="h-4 w-64" />}
-          </DialogHeader>
-            <Flex className="max-h-[calc(60dvh)] overflow-y-auto">
+            <DialogHeader className="px-6 pt-6 pb-4">
+              {headerContent}
+            </DialogHeader>
+            <Flex maxHeight="600" overflow="auto" fullWidth>
               <Flex padding="md" fullWidth>
-              {formFields}
+                {formFields}
               </Flex>
             </Flex>
             <DialogFooter className="px-6 pb-6 pt-4 border-t border-border">
-              <Flex align="center" gap={3}>
-            <Skeleton className="h-10 w-24" />
-            <Skeleton className="h-10 w-20" />
-              </Flex>
-          </DialogFooter>
+              {footerContent}
+            </DialogFooter>
           </Flex>
         </DialogContent>
       </Dialog>
@@ -82,27 +89,15 @@ export function ResourceFormSkeleton({
       <Sheet open={true}>
         <SheetContent>
           <Flex direction="col" fullWidth flex="1">
-          <SheetHeader>
-              {title ? (
-                <Flex direction="col" gap={2}>
-                  <Skeleton className="h-6 w-48" />
-                  <Skeleton className="h-4 w-64" />
-                </Flex>
-              ) : (
-                <Skeleton className="h-4 w-64" />
-              )}
-          </SheetHeader>
-            <Flex flex="1" className="-mx-6 px-6 mt-6 overflow-y-auto">
-              <Flex className="pr-4" fullWidth>
-              {formFields}
+            <SheetHeader>{headerContent}</SheetHeader>
+            <Flex flex="1" overflow="auto" fullWidth paddingX={6} marginTop={6}>
+              <Flex paddingX={4} fullWidth>
+                {formFields}
               </Flex>
             </Flex>
-            <SheetFooter className="mt-6 border-t border-border pt-4">
-              <Flex align="center" gap={3}>
-            <Skeleton className="h-10 w-24" />
-            <Skeleton className="h-10 w-20" />
-              </Flex>
-          </SheetFooter>
+            <SheetFooter className="mt-6 pt-4 border-t border-border">
+              {footerContent}
+            </SheetFooter>
           </Flex>
         </SheetContent>
       </Sheet>
@@ -114,7 +109,7 @@ export function ResourceFormSkeleton({
       {title && (
         <CardHeader>
           <Flex direction="col" gap={2}>
-          <Skeleton className="h-6 w-48" />
+            <Skeleton className="h-6 w-48" />
             <Skeleton className="h-4 w-64" />
           </Flex>
         </CardHeader>
@@ -128,22 +123,21 @@ export function ResourceFormSkeleton({
   )
 
   return (
-    <Flex direction="col" flex="1" gap={6} marginX="auto" fullWidth padding="md">
+    <Flex direction="col" gap={6} flex="1" fullWidth marginX="auto" padding="md">
       {title && (
-        <Flex direction="col-lg-row-items-center" align="start" justify="between" gap={4} paddingBottom={4} border="b-border">
-          <Flex direction="col" gap={2} flex="1" minWidth="0">
+        <Flex direction="col-lg-row-items-center" justify="between" gap={4} fullWidth paddingBottom={4} border="b-border">
+          <Flex direction="col" gap={2} fullWidth flex="1" minWidth="0">
             <Skeleton className="h-6 w-32" />
             <Skeleton className="h-8 w-64" />
-            <Skeleton className="h-4 w-96" />
+            <Skeleton className="h-4 w-96 max-w-full" />
           </Flex>
         </Flex>
       )}
 
       {formContent}
 
-      <Flex align="center" justify="end" gap={3} paddingY="responsive" border="top">
-        <Skeleton className="h-10 w-24" />
-        <Skeleton className="h-10 w-20" />
+      <Flex align="center" justify="end" gap={3} fullWidth paddingY={4} border="top">
+        {footerContent}
       </Flex>
     </Flex>
   )

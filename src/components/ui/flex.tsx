@@ -20,6 +20,8 @@ const flexVariants = cva("flex", {
       center: "items-center",
       end: "items-end",
       stretch: "items-stretch",
+      baseline: "items-baseline",
+      normal: "items-normal",
     },
     justify: {
       start: "justify-start",
@@ -28,6 +30,7 @@ const flexVariants = cva("flex", {
       between: "justify-between",
       around: "justify-around",
       evenly: "justify-evenly",
+      normal: "justify-normal",
       "start-lg-end": "justify-start lg:justify-end",
     },
     gap: {
@@ -43,6 +46,9 @@ const flexVariants = cva("flex", {
       8: "gap-8",
       12: "gap-12",
       16: "gap-16",
+      small: "gap-2",
+      middle: "gap-4",
+      large: "gap-8",
       "6-lg-8": "gap-6 lg:gap-8",
       "2-md-4": "gap-2 md:gap-4",
       "2-lg-6": "gap-2 lg:gap-6",
@@ -83,6 +89,9 @@ const flexVariants = cva("flex", {
     wrap: {
       true: "flex-wrap",
       false: "flex-nowrap",
+      wrap: "flex-wrap",
+      nowrap: "flex-nowrap",
+      "wrap-reverse": "flex-wrap-reverse",
     },
     fullWidth: {
       true: "w-full",
@@ -441,6 +450,7 @@ const flexVariants = cva("flex", {
       "1": "flex-1",
       auto: "flex-auto",
       initial: "flex-initial",
+      normal: "",
     },
     grow: {
       true: "grow",
@@ -473,8 +483,8 @@ const flexVariants = cva("flex", {
   },
   defaultVariants: {
     direction: "row",
-    align: "start",
-    justify: "start",
+    align: "normal",
+    justify: "normal",
     gap: 0,
     gapX: "none",
     gapY: "none",
@@ -507,7 +517,7 @@ const flexVariants = cva("flex", {
     width: "none",
     cursor: "none",
     textAlign: "none",
-    flex: "none",
+    flex: "normal",
     grow: false,
     truncate: false,
     lineClamp: "none",
@@ -521,17 +531,193 @@ const flexVariants = cva("flex", {
 })
 
 export interface FlexProps
-  extends React.HTMLAttributes<HTMLDivElement>,
-  VariantProps<typeof flexVariants> {
+  extends Omit<React.HTMLAttributes<HTMLDivElement>, "style">,
+  Omit<VariantProps<typeof flexVariants>, "flex" | "gap" | "wrap"> {
+  /**
+   * Custom element type (alias for `as` prop)
+   * @default "div"
+   */
+  component?: React.ComponentType<React.HTMLAttributes<HTMLElement>>
+  /**
+   * Is direction of the flex vertical, use flex-direction: column
+   * @default false
+   */
+  vertical?: boolean
+  /**
+   * Direction of the flex (horizontal | vertical)
+   * @default "horizontal"
+   */
+  orientation?: "horizontal" | "vertical"
+  /**
+   * flex CSS shorthand properties
+   * @default "normal"
+   */
+  flex?: "none" | "1" | "auto" | "initial" | "normal" | string
+  /**
+   * Sets the gap between grids
+   * Supports: small | middle | large | string | number
+   * @default 0
+   */
+  gap?: VariantProps<typeof flexVariants>["gap"] | string | number
+  /**
+   * Set whether the element is displayed in a single line or in multiple lines
+   * Supports: flex-wrap | boolean
+   * @default false (nowrap)
+   */
+  wrap?: VariantProps<typeof flexVariants>["wrap"] | boolean
+  /**
+   * Alias for `as` prop to match Ant Design API
+   */
   as?: React.ElementType
+  /**
+   * Inline styles
+   */
+  style?: React.CSSProperties
 }
 
 export const Flex = React.forwardRef<HTMLDivElement, FlexProps>(
-  ({ className, direction, align, justify, gap, gapX, gapY, wrap, fullWidth, container, padding, paddingX, paddingY, paddingTop, paddingBottom, margin, marginX, marginY, marginTop, marginBottom, marginLeft, marginRight, position, border, height, maxHeight, shrink, overflow, minWidth, maxWidth, rounded, bg, hover, opacity, width, cursor, textAlign, flex, grow, truncate, lineClamp, display, objectFit, imageStyle, blur, animate, as: Component = "div", ...props }, ref) => {
+  ({ 
+    className, 
+    direction, 
+    align, 
+    justify, 
+    gap, 
+    gapX, 
+    gapY, 
+    wrap = false, 
+    fullWidth, 
+    container, 
+    padding, 
+    paddingX, 
+    paddingY, 
+    paddingTop, 
+    paddingBottom, 
+    margin, 
+    marginX, 
+    marginY, 
+    marginTop, 
+    marginBottom, 
+    marginLeft, 
+    marginRight, 
+    position, 
+    border, 
+    height, 
+    maxHeight, 
+    shrink, 
+    overflow, 
+    minWidth, 
+    maxWidth, 
+    rounded, 
+    bg, 
+    hover, 
+    opacity, 
+    width, 
+    cursor, 
+    textAlign, 
+    flex: flexProp = "normal", 
+    grow, 
+    truncate, 
+    lineClamp, 
+    display, 
+    objectFit, 
+    imageStyle, 
+    blur, 
+    animate, 
+    component,
+    vertical = false,
+    orientation = "horizontal",
+    as: Component = component || "div", 
+    style,
+    ...props 
+  }, ref) => {
+    // Map vertical/orientation to direction
+    // Priority: direction > vertical > orientation
+    const computedDirection = direction 
+      ? direction
+      : (vertical || orientation === "vertical") 
+        ? "col"
+        : "row"
+    
+    // Handle flex prop with inline style if it's a custom value
+    const flexStyle: React.CSSProperties = { ...style }
+    const isStandardFlex = flexProp === "normal" || flexProp === "none" || flexProp === "1" || flexProp === "auto" || flexProp === "initial"
+    const flexVariant = isStandardFlex ? flexProp : "normal"
+    
+    if (flexProp && !isStandardFlex) {
+      // Custom flex value (string like "1 1 auto")
+      flexStyle.flex = flexProp
+    }
+    
+    // Handle gap prop with custom string/number values
+    // Check if gap is a valid variant value
+    const validGapVariants: (string | number)[] = [0, 0.5, 1, 1.5, 2, 3, 4, 5, 6, 8, 12, 16, "small", "middle", "large", "6-lg-8", "2-md-4", "2-lg-6", "4-lg-6", "4-lg-8", "responsive"]
+    let gapVariant: VariantProps<typeof flexVariants>["gap"] | undefined = undefined
+    
+    if (gap !== undefined && gap !== null) {
+      if (validGapVariants.includes(gap as string | number)) {
+        // Standard gap value - use variant
+        gapVariant = gap as VariantProps<typeof flexVariants>["gap"]
+      } else {
+        // Custom gap value (string like "10px" or number like 10) - use inline style
+        if (typeof gap === "number") {
+          flexStyle.gap = `${gap * 0.25}rem` // Convert to rem (assuming 4px base)
+        } else if (typeof gap === "string") {
+          flexStyle.gap = gap
+        }
+      }
+    }
+    
     return (
       <Component
         ref={ref}
-        className={cn(flexVariants({ direction, align, justify, gap, gapX, gapY, wrap, fullWidth, container, padding, paddingX, paddingY, paddingTop, paddingBottom, margin, marginX, marginY, marginTop, marginBottom, marginLeft, marginRight, position, border, height, maxHeight, shrink, overflow, minWidth, maxWidth, rounded, bg, hover, opacity, width, cursor, textAlign, flex, grow, truncate, lineClamp, display, objectFit, imageStyle, blur, animate }), className)}
+        className={cn(flexVariants({ 
+          direction: computedDirection, 
+          align, 
+          justify, 
+          gap: gapVariant, 
+          gapX, 
+          gapY, 
+          wrap: wrap === true ? "wrap" : wrap === false ? "nowrap" : wrap, 
+          fullWidth, 
+          container, 
+          padding, 
+          paddingX, 
+          paddingY, 
+          paddingTop, 
+          paddingBottom, 
+          margin, 
+          marginX, 
+          marginY, 
+          marginTop, 
+          marginBottom, 
+          marginLeft, 
+          marginRight, 
+          position, 
+          border, 
+          height, 
+          maxHeight, 
+          shrink, 
+          overflow, 
+          minWidth, 
+          maxWidth, 
+          rounded, 
+          bg, 
+          hover, 
+          opacity, 
+          width, 
+          cursor, 
+          textAlign, 
+          flex: flexVariant, 
+          grow, 
+          truncate, 
+          lineClamp, 
+          display, 
+          objectFit, 
+          imageStyle, 
+          blur, 
+          animate 
+        }), className)}
+        style={Object.keys(flexStyle).length > 0 ? flexStyle : undefined}
         {...props}
       />
     )

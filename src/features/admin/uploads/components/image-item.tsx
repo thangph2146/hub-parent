@@ -31,8 +31,9 @@ export const ImageItem = ({
   const { toast } = useToast()
 
   return (
-    <div
-      className={`relative aspect-square rounded-lg overflow-hidden border-2 transition-all duration-200 bg-muted group cursor-pointer ${
+    <Flex
+      position="relative"
+      className={`aspect-square rounded-lg overflow-hidden border-2 transition-all duration-200 bg-muted group cursor-pointer ${
         isSelected 
           ? "ring-2 ring-primary ring-offset-2 border-primary shadow-md" 
           : "border-border hover:border-primary/50 hover:shadow-md"
@@ -46,18 +47,19 @@ export const ImageItem = ({
         sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
         unoptimized
       />
-      <div className="absolute top-2 left-2 z-20">
+      <Flex position="absolute" className="top-2 left-2 z-20">
         <Checkbox
           checked={isSelected}
           onCheckedChange={() => onToggleSelect(image.fileName)}
           onClick={(e) => e.stopPropagation()}
           className="h-5 w-5 bg-white/95 backdrop-blur-sm shadow-md border-2"
         />
-      </div>
+      </Flex>
       <Flex 
         direction="col" 
-        gap={0.5} 
-        className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/70 to-transparent p-2.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10"
+        gap={0.5}
+        position="absolute"
+        className="bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/70 to-transparent p-2.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10"
       >
         <TypographySpanSmall className="text-white truncate font-medium">
           {image.originalName}
@@ -68,9 +70,10 @@ export const ImageItem = ({
       </Flex>
       <Flex 
         align="center" 
-        justify="center" 
+        justify="center"
         gap={2} 
-        className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10"
+        position="absolute-inset"
+        className="bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10"
       >
         <Button
           size="sm"
@@ -109,7 +112,7 @@ export const ImageItem = ({
           Xóa
         </Button>
       </Flex>
-    </div>
+    </Flex>
   )
 }
 

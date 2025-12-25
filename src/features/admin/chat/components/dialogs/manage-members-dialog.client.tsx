@@ -191,18 +191,20 @@ export const ManageMembersDialog = ({
           <DialogTitle>Thành viên nhóm</DialogTitle>
           <DialogDescription>Thêm, xóa hoặc cập nhật vai trò thành viên</DialogDescription>
         </DialogHeader>
-        <div className="py-2 space-y-3">
-          <div className="space-y-2">
+        <Flex direction="col" gap={3} paddingY={2} fullWidth>
+          <Flex direction="col" gap={2} fullWidth>
             <Label>Tìm người dùng</Label>
             <Command shouldFilter={false}>
               <CommandInput placeholder="Tìm kiếm theo tên hoặc email..." value={searchValue} onValueChange={handleSearchChange} />
               <CommandList>
                 {isLoading && (
-                  <Flex align="center" justify="center" className="py-6">
+                  <Flex align="center" justify="center" paddingY={6}>
                     <IconSize size="sm" className="animate-spin text-muted-foreground">
                       <Loader2 />
                     </IconSize>
-                    <TypographyPMuted className="ml-2">Đang tải...</TypographyPMuted>
+                    <Flex marginLeft={2}>
+                      <TypographyPMuted>Đang tải...</TypographyPMuted>
+                    </Flex>
                   </Flex>
                 )}
                 {!isLoading && users.length === 0 && searchValue.length >= 2 && (
@@ -222,7 +224,7 @@ export const ManageMembersDialog = ({
                               </TypographyPSmall>
                             </AvatarFallback>
                           </Avatar>
-                          <Flex direction="col" className="flex-1 min-w-0">
+                          <Flex direction="col" flex="1" minWidth="0" fullWidth>
                             <TypographyP className="truncate">{user.name || user.email}</TypographyP>
                             {user.name && <TypographyPSmallMuted className="truncate">{user.email}</TypographyPSmallMuted>}
                           </Flex>
@@ -246,62 +248,60 @@ export const ManageMembersDialog = ({
                 )}
               </CommandList>
             </Command>
-          </div>
+          </Flex>
 
-          <div className="space-y-2">
+          <Flex direction="col" gap={2} fullWidth>
             <Label>Thành viên hiện tại</Label>
-            <div className="space-y-2">
-              {group?.members?.length ? (
-                <ScrollArea className="h-[240px] pr-2">
-                  <div className="space-y-2">
-                    {group?.members?.map((member) => (
-                      <Flex key={member.id} align="center" gap={3} className="rounded border p-2">
-                        <Avatar className="h-12 w-12">
-                          <AvatarImage src={member.user?.avatar || undefined} alt={member.user?.name || member.user?.email || ""} />
-                          <AvatarFallback>
-                            <TypographyPSmall>
-                              {(member.user?.name || member.user?.email || "").substring(0, 2).toUpperCase()}
-                            </TypographyPSmall>
-                          </AvatarFallback>
-                        </Avatar>
-                        <Flex direction="col" className="flex-1 min-w-0">
-                          <TypographyP className="truncate">{member.user?.name || member.user?.email}</TypographyP>
-                          <TypographyPSmallMuted className="truncate">{member.role}</TypographyPSmallMuted>
-                        </Flex>
-                        <Flex align="center" gap={2}>
-                          {canPromoteAdmin && (
-                            <Button size="sm" variant="secondary" disabled={isProcessing === member.id} onClick={() => handleUpdateRole(member.userId, member.role === "ADMIN" ? "MEMBER" : "ADMIN")}>
-                              <IconSize size="sm" className="mr-2">
-                                <ShieldCheck />
-                              </IconSize>
-                              {member.role === "ADMIN" ? "Hạ cấp" : "Thăng cấp"}
-                            </Button>
-                          )}
-                          {canManageMembers && (
-                            <Button size="sm" variant="destructive" disabled={isProcessing === member.id} onClick={() => handleRemoveMember(member.userId)}>
-                              {isProcessing === member.id ? (
-                                <IconSize size="sm" className="mr-2 animate-spin">
-                                  <Loader2 />
-                                </IconSize>
-                              ) : (
-                                <IconSize size="sm" className="mr-2">
-                                  <UserMinus />
-                                </IconSize>
-                              )}
-                              Xóa
-                            </Button>
-                          )}
-                        </Flex>
+            {group?.members?.length ? (
+              <ScrollArea className="h-[240px] pr-2">
+                <Flex direction="col" gap={2}>
+                  {group?.members?.map((member) => (
+                    <Flex key={member.id} align="center" gap={3} rounded="md" border="all" padding="sm" fullWidth>
+                      <Avatar className="h-12 w-12">
+                        <AvatarImage src={member.user?.avatar || undefined} alt={member.user?.name || member.user?.email || ""} />
+                        <AvatarFallback>
+                          <TypographyPSmall>
+                            {(member.user?.name || member.user?.email || "").substring(0, 2).toUpperCase()}
+                          </TypographyPSmall>
+                        </AvatarFallback>
+                      </Avatar>
+                      <Flex direction="col" flex="1" minWidth="0" fullWidth>
+                        <TypographyP className="truncate">{member.user?.name || member.user?.email}</TypographyP>
+                        <TypographyPSmallMuted className="truncate">{member.role}</TypographyPSmallMuted>
                       </Flex>
-                    ))}
-                  </div>
-                </ScrollArea>
+                      <Flex align="center" gap={2}>
+                        {canPromoteAdmin && (
+                          <Button size="sm" variant="secondary" disabled={isProcessing === member.id} onClick={() => handleUpdateRole(member.userId, member.role === "ADMIN" ? "MEMBER" : "ADMIN")}>
+                            <IconSize size="sm" className="mr-2">
+                              <ShieldCheck />
+                            </IconSize>
+                            {member.role === "ADMIN" ? "Hạ cấp" : "Thăng cấp"}
+                          </Button>
+                        )}
+                        {canManageMembers && (
+                          <Button size="sm" variant="destructive" disabled={isProcessing === member.id} onClick={() => handleRemoveMember(member.userId)}>
+                            {isProcessing === member.id ? (
+                              <IconSize size="sm" className="mr-2 animate-spin">
+                                <Loader2 />
+                              </IconSize>
+                            ) : (
+                              <IconSize size="sm" className="mr-2">
+                                <UserMinus />
+                              </IconSize>
+                            )}
+                            Xóa
+                          </Button>
+                        )}
+                      </Flex>
+                    </Flex>
+                  ))}
+                </Flex>
+              </ScrollArea>
               ) : (
                 <TypographyPMuted>Chưa có thành viên nào</TypographyPMuted>
               )}
-            </div>
-          </div>
-        </div>
+            </Flex>
+          </Flex>
       </DialogContent>
     </Dialog>
   )

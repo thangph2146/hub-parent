@@ -324,11 +324,9 @@ export const CategoriesTableClient = ({
                 className="whitespace-nowrap"
               >
                 <Flex align="center" gap={2}>
-                  <Flex shrink>
-                    <IconSize size="md">
-                      <Trash2 />
-                    </IconSize>
-                  </Flex>
+                  <IconSize size="md">
+                    <Trash2 />
+                  </IconSize>
                   <TypographySpanSmall className="hidden sm:inline">
                     {CATEGORY_LABELS.DELETE_SELECTED(selectedIds.length)}
                   </TypographySpanSmall>
@@ -346,11 +344,9 @@ export const CategoriesTableClient = ({
                 className="whitespace-nowrap"
               >
                 <Flex align="center" gap={2}>
-                  <Flex shrink>
-                    <IconSize size="md">
-                      <AlertTriangle />
-                    </IconSize>
-                  </Flex>
+                  <IconSize size="md">
+                    <AlertTriangle />
+                  </IconSize>
                   <TypographySpanSmall className="hidden sm:inline">
                     {CATEGORY_LABELS.HARD_DELETE_SELECTED(selectedIds.length)}
                   </TypographySpanSmall>
@@ -398,11 +394,9 @@ export const CategoriesTableClient = ({
                 className="whitespace-nowrap"
               >
                 <Flex align="center" gap={2}>
-                  <Flex shrink>
-                    <IconSize size="md">
-                      <RotateCcw />
-                    </IconSize>
-                  </Flex>
+                  <IconSize size="md">
+                    <RotateCcw />
+                  </IconSize>
                   <TypographySpanSmall className="hidden sm:inline">
                     {CATEGORY_LABELS.RESTORE_SELECTED(selectedIds.length)}
                   </TypographySpanSmall>
@@ -420,11 +414,9 @@ export const CategoriesTableClient = ({
                 className="whitespace-nowrap"
               >
                 <Flex align="center" gap={2}>
-                  <Flex shrink>
-                    <IconSize size="md">
-                      <AlertTriangle />
-                    </IconSize>
-                  </Flex>
+                  <IconSize size="md">
+                    <AlertTriangle />
+                  </IconSize>
                   <TypographySpanSmall className="hidden sm:inline">
                     {CATEGORY_LABELS.HARD_DELETE_SELECTED(selectedIds.length)}
                   </TypographySpanSmall>

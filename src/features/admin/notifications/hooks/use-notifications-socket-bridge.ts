@@ -210,6 +210,10 @@ export const useNotificationsSocketBridge = () => {
       logger.debug("Received notification:deleted", { notificationId: id })
       
       const updated = updateNotificationQueries(queryClient, ({ data }) => {
+        if (!data || !data.rows || !Array.isArray(data.rows)) {
+          return null
+        }
+        
         const result = removeRowFromPage(data.rows, id)
         if (!result.removed) {
           logger.debug("Notification not found in current view", { notificationId: id })
@@ -250,6 +254,10 @@ export const useNotificationsSocketBridge = () => {
       logger.debug("Received notifications:deleted", { count: ids.length })
       
       const updated = updateNotificationQueries(queryClient, ({ data }) => {
+        if (!data || !data.rows || !Array.isArray(data.rows)) {
+          return null
+        }
+        
         let rows = data.rows
         let removedCount = 0
 

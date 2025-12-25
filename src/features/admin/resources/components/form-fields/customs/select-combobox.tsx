@@ -44,7 +44,7 @@ export const SelectCombobox = <T,>({
 
   if (!field.options || field.options.length === 0) {
     return (
-      <Flex align="center" fullWidth className="h-10 rounded-md border border-input bg-background" paddingX={3} paddingY={2}>
+      <Flex align="center" fullWidth height="10" rounded="md" border="all" bg="background" paddingX={3} paddingY={2}>
         <TypographyPMuted>Không có tùy chọn</TypographyPMuted>
       </Flex>
     )
@@ -69,13 +69,13 @@ export const SelectCombobox = <T,>({
           )}
           disabled={field.disabled || isPending}
         >
-          <Flex align="center" justify="between" fullWidth gap={2}>
+          <Flex align="center" justify="between" gap={2} fullWidth>
             <TypographySpanSmall className="truncate">
-            {selectedOption ? selectedOption.label : field.placeholder || "-- Chọn --"}
+              {selectedOption ? selectedOption.label : field.placeholder || "-- Chọn --"}
             </TypographySpanSmall>
             <IconSize size="md" className="shrink-0 opacity-50">
-            <ChevronsUpDown />
-          </IconSize>
+              <ChevronsUpDown />
+            </IconSize>
           </Flex>
         </Button>
       </PopoverTrigger>

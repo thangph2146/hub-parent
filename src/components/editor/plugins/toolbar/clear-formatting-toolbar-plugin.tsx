@@ -78,7 +78,7 @@ export function ClearFormattingToolbarPlugin() {
 
   return (
     <Button
-      className="min-w-9 min-h-9 px-1.5"
+      className="!min-h-11 !min-w-11"
       aria-label="Clear formatting"
       variant={"outline"}
       size={"icon"}

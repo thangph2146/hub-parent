@@ -15,6 +15,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Loader2 } from "lucide-react"
 import { IconSize } from "@/components/ui/typography"
+import { Flex } from "@/components/ui/flex"
 import { logger } from "@/lib/config"
 import type { Group } from "@/components/chat/types"
 import { apiRoutes } from "@/lib/api/routes"
@@ -86,16 +87,16 @@ export const EditGroupDialog = ({ open, onOpenChange, group, onSuccess }: EditGr
           <DialogTitle>Chỉnh sửa nhóm</DialogTitle>
           <DialogDescription>Cập nhật tên và mô tả cho nhóm</DialogDescription>
         </DialogHeader>
-        <div className="space-y-4 py-2">
-          <div className="space-y-2">
+        <Flex direction="col" gap={4} paddingY={2}>
+          <Flex direction="col" gap={2}>
             <Label htmlFor="group-name">Tên nhóm</Label>
             <Input id="group-name" value={groupName} onChange={(e) => setGroupName(e.target.value)} />
-          </div>
-          <div className="space-y-2">
+          </Flex>
+          <Flex direction="col" gap={2}>
             <Label htmlFor="group-description">Mô tả</Label>
             <Textarea id="group-description" value={groupDescription} onChange={(e) => setGroupDescription(e.target.value)} />
-          </div>
-        </div>
+          </Flex>
+        </Flex>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isSaving}>
             Hủy

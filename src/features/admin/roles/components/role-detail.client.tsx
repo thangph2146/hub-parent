@@ -103,23 +103,23 @@ export const RoleDetailClient = ({ roleId, role, backUrl = "/admin/roles" }: Rol
         
         return (
           <Flex direction="col" fullWidth gap={6}>
-            <Grid cols={2} fullWidth gap={6}>
+            <Grid cols="2-lg" fullWidth gap={6}>
               <FieldItem icon={Shield} label="Tên vai trò">
-                <TypographySpanMuted className="text-foreground">{roleData.name || "—"}</TypographySpanMuted>
+                <TypographySpanMuted>{roleData.name || "—"}</TypographySpanMuted>
               </FieldItem>
               <FieldItem icon={FileText} label="Tên hiển thị">
-                <TypographySpanMuted className="text-foreground">{roleData.displayName || "—"}</TypographySpanMuted>
+                <TypographySpanMuted>{roleData.displayName || "—"}</TypographySpanMuted>
               </FieldItem>
             </Grid>
             {roleData.description && (
-              <Card className="border border-border/50" padding="lg">
-                <Flex align="start" fullWidth gap={3}>
+              <Card className="border border-border/50">
+                <Flex align="start" fullWidth gap={3} padding="lg">
                   <Flex align="center" justify="center" shrink className="h-9 w-9" rounded="lg" bg="muted">
-                    <IconSize size="sm"><FileText className="text-muted-foreground" /></IconSize>
+                    <IconSize size="sm"><FileText /></IconSize>
                   </Flex>
                   <Flex direction="col" fullWidth gap={2} flex="1" minWidth="0">
-                    <TypographyH3 className="text-foreground">Mô tả</TypographyH3>
-                    <TypographyP className="leading-relaxed whitespace-pre-wrap text-foreground break-words">
+                    <TypographyH3>Mô tả</TypographyH3>
+                    <TypographyP className="leading-relaxed whitespace-pre-wrap break-words">
                       {roleData.description || "—"}
                     </TypographyP>
                   </Flex>
@@ -139,10 +139,10 @@ export const RoleDetailClient = ({ roleId, role, backUrl = "/admin/roles" }: Rol
         
         if (!roleData.permissions || !Array.isArray(roleData.permissions) || roleData.permissions.length === 0) {
           return (
-            <Flex align="center" gap={3}>
+            <Flex align="center" gap={3} fullWidth>
               <Flex align="center" justify="center" shrink className="h-9 w-9" rounded="lg" bg="muted">
                 <IconSize size="sm">
-                  <Shield className="text-muted-foreground" />
+                  <Shield />
                 </IconSize>
               </Flex>
               <Flex direction="col" gap={2} flex="1" minWidth="0">
@@ -172,7 +172,7 @@ export const RoleDetailClient = ({ roleId, role, backUrl = "/admin/roles" }: Rol
             <Flex align="start" gap={3} fullWidth>
               <Flex align="center" justify="center" shrink className="h-9 w-9" rounded="lg" bg="muted">
                 <IconSize size="sm">
-                  <Shield className="text-muted-foreground" />
+                  <Shield />
                 </IconSize>
               </Flex>
               <Flex direction="col" gap={3} flex="1" minWidth="0">
@@ -262,7 +262,7 @@ export const RoleDetailClient = ({ roleId, role, backUrl = "/admin/roles" }: Rol
         const roleData = (data || detailData) as RoleDetailData
         
         return (
-          <Flex direction="col" gap={6} fullWidth>
+          <Flex direction="col" gap={6}>
             {/* Status */}
             <FieldItem 
               icon={roleData.isActive ? CheckCircle2 : XCircle} 
@@ -270,7 +270,7 @@ export const RoleDetailClient = ({ roleId, role, backUrl = "/admin/roles" }: Rol
             >
               <Badge
                   className={cn(
-                  "px-2.5 py-1",
+                  "w-fit px-2.5 py-1",
                   roleData.isActive
                     ? "bg-green-500/10 hover:bg-green-500/20 text-green-700 dark:text-green-400 border-green-500/20"
                     : "bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 dark:text-amber-400 border-amber-500/20"
@@ -300,15 +300,15 @@ export const RoleDetailClient = ({ roleId, role, backUrl = "/admin/roles" }: Rol
             </FieldItem>
 
             {/* Timestamps */}
-            <Grid cols={2} gap={6} fullWidth>
+            <Grid cols="2-lg" gap={6} fullWidth>
               <FieldItem icon={Calendar} label="Ngày tạo">
-                <TypographySpanMuted className="text-foreground">
+                <TypographySpanMuted>
                   {roleData.createdAt ? formatDateVi(roleData.createdAt) : "—"}
                 </TypographySpanMuted>
               </FieldItem>
 
               <FieldItem icon={Clock} label="Cập nhật lần cuối">
-                <TypographySpanMuted className="text-foreground">
+                <TypographySpanMuted>
                   {roleData.updatedAt ? formatDateVi(roleData.updatedAt) : "—"}
                 </TypographySpanMuted>
               </FieldItem>

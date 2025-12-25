@@ -24,30 +24,30 @@ export function ResourceTableSkeleton({
   columnCount = 4,
 }: ResourceTableSkeletonProps) {
   return (
-    <Flex direction="col" gap={4}>
+    <Flex direction="col" gap={4} fullWidth>
       {(title || viewModes > 1) && (
-        <Flex direction="col-sm-row" align="start" justify="between" gap={2} className="sm:items-center">
-          {title ? <Skeleton className="h-6 w-32" /> : <Flex />}
-            {viewModes > 1 && (
+        <Flex direction="col" align="start" justify="between" gap={2} fullWidth className="sm:flex-row sm:items-center">
+          {title ? <Skeleton className="h-6 w-32" /> : <div />}
+          {viewModes > 1 && (
             <Flex align="center" gap={2} wrap>
-                {Array.from({ length: viewModes }).map((_, index) => (
-                  <Skeleton key={index} className="h-8 w-20" />
-                ))}
+              {Array.from({ length: viewModes }).map((_, index) => (
+                <Skeleton key={index} className="h-8 w-20" />
+              ))}
             </Flex>
-            )}
+          )}
         </Flex>
       )}
 
       <Card>
         <CardHeader className="pb-3">
-          <Flex align="center" fullWidth justify="between">
+          <Flex align="center" justify="between" gap={2} fullWidth>
             <Skeleton className="h-5 w-32" />
             <Skeleton className="h-9 w-24" />
           </Flex>
         </CardHeader>
         <CardContent>
-          <Flex rounded="md" border="all" className="overflow-hidden">
-            <Flex className="overflow-x-auto" fullWidth>
+          <Flex rounded="md" border="all" overflow="hidden" fullWidth>
+            <Flex overflow="auto" fullWidth>
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -72,9 +72,9 @@ export function ResourceTableSkeleton({
               </Table>
             </Flex>
           </Flex>
-          <Flex align="center" fullWidth justify="between" gap={3} border="top" paddingX={2} paddingY={4} marginTop={4}>
+          <Flex align="center" justify="between" gap={3} fullWidth border="top" paddingX={2} paddingY={4} marginTop={4} wrap>
             <Skeleton className="h-5 w-48" />
-            <Flex align="center" gap={2}>
+            <Flex align="center" gap={2} wrap>
               <Skeleton className="h-8 w-20" />
               <Skeleton className="h-4 w-24" />
               <Skeleton className="h-8 w-20" />

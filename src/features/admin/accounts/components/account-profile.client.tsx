@@ -96,7 +96,7 @@ export const AccountProfileClient = ({
       description: "Thông tin đăng nhập và cá nhân",
       fieldHeader: (
         <Card className="overflow-hidden border-2 bg-gradient-to-br from-card via-card to-muted/20 shadow-sm">
-          <Flex direction="col" align="start" gap={6} padding="lg" className="sm:flex-row sm:items-center">
+          <Flex direction="col" align="start" gap={6} padding="lg" fullWidth className="sm:flex-row sm:items-center">
             <div className="relative group">
               <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 via-primary/10 to-transparent rounded-full blur opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               <Avatar className="relative h-28 w-28 border-4 border-background shadow-lg ring-2 ring-primary/10">
@@ -113,7 +113,7 @@ export const AccountProfileClient = ({
                   </TypographyH4>
                 </AvatarFallback>
               </Avatar>
-              <Flex align="center" justify="center" className="absolute -bottom-1 -right-1 h-7 w-7 rounded-full bg-green-500 border-[3px] border-background shadow-md">
+              <Flex align="center" justify="center" position="absolute" className="-bottom-1 -right-1 h-7 w-7 rounded-full bg-green-500 border-[3px] border-background shadow-md">
                 <IconSize size="sm">
                   <CheckCircle2 className="text-white" />
                 </IconSize>
@@ -185,7 +185,7 @@ export const AccountProfileClient = ({
             {accountData.bio && (
               <Card padding="lg" className="border-2 border-border/50 bg-gradient-to-br from-card to-muted/20 shadow-sm">
                 <Flex align="start" gap={4}>
-                  <Flex align="center" justify="center" className="h-10 w-10 shrink-0 rounded-xl bg-primary/10 ring-2 ring-primary/5">
+                  <Flex align="center" className="h-10 w-10 shrink-0 rounded-xl bg-primary/10 ring-2 ring-primary/5">
                     <IconSize size="md">
                       <FileText className="text-primary" />
                     </IconSize>
@@ -212,7 +212,7 @@ export const AccountProfileClient = ({
                 return (
                   <Card padding="lg" className="border-2 border-border/50 bg-gradient-to-br from-card to-muted/10 shadow-sm">
                     <FieldItem icon={MapPin} label="Địa chỉ">
-                      <Flex direction="col" gap={3} className="mt-2">
+                      <Flex direction="col" gap={3} marginTop={2}>
                         {structuredAddress ? (
                           <Flex direction="col" gap={2}>
                             <TypographyPLarge>
@@ -286,7 +286,7 @@ export const AccountProfileClient = ({
           <Flex direction="col" gap={6}>
             <Card padding="lg" className="border-2 border-border/50 bg-gradient-to-br from-card to-muted/10 shadow-sm">
               <FieldItem icon={Mail} label="Email">
-                <Flex direction="col" gap={3} className="mt-2">
+                <Flex direction="col" gap={3} marginTop={2}>
                   <TypographyP className="text-foreground">
                     {accountData.email}
                   </TypographyP>

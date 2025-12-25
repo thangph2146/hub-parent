@@ -92,7 +92,7 @@ export const FolderTreeNode = React.memo(function FolderTreeNode({
           )}
           {/* Render subfolders */}
           {folder.subfolders.length > 0 && (
-            <div className="ml-4">
+            <Flex direction="col" className="ml-4">
               {folder.subfolders.map((subfolder) => (
                 <FolderTreeNode
                   key={subfolder.path}
@@ -106,7 +106,7 @@ export const FolderTreeNode = React.memo(function FolderTreeNode({
                   onDelete={onDelete}
                 />
               ))}
-            </div>
+            </Flex>
           )}
         </Flex>
       </CollapsibleContent>

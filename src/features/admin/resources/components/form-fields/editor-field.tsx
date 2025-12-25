@@ -105,8 +105,8 @@ export const EditorField = ({
   }
 
   return (
-    <FieldContent className="w-full">
-      <Flex direction="col" fullWidth gap={2} className={className || "max-w-none"}>
+    <FieldContent>
+      <Flex direction="col" gap={2} fullWidth maxWidth={className ? undefined : "none"} className={className}>
         <Editor
           editorSerializedState={editorState || undefined}
           onSerializedChange={handleChange}

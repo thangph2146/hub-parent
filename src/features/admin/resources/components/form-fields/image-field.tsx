@@ -39,7 +39,7 @@ export const ImageField = ({
   return (
     <FieldContent>
       <Flex direction="col" gap={4}>
-        <Flex gap={2}>
+        <Flex align="center" gap={2} fullWidth>
           <Input
             id={fieldId}
             type="text"
@@ -49,7 +49,7 @@ export const ImageField = ({
               setImageError(false)
             }}
             placeholder={placeholder}
-            className={cn("flex-1", error && "border-destructive")}
+            className={cn("flex-1 min-w-0", error && "border-destructive")}
             disabled={disabled}
             aria-invalid={error ? "true" : "false"}
             aria-describedby={errorId}
@@ -76,7 +76,7 @@ export const ImageField = ({
 
         {/* Image preview */}
         {hasImage && !imageError && (
-          <Flex align="center" justify="center" fullWidth className="aspect-video relative">
+          <Flex align="center" justify="center" fullWidth position="relative" className="aspect-video">
             <Image
               src={imageUrl}
               alt="Preview"
@@ -91,26 +91,22 @@ export const ImageField = ({
 
         {/* Error state */}
         {hasImage && imageError && (
-          <Flex fullWidth className="relative rounded-lg border border-destructive/50 overflow-hidden bg-destructive/5">
-            <Flex direction="col" align="center" justify="center" gap={2} padding="md" fullWidth className="aspect-video text-destructive">
-              <IconSize size="2xl">
-                <ImageIcon />
-              </IconSize>
-              <TypographySpanMuted>Không thể tải hình ảnh</TypographySpanMuted>
-              <TypographySpanSmallMuted>Vui lòng kiểm tra lại URL</TypographySpanSmallMuted>
-            </Flex>
+          <Flex direction="col" align="center" gap={2} fullWidth position="relative" rounded="lg" border="all" overflow="hidden" bg="destructive-text" className="border-destructive/50 aspect-video text-destructive" padding="md">
+            <IconSize size="2xl">
+              <ImageIcon />
+            </IconSize>
+            <TypographySpanMuted>Không thể tải hình ảnh</TypographySpanMuted>
+            <TypographySpanSmallMuted>Vui lòng kiểm tra lại URL</TypographySpanSmallMuted>
           </Flex>
         )}
 
         {/* Placeholder when no image */}
         {!hasImage && (
-          <Flex fullWidth className="relative rounded-lg border border-dashed border-border overflow-hidden bg-muted/30">
-            <Flex direction="col" align="center" justify="center" gap={2} fullWidth className="aspect-video text-muted-foreground">
-              <IconSize size="4xl">
-                <ImageIcon />
-              </IconSize>
-              <TypographySpanMuted>Chưa có hình ảnh</TypographySpanMuted>
-            </Flex>
+          <Flex direction="col" align="center" gap={2} fullWidth position="relative" rounded="lg" border="all" overflow="hidden" bg="muted-50" className="border-dashed aspect-video text-muted-foreground">
+            <IconSize size="4xl">
+              <ImageIcon />
+            </IconSize>
+            <TypographySpanMuted>Chưa có hình ảnh</TypographySpanMuted>
           </Flex>
         )}
 

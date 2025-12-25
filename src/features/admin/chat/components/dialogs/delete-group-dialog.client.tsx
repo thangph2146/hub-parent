@@ -107,7 +107,7 @@ export const DeleteGroupDialog = ({
               {GROUP_CONFIRM_MESSAGES.DELETE_DESCRIPTION(group?.name)}
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-3 py-2">
+          <Flex direction="col" gap={3} paddingY={2}>
             <Button 
               variant="secondary" 
               onClick={handleSoftDelete} 
@@ -142,7 +142,7 @@ export const DeleteGroupDialog = ({
               )}
               {GROUP_LABELS.HARD_DELETE}
             </Button>
-          </div>
+          </Flex>
           <DialogFooter>
             <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isProcessing}>
               {GROUP_CONFIRM_MESSAGES.CANCEL_LABEL}

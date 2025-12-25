@@ -146,11 +146,13 @@ export const NewConversationDialog = ({ onSelectUser, existingContactIds = [] }:
           />
           <CommandList>
             {isLoading && (
-              <Flex align="center" justify="center" className="py-6">
+              <Flex align="center" justify="center" paddingY={6}>
                 <IconSize size="sm" className="animate-spin text-muted-foreground">
                   <Loader2 />
                 </IconSize>
-                <TypographyPMuted className="ml-2">Đang tải...</TypographyPMuted>
+                <Flex marginLeft={2}>
+                  <TypographyPMuted>Đang tải...</TypographyPMuted>
+                </Flex>
               </Flex>
             )}
             {!isLoading && users.length === 0 && searchValue.length >= 2 && (
@@ -177,7 +179,7 @@ export const NewConversationDialog = ({ onSelectUser, existingContactIds = [] }:
                       </TypographyPSmall>
                     </AvatarFallback>
                   </Avatar>
-                  <Flex direction="col" className="flex-1 min-w-0">
+                  <Flex direction="col" flex="1" minWidth="0">
                       <TypographyP className="truncate">{user.name || user.email}</TypographyP>
                       {user.name && <TypographyPSmall className="truncate">{user.email}</TypographyPSmall>}
                     </Flex>
