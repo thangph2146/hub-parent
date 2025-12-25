@@ -317,7 +317,7 @@ export const UsersTableClient = ({
                     </TypographySpanSmallMuted>
                   )}
                 </Flex>
-                <Flex align="center" gap={2} wrap={true}>
+                <Flex align="center" gap={2} wrap>
                   <Button
                     type="button"
                     size="sm"

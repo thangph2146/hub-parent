@@ -15,19 +15,23 @@ export const FieldItem = ({
   icon: Icon, 
   label, 
   children, 
-  iconColor = "bg-muted",
+  iconColor = "muted",
   className 
-}: FieldItemProps) => (
-  <Flex align="start" gap={3} className={className}>
-    <Flex align="center" justify="center" className={cn("h-9 w-9 shrink-0 rounded-lg", iconColor)}>
-      <IconSize size="sm">
-        <Icon />
-      </IconSize>
+}: FieldItemProps) => {
+  const isBgClass = iconColor.startsWith("bg-")
+  const bgProp = isBgClass ? undefined : (iconColor as "muted" | "primary" | "destructive" | undefined)
+  const bgClassName = isBgClass ? iconColor : undefined
+  
+  return (
+    <Flex align="start" fullWidth gap={3} className={className}>
+      <Flex align="center" justify="center" shrink className={cn("h-9 w-9", bgClassName)} rounded="lg" bg={bgProp}>
+        <IconSize size="sm"><Icon /></IconSize>
     </Flex>
-    <Flex direction="col" gap={1} className="flex-1 min-w-0">
+      <Flex direction="col" fullWidth gap={1} flex="1" minWidth="0">
       <TypographySpanSmallMuted>{label}</TypographySpanSmallMuted>
       {children}
     </Flex>
   </Flex>
 )
+}
 

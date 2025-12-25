@@ -6,6 +6,7 @@ import {
   SidebarMenuButton,
 } from "@/components/ui/sidebar"
 import { Skeleton } from "@/components/ui/skeleton"
+import { Flex } from "@/components/ui/flex"
 
 export function NavMainSkeleton() {
   return (
@@ -15,10 +16,10 @@ export function NavMainSkeleton() {
         {Array.from({ length: 4 }).map((_, index) => (
           <SidebarMenuItem key={index}>
             <SidebarMenuButton asChild>
-              <div className="flex items-center gap-2 w-full">
+              <Flex align="center" gap={2} fullWidth>
                 <Skeleton className="h-5 w-5 rounded" />
                 <Skeleton className="h-4 flex-1" />
-              </div>
+              </Flex>
             </SidebarMenuButton>
           </SidebarMenuItem>
         ))}

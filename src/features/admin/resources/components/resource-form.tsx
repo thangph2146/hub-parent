@@ -32,7 +32,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { cn } from "@/lib/utils"
 import { renderFieldInput } from "./form-fields"
 import { applyResourceSegmentToPath } from "@/lib/permissions"
-import { TypographyH1, TypographyH4, TypographyPMuted, TypographySpanMuted, IconSize } from "@/components/ui/typography"
+import { TypographyH1, TypographyH4, TypographyPMuted, TypographySpanMuted, TypographySpanSmall, IconSize } from "@/components/ui/typography"
 import { Flex } from "@/components/ui/flex"
 import { Grid } from "@/components/ui/grid"
 
@@ -65,30 +65,30 @@ export interface ResourceFormProps<T extends Record<string, unknown>> {
   data: T | null
   fields: ResourceFormField<T>[]
   sections?: ResourceFormSection[]
-  
+
   title?: string
   description?: string
   submitLabel?: string
   cancelLabel?: string
   backUrl?: string
   backLabel?: string
-  
+
   onSubmit: (data: Partial<T>) => Promise<{ success: boolean; error?: string }>
   onCancel?: () => void
   onSuccess?: () => void
   onBack?: () => void | Promise<void>
-  
+
   // UI
   className?: string
   formClassName?: string
   contentClassName?: string
   showCard?: boolean
-  
+
   // Dialog/Sheet mode
   variant?: "page" | "dialog" | "sheet"
   open?: boolean
   onOpenChange?: (open: boolean) => void
-  
+
   resourceName?: string
   resourceId?: string
   action?: "create" | "update"
@@ -122,7 +122,7 @@ export const ResourceForm = <T extends Record<string, unknown>>({
   const resourceSegment = useResourceSegment()
   const resolvedBackUrl = backUrl ? applyResourceSegmentToPath(backUrl, resourceSegment) : undefined
   const { navigateBack, router } = useResourceNavigation()
-  
+
   const handleBack = async () => {
     if (resolvedBackUrl) await navigateBack(resolvedBackUrl, onBack)
   }
@@ -132,7 +132,7 @@ export const ResourceForm = <T extends Record<string, unknown>>({
     fields.forEach((field) => {
       const key = field.name as keyof T
       const dataValue = data?.[key]
-      
+
       if (dataValue !== undefined && dataValue !== null) {
         initial[key] = dataValue as T[keyof T]
       } else if (field.defaultValue !== undefined) {
@@ -169,10 +169,10 @@ export const ResourceForm = <T extends Record<string, unknown>>({
         const currentValue = prev[key]
         if (field.type === "multiple-select") {
           // Multiple-select: luôn là array
-          const newValue = Array.isArray(dataValue) 
-            ? dataValue 
+          const newValue = Array.isArray(dataValue)
+            ? dataValue
             : (dataValue !== undefined && dataValue !== null ? [dataValue] : [])
-          
+
           // So sánh array
           const currentArray = Array.isArray(currentValue) ? currentValue : []
           if (JSON.stringify(newValue) !== JSON.stringify(currentArray)) {
@@ -199,7 +199,7 @@ export const ResourceForm = <T extends Record<string, unknown>>({
             const arraysEqual = Array.isArray(newValue) && Array.isArray(currentValue)
               ? JSON.stringify(newValue) !== JSON.stringify(currentValue)
               : false
-            
+
             if (arraysEqual || (!Array.isArray(newValue) && newValue !== currentValue)) {
               updated[key] = newValue as T[keyof T]
               hasChanges = true
@@ -243,7 +243,7 @@ export const ResourceForm = <T extends Record<string, unknown>>({
     fields.forEach((field) => {
       const fieldName = String(field.name)
       const value = formData[field.name as keyof T]
-      
+
       if (!field.required) {
         if (field.validate && value !== undefined && value !== null && value !== "") {
           const validation = field.validate(value)
@@ -304,7 +304,7 @@ export const ResourceForm = <T extends Record<string, unknown>>({
         }
 
         let scrollContainer: HTMLElement | null = null
-        
+
         if (variant === "dialog") {
           const dialog = fieldElement.closest('[role="dialog"]')
           scrollContainer = dialog?.querySelector('[data-slot="scroll-area-viewport"]') as HTMLElement | null
@@ -452,31 +452,19 @@ export const ResourceForm = <T extends Record<string, unknown>>({
       <div
         key={fieldName}
         id={fieldName}
-        className={cn(
-          "min-w-0",
-          isEditorField ? "col-span-full" : (isFullWidth && "@md:col-span-full")
-        )}
+        className={cn("min-w-0", isEditorField ? "col-span-full" : (isFullWidth && "@md:col-span-full"))}
         style={isFullWidth ? undefined : { minWidth: "200px" }}
       >
         <Field orientation={isCheckbox ? undefined : "responsive"}>
-          {!isCheckbox && (
+          {(!isCheckbox || field.icon) && (
             <FieldLabel htmlFor={fieldName}>
               {field.icon}
               {field.label}
-              {field.required && <span className="text-destructive">*</span>}
-            </FieldLabel>
-          )}
-          {isCheckbox && field.icon && (
-            <FieldLabel htmlFor={fieldName}>
-              {field.icon}
-              {field.label}
-              {field.required && <span className="text-destructive">*</span>}
+              {field.required && <TypographySpanSmall className="text-destructive">*</TypographySpanSmall>}
             </FieldLabel>
           )}
           {fieldInput}
-          {field.description && (
-            <FieldDescription>{field.description}</FieldDescription>
-          )}
+          {field.description && <FieldDescription>{field.description}</FieldDescription>}
         </Field>
       </div>
     )
@@ -484,26 +472,17 @@ export const ResourceForm = <T extends Record<string, unknown>>({
 
   const renderSection = (sectionId: string, sectionFields: ResourceFormField<T>[]) => {
     const sectionInfo = sections?.find((s) => s.id === sectionId)
-    const fieldCount = sectionFields.length
-    
-    // Determine grid columns based on field count
-    // For address section with 5 fields, use 2 columns
-    // For other sections, use 2 columns if fieldCount >= 2, otherwise 1
-    const gridCols: 1 | 2 = fieldCount >= 2 ? 2 : 1
+    const gridCols: 1 | 2 = sectionFields.length >= 2 ? 2 : 1
 
     return (
-      <Flex key={sectionId} direction="col" gap={6}>
+      <Flex key={sectionId} direction="col" gap={6} fullWidth>
         {(sectionInfo?.title || sectionInfo?.description) && (
-          <Flex direction="col" gap={2} className="pb-2 border-b border-border/50">
-            {sectionInfo.title && (
-              <TypographyH4>{sectionInfo.title}</TypographyH4>
-            )}
-            {sectionInfo.description && (
-              <TypographyPMuted>{sectionInfo.description}</TypographyPMuted>
-            )}
+          <Flex direction="col" gap={2} paddingBottom={2} border="b-border-50">
+            {sectionInfo.title && <TypographyH4>{sectionInfo.title}</TypographyH4>}
+            {sectionInfo.description && <TypographyPMuted>{sectionInfo.description}</TypographyPMuted>}
           </Flex>
         )}
-        <Grid cols={gridCols} gap={6}>
+        <Grid cols={gridCols} fullWidth gap={6}>
           {sectionFields.map(renderField)}
         </Grid>
       </Flex>
@@ -513,26 +492,18 @@ export const ResourceForm = <T extends Record<string, unknown>>({
   const { grouped, ungrouped } = groupFieldsBySection()
 
   const formContent = (
-    <form id="resource-form" ref={formRef} onSubmit={handleSubmit} className={formClassName}>
-      <Flex direction="col" gap={6} className="w-full">
+    <form id="resource-form" ref={formRef} onSubmit={handleSubmit} className={cn("w-full", formClassName)}>
+      <Flex direction="col" fullWidth gap={6}>
         {submitError && (
-          <Flex 
-            align="center" 
-            className="rounded-lg bg-destructive/10 border border-destructive/20 p-4 text-destructive"
-          >
+          <Flex align="center" fullWidth rounded="lg" bg="destructive-text" border="all" padding="md" className="border-destructive/20">
             <TypographySpanMuted className="font-medium">{submitError}</TypographySpanMuted>
           </Flex>
         )}
 
-        <Flex direction="col" gap={8} className={contentClassName}>
-          {/* Render sections */}
-          {Object.entries(grouped).map(([sectionId, sectionFields]) =>
-            renderSection(sectionId, sectionFields)
-          )}
-
-          {/* Render ungrouped fields */}
+        <Flex direction="col" fullWidth gap={8} className={contentClassName}>
+          {Object.entries(grouped).map(([sectionId, sectionFields]) => renderSection(sectionId, sectionFields))}
           {ungrouped.length > 0 && (
-            <Grid cols={2} gap={6}>
+            <Grid cols={2} fullWidth gap={6}>
               {ungrouped.map(renderField)}
             </Grid>
           )}
@@ -543,41 +514,24 @@ export const ResourceForm = <T extends Record<string, unknown>>({
 
 
   const footer = (
-    <Flex align="center" gap={3} wrap={true} className="w-full sm:w-auto">
-      <Button
-        type="button"
-        variant="outline"
-        onClick={handleCancel}
-        disabled={isPending}
-        className="h-9"
-      >
+    <Flex align="center" fullWidth gap={3} wrap className="sm:w-auto">
+      <Button type="button" variant="outline" onClick={handleCancel} disabled={isPending} className="h-9">
         <Flex align="center" gap={2}>
-          <IconSize size="sm">
-            {variant === "page" && resolvedBackUrl ? <ArrowLeft /> : <X />}
-          </IconSize>
+          <IconSize size="sm">{variant === "page" && resolvedBackUrl ? <ArrowLeft /> : <X />}</IconSize>
           {cancelLabel}
         </Flex>
       </Button>
-      <Button 
-        type="submit" 
-        form="resource-form" 
-        disabled={isPending}
-        className="h-9"
-      >
+      <Button type="submit" form="resource-form" disabled={isPending} className="h-9">
         <Flex align="center" gap={2}>
           {isPending ? (
             <>
-              <IconSize size="sm">
-                <Loader2 className="animate-spin" />
-              </IconSize>
-              <span>Đang lưu...</span>
+              <IconSize size="sm"><Loader2 className="animate-spin" /></IconSize>
+              Đang lưu...
             </>
           ) : (
             <>
-              <IconSize size="sm">
-                <Save />
-              </IconSize>
-              <span>{submitLabel || "Lưu"}</span>
+              <IconSize size="sm"><Save /></IconSize>
+              {submitLabel || "Lưu"}
             </>
           )}
         </Flex>
@@ -585,18 +539,17 @@ export const ResourceForm = <T extends Record<string, unknown>>({
     </Flex>
   )
 
-  // Dialog mode
   if (variant === "dialog") {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="max-w-2xl w-full p-0">
-          <Flex direction="col" className="h-full">
+          <Flex direction="col" fullWidth className="h-full">
             <DialogHeader className="px-6 pt-6 pb-4 border-b border-border/50">
               <DialogTitle>{title}</DialogTitle>
               {description && <DialogDescription className="mt-2">{description}</DialogDescription>}
             </DialogHeader>
             <ScrollArea className="max-h-[calc(60dvh)] overflow-y-auto flex-1">
-              <Flex direction="col" className="px-6 py-6">
+              <Flex direction="col" fullWidth padding="lg">
                 {formContent}
               </Flex>
             </ScrollArea>
@@ -614,15 +567,13 @@ export const ResourceForm = <T extends Record<string, unknown>>({
     return (
       <Sheet open={open} onOpenChange={onOpenChange}>
         <SheetContent>
-          <Flex direction="col" className="h-full">
+          <Flex direction="col" fullWidth className="h-full">
             <SheetHeader className="pb-4 border-b border-border/50">
               <SheetTitle>{title}</SheetTitle>
-              {description && (
-                <SheetDescription className="mt-2">{description}</SheetDescription>
-              )}
+              {description && <SheetDescription className="mt-2">{description}</SheetDescription>}
             </SheetHeader>
             <ScrollArea className="flex-1 -mx-6 px-6 mt-6">
-              <Flex direction="col" className="pr-4">
+              <Flex direction="col" fullWidth className="pr-4">
                 {formContent}
               </Flex>
             </ScrollArea>
@@ -648,64 +599,49 @@ export const ResourceForm = <T extends Record<string, unknown>>({
       </CardContent>
     </Card>
   ) : (
-    <div className={className}>
+    <Flex direction="col" fullWidth flex="1" marginX="auto" padding="md" gap={4} className={className}>
       {formContent}
-    </div>
+    </Flex>
   )
 
   return (
-    <Flex direction="col" gap={4} className={cn("flex-1 mx-auto w-full max-w-[100%] p-4", className)}>
-      {/* Header */}
+    <Flex direction="col" fullWidth flex="1" marginX="auto" padding="md" gap={4}>
       {(title || resolvedBackUrl) && !showCard && (
-        <Flex 
-          direction="col" 
-          align="start" 
-          justify="between" 
-          gap={4} 
-          className="w-full pb-6 border-b border-border lg:flex-row lg:items-center"
+        <Flex
+          direction="col-lg-row-items-center"
+          fullWidth
+          align="start"
+          justify="between"
+          gap={4}
+          paddingBottom={6}
+          border="b-border"
         >
-          <Flex direction="col" gap={3} className="w-full lg:w-auto flex-1 min-w-0">
+          <Flex direction="col" fullWidth width="1/3" flex="1" minWidth="0" gap={3}>
             {resolvedBackUrl && (
-              <Flex>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleBack}
-                  className="h-8"
-                >
-                  <Flex align="center" gap={2}>
-                    <IconSize size="sm">
-                      <ArrowLeft />
-                    </IconSize>
-                    {backLabel}
-                  </Flex>
-                </Button>
-              </Flex>
+              <Button variant="outline" size="sm" onClick={handleBack} className="h-8">
+                <Flex align="center" gap={2}>
+                  <IconSize size="sm"><ArrowLeft /></IconSize>
+                  {backLabel}
+                </Flex>
+              </Button>
             )}
-            <Flex direction="col" gap={2} className="min-w-0">
-              {title && (
-                <TypographyH1 className="truncate">{title}</TypographyH1>
-              )}
-              {description && (
-                <TypographyPMuted className="line-clamp-2">
-                  {description}
-                </TypographyPMuted>
-              )}
+            <Flex direction="col" gap={2} minWidth="0">
+              {title && <TypographyH1 className="truncate">{title}</TypographyH1>}
+              {description && <TypographyPMuted className="line-clamp-2">{description}</TypographyPMuted>}
             </Flex>
           </Flex>
         </Flex>
       )}
 
-      {/* Form */}
-      <Flex className="flex-1 mx-auto w-full max-w-[100%] p-4">
+      <Flex fullWidth flex="1" marginX="auto" padding="md">
         {formElement}
       </Flex>
 
-      {/* Footer Actions */}
-      <Flex 
-        align="center" 
-        justify="end" 
-        gap={3} 
+      <Flex
+        align="center"
+        justify="end"
+        gap={3}
+        fullWidth
         className="sticky bottom-0 py-4 -mx-4 px-4 border-t border-border bg-background/95 backdrop-blur-sm z-10"
       >
         {footer}

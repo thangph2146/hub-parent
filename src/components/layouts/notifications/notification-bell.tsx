@@ -260,7 +260,7 @@ export function NotificationBell() {
           </IconSize>
           {data && data.unreadCount > 0 && (
             <Badge variant="destructive" className="absolute -top-1 -right-1 h-5 w-5 p-0">
-              <Flex align="center" justify="center" className="h-full w-full">
+              <Flex align="center" justify="center" height="full" width="full">
                 <TypographySpanSmall>
                   {data.unreadCount > 99 ? "99+" : data.unreadCount}
                 </TypographySpanSmall>
@@ -274,7 +274,7 @@ export function NotificationBell() {
         className="w-[380px] p-0 sm:w-[420px]"
         sideOffset={8}
       >
-        <Flex align="center" justify="between" padding="md" className="border-b">
+        <Flex align="center" justify="between" padding="md" border="bottom">
           <Flex align="center" gap={2}>
             <TypographyH3>Thông báo</TypographyH3>
             {isSocketConnected ? (
@@ -346,9 +346,9 @@ export function NotificationBell() {
           </Flex>
         </Flex>
 
-        <div className="max-h-[400px] overflow-y-auto">
+        <Flex direction="col" maxHeight="400" overflow="auto">
           {connectionError && !isSocketConnected && (
-            <Flex padding="sm" className="border-b bg-yellow-50/50 text-yellow-700 dark:bg-yellow-950/20 dark:text-yellow-300">
+            <Flex padding="sm" border="bottom" className="bg-yellow-50/50 text-yellow-700 dark:bg-yellow-950/20 dark:text-yellow-300">
               <Flex align="center" gap={2}>
                 <IconSize size="xs">
                   <WifiOff />
@@ -364,7 +364,7 @@ export function NotificationBell() {
               </IconSize>
             </Flex>
           ) : ownedNotifications.length === 0 ? (
-            <Flex direction="col" align="center" justify="center" padding="xl" className="text-center">
+            <Flex direction="col" align="center" justify="center" padding="xl" textAlign="center">
               <Flex direction="col" align="center" gap={2}>
                 <IconSize size="4xl">
                   <Bell className="text-muted-foreground opacity-50" />
@@ -376,7 +376,7 @@ export function NotificationBell() {
               </Flex>
             </Flex>
           ) : (
-            <div className="divide-y">
+            <Flex direction="col" className="divide-y">
               {/* Chỉ hiển thị tối đa 10 thông báo đầu tiên của chính user (owner) */}
               {ownedNotifications.slice(0, 10).map((notification, index) => (
                 <React.Fragment key={notification.id}>
@@ -444,9 +444,9 @@ export function NotificationBell() {
                   {index < Math.min(ownedNotifications.length, 10) - 1 && <Separator />}
                 </React.Fragment>
               ))}
-            </div>
+            </Flex>
           )}
-        </div>
+        </Flex>
 
         {/* Luôn hiển thị link "Xem tất cả" nếu có thông báo và user là super admin */}
         {!isLoading && ownedNotifications.length > 0 && isProtectedSuperAdmin && (

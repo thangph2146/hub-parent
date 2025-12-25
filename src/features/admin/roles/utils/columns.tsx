@@ -1,5 +1,5 @@
 import { useMemo } from "react"
-import { TypographySpanSmall, TypographySpanSmallMuted } from "@/components/ui/typography"
+import { TypographySpanSmall, TypographySpanSmallMuted, TypographySpanMuted } from "@/components/ui/typography"
 import { Switch } from "@/components/ui/switch"
 import type { DataTableColumn } from "@/components/tables"
 import { Flex } from "@/components/ui/flex"
@@ -68,7 +68,7 @@ export const useRoleColumns = ({ togglingRoles, canManage, onToggleStatus }: Use
         header: "Mô tả",
         className: "min-w-[200px] max-w-[400px]",
         headerClassName: "min-w-[200px] max-w-[400px]",
-        cell: (row) => row.description ?? <span className="text-muted-foreground">-</span>,
+        cell: (row) => row.description ?? <TypographySpanMuted>-</TypographySpanMuted>,
       },
       {
         accessorKey: "permissions",
@@ -77,7 +77,7 @@ export const useRoleColumns = ({ togglingRoles, canManage, onToggleStatus }: Use
         headerClassName: "min-w-[150px] max-w-[300px]",
         cell: (row) =>
           row.permissions.length > 0 ? (
-            <Flex wrap={true} gap={1}>
+            <Flex wrap gap={1}>
               {row.permissions.slice(0, 3).map((perm) => (
                 <TypographySpanSmallMuted
                   key={perm}
@@ -93,7 +93,7 @@ export const useRoleColumns = ({ togglingRoles, canManage, onToggleStatus }: Use
               )}
             </Flex>
           ) : (
-            <span className="text-muted-foreground">-</span>
+            <TypographySpanMuted>-</TypographySpanMuted>
           ),
       },
       {

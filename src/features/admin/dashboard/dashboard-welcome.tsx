@@ -168,7 +168,7 @@ export const DashboardWelcome = () => {
 
   if (!isMounted) {
     return (
-      <Flex direction="col" gap={4} className="flex-1 p-4 md:p-6">
+      <Flex direction="col" gap={4} flex="1" padding="md-lg" fullWidth>
         <Flex className="h-64 bg-muted/50 rounded-xl animate-pulse" />
       </Flex>
     )
@@ -177,7 +177,7 @@ export const DashboardWelcome = () => {
   const RoleIcon = roleInfo.icon
 
   return (
-    <Flex direction="col" gap={6} className="flex-1 p-4 md:p-6 lg:p-8 relative overflow-hidden">
+    <Flex direction="col" gap={6} flex="1" padding="responsive-lg" position="relative" overflow="hidden" fullWidth>
       {/* Background gradient effects */}
       <Flex className="absolute inset-0 -z-10 overflow-hidden pointer-events-none">
         <Flex className="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
@@ -185,16 +185,16 @@ export const DashboardWelcome = () => {
       </Flex>
 
       <motion.div
-        className="flex flex-1 flex-col gap-8 relative z-10"
+        className="flex flex-1 flex-col gap-8 relative z-10 w-full"
         variants={containerVariants}
         initial="hidden"
         animate="visible"
       >
         {/* Welcome Header with Role Badge */}
         <motion.div variants={itemVariants}>
-          <Flex direction="col" align="center" justify="between" gap={6} className="md:flex-row md:items-center">
-            <Flex direction="col" gap={4}>
-              <Flex align="center" gap={3} wrap={true}>
+          <Flex direction="col" align="center" justify="between" gap={6} className="md:flex-row md:items-center" fullWidth>
+            <Flex direction="col" gap={4} fullWidth>
+              <Flex align="center" gap={3} wrap fullWidth>
                 <motion.h1
                   className="leading-tight"
                   initial={{ opacity: 0, x: -20 }}
@@ -229,7 +229,7 @@ export const DashboardWelcome = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4, duration: 0.6 }}
               >
-                <Flex wrap={true} align="center" gap={3}>
+                <Flex wrap align="center" gap={3}>
                 <Badge
                   variant="outline"
                   className={cn(
@@ -261,7 +261,7 @@ export const DashboardWelcome = () => {
           animate={{ opacity: 1, y: 0 }}
         >
           <Card className="relative overflow-hidden backdrop-blur-md bg-card/80 border border-primary/20 shadow-xl">
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-primary/5 to-background" />
+            <Flex className="absolute inset-0 bg-gradient-to-br from-primary/10 via-primary/5 to-background" />
             <CardHeader className="relative z-10">
               <CardTitle>
                 <TypographyTitleLarge>
@@ -285,12 +285,11 @@ export const DashboardWelcome = () => {
                   {availablePermissions.map((item, index) => (
                     <motion.div
                       key={index}
-                      className="p-2 rounded-md bg-background/50 border border-border/50"
                       initial={{ opacity: 0, x: -10 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: 0.1 * index }}
                     >
-                      <Flex align="center" gap={2}>
+                      <Flex align="center" gap={2} padding="sm" rounded="md" className="bg-background/50 border-border/50" border="all">
                         <IconSize size="sm">
                           <CheckCircle2 className="text-[#00cc44] dark:text-[#00ff88]" />
                         </IconSize>
@@ -300,7 +299,7 @@ export const DashboardWelcome = () => {
                   ))}
                 </Grid>
               ) : (
-                <Flex direction="col" align="center" gap={2} className="text-center py-4">
+                <Flex direction="col" align="center" gap={2} textAlign="center" paddingY={4}>
                   <IconSize size="2xl">
                     <AlertCircle className="opacity-50" />
                   </IconSize>

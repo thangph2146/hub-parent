@@ -1,6 +1,5 @@
 "use client"
 
-import { useMemo } from "react"
 import { useQueryClient } from "@tanstack/react-query"
 import { ResourceForm } from "@/features/admin/resources/components"
 import { useResourceFormSubmit, useResourceNavigation, useResourceDetailData } from "@/features/admin/resources/hooks"
@@ -52,12 +51,7 @@ export const CategoryEditClient = ({
     resourceName: "categories",
     fetchOnMount: !!resourceId,
   })
-  const category = useMemo(() => {
-    if (categoryData) {
-      return categoryData as CategoryEditData
-    }
-    return initialCategory || null
-  }, [categoryData, initialCategory])
+  const category = (categoryData || initialCategory) as CategoryEditData | null
 
   const { handleSubmit } = useResourceFormSubmit({
     apiRoute: (id) => apiRoutes.categories.update(id),
@@ -69,10 +63,8 @@ export const CategoryEditClient = ({
       errorTitle: "Lỗi cập nhật danh mục",
     },
     navigation: {
-      toDetail: variant === "page" && backUrl
-        ? backUrl
-        : variant === "page" && category?.id
-          ? `/admin/categories/${category.id}`
+      toDetail: variant === "page" 
+        ? (backUrl || (category?.id ? `/admin/categories/${category.id}` : undefined))
           : undefined,
       fallback: backUrl,
     },
@@ -87,26 +79,21 @@ export const CategoryEditClient = ({
     }),
   })
 
-  if (!category?.id) {
-    return null
-  }
+  if (!category?.id) return null
 
-  const isDeleted = category.deletedAt !== null && category.deletedAt !== undefined
+  const isDeleted = !!category.deletedAt
   const formDisabled = isDeleted && variant !== "page"
+  const editUrl = `/admin/categories/${category.id}/edit`
   
   const handleSubmitWrapper = async (data: Partial<CategoryFormData>) => {
-    if (isDeleted) {
-      return { success: false, error: "Bản ghi đã bị xóa, không thể chỉnh sửa" }
-    }
+    if (isDeleted) return { success: false, error: "Bản ghi đã bị xóa, không thể chỉnh sửa" }
     return handleSubmit(data)
   }
-
-  const editFields = getBaseCategoryFields()
 
   return (
     <ResourceForm<CategoryFormData>
       data={category}
-      fields={editFields.map(field => ({ ...field, disabled: formDisabled || field.disabled }))}
+      fields={getBaseCategoryFields().map(field => ({ ...field, disabled: formDisabled || field.disabled }))}
       onSubmit={handleSubmitWrapper}
       title="Chỉnh sửa danh mục"
       description={isDeleted ? "Bản ghi đã bị xóa, không thể chỉnh sửa" : "Cập nhật thông tin danh mục"}
@@ -114,14 +101,14 @@ export const CategoryEditClient = ({
       cancelLabel="Hủy"
       backUrl={backUrl}
       backLabel={backLabel}
-      onBack={() => navigateBack(backUrl || `/admin/categories/${category?.id || ""}`)}
+      onBack={() => navigateBack(backUrl || editUrl)}
       variant={variant}
       open={open}
       onOpenChange={onOpenChange}
-      showCard={variant === "page" ? false : true}
+      showCard={variant !== "page"}
       className={variant === "page" ? "max-w-[100%]" : undefined}
       resourceName="categories"
-      resourceId={category?.id}
+      resourceId={category.id}
       action="update"
     />
   )

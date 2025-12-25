@@ -18,15 +18,37 @@ const cardVariants = cva(
         lg: "p-6",
         xl: "p-8",
         default: "py-6",
+        "hero": "p-4 sm:p-6 lg:p-8 gap-0",
+        "0": "p-0",
+        "form": "p-6 md:p-8",
       },
       fullWidth: {
         true: "w-full",
         false: "",
       },
+      maxWidth: {
+        none: "",
+        "sm": "max-w-sm",
+        "md": "max-w-md",
+        "lg": "max-w-lg",
+        "hero": "max-w-sm md:max-w-md lg:max-w-lg",
+      },
+      overlay: {
+        none: "",
+        "white-90": "bg-white/90 backdrop-blur-md shadow-xl border border-white/20",
+      },
+      overflow: {
+        none: "",
+        hidden: "overflow-hidden",
+        auto: "overflow-auto",
+      },
     },
     defaultVariants: {
       padding: "default",
       fullWidth: true,
+      maxWidth: "none",
+      overlay: "none",
+      overflow: "none",
     },
   }
 )
@@ -35,11 +57,11 @@ export interface CardProps
   extends React.ComponentProps<"div">,
     VariantProps<typeof cardVariants> {}
 
-function Card({ className, padding, fullWidth, ...props }: CardProps) {
+function Card({ className, padding, fullWidth, maxWidth, overlay, overflow, ...props }: CardProps) {
   return (
     <div
       data-slot="card"
-      className={cn(cardVariants({ padding, fullWidth }), className)}
+      className={cn(cardVariants({ padding, fullWidth, maxWidth, overlay, overflow }), className)}
       {...props}
     />
   )
@@ -91,11 +113,34 @@ function CardAction({ className, ...props }: React.ComponentProps<"div">) {
   )
 }
 
-function CardContent({ className, ...props }: React.ComponentProps<"div">) {
+const cardContentVariants = cva("px-6", {
+  variants: {
+    padding: {
+      none: "p-0",
+      default: "",
+      "md": "p-6 md:p-8",
+    },
+    grid: {
+      none: "",
+      "2": "grid grid-cols-1 md:grid-cols-2",
+    },
+  },
+  defaultVariants: {
+    padding: "default",
+    grid: "none",
+  },
+})
+
+export interface CardContentProps extends React.ComponentProps<"div"> {
+  padding?: "none" | "default" | "md"
+  grid?: "none" | "2"
+}
+
+function CardContent({ className, padding, grid, ...props }: CardContentProps) {
   return (
     <div
       data-slot="card-content"
-      className={cn("px-6", className)}
+      className={cn(cardContentVariants({ padding, grid }), className)}
       {...props}
     />
   )

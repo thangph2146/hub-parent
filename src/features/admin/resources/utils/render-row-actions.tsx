@@ -8,6 +8,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { IconSize } from "@/components/ui/typography"
+import { Flex } from "@/components/ui/flex"
 
 export interface RowActionConfig {
   label: string
@@ -37,10 +38,12 @@ export const renderRowActions = (actions: RowActionConfig[]) => {
           if (!isDisabled) singleAction.onSelect()
         }}
       >
-        <IconSize size="md" className={`mr-2 ${singleAction.isLoading ? "animate-spin" : ""}`}>
+        <Flex align="center" gap={2}>
+          <IconSize size="md" className={singleAction.isLoading ? "animate-spin" : ""}>
           <Icon />
         </IconSize>
         {displayLabel}
+        </Flex>
       </Button>
     )
   }
@@ -73,14 +76,16 @@ export const renderRowActions = (actions: RowActionConfig[]) => {
                   : "data-[highlighted]:bg-accent/10 disabled:opacity-50"
               }
             >
+              <Flex align="center" gap={2}>
               <IconSize size="md" className={
                   action.destructive
-                    ? `mr-2 text-destructive ${action.isLoading ? "animate-spin" : ""}`
-                    : `mr-2 ${action.isLoading ? "animate-spin" : ""}`
+                      ? `text-destructive ${action.isLoading ? "animate-spin" : ""}`
+                      : action.isLoading ? "animate-spin" : ""
                 }>
                 <Icon />
               </IconSize>
               {displayLabel}
+              </Flex>
             </DropdownMenuItem>
           )
         })}

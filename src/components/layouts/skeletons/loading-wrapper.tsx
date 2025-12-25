@@ -7,7 +7,6 @@
 
 import { AdminHeader, type AdminBreadcrumbItem } from "@/components/layouts/headers"
 import { Flex } from "@/components/ui/flex"
-import { cn } from "@/lib/utils"
 
 interface LoadingWrapperProps {
   breadcrumbs: AdminBreadcrumbItem[]
@@ -19,7 +18,7 @@ export function LoadingWrapper({ breadcrumbs, children, className }: LoadingWrap
   return (
     <>
       <AdminHeader breadcrumbs={breadcrumbs} />
-      <Flex direction="col" gap={4} className={cn("flex-1 p-4", className)}>
+      <Flex direction="col" gap={4} flex="1" padding="md" className={className}>
         {children}
       </Flex>
     </>

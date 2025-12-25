@@ -17,6 +17,7 @@ import { Separator } from "@/components/ui/separator"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { NotificationBell } from "@/components/layouts/notifications"
 import { ModeToggle } from "@/components/layouts/shared"
+import { Flex } from "@/components/ui/flex"
 import { useResourceRouter, useResourceSegment } from "@/hooks/use-resource-segment"
 import { applyResourceSegmentToPath } from "@/lib/permissions"
 import { truncateBreadcrumbLabel } from "@/features/admin/resources/utils"
@@ -74,11 +75,19 @@ export function AdminHeader({ breadcrumbs = [] }: AdminHeaderProps) {
   }, [resourceSegment])
 
   return (
-    <header
+    <Flex
+      as="header"
       data-admin-header="true"
-      className="sticky top-0 z-50 flex h-16 shrink-0 items-center gap-2 border-b bg-background"
+      position="sticky"
+      height="16"
+      shrink
+      align="center"
+      gap={2}
+      border="bottom"
+      bg="background"
+      className="top-0 z-50"
     >
-      <div className="flex flex-1 items-center gap-2 px-4">
+      <Flex flex="1" align="center" gap={2} padding="md-x">
         <SidebarTrigger className="-ml-1" />
         <Separator
           orientation="vertical"
@@ -127,14 +136,14 @@ export function AdminHeader({ breadcrumbs = [] }: AdminHeaderProps) {
             })}
           </BreadcrumbList>
         </Breadcrumb>
-      </div>
+      </Flex>
       {session?.user?.id && (
-        <div className="flex items-center gap-2 px-4">
+        <Flex align="center" gap={2} padding="md-x">
           <ModeToggle />
           <NotificationBell />
-        </div>
+        </Flex>
       )}
-    </header>
+    </Flex>
   )
 }
 

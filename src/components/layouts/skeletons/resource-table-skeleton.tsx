@@ -1,5 +1,6 @@
 import { Skeleton } from "@/components/ui/skeleton"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
+import { Flex } from "@/components/ui/flex"
 import {
   Table,
   TableBody,
@@ -23,38 +24,30 @@ export function ResourceTableSkeleton({
   columnCount = 4,
 }: ResourceTableSkeletonProps) {
   return (
-    <div className="flex flex-col gap-3 sm:gap-4">
-      {/* Header Skeleton */}
+    <Flex direction="col" gap={4}>
       {(title || viewModes > 1) && (
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0">
-          {title ? (
-            <Skeleton className="h-6 w-32" />
-          ) : (
-            <span />
-          )}
-          <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+        <Flex direction="col-sm-row" align="start" justify="between" gap={2} className="sm:items-center">
+          {title ? <Skeleton className="h-6 w-32" /> : <Flex />}
             {viewModes > 1 && (
-              <>
+            <Flex align="center" gap={2} wrap>
                 {Array.from({ length: viewModes }).map((_, index) => (
                   <Skeleton key={index} className="h-8 w-20" />
                 ))}
-              </>
+            </Flex>
             )}
-          </div>
-        </div>
+        </Flex>
       )}
 
-      {/* Table Skeleton */}
       <Card>
         <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
+          <Flex align="center" fullWidth justify="between">
             <Skeleton className="h-5 w-32" />
             <Skeleton className="h-9 w-24" />
-          </div>
+          </Flex>
         </CardHeader>
         <CardContent>
-          <div className="rounded-md border overflow-hidden">
-            <div className="overflow-x-auto">
+          <Flex rounded="md" border="all" className="overflow-hidden">
+            <Flex className="overflow-x-auto" fullWidth>
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -77,20 +70,19 @@ export function ResourceTableSkeleton({
                   ))}
                 </TableBody>
               </Table>
-            </div>
-          </div>
-          {/* Pagination Skeleton */}
-          <div className="flex items-center justify-between gap-3 border-t border-border px-2 py-4 mt-4">
+            </Flex>
+          </Flex>
+          <Flex align="center" fullWidth justify="between" gap={3} border="top" paddingX={2} paddingY={4} marginTop={4}>
             <Skeleton className="h-5 w-48" />
-            <div className="flex items-center gap-2">
+            <Flex align="center" gap={2}>
               <Skeleton className="h-8 w-20" />
               <Skeleton className="h-4 w-24" />
               <Skeleton className="h-8 w-20" />
-            </div>
-          </div>
+            </Flex>
+          </Flex>
         </CardContent>
       </Card>
-    </div>
+    </Flex>
   )
 }
 

@@ -73,7 +73,7 @@ export function FontSizeToolbarPlugin() {
         onChange={(e) =>
           updateFontSize(parseInt(e.target.value) || DEFAULT_FONT_SIZE)
         }
-        className="!h-8 w-fit text-center"
+        className="bg-background !h-11 w-fit text-center"
         min={MIN_FONT_SIZE}
         max={MAX_FONT_SIZE}
         onKeyDown={(event) => {

@@ -38,7 +38,7 @@ export function FeedbackDialog({
             <IconSize size="lg" className={iconColor}>
               <Icon />
             </IconSize>
-            <Flex direction="col" className="flex-1">
+            <Flex direction="col" flex="1">
               <DialogPrimitive.Title asChild>
                 <TypographyH3>{title}</TypographyH3>
               </DialogPrimitive.Title>
@@ -51,7 +51,7 @@ export function FeedbackDialog({
           </Flex>
 
           {details ? (
-            <Flex direction="col" gap={2} className="mt-4">
+            <Flex direction="col" gap={2} marginTop={4}>
               <TypographyP>
                 Chi tiết
               </TypographyP>

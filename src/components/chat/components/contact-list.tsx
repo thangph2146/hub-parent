@@ -6,10 +6,10 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Flex } from "@/components/ui/flex"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { Search, ChevronDown } from "lucide-react"
-import { TypographyPSmall, TypographyPSmallMuted, IconSize } from "@/components/ui/typography"
+import { TypographyPSmallMuted, IconSize } from "@/components/ui/typography"
 import type { Contact } from "../types"
 import { ContactItem } from "./contact-item"
-import { groupContactsByTime, type GroupedContacts } from "../utils/contact-helpers"
+import { groupContactsByTime } from "../utils/contact-helpers"
 
 interface ContactListProps {
   contacts: Contact[]

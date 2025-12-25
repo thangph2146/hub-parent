@@ -33,6 +33,9 @@ export interface ContentCardProps {
   button?: ContentCardButton;
   buttons?: ContentCardButton[];
   cardClassName?: string;
+  cardOverlay?: "white-90" | "none";
+  cardMaxWidth?: "sm" | "md" | "lg" | "hero" | "none";
+  cardPadding?: "none" | "xs" | "sm" | "md" | "lg" | "xl" | "default" | "hero";
   headerClassName?: string;
   titleClassName?: string;
   descriptionClassName?: string;
@@ -48,6 +51,9 @@ export const ContentCard = ({
   button,
   buttons,
   cardClassName,
+  cardOverlay = "none",
+  cardMaxWidth = "none",
+  cardPadding = "default",
   headerClassName,
   titleClassName,
   descriptionClassName,
@@ -59,7 +65,12 @@ export const ContentCard = ({
   const buttonsToRender = buttons || (button ? [button] : []);
 
   return (
-    <Card className={cardClassName}>
+    <Card 
+      className={cardClassName}
+      overlay={cardOverlay}
+      maxWidth={cardMaxWidth}
+      padding={cardPadding}
+    >
       <CardHeader className={headerClassName}>
         <CardTitle
           className={cn("leading-tight", titleClassName || titleDefaultClasses)}

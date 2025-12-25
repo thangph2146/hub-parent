@@ -4,7 +4,6 @@ import { Tag, Hash, AlignLeft, Calendar, Clock, Edit } from "lucide-react"
 import { 
   ResourceDetailClient, 
   FieldItem,
-  type ResourceDetailField, 
   type ResourceDetailSection 
 } from "@/features/admin/resources/components"
 import { Button } from "@/components/ui/button"
@@ -40,8 +39,6 @@ export const CategoryDetailClient = ({ categoryId, category, backUrl = "/admin/c
     invalidateQueryKey: queryKeys.adminCategories.all(),
   })
   const { hasAnyPermission } = usePermissions()
-  
-  // Check permission for edit
   const canUpdate = hasAnyPermission([PERMISSIONS.CATEGORIES_UPDATE, PERMISSIONS.CATEGORIES_MANAGE])
 
   const { data: detailData, isFetched, isFromApi, fetchedData } = useResourceDetailData({
@@ -61,64 +58,44 @@ export const CategoryDetailClient = ({ categoryId, category, backUrl = "/admin/c
     fetchedData,
   })
 
-  const detailFields: ResourceDetailField<CategoryDetailData>[] = []
-
   const detailSections: ResourceDetailSection<CategoryDetailData>[] = [
     {
       id: "basic",
       title: "Thông tin cơ bản",
       description: "Thông tin chính về danh mục và thời gian",
       fieldsContent: (_fields, data) => {
-        const categoryData = data as CategoryDetailData
-        
+        const cat = data as CategoryDetailData
         return (
-          <Flex direction="col" gap={6}>
-            {/* Name & Slug */}
-            <Grid cols={2} gap={6}>
+          <Flex direction="col" fullWidth gap={6}>
+            <Grid cols={2} fullWidth gap={6}>
               <FieldItem icon={Tag} label="Tên danh mục">
-                <TypographyP>
-                  {categoryData.name || "—"}
-                </TypographyP>
+                <TypographyP>{cat.name || "—"}</TypographyP>
               </FieldItem>
-
               <FieldItem icon={Hash} label="Slug">
-                <TypographyP className="font-mono">
-                  {categoryData.slug || "—"}
-                </TypographyP>
+                <TypographyP className="font-mono">{cat.slug || "—"}</TypographyP>
               </FieldItem>
             </Grid>
 
-            {/* Description */}
-            {categoryData.description && (
-              <Card className="border border-border/50 bg-card p-5">
-                <Flex align="start" gap={3}>
-                  <Flex align="center" justify="center" className="h-9 w-9 shrink-0 rounded-lg bg-muted">
-                    <IconSize size="sm">
-                      <AlignLeft />
-                    </IconSize>
+            {cat.description && (
+              <Card className="border-border/50" padding="lg">
+                <Flex align="start" fullWidth gap={3}>
+                  <Flex align="center" justify="center" shrink className="h-9 w-9" rounded="lg" bg="muted">
+                    <IconSize size="sm"><AlignLeft /></IconSize>
                   </Flex>
-                  <Flex direction="col" gap={2} className="flex-1 min-w-0">
+                  <Flex direction="col" fullWidth gap={2} flex="1" minWidth="0">
                     <TypographyP>Mô tả</TypographyP>
-                    <TypographyP>
-                      {categoryData.description || "—"}
-                    </TypographyP>
+                    <TypographyP>{cat.description}</TypographyP>
                   </Flex>
                 </Flex>
               </Card>
             )}
 
-            {/* Timestamps */}
-            <Grid cols={2} gap={6}>
+            <Grid cols={2} fullWidth gap={6}>
               <FieldItem icon={Calendar} label="Ngày tạo">
-                <TypographyP>
-                  {categoryData.createdAt ? formatDateVi(categoryData.createdAt) : "—"}
-                </TypographyP>
+                <TypographyP>{formatDateVi(cat.createdAt)}</TypographyP>
               </FieldItem>
-
               <FieldItem icon={Clock} label="Cập nhật lần cuối">
-                <TypographyP>
-                  {categoryData.updatedAt ? formatDateVi(categoryData.updatedAt) : "—"}
-                </TypographyP>
+                <TypographyP>{formatDateVi(cat.updatedAt)}</TypographyP>
               </FieldItem>
             </Grid>
           </Flex>
@@ -127,32 +104,29 @@ export const CategoryDetailClient = ({ categoryId, category, backUrl = "/admin/c
     },
   ]
 
-  const isDeleted = detailData.deletedAt !== null && detailData.deletedAt !== undefined
+  const isDeleted = !!detailData?.deletedAt
+
+  const editUrl = `/admin/categories/${categoryId}/edit`
 
   return (
     <ResourceDetailClient<CategoryDetailData>
       data={detailData}
-      fields={detailFields}
+      fields={[]}
       detailSections={detailSections}
-      title={detailData.name}
-      description={`Chi tiết danh mục ${detailData.slug}`}
+      title={detailData?.name}
+      description={`Chi tiết danh mục ${detailData?.slug}`}
       backUrl={backUrl}
       backLabel="Quay lại danh sách"
       onBack={() => navigateBack(backUrl)}
       actions={
-        !isDeleted && canUpdate ? (
-          <Button
-            variant="outline"
-            onClick={() => router.push(`/admin/categories/${categoryId}/edit`)}
-          >
+        !isDeleted && canUpdate && (
+          <Button variant="outline" onClick={() => router.push(editUrl)}>
             <Flex align="center" gap={2}>
-              <IconSize size="sm">
-                <Edit />
-              </IconSize>
+              <IconSize size="sm"><Edit /></IconSize>
               Chỉnh sửa
             </Flex>
           </Button>
-        ) : null
+        )
       }
     />
   )

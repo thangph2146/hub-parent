@@ -82,21 +82,13 @@ export const StudentDetailClient = ({ studentId, student, backUrl = "/admin/stud
         const studentData = (data || detailData) as StudentDetailData
         
         return (
-          <Grid cols={2} gap={6}>
-            {/* Student Code & Name */}
+          <Grid cols={2} fullWidth gap={6}>
             <FieldItem icon={Hash} label="Mã sinh viên">
-              <TypographyP className="font-mono">
-                {studentData.studentCode || "—"}
-              </TypographyP>
+              <TypographyP className="font-mono">{studentData.studentCode || "—"}</TypographyP>
             </FieldItem>
-
             <FieldItem icon={User} label="Tên sinh viên">
-              <TypographyP>
-                {studentData.name || "—"}
-              </TypographyP>
+              <TypographyP>{studentData.name || "—"}</TypographyP>
             </FieldItem>
-
-            {/* Email */}
             {studentData.email && (
               <FieldItem icon={Mail} label="Email">
                 <a
@@ -107,18 +99,12 @@ export const StudentDetailClient = ({ studentId, student, backUrl = "/admin/stud
                 </a>
               </FieldItem>
             )}
-
-            {/* Linked Account */}
             {studentData.userId && studentData.userName && (
               <FieldItem icon={User} label="Tài khoản liên kết">
                 <Flex direction="col" gap={1}>
-                  <TypographyP>
-                    {studentData.userName}
-                  </TypographyP>
+                  <TypographyP>{studentData.userName}</TypographyP>
                   {studentData.userEmail && (
-                    <TypographyPSmallMuted>
-                      {studentData.userEmail}
-                    </TypographyPSmallMuted>
+                    <TypographyPSmallMuted>{studentData.userEmail}</TypographyPSmallMuted>
                   )}
                 </Flex>
               </FieldItem>
@@ -133,7 +119,7 @@ export const StudentDetailClient = ({ studentId, student, backUrl = "/admin/stud
   const isDeleted = detailData.deletedAt !== null && detailData.deletedAt !== undefined
 
   return (
-    <Flex direction="col" gap={6}>
+    <Flex direction="col" fullWidth gap={6}>
       <ResourceDetailClient<StudentDetailData>
         title="Thông tin sinh viên"
         description={`Thông tin chính về sinh viên ${detailData.name}`}

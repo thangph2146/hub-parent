@@ -60,7 +60,7 @@ export const usePostColumns = ({
               <TypographySpanSmallMuted className="line-clamp-1">{row.excerpt}</TypographySpanSmallMuted>
             )}
             {(row.categories && row.categories.length > 0) || (row.tags && row.tags.length > 0) ? (
-              <Flex wrap={true} gap={1} className="mt-0.5">
+              <Flex wrap gap={1} marginTop={0.5}>
                 {row.categories && row.categories.length > 0 && (
                   <>
                     {row.categories.slice(0, 2).map((category) => (

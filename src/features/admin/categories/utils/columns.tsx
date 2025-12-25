@@ -1,5 +1,6 @@
 import { useMemo } from "react"
-import { TypographyP } from "@/components/ui/typography"
+import { TypographyP, TypographyPSmallMuted } from "@/components/ui/typography"
+import { Flex } from "@/components/ui/flex"
 import type { DataTableColumn } from "@/components/tables"
 import { useDynamicFilterOptions } from "@/features/admin/resources/hooks/use-dynamic-filter-options"
 import { apiRoutes } from "@/lib/api/routes"
@@ -40,9 +41,9 @@ export const useCategoryColumns = () => {
         className: "min-w-[150px] max-w-[250px]",
         headerClassName: "min-w-[150px] max-w-[250px]",
         cell: (row) => (
-          <div className="break-words max-w-[250px]" title={row.name}>
+          <Flex className="break-words max-w-[250px]" title={row.name}>
             {row.name}
-          </div>
+          </Flex>
         ),
       },
       {
@@ -60,9 +61,9 @@ export const useCategoryColumns = () => {
         className: "min-w-[150px] max-w-[250px]",
         headerClassName: "min-w-[150px] max-w-[250px]",
         cell: (row) => (
-          <div className="break-words max-w-[250px]" title={row.slug}>
+          <Flex className="break-words max-w-[250px]" title={row.slug}>
             {row.slug}
-          </div>
+          </Flex>
         ),
       },
       {
@@ -72,7 +73,7 @@ export const useCategoryColumns = () => {
         headerClassName: "min-w-[200px] max-w-[400px]",
         cell: (row) => (
           <TypographyP className="break-words max-w-[400px]" title={row.description || undefined}>
-            {row.description ?? <span className="text-muted-foreground">-</span>}
+            {row.description ?? <TypographyPSmallMuted>-</TypographyPSmallMuted>}
           </TypographyP>
         ),
       },
@@ -120,7 +121,7 @@ export const useCategoryColumns = () => {
         className: "min-w-[140px] max-w-[180px]",
         headerClassName: "min-w-[140px] max-w-[180px]",
         cell: (row) => {
-          if (!row.deletedAt) return <span className="text-muted-foreground">-</span>
+          if (!row.deletedAt) return <TypographyPSmallMuted>-</TypographyPSmallMuted>
           try {
             return dateFormatter.format(new Date(row.deletedAt))
           } catch {

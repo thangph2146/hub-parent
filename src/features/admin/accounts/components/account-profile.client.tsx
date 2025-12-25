@@ -1,6 +1,6 @@
 "use client";
 
-import { TypographyH1, TypographyH3, TypographyH4, TypographyDescription, TypographyP, TypographyPLarge, TypographySpanSmall, IconSize } from "@/components/ui/typography";
+import { TypographyH1, TypographyH3, TypographyH4, TypographyDescription, TypographyP, TypographyPLarge, TypographySpanSmall, TypographySpanMuted, IconSize } from "@/components/ui/typography";
 import { Flex } from "@/components/ui/flex";
 import { Grid } from "@/components/ui/grid";
 
@@ -119,7 +119,7 @@ export const AccountProfileClient = ({
                 </IconSize>
               </Flex>
             </div>
-            <Flex direction="col" gap={3} className="flex-1 min-w-0">
+            <Flex direction="col" gap={3} flex="1" minWidth="0">
               <Flex direction="col" gap={1.5}>
                 <TypographyH3 className="tracking-tight">
                   {account.name || "Chưa có tên"}
@@ -128,11 +128,11 @@ export const AccountProfileClient = ({
                   <IconSize size="sm" className="shrink-0">
                     <Mail />
                   </IconSize>
-                  <span className="truncate">{account.email}</span>
+                  <TypographySpanSmall className="truncate">{account.email}</TypographySpanSmall>
                 </Flex>
               </Flex>
               {account.roles && account.roles.length > 0 && (
-                <Flex wrap={true} align="center" gap={2}>
+                <Flex wrap align="center" gap={2}>
                   {account.roles.map((role) => (
                     <Badge
                       key={role.id}
@@ -161,9 +161,9 @@ export const AccountProfileClient = ({
                 <FieldItem icon={User} label="Tên">
                   <TypographyPLarge className="mt-1">
                     {accountData.name || (
-                      <span className="text-muted-foreground italic">
+                      <TypographySpanMuted className="italic">
                         Chưa cập nhật
-                      </span>
+                      </TypographySpanMuted>
                     )}
                   </TypographyPLarge>
                 </FieldItem>
@@ -173,9 +173,9 @@ export const AccountProfileClient = ({
                 <FieldItem icon={Phone} label="Số điện thoại">
                   <TypographyPLarge className="mt-1">
                     {accountData.phone || (
-                      <span className="text-muted-foreground italic">
+                      <TypographySpanMuted className="italic">
                         Chưa cập nhật
-                      </span>
+                      </TypographySpanMuted>
                     )}
                   </TypographyPLarge>
                 </FieldItem>
@@ -190,7 +190,7 @@ export const AccountProfileClient = ({
                       <FileText className="text-primary" />
                     </IconSize>
                   </Flex>
-                  <Flex direction="col" gap={3} className="flex-1 min-w-0">
+                  <Flex direction="col" gap={3} flex="1" minWidth="0">
                     <TypographyP className="uppercase tracking-wide">
                       Giới thiệu
                     </TypographyP>
@@ -224,7 +224,7 @@ export const AccountProfileClient = ({
                                   <TypographySpanSmall className="min-w-[80px]">
                                     Số nhà:
                                   </TypographySpanSmall>
-                                  <span>{structuredAddress.address}</span>
+                                  <TypographySpanSmall>{structuredAddress.address}</TypographySpanSmall>
                                 </Flex>
                               )}
                               {structuredAddress.ward && (
@@ -232,7 +232,7 @@ export const AccountProfileClient = ({
                                   <TypographySpanSmall className="min-w-[80px]">
                                     Phường/Xã:
                                   </TypographySpanSmall>
-                                  <span>{structuredAddress.ward}</span>
+                                  <TypographySpanSmall>{structuredAddress.ward}</TypographySpanSmall>
                                 </Flex>
                               )}
                               {structuredAddress.district && (
@@ -240,7 +240,7 @@ export const AccountProfileClient = ({
                                   <TypographySpanSmall className="min-w-[80px]">
                                     Quận/Huyện:
                                   </TypographySpanSmall>
-                                  <span>{structuredAddress.district}</span>
+                                  <TypographySpanSmall>{structuredAddress.district}</TypographySpanSmall>
                                 </Flex>
                               )}
                               {structuredAddress.city && (
@@ -248,7 +248,7 @@ export const AccountProfileClient = ({
                                   <TypographySpanSmall className="min-w-[80px]">
                                     Thành phố:
                                   </TypographySpanSmall>
-                                  <span>{structuredAddress.city}</span>
+                                  <TypographySpanSmall>{structuredAddress.city}</TypographySpanSmall>
                                 </Flex>
                               )}
                               {structuredAddress.postalCode && (
@@ -256,7 +256,7 @@ export const AccountProfileClient = ({
                                   <TypographySpanSmall className="min-w-[80px]">
                                     Mã bưu điện:
                                   </TypographySpanSmall>
-                                  <span>{structuredAddress.postalCode}</span>
+                                  <TypographySpanSmall>{structuredAddress.postalCode}</TypographySpanSmall>
                                 </Flex>
                               )}
                             </Grid>
@@ -342,7 +342,7 @@ export const AccountProfileClient = ({
                     {accountData.createdAt ? (
                       formatDateVi(accountData.createdAt)
                     ) : (
-                      <span className="text-muted-foreground italic">—</span>
+                      <TypographySpanMuted className="italic">—</TypographySpanMuted>
                     )}
                   </TypographyPLarge>
                 </FieldItem>
@@ -354,7 +354,7 @@ export const AccountProfileClient = ({
                     {accountData.updatedAt ? (
                       formatDateVi(accountData.updatedAt)
                     ) : (
-                      <span className="text-muted-foreground italic">—</span>
+                      <TypographySpanMuted className="italic">—</TypographySpanMuted>
                     )}
                   </TypographyPLarge>
                 </FieldItem>

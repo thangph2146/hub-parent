@@ -32,7 +32,7 @@ import {
   CommandList,
 } from "@/components/ui/command"
 import { cn } from "@/lib/utils"
-import { TypographySpanMuted, TypographyH3, TypographyP, TypographySpanSmallMuted, IconSize } from "@/components/ui/typography"
+import { TypographySpanMuted, TypographyH3, TypographyP, TypographySpanSmallMuted, TypographySpanSmall, IconSize } from "@/components/ui/typography"
 import { Flex } from "@/components/ui/flex"
 import { Grid } from "@/components/ui/grid"
 
@@ -102,32 +102,22 @@ export const RoleDetailClient = ({ roleId, role, backUrl = "/admin/roles" }: Rol
         const roleData = (data || detailData) as RoleDetailData
         
         return (
-          <Flex direction="col" gap={6}>
-            {/* Name & Display Name */}
-            <Grid cols={2} gap={6}>
-              <FieldItem icon={Shield} label="Tên vai trò">{" "}
-                <TypographySpanMuted className="text-foreground">
-                  {roleData.name || "—"}
-                </TypographySpanMuted>
+          <Flex direction="col" fullWidth gap={6}>
+            <Grid cols={2} fullWidth gap={6}>
+              <FieldItem icon={Shield} label="Tên vai trò">
+                <TypographySpanMuted className="text-foreground">{roleData.name || "—"}</TypographySpanMuted>
               </FieldItem>
-
-              <FieldItem icon={FileText} label="Tên hiển thị">{" "}
-                <TypographySpanMuted className="text-foreground">
-                  {roleData.displayName || "—"}
-                </TypographySpanMuted>
+              <FieldItem icon={FileText} label="Tên hiển thị">
+                <TypographySpanMuted className="text-foreground">{roleData.displayName || "—"}</TypographySpanMuted>
               </FieldItem>
             </Grid>
-
-            {/* Description */}
             {roleData.description && (
-              <Card className="border border-border/50 bg-card p-5">
-                <Flex align="start" gap={3}>
-                  <Flex align="center" justify="center" className="h-9 w-9 shrink-0 rounded-lg bg-muted">
-                    <IconSize size="sm">
-                      <FileText className="text-muted-foreground" />
-                    </IconSize>
+              <Card className="border border-border/50" padding="lg">
+                <Flex align="start" fullWidth gap={3}>
+                  <Flex align="center" justify="center" shrink className="h-9 w-9" rounded="lg" bg="muted">
+                    <IconSize size="sm"><FileText className="text-muted-foreground" /></IconSize>
                   </Flex>
-                  <Flex direction="col" gap={2} className="flex-1 min-w-0">
+                  <Flex direction="col" fullWidth gap={2} flex="1" minWidth="0">
                     <TypographyH3 className="text-foreground">Mô tả</TypographyH3>
                     <TypographyP className="leading-relaxed whitespace-pre-wrap text-foreground break-words">
                       {roleData.description || "—"}
@@ -150,12 +140,12 @@ export const RoleDetailClient = ({ roleId, role, backUrl = "/admin/roles" }: Rol
         if (!roleData.permissions || !Array.isArray(roleData.permissions) || roleData.permissions.length === 0) {
           return (
             <Flex align="center" gap={3}>
-              <Flex align="center" justify="center" className="h-9 w-9 shrink-0 rounded-lg bg-muted">
+              <Flex align="center" justify="center" shrink className="h-9 w-9" rounded="lg" bg="muted">
                 <IconSize size="sm">
                   <Shield className="text-muted-foreground" />
                 </IconSize>
               </Flex>
-              <Flex direction="col" gap={2} className="flex-1 min-w-0">
+              <Flex direction="col" gap={2} flex="1" minWidth="0">
                 <TypographySpanSmallMuted>Quyền</TypographySpanSmallMuted>
                 <TypographySpanMuted>—</TypographySpanMuted>
               </Flex>
@@ -178,14 +168,14 @@ export const RoleDetailClient = ({ roleId, role, backUrl = "/admin/roles" }: Rol
           : `${roleData.permissions.length} quyền đã chọn`
 
         return (
-          <Flex direction="col" gap={4}>
-            <Flex align="start" gap={3}>
-              <Flex align="center" justify="center" className="h-9 w-9 shrink-0 rounded-lg bg-muted">
+          <Flex direction="col" gap={4} fullWidth>
+            <Flex align="start" gap={3} fullWidth>
+              <Flex align="center" justify="center" shrink className="h-9 w-9" rounded="lg" bg="muted">
                 <IconSize size="sm">
                   <Shield className="text-muted-foreground" />
                 </IconSize>
               </Flex>
-              <Flex direction="col" gap={3} className="flex-1 min-w-0">
+              <Flex direction="col" gap={3} flex="1" minWidth="0">
                 <Flex direction="col" gap={2}>
                   <TypographySpanSmallMuted>Quyền</TypographySpanSmallMuted>
                   <Popover open={permissionsOpen} onOpenChange={setPermissionsOpen}>
@@ -196,10 +186,12 @@ export const RoleDetailClient = ({ roleId, role, backUrl = "/admin/roles" }: Rol
                         aria-expanded={permissionsOpen}
                         className="w-full justify-between"
                       >
-                        <span className="truncate">{displayText}</span>
-                        <IconSize size="sm" className="ml-2 shrink-0 opacity-50">
-                          <ChevronsUpDown />
-                        </IconSize>
+                        <Flex align="center" justify="between" fullWidth gap={2}>
+                          <TypographySpanSmall className="truncate">{displayText}</TypographySpanSmall>
+                          <IconSize size="sm" className="shrink-0 opacity-50">
+                            <ChevronsUpDown />
+                          </IconSize>
+                        </Flex>
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-[400px] p-0" align="start">
@@ -227,10 +219,12 @@ export const RoleDetailClient = ({ roleId, role, backUrl = "/admin/roles" }: Rol
                                       disabled
                                       className="cursor-default"
                                     >
-                                      <IconSize size="sm" className="mr-2 opacity-100">
-                                        <Check />
-                                      </IconSize>
-                                      {option.label}
+                                      <Flex align="center" gap={2}>
+                                        <IconSize size="sm" className="opacity-100">
+                                          <Check />
+                                        </IconSize>
+                                        {option.label}
+                                      </Flex>
                                     </CommandItem>
                                   )
                                 })}
@@ -242,7 +236,7 @@ export const RoleDetailClient = ({ roleId, role, backUrl = "/admin/roles" }: Rol
                     </PopoverContent>
                   </Popover>
                 </Flex>
-                <Flex wrap={true} gap={2}>
+                <Flex wrap gap={2}>
                   {selectedPermissions.slice(0, 5).map((perm) => (
                     <Badge key={perm.value} variant="outline" className="bg-primary/10 text-primary border-primary/20">
                       {perm.label}
@@ -268,7 +262,7 @@ export const RoleDetailClient = ({ roleId, role, backUrl = "/admin/roles" }: Rol
         const roleData = (data || detailData) as RoleDetailData
         
         return (
-          <Flex direction="col" gap={6}>
+          <Flex direction="col" gap={6} fullWidth>
             {/* Status */}
             <FieldItem 
               icon={roleData.isActive ? CheckCircle2 : XCircle} 
@@ -285,24 +279,28 @@ export const RoleDetailClient = ({ roleId, role, backUrl = "/admin/roles" }: Rol
               >
                 {roleData.isActive ? (
                   <>
-                    <IconSize size="xs" className="mr-1.5">
-                      <CheckCircle2 />
-                    </IconSize>
-                    Hoạt động
+                    <Flex align="center" gap={1.5}>
+                      <IconSize size="xs">
+                        <CheckCircle2 />
+                      </IconSize>
+                      Hoạt động
+                    </Flex>
                   </> 
                 ) : (
                   <>
-                    <IconSize size="xs" className="mr-1.5">
-                      <XCircle />
-                    </IconSize>
-                    Tạm khóa
+                    <Flex align="center" gap={1.5}>
+                      <IconSize size="xs">
+                        <XCircle />
+                      </IconSize>
+                      Tạm khóa
+                    </Flex>
                   </>
                 )}
               </Badge>
             </FieldItem>
 
             {/* Timestamps */}
-            <Grid cols={2} gap={6}>
+            <Grid cols={2} gap={6} fullWidth>
               <FieldItem icon={Calendar} label="Ngày tạo">
                 <TypographySpanMuted className="text-foreground">
                   {roleData.createdAt ? formatDateVi(roleData.createdAt) : "—"}
@@ -338,12 +336,13 @@ export const RoleDetailClient = ({ roleId, role, backUrl = "/admin/roles" }: Rol
           <Button
             variant="outline"
             onClick={() => router.push(`/admin/roles/${roleId}/edit`)}
-            className="gap-2"
           >
-            <IconSize size="sm">
-              <Edit />
-            </IconSize>
-            Chỉnh sửa
+            <Flex align="center" gap={2}>
+              <IconSize size="sm">
+                <Edit />
+              </IconSize>
+              Chỉnh sửa
+            </Flex>
           </Button>
         ) : null
       }

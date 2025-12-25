@@ -35,7 +35,6 @@ export function MessageBubble({
   onScrollToMessage,
 }: MessageBubbleProps) {
   const isParentOwnMessage = parentMessage?.senderId === currentUserId
-  const canMarkRead = !isOwnMessage && (message.receiverId === currentUserId || (message.groupId && message.senderId !== currentUserId))
   
   // Hiển thị sender info cho group messages (không phải own message)
   const showSenderInfo = message.groupId && !isOwnMessage && message.sender

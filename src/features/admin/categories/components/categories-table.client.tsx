@@ -1,6 +1,7 @@
 "use client"
 
-import { IconSize } from "@/components/ui/typography"
+import { IconSize, TypographySpanSmall } from "@/components/ui/typography"
+import { Flex } from "@/components/ui/flex"
 
 import { useCallback, useMemo, useState } from "react"
 import { useResourceRouter } from "@/hooks/use-resource-segment"
@@ -322,13 +323,17 @@ export const CategoriesTableClient = ({
                 onClick={() => executeBulk("delete", selectedIds, refresh, clearSelection)}
                 className="whitespace-nowrap"
               >
-                <IconSize size="md" className="mr-2 shrink-0">
-                  <Trash2 />
-                </IconSize>
-                <span className="hidden sm:inline">
-                  {CATEGORY_LABELS.DELETE_SELECTED(selectedIds.length)}
-                </span>
-                <span className="sm:hidden">Xóa</span>
+                <Flex align="center" gap={2}>
+                  <Flex shrink>
+                    <IconSize size="md">
+                      <Trash2 />
+                    </IconSize>
+                  </Flex>
+                  <TypographySpanSmall className="hidden sm:inline">
+                    {CATEGORY_LABELS.DELETE_SELECTED(selectedIds.length)}
+                  </TypographySpanSmall>
+                  <TypographySpanSmall className="sm:hidden">Xóa</TypographySpanSmall>
+                </Flex>
               </Button>
             )}
             {canManage && (
@@ -340,13 +345,17 @@ export const CategoriesTableClient = ({
                 onClick={() => executeBulk("hard-delete", selectedIds, refresh, clearSelection)}
                 className="whitespace-nowrap"
               >
-                <IconSize size="md" className="mr-2 shrink-0">
-                  <AlertTriangle />
-                </IconSize>
-                <span className="hidden sm:inline">
-                  {CATEGORY_LABELS.HARD_DELETE_SELECTED(selectedIds.length)}
-                </span>
-                <span className="sm:hidden">Xóa vĩnh viễn</span>
+                <Flex align="center" gap={2}>
+                  <Flex shrink>
+                    <IconSize size="md">
+                      <AlertTriangle />
+                    </IconSize>
+                  </Flex>
+                  <TypographySpanSmall className="hidden sm:inline">
+                    {CATEGORY_LABELS.HARD_DELETE_SELECTED(selectedIds.length)}
+                  </TypographySpanSmall>
+                  <TypographySpanSmall className="sm:hidden">Xóa vĩnh viễn</TypographySpanSmall>
+                </Flex>
               </Button>
             )}
             <Button
@@ -388,13 +397,17 @@ export const CategoriesTableClient = ({
                 onClick={() => executeBulk("restore", selectedIds, refresh, clearSelection)}
                 className="whitespace-nowrap"
               >
-                <IconSize size="md" className="mr-2 shrink-0">
-                  <RotateCcw />
-                </IconSize>
-                <span className="hidden sm:inline">
-                  {CATEGORY_LABELS.RESTORE_SELECTED(selectedIds.length)}
-                </span>
-                <span className="sm:hidden">Khôi phục</span>
+                <Flex align="center" gap={2}>
+                  <Flex shrink>
+                    <IconSize size="md">
+                      <RotateCcw />
+                    </IconSize>
+                  </Flex>
+                  <TypographySpanSmall className="hidden sm:inline">
+                    {CATEGORY_LABELS.RESTORE_SELECTED(selectedIds.length)}
+                  </TypographySpanSmall>
+                  <TypographySpanSmall className="sm:hidden">Khôi phục</TypographySpanSmall>
+                </Flex>
               </Button>
             )}
             {canManage && (
@@ -406,13 +419,17 @@ export const CategoriesTableClient = ({
                 onClick={() => executeBulk("hard-delete", selectedIds, refresh, clearSelection)}
                 className="whitespace-nowrap"
               >
-                <IconSize size="md" className="mr-2 shrink-0">
-                  <AlertTriangle />
-                </IconSize>
-                <span className="hidden sm:inline">
-                  {CATEGORY_LABELS.HARD_DELETE_SELECTED(selectedIds.length)}
-                </span>
-                <span className="sm:hidden">Xóa vĩnh viễn</span>
+                <Flex align="center" gap={2}>
+                  <Flex shrink>
+                    <IconSize size="md">
+                      <AlertTriangle />
+                    </IconSize>
+                  </Flex>
+                  <TypographySpanSmall className="hidden sm:inline">
+                    {CATEGORY_LABELS.HARD_DELETE_SELECTED(selectedIds.length)}
+                  </TypographySpanSmall>
+                  <TypographySpanSmall className="sm:hidden">Xóa vĩnh viễn</TypographySpanSmall>
+                </Flex>
               </Button>
             )}
             <Button
@@ -515,10 +532,12 @@ export const CategoriesTableClient = ({
       onClick={() => router.push("/admin/categories/new")}
       className="h-8 px-3"
     >
-      <IconSize size="md" className="mr-2">
-        <Plus />
-      </IconSize>
-      {CATEGORY_LABELS.ADD_NEW}
+      <Flex align="center" gap={2}>
+        <IconSize size="md">
+          <Plus />
+        </IconSize>
+        {CATEGORY_LABELS.ADD_NEW}
+      </Flex>
     </Button>
   ) : undefined
 

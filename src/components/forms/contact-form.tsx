@@ -1,8 +1,7 @@
 "use client";
 
 import { useForm } from "react-hook-form";
-import { cn } from "@/lib/utils";
-import { TypographySpanSmall, IconSize } from "@/components/ui/typography";
+import { TypographySpanSmall, TypographySpanDestructive, IconSize } from "@/components/ui/typography";
 import { Flex } from "@/components/ui/flex";
 import { Grid } from "@/components/ui/grid";
 import { Button } from "@/components/ui/button";
@@ -116,15 +115,15 @@ export function ContactForm({ onSubmit, className, apiUrl = "/api/contact" }: Co
         <form onSubmit={handleFormSubmit(onSubmitForm)}>
           <Flex direction="col" gap={6}>
             <FieldGroup>
-              <Flex direction="col" gap={6}>
-                <Grid cols={2} gap={6}>
+              <Flex fullWidth direction="col" gap={6}>
+                <Grid fullWidth cols={2} gap={6}>
                   <Field data-invalid={Boolean(errors.name)}>
                     <FieldLabel htmlFor="name">
                       <Flex align="center" gap={2}>
                         <IconSize size="sm">
                           <User />
                         </IconSize>
-                        <TypographySpanSmall>Họ tên <span className="text-destructive">*</span></TypographySpanSmall>
+                        <TypographySpanSmall>Họ tên <TypographySpanDestructive>*</TypographySpanDestructive></TypographySpanSmall>
                       </Flex>
                     </FieldLabel>
                     <FieldContent>
@@ -133,7 +132,7 @@ export function ContactForm({ onSubmit, className, apiUrl = "/api/contact" }: Co
                         type="text"
                         placeholder="Nhập họ tên của bạn"
                         aria-invalid={Boolean(errors.name)}
-                        className={errors.name ? "border-destructive" : ""}
+                        error={Boolean(errors.name)}
                         {...register("name", {
                           required: "Họ tên là bắt buộc",
                           minLength: {
@@ -161,7 +160,7 @@ export function ContactForm({ onSubmit, className, apiUrl = "/api/contact" }: Co
                         <IconSize size="sm">
                           <Mail />
                         </IconSize>
-                        <TypographySpanSmall>Email <span className="text-destructive">*</span></TypographySpanSmall>
+                        <TypographySpanSmall>Email <TypographySpanDestructive>*</TypographySpanDestructive></TypographySpanSmall>
                       </Flex>
                     </FieldLabel>
                     <FieldContent>
@@ -170,7 +169,7 @@ export function ContactForm({ onSubmit, className, apiUrl = "/api/contact" }: Co
                         type="email"
                         placeholder="Nhập địa chỉ email của bạn"
                         aria-invalid={Boolean(errors.email)}
-                        className={errors.email ? "border-destructive" : ""}
+                        error={Boolean(errors.email)}
                         {...register("email", {
                           required: "Email là bắt buộc",
                           pattern: {
@@ -193,7 +192,7 @@ export function ContactForm({ onSubmit, className, apiUrl = "/api/contact" }: Co
                   </Field>
                 </Grid>
 
-                <Grid cols={2} gap={6}>
+                <Grid fullWidth cols={2} gap={6}>
                   <Field data-invalid={Boolean(errors.phone)}>
                     <FieldLabel htmlFor="phone">
                       <Flex align="center" gap={2}>
@@ -209,7 +208,7 @@ export function ContactForm({ onSubmit, className, apiUrl = "/api/contact" }: Co
                         type="tel"
                         placeholder="Nhập số điện thoại (không bắt buộc)"
                         aria-invalid={Boolean(errors.phone)}
-                        className={errors.phone ? "border-destructive" : ""}
+                        error={Boolean(errors.phone)}
                         {...register("phone", {
                           maxLength: {
                             value: 20,
@@ -231,7 +230,7 @@ export function ContactForm({ onSubmit, className, apiUrl = "/api/contact" }: Co
                         <IconSize size="sm">
                           <FileText />
                         </IconSize>
-                        <TypographySpanSmall>Tiêu đề <span className="text-destructive">*</span></TypographySpanSmall>
+                        <TypographySpanSmall>Tiêu đề <TypographySpanDestructive>*</TypographySpanDestructive></TypographySpanSmall>
                       </Flex>
                     </FieldLabel>
                     <FieldContent>
@@ -240,7 +239,7 @@ export function ContactForm({ onSubmit, className, apiUrl = "/api/contact" }: Co
                         type="text"
                         placeholder="Nhập tiêu đề tin nhắn"
                         aria-invalid={Boolean(errors.subject)}
-                        className={errors.subject ? "border-destructive" : ""}
+                        error={Boolean(errors.subject)}
                         {...register("subject", {
                           required: "Tiêu đề là bắt buộc",
                           minLength: {
@@ -269,7 +268,7 @@ export function ContactForm({ onSubmit, className, apiUrl = "/api/contact" }: Co
                       <IconSize size="sm">
                         <MessageSquare />
                       </IconSize>
-                      <TypographySpanSmall>Nội dung tin nhắn <span className="text-destructive">*</span></TypographySpanSmall>
+                      <TypographySpanSmall>Nội dung tin nhắn <TypographySpanDestructive>*</TypographySpanDestructive></TypographySpanSmall>
                     </Flex>
                   </FieldLabel>
                   <FieldContent>
@@ -277,10 +276,8 @@ export function ContactForm({ onSubmit, className, apiUrl = "/api/contact" }: Co
                       id="message"
                       placeholder="Mô tả chi tiết vấn đề cần được giải quyết..."
                       rows={5}
-                      className={cn(
-                        "min-h-[100px] sm:min-h-[120px]",
-                        errors.message ? "border-destructive" : ""
-                      )}
+                      minHeight="100"
+                      error={Boolean(errors.message)}
                       aria-invalid={Boolean(errors.message)}
                       {...register("message", {
                         required: "Nội dung tin nhắn là bắt buộc",
@@ -305,7 +302,7 @@ export function ContactForm({ onSubmit, className, apiUrl = "/api/contact" }: Co
               </Flex>
             </FieldGroup>
 
-            <Button type="submit" className="w-full" disabled={isSubmitting}>
+            <Button type="submit" fullWidth disabled={isSubmitting}>
               <Flex align="center" gap={2}>
                 {isSubmitting ? (
                   <>

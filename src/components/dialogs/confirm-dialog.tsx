@@ -4,7 +4,7 @@ import { AlertTriangle } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Flex } from "@/components/ui/flex"
-import { IconSize } from "@/components/ui/typography"
+import { IconSize, TypographySpan } from "@/components/ui/typography"
 import {
   Dialog,
   DialogContent,
@@ -48,14 +48,14 @@ export function ConfirmDialog({
         <DialogHeader>
           <DialogTitle asChild>
             <Flex align="center" gap={2}>
-            <IconSize size="md">
-              <AlertTriangle />
-            </IconSize>
-              <span>{title}</span>
+              <IconSize size="md">
+                <AlertTriangle />
+              </IconSize>
+              <TypographySpan>{title}</TypographySpan>
             </Flex>
           </DialogTitle>
           {description && (
-            <DialogDescription className="pt-2">{description}</DialogDescription>
+            <DialogDescription>{description}</DialogDescription>
           )}
         </DialogHeader>
         <DialogFooter>

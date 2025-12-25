@@ -12,21 +12,15 @@ export const SelectionActionsWrapper = ({
   label,
   labelSuffix,
   actions,
-}: SelectionActionsWrapperProps) => {
-  return (
-    <Flex direction="col" align="start" justify="between" gap={3} className="w-full sm:flex-row sm:items-center">
+}: SelectionActionsWrapperProps) => (
+  <Flex direction="col-sm-row" align="start" justify="between" gap={3} fullWidth className="sm:items-center">
       <Flex direction="col" gap={1}>
         <TypographySpanSmall className="block sm:inline">{label}</TypographySpanSmall>
-        {labelSuffix && (
-          <TypographySpanSmallMuted className="block sm:inline sm:ml-0">
-            {labelSuffix}
-          </TypographySpanSmallMuted>
-        )}
+      {labelSuffix && <TypographySpanSmallMuted className="block sm:inline">{labelSuffix}</TypographySpanSmallMuted>}
       </Flex>
-      <Flex align="center" gap={2} className="w-full sm:w-auto flex-wrap sm:flex-nowrap shrink-0">
+    <Flex align="center" gap={2} wrap className="w-full sm:w-auto sm:flex-nowrap" shrink>
         {actions}
       </Flex>
     </Flex>
   )
-}
 

@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { IconSize } from "@/components/ui/typography"
+import { Flex } from "@/components/ui/flex"
 import type { ResourceFormField } from "../resource-form"
 
 interface TextFieldProps<T> {
@@ -32,7 +33,7 @@ export const TextField = <T,>({
 
   return (
     <FieldContent>
-      <div className="relative">
+      <Flex position="relative" fullWidth>
         <Input
           id={fieldId}
           name={fieldId}
@@ -70,7 +71,7 @@ export const TextField = <T,>({
             )}
           </Button>
         )}
-      </div>
+      </Flex>
       {error && <FieldError id={errorId}>{error}</FieldError>}
     </FieldContent>
   )

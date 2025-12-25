@@ -87,6 +87,7 @@ import { useSocket } from "@/hooks/use-socket";
 import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/query-keys";
 import { logger } from "@/lib/config";
+import { Grid } from "@/components/ui/grid";
 
 export function NavUser({ className }: { className?: string }) {
   const { data: session, status } = useSession();
@@ -346,7 +347,7 @@ export function NavUser({ className }: { className?: string }) {
             <Avatar className="h-8 w-8 rounded-lg">
               <AvatarFallback className="rounded-lg">...</AvatarFallback>
             </Avatar>
-            <Flex direction="col" className="flex-1 text-left" suppressHydrationWarning>
+            <Flex direction="col" flex="1" textAlign="left" suppressHydrationWarning>
               <TypographySpanMuted className="truncate">Đang tải...</TypographySpanMuted>
               <TypographySpanSmallMuted className="truncate">Vui lòng chờ</TypographySpanSmallMuted>
             </Flex>
@@ -374,7 +375,7 @@ export function NavUser({ className }: { className?: string }) {
               {getInitials(user.name)}
             </AvatarFallback>
           </Avatar>
-          <Flex direction="col" className="flex-1 min-w-0 text-left">
+          <Flex direction="col" flex="1" minWidth="0" textAlign="left">
             <TypographySpanMuted className="truncate">
               {user.name || user.email}
             </TypographySpanMuted>
@@ -539,14 +540,14 @@ export function NavUser({ className }: { className?: string }) {
                 {getInitials(user.name)}
               </AvatarFallback>
             </Avatar>
-            <div className="grid flex-1 text-left" suppressHydrationWarning>
+            <Grid cols={1} align="start" justify="start" suppressHydrationWarning>
               <TypographySpanMuted className="truncate" suppressHydrationWarning>
                 {user.name || user.email}
               </TypographySpanMuted>
               <TypographySpanSmallMuted className="truncate" suppressHydrationWarning>
                 {primaryRole?.displayName || primaryRole?.name || user.email}
               </TypographySpanSmallMuted>
-            </div>
+            </Grid>
           </SidebarMenuButton>
         </SidebarMenuItem>
       </SidebarMenu>

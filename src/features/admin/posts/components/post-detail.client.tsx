@@ -173,7 +173,7 @@ export const PostDetailClient = ({
 
               {postData.categories && postData.categories.length > 0 && (
                 <FieldItem icon={Tag} label="Danh mục">
-                  <Flex wrap={true} gap={1.5}>
+                  <Flex wrap gap={1.5}>
                     {postData.categories.map((category) => (
                       <Badge key={category.id} variant="default">
                         {category.name}
@@ -185,7 +185,7 @@ export const PostDetailClient = ({
 
               {postData.tags && postData.tags.length > 0 && (
                 <FieldItem icon={Tags} label="Thẻ tag">
-                  <Flex wrap={true} gap={1.5}>
+                  <Flex wrap gap={1.5}>
                     {postData.tags.map((tag) => (
                       <Badge key={tag.id} variant="secondary">
                         {tag.name}

@@ -56,7 +56,7 @@ export function MessagesArea({
   return (
     <ScrollArea
       ref={scrollAreaRef}
-      className="flex-1 w-full"
+      fullWidth
       style={{
         height: messagesMaxHeight ? `${messagesMaxHeight}px` : undefined,
         maxHeight: messagesMaxHeight ? `${messagesMaxHeight}px` : "calc(100dvh - 13rem)",

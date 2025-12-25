@@ -56,7 +56,7 @@ export const MultipleSelectCombobox = <T,>({
 
   if (allOptions.length === 0) {
     return (
-      <Flex align="center" className="h-10 w-full rounded-md border border-input bg-background px-3 py-2">
+      <Flex align="center" fullWidth className="h-10 rounded-md border border-input bg-background" paddingX={3} paddingY={2}>
         <TypographyPMuted>Không có tùy chọn</TypographyPMuted>
       </Flex>
     )
@@ -117,7 +117,7 @@ export const MultipleSelectCombobox = <T,>({
           )}
           disabled={field.disabled || isPending}
         >
-          <Flex wrap={true} align="center" gap={1.5} className="flex-1 min-w-0">
+          <Flex wrap align="center" gap={1.5} flex="1" minWidth="0">
             {selectedOptions.length > 0 ? (
               selectedOptions.length <= 3 ? (
                 // Show badges if <= 3 items
@@ -144,23 +144,20 @@ export const MultipleSelectCombobox = <T,>({
               <TypographyP>{displayText}</TypographyP>
             )}
           </Flex>
-          <Flex align="center" gap={1} className="ml-2 flex-shrink-0">
+          <Flex align="center" gap={1} marginLeft={2} shrink>
             {selectedValues.length > 0 && (
-              <div
-                role="button"
-                tabIndex={0}
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
                 onClick={handleClear}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault()
-                    handleClear(e as unknown as React.MouseEvent)
-                  }
-                }}
+                className="h-auto w-auto p-0 hover:opacity-70"
+                aria-label="Xóa tất cả"
               >
                 <IconSize size="md">
                   <X />
                 </IconSize>
-              </div>
+              </Button>
             )}
             <IconSize size="md">
               <ChevronsUpDown />
@@ -209,10 +206,12 @@ export const MultipleSelectCombobox = <T,>({
                           value={String(option.value)}
                           onSelect={() => handleToggle(option.value)}
                         >
-                          <IconSize size="md">
-                            <Check className={cn(isSelected ? "opacity-100" : "opacity-0")} />
+                          <Flex align="center" gap={2}>
+                            <IconSize size="md" className={cn(isSelected ? "opacity-100" : "opacity-0")}>
+                              <Check />
                           </IconSize>
                           {option.label}
+                          </Flex>
                         </CommandItem>
                       )
                     })}
@@ -236,10 +235,12 @@ export const MultipleSelectCombobox = <T,>({
                       allSelected && "text-primary"
                     )}
                   >
-                    <IconSize size="md">
-                      <Check className={cn(allSelected ? "opacity-100" : "opacity-0")} />
+                    <Flex align="center" gap={2}>
+                      <IconSize size="md" className={cn(allSelected ? "opacity-100" : "opacity-0")}>
+                        <Check />
                     </IconSize>
                     {allSelected ? "Bỏ chọn tất cả" : "Chọn tất cả"}
+                    </Flex>
                   </CommandItem>
                 )}
                 {allOptions.map((option) => {
@@ -250,10 +251,12 @@ export const MultipleSelectCombobox = <T,>({
                       value={String(option.value)}
                       onSelect={() => handleToggle(option.value)}
                     >
-                      <IconSize size="md">
-                        <Check className={cn(isSelected ? "opacity-100" : "opacity-0")} />
+                      <Flex align="center" gap={2}>
+                        <IconSize size="md" className={cn(isSelected ? "opacity-100" : "opacity-0")}>
+                          <Check />
                       </IconSize>
                       {option.label}
+                      </Flex>
                     </CommandItem>
                   )
                 })}

@@ -252,8 +252,8 @@ export const HeroSection: React.FC = () => {
   }
 
   return (
-    <div className="relative bg-background text-foreground min-h-screen overflow-x-hidden">
-      <Flex direction="col" className="min-h-screen">
+    <Flex position="relative" bg="background" height="screen" overflow="hidden" className="overflow-x-hidden">
+      <Flex direction="col" height="screen">
         <canvas ref={canvasRef} className="absolute inset-0 z-0 pointer-events-none opacity-60" />
 
         <div
@@ -264,8 +264,8 @@ export const HeroSection: React.FC = () => {
           }}
         />
 
-        <main className="flex-grow px-4 pt-32 pb-16 relative z-10">
-          <Flex direction="col" align="center" justify="center" gap={6} className="text-center h-full">
+        <Flex as="main" flex="1" paddingX={4} position="relative" className="z-10 pt-32 pb-16">
+          <Flex direction="col" align="center" justify="center" gap={6} textAlign="center" height="full">
         <motion.h1
           variants={headlineVariants}
           initial="hidden"
@@ -296,9 +296,16 @@ export const HeroSection: React.FC = () => {
               variants={buttonGroupVariants}
               initial="hidden"
               animate="visible"
-              className="w-full max-w-md mx-auto"
             >
-              <Flex direction="col" align="center" justify="center" gap={4} className="sm:flex-row">
+              <Flex
+                fullWidth
+                marginX="auto"
+                direction="col-lg-row"
+                align="center"
+                justify="center"
+                gap={4}
+                className="max-w-md"
+              >
                 <Button size="lg" className="w-full sm:w-auto shadow-lg" asChild>
                   <Link href="/auth/sign-up">Đăng ký ngay</Link>
                 </Button>
@@ -308,8 +315,8 @@ export const HeroSection: React.FC = () => {
               </Flex>
             </motion.div>
           </Flex>
-        </main>
+        </Flex>
       </Flex>
-    </div>
+    </Flex>
   )
 }

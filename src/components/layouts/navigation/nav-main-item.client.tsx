@@ -17,6 +17,8 @@ import {
 } from "@/components/ui/sidebar"
 import { Badge } from "@/components/ui/badge"
 import { Flex } from "@/components/ui/flex"
+import { TypographySpan } from "@/components/ui/typography"
+import { IconSize } from "@/components/ui/typography"
 import { useClientOnly } from "@/hooks/use-client-only"
 import * as React from "react"
 
@@ -63,10 +65,10 @@ export function NavMainItem({
       <SidebarMenuItem>
         <SidebarMenuButton asChild tooltip={title} isActive={isActive}>
           <Link href={url} className="w-full" suppressHydrationWarning>
-            <Flex align="center" justify="between" className="w-full">
-              <Flex align="center" gap={2} className="flex-1 min-w-0" suppressHydrationWarning>
-                {iconElement}
-                <span>{title}</span>
+            <Flex align="center" justify="between" fullWidth>
+              <Flex align="center" gap={2} flex="1" minWidth="0">
+                <IconSize size="sm">{iconElement}</IconSize>
+                <TypographySpan>{title}</TypographySpan>
               </Flex>
               {/* Không render badge trên server để tránh hydration mismatch */}
             </Flex>
@@ -78,7 +80,7 @@ export function NavMainItem({
               <SidebarMenuSubItem key={subItem.url}>
                 <SidebarMenuSubButton asChild>
                   <Link href={subItem.url}>
-                    <span>{subItem.title}</span>
+                    <TypographySpan>{subItem.title}</TypographySpan>
                   </Link>
                 </SidebarMenuSubButton>
               </SidebarMenuSubItem>
@@ -93,20 +95,22 @@ export function NavMainItem({
     <Collapsible asChild defaultOpen={isActive}>
       <SidebarMenuItem>
         <SidebarMenuButton asChild tooltip={title} isActive={isActive}>
-          <Link href={url} className="flex items-center justify-between w-full">
-            <Flex align="center" gap={2} className="flex-1 min-w-0" suppressHydrationWarning>
-              {iconElement}
-              <span>{title}</span>
+          <Link href={url} className="w-full">
+            <Flex align="center" justify="between" fullWidth>
+              <Flex align="center" gap={2} flex="1" minWidth="0">
+                <IconSize size="sm">{iconElement}</IconSize>
+                <TypographySpan>{title}</TypographySpan>
+              </Flex>
+              {showBadge && (
+                <Badge 
+                  variant="destructive" 
+                  shrink
+                  suppressHydrationWarning
+                >
+                  {badgeCount > 99 ? "99+" : badgeCount}
+                </Badge>
+              )}
             </Flex>
-            {showBadge && (
-              <Badge 
-                variant="destructive" 
-                className="ml-auto shrink-0"
-                suppressHydrationWarning
-              >
-                {badgeCount > 99 ? "99+" : badgeCount}
-              </Badge>
-            )}
           </Link>
         </SidebarMenuButton>
         {items?.length ? (
@@ -122,9 +126,9 @@ export function NavMainItem({
                 {items.map((subItem) => (
                   <SidebarMenuSubItem key={subItem.url}>
                     <SidebarMenuSubButton asChild>
-                      <Link href={subItem.url}>
-                        <span>{subItem.title}</span>
-                      </Link>
+                  <Link href={subItem.url}>
+                    <TypographySpan>{subItem.title}</TypographySpan>
+                  </Link>
                     </SidebarMenuSubButton>
                   </SidebarMenuSubItem>
                 ))}

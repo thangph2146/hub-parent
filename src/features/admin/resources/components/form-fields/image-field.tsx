@@ -76,7 +76,7 @@ export const ImageField = ({
 
         {/* Image preview */}
         {hasImage && !imageError && (
-          <Flex align="center" justify="center" className="aspect-video w-full relative">
+          <Flex align="center" justify="center" fullWidth className="aspect-video relative">
             <Image
               src={imageUrl}
               alt="Preview"
@@ -91,27 +91,27 @@ export const ImageField = ({
 
         {/* Error state */}
         {hasImage && imageError && (
-          <div className="relative w-full rounded-lg border border-destructive/50 overflow-hidden bg-destructive/5">
-            <Flex direction="col" align="center" justify="center" className="aspect-video w-full gap-2 p-4 text-destructive">
+          <Flex fullWidth className="relative rounded-lg border border-destructive/50 overflow-hidden bg-destructive/5">
+            <Flex direction="col" align="center" justify="center" gap={2} padding="md" fullWidth className="aspect-video text-destructive">
               <IconSize size="2xl">
                 <ImageIcon />
               </IconSize>
               <TypographySpanMuted>Không thể tải hình ảnh</TypographySpanMuted>
               <TypographySpanSmallMuted>Vui lòng kiểm tra lại URL</TypographySpanSmallMuted>
             </Flex>
-          </div>
+          </Flex>
         )}
 
         {/* Placeholder when no image */}
         {!hasImage && (
-          <div className="relative w-full rounded-lg border border-dashed border-border overflow-hidden bg-muted/30">
-            <Flex direction="col" align="center" justify="center" className="aspect-video w-full gap-2 text-muted-foreground">
+          <Flex fullWidth className="relative rounded-lg border border-dashed border-border overflow-hidden bg-muted/30">
+            <Flex direction="col" align="center" justify="center" gap={2} fullWidth className="aspect-video text-muted-foreground">
               <IconSize size="4xl">
                 <ImageIcon />
               </IconSize>
               <TypographySpanMuted>Chưa có hình ảnh</TypographySpanMuted>
             </Flex>
-          </div>
+          </Flex>
         )}
 
         {error && <FieldError id={errorId}>{error}</FieldError>}

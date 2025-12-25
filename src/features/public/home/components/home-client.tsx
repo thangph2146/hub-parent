@@ -136,7 +136,7 @@ export const HomeClient = ({ featuredPosts = [] }: HomeClientProps) => {
 
       {/* Featured Posts Section */}
       {featuredPosts.length > 0 && (
-        <Section padding="responsive-lg" background="bg-background">
+        <Section padding="responsive-lg" background="background">
           <Flex direction="col" gap={8}>
             {/* Header */}
             <Flex align="center" justify="between" gap={4} fullWidth>
@@ -189,7 +189,7 @@ export const HomeClient = ({ featuredPosts = [] }: HomeClientProps) => {
       )}
 
       {/* Registration Form Section */}
-      <Section padding="responsive-lg" background="bg-background">
+      <Section padding="responsive-lg" background="background">
         <ContactSection
           title="Tại sao chọn chúng tôi?"
           description="Chúng tôi cam kết mang đến trải nghiệm tốt nhất cho phụ huynh và sinh viên."

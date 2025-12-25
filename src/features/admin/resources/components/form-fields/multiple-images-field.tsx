@@ -66,7 +66,7 @@ const ImageItem = ({
           className="object-cover"
           unoptimized
         />
-        <Flex align="center" justify="center" className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors gap-2">
+        <Flex align="center" justify="center" gap={2} className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors">
           <Flex direction="col" gap={1} className="opacity-0 group-hover:opacity-100 transition-opacity">
             <Button
               type="button"
@@ -121,7 +121,7 @@ const ImageItem = ({
           </Button>
         </Flex>
         {image.isPrimary && (
-          <Flex align="center" className="absolute top-2 left-2 bg-primary text-primary-foreground px-2 py-1 rounded gap-1">
+          <Flex align="center" gap={1} className="absolute top-2 left-2 bg-primary text-primary-foreground" paddingX={2} paddingY={1} rounded="md">
             <IconSize size="xs" className="fill-current">
               <Star />
             </IconSize>
@@ -129,16 +129,15 @@ const ImageItem = ({
           </Flex>
         )}
       </div>
-      <div className="p-2">
+      <Flex padding="sm">
         <Input
           type="text"
           value={image.alt || ""}
           onChange={(e) => onAltChange(e.target.value)}
           placeholder="Mô tả ảnh (alt text)"
-          className=""
           disabled={disabled}
         />
-      </div>
+      </Flex>
     </div>
   )
 }
@@ -351,9 +350,9 @@ export const MultipleImagesField = ({ value, onChange, error, disabled = false }
 
   return (
     <FieldContent>
-      <div className="space-y-4">
+      <Flex direction="col" gap={4}>
         {/* Upload controls */}
-        <div className="space-y-4">
+        <Flex direction="col" gap={4}>
           <MultipleImageUpload
             onUploadSuccess={handleUploadSuccess}
             onUploadError={handleUploadError}
@@ -392,7 +391,7 @@ export const MultipleImagesField = ({ value, onChange, error, disabled = false }
               Thêm URL
             </Button>
           </Flex>
-        </div>
+        </Flex>
 
         {/* Images grid */}
         {images.length > 0 ? (
@@ -413,18 +412,18 @@ export const MultipleImagesField = ({ value, onChange, error, disabled = false }
             ))}
           </Grid>
         ) : (
-          <div className="border-2 border-dashed border-border rounded-lg p-8 text-center">
-            <IconSize size="4xl" className="mx-auto text-muted-foreground mb-2">
+          <Flex direction="col" align="center" gap={2} className="border-2 border-dashed border-border" rounded="lg" padding="xl">
+            <IconSize size="4xl" className="text-muted-foreground">
               <ImageIcon />
             </IconSize>
             <TypographyPMuted>Chưa có hình ảnh nào</TypographyPMuted>
-            <TypographyPSmallMuted className="mt-1">Upload hoặc thêm URL để bắt đầu</TypographyPSmallMuted>
-          </div>
+            <TypographyPSmallMuted>Upload hoặc thêm URL để bắt đầu</TypographyPSmallMuted>
+          </Flex>
         )}
 
         {/* Error message */}
         {error && <FieldError>{error}</FieldError>}
-      </div>
+      </Flex>
     </FieldContent>
   )
 }

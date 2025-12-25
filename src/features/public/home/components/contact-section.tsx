@@ -39,9 +39,9 @@ export const ContactSection = ({
   descriptionClassName,
 }: ContactSectionProps) => {
   return (
-    <Flex direction="col" gap={6} fullWidth className="lg:flex-row lg:gap-8">
+    <Flex direction="col-lg-row" gap="6-lg-8" fullWidth>
       {/* Left Side - Features & Contact Info - 1/3 */}
-      <Flex direction="col" gap={6} fullWidth className="lg:w-1/3">
+      <Flex direction="col" gap={6} width="1/3">
         <Flex direction="col" gap={4}>
           <TypographyH3 className={titleClassName}>
             {title}
@@ -69,7 +69,7 @@ export const ContactSection = ({
 
       {/* Right Side - Form - 2/3 */}
       {formComponent && (
-        <Flex direction="col" fullWidth className="lg:w-2/3">
+        <Flex direction="col" width="2/3">
           {formComponent}
         </Flex>
       )}

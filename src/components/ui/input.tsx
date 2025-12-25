@@ -15,9 +15,19 @@ const inputVariants = cva(
         none: "",
         "9": "pl-9",
       },
+      paddingRight: {
+        none: "",
+        "10": "pr-10",
+      },
+      error: {
+        true: "border-destructive",
+        false: "",
+      },
     },
     defaultVariants: {
       paddingLeft: "none",
+      paddingRight: "none",
+      error: false,
     },
   }
 )
@@ -26,12 +36,12 @@ export interface InputProps
   extends React.ComponentProps<"input">,
     VariantProps<typeof inputVariants> {}
 
-function Input({ className, type, paddingLeft, ...props }: InputProps) {
+function Input({ className, type, paddingLeft, paddingRight, error, ...props }: InputProps) {
   return (
     <input
       type={type}
       data-slot="input"
-      className={cn(inputVariants({ paddingLeft }), className)}
+      className={cn(inputVariants({ paddingLeft, paddingRight, error }), className)}
       {...props}
     />
   )

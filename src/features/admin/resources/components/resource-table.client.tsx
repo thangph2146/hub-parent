@@ -187,7 +187,7 @@ export const ResourceTableClient = <T extends object>({
 
     // Có view modes - gắn headerActions vào viewModeSection
     const viewModeSection = (
-      <Flex align="center" gap={2} wrap={true}>
+      <Flex align="center" gap={2} wrap>
         {isMobile ? (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -243,14 +243,10 @@ export const ResourceTableClient = <T extends object>({
   return (
     <Flex direction="col" gap={4}>
       {(title || viewModeButtons) && (
-        <Flex direction="col" align="start" justify="between" gap={2} className="w-full sm:flex-row sm:items-center">
-          {title ? (
-            <TypographyH4 className="truncate">{title}</TypographyH4>
-          ) : (
-            <Flex />
-          )}
+        <Flex direction="col-sm-row" align="start" justify="between" gap={2} fullWidth className="sm:items-center">
+          {title ? <TypographyH4 className="truncate">{title}</TypographyH4> : <Flex />}
           {viewModeButtons && (
-            <Flex align="center" gap={2} wrap={true} className="w-full sm:w-auto sm:justify-end">
+            <Flex align="center" gap={2} wrap className="w-full sm:w-auto sm:justify-end">
               {viewModeButtons}
             </Flex>
           )}

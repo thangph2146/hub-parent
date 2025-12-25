@@ -22,7 +22,7 @@ import { Flex } from "@/components/ui/flex";
 import { Grid } from "@/components/ui/grid";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { TypographyH3, TypographyH4, TypographyP, TypographyPSmall, TypographySpan, TypographySpanMuted, IconSize } from "@/components/ui/typography";
+import { TypographyH3, TypographyH4, TypographyP, TypographyPSmall, TypographySpan, TypographySpanMuted, TypographySpanWhite, IconSize } from "@/components/ui/typography";
 import { Logo } from "../../../../public/svg/Logo"
 
 /**
@@ -60,7 +60,7 @@ export function PublicFooter() {
 
   return (
     <footer>
-      <Flex direction="col" position="relative" container padding="responsive-lg" fullWidth bg="primary" className="mt-auto overflow-hidden">
+      <Flex direction="col" position="relative" padding="responsive-lg" fullWidth bg="primary" margin="t-auto" overflow="hidden">
         {/* Main Footer Content */}
         <Grid cols={3} gap={8} fullWidth>
           {/* Company Info - Takes 2 columns on large screens */}
@@ -182,7 +182,7 @@ export function PublicFooter() {
                 <Flex height="16" maxWidth="32" rounded="full" bg="white" />
                 <TypographyH4>Kết nối</TypographyH4>
               </Flex>
-              <Flex align="center" gap={3}>
+              <Flex direction="row" align="center" gap={3}>
                 {appConfig.social.facebook && (
                   <Link
                     href={`https://facebook.com/${appConfig.social.facebook}`}
@@ -190,11 +190,9 @@ export function PublicFooter() {
                     rel="noopener noreferrer"
                     aria-label="Facebook - Trường Đại học Ngân hàng TP.HCM"
                   >
-                    <Flex align="center" justify="center" height="64" rounded="xl" bg="white-10" fullWidth>
                       <IconSize size="md">
                         <Facebook />
                       </IconSize>
-                    </Flex>
                   </Link>
                 )}
                 {appConfig.social.twitter && (
@@ -204,11 +202,9 @@ export function PublicFooter() {
                     rel="noopener noreferrer"
                     aria-label="Twitter - Trường Đại học Ngân hàng TP.HCM"
                   >
-                    <Flex align="center" justify="center" height="64" rounded="xl" bg="white-10" fullWidth>
                       <IconSize size="md">
                         <Twitter />
                       </IconSize>
-                    </Flex>
                   </Link>
                 )}
                 {appConfig.social.linkedin && (
@@ -231,11 +227,9 @@ export function PublicFooter() {
                   rel="noopener noreferrer"
                   aria-label="Instagram - Trường Đại học Ngân hàng TP.HCM"
                 >
-                  <Flex align="center" justify="center" height="64" rounded="xl" bg="white-10">
                     <IconSize size="md">
                       <Instagram />
                     </IconSize>
-                  </Flex>
                 </Link>
                 <Link
                   href={appConfig.social.youtube}
@@ -243,11 +237,9 @@ export function PublicFooter() {
                   rel="noopener noreferrer"
                   aria-label="YouTube - Trường Đại học Ngân hàng TP.HCM"
                 >
-                  <Flex align="center" justify="center" height="64" rounded="xl" bg="white-10">
                     <IconSize size="md">
                       <Youtube />
                     </IconSize>
-                  </Flex>
                 </Link>
               </Flex>
             </Flex>
@@ -263,37 +255,28 @@ export function PublicFooter() {
               </Flex>
               <nav>
                 <Flex direction="col" gap={3}>
-                  <Link
-                    href={FOOTER_ROUTES.home}
-                    className="text-white/80 hover:text-white transition-all duration-200"
-                  >
+                  <Link href={FOOTER_ROUTES.home}>
                     <Flex align="center" gap={2}>
                       <IconSize size="sm">
                         <ArrowRight />
                       </IconSize>
-                      <TypographySpan>Trang chủ</TypographySpan>
+                      <TypographySpanWhite>Trang chủ</TypographySpanWhite>
                     </Flex>
                   </Link>
-                  <Link
-                    href={FOOTER_ROUTES.blog}
-                    className="text-white/80 hover:text-white transition-all duration-200"
-                  >
+                  <Link href={FOOTER_ROUTES.blog}>
                     <Flex align="center" gap={2}>
                       <IconSize size="sm">
                         <ArrowRight />
                       </IconSize>
-                      <TypographySpan>Blog</TypographySpan>
+                      <TypographySpanWhite>Blog</TypographySpanWhite>
                     </Flex>
                   </Link>
-                  <Link
-                    href={FOOTER_ROUTES.categories}
-                    className="text-white/80 hover:text-white transition-all duration-200"
-                  >
+                  <Link href={FOOTER_ROUTES.categories}>
                     <Flex align="center" gap={2}>
                       <IconSize size="sm">
                         <ArrowRight />
                       </IconSize>
-                      <TypographySpan>Danh mục</TypographySpan>
+                      <TypographySpanWhite>Danh mục</TypographySpanWhite>
                     </Flex>
                   </Link>
                 </Flex>
@@ -308,48 +291,36 @@ export function PublicFooter() {
               </Flex>
               <nav>
                 <Flex direction="col" gap={3}>
-                  <Link
-                    href={FOOTER_ROUTES.admin}
-                    className="text-white/80 hover:text-white transition-all duration-200"
-                  >
+                  <Link href={FOOTER_ROUTES.admin}>
                     <Flex align="center" gap={2}>
                       <IconSize size="sm">
                         <ArrowRight />
                       </IconSize>
-                      <TypographySpan>Quản trị</TypographySpan>
+                      <TypographySpanWhite>Quản trị</TypographySpanWhite>
                     </Flex>
                   </Link>
-                  <Link
-                    href="#"
-                    className="text-white/80 hover:text-white transition-all duration-200"
-                  >
+                  <Link href="#">
                     <Flex align="center" gap={2}>
                       <IconSize size="sm">
                         <ArrowRight />
                       </IconSize>
-                      <TypographySpan>Hướng dẫn sử dụng</TypographySpan>
+                      <TypographySpanWhite>Hướng dẫn sử dụng</TypographySpanWhite>
                     </Flex>
                   </Link>
-                  <Link
-                    href="#"
-                    className="text-white/80 hover:text-white transition-all duration-200"
-                  >
+                  <Link href="#">
                     <Flex align="center" gap={2}>
                       <IconSize size="sm">
                         <ArrowRight />
                       </IconSize>
-                      <TypographySpan>Điều khoản dịch vụ</TypographySpan>
+                      <TypographySpanWhite>Điều khoản dịch vụ</TypographySpanWhite>
                     </Flex>
                   </Link>
-                  <Link
-                    href="#"
-                    className="text-white/80 hover:text-white transition-all duration-200"
-                  >
+                  <Link href="#">
                     <Flex align="center" gap={2}>
                       <IconSize size="sm">
                         <ArrowRight />
                       </IconSize>
-                      <TypographySpan>Chính sách bảo mật</TypographySpan>
+                      <TypographySpanWhite>Chính sách bảo mật</TypographySpanWhite>
                     </Flex>
                   </Link>
                 </Flex>
@@ -361,7 +332,7 @@ export function PublicFooter() {
         </Grid>
 
         {/* Divider */}
-        <Separator variant="gradientWhite" />
+        <Separator variant="gradientWhite" margin="y-4"/>
 
         {/* Bottom Footer */}
         <Flex
@@ -378,16 +349,7 @@ export function PublicFooter() {
             fullWidth
           >
             <TypographySpan>
-              © {currentYear} {appConfig.namePublic}.
-            </TypographySpan>
-            <TypographySpan>
-              Được phát triển bởi
-            </TypographySpan>
-            <TypographySpan>
-              {appConfig.company}
-            </TypographySpan>
-            <TypographySpan>
-              Trường Đại học Ngân hàng TP.Hồ Chí Minh
+              © {currentYear} {appConfig.namePublic} . Được phát triển bởi {appConfig.company} Trường Đại học Ngân hàng TP.Hồ Chí Minh
             </TypographySpan>
           </Flex>
 

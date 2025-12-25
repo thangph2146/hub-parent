@@ -27,7 +27,9 @@ export const ImageGrid = ({
     <Grid 
       cols={5} 
       gap={4}
-      className="w-full gap-2 sm:gap-3 md:gap-4 p-2" 
+      fullWidth
+      padding="sm"
+      className="gap-2 sm:gap-3 md:gap-4" 
     >
       {images.map((image) => (
         <ImageItem

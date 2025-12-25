@@ -7,6 +7,8 @@
 
 import { Skeleton } from "@/components/ui/skeleton"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
+import { Flex } from "@/components/ui/flex"
+import { Grid } from "@/components/ui/grid"
 import {
   Dialog,
   DialogContent,
@@ -34,69 +36,87 @@ export function ResourceFormSkeleton({
   showCard = true,
 }: ResourceFormSkeletonProps) {
   const formFields = (
-    <div className="grid gap-6">
+    <Grid cols={2} fullWidth gap={6}>
       {Array.from({ length: fieldCount }).map((_, index) => (
-        <div key={index} className="space-y-2">
+        <Flex key={index} direction="col" fullWidth gap={2}>
           <Skeleton className="h-4 w-24" />
           <Skeleton className="h-10 w-full" />
-        </div>
+        </Flex>
       ))}
-    </div>
+    </Grid>
   )
 
-  // Dialog mode
   if (variant === "dialog") {
     return (
       <Dialog open={true}>
-        <DialogContent className="max-w-2xl w-full flex flex-col p-0">
+        <DialogContent className="max-w-2xl w-full p-0">
+          <Flex direction="col" fullWidth>
           <DialogHeader className="px-6 pt-6 pb-4">
-            {title && <Skeleton className="h-6 w-48" />}
-            <Skeleton className="h-4 w-64 mt-2" />
+              {title && (
+                <Flex direction="col" gap={2}>
+                  <Skeleton className="h-6 w-48" />
+                  <Skeleton className="h-4 w-64" />
+                </Flex>
+              )}
+              {!title && <Skeleton className="h-4 w-64" />}
           </DialogHeader>
-          <div className="max-h-[calc(60dvh)] overflow-y-auto">
-            <div className="px-6 py-4">
+            <Flex className="max-h-[calc(60dvh)] overflow-y-auto">
+              <Flex padding="md" fullWidth>
               {formFields}
-            </div>
-          </div>
-          <DialogFooter className="px-6 pb-6 pt-4 border-t">
+              </Flex>
+            </Flex>
+            <DialogFooter className="px-6 pb-6 pt-4 border-t border-border">
+              <Flex align="center" gap={3}>
             <Skeleton className="h-10 w-24" />
             <Skeleton className="h-10 w-20" />
+              </Flex>
           </DialogFooter>
+          </Flex>
         </DialogContent>
       </Dialog>
     )
   }
 
-  // Sheet mode
   if (variant === "sheet") {
     return (
       <Sheet open={true}>
-        <SheetContent className="flex flex-col">
+        <SheetContent>
+          <Flex direction="col" fullWidth flex="1">
           <SheetHeader>
-            {title && <Skeleton className="h-6 w-48" />}
-            <Skeleton className="h-4 w-64 mt-2" />
+              {title ? (
+                <Flex direction="col" gap={2}>
+                  <Skeleton className="h-6 w-48" />
+                  <Skeleton className="h-4 w-64" />
+                </Flex>
+              ) : (
+                <Skeleton className="h-4 w-64" />
+              )}
           </SheetHeader>
-          <div className="flex-1 -mx-6 px-6 mt-6 overflow-y-auto">
-            <div className="pr-4">
+            <Flex flex="1" className="-mx-6 px-6 mt-6 overflow-y-auto">
+              <Flex className="pr-4" fullWidth>
               {formFields}
-            </div>
-          </div>
-          <SheetFooter className="mt-6 border-t pt-4">
+              </Flex>
+            </Flex>
+            <SheetFooter className="mt-6 border-t border-border pt-4">
+              <Flex align="center" gap={3}>
             <Skeleton className="h-10 w-24" />
             <Skeleton className="h-10 w-20" />
+              </Flex>
           </SheetFooter>
+          </Flex>
         </SheetContent>
       </Sheet>
     )
   }
 
-  // Page mode
   const formContent = showCard ? (
     <Card>
       {title && (
         <CardHeader>
+          <Flex direction="col" gap={2}>
           <Skeleton className="h-6 w-48" />
-          <Skeleton className="h-4 w-64 mt-2" />
+            <Skeleton className="h-4 w-64" />
+          </Flex>
         </CardHeader>
       )}
       <CardContent className={title ? undefined : "pt-6"}>
@@ -104,33 +124,28 @@ export function ResourceFormSkeleton({
       </CardContent>
     </Card>
   ) : (
-    <div>
-      {formFields}
-    </div>
+    <Flex fullWidth>{formFields}</Flex>
   )
 
   return (
-    <div className="flex flex-1 flex-col gap-6 mx-auto w-full max-w-[100%]">
-      {/* Header */}
+    <Flex direction="col" flex="1" gap={6} marginX="auto" fullWidth padding="md">
       {title && (
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-border/50">
-          <div className="space-y-1.5 flex-1 min-w-0">
-            <Skeleton className="h-6 w-32 mb-2" />
+        <Flex direction="col-lg-row-items-center" align="start" justify="between" gap={4} paddingBottom={4} border="b-border">
+          <Flex direction="col" gap={2} flex="1" minWidth="0">
+            <Skeleton className="h-6 w-32" />
             <Skeleton className="h-8 w-64" />
-            <Skeleton className="h-4 w-96 mt-2" />
-          </div>
-        </div>
+            <Skeleton className="h-4 w-96" />
+          </Flex>
+        </Flex>
       )}
 
-      {/* Form */}
       {formContent}
 
-      {/* Footer Actions */}
-      <div className="flex items-center justify-end gap-3 pt-4 border-t">
+      <Flex align="center" justify="end" gap={3} paddingY="responsive" border="top">
         <Skeleton className="h-10 w-24" />
         <Skeleton className="h-10 w-20" />
-      </div>
-    </div>
+      </Flex>
+    </Flex>
   )
 }
 

@@ -1,4 +1,5 @@
 import { Skeleton } from "@/components/ui/skeleton"
+import { Flex } from "@/components/ui/flex"
 
 /**
  * MessagesPageSkeleton
@@ -7,77 +8,74 @@ import { Skeleton } from "@/components/ui/skeleton"
  * Hiển thị 2 panel (contact list + chat window) để tránh layout shift
  */
 export function MessagesPageSkeleton() {
-  const isBrowser = typeof window !== "undefined"
-  const viewportHeight = isBrowser ? window.innerHeight : undefined
-  const skeletonHeight = viewportHeight ? `calc(${viewportHeight}px - 0px)` : "100dvh"
-
   return (
-    <div
-      className="flex w-full overflow-hidden border bg-card"
+    <Flex
+      fullWidth
+      className="overflow-hidden border bg-card"
       style={{
-        height: skeletonHeight,
+        height: "100dvh",
         minHeight: "480px",
       }}
     >
       {/* Contact list */}
-      <div className="hidden w-full max-w-xs flex-col border-r p-4 sm:flex">
-        <div className="mb-4 flex items-center justify-between gap-2">
+      <Flex direction="col" fullWidth className="hidden max-w-xs border-r sm:flex" padding="md">
+        <Flex align="center" justify="between" gap={2} marginBottom={4}>
           <Skeleton className="h-6 w-20" />
-          <div className="flex items-center gap-2">
+          <Flex align="center" gap={2}>
             <Skeleton className="h-8 w-8 rounded-full" />
             <Skeleton className="h-8 w-8 rounded-full" />
-          </div>
-        </div>
-        <div className="flex flex-1 flex-col gap-3">
+          </Flex>
+        </Flex>
+        <Flex direction="col" flex="1" gap={3}>
           {Array.from({ length: 8 }).map((_, index) => (
-            <div key={`contact-skeleton-${index}`} className="flex items-center gap-3 rounded-lg border px-3 py-2">
+            <Flex key={`contact-skeleton-${index}`} align="center" gap={3} rounded="lg" border="all" paddingX={3} paddingY={2}>
               <Skeleton className="h-10 w-10 rounded-full" />
-              <div className="flex flex-1 flex-col gap-1">
+              <Flex direction="col" flex="1" gap={1}>
                 <Skeleton className="h-4 w-32" />
                 <Skeleton className="h-3 w-24" />
-              </div>
+              </Flex>
               <Skeleton className="h-3 w-8" />
-            </div>
+            </Flex>
           ))}
-        </div>
-      </div>
+        </Flex>
+      </Flex>
 
       {/* Chat window */}
-      <div className="flex flex-1 flex-col">
-        <div className="flex items-center justify-between border-b px-4 py-3">
-          <div className="flex items-center gap-3">
+      <Flex direction="col" flex="1">
+        <Flex align="center" justify="between" border="bottom" paddingX={4} paddingY={3} fullWidth>
+          <Flex align="center" gap={3}>
             <Skeleton className="h-10 w-10 rounded-full" />
-            <div className="flex flex-col gap-1">
+            <Flex direction="col" gap={1}>
               <Skeleton className="h-4 w-32" />
               <Skeleton className="h-3 w-24" />
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
+            </Flex>
+          </Flex>
+          <Flex align="center" gap={2}>
             <Skeleton className="h-9 w-28" />
             <Skeleton className="h-9 w-9 rounded-full" />
-          </div>
-        </div>
+          </Flex>
+        </Flex>
 
-        <div className="flex flex-1 flex-col gap-3 overflow-hidden p-4">
-          <div className="flex flex-col gap-4 overflow-y-hidden">
+        <Flex direction="col" flex="1" gap={3} className="overflow-hidden min-h-[calc(100dvh-64px)]" padding="md" fullWidth>
+          <Flex direction="col" gap={4} className="overflow-y-hidden" fullWidth>
             {Array.from({ length: 6 }).map((_, index) => (
-              <div
+              <Flex
                 key={`message-skeleton-${index}`}
-                className={`flex ${index % 2 === 0 ? "justify-start" : "justify-end"}`}
+                justify={index % 2 === 0 ? "start" : "end"}
               >
                 <Skeleton
                   className={`h-16 w-[65%] rounded-2xl ${index % 2 === 0 ? "rounded-tl-none" : "rounded-tr-none"}`}
                 />
-              </div>
+              </Flex>
             ))}
-          </div>
-        </div>
+          </Flex>
+        </Flex>
 
-        <div className="flex items-center gap-3 border-t px-4 py-3">
+        <Flex align="center" gap={3} border="top" paddingX={4} paddingY={3} fullWidth>
           <Skeleton className="h-12 flex-1 rounded-2xl" />
           <Skeleton className="h-10 w-10 rounded-full" />
-        </div>
-      </div>
-    </div>
+        </Flex>
+      </Flex>
+    </Flex>
   )
 }

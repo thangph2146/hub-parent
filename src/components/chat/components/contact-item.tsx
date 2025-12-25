@@ -8,7 +8,6 @@ import { Trash2 } from "lucide-react"
 import { TypographyP, TypographyPSmallMuted, IconSize } from "@/components/ui/typography"
 import type { Contact } from "../types"
 import { formatTime } from "../utils"
-import { cn } from "@/lib/utils"
 
 interface ContactItemProps {
   contact: Contact
@@ -40,8 +39,11 @@ export function ContactItem({ contact, isSelected, onClick }: ContactItemProps) 
             </Avatar>
             {contact.isOnline && (
               <Flex 
-                position="absolute" 
-                className="bottom-0 right-0 h-2 w-2 rounded-full bg-green-500 border-2 border-background" 
+                position="absolute-bottom-right"
+                height="2"
+                width="2"
+                rounded="full"
+                bg="green-500-border"
               />
             )}
           </Flex>
@@ -57,20 +59,26 @@ export function ContactItem({ contact, isSelected, onClick }: ContactItemProps) 
                   </IconSize>
                 )}
               </Flex>
-              <TypographyPSmallMuted className="shrink-0">
-                {formatTime(contact.lastMessageTime)}
-              </TypographyPSmallMuted>
+              <Flex shrink>
+                <TypographyPSmallMuted>
+                  {formatTime(contact.lastMessageTime)}
+                </TypographyPSmallMuted>
+              </Flex>
             </Flex>
             <Flex align="center" justify="between" gap={2} fullWidth>
-              <CardDescription className="flex-1 min-w-0">
-                <TypographyPSmallMuted className="truncate">
-                  {contact.lastMessage}
-                </TypographyPSmallMuted>
-              </CardDescription>
+              <Flex flex="1" minWidth="0" truncate>
+                <CardDescription>
+                  <TypographyPSmallMuted>
+                    {contact.lastMessage}
+                  </TypographyPSmallMuted>
+                </CardDescription>
+              </Flex>
               {contact.unreadCount > 0 && (
-                <Badge variant="default" className="shrink-0">
-                  {contact.unreadCount > 99 ? "99+" : contact.unreadCount}
-                </Badge>
+                <Flex shrink>
+                  <Badge variant="default">
+                    {contact.unreadCount > 99 ? "99+" : contact.unreadCount}
+                  </Badge>
+                </Flex>
               )}
             </Flex>
           </Flex>

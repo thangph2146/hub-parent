@@ -36,7 +36,7 @@ export function PostCard({ post, className, priority = false }: PostCardProps) {
   }
 
   return (
-    <article className={cn("group h-full bg-card rounded-lg border overflow-hidden transition-all hover:shadow-lg", className)}>
+    <Flex as="article" direction="col" height="full" bg="card" rounded="lg" border="all" overflow="hidden" className={cn("group transition-all hover:shadow-lg", className)}>
       <Link href={`/bai-viet/${post.slug}`} className="flex flex-col flex-1">
             {/* Featured Image */}
             {post.image ? (
@@ -62,7 +62,7 @@ export function PostCard({ post, className, priority = false }: PostCardProps) {
             )}
             
             {/* Content */}
-            <Flex direction="col" gap={3} className="p-6">
+            <Flex direction="col" gap={3} padding="lg">
               {/* Category Badge */}
               {primaryCategory && primaryCategory.name && (
                 <Badge variant="secondary" className="w-fit">
@@ -99,7 +99,7 @@ export function PostCard({ post, className, priority = false }: PostCardProps) {
 
         {/* Tags */}
         {displayTags.length > 0 && (
-          <Flex align="center" gap={2} wrap={true} className="p-4 border-t">
+          <Flex align="center" gap={2} wrap={true} padding="md" border="top">
             <IconSize size="xs">
               <Tag />
             </IconSize>
@@ -110,7 +110,7 @@ export function PostCard({ post, className, priority = false }: PostCardProps) {
             ))}
           </Flex>
         )}
-    </article>
+    </Flex>
   )
 }
 

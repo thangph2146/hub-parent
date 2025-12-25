@@ -164,7 +164,7 @@ export function NotificationItem({
       }}
     >
       <Flex align="start" gap={3}>
-        <div className="mt-0.5 flex-shrink-0">
+        <Flex marginTop={0.5} shrink>
           <IconSize
             size="md"
             className={cn(
@@ -178,15 +178,15 @@ export function NotificationItem({
           >
             <Icon />
           </IconSize>
-        </div>
+        </Flex>
 
-        <Flex direction="col" gap={1} className="w-full flex-1">
+        <Flex direction="col" gap={1} fullWidth flex="1">
           <Flex align="start" justify="between" gap={2}>
             <TypographyP className="leading-none">
               {notification.title}
             </TypographyP>
             {!notification.isRead && (
-              <div className="h-2 w-2 flex-shrink-0 rounded-full bg-primary" />
+              <Flex height="2" width="2" shrink rounded="full" bg="primary" />
             )}
           </Flex>
 

@@ -168,12 +168,14 @@ export function PublicHeader() {
       as="header"
       position="sticky"
       fullWidth
-      className={cn("top-0 z-50 border-b border-transparent h-14", {
+      height="14"
+      border="bottom"
+      className={cn("top-0 z-50 border-transparent", {
         "bg-background/95 supports-[backdrop-filter]:bg-background/70 border-border backdrop-blur-lg":
           scrolled,
       })}
     >
-      <Flex as="nav" container fullWidth align="center" justify="between" className="h-full">
+      <Flex as="nav" container fullWidth align="center" justify="between" height="full">
         <Flex align="center" gap={4}>
           <Link
             href={PUBLIC_ROUTES.home}
@@ -249,7 +251,7 @@ export function PublicHeader() {
               </NavigationMenuList>
             </NavigationMenu>
           ) : (
-            <Flex align="center" gap={4} className="hidden md:flex">
+            <Flex align="center" gap={4} display="hidden-md-flex">
               {publicLinks.slice(0, 2).map((link) => (
                 <Button
                   key={link.href}
@@ -264,7 +266,7 @@ export function PublicHeader() {
           )}
         </Flex>
         {mounted ? (
-          <Flex align="end" justify="end" gap={2} className="w-[400px] max-w-full">
+          <Flex align="end" justify="end" gap={2} width="400">
             <ModeToggle />
             {isAuthenticated ? (
               <Flex>
@@ -303,14 +305,14 @@ export function PublicHeader() {
       </Flex>
       {mounted && (
         <MobileMenu open={open} onClose={() => setOpen(false)}>
-          <Flex direction="col" className="h-full">
+          <Flex direction="col" height="full">
             {/* User Section - Top */}
             {isAuthenticated ? (
-              <Flex direction="col" className="border-b pb-4 mb-4 w-full">
+              <Flex direction="col" border="bottom" padding="lg-y" marginBottom={4} fullWidth>
                 <NavUser className="w-full" />
               </Flex>
             ) : (
-              <Flex direction="col" gap={2} className="border-b pb-4 mb-4">
+              <Flex direction="col" gap={2} border="bottom" padding="lg-y" margin="b-4">
                 <Button
                   variant="default"
                   className="w-full h-auto py-3"
@@ -318,8 +320,8 @@ export function PublicHeader() {
                   onClick={() => setOpen(false)}
                 >
                   <Link href="/auth/sign-in">
-                    <Flex align="center" gap={3} className="justify-start">
-                      <Flex align="center" justify="center" className="bg-primary/10 aspect-square h-12 w-12 rounded-md">
+                    <Flex align="center" justify="start" gap={3}>
+                      <Flex align="center" justify="center" bg="primary-10" height="12" width="12" rounded="md" className="aspect-square">
                         <IconSize size="md"><LogIn /></IconSize>
                       </Flex>
                       <Flex direction="col" align="start">
@@ -338,8 +340,8 @@ export function PublicHeader() {
                   onClick={() => setOpen(false)}
                 >
                   <Link href="/auth/sign-up">
-                    <Flex align="center" gap={3} className="justify-start">
-                      <Flex align="center" justify="center" className="bg-muted aspect-square h-12 w-12 rounded-md">
+                    <Flex align="center" justify="start" gap={3}>
+                      <Flex align="center" justify="center" bg="muted" height="12" width="12" rounded="md" className="aspect-square">
                         <IconSize size="md"><UserPlus /></IconSize>
                       </Flex>
                       <Flex direction="col" align="start">
@@ -355,7 +357,7 @@ export function PublicHeader() {
             )}
 
             {/* Navigation Links - Scrollable */}
-            <Flex direction="col" gap={1} className="flex-1 overflow-y-auto w-full">
+            <Flex direction="col" gap={1} flex="1" overflow="auto" fullWidth>
               {publicLinks.map((link) => {
                 // Hiển thị "Trang chủ" và "Bài viết" trực tiếp
                 if (

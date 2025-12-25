@@ -7,45 +7,50 @@
 
 import { Skeleton } from "@/components/ui/skeleton"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
+import { Flex } from "@/components/ui/flex"
+import { Grid } from "@/components/ui/grid"
 
 export function DashboardStatsSkeleton() {
   return (
-    <div className="flex flex-1 flex-col gap-6 p-4 md:p-6 lg:p-8 relative overflow-hidden">
+    <Flex direction="col" flex="1" gap={6} padding="responsive-lg" className="relative overflow-hidden">
       {/* Background gradient effects */}
-      <div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 left-0 w-96 h-96 bg-[#00cc44]/5 dark:bg-[#00ff88]/5 rounded-full blur-3xl" />
-      </div>
+      <Flex className="absolute inset-0 -z-10 overflow-hidden pointer-events-none">
+        <Flex className="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
+        <Flex className="absolute bottom-0 left-0 w-96 h-96 bg-[#00cc44]/5 dark:bg-[#00ff88]/5 rounded-full blur-3xl" />
+      </Flex>
 
-      <div className="flex flex-1 flex-col gap-8 relative z-10">
+      <Flex direction="col" flex="1" gap={8} className="relative z-10">
         {/* Header */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="flex items-center gap-3 mb-2">
+        <Flex direction="col" gap={2}>
+          <Flex align="center" justify="between">
+            <Flex direction="col" gap={2}>
+              <Flex align="center" gap={3} marginBottom={2}>
                 <Skeleton className="h-8 w-8 rounded" />
                 <Skeleton className="h-9 w-64" />
-              </div>
-              <div className="flex items-center gap-2 mt-2">
+              </Flex>
+              <Flex align="center" gap={2} marginTop={2}>
                 <Skeleton className="h-5 w-5 rounded" />
                 <Skeleton className="h-5 w-48" />
-              </div>
-            </div>
-          </div>
-        </div>
+              </Flex>
+            </Flex>
+          </Flex>
+        </Flex>
+
         {/* Charts Row */}
-        <div className="grid gap-6 lg:grid-cols-2">
+        <Grid cols="2-lg" gap={6}>
           {/* Line Chart Skeleton */}
           <Card className="relative overflow-hidden">
             <CardHeader>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
+              <Flex direction="col" gap={2}>
+                <Flex align="center" justify="between">
+                  <Flex align="center" gap={2}>
                   <Skeleton className="h-6 w-6 rounded" />
                   <Skeleton className="h-6 w-40" />
-                </div>
+                  </Flex>
                 <Skeleton className="h-9 w-32 rounded-md" />
-              </div>
-              <Skeleton className="h-4 w-64 mt-2" />
+                </Flex>
+                <Skeleton className="h-4 w-64" />
+              </Flex>
             </CardHeader>
             <CardContent>
               <Skeleton className="h-80 w-full rounded-lg" />
@@ -55,34 +60,35 @@ export function DashboardStatsSkeleton() {
           {/* Pie Chart Skeleton */}
           <Card className="relative overflow-hidden">
             <CardHeader>
-              <div className="flex items-center gap-2">
+              <Flex direction="col" gap={2}>
+                <Flex align="center" gap={2}>
                 <Skeleton className="h-6 w-6 rounded" />
                 <Skeleton className="h-6 w-40" />
-              </div>
-              <Skeleton className="h-4 w-64 mt-2" />
+                </Flex>
+                <Skeleton className="h-4 w-64" />
+              </Flex>
             </CardHeader>
             <CardContent>
-              <div className="space-y-6">
-                <div className="flex items-center justify-center">
+              <Flex direction="col" gap={6}>
+                <Flex align="center" justify="center">
                   <Skeleton className="h-80 w-80 rounded-full" />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
+                </Flex>
+                <Grid cols={2} gap={4}>
                   {Array.from({ length: 4 }).map((_, index) => (
-                    <div key={index} className="flex items-center gap-3 p-3 rounded-lg border">
+                    <Flex key={index} align="center" gap={3} padding="xs" rounded="lg" border="all">
                       <Skeleton className="h-4 w-4 rounded" />
-                      <div className="flex-1">
-                        <Skeleton className="h-4 w-24 mb-1" />
+                      <Flex direction="col" flex="1" gap={1}>
+                        <Skeleton className="h-4 w-24" />
                         <Skeleton className="h-3 w-32" />
-                      </div>
-                    </div>
+                      </Flex>
+                    </Flex>
                   ))}
-                </div>
-              </div>
+                </Grid>
+              </Flex>
             </CardContent>
           </Card>
-        </div>
-      </div>
-    </div>
+        </Grid>
+      </Flex>
+    </Flex>
   )
 }
-

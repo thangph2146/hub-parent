@@ -92,21 +92,22 @@ export function SignUpForm({
 
   return (
     <Flex direction="col" gap={6} className={className} {...props}>
-      <Card className="overflow-hidden p-0">
-        <CardContent className="p-0">
-          <div className="grid grid-cols-1 md:grid-cols-2">
+      <Card overflow="hidden" padding="0">
+        <CardContent padding="none" grid="2">
           <form onSubmit={handleSubmit} className="p-6 md:p-8">
             <FieldGroup>
-              <Flex direction="col" align="center" gap={2} className="text-center">
+              <Flex direction="col" align="center" gap={2} textAlign="center">
                 <TypographyH2>Tạo tài khoản</TypographyH2>
-                <TypographyPMuted className="text-balance">
+                <TypographyPMuted>
                   Đăng ký tài khoản của bạn
                 </TypographyPMuted>
               </Flex>
               {error && (
-                <TypographyP className="rounded-lg bg-destructive/10 p-3 text-destructive">
-                  {error}
-                </TypographyP>
+                <Flex rounded="lg" bg="destructive-text" padding="md">
+                  <TypographyP>
+                    {error}
+                  </TypographyP>
+                </Flex>
               )}
               <Field>
                 <FieldLabel htmlFor="name">Tên</FieldLabel>
@@ -134,7 +135,7 @@ export function SignUpForm({
               </Field>
               <Field>
                 <FieldLabel htmlFor="password">Mật khẩu</FieldLabel>
-                <div className="relative">
+                <Flex position="relative">
                   <Input
                     id="password"
                     name="password"
@@ -143,13 +144,12 @@ export function SignUpForm({
                     placeholder="Tạo mật khẩu"
                     required
                     disabled={isLoading}
-                    className="pr-10"
+                    paddingRight="10"
                   />
                   <Button
                     type="button"
                     variant="ghost"
-                    size="sm"
-                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                    size="icon-absolute"
                     onClick={() => setShowPassword(!showPassword)}
                     disabled={isLoading}
                   >
@@ -163,11 +163,11 @@ export function SignUpForm({
                       </IconSize>
                     )}
                   </Button>
-                </div>
+                </Flex>
               </Field>
               <Field>
                 <FieldLabel htmlFor="confirm-password">Xác nhận mật khẩu</FieldLabel>
-                <div className="relative">
+                <Flex position="relative">
                   <Input
                     id="confirm-password"
                     name="confirm-password"
@@ -176,13 +176,12 @@ export function SignUpForm({
                     placeholder="Xác nhận mật khẩu của bạn"
                     required
                     disabled={isLoading}
-                    className="pr-10"
+                    paddingRight="10"
                   />
                   <Button
                     type="button"
                     variant="ghost"
-                    size="sm"
-                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                    size="icon-absolute"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                     disabled={isLoading}
                   >
@@ -196,7 +195,7 @@ export function SignUpForm({
                       </IconSize>
                     )}
                   </Button>
-                </div>
+                </Flex>
               </Field>
               <Field>
                 <Button type="submit" disabled={isLoading}>
@@ -207,25 +206,25 @@ export function SignUpForm({
                 Hoặc tiếp tục với
               </FieldSeparator>
               <Field>
-                <Flex justify="center">
+                <Flex justify="center" fullWidth>
                   <Button
                     variant="outline"
                     type="button"
                     onClick={handleGoogleSignIn}
                     disabled={isLoading}
-                    className="w-full"
+                    fullWidth
                   >
                     <IconBrandGoogleFilled />
                     Đăng ký bằng Google
                   </Button>
                 </Flex>
               </Field>
-              <FieldDescription className="text-center">
-                Đã có tài khoản? <Link href="/auth/sign-in" className="underline-offset-2 hover:underline">Đăng nhập</Link>
+              <FieldDescription textAlign="center">
+                Đã có tài khoản? <Link href="/auth/sign-in">Đăng nhập</Link>
               </FieldDescription>
             </FieldGroup>
           </form>
-          <Flex className="bg-muted relative hidden md:block">
+          <Flex bg="muted" position="relative" display="hidden-md-flex">
             <Image
               src="https://hub.edu.vn/DATA/IMAGES/2025/06/06/20250606095214z6676928339374_824596735893cad9e9d4402075fcccd2.jpg"
               alt="Hình ảnh"
@@ -235,7 +234,6 @@ export function SignUpForm({
               className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
             />    
           </Flex>
-          </div>
         </CardContent>
       </Card>
     </Flex>

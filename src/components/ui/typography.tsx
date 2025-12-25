@@ -164,6 +164,18 @@ export function TypographySpan({
   )
 }
 
+export function TypographySpanWhite({
+  className,
+  children,
+  ...props
+}: React.HTMLAttributes<HTMLSpanElement>) {
+  return (
+    <span className={cn(typography.body.medium, "text-white/80 hover:text-white transition-all duration-200", className)} {...props}>
+      {children}
+    </span>
+  )
+}
+
 export function TypographySpanSmall({
   className,
   children,
@@ -221,6 +233,30 @@ export function TypographySpanLargeMuted({
     <span className={cn(typography.body.muted.large, className)} {...props}>
       {children}
     </span>
+  )
+}
+
+export function TypographySpanDestructive({
+  className,
+  children,
+  ...props
+}: React.HTMLAttributes<HTMLSpanElement>) {
+  return (
+    <span className={cn(typography.body.small, "text-destructive", className)} {...props}>
+      {children}
+    </span>
+  )
+}
+
+export function TypographyLink({
+  className,
+  children,
+  ...props
+}: React.HTMLAttributes<HTMLAnchorElement>) {
+  return (
+    <a className={cn("underline-offset-2 hover:underline", className)} {...props}>
+      {children}
+    </a>
   )
 }
 
