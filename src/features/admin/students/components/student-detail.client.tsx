@@ -82,7 +82,7 @@ export const StudentDetailClient = ({ studentId, student, backUrl = "/admin/stud
         const studentData = (data || detailData) as StudentDetailData
         
         return (
-          <Grid cols={2} fullWidth gap={6}>
+          <Grid cols="responsive-2" fullWidth gap={6}>
             <FieldItem icon={Hash} label="Mã sinh viên">
               <TypographyP className="font-mono">{studentData.studentCode || "—"}</TypographyP>
             </FieldItem>

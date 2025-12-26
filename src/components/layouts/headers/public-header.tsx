@@ -29,7 +29,7 @@ import {
   Info,
   Mail,
 } from "lucide-react";
-import { Logo } from "@/public/svg/Logo"
+import { Logo } from "../../../../public/svg/Logo"
 import { appFeatures } from "@/lib/config/app-features";
 import { getResourceMainRoute } from "@/lib/permissions/route-helpers";
 import { Separator } from "@/components/ui/separator";
@@ -37,6 +37,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { TypographyPSmall, TypographyP, TypographyPSmallMuted, IconSize } from "@/components/ui/typography";
 import { Flex } from "@/components/ui/flex";
 import { Grid } from "@/components/ui/grid";
+import { useRouter } from "next/navigation";
 
 /**
  * Helper functions để lấy routes từ appFeatures
@@ -147,7 +148,7 @@ export function PublicHeader() {
   const scrolled = useScroll(10);
   const { data: session } = useSession();
   const isAuthenticated = !!session;
-
+  const router = useRouter();
   React.useEffect(() => {
     setMounted(true);
   }, []);
@@ -170,6 +171,7 @@ export function PublicHeader() {
       fullWidth
       height="14"
       border="bottom"
+      padding="md-x"
       className={cn("top-0 z-50 border-transparent", {
         "bg-background/95 supports-[backdrop-filter]:bg-background/70 border-border backdrop-blur-lg":
           scrolled,
@@ -315,31 +317,34 @@ export function PublicHeader() {
               <Flex direction="col" gap={2} border="bottom" padding="lg-y" margin="b-4">
                 <Button
                   variant="default"
-                  className="w-full h-auto py-3"
+                  className="w-full h-auto py-3 flex flex-row items-center justify-start"
                   asChild
-                  onClick={() => setOpen(false)}
+                  onClick={() => {
+                    setOpen(false);
+                    router.push("/auth/sign-in");
+                  }}
                 >
-                  <Link href="/auth/sign-in">
                     <Flex align="center" justify="start" gap={3}>
                       <Flex align="center" justify="center" bg="primary-10" height="12" width="12" rounded="md" className="aspect-square">
                         <IconSize size="md"><LogIn /></IconSize>
                       </Flex>
                       <Flex direction="col" align="start">
                         <TypographyP>Đăng nhập</TypographyP>
-                        <TypographyPSmallMuted>
+                        <TypographyPSmall>
                           Đăng nhập vào tài khoản của bạn
-                        </TypographyPSmallMuted>
+                        </TypographyPSmall>
                       </Flex>
                     </Flex>
-                  </Link>
                 </Button>
                 <Button
                   variant="outline"
-                  className="w-full h-auto py-3"
+                  className="w-full h-auto py-3 flex flex-row items-center justify-start"
                   asChild
-                  onClick={() => setOpen(false)}
+                  onClick={() => {
+                    setOpen(false);
+                    router.push("/auth/sign-up");
+                  }}
                 >
-                  <Link href="/auth/sign-up">
                     <Flex align="center" justify="start" gap={3}>
                       <Flex align="center" justify="center" bg="muted" height="12" width="12" rounded="md" className="aspect-square">
                         <IconSize size="md"><UserPlus /></IconSize>
@@ -351,7 +356,6 @@ export function PublicHeader() {
                         </TypographyPSmallMuted>
                       </Flex>
                     </Flex>
-                  </Link>
                 </Button>
               </Flex>
             )}

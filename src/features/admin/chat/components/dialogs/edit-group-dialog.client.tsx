@@ -12,7 +12,15 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { Label } from "@/components/ui/label"
+import {
+  Field,
+  FieldLabel,
+  FieldDescription,
+  FieldContent,
+  FieldSet,
+  FieldLegend,
+  FieldGroup,
+} from "@/components/ui/field"
 import { Loader2 } from "lucide-react"
 import { IconSize } from "@/components/ui/typography"
 import { Flex } from "@/components/ui/flex"
@@ -82,26 +90,60 @@ export const EditGroupDialog = ({ open, onOpenChange, group, onSuccess }: EditGr
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[540px]">
+      <DialogContent className="sm:max-w-[540px] md:max-w-[600px] lg:max-w-[640px]">
         <DialogHeader>
           <DialogTitle>Chỉnh sửa nhóm</DialogTitle>
           <DialogDescription>Cập nhật tên và mô tả cho nhóm</DialogDescription>
         </DialogHeader>
-        <Flex direction="col" gap={4} paddingY={2}>
-          <Flex direction="col" gap={2}>
-            <Label htmlFor="group-name">Tên nhóm</Label>
-            <Input id="group-name" value={groupName} onChange={(e) => setGroupName(e.target.value)} />
-          </Flex>
-          <Flex direction="col" gap={2}>
-            <Label htmlFor="group-description">Mô tả</Label>
-            <Textarea id="group-description" value={groupDescription} onChange={(e) => setGroupDescription(e.target.value)} />
-          </Flex>
-        </Flex>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isSaving}>
+        <FieldSet className="group/field-set">
+          <FieldLegend variant="legend">Thông tin nhóm</FieldLegend>
+          <FieldGroup>
+            <Field orientation="responsive">
+              <FieldLabel htmlFor="group-name">Tên nhóm</FieldLabel>
+              <FieldContent>
+                <Input 
+                  id="group-name" 
+                  value={groupName} 
+                  onChange={(e) => setGroupName(e.target.value)}
+                  className="w-full"
+                  disabled={isSaving}
+                />
+                <FieldDescription>
+                  Tên nhóm sẽ hiển thị trong danh sách và cuộc trò chuyện
+                </FieldDescription>
+              </FieldContent>
+            </Field>
+            <Field orientation="responsive">
+              <FieldLabel htmlFor="group-description">Mô tả</FieldLabel>
+              <FieldContent>
+                <Textarea 
+                  id="group-description" 
+                  value={groupDescription} 
+                  onChange={(e) => setGroupDescription(e.target.value)}
+                  className="w-full min-h-[100px] sm:min-h-[120px]"
+                  disabled={isSaving}
+                />
+                <FieldDescription>
+                  Mô tả về nhóm (tùy chọn)
+                </FieldDescription>
+              </FieldContent>
+            </Field>
+          </FieldGroup>
+        </FieldSet>
+        <DialogFooter className="flex-col sm:flex-row gap-2 sm:gap-0">
+          <Button 
+            variant="outline" 
+            onClick={() => onOpenChange(false)} 
+            disabled={isSaving}
+            className="w-full sm:w-auto"
+          >
             Hủy
           </Button>
-          <Button onClick={handleSave} disabled={isSaving}>
+          <Button 
+            onClick={handleSave} 
+            disabled={isSaving || !groupName.trim()}
+            className="w-full sm:w-auto"
+          >
             {isSaving && (
               <IconSize size="sm" className="mr-2 animate-spin">
                 <Loader2 />

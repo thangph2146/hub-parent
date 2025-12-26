@@ -156,7 +156,7 @@ export const AccountProfileClient = ({
 
         return (
           <Flex direction="col" gap={6}>
-            <Grid cols={2} gap={4}>
+            <Grid cols="responsive-2" gap={4}>
               <Card padding="md" className="border-border/50 bg-card/50 hover:bg-card transition-colors">
                 <FieldItem icon={User} label="Tên">
                   <TypographyPLarge className="mt-1">
@@ -218,7 +218,7 @@ export const AccountProfileClient = ({
                             <TypographyPLarge>
                               {addressDisplay}
                             </TypographyPLarge>
-                            <Grid cols={2} gap={2}>
+                            <Grid cols="responsive-2" gap={2}>
                               {structuredAddress.address && (
                                 <Flex align="start" gap={2}>
                                   <TypographySpanSmall className="min-w-[80px]">
@@ -335,7 +335,7 @@ export const AccountProfileClient = ({
 
         return (
           <Flex direction="col" gap={6}>
-            <Grid cols={2} gap={4}>
+            <Grid cols="responsive-2" gap={4}>
               <Card padding="md" className="border-border/50 bg-card/50 hover:bg-card transition-colors">
                 <FieldItem icon={Calendar} label="Ngày tạo tài khoản">
                   <TypographyPLarge className="mt-1">

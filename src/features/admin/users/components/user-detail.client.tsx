@@ -209,7 +209,7 @@ export const UserDetailClient = ({ userId, user, backUrl = "/admin/users" }: Use
         const userData = data as UserDetailData
         
         return (
-          <Grid cols={2} gap={6} fullWidth>
+          <Grid cols="responsive-2" gap={6} fullWidth>
             {/* Email */}
             <FieldItem icon={Mail} label="Email">
               <Flex direction="col" gap={1}>
@@ -322,7 +322,7 @@ export const UserDetailClient = ({ userId, user, backUrl = "/admin/users" }: Use
                     
                     {/* Structured address fields */}
                     {hasStructuredAddress && (
-                      <Grid cols={2} gap={4} className="pt-2 border-t border-border/50">
+                      <Grid cols="responsive-2" gap={4} className="pt-2 border-t border-border/50">
                         {streetValue && (
                           <FieldItem icon={MapPin} label="Số nhà, Đường">
                             <TypographySpanMuted>
@@ -366,7 +366,7 @@ export const UserDetailClient = ({ userId, user, backUrl = "/admin/users" }: Use
             })()}
 
             {/* Roles & Status */}
-            <Grid cols={2} gap={6} fullWidth>
+            <Grid cols="responsive-2" gap={6} fullWidth>
               {/* Roles */}
               {userData.roles && userData.roles.length > 0 && (
                 <FieldItem icon={Shield} label="Vai trò">
@@ -423,7 +423,7 @@ export const UserDetailClient = ({ userId, user, backUrl = "/admin/users" }: Use
             </Grid>
 
             {/* Timestamps */}
-            <Grid cols={2} gap={6} fullWidth>
+            <Grid cols="responsive-2" gap={6} fullWidth>
               <FieldItem icon={Calendar} label="Ngày tạo">
                 <TypographySpanMuted>
                   {userData.createdAt ? formatDateVi(userData.createdAt) : "—"}

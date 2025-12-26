@@ -117,7 +117,7 @@ export const SessionDetailClient = ({ sessionId, session, backUrl = "/admin/sess
               </TypographyPSmall>
             </FieldItem>
 
-            <Grid cols={2} gap={6}>
+            <Grid cols="responsive-2" fullWidth gap={6}>
               <FieldItem icon={Globe} label="User Agent" iconColor="bg-chart-3/10">
                 <TypographyP className="break-all">
                   {sessionData.userAgent || "—"}
@@ -160,7 +160,7 @@ export const SessionDetailClient = ({ sessionId, session, backUrl = "/admin/sess
               </Badge>
             </FieldItem>
 
-            <Grid cols={2} gap={6}>
+            <Grid cols="responsive-2" fullWidth gap={6}>
               <FieldItem icon={Calendar} label="Thời gian hết hạn">
                 <TypographyP>
                   {sessionData.expiresAt ? formatDateVi(sessionData.expiresAt) : "—"}

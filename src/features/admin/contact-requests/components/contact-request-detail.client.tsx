@@ -174,7 +174,7 @@ export const ContactRequestDetailClient = ({ contactRequestId, contactRequest, b
         return (
           <Flex direction="col" gap={6}>
             {/* Contact Info */}
-            <Grid cols="3-lg" gap={6} fullWidth>
+            <Grid cols="responsive-2" gap={6} fullWidth>
               <FieldItem icon={User} label="Tên người liên hệ">
                 <TypographyP>
                   {requestData.name || "—"}
@@ -230,7 +230,7 @@ export const ContactRequestDetailClient = ({ contactRequestId, contactRequest, b
         return (
             <Flex direction="col" gap={6}>
             {/* Status & Priority */}
-            <Grid cols="2-lg" gap={6} fullWidth>
+            <Grid cols="responsive-2" gap={6} fullWidth>
               <FieldItem icon={AlertCircle} label="Trạng thái">
                 <Badge variant={CONTACT_REQUEST_STATUS_COLORS[requestData.status] || "default"} className="w-fit">
                   {(requestData.status === "NEW" && CONTACT_REQUEST_LABELS.NEW) ||
@@ -297,7 +297,7 @@ export const ContactRequestDetailClient = ({ contactRequestId, contactRequest, b
         const requestData = data as ContactRequestDetailData
 
         return (
-          <Grid cols="2-lg" gap={6} fullWidth>
+          <Grid cols="responsive-2" gap={6} fullWidth>
             <FieldItem icon={Calendar} label="Ngày tạo">
               <TypographyP>
                 {requestData.createdAt ? formatDateVi(requestData.createdAt) : "—"}

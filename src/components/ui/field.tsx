@@ -6,19 +6,20 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
-import { responsiveTextSizes, fontWeights, lineHeights } from "@/lib/typography"
+import { typography } from "@/lib/typography"
 
-const fieldBodySmall = `${responsiveTextSizes.small} ${fontWeights.normal} ${lineHeights.relaxed}`
+const fieldBodySmall = typography.body.small
 
 function FieldSet({ className, ...props }: React.ComponentProps<"fieldset">) {
   return (
     <fieldset
       data-slot="field-set"
       className={cn(
-        "flex flex-col gap-6",
-        "has-[>[data-slot=checkbox-group]]:gap-3 has-[>[data-slot=radio-group]]:gap-3",
-        // Fieldset custom styling
-        "p-4 px-5 border-2 border-solid border-border rounded-[calc(var(--radius)-2px)] mb-6",
+        "flex flex-col",
+        // Responsive padding: mobile -> sm (640px) -> md (768px) -> lg (1024px) -> xl (1280px) -> 2xl (1536px)
+        "p-3 px-4 sm:p-4 sm:px-5 md:p-5 md:px-6 lg:p-6 lg:px-8 xl:p-7 xl:px-9 2xl:p-8 2xl:px-10",
+        "border-2 border-solid border-border rounded-[calc(var(--radius)-2px)]",
+        "mb-4 sm:mb-5 md:mb-6 lg:mb-6 xl:mb-8 2xl:mb-8",
         "bg-background transition-all duration-300",
         "relative overflow-hidden",
         "hover:border-ring/50 hover:shadow-[0_2px_8px_hsl(var(--ring)/0.1)]",
@@ -45,17 +46,17 @@ function FieldLegend({
       data-slot="field-legend"
       data-variant={variant}
       className={cn(
-        // Legend custom styling - larger text
-        "mx-0 mb-3 px-2 border-b-0 w-auto",
+        "mx-0 mb-2 sm:mb-3 md:mb-3 lg:mb-4 xl:mb-4 2xl:mb-5 px-2 border-b-0 w-auto",
         "font-semibold text-foreground",
         "transition-colors duration-200",
         "relative",
-        // Responsive text sizes - override fieldBodyMedium
+        // Responsive text sizes: mobile -> sm (640px) -> md (768px) -> lg (1024px) -> xl (1280px) -> 2xl (1536px)
         variant === "legend" 
-          ? "text-sm sm:text-base md:text-lg leading-relaxed"
-          : `${fieldBodySmall}`,
-        // Gradient accent line
-        "after:content-[''] after:absolute after:-bottom-2 after:left-2 after:right-2 after:h-[2px]",
+          ? typography.title.default
+          : fieldBodySmall,
+        // Gradient accent line with responsive positioning
+        "after:content-[''] after:absolute after:-bottom-1.5 sm:after:-bottom-2 md:after:-bottom-2 lg:after:-bottom-2.5 xl:after:-bottom-2.5 2xl:after:-bottom-3",
+        "after:left-2 after:right-2 after:h-[2px]",
         "after:bg-gradient-to-r after:from-primary after:to-transparent",
         "after:opacity-30 after:transition-opacity after:duration-300",
         "group-hover/field-set:after:opacity-60",
@@ -91,7 +92,13 @@ const fieldVariants = cva(
           "has-[>[data-slot=field-content]]:items-start has-[>[data-slot=field-content]]:[&>[role=checkbox],[role=radio]]:mt-px",
         ],
         responsive: [
-          "flex-col [&>*]:w-full [&>.sr-only]:w-auto @md/field-group:flex-row @md/field-group:items-center @md/field-group:[&>*]:w-auto",
+          "flex-col [&>*]:w-full [&>.sr-only]:w-auto",
+          // sm: 640px+
+          "sm:flex-row sm:items-center sm:[&>*]:w-auto",
+          "sm:[&>[data-slot=field-label]]:flex-auto",
+          "sm:has-[>[data-slot=field-content]]:items-start sm:has-[>[data-slot=field-content]]:[&>[role=checkbox],[role=radio]]:mt-px",
+          // md: 768px+ (container query)
+          "@md/field-group:flex-row @md/field-group:items-center @md/field-group:[&>*]:w-auto",
           "@md/field-group:[&>[data-slot=field-label]]:flex-auto",
           "@md/field-group:has-[>[data-slot=field-content]]:items-start @md/field-group:has-[>[data-slot=field-content]]:[&>[role=checkbox],[role=radio]]:mt-px",
         ],
@@ -157,7 +164,7 @@ function FieldTitle({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="field-label"
       className={cn(
-        `flex w-fit items-center gap-2 leading-snug font-medium group-data-[disabled=true]/field:opacity-50 ${fieldBodySmall}`,
+        `flex w-fit items-center gap-2 leading-snug font-medium group-data-[disabled=true]/field:opacity-50 ${typography.body.small}`,
         className
       )}
       {...props}
@@ -166,25 +173,30 @@ function FieldTitle({ className, ...props }: React.ComponentProps<"div">) {
 }
 
 const fieldDescriptionVariants = cva(
-  `text-muted-foreground leading-normal font-normal group-has-[[data-orientation=horizontal]]/field:text-balance ${fieldBodySmall} last:mt-0 nth-last-2:-mt-1 [[data-variant=legend]+&]:-mt-1.5 [&>a:hover]:text-primary [&>a]:underline [&>a]:underline-offset-4`,
+  `${typography.body.muted.small} group-has-[[data-orientation=horizontal]]/field:text-balance last:mt-0 nth-last-2:-mt-1 [[data-variant=legend]+&]:-mt-1.5 [&>a:hover]:text-primary [&>a]:underline [&>a]:underline-offset-4`,
   {
     variants: {
       textAlign: {
         none: "",
         center: "text-center",
       },
+      variant: {
+        default: "",
+        section: "mx-0 mb-2 sm:mb-3 md:mb-3 lg:mb-4 xl:mb-4 2xl:mb-5 px-2",
+      },
     },
     defaultVariants: {
       textAlign: "none",
+      variant: "default",
     },
   }
 )
 
-function FieldDescription({ className, textAlign, ...props }: React.ComponentProps<"p"> & VariantProps<typeof fieldDescriptionVariants>) {
+function FieldDescription({ className, textAlign, variant, ...props }: React.ComponentProps<"p"> & VariantProps<typeof fieldDescriptionVariants>) {
   return (
     <p
       data-slot="field-description"
-      className={cn(fieldDescriptionVariants({ textAlign }), className)}
+      className={cn(fieldDescriptionVariants({ textAlign, variant }), className)}
       {...props}
     />
   )
@@ -266,7 +278,7 @@ function FieldError({
       aria-atomic="true"
       data-slot="field-error"
       className={cn(
-        `text-destructive font-normal ${fieldBodySmall}`,
+        `text-destructive font-normal ${typography.body.small}`,
         "animate-in slide-in-from-top-1 fade-in duration-200",
         "flex items-center gap-1.5",
         className

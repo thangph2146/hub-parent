@@ -282,7 +282,7 @@ export const DashboardWelcome = () => {
             </CardHeader>
             <CardContent className="relative z-10">
               {availablePermissions.length > 0 ? (
-                <Grid cols="2-md" gap={2} fullWidth>
+                <Grid cols="responsive-2" gap={2} fullWidth>
                   {availablePermissions.map((item, index) => (
                     <motion.div
                       key={index}

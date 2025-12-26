@@ -197,7 +197,7 @@ export const CommentDetailClient = ({ commentId, comment, backUrl = "/admin/comm
             />
 
             {/* Author Info */}
-            <Grid cols={2} gap={6}>
+            <Grid cols="responsive-2" fullWidth gap={6}>
               <FieldItem icon={User} label="Người bình luận">
                 <TypographyP className="truncate">
                   {commentData.authorName || commentData.authorEmail || "—"}
@@ -234,7 +234,7 @@ export const CommentDetailClient = ({ commentId, comment, backUrl = "/admin/comm
             </FieldItem>
 
             {/* Timestamps */}
-            <Grid cols={2} gap={6}>
+            <Grid cols="responsive-2" fullWidth gap={6}>
               <FieldItem icon={Calendar} label="Ngày tạo">
                 <TypographyP>
                   {commentData.createdAt ? formatDateVi(commentData.createdAt) : "—"}

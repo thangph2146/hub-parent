@@ -86,7 +86,7 @@ export const RoleDetailClient = ({ roleId, role, backUrl = "/admin/roles" }: Rol
         
         return (
           <Flex direction="col" fullWidth gap={6}>
-            <Grid cols="2-lg" fullWidth gap={6}>
+            <Grid cols="responsive-2" fullWidth gap={6}>
               <FieldItem icon={Shield} label="Tên vai trò">
                 <TypographySpanMuted>{roleData.name || "—"}</TypographySpanMuted>
               </FieldItem>
@@ -223,7 +223,7 @@ export const RoleDetailClient = ({ roleId, role, backUrl = "/admin/roles" }: Rol
             </FieldItem>
 
             {/* Timestamps */}
-            <Grid cols="2-lg" gap={6} fullWidth>
+            <Grid cols="responsive-2" gap={6} fullWidth>
               <FieldItem icon={Calendar} label="Ngày tạo">
                 <TypographySpanMuted>
                   {roleData.createdAt ? formatDateVi(roleData.createdAt) : "—"}

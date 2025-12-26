@@ -227,9 +227,19 @@ export const ResourceDetailClient = <T extends Record<string, unknown>>({
   )
 
   const getGridProps = React.useCallback((fieldCount: number) => ({
-    cols: (fieldCount === 1 ? 1 : "2-lg") as 1 | "2-lg",
+    cols: (fieldCount === 1 ? 1 : "responsive-2") as 1 | "responsive-2",
     gap: 6 as const,
   }), [])
+
+  const renderSectionHeader = React.useCallback((title?: string, description?: string) => {
+    if (!title && !description) return null
+    return (
+      <>
+        {title && <FieldLegend variant="legend">{title}</FieldLegend>}
+        {description && <FieldDescription variant="section">{description}</FieldDescription>}
+      </>
+    )
+  }, [])
 
   const renderSection = React.useCallback(
     (sectionId: string, sectionFields: ResourceDetailField<T>[]) => {
@@ -251,31 +261,9 @@ export const ResourceDetailClient = <T extends Record<string, unknown>>({
       return (
         <FieldSet 
           key={sectionId} 
-          className={cn(
-            "group/field-set",
-            "transition-all duration-300"
-          )}
+          className="group/field-set transition-all duration-300"
         >
-          {sectionInfo && (sectionInfo.title || sectionInfo.description) && (
-            <>
-              {sectionInfo.title && (
-                <FieldLegend variant="legend">
-                  {sectionInfo.title || "Thông tin chi tiết"}
-                </FieldLegend>
-              )}
-              {sectionInfo.description && (
-                <p 
-                  className={cn(
-                    "mx-0 mb-3 px-2 border-b-0 w-auto",
-                    "text-xs sm:text-sm md:text-base font-normal text-muted-foreground",
-                    "transition-colors duration-200"
-                  )}
-                >
-                  {sectionInfo.description}
-                </p>
-              )}
-            </>
-          )}
+          {renderSectionHeader(sectionInfo?.title, sectionInfo?.description)}
           <Flex direction="col" gap={6} fullWidth>
             {sectionInfo?.fieldHeader}
             {fieldsContent}
@@ -284,7 +272,7 @@ export const ResourceDetailClient = <T extends Record<string, unknown>>({
         </FieldSet>
       )
     },
-    [detailSections, data, getGridProps, renderField]
+    [detailSections, data, getGridProps, renderField, renderSectionHeader]
   )
 
   if (isLoading) {
@@ -350,22 +338,23 @@ export const ResourceDetailClient = <T extends Record<string, unknown>>({
       )}
       {(title || resolvedBackUrl || actions) && (
         <Flex
-          direction="col-lg-row-items-center"
+          direction="col-sm-row"
           fullWidth
           align="start"
           justify="between"
           gap={4}
           paddingBottom={6}
           border="b-border"
+          className="sm:items-center"
         >
-          <Flex direction="col" gap={3} fullWidth width="1/3" flex="1" minWidth="0">
-            <Flex direction="col" gap={2} minWidth="0">
+          <Flex direction="col" gap={3} className="flex-1 min-w-0">
+            <Flex direction="col" gap={2}>
               {title && <TypographyH1 className="truncate">{title}</TypographyH1>}
               {description && <TypographyPMuted className="line-clamp-2">{description}</TypographyPMuted>}
             </Flex>
           </Flex>
           {actions && (
-            <Flex align="center" justify="start-lg-end" gap={2} wrap fullWidth width="2/3" shrink>
+            <Flex align="center" justify="start-sm-end" gap={2} wrap shrink className="w-full sm:w-auto">
               {actions}
             </Flex>
           )}
@@ -396,34 +385,10 @@ export const ResourceDetailClient = <T extends Record<string, unknown>>({
                 ))}
 
               {ungrouped.length > 0 && (
-                <FieldSet 
-                  className={cn(
-                    "group/field-set",
-                    "transition-all duration-300"
-                  )}
-                >
-                  {(fieldsTitle || fieldsDesc) && (
-                    <>
-                      {fieldsTitle && (
-                        <FieldLegend variant="legend">
-                          {fieldsTitle}
-                        </FieldLegend>
-                      )}
-                      {fieldsDesc && (
-                        <p 
-                          className={cn(
-                            "mx-0 mb-3 px-2 border-b-0 w-auto",
-                            "text-xs sm:text-sm md:text-base font-normal text-muted-foreground",
-                            "transition-colors duration-200"
-                          )}
-                        >
-                          {fieldsDesc}
-                        </p>
-                      )}
-                    </>
-                  )}
+                <FieldSet className="group/field-set transition-all duration-300">
+                  {renderSectionHeader(fieldsTitle, fieldsDesc)}
                   {ungrouped.length > 4 ? (
-                    <Grid cols="2-lg" fullWidth gap={6}>
+                    <Grid cols="responsive-2" fullWidth gap={6}>
                       {renderFields(ungrouped.slice(0, Math.ceil(ungrouped.length / 2)))}
                       {renderFields(ungrouped.slice(Math.ceil(ungrouped.length / 2)))}
                     </Grid>
@@ -440,31 +405,9 @@ export const ResourceDetailClient = <T extends Record<string, unknown>>({
                   {sections.map((section, i) => (
                     <FieldSet 
                       key={i}
-                      className={cn(
-                        "group/field-set",
-                        "transition-all duration-300"
-                      )}
+                      className="group/field-set transition-all duration-300"
                     >
-                      {(section.title || section.description) && (
-                        <>
-                          {section.title && (
-                            <FieldLegend variant="legend">
-                              {section.title}
-                            </FieldLegend>
-                          )}
-                          {section.description && (
-                            <p 
-                              className={cn(
-                                "mx-0 mb-3 px-2 border-b-0 w-auto",
-                                "text-xs sm:text-sm md:text-base font-normal text-muted-foreground",
-                                "transition-colors duration-200"
-                              )}
-                            >
-                              {section.description}
-                            </p>
-                          )}
-                        </>
-                      )}
+                      {renderSectionHeader(section.title, section.description)}
                       <Flex direction="col" fullWidth>
                         {renderFields(section.fields)}
                       </Flex>
