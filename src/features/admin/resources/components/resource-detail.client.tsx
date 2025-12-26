@@ -5,9 +5,7 @@ import { ArrowLeft } from "lucide-react";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,6 +14,8 @@ import {
   FieldDescription,
   FieldGroup,
   FieldTitle,
+  FieldSet,
+  FieldLegend,
 } from "@/components/ui/field";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
@@ -249,21 +249,39 @@ export const ResourceDetailClient = <T extends Record<string, unknown>>({
         )
 
       return (
-        <Card key={sectionId}>
-          <CardHeader className="pb-3">
-            <Flex direction="col" gap={0.5}>
-              <CardTitle>{sectionInfo?.title || "Thông tin chi tiết"}</CardTitle>
-              {sectionInfo?.description && <CardDescription>{sectionInfo.description}</CardDescription>}
-            </Flex>
-          </CardHeader>
-          <CardContent className="pt-0 pb-4">
-            <Flex direction="col" gap={6} fullWidth>
-              {sectionInfo?.fieldHeader}
-              {fieldsContent}
-              {sectionInfo?.fieldFooter}
-            </Flex>
-          </CardContent>
-        </Card>
+        <FieldSet 
+          key={sectionId} 
+          className={cn(
+            "group/field-set",
+            "transition-all duration-300"
+          )}
+        >
+          {sectionInfo && (sectionInfo.title || sectionInfo.description) && (
+            <>
+              {sectionInfo.title && (
+                <FieldLegend variant="legend">
+                  {sectionInfo.title || "Thông tin chi tiết"}
+                </FieldLegend>
+              )}
+              {sectionInfo.description && (
+                <p 
+                  className={cn(
+                    "mx-0 mb-3 px-2 border-b-0 w-auto",
+                    "text-xs sm:text-sm md:text-base font-normal text-muted-foreground",
+                    "transition-colors duration-200"
+                  )}
+                >
+                  {sectionInfo.description}
+                </p>
+              )}
+            </>
+          )}
+          <Flex direction="col" gap={6} fullWidth>
+            {sectionInfo?.fieldHeader}
+            {fieldsContent}
+            {sectionInfo?.fieldFooter}
+          </Flex>
+        </FieldSet>
       )
     },
     [detailSections, data, getGridProps, renderField]
@@ -378,47 +396,81 @@ export const ResourceDetailClient = <T extends Record<string, unknown>>({
                 ))}
 
               {ungrouped.length > 0 && (
-                <Card>
-                  <CardHeader className="pb-3">
-                    <Flex direction="col" gap={0.5}>
-                      <CardTitle>{fieldsTitle}</CardTitle>
-                      {fieldsDesc && <CardDescription>{fieldsDesc}</CardDescription>}
+                <FieldSet 
+                  className={cn(
+                    "group/field-set",
+                    "transition-all duration-300"
+                  )}
+                >
+                  {(fieldsTitle || fieldsDesc) && (
+                    <>
+                      {fieldsTitle && (
+                        <FieldLegend variant="legend">
+                          {fieldsTitle}
+                        </FieldLegend>
+                      )}
+                      {fieldsDesc && (
+                        <p 
+                          className={cn(
+                            "mx-0 mb-3 px-2 border-b-0 w-auto",
+                            "text-xs sm:text-sm md:text-base font-normal text-muted-foreground",
+                            "transition-colors duration-200"
+                          )}
+                        >
+                          {fieldsDesc}
+                        </p>
+                      )}
+                    </>
+                  )}
+                  {ungrouped.length > 4 ? (
+                    <Grid cols="2-lg" fullWidth gap={6}>
+                      {renderFields(ungrouped.slice(0, Math.ceil(ungrouped.length / 2)))}
+                      {renderFields(ungrouped.slice(Math.ceil(ungrouped.length / 2)))}
+                    </Grid>
+                  ) : (
+                    <Flex direction="col" fullWidth>
+                      {renderFields(ungrouped)}
                     </Flex>
-                  </CardHeader>
-                  <CardContent className="pt-0 pb-4">
-                    {ungrouped.length > 4 ? (
-                      <Grid cols="2-lg" fullWidth gap={6}>
-                        {renderFields(ungrouped.slice(0, Math.ceil(ungrouped.length / 2)))}
-                        {renderFields(ungrouped.slice(Math.ceil(ungrouped.length / 2)))}
-                      </Grid>
-                    ) : (
-                      <Flex direction="col" fullWidth>
-                        {renderFields(ungrouped)}
-                      </Flex>
-                    )}
-                  </CardContent>
-                </Card>
+                  )}
+                </FieldSet>
               )}
 
               {sections && sections.length > 0 && (
-                <Grid cols="2-lg" fullWidth gap={6}>
+                <>
                   {sections.map((section, i) => (
-                    <Card key={i}>
-                      <CardHeader className="pb-3">
-                        <Flex direction="col" gap={0.5}>
-                          <CardTitle>{section.title}</CardTitle>
-                          {section.description && <CardDescription>{section.description}</CardDescription>}
-                        </Flex>
-                      </CardHeader>
-                      <CardContent>
-                        <Flex direction="col" paddingTop={0} paddingBottom={4}>
-                          {renderFields(section.fields)}
-                        </Flex>
-                      </CardContent>
-                    </Card>
+                    <FieldSet 
+                      key={i}
+                      className={cn(
+                        "group/field-set",
+                        "transition-all duration-300"
+                      )}
+                    >
+                      {(section.title || section.description) && (
+                        <>
+                          {section.title && (
+                            <FieldLegend variant="legend">
+                              {section.title}
+                            </FieldLegend>
+                          )}
+                          {section.description && (
+                            <p 
+                              className={cn(
+                                "mx-0 mb-3 px-2 border-b-0 w-auto",
+                                "text-xs sm:text-sm md:text-base font-normal text-muted-foreground",
+                                "transition-colors duration-200"
+                              )}
+                            >
+                              {section.description}
+                            </p>
+                          )}
+                        </>
+                      )}
+                      <Flex direction="col" fullWidth>
+                        {renderFields(section.fields)}
+                      </Flex>
+                    </FieldSet>
                   ))}
-                  {sections.length % 2 === 1 && <div />}
-                </Grid>
+                </>
               )}
 
               {afterSections && <Flex fullWidth>{afterSections}</Flex>}

@@ -8,7 +8,6 @@ import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import { responsiveTextSizes, fontWeights, lineHeights } from "@/lib/typography"
 
-const fieldBodyMedium = `${responsiveTextSizes.medium} ${fontWeights.normal} ${lineHeights.relaxed}`
 const fieldBodySmall = `${responsiveTextSizes.small} ${fontWeights.normal} ${lineHeights.relaxed}`
 
 function FieldSet({ className, ...props }: React.ComponentProps<"fieldset">) {
@@ -18,6 +17,17 @@ function FieldSet({ className, ...props }: React.ComponentProps<"fieldset">) {
       className={cn(
         "flex flex-col gap-6",
         "has-[>[data-slot=checkbox-group]]:gap-3 has-[>[data-slot=radio-group]]:gap-3",
+        // Fieldset custom styling
+        "p-4 px-5 border-2 border-solid border-border rounded-[calc(var(--radius)-2px)] mb-6",
+        "bg-background transition-all duration-300",
+        "relative overflow-hidden",
+        "hover:border-ring/50 hover:shadow-[0_2px_8px_hsl(var(--ring)/0.1)]",
+        "dark:bg-card dark:border-border dark:hover:border-ring/60 dark:hover:shadow-[0_2px_8px_hsl(var(--ring)/0.15)]",
+        // Gradient accent line on hover
+        "before:content-[''] before:absolute before:top-0 before:left-0 before:right-0 before:h-[2px]",
+        "before:bg-gradient-to-r before:from-primary before:via-primary/50 before:to-primary",
+        "before:opacity-0 before:transition-opacity before:duration-300",
+        "hover:before:opacity-100",
         className
       )}
       {...props}
@@ -35,9 +45,20 @@ function FieldLegend({
       data-slot="field-legend"
       data-variant={variant}
       className={cn(
-        "mb-3 font-medium",
-        `data-[variant=legend]:${fieldBodyMedium}`,
-        `data-[variant=label]:${fieldBodySmall}`,
+        // Legend custom styling - larger text
+        "mx-0 mb-3 px-2 border-b-0 w-auto",
+        "font-semibold text-foreground",
+        "transition-colors duration-200",
+        "relative",
+        // Responsive text sizes - override fieldBodyMedium
+        variant === "legend" 
+          ? "text-sm sm:text-base md:text-lg leading-relaxed"
+          : `${fieldBodySmall}`,
+        // Gradient accent line
+        "after:content-[''] after:absolute after:-bottom-2 after:left-2 after:right-2 after:h-[2px]",
+        "after:bg-gradient-to-r after:from-primary after:to-transparent",
+        "after:opacity-30 after:transition-opacity after:duration-300",
+        "group-hover/field-set:after:opacity-60",
         className
       )}
       {...props}
@@ -59,7 +80,7 @@ function FieldGroup({ className, ...props }: React.ComponentProps<"div">) {
 }
 
 const fieldVariants = cva(
-  "group/field flex w-full gap-3 data-[invalid=true]:text-destructive",
+  "group/field flex w-full gap-3 data-[invalid=true]:text-destructive transition-all duration-200",
   {
     variants: {
       orientation: {
@@ -104,6 +125,7 @@ function FieldContent({ className, ...props }: React.ComponentProps<"div">) {
       data-slot="field-content"
       className={cn(
         "group/field-content flex flex-1 flex-col gap-1.5 leading-snug",
+        "transition-all duration-200",
         className
       )}
       {...props}
@@ -122,6 +144,7 @@ function FieldLabel({
         "group/field-label peer/field-label flex w-fit gap-2 leading-snug group-data-[disabled=true]/field:opacity-50",
         "has-[>[data-slot=field]]:w-full has-[>[data-slot=field]]:flex-col has-[>[data-slot=field]]:rounded-md has-[>[data-slot=field]]:border [&>*]:data-[slot=field]:p-4",
         "has-data-[state=checked]:bg-primary/5 has-data-[state=checked]:border-primary dark:has-data-[state=checked]:bg-primary/10",
+        "transition-colors duration-200",
         className
       )}
       {...props}
@@ -242,10 +265,16 @@ function FieldError({
       aria-live="polite"
       aria-atomic="true"
       data-slot="field-error"
-      className={cn(`text-destructive font-normal ${fieldBodySmall}`, className)}
+      className={cn(
+        `text-destructive font-normal ${fieldBodySmall}`,
+        "animate-in slide-in-from-top-1 fade-in duration-200",
+        "flex items-center gap-1.5",
+        className
+      )}
       {...props}
     >
-      {content}
+      <span className="inline-flex h-1 w-1 rounded-full bg-destructive animate-pulse" aria-hidden="true" />
+      <span>{content}</span>
     </div>
   )
 }

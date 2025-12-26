@@ -37,7 +37,14 @@ import {
 import { resourceLogger } from "@/lib/config/resource-logger";
 import { usePermissions } from "@/hooks/use-permissions";
 import { PERMISSIONS } from "@/lib/permissions";
-import { TypographyH2, TypographyP, TypographyPLargeMuted, TypographyPMuted, TypographyPSmallMuted, IconSize } from "@/components/ui/typography";
+import {
+  TypographyH2,
+  TypographyP,
+  TypographyPLargeMuted,
+  TypographyPMuted,
+  TypographyPSmallMuted,
+  IconSize,
+} from "@/components/ui/typography";
 import { Flex } from "@/components/ui/flex";
 import { Grid } from "@/components/ui/grid";
 
@@ -129,7 +136,12 @@ export const PostDetailClient = ({
             <Flex direction="col" gap={4} fullWidth className="lg:flex-row">
               {/* Featured Image */}
               {postData.image && (
-                <Flex align="center" justify="center" position="relative" className="aspect-[16/9] max-w-2xl mx-auto w-full overflow-hidden rounded-lg">
+                <Flex
+                  align="center"
+                  justify="center"
+                  position="relative"
+                  className="aspect-[16/9] max-w-2xl mx-auto w-full overflow-hidden rounded-lg"
+                >
                   <Image
                     src={postData.image}
                     alt={postData.title || "Ảnh bài viết"}
@@ -150,16 +162,15 @@ export const PostDetailClient = ({
                     {postData.excerpt}
                   </TypographyPLargeMuted>
                 )}
-                  <FieldItem icon={Hash} label="Slug">
-                <TypographyP className="font-mono break-all">
-                  {postData.slug || "---"}
-                </TypographyP>
-              </FieldItem>
               </Flex>
             </Flex>
 
             <Grid cols="responsive-2" gap={6} fullWidth>
-            
+              <FieldItem icon={Hash} label="Slug">
+                <TypographyP className="font-mono break-all">
+                  {postData.slug || "---"}
+                </TypographyP>
+              </FieldItem>
 
               <FieldItem icon={User} label="Tác giả">
                 <Flex direction="col" gap={0.5}>
@@ -206,18 +217,14 @@ export const PostDetailClient = ({
                       <IconSize size="sm">
                         <CheckCircle2 className="text-green-600 dark:text-green-500" />
                       </IconSize>
-                      <TypographyP>
-                        Đã xuất bản
-                      </TypographyP>
+                      <TypographyP>Đã xuất bản</TypographyP>
                     </>
                   ) : (
                     <>
                       <IconSize size="sm">
                         <EyeOff className="text-gray-600 dark:text-gray-400" />
                       </IconSize>
-                      <TypographyP>
-                        Bản nháp
-                      </TypographyP>
+                      <TypographyP>Bản nháp</TypographyP>
                     </>
                   )}
                 </Flex>
@@ -230,16 +237,12 @@ export const PostDetailClient = ({
                   </TypographyP>
                 </FieldItem>
               )}
-               <FieldItem icon={Clock} label="Ngày tạo">
-                <TypographyP>
-                  {formatDateVi(postData.createdAt)}
-                </TypographyP>
+              <FieldItem icon={Clock} label="Ngày tạo">
+                <TypographyP>{formatDateVi(postData.createdAt)}</TypographyP>
               </FieldItem>
 
               <FieldItem icon={Clock} label="Cập nhật lần cuối">
-                <TypographyP>
-                  {formatDateVi(postData.updatedAt)}
-                </TypographyP>
+                <TypographyP>{formatDateVi(postData.updatedAt)}</TypographyP>
               </FieldItem>
 
               {postData.deletedAt && (
@@ -325,6 +328,6 @@ export const PostDetailClient = ({
       }
     />
   );
-}
+};
 
 PostDetailClient.displayName = "PostDetailClient";

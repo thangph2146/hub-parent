@@ -102,7 +102,7 @@ export const ImageField = ({
 
         {/* Placeholder when no image */}
         {!hasImage && (
-          <Flex direction="col" align="center" gap={2} fullWidth position="relative" rounded="lg" border="all" overflow="hidden" bg="muted-50" className="border-dashed aspect-video text-muted-foreground">
+          <Flex direction="col" align="center" justify="center" gap={2} fullWidth position="relative" rounded="lg" border="all" overflow="hidden" bg="muted-50" className="border-dashed aspect-video text-muted-foreground">
             <IconSize size="4xl">
               <ImageIcon />
             </IconSize>

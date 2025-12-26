@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { useQueryClient } from "@tanstack/react-query"
-import { Shield, FileText, Calendar, Clock, CheckCircle2, XCircle, Edit, ChevronsUpDown, Check } from "lucide-react"
+import { Shield, FileText, Calendar, Clock, CheckCircle2, XCircle, Edit } from "lucide-react"
 import { 
   ResourceDetailClient, 
   FieldItem,
@@ -18,21 +18,9 @@ import { formatDateVi } from "../utils"
 import { getAllPermissionsOptionGroups } from "../form-fields"
 import { usePermissions } from "@/hooks/use-permissions"
 import { PERMISSIONS } from "@/lib/permissions"
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command"
+import { PermissionsTableField } from "@/features/admin/resources/components/form-fields/permissions-table-field"
 import { cn } from "@/lib/utils"
-import { TypographySpanMuted, TypographyH3, TypographyP, TypographySpanSmallMuted, TypographySpanSmall, IconSize } from "@/components/ui/typography"
+import { TypographySpanMuted, TypographyH3, TypographyP, TypographySpanSmallMuted, IconSize } from "@/components/ui/typography"
 import { Flex } from "@/components/ui/flex"
 import { Grid } from "@/components/ui/grid"
 
@@ -61,7 +49,6 @@ export const RoleDetailClient = ({ roleId, role, backUrl = "/admin/roles" }: Rol
     queryClient,
     invalidateQueryKey: queryKeys.adminRoles.all(),
   })
-  const [permissionsOpen, setPermissionsOpen] = React.useState(false)
   const { hasAnyPermission } = usePermissions()
   
   // Check permission for edit
@@ -86,10 +73,6 @@ export const RoleDetailClient = ({ roleId, role, backUrl = "/admin/roles" }: Rol
 
   // Get grouped permissions
   const permissionsGroups = getAllPermissionsOptionGroups()
-  
-  // Get all options from groups
-  const allPermissionsOptions = permissionsGroups.flatMap((group) => group.options)
-  
 
   const detailFields: ResourceDetailField<RoleDetailData>[] = []
 
@@ -135,7 +118,7 @@ export const RoleDetailClient = ({ roleId, role, backUrl = "/admin/roles" }: Rol
       title: "Quyền truy cập",
       description: "Danh sách quyền được gán cho vai trò",
               fieldsContent: (_fields, data) => {
-                const roleData = (data || detailData) as RoleDetailData
+        const roleData = (data || detailData) as RoleDetailData
         
         if (!roleData.permissions || !Array.isArray(roleData.permissions) || roleData.permissions.length === 0) {
           return (
@@ -153,19 +136,20 @@ export const RoleDetailClient = ({ roleId, role, backUrl = "/admin/roles" }: Rol
           )
         }
 
-        const selectedValues = roleData.permissions.map((v) => String(v))
-        
-        // Get selected permissions with labels
-        const selectedPermissions = roleData.permissions
-          .map((perm) => {
-            const option = allPermissionsOptions.find((opt) => opt.value === perm)
-            return option ? { value: perm, label: option.label } : null
-          })
-          .filter((p): p is { value: string; label: string } => p !== null)
-
-        const displayText = selectedPermissions.length > 0
-          ? `${selectedPermissions.length} quyền đã chọn`
-          : `${roleData.permissions.length} quyền đã chọn`
+        // Create a mock field object for PermissionsTableField
+        const mockField = {
+          name: "permissions",
+          label: "Quyền",
+          type: "permissions-table" as const,
+          optionGroups: permissionsGroups.map((group) => ({
+            label: group.label,
+            options: group.options.map((opt) => ({
+              label: opt.label,
+              value: opt.value,
+            })),
+          })),
+          disabled: true, // Read-only mode
+        }
 
         return (
           <Flex direction="col" gap={4} fullWidth>
@@ -178,75 +162,14 @@ export const RoleDetailClient = ({ roleId, role, backUrl = "/admin/roles" }: Rol
               <Flex direction="col" gap={3} flex="1" minWidth="0">
                 <Flex direction="col" gap={2}>
                   <TypographySpanSmallMuted>Quyền</TypographySpanSmallMuted>
-                  <Popover open={permissionsOpen} onOpenChange={setPermissionsOpen}>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        role="combobox"
-                        aria-expanded={permissionsOpen}
-                        className="w-full justify-between"
-                      >
-                        <Flex align="center" justify="between" fullWidth gap={2}>
-                          <TypographySpanSmall className="truncate">{displayText}</TypographySpanSmall>
-                          <IconSize size="sm" className="shrink-0 opacity-50">
-                            <ChevronsUpDown />
-                          </IconSize>
-                        </Flex>
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-[400px] p-0" align="start">
-                      <Command>
-                        <CommandInput placeholder="Tìm kiếm quyền..." className="h-9" />
-                        <CommandList>
-                          <CommandEmpty>Không tìm thấy quyền.</CommandEmpty>
-                          {permissionsGroups.map((group, groupIndex) => {
-                            const groupSelectedCount = group.options.filter((opt) =>
-                              selectedValues.includes(String(opt.value))
-                            ).length
-                            
-                            if (groupSelectedCount === 0) return null
-
-                            return (
-                              <CommandGroup key={`${groupIndex}-${group.label}`} heading={group.label}>
-                                {group.options.map((option, optionIndex) => {
-                                  const isSelected = selectedValues.includes(String(option.value))
-                                  if (!isSelected) return null
-                                  
-                                  return (
-                                    <CommandItem
-                                      key={`${groupIndex}-${optionIndex}-${option.value}`}
-                                      value={String(option.value)}
-                                      disabled
-                                      className="cursor-default"
-                                    >
-                                      <Flex align="center" gap={2}>
-                                        <IconSize size="sm" className="opacity-100">
-                                          <Check />
-                                        </IconSize>
-                                        {option.label}
-                                      </Flex>
-                                    </CommandItem>
-                                  )
-                                })}
-                              </CommandGroup>
-                            )
-                          })}
-                        </CommandList>
-                      </Command>
-                    </PopoverContent>
-                  </Popover>
-                </Flex>
-                <Flex wrap gap={2}>
-                  {selectedPermissions.slice(0, 5).map((perm) => (
-                    <Badge key={perm.value} variant="outline" className="bg-primary/10 text-primary border-primary/20">
-                      {perm.label}
-                    </Badge>
-                  ))}
-                  {selectedPermissions.length > 5 && (
-                    <Badge variant="outline" className="bg-muted text-muted-foreground">
-                      +{selectedPermissions.length - 5} quyền khác
-                    </Badge>
-                  )}
+                  <PermissionsTableField
+                    field={mockField}
+                    fieldValue={roleData.permissions}
+                    onChange={() => {}} // No-op since it's read-only
+                    isPending={false}
+                    availablePermissions={roleData.permissions}
+                    readOnly={true}
+                  />
                 </Flex>
               </Flex>
             </Flex>

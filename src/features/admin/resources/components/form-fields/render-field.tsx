@@ -9,6 +9,7 @@ import { CheckboxField } from "./checkbox-field"
 import { SwitchField } from "./switch-field"
 import { SelectField } from "./select-field"
 import { MultipleSelectField } from "./multiple-select-field"
+import { PermissionsTableField } from "./permissions-table-field"
 import { ImageField } from "./image-field"
 import { EditorField } from "./editor-field"
 import { SlugField } from "./slug-field"
@@ -31,7 +32,7 @@ export const renderFieldInput = <T,>({
   isPending = false,
   sourceValue,
 }: RenderFieldProps<T>) => {
-  const defaultValue = field.type === "multiple-select" 
+  const defaultValue = field.type === "multiple-select" || field.type === "permissions-table"
     ? (field.defaultValue ?? [])
     : (field.defaultValue ?? "")
   
@@ -75,6 +76,17 @@ export const renderFieldInput = <T,>({
     case "multiple-select":
       return (
         <MultipleSelectField
+          field={field}
+          fieldValue={fieldValue}
+          error={error}
+          onChange={onChange}
+          isPending={isPending}
+        />
+      )
+
+    case "permissions-table":
+      return (
+        <PermissionsTableField
           field={field}
           fieldValue={fieldValue}
           error={error}
