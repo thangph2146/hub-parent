@@ -718,10 +718,9 @@ export const ResourceForm = <T extends Record<string, unknown>>({
       <Flex
         align="center"
         justify="end"
-        gap="responsive"
+        gap={2}
         fullWidth
-        paddingY="responsive"
-        paddingX="responsive"
+        paddingY={2}
         border="top"
         className="sticky bottom-0 bg-background/95 backdrop-blur-sm z-10"
       >
