@@ -1,6 +1,6 @@
 "use client";
 
-import { TypographyH1, TypographyH2, TypographyH4, TypographyP, TypographyPSmallMuted, TypographySpanSmall, TypographySpanSmallMuted, TypographyPMuted, TypographyTitleLarge, IconSize } from "@/components/ui/typography";
+import { TypographyH1, TypographyH2, TypographyH4, TypographyP, TypographyPSmallMuted, TypographySpanSmall, TypographySpanSmallMuted, TypographyDescription, TypographyTitleLarge, IconSize } from "@/components/ui/typography";
 import { Flex } from "@/components/ui/flex";
 import { Grid } from "@/components/ui/grid";
 
@@ -484,7 +484,7 @@ export const DashboardStatsClient = ({ stats }: DashboardStatsClientProps) => {
                   </span>
                 </Flex>
               </TypographyH1>
-              <TypographyPMuted className="mt-2">
+              <TypographyDescription className="mt-2">
                 <Flex align="center" gap={2}>
                   <IconSize size="md">
                     <Calendar />
@@ -496,7 +496,7 @@ export const DashboardStatsClient = ({ stats }: DashboardStatsClientProps) => {
                     day: "numeric",
                   })}
                 </Flex>
-              </TypographyPMuted>
+              </TypographyDescription>
             </div>
           </Flex>
           </motion.div>

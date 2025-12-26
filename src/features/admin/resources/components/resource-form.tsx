@@ -10,6 +10,8 @@ import {
   Field,
   FieldDescription,
   FieldLabel,
+  FieldSet,
+  FieldLegend,
 } from "@/components/ui/field"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import {
@@ -32,7 +34,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { cn } from "@/lib/utils"
 import { renderFieldInput } from "./form-fields"
 import { applyResourceSegmentToPath } from "@/lib/permissions"
-import { TypographyH1, TypographyH4, TypographyPMuted, TypographySpanMuted, TypographySpanDestructive, IconSize } from "@/components/ui/typography"
+import { TypographyH1, TypographyPMuted, TypographySpanMuted, TypographySpanDestructive, IconSize } from "@/components/ui/typography"
 import { Flex } from "@/components/ui/flex"
 import { Grid } from "@/components/ui/grid"
 
@@ -439,6 +441,7 @@ export const ResourceForm = <T extends Record<string, unknown>>({
     const isFullWidth = fullWidthTypes.includes(field.type || "") || !!field.render
     const isEditorField = field.type === "editor"
     const isCheckbox = field.type === "checkbox"
+    const hasError = !!error
     const fieldInput = renderFieldInput({
       field,
       value,
@@ -454,18 +457,52 @@ export const ResourceForm = <T extends Record<string, unknown>>({
         id={fieldName}
         direction="col"
         minWidth={isFullWidth ? "full" : "120"}
-        className={cn(isEditorField ? "col-span-full" : (isFullWidth && "@md:col-span-full"), field.className)}
+        className={cn(
+          "transition-all duration-200 ease-in-out",
+          isEditorField ? "col-span-full" : (isFullWidth && "@md:col-span-full"),
+          field.className
+        )}
       >
-        <Field orientation={isCheckbox ? undefined : "responsive"}>
+        <Field 
+          orientation={isCheckbox ? undefined : "responsive"}
+          data-invalid={hasError}
+          className="transition-all duration-200"
+        >
           {(!isCheckbox || field.icon) && (
-            <FieldLabel htmlFor={fieldName}>
-              {field.icon}
-              {field.label}
-              {field.required && <TypographySpanDestructive>*</TypographySpanDestructive>}
+            <FieldLabel 
+              htmlFor={fieldName}
+              className={cn(
+                "transition-colors duration-200",
+                hasError && "text-destructive/90",
+                !hasError && "group-hover/field:text-foreground"
+              )}
+            >
+              {field.icon && (
+                <span className="transition-transform duration-200 group-hover/field-label:scale-110">
+                  {field.icon}
+                </span>
+              )}
+              <span className="font-medium">{field.label}</span>
+              {field.required && (
+                <TypographySpanDestructive className="transition-opacity duration-200">
+                  *
+                </TypographySpanDestructive>
+              )}
             </FieldLabel>
           )}
-          {fieldInput}
-          {field.description && <FieldDescription>{field.description}</FieldDescription>}
+          <div className="relative">
+            {fieldInput}
+          </div>
+          {field.description && (
+            <FieldDescription 
+              className={cn(
+                "transition-opacity duration-200",
+                hasError && "opacity-70"
+              )}
+            >
+              {field.description}
+            </FieldDescription>
+          )}
         </Field>
       </Flex>
     )
@@ -476,17 +513,42 @@ export const ResourceForm = <T extends Record<string, unknown>>({
     const gridCols = sectionFields.length >= 2 ? ("2-lg" as const) : (1 as const)
 
     return (
-      <Flex key={sectionId} direction="col" gap={6} fullWidth>
-        {sectionInfo && (sectionInfo.title || sectionInfo.description) && (
-          <Flex direction="col" gap={2} paddingBottom={2} border="b-border-50">
-            {sectionInfo.title && <TypographyH4>{sectionInfo.title}</TypographyH4>}
-            {sectionInfo.description && <TypographyPMuted>{sectionInfo.description}</TypographyPMuted>}
-          </Flex>
+      <FieldSet 
+        key={sectionId} 
+        className={cn(
+          "group/field-set",
+          "transition-all duration-300"
         )}
-        <Grid cols={gridCols} fullWidth gap={6}>
+      >
+        {sectionInfo && (sectionInfo.title || sectionInfo.description) && (
+          <>
+            {sectionInfo.title && (
+              <FieldLegend variant="legend">
+                {sectionInfo.title}
+              </FieldLegend>
+            )}
+            {sectionInfo.description && (
+              <p 
+                className={cn(
+                  "mx-0 mb-3 px-2 border-b-0 w-auto",
+                  "text-xs sm:text-sm md:text-base font-normal text-muted-foreground",
+                  "transition-colors duration-200"
+                )}
+              >
+                {sectionInfo.description}
+              </p>
+            )}
+          </>
+        )}
+        <Grid 
+          cols={gridCols} 
+          fullWidth 
+          gap={6}
+          className="transition-all duration-300"
+        >
           {sectionFields.map(renderField)}
         </Grid>
-      </Flex>
+      </FieldSet>
     )
   }
 
@@ -496,7 +558,20 @@ export const ResourceForm = <T extends Record<string, unknown>>({
     <form id="resource-form" ref={formRef} onSubmit={handleSubmit} className={formClassName}>
       <Flex direction="col" fullWidth gap={6}>
         {submitError && (
-          <Flex align="center" gap={2} fullWidth rounded="lg" bg="destructive-text" border="all" padding="md" className="border-destructive/20">
+          <Flex 
+            align="center" 
+            gap={2} 
+            fullWidth 
+            rounded="lg" 
+            bg="destructive-text" 
+            border="all" 
+            padding="md" 
+            className={cn(
+              "border-destructive/20",
+              "transition-all duration-300",
+              "shadow-sm"
+            )}
+          >
             <TypographySpanMuted className="font-medium">{submitError}</TypographySpanMuted>
           </Flex>
         )}
