@@ -9,7 +9,7 @@ import type {
   StudentYearAveragesResponse,
   StudentTermAveragesResponse,
   StudentOverallAverageResponse,
-} from "./types/student-scores"
+} from "./types"
 
 /**
  * Lấy danh sách điểm chi tiết theo MSSV

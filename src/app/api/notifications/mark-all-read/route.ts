@@ -8,7 +8,7 @@ import { getSocketServer, getNotificationCache, mapNotificationToPayload } from 
 import { createErrorResponse, createSuccessResponse } from "@/lib/config"
 import { logger } from "@/lib/config/logger"
 import { isSuperAdmin } from "@/lib/permissions"
-import { buildOwnUnreadNotificationWhereClause, buildNotificationWhereClause, countUnreadNotificationsWithBreakdown } from "@/lib/notifications/count-helpers"
+import { buildOwnUnreadNotificationWhereClause, buildNotificationWhereClause, countUnreadNotificationsWithBreakdown } from "@/lib/utils"
 
 async function markAllAsReadHandler(_req: NextRequest) {
   const session = await auth()

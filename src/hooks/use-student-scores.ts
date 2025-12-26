@@ -15,7 +15,7 @@ import type {
   StudentYearAveragesResponse,
   StudentTermAveragesResponse,
   StudentOverallAverageResponse,
-} from "@/lib/api/types/student-scores"
+} from "@/lib/api/types"
 
 /**
  * Helper to extract payload from API response or throw error

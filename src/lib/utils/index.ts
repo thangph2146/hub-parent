@@ -20,4 +20,12 @@ export { generateSlug } from "./generate-slug"
 export { deduplicateBy, deduplicateById, getDuplicateIds, arraysEqual } from "./array-helpers"
 export { invalidateAndRefetchQueries, invalidateAndRefetchMultipleQueries } from "./query-helpers"
 export { buildQueryString, withQuery } from "./query-utils"
+export { extractRouteId, validateRouteId } from "./route-params"
+export {
+  buildNotificationWhereClause,
+  buildUnreadNotificationWhereClause,
+  buildOwnUnreadNotificationWhereClause,
+  countUnreadNotificationsWithBreakdown,
+  type NotificationCountParams,
+} from "./notification-helpers"
 

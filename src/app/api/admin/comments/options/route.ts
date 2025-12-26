@@ -7,7 +7,7 @@ import { NextRequest } from "next/server"
 import { getCommentColumnOptions } from "@/features/admin/comments/server/queries"
 import { createGetRoute } from "@/lib/api/api-route-wrapper"
 import type { ApiRouteContext } from "@/lib/api/types"
-import { createOptionsHandler } from "@/lib/api/options-route-helper"
+import { createOptionsHandler } from "@/lib/api/api-route-helpers"
 
 async function getCommentOptionsHandler(req: NextRequest, _context: ApiRouteContext) {
   return createOptionsHandler(req, {

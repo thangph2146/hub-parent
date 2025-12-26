@@ -7,7 +7,7 @@ import { NextRequest } from "next/server"
 import { getStudentColumnOptions } from "@/features/admin/students/server/queries"
 import { createGetRoute } from "@/lib/api/api-route-wrapper"
 import type { ApiRouteContext } from "@/lib/api/types"
-import { createOptionsHandler } from "@/lib/api/options-route-helper"
+import { createOptionsHandler } from "@/lib/api/api-route-helpers"
 import { isSuperAdmin } from "@/lib/permissions"
 
 async function getStudentOptionsHandler(req: NextRequest, context: ApiRouteContext) {

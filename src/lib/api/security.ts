@@ -5,8 +5,7 @@
 
 import { NextRequest, NextResponse } from "next/server"
 import { logger } from "@/lib/config"
-import { getClientIP } from "@/lib/utils/request-utils"
-import { applyBasicSecurityHeaders, applyCSPHeader, applyHSTSHeader } from "@/lib/utils/response-utils"
+import { getClientIP, applyBasicSecurityHeaders, applyCSPHeader, applyHSTSHeader } from "@/lib/utils/http-utils"
 import { normalizeError } from "@/lib/utils/api-utils"
 
 // Rate limiting configuration
