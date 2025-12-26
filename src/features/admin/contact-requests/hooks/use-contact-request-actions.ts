@@ -44,6 +44,7 @@ export const useContactRequestActions = ({
     resourceName: "contact-requests",
     queryKeys: {
       all: () => queryKeys.adminContactRequests.all(),
+      detail: (id) => queryKeys.adminContactRequests.detail(id),
     },
     apiRoutes: {
       delete: (id) => apiRoutes.contactRequests.delete(id),
@@ -81,8 +82,15 @@ export const useContactRequestActions = ({
       try {
         await apiClient.put(apiRoutes.contactRequests.update(row.id), { isRead: newStatus })
         
-        await queryClient.invalidateQueries({ queryKey: queryKeys.adminContactRequests.all(), refetchType: "active" })
-        await queryClient.refetchQueries({ queryKey: queryKeys.adminContactRequests.all(), type: "active" })
+        // Invalidate và refetch list queries - sử dụng "all" để đảm bảo refetch tất cả queries
+        await queryClient.invalidateQueries({ queryKey: queryKeys.adminContactRequests.all(), refetchType: "all" })
+        await queryClient.refetchQueries({ queryKey: queryKeys.adminContactRequests.all(), type: "all" })
+        
+        // Invalidate và refetch detail query
+        await queryClient.invalidateQueries({ queryKey: queryKeys.adminContactRequests.detail(row.id), refetchType: "all" })
+        await queryClient.refetchQueries({ queryKey: queryKeys.adminContactRequests.detail(row.id), type: "all" })
+        
+        // Gọi refresh callback để cập nhật UI ngay lập tức
         await refresh?.()
         
         showFeedback(
@@ -148,8 +156,17 @@ export const useContactRequestActions = ({
         )
         clearSelection()
 
-        await queryClient.invalidateQueries({ queryKey: queryKeys.adminContactRequests.all(), refetchType: "active" })
-        await queryClient.refetchQueries({ queryKey: queryKeys.adminContactRequests.all(), type: "active" })
+        // Invalidate và refetch list queries - sử dụng "all" để đảm bảo refetch tất cả queries
+        await queryClient.invalidateQueries({ queryKey: queryKeys.adminContactRequests.all(), refetchType: "all" })
+        await queryClient.refetchQueries({ queryKey: queryKeys.adminContactRequests.all(), type: "all" })
+        
+        // Invalidate detail queries cho tất cả affected IDs
+        for (const id of ids) {
+          await queryClient.invalidateQueries({ queryKey: queryKeys.adminContactRequests.detail(id), refetchType: "all" })
+          await queryClient.refetchQueries({ queryKey: queryKeys.adminContactRequests.detail(id), type: "all" })
+        }
+        
+        // Gọi refresh callback để cập nhật UI ngay lập tức
         await refresh?.()
       } catch (error: unknown) {
         const errorMessage = error instanceof Error ? error.message : CONTACT_REQUEST_MESSAGES.UNKNOWN_ERROR
@@ -193,8 +210,17 @@ export const useContactRequestActions = ({
         )
         clearSelection()
 
-        await queryClient.invalidateQueries({ queryKey: queryKeys.adminContactRequests.all(), refetchType: "active" })
-        await queryClient.refetchQueries({ queryKey: queryKeys.adminContactRequests.all(), type: "active" })
+        // Invalidate và refetch list queries - sử dụng "all" để đảm bảo refetch tất cả queries
+        await queryClient.invalidateQueries({ queryKey: queryKeys.adminContactRequests.all(), refetchType: "all" })
+        await queryClient.refetchQueries({ queryKey: queryKeys.adminContactRequests.all(), type: "all" })
+        
+        // Invalidate detail queries cho tất cả affected IDs
+        for (const id of ids) {
+          await queryClient.invalidateQueries({ queryKey: queryKeys.adminContactRequests.detail(id), refetchType: "all" })
+          await queryClient.refetchQueries({ queryKey: queryKeys.adminContactRequests.detail(id), type: "all" })
+        }
+        
+        // Gọi refresh callback để cập nhật UI ngay lập tức
         await refresh?.()
       } catch (error: unknown) {
         const errorMessage = error instanceof Error ? error.message : CONTACT_REQUEST_MESSAGES.UNKNOWN_ERROR
@@ -246,8 +272,17 @@ export const useContactRequestActions = ({
         )
         clearSelection()
 
-        await queryClient.invalidateQueries({ queryKey: queryKeys.adminContactRequests.all(), refetchType: "active" })
-        await queryClient.refetchQueries({ queryKey: queryKeys.adminContactRequests.all(), type: "active" })
+        // Invalidate và refetch list queries - sử dụng "all" để đảm bảo refetch tất cả queries
+        await queryClient.invalidateQueries({ queryKey: queryKeys.adminContactRequests.all(), refetchType: "all" })
+        await queryClient.refetchQueries({ queryKey: queryKeys.adminContactRequests.all(), type: "all" })
+        
+        // Invalidate detail queries cho tất cả affected IDs
+        for (const id of ids) {
+          await queryClient.invalidateQueries({ queryKey: queryKeys.adminContactRequests.detail(id), refetchType: "all" })
+          await queryClient.refetchQueries({ queryKey: queryKeys.adminContactRequests.detail(id), type: "all" })
+        }
+        
+        // Gọi refresh callback để cập nhật UI ngay lập tức
         await refresh?.()
       } catch (error: unknown) {
         const errorMessage = error instanceof Error ? error.message : CONTACT_REQUEST_MESSAGES.UNKNOWN_ERROR

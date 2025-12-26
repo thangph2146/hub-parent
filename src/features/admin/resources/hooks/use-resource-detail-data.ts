@@ -65,10 +65,12 @@ export const useResourceDetailData = <T extends Record<string, unknown>>({
   // Override với staleTime và refetchOnMount tối ưu
   const queryOptions = {
     ...baseQueryOptions,
-    // Tăng staleTime để cache lâu hơn và giảm refetch không cần thiết
-    staleTime: 30 * 1000, // 30 giây
-    // Chỉ refetch nếu data đã stale hoặc chưa có cache
-    refetchOnMount: hasFreshCache ? false : "always",
+    // Giảm staleTime để đảm bảo data được refetch khi invalidate
+    staleTime: 0, // Không cache - luôn refetch khi invalidate
+    // Luôn refetch khi mount để đảm bảo data mới nhất
+    refetchOnMount: "always",
+    // Refetch khi window focus để đảm bảo data sync
+    refetchOnWindowFocus: false,
   } as typeof baseQueryOptions
   
   const { data: fetchedData, isFetched, isFetching } = useQuery({ ...queryOptions })

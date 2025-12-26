@@ -1,6 +1,7 @@
 "use client"
 
 import { useCallback, useState, useEffect, useMemo, useRef } from "react"
+import { flushSync } from "react-dom"
 import {
   DataTable,
   type DataTableColumn,
@@ -18,9 +19,9 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { ChevronDown } from "lucide-react"
 import { useIsMobile } from "@/hooks/use-mobile"
-import { useDebouncedCallback } from "@/hooks/use-debounced-callback"
 import { Flex } from "@/components/ui/flex"
 import { TypographyH4, TypographySpanSmall, IconSize } from "@/components/ui/typography"
+import { logger } from "@/lib/config/logger"
 import type {
   ResourceTableLoader,
   ResourceViewMode,
@@ -62,7 +63,8 @@ export const ResourceTableClient = <T extends object>({
   const isMobile = useIsMobile()
   const [currentViewId, setCurrentViewId] = useState(defaultViewId ?? viewModes[0].id)
   const [selectedIds, setSelectedIds] = useState<string[]>([])
-  const [refreshKey, setRefreshKey] = useState(0)
+  const refreshCounterRef = useRef(0)
+  const [refreshKey, setRefreshKey] = useState<string | number>(0)
   const lastViewIdRef = useRef<string | undefined>(currentViewId)
   const [hasViewChanged, setHasViewChanged] = useState(false)
 
@@ -72,41 +74,56 @@ export const ResourceTableClient = <T extends object>({
   const columns = activeView.columns ?? baseColumns
   const emptyMessage = activeView.emptyMessage
 
-  const lastRefreshKeyRef = useRef(0)
-  const lastRefreshTimeRef = useRef(0)
-  
-  const debouncedRefresh = useDebouncedCallback(
-    () => {
-      const now = Date.now()
-      if (now - lastRefreshTimeRef.current < 200) return
-      lastRefreshTimeRef.current = now
-      setRefreshKey((prev) => {
-        const next = prev + 1
-        if (prev !== next && lastRefreshKeyRef.current !== next) {
-          lastRefreshKeyRef.current = next
-        }
-        return next
-      })
-    },
-    200
-  )
-  
+  // Update refreshKey ngay lập tức để trigger re-render của DataTable
+  // Sử dụng counter + timestamp + random để đảm bảo refreshKey luôn thay đổi và unique
+  // Điều này đảm bảo DataTable sẽ luôn detect được sự thay đổi và trigger refetch
+  // Sử dụng flushSync để đảm bảo state update được apply ngay lập tức, không bị React batching
   const handleRefresh = useCallback(() => {
-    debouncedRefresh()
-  }, [debouncedRefresh])
+    refreshCounterRef.current += 1
+    
+    // Tạo refreshKey mới với timestamp, counter và random để đảm bảo luôn unique
+    // Sử dụng Date.now() + performance.now() + counter + random để đảm bảo giá trị luôn khác nhau
+    const timestamp = Date.now()
+    const performanceTime = performance.now()
+    const random = Math.random()
+    const currentCounter = refreshCounterRef.current
+    const newRefreshKey = `${timestamp}-${performanceTime}-${currentCounter}-${random}`
+    
+    // Sử dụng flushSync để đảm bảo state update được apply ngay lập tức
+    // Điều này đảm bảo DataTable detect được refreshKey thay đổi ngay lập tức
+    flushSync(() => {
+      setRefreshKey((prev) => {
+        // Luôn return giá trị mới để đảm bảo React detect được thay đổi
+        // Nếu prev === newRefreshKey (rất hiếm), thêm random để đảm bảo luôn khác
+        const finalKey = prev === newRefreshKey ? `${newRefreshKey}-${Math.random()}` : newRefreshKey
+        
+        logger.debug("ResourceTable refreshKey updated", {
+          previousKey: prev,
+          newKey: finalKey,
+          counter: currentCounter,
+          timestamp,
+          performanceTime,
+          random,
+        })
+        
+        return finalKey
+      })
+    })
+  }, [])
 
   const onRefreshReadyRef = useRef(onRefreshReady)
-  const exposedRefs = useRef<Set<string>>(new Set())
   useEffect(() => {
     onRefreshReadyRef.current = onRefreshReady
   }, [onRefreshReady])
 
+  // Đăng ký handleRefresh với onRefreshReady ngay khi component mount
+  // Đảm bảo refresh callback luôn được đăng ký trước khi mutations hoàn thành
+  // Gọi lại mỗi khi onRefreshReady hoặc handleRefresh thay đổi
   useEffect(() => {
-    const instanceId = `refresh-${handleRefresh.toString().slice(0, 20)}`
-    if (exposedRefs.current.has(instanceId)) return
-    exposedRefs.current.add(instanceId)
-    onRefreshReadyRef.current?.(handleRefresh)
-  }, [handleRefresh])
+    if (onRefreshReadyRef.current) {
+      onRefreshReadyRef.current(handleRefresh)
+    }
+  }, [handleRefresh, onRefreshReady])
 
   const handleViewChange = useCallback(
     (viewId: string) => {

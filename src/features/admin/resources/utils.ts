@@ -1,6 +1,7 @@
 import type { AdminBreadcrumbItem } from "@/components/layouts/headers/admin-header"
 import { applyResourceSegmentToPath, DEFAULT_RESOURCE_SEGMENT } from "@/lib/permissions"
 import { logActionFlow } from "./server/mutation-helpers"
+import { resourceRefreshRegistry } from "./hooks/resource-refresh-registry"
 
 export const formatDateVi = (date: string | Date | null | undefined): string => {
   if (!date) return "—"
@@ -271,12 +272,19 @@ export const createResourceEditOnSuccess = ({
   return async (response: import("axios").AxiosResponse) => {
     const responseData = response?.data?.data
 
-    await queryClient.invalidateQueries({ queryKey: allQueryKey, refetchType: "active" })
-    await queryClient.refetchQueries({ queryKey: allQueryKey, type: "active" })
+    // Invalidate và refetch queries để đảm bảo data được cập nhật ngay lập tức
+    // Sử dụng refetchType: "all" để đảm bảo refetch tất cả queries, không chỉ active
+    await queryClient.invalidateQueries({ queryKey: allQueryKey, refetchType: "all" })
+    await queryClient.refetchQueries({ queryKey: allQueryKey, type: "all" })
     if (resourceId) {
-      await queryClient.invalidateQueries({ queryKey: detailQueryKey(resourceId), refetchType: "active" })
-      await queryClient.refetchQueries({ queryKey: detailQueryKey(resourceId), type: "active" })
+      await queryClient.invalidateQueries({ queryKey: detailQueryKey(resourceId), refetchType: "all" })
+      await queryClient.refetchQueries({ queryKey: detailQueryKey(resourceId), type: "all" })
     }
+
+    // Trigger UI refresh ngay lập tức thông qua registry
+    // Registry sẽ gọi handleRefresh để update refreshKey, trigger DataTable re-render và fetch fresh data
+    // Gọi trực tiếp ngay lập tức - queries đã được refetch xong và cache đã được cập nhật
+    resourceRefreshRegistry.triggerRefresh(allQueryKey)
 
     const recordName = getRecordName?.(responseData) || (responseData?.name as string | undefined)
     const singularName = getResourceSingularName(resourceName)

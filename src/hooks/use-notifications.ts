@@ -11,6 +11,7 @@ import { useSocket, type SocketNotificationPayload } from "@/hooks/use-socket"
 import { queryKeys, invalidateQueries } from "@/lib/query-keys"
 import { apiRoutes } from "@/lib/api/routes"
 import { logger } from "@/lib/config"
+import { resourceRefreshRegistry } from "@/features/admin/resources/hooks/resource-refresh-registry"
 import type { UnreadCountsResponse } from "@/hooks/use-unread-counts"
 
 /**
@@ -201,11 +202,21 @@ export const useMarkNotificationRead = () => {
         ...parseNotificationDates(payload),
       }
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       // Invalidate cả user và admin notifications vì thay đổi trạng thái đọc ảnh hưởng đến cả 2
       // Admin table cần cập nhật ngay khi notification được đánh dấu đã đọc/chưa đọc
       // Cũng invalidate unreadCounts để cập nhật badge count trong nav-main-with-badges
       invalidateQueries.notificationsAndCounts(queryClient, session?.user?.id)
+      
+      // Refetch admin queries để đảm bảo UI cập nhật ngay lập tức
+      await queryClient.refetchQueries({ 
+        queryKey: queryKeys.notifications.admin(), 
+        type: "all" 
+      })
+      
+      // Trigger UI refresh cho notification page thông qua registry
+      // Đảm bảo notification page và bell đồng bộ với nhau
+      resourceRefreshRegistry.triggerRefresh(queryKeys.notifications.admin())
     },
   })
 }
@@ -223,9 +234,19 @@ export const useDeleteNotification = () => {
       await apiClient.delete(apiRoutes.notifications.delete(id))
       return id
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       // Invalidate cả user và admin notifications vì xóa notification ảnh hưởng đến cả 2
       invalidateQueries.allNotifications(queryClient, session?.user?.id)
+      
+      // Refetch admin queries để đảm bảo UI cập nhật ngay lập tức
+      await queryClient.refetchQueries({ 
+        queryKey: queryKeys.notifications.admin(), 
+        type: "all" 
+      })
+      
+      // Trigger UI refresh cho notification page thông qua registry
+      // Đảm bảo notification page và bell đồng bộ với nhau
+      resourceRefreshRegistry.triggerRefresh(queryKeys.notifications.admin())
     },
     onError: (error: unknown) => {
       logger.error("Error deleting notification", { error, userId: session?.user?.id })
@@ -267,11 +288,21 @@ export const useMarkAllAsRead = () => {
       
       return payload
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       // Invalidate cả user và admin notifications vì đánh dấu tất cả đã đọc ảnh hưởng đến cả 2
       // Admin table cần cập nhật ngay khi tất cả notifications được đánh dấu đã đọc
       // Cũng invalidate unreadCounts để cập nhật badge count trong nav-main-with-badges
       invalidateQueries.notificationsAndCounts(queryClient, session?.user?.id)
+      
+      // Refetch admin queries để đảm bảo UI cập nhật ngay lập tức
+      await queryClient.refetchQueries({ 
+        queryKey: queryKeys.notifications.admin(), 
+        type: "all" 
+      })
+      
+      // Trigger UI refresh cho notification page thông qua registry
+      // Đảm bảo notification page và bell đồng bộ với nhau
+      resourceRefreshRegistry.triggerRefresh(queryKeys.notifications.admin())
     },
   })
 }
@@ -299,9 +330,19 @@ export const useDeleteAllNotifications = () => {
         { source: "useDeleteAllNotifications" }
       )
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       // Invalidate cả user và admin notifications vì xóa tất cả ảnh hưởng đến cả 2
       invalidateQueries.allNotifications(queryClient, session?.user?.id)
+      
+      // Refetch admin queries để đảm bảo UI cập nhật ngay lập tức
+      await queryClient.refetchQueries({ 
+        queryKey: queryKeys.notifications.admin(), 
+        type: "all" 
+      })
+      
+      // Trigger UI refresh cho notification page thông qua registry
+      // Đảm bảo notification page và bell đồng bộ với nhau
+      resourceRefreshRegistry.triggerRefresh(queryKeys.notifications.admin())
     },
     onError: (error: unknown) => {
       logger.error("Error deleting all notifications", { error, userId: session?.user?.id })

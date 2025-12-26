@@ -1,9 +1,12 @@
 import { useCallback, useState } from "react"
 import { useSession } from "next-auth/react"
+import { useQueryClient } from "@tanstack/react-query"
 import { apiClient } from "@/lib/api/axios"
 import { apiRoutes } from "@/lib/api/routes"
+import { queryKeys } from "@/lib/query-keys"
 import { useDeleteNotification } from "@/hooks/use-notifications"
 import { useResourceBulkProcessing } from "@/features/admin/resources/hooks"
+import { resourceRefreshRegistry } from "@/features/admin/resources/hooks/resource-refresh-registry"
 import type { FeedbackVariant } from "@/components/dialogs"
 import type { NotificationRow } from "../types"
 import { NOTIFICATION_MESSAGES } from "../constants"
@@ -30,6 +33,7 @@ export const useNotificationActions = ({
   triggerTableRefresh,
 }: UseNotificationActionsOptions) => {
   const { data: session } = useSession()
+  const queryClient = useQueryClient()
   const deleteNotificationMutation = useDeleteNotification()
   const [togglingNotifications, setTogglingNotifications] = useState<Set<string>>(new Set())
   const [markingReadNotifications, setMarkingReadNotifications] = useState<Set<string>>(new Set())
@@ -55,6 +59,15 @@ export const useNotificationActions = ({
 
       try {
         await apiClient.patch(apiRoutes.notifications.markRead(row.id), { isRead: newStatus })
+        
+        // Invalidate và refetch queries để đảm bảo UI cập nhật ngay lập tức - sử dụng "all" để đảm bảo refetch tất cả queries
+        await queryClient.invalidateQueries({ queryKey: queryKeys.notifications.admin(), refetchType: "all" })
+        await queryClient.refetchQueries({ queryKey: queryKeys.notifications.admin(), type: "all" })
+        
+        // Trigger UI refresh ngay lập tức thông qua registry
+        // Registry sẽ gọi handleRefresh để update refreshKey, trigger DataTable re-render và fetch fresh data
+        resourceRefreshRegistry.triggerRefresh(queryKeys.notifications.admin())
+        
         showFeedback(
           "success",
           newStatus ? NOTIFICATION_MESSAGES.MARK_READ_SUCCESS : NOTIFICATION_MESSAGES.MARK_UNREAD_SUCCESS,
@@ -83,7 +96,7 @@ export const useNotificationActions = ({
         setLoadingState(removeFromSet)
       }
     },
-    [showFeedback, session?.user?.id],
+    [showFeedback, session?.user?.id, queryClient],
   )
 
   const handleBulkMarkAsRead = useCallback(
@@ -129,12 +142,19 @@ export const useNotificationActions = ({
         const count = response.data.data?.count ?? 0
 
         if (count > 0) {
+          // Invalidate và refetch queries để đảm bảo UI cập nhật ngay lập tức - sử dụng "all" để đảm bảo refetch tất cả queries
+          await queryClient.invalidateQueries({ queryKey: queryKeys.notifications.admin(), refetchType: "all" })
+          await queryClient.refetchQueries({ queryKey: queryKeys.notifications.admin(), type: "all" })
+          
+          // Trigger UI refresh ngay lập tức thông qua registry
+          // Registry sẽ gọi handleRefresh để update refreshKey, trigger DataTable re-render và fetch fresh data
+          resourceRefreshRegistry.triggerRefresh(queryKeys.notifications.admin())
+          
           showFeedback(
             "success",
             NOTIFICATION_MESSAGES.BULK_MARK_READ_SUCCESS,
             `Đã đánh dấu ${count} thông báo là đã đọc.`,
           )
-          triggerTableRefresh()
         } else {
           showFeedback(
             "error",
@@ -151,7 +171,7 @@ export const useNotificationActions = ({
         stopBulkProcessing()
       }
     },
-    [showFeedback, triggerTableRefresh, session?.user?.id, startBulkProcessing, stopBulkProcessing],
+    [showFeedback, session?.user?.id, startBulkProcessing, stopBulkProcessing, queryClient],
   )
 
   const handleBulkMarkAsUnread = useCallback(
@@ -197,12 +217,19 @@ export const useNotificationActions = ({
         const count = response.data.data?.count ?? 0
 
         if (count > 0) {
+          // Invalidate và refetch queries để đảm bảo UI cập nhật ngay lập tức - sử dụng "all" để đảm bảo refetch tất cả queries
+          await queryClient.invalidateQueries({ queryKey: queryKeys.notifications.admin(), refetchType: "all" })
+          await queryClient.refetchQueries({ queryKey: queryKeys.notifications.admin(), type: "all" })
+          
+          // Trigger UI refresh ngay lập tức thông qua registry
+          // Registry sẽ gọi handleRefresh để update refreshKey, trigger DataTable re-render và fetch fresh data
+          resourceRefreshRegistry.triggerRefresh(queryKeys.notifications.admin())
+          
           showFeedback(
             "success",
             NOTIFICATION_MESSAGES.BULK_MARK_UNREAD_SUCCESS,
             `Đã đánh dấu ${count} thông báo là chưa đọc.`,
           )
-          triggerTableRefresh()
         } else {
           showFeedback(
             "error",
@@ -219,7 +246,7 @@ export const useNotificationActions = ({
         stopBulkProcessing()
       }
     },
-    [showFeedback, triggerTableRefresh, session?.user?.id, startBulkProcessing, stopBulkProcessing],
+    [showFeedback, session?.user?.id, startBulkProcessing, stopBulkProcessing, queryClient],
   )
 
   const handleDeleteSingle = useCallback(
@@ -240,6 +267,15 @@ export const useNotificationActions = ({
 
       try {
         await deleteNotificationMutation.mutateAsync(row.id)
+        
+        // Invalidate và refetch queries để đảm bảo UI cập nhật ngay lập tức - sử dụng "all" để đảm bảo refetch tất cả queries
+        await queryClient.invalidateQueries({ queryKey: queryKeys.notifications.admin(), refetchType: "all" })
+        await queryClient.refetchQueries({ queryKey: queryKeys.notifications.admin(), type: "all" })
+        
+        // Trigger UI refresh ngay lập tức thông qua registry
+        // Registry sẽ gọi handleRefresh để update refreshKey, trigger DataTable re-render và fetch fresh data
+        resourceRefreshRegistry.triggerRefresh(queryKeys.notifications.admin())
+        
         showFeedback("success", NOTIFICATION_MESSAGES.DELETE_SUCCESS, "Thông báo đã được xóa thành công.")
         refresh()
       } catch (error: unknown) {
@@ -253,7 +289,7 @@ export const useNotificationActions = ({
         })
       }
     },
-    [showFeedback, session?.user?.id, deleteNotificationMutation],
+    [showFeedback, session?.user?.id, deleteNotificationMutation, queryClient],
   )
 
   const handleBulkDelete = useCallback(
@@ -302,6 +338,14 @@ export const useNotificationActions = ({
         const deletedCount = response.data.data?.count || 0
 
         if (deletedCount > 0) {
+          // Invalidate và refetch queries để đảm bảo UI cập nhật ngay lập tức - sử dụng "all" để đảm bảo refetch tất cả queries
+          await queryClient.invalidateQueries({ queryKey: queryKeys.notifications.admin(), refetchType: "all" })
+          await queryClient.refetchQueries({ queryKey: queryKeys.notifications.admin(), type: "all" })
+          
+          // Trigger UI refresh ngay lập tức thông qua registry
+          // Registry sẽ gọi handleRefresh để update refreshKey, trigger DataTable re-render và fetch fresh data
+          resourceRefreshRegistry.triggerRefresh(queryKeys.notifications.admin())
+          
           let message = `Đã xóa ${deletedCount} thông báo.`
           if (systemCount > 0) {
             message += ` ${systemCount} thông báo hệ thống đã được bỏ qua.`
@@ -310,7 +354,6 @@ export const useNotificationActions = ({
             message += ` ${otherCount} thông báo không thuộc về bạn đã được bỏ qua.`
           }
           showFeedback("success", NOTIFICATION_MESSAGES.BULK_DELETE_SUCCESS, message)
-          triggerTableRefresh()
         } else {
           showFeedback("error", "Lỗi", NOTIFICATION_MESSAGES.NO_DELETE_OTHER)
         }
@@ -321,7 +364,7 @@ export const useNotificationActions = ({
         stopBulkProcessing()
       }
     },
-    [showFeedback, triggerTableRefresh, session?.user?.id, startBulkProcessing, stopBulkProcessing],
+    [showFeedback, session?.user?.id, startBulkProcessing, stopBulkProcessing, queryClient],
   )
 
   return {

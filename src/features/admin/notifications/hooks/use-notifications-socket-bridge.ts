@@ -8,11 +8,16 @@ import { logger } from "@/lib/config"
 import type { NotificationRow } from "../types"
 import type { DataTableResult } from "@/components/tables"
 import { queryKeys } from "@/lib/query-keys"
+import { updateResourceQueries } from "@/features/admin/resources/utils/update-resource-queries"
 import {
   insertRowIntoPage,
   removeRowFromPage,
-  convertSocketPayloadToRow,
-} from "../utils/socket-helpers"
+} from "@/features/admin/resources/utils/socket-helpers"
+import { convertSocketPayloadToRow } from "../utils/socket-helpers"
+
+const calculateTotalPages = (total: number, limit: number): number => {
+  return total === 0 ? 0 : Math.ceil(total / limit)
+}
 
 interface NotificationUpsertPayload {
   id: string
@@ -59,49 +64,9 @@ const normalizeNotificationsDeletedPayload = (payload: NotificationsDeletedSocke
   return []
 }
 
-const updateNotificationQueries = (
-  queryClient: ReturnType<typeof useQueryClient>,
-  updater: (args: { key: unknown[]; data: DataTableResult<NotificationRow> }) => DataTableResult<NotificationRow> | null,
-): boolean => {
-  let updated = false
-  const queries = queryClient.getQueriesData<DataTableResult<NotificationRow>>({
-    queryKey: queryKeys.notifications.admin() as unknown[],
-  })
-  
-  logger.debug("Found notification queries to update", { count: queries.length })
-  
-  for (const [key, data] of queries) {
-    if (!Array.isArray(key) || key.length < 2) continue
-    
-    if (!data) {
-      logger.debug("Skipping query - no data", { key: key.slice(0, 2) })
-      continue
-    }
-    
-    const next = updater({ key, data })
-    if (next) {
-      logger.debug("Setting query data", {
-        key: key.slice(0, 2),
-        oldRowsCount: data.rows.length,
-        newRowsCount: next.rows.length,
-        oldTotal: data.total,
-        newTotal: next.total,
-      })
-      queryClient.setQueryData(key, next)
-      updated = true
-    } else {
-      logger.debug("Updater returned null, skipping update")
-    }
-  }
-  
-  return updated
-}
-
-const createNotificationUpsertUpdater = (
-  row: NotificationRow
-): (args: { key: unknown[]; data: DataTableResult<NotificationRow> }) => DataTableResult<NotificationRow> | null => {
-  return ({ data }) => {
-    // Safety check: ensure data and rows exist
+// Helper để tạo updater cho notification upsert
+const createNotificationUpsertUpdater = (row: NotificationRow) => {
+  return ({ data }: { data: DataTableResult<NotificationRow> }) => {
     if (!data || !Array.isArray(data.rows)) {
       logger.debug("Skipping update - invalid data structure", {
         hasData: !!data,
@@ -112,33 +77,25 @@ const createNotificationUpsertUpdater = (
     }
 
     const existingIndex = data.rows.findIndex((r) => r.id === row.id)
-
-    const next: DataTableResult<NotificationRow> = { ...data }
+    const next = { ...data }
     let total = next.total
     let rows = next.rows
 
     if (existingIndex >= 0) {
-      // Update existing notification
-      const updated = [...rows]
-      updated[existingIndex] = row
-      rows = updated
+      rows = [...rows]
+      rows[existingIndex] = row
     } else if (data.page === 1) {
-      // Insert new notification on page 1
       rows = insertRowIntoPage(rows, row, next.limit)
       total = total + 1
     } else {
-      // On other pages, just update total if needed
-      // Don't insert because we don't know if it should be on this page
       return null
     }
-
-    const totalPages = total === 0 ? 0 : Math.ceil(total / next.limit)
 
     return {
       ...next,
       rows,
       total,
-      totalPages,
+      totalPages: calculateTotalPages(total, next.limit),
     }
   }
 }
@@ -159,85 +116,64 @@ export const useNotificationsSocketBridge = () => {
   useEffect(() => {
     if (!session?.user?.id) return
 
-    const detachUpsert = on<[NotificationUpsertPayload]>("notification:new", (payload) => {
-      // Không log ở đây để tránh duplicate logs (useAdminNotificationsSocketBridge cũng log)
-      const row = convertSocketPayloadToRow(payload, payload.userEmail, payload.userName)
-
-      logger.debug("Processing notification update", {
-        notificationId: row.id,
+    // Helper để xử lý notification upsert events (new, updated, admin)
+    const handleNotificationUpsert = (payload: NotificationUpsertPayload, eventName: string) => {
+      logger.debug(`Received ${eventName}`, {
+        notificationId: payload.id,
+        toUserId: payload.toUserId,
       })
 
-      const updated = updateNotificationQueries(queryClient, createNotificationUpsertUpdater(row))
+      const row = convertSocketPayloadToRow(payload, payload.userEmail, payload.userName)
+      const updated = updateResourceQueries<NotificationRow, Record<string, never>>(
+        queryClient,
+        queryKeys.notifications.admin() as unknown[],
+        createNotificationUpsertUpdater(row)
+      )
 
       if (updated) {
-        logger.debug("Cache updated for notification", {
-          notificationId: row.id,
-        })
         setCacheVersion((prev) => prev + 1)
       }
+    }
+
+    const detachUpsert = on<[NotificationUpsertPayload]>("notification:new", (payload) => {
+      handleNotificationUpsert(payload, "notification:new")
     })
 
     const detachUpdated = on<[NotificationUpsertPayload]>("notification:updated", (payload) => {
-      logger.debug("Received notification:updated", {
-        notificationId: payload.id,
-        toUserId: payload.toUserId,
-      })
-
-      const row = convertSocketPayloadToRow(payload, payload.userEmail, payload.userName)
-      const updated = updateNotificationQueries(queryClient, createNotificationUpsertUpdater(row))
-
-      if (updated) {
-        setCacheVersion((prev) => prev + 1)
-      }
+      handleNotificationUpsert(payload, "notification:updated")
     })
 
     const detachAdmin = on<[NotificationUpsertPayload]>("notification:admin", (payload) => {
-      logger.debug("Received notification:admin", {
-        notificationId: payload.id,
-        toUserId: payload.toUserId,
-      })
-
-      const row = convertSocketPayloadToRow(payload, payload.userEmail, payload.userName)
-      const updated = updateNotificationQueries(queryClient, createNotificationUpsertUpdater(row))
-
-      if (updated) {
-        setCacheVersion((prev) => prev + 1)
-      }
+      handleNotificationUpsert(payload, "notification:admin")
     })
 
     const detachRemove = on<[NotificationRemovePayload]>("notification:deleted", (payload) => {
       const { id } = payload as NotificationRemovePayload
       logger.debug("Received notification:deleted", { notificationId: id })
       
-      const updated = updateNotificationQueries(queryClient, ({ data }) => {
-        if (!data || !data.rows || !Array.isArray(data.rows)) {
-          return null
+      const updated = updateResourceQueries<NotificationRow, Record<string, never>>(
+        queryClient,
+        queryKeys.notifications.admin() as unknown[],
+        ({ data }) => {
+          if (!data || !Array.isArray(data.rows)) {
+            return null
+          }
+          
+          const result = removeRowFromPage(data.rows, id)
+          if (!result.removed) {
+            logger.debug("Notification not found in current view", { notificationId: id })
+            return null
+          }
+          
+          const total = Math.max(0, data.total - 1)
+          return {
+            ...data,
+            rows: result.rows,
+            total,
+            totalPages: calculateTotalPages(total, data.limit),
+          }
         }
-        
-        const result = removeRowFromPage(data.rows, id)
-        if (!result.removed) {
-          logger.debug("Notification not found in current view", { notificationId: id })
-          return null
-        }
-        
-        const total = Math.max(0, data.total - 1)
-        const totalPages = total === 0 ? 0 : Math.ceil(total / data.limit)
-        
-        logger.debug("Removed notification from cache", {
-          notificationId: id,
-          oldRowsCount: data.rows.length,
-          newRowsCount: result.rows.length,
-          oldTotal: data.total,
-          newTotal: total,
-        })
-        
-        return {
-          ...data,
-          rows: result.rows,
-          total,
-          totalPages,
-        }
-      })
+      )
       
       if (updated) {
         setCacheVersion((prev) => prev + 1)
@@ -253,44 +189,38 @@ export const useNotificationsSocketBridge = () => {
 
       logger.debug("Received notifications:deleted", { count: ids.length })
       
-      const updated = updateNotificationQueries(queryClient, ({ data }) => {
-        if (!data || !data.rows || !Array.isArray(data.rows)) {
-          return null
-        }
-        
-        let rows = data.rows
-        let removedCount = 0
+      const updated = updateResourceQueries<NotificationRow, Record<string, never>>(
+        queryClient,
+        queryKeys.notifications.admin() as unknown[],
+        ({ data }) => {
+          if (!data || !Array.isArray(data.rows)) {
+            return null
+          }
+          
+          let rows = data.rows
+          let removedCount = 0
 
-        for (const id of ids) {
-          const result = removeRowFromPage(rows, id)
-          if (result.removed) {
-            rows = result.rows
-            removedCount++
+          for (const id of ids) {
+            const result = removeRowFromPage(rows, id)
+            if (result.removed) {
+              rows = result.rows
+              removedCount++
+            }
+          }
+
+          if (removedCount === 0) {
+            return null
+          }
+          
+          const total = Math.max(0, data.total - removedCount)
+          return {
+            ...data,
+            rows,
+            total,
+            totalPages: calculateTotalPages(total, data.limit),
           }
         }
-
-        if (removedCount === 0) {
-          return null
-        }
-        
-        const total = Math.max(0, data.total - removedCount)
-        const totalPages = total === 0 ? 0 : Math.ceil(total / data.limit)
-        
-        logger.debug("Removed notifications from cache", {
-          removedCount,
-          oldRowsCount: data.rows.length,
-          newRowsCount: rows.length,
-          oldTotal: data.total,
-          newTotal: total,
-        })
-        
-        return {
-          ...data,
-          rows,
-          total,
-          totalPages,
-        }
-      })
+      )
       
       if (updated) {
         setCacheVersion((prev) => prev + 1)
@@ -298,32 +228,34 @@ export const useNotificationsSocketBridge = () => {
     })
 
     const detachSync = on<[NotificationUpsertPayload[]]>("notifications:sync", (payloads) => {
-      // Không log ở đây để tránh duplicate logs (useAdminNotificationsSocketBridge cũng log)
-      const updated = updateNotificationQueries(queryClient, ({ data }) => {
-        const rows = payloads
-          .map((p) => convertSocketPayloadToRow(p, p.userEmail, p.userName))
-          .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      const updated = updateResourceQueries<NotificationRow, Record<string, never>>(
+        queryClient,
+        queryKeys.notifications.admin() as unknown[],
+        ({ data }) => {
+          const rows = payloads
+            .map((p) => convertSocketPayloadToRow(p, p.userEmail, p.userName))
+            .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
 
-        if (rows.length === 0 && data.rows.length === 0) {
-          return null
+          if (rows.length === 0 && data.rows.length === 0) {
+            return null
+          }
+
+          const limitedRows = data.page === 1 ? rows.slice(0, data.limit) : data.rows
+          const total = rows.length
+
+          logger.debug("Synced notifications in cache", {
+            rowsCount: limitedRows.length,
+            total,
+          })
+
+          return {
+            ...data,
+            rows: limitedRows,
+            total,
+            totalPages: calculateTotalPages(total, data.limit),
+          }
         }
-
-        const limitedRows = data.page === 1 ? rows.slice(0, data.limit) : data.rows
-        const total = rows.length
-        const totalPages = total === 0 ? 0 : Math.ceil(total / data.limit)
-
-        logger.debug("Synced notifications in cache", {
-          rowsCount: limitedRows.length,
-          total,
-        })
-
-        return {
-          ...data,
-          rows: limitedRows,
-          total,
-          totalPages,
-        }
-      })
+      )
 
       if (updated) {
         setCacheVersion((prev) => prev + 1)

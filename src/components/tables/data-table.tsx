@@ -242,12 +242,19 @@ export function DataTable<T extends object>({
 
         prevQueryRef.current = query
 
-        startTransition(() => {
-            // Luôn fetch dữ liệu mới khi query thay đổi hoặc refresh
-            // initialData chỉ được sử dụng trong useState initializer
+        // Khi refreshKey thay đổi (từ mutation), cần fetch ngay lập tức không delay
+        // Khi query thay đổi (từ user action), có thể dùng startTransition để tránh blocking UI
+        if (refreshKeyChanged) {
+            // Refresh từ mutation - fetch ngay lập tức để đảm bảo UI cập nhật ngay
+            // Không dùng startTransition để tránh delay
             setDataPromise(safeLoad(loader, query))
-        })
-    }, [loader, query, refreshKey, initialData])
+        } else {
+            // Query change từ user action - có thể dùng startTransition
+            startTransition(() => {
+                setDataPromise(safeLoad(loader, query))
+            })
+        }
+    }, [loader, query, refreshKey])
 
     const hasAppliedFilters =
         query.search.trim().length > 0 ||
@@ -599,6 +606,20 @@ function safeLoad<T extends object>(
     query: DataTableQueryState,
 ): Promise<DataTableResult<T>> {
     return loader(query).catch((error) => {
+        // Ignore CancelledError - đây là expected behavior khi query bị cancel do removeQueries
+        // CancelledError xảy ra khi refreshKey thay đổi và query cũ bị cancel để fetch fresh data
+        if (error?.name === "CancelledError" || error?.message?.includes("CancelledError")) {
+            // Return empty result để tránh error log, query mới sẽ được fetch ngay sau đó
+            return {
+                rows: [],
+                page: query.page,
+                limit: query.limit,
+                total: 0,
+                totalPages: 0,
+            }
+        }
+        
+        // Log other errors
         console.error("[DataTable] Failed to load data", error)
         return {
             rows: [],

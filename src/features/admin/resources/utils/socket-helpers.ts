@@ -8,7 +8,9 @@ export const createMatchesSearch = <TRow extends { id: string }>(
 ) => {
   return (search: string | undefined, row: TRow): boolean => {
     if (!search) return true
-    const lowerSearch = search.toLowerCase()
+    // Đảm bảo search là string trước khi gọi toLowerCase()
+    const searchString = typeof search === "string" ? search : String(search)
+    const lowerSearch = searchString.toLowerCase()
 
     return searchFields.some((field) => {
       if (typeof field === "function") {

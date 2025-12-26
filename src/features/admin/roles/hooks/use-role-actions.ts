@@ -39,6 +39,7 @@ export const useRoleActions = ({
     resourceName: "roles",
     queryKeys: {
       all: () => queryKeys.adminRoles.all(),
+      detail: (id) => queryKeys.adminRoles.detail(id),
     },
     apiRoutes: {
       delete: (id) => apiRoutes.roles.delete(id),
@@ -127,8 +128,16 @@ export const useRoleActions = ({
           `Đã ${newStatus ? "kích hoạt" : "vô hiệu hóa"} vai trò ${row.displayName}`
         )
         
-        await queryClient.invalidateQueries({ queryKey: queryKeys.adminRoles.all(), refetchType: "active" })
-        await queryClient.refetchQueries({ queryKey: queryKeys.adminRoles.all(), type: "active" })
+        // Invalidate và refetch list queries - sử dụng "all" để đảm bảo refetch tất cả queries
+        await queryClient.invalidateQueries({ queryKey: queryKeys.adminRoles.all(), refetchType: "all" })
+        await queryClient.refetchQueries({ queryKey: queryKeys.adminRoles.all(), type: "all" })
+        
+        // Invalidate và refetch detail query
+        await queryClient.invalidateQueries({ queryKey: queryKeys.adminRoles.detail(row.id), refetchType: "all" })
+        await queryClient.refetchQueries({ queryKey: queryKeys.adminRoles.detail(row.id), type: "all" })
+        
+        // Gọi refresh callback để cập nhật UI ngay lập tức
+        await _refresh()
       } catch (error: unknown) {
         const errorMessage = error instanceof Error ? error.message : ROLE_MESSAGES.UNKNOWN_ERROR
         

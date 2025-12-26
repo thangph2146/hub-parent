@@ -130,9 +130,13 @@ export const CommentDetailClient = ({ commentId, comment, backUrl = "/admin/comm
           await apiClient.post(apiRoutes.comments.unapprove(commentId))
         }
         
-        // Socket events sẽ tự động update cache nếu có
-        await queryClient.invalidateQueries({ queryKey: queryKeys.adminComments.all() })
-        await queryClient.invalidateQueries({ queryKey: queryKeys.adminComments.detail(commentId) })
+        // Invalidate và refetch list queries - sử dụng "all" để đảm bảo refetch tất cả queries
+        await queryClient.invalidateQueries({ queryKey: queryKeys.adminComments.all(), refetchType: "all" })
+        await queryClient.refetchQueries({ queryKey: queryKeys.adminComments.all(), type: "all" })
+        
+        // Invalidate và refetch detail query
+        await queryClient.invalidateQueries({ queryKey: queryKeys.adminComments.detail(commentId), refetchType: "all" })
+        await queryClient.refetchQueries({ queryKey: queryKeys.adminComments.detail(commentId), type: "all" })
         
         setApproved(newStatus)
       } catch (error) {
@@ -144,8 +148,11 @@ export const CommentDetailClient = ({ commentId, comment, backUrl = "/admin/comm
           error: error instanceof Error ? error.message : "Unknown error",
         })
         
-        await queryClient.invalidateQueries({ queryKey: queryKeys.adminComments.all() })
-        await queryClient.invalidateQueries({ queryKey: queryKeys.adminComments.detail(commentId) })
+        // Invalidate và refetch queries trong trường hợp lỗi - sử dụng "all" để đảm bảo refetch tất cả queries
+        await queryClient.invalidateQueries({ queryKey: queryKeys.adminComments.all(), refetchType: "all" })
+        await queryClient.refetchQueries({ queryKey: queryKeys.adminComments.all(), type: "all" })
+        await queryClient.invalidateQueries({ queryKey: queryKeys.adminComments.detail(commentId), refetchType: "all" })
+        await queryClient.refetchQueries({ queryKey: queryKeys.adminComments.detail(commentId), type: "all" })
       } finally {
         setIsToggling(false)
       }

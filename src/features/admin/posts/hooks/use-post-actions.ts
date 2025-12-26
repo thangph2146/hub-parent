@@ -22,6 +22,7 @@ export const usePostActions = ({
     resourceName: "posts",
     queryKeys: {
       all: () => queryKeys.adminPosts.all(),
+      detail: (id) => queryKeys.adminPosts.detail(id),
     },
     apiRoutes: {
       delete: (id) => apiRoutes.posts.delete(id),

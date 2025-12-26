@@ -36,6 +36,7 @@ export const useUserActions = ({
     resourceName: "users",
     queryKeys: {
       all: () => queryKeys.adminUsers.all(),
+      detail: (id) => queryKeys.adminUsers.detail(id),
     },
     apiRoutes: {
       delete: (id) => apiRoutes.users.delete(id),
@@ -120,8 +121,16 @@ export const useUserActions = ({
           `Đã ${newStatus ? "kích hoạt" : "vô hiệu hóa"} người dùng ${row.email}`
         )
         
-        await queryClient.invalidateQueries({ queryKey: queryKeys.adminUsers.all(), refetchType: "active" })
-        await queryClient.refetchQueries({ queryKey: queryKeys.adminUsers.all(), type: "active" })
+        // Invalidate và refetch list queries - sử dụng "all" để đảm bảo refetch tất cả queries
+        await queryClient.invalidateQueries({ queryKey: queryKeys.adminUsers.all(), refetchType: "all" })
+        await queryClient.refetchQueries({ queryKey: queryKeys.adminUsers.all(), type: "all" })
+        
+        // Invalidate và refetch detail query
+        await queryClient.invalidateQueries({ queryKey: queryKeys.adminUsers.detail(row.id), refetchType: "all" })
+        await queryClient.refetchQueries({ queryKey: queryKeys.adminUsers.detail(row.id), type: "all" })
+        
+        // Gọi refresh callback để cập nhật UI ngay lập tức
+        await _refresh()
       } catch (error: unknown) {
         const errorMessage = error instanceof Error ? error.message : USER_MESSAGES.UNKNOWN_ERROR
         showFeedback(
