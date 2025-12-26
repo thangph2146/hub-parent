@@ -7,7 +7,7 @@ import { useResourceFormSubmit, useResourceNavigation, useResourceDetailData } f
 import { createResourceEditOnSuccess } from "@/features/admin/resources/utils"
 import { apiRoutes } from "@/lib/api/routes"
 import { queryKeys } from "@/lib/query-keys"
-import { getBaseTagFields, type TagFormData } from "../form-fields"
+import { getBaseTagFields, getTagFormSections, type TagFormData } from "../form-fields"
 import type { TagRow } from "../types"
 
 interface TagEditData extends TagRow {
@@ -106,6 +106,7 @@ export const TagEditClient = ({
     <ResourceForm<TagFormData>
       data={tag}
       fields={editFields.map(field => ({ ...field, disabled: formDisabled || field.disabled }))}
+      sections={getTagFormSections()}
       onSubmit={handleSubmitWrapper}
       title="Chỉnh sửa thẻ tag"
       description={isDeleted ? "Bản ghi đã bị xóa, không thể chỉnh sửa" : "Cập nhật thông tin thẻ tag"}

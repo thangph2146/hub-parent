@@ -66,8 +66,8 @@ export const CategoryDetailClient = ({ categoryId, category, backUrl = "/admin/c
       fieldsContent: (_fields, data) => {
         const cat = data as CategoryDetailData
         return (
-          <Flex direction="col" fullWidth gap={6}>
-            <Grid cols="responsive-2" fullWidth gap={6}>
+          <Flex direction="col" fullWidth gap="responsive">
+            <Grid cols="responsive-2" fullWidth gap="responsive">
               <FieldItem icon={Tag} label="Tên danh mục">
                 <TypographyP>{cat.name || "—"}</TypographyP>
               </FieldItem>
@@ -90,7 +90,7 @@ export const CategoryDetailClient = ({ categoryId, category, backUrl = "/admin/c
               </Card>
             )}
 
-            <Grid cols="responsive-2" fullWidth gap={6}>
+            <Grid cols="responsive-2" fullWidth gap="responsive">
               <FieldItem icon={Calendar} label="Ngày tạo">
                 <TypographyP>{formatDateVi(cat.createdAt)}</TypographyP>
               </FieldItem>

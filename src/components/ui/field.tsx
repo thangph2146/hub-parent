@@ -21,7 +21,7 @@ function FieldSet({ className, ...props }: React.ComponentProps<"fieldset">) {
         "border-2 border-solid border-border rounded-[calc(var(--radius)-2px)]",
         "mb-4 sm:mb-5 md:mb-6 lg:mb-6 xl:mb-8 2xl:mb-8",
         "bg-background transition-all duration-300",
-        "relative overflow-hidden",
+        "relative overflow-x-hidden overflow-y-visible",
         "hover:border-ring/50 hover:shadow-[0_2px_8px_hsl(var(--ring)/0.1)]",
         "dark:bg-card dark:border-border dark:hover:border-ring/60 dark:hover:shadow-[0_2px_8px_hsl(var(--ring)/0.15)]",
         // Gradient accent line on hover
@@ -46,14 +46,17 @@ function FieldLegend({
       data-slot="field-legend"
       data-variant={variant}
       className={cn(
+        "w-fit h-fit min-h-6",
         "mx-0 mb-2 sm:mb-3 md:mb-3 lg:mb-4 xl:mb-4 2xl:mb-5 px-2 border-b-0 w-auto",
-        "font-semibold text-foreground",
+        "block",
         "transition-colors duration-200",
         "relative",
         // Responsive text sizes: mobile -> sm (640px) -> md (768px) -> lg (1024px) -> xl (1280px) -> 2xl (1536px)
         variant === "legend" 
           ? typography.title.default
           : fieldBodySmall,
+        // Text color - đặt sau typography để đảm bảo không bị override
+        "text-foreground font-semibold",
         // Gradient accent line with responsive positioning
         "after:content-[''] after:absolute after:-bottom-1.5 sm:after:-bottom-2 md:after:-bottom-2 lg:after:-bottom-2.5 xl:after:-bottom-2.5 2xl:after:-bottom-3",
         "after:left-2 after:right-2 after:h-[2px]",

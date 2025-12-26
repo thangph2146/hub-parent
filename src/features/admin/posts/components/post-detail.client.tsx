@@ -132,8 +132,8 @@ export const PostDetailClient = ({
         const postData = data as PostDetailData;
 
         return (
-          <Flex direction="col" gap={8} fullWidth>
-            <Flex direction="col" gap={4} fullWidth className="lg:flex-row">
+          <Flex direction="col" gap="responsive" fullWidth>
+            <Flex direction="col" gap="responsive" fullWidth className="lg:flex-row">
               {/* Featured Image */}
               {postData.image && (
                 <Flex
@@ -165,7 +165,7 @@ export const PostDetailClient = ({
               </Flex>
             </Flex>
 
-            <Grid cols="responsive-2" gap={6} fullWidth>
+            <Grid cols="responsive-2" gap="responsive" fullWidth>
               <FieldItem icon={Hash} label="Slug">
                 <TypographyP className="font-mono break-all">
                   {postData.slug || "---"}
@@ -282,7 +282,7 @@ export const PostDetailClient = ({
         }
 
         return (
-          <Flex direction="col" gap={4} fullWidth className="max-w-5xl mx-auto">
+          <Flex direction="col" gap="responsive" fullWidth className="max-w-5xl mx-auto">
             {editorState ? (
               <Editor editorSerializedState={editorState} readOnly={true} />
             ) : (

@@ -180,9 +180,9 @@ export const NotificationDetailClient = ({
         };
 
         return (
-          <Flex direction="col" gap={6}>
+          <Flex direction="col" gap="responsive">
             {/* Kind & Title */}
-            <Grid cols="responsive-2" fullWidth gap={6}>
+            <Grid cols="responsive-2" fullWidth gap="responsive">
               <FieldItem icon={Bell} label="Loại thông báo">
                 <Badge variant={kindConfigData.variant} className="w-fit">
                   {kindConfigData.label}
@@ -243,9 +243,9 @@ export const NotificationDetailClient = ({
         const isNotificationOwner = session?.user?.id === notificationData.userId;
 
         return (
-          <Flex direction="col" gap={6}>
+          <Flex direction="col" gap="responsive">
             {/* Read Status & Read Date - 2 columns on sm+ */}
-            <Grid cols="responsive-2" fullWidth gap={6}>
+            <Grid cols="responsive-2" fullWidth gap="responsive">
               {/* Read Status */}
               <FieldItem
                 icon={notificationData.isRead ? CheckCircle : XCircleIcon}
@@ -320,9 +320,9 @@ export const NotificationDetailClient = ({
         const fieldCount = (hasActionUrl ? 1 : 0) + 1 + (hasExpiresAt ? 1 : 0); // actionUrl + createdAt + expiresAt
 
         return (
-          <Flex direction="col" gap={6}>
+          <Flex direction="col" gap="responsive">
             {/* Action URL & Timestamps - Grid layout */}
-            <Grid cols={fieldCount === 1 ? 1 : "responsive-2"} gap={6} fullWidth>
+            <Grid cols={fieldCount === 1 ? 1 : "responsive-2"} gap="responsive" fullWidth>
               {/* Action URL */}
               {notificationData.actionUrl && (
                 <FieldItem icon={ExternalLink} label="URL hành động">

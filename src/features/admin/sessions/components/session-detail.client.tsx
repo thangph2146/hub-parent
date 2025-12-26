@@ -79,7 +79,7 @@ export const SessionDetailClient = ({ sessionId, session, backUrl = "/admin/sess
         const sessionData = data as SessionDetailData
         
         return (
-          <Flex direction="col" gap={6}>
+          <Flex direction="col" gap="responsive">
             <FieldItem icon={User} label="Người dùng" iconColor="bg-primary/10">
               <Flex direction="col" gap={0.5}>
                 <TypographyP>
@@ -104,7 +104,7 @@ export const SessionDetailClient = ({ sessionId, session, backUrl = "/admin/sess
         const sessionData = data as SessionDetailData
         
         return (
-          <Flex direction="col" gap={6}>
+          <Flex direction="col" gap="responsive">
             <FieldItem icon={Key} label="Access Token" iconColor="bg-chart-1/10">
               <TypographyPSmall className="font-mono break-all text-foreground">
                 {sessionData.accessToken || "—"}
@@ -117,7 +117,7 @@ export const SessionDetailClient = ({ sessionId, session, backUrl = "/admin/sess
               </TypographyPSmall>
             </FieldItem>
 
-            <Grid cols="responsive-2" fullWidth gap={6}>
+            <Grid cols="responsive-2" fullWidth gap="responsive">
               <FieldItem icon={Globe} label="User Agent" iconColor="bg-chart-3/10">
                 <TypographyP className="break-all">
                   {sessionData.userAgent || "—"}
@@ -142,7 +142,7 @@ export const SessionDetailClient = ({ sessionId, session, backUrl = "/admin/sess
         const sessionData = data as SessionDetailData
         
         return (
-          <Flex direction="col" gap={6}>
+          <Flex direction="col" gap="responsive">
             <FieldItem 
               icon={sessionData.isActive ? CheckCircle2 : XCircle} 
               label="Trạng thái"
@@ -160,7 +160,7 @@ export const SessionDetailClient = ({ sessionId, session, backUrl = "/admin/sess
               </Badge>
             </FieldItem>
 
-            <Grid cols="responsive-2" fullWidth gap={6}>
+            <Grid cols="responsive-2" fullWidth gap="responsive">
               <FieldItem icon={Calendar} label="Thời gian hết hạn">
                 <TypographyP>
                   {sessionData.expiresAt ? formatDateVi(sessionData.expiresAt) : "—"}

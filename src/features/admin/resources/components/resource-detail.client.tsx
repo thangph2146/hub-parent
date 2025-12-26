@@ -228,7 +228,7 @@ export const ResourceDetailClient = <T extends Record<string, unknown>>({
 
   const getGridProps = React.useCallback((fieldCount: number) => ({
     cols: (fieldCount === 1 ? 1 : "responsive-2") as 1 | "responsive-2",
-    gap: 6 as const,
+    gap: "responsive" as const,
   }), [])
 
   const renderSectionHeader = React.useCallback((title?: string, description?: string) => {
@@ -264,7 +264,7 @@ export const ResourceDetailClient = <T extends Record<string, unknown>>({
           className="group/field-set transition-all duration-300"
         >
           {renderSectionHeader(sectionInfo?.title, sectionInfo?.description)}
-          <Flex direction="col" gap={6} fullWidth>
+          <Flex direction="col" gap="responsive" fullWidth className="min-w-0">
             {sectionInfo?.fieldHeader}
             {fieldsContent}
             {sectionInfo?.fieldFooter}
@@ -277,7 +277,7 @@ export const ResourceDetailClient = <T extends Record<string, unknown>>({
 
   if (isLoading) {
     return (
-      <Flex direction="col" gap={6} fullWidth>
+      <Flex direction="col" gap="responsive" fullWidth>
         <Flex align="center" justify="between" gap={2} fullWidth>
           <Flex direction="col" gap={2} fullWidth>
             <Skeleton className="h-8 w-64" />
@@ -327,7 +327,7 @@ export const ResourceDetailClient = <T extends Record<string, unknown>>({
   }
 
   return (
-    <Flex direction="col" gap={6} fullWidth>
+    <Flex direction="col" gap="responsive" fullWidth>
       {resolvedBackUrl && (
         <Button variant="outline" size="sm" onClick={handleBack} fullWidth>
           <Flex align="center" gap={2}>
@@ -361,7 +361,7 @@ export const ResourceDetailClient = <T extends Record<string, unknown>>({
         </Flex>
       )}
 
-      <Flex direction="col" gap={6} fullWidth>
+      <Flex direction="col" gap="responsive" fullWidth>
         {(() => {
           const { grouped, ungrouped } = groupFieldsBySection
           const fieldsTitle = Array.isArray(fields) ? "Thông tin chi tiết" : fields.title || "Thông tin chi tiết"
@@ -388,7 +388,7 @@ export const ResourceDetailClient = <T extends Record<string, unknown>>({
                 <FieldSet className="group/field-set transition-all duration-300">
                   {renderSectionHeader(fieldsTitle, fieldsDesc)}
                   {ungrouped.length > 4 ? (
-                    <Grid cols="responsive-2" fullWidth gap={6}>
+                    <Grid cols="responsive-2" fullWidth gap="responsive">
                       {renderFields(ungrouped.slice(0, Math.ceil(ungrouped.length / 2)))}
                       {renderFields(ungrouped.slice(Math.ceil(ungrouped.length / 2)))}
                     </Grid>

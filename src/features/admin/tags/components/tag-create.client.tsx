@@ -6,7 +6,7 @@ import { useResourceFormSubmit } from "@/features/admin/resources/hooks"
 import { apiRoutes } from "@/lib/api/routes"
 import { queryKeys } from "@/lib/query-keys"
 import { resourceLogger } from "@/lib/config"
-import { getBaseTagFields, type TagFormData } from "../form-fields"
+import { getBaseTagFields, getTagFormSections, type TagFormData } from "../form-fields"
 
 export interface TagCreateClientProps {
   backUrl?: string
@@ -55,6 +55,7 @@ export const TagCreateClient = ({ backUrl = "/admin/tags" }: TagCreateClientProp
     <ResourceForm<TagFormData>
       data={null}
       fields={createFields}
+      sections={getTagFormSections()}
       onSubmit={handleSubmit}
       title="Tạo thẻ tag mới"
       description="Nhập thông tin để tạo thẻ tag mới"

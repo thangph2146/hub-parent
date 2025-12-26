@@ -82,7 +82,7 @@ export const StudentDetailClient = ({ studentId, student, backUrl = "/admin/stud
         const studentData = (data || detailData) as StudentDetailData
         
         return (
-          <Grid cols="responsive-2" fullWidth gap={6}>
+          <Grid cols="responsive-2" fullWidth gap="responsive">
             <FieldItem icon={Hash} label="Mã sinh viên">
               <TypographyP className="font-mono">{studentData.studentCode || "—"}</TypographyP>
             </FieldItem>
@@ -119,7 +119,7 @@ export const StudentDetailClient = ({ studentId, student, backUrl = "/admin/stud
   const isDeleted = detailData.deletedAt !== null && detailData.deletedAt !== undefined
 
   return (
-    <Flex direction="col" fullWidth gap={6}>
+    <Flex direction="col" fullWidth gap="responsive">
       <ResourceDetailClient<StudentDetailData>
         title="Thông tin sinh viên"
         description={`Thông tin chính về sinh viên ${detailData.name}`}

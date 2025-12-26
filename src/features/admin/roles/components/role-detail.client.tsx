@@ -85,8 +85,8 @@ export const RoleDetailClient = ({ roleId, role, backUrl = "/admin/roles" }: Rol
         const roleData = (data || detailData) as RoleDetailData
         
         return (
-          <Flex direction="col" fullWidth gap={6}>
-            <Grid cols="responsive-2" fullWidth gap={6}>
+          <Flex direction="col" fullWidth gap="responsive">
+            <Grid cols="responsive-2" fullWidth gap="responsive">
               <FieldItem icon={Shield} label="Tên vai trò">
                 <TypographySpanMuted>{roleData.name || "—"}</TypographySpanMuted>
               </FieldItem>
@@ -152,28 +152,14 @@ export const RoleDetailClient = ({ roleId, role, backUrl = "/admin/roles" }: Rol
         }
 
         return (
-          <Flex direction="col" gap={4} fullWidth>
-            <Flex align="start" gap={3} fullWidth>
-              <Flex align="center" justify="center" shrink className="h-9 w-9" rounded="lg" bg="muted">
-                <IconSize size="sm">
-                  <Shield />
-                </IconSize>
-              </Flex>
-              <Flex direction="col" gap={3} flex="1" minWidth="0">
-                <Flex direction="col" gap={2}>
-                  <TypographySpanSmallMuted>Quyền</TypographySpanSmallMuted>
-                  <PermissionsTableField
-                    field={mockField}
-                    fieldValue={roleData.permissions}
-                    onChange={() => {}} // No-op since it's read-only
-                    isPending={false}
-                    availablePermissions={roleData.permissions}
-                    readOnly={true}
-                  />
-                </Flex>
-              </Flex>
-            </Flex>
-          </Flex>
+          <PermissionsTableField
+            field={mockField}
+            fieldValue={roleData.permissions}
+            onChange={() => {}} // No-op since it's read-only
+            isPending={false}
+            availablePermissions={roleData.permissions}
+            readOnly={true}
+          />
         )
       },
     },
@@ -185,7 +171,7 @@ export const RoleDetailClient = ({ roleId, role, backUrl = "/admin/roles" }: Rol
         const roleData = (data || detailData) as RoleDetailData
         
         return (
-          <Flex direction="col" gap={6}>
+          <Flex direction="col" gap="responsive">
             {/* Status */}
             <FieldItem 
               icon={roleData.isActive ? CheckCircle2 : XCircle} 
@@ -223,7 +209,7 @@ export const RoleDetailClient = ({ roleId, role, backUrl = "/admin/roles" }: Rol
             </FieldItem>
 
             {/* Timestamps */}
-            <Grid cols="responsive-2" gap={6} fullWidth>
+            <Grid cols="responsive-2" gap="responsive" fullWidth>
               <FieldItem icon={Calendar} label="Ngày tạo">
                 <TypographySpanMuted>
                   {roleData.createdAt ? formatDateVi(roleData.createdAt) : "—"}

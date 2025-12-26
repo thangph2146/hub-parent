@@ -170,7 +170,7 @@ export const CommentDetailClient = ({ commentId, comment, backUrl = "/admin/comm
         const commentData = (data || detailData) as CommentDetailData
         
         return (
-          <Flex direction="col" gap={6}>
+          <Flex direction="col" gap="responsive">
             {/* Content Card */}
             <Card className="border border-border/50 bg-card p-5">
                 <Flex align="start" gap={3} fullWidth>
@@ -197,7 +197,7 @@ export const CommentDetailClient = ({ commentId, comment, backUrl = "/admin/comm
             />
 
             {/* Author Info */}
-            <Grid cols="responsive-2" fullWidth gap={6}>
+            <Grid cols="responsive-2" fullWidth gap="responsive">
               <FieldItem icon={User} label="Người bình luận">
                 <TypographyP className="truncate">
                   {commentData.authorName || commentData.authorEmail || "—"}
@@ -234,7 +234,7 @@ export const CommentDetailClient = ({ commentId, comment, backUrl = "/admin/comm
             </FieldItem>
 
             {/* Timestamps */}
-            <Grid cols="responsive-2" fullWidth gap={6}>
+            <Grid cols="responsive-2" fullWidth gap="responsive">
               <FieldItem icon={Calendar} label="Ngày tạo">
                 <TypographyP>
                   {commentData.createdAt ? formatDateVi(commentData.createdAt) : "—"}

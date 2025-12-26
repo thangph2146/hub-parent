@@ -70,7 +70,7 @@ export const TagDetailClient = ({ tagId, tag, backUrl = "/admin/tags" }: TagDeta
         const tagData = data as TagDetailData
         
         return (
-          <Grid cols="responsive-2" fullWidth gap={6}>
+          <Grid cols="responsive-2" fullWidth gap="responsive">
             {/* Name & Slug */}
             <FieldItem icon={Tag} label="Tên thẻ tag">
               <TypographyP>

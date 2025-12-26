@@ -96,7 +96,7 @@ export const AccountProfileClient = ({
       description: "Thông tin đăng nhập và cá nhân",
       fieldHeader: (
         <Card className="overflow-hidden border-2 bg-gradient-to-br from-card via-card to-muted/20 shadow-sm">
-          <Flex direction="col" align="start" gap={6} padding="lg" fullWidth className="sm:flex-row sm:items-center">
+          <Flex direction="col" align="start" gap="responsive" padding="lg" fullWidth className="sm:flex-row sm:items-center">
             <div className="relative group">
               <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 via-primary/10 to-transparent rounded-full blur opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               <Avatar className="relative h-28 w-28 border-4 border-background shadow-lg ring-2 ring-primary/10">
@@ -155,8 +155,8 @@ export const AccountProfileClient = ({
         const accountData = data as AccountProfile;
 
         return (
-          <Flex direction="col" gap={6}>
-            <Grid cols="responsive-2" gap={4}>
+          <Flex direction="col" gap="responsive">
+            <Grid cols="responsive-2" gap="responsive">
               <Card padding="md" className="border-border/50 bg-card/50 hover:bg-card transition-colors">
                 <FieldItem icon={User} label="Tên">
                   <TypographyPLarge className="mt-1">
@@ -283,7 +283,7 @@ export const AccountProfileClient = ({
         const accountData = data as AccountProfile;
 
         return (
-          <Flex direction="col" gap={6}>
+          <Flex direction="col" gap="responsive">
             <Card padding="lg" className="border-2 border-border/50 bg-gradient-to-br from-card to-muted/10 shadow-sm">
               <FieldItem icon={Mail} label="Email">
                 <Flex direction="col" gap={3} marginTop={2}>
@@ -334,8 +334,8 @@ export const AccountProfileClient = ({
         const accountData = data as AccountProfile;
 
         return (
-          <Flex direction="col" gap={6}>
-            <Grid cols="responsive-2" gap={4}>
+          <Flex direction="col" gap="responsive">
+            <Grid cols="responsive-2" gap="responsive">
               <Card padding="md" className="border-border/50 bg-card/50 hover:bg-card transition-colors">
                 <FieldItem icon={Calendar} label="Ngày tạo tài khoản">
                   <TypographyPLarge className="mt-1">
@@ -367,7 +367,7 @@ export const AccountProfileClient = ({
   ];
 
   return (
-    <Flex direction="col" gap={6}>
+    <Flex direction="col" gap="responsive">
       <Flex align="center" justify="between">
         <div>
           <TypographyH1>

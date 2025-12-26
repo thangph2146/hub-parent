@@ -6,7 +6,7 @@ import { useResourceFormSubmit, useResourceNavigation, useResourceDetailData } f
 import { createResourceEditOnSuccess } from "@/features/admin/resources/utils"
 import { apiRoutes } from "@/lib/api/routes"
 import { queryKeys } from "@/lib/query-keys"
-import { getBaseCategoryFields, type CategoryFormData } from "../form-fields"
+import { getBaseCategoryFields, getCategoryFormSections, type CategoryFormData } from "../form-fields"
 import type { CategoryRow } from "../types"
 
 interface CategoryEditData extends CategoryRow {
@@ -94,6 +94,7 @@ export const CategoryEditClient = ({
     <ResourceForm<CategoryFormData>
       data={category}
       fields={getBaseCategoryFields().map(field => ({ ...field, disabled: formDisabled || field.disabled }))}
+      sections={getCategoryFormSections()}
       onSubmit={handleSubmitWrapper}
       title="Chỉnh sửa danh mục"
       description={isDeleted ? "Bản ghi đã bị xóa, không thể chỉnh sửa" : "Cập nhật thông tin danh mục"}

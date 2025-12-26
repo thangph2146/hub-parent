@@ -487,14 +487,6 @@ export const ResourceForm = <T extends Record<string, unknown>>({
     const sourceValue = field.sourceField
       ? formData[field.sourceField as keyof T]
       : undefined;
-    const fullWidthTypes = [
-      "textarea",
-      "select",
-      "image",
-      "editor",
-      "slug",
-      "permissions-table",
-    ];
     const isCheckbox = field.type === "checkbox";
     const hasError = !!error;
     const fieldInput = renderFieldInput({
@@ -574,7 +566,7 @@ export const ResourceForm = <T extends Record<string, unknown>>({
         <Grid
           cols={gridCols}
           fullWidth
-          gap={6}
+          gap="responsive"
           className="transition-all duration-300"
         >
           {sectionFields.map(renderField)}
@@ -592,7 +584,7 @@ export const ResourceForm = <T extends Record<string, unknown>>({
       onSubmit={handleSubmit}
       className={formClassName}
     >
-      <Flex direction="col" fullWidth gap={6}>
+      <Flex direction="col" fullWidth gap="responsive">
         {submitError && (
           <Flex
             align="center"
@@ -614,12 +606,12 @@ export const ResourceForm = <T extends Record<string, unknown>>({
           </Flex>
         )}
 
-        <Flex direction="col" gap={8} fullWidth className={contentClassName}>
+        <Flex direction="col" gap="responsive" fullWidth className={contentClassName}>
           {Object.entries(grouped).map(([sectionId, sectionFields]) =>
             renderSection(sectionId, sectionFields)
           )}
           {ungrouped.length > 0 && (
-            <Grid cols="responsive-2" fullWidth gap={6}>
+            <Grid cols="responsive-2" fullWidth gap="responsive">
               {ungrouped.map(renderField)}
             </Grid>
           )}
@@ -726,12 +718,11 @@ export const ResourceForm = <T extends Record<string, unknown>>({
       <Flex
         align="center"
         justify="end"
-        gap={3}
+        gap="responsive"
         fullWidth
-        paddingY={4}
-        paddingX={4}
+        paddingY="responsive"
+        paddingX="responsive"
         border="top"
-        direction="col-sm-row"
         className="sticky bottom-0 bg-background/95 backdrop-blur-sm z-10"
       >
         {footerButtons}
