@@ -16,7 +16,7 @@ import { TypographySpanSmall, TypographySpanSmallMuted, IconSize, TypographyPSma
 import { Flex } from "@/components/ui/flex"
 import { logger } from "@/lib/config"
 import { SelectionActionsWrapper } from "@/features/admin/resources/components"
-import { useUploadsStore } from "../store/uploads-store"
+import { useUploadsStore } from "../uploads-store"
 import { useImagesList, useFoldersList } from "../hooks/use-uploads-queries"
 import { useDialogs } from "../hooks/use-dialogs"
 import { useFolderTreeInitialization } from "../hooks/use-folder-tree-initialization"

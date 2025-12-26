@@ -1,4 +1,4 @@
-import { getDashboardStats } from "./server/queries"
+import { getDashboardStats } from "./queries"
 import { DashboardStatsClient } from "./dashboard-stats.client"
 
 export async function DashboardStats() {

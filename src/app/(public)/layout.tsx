@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { PublicHeader } from "@/components/layouts/headers";
-import { PublicFooter } from "@/components/layouts/footers";
+import { PublicFooter } from "@/components/layouts/footer";
 import { appConfig, getOpenGraphConfig, getTwitterConfig } from "@/lib/config";
 
 /**

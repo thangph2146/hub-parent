@@ -7,7 +7,6 @@
  * in server components/API routes.
  */
 
-export { cn } from "./cn"
 export {
   parseJsonSafe,
   extractErrorMessage,
@@ -29,3 +28,4 @@ export {
   type NotificationCountParams,
 } from "./notification-helpers"
 
+export { cn } from "./cn"

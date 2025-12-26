@@ -40,7 +40,7 @@ import {
 import { useClientOnly } from "@/hooks/use-client-only";
 import { usePermissions } from "@/hooks/use-permissions";
 import { PERMISSIONS, isSuperAdmin } from "@/lib/permissions";
-import type { DashboardStatsData } from "./server/queries";
+import type { DashboardStatsData } from "./queries";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 const containerVariants = {
