@@ -3,6 +3,7 @@
 import { useCallback, useState } from "react"
 import { apiClient } from "@/lib/api/axios"
 import { apiRoutes } from "@/lib/api/routes"
+import { getErrorMessage } from "@/lib/utils"
 import type { Group } from "@/components/chat/types"
 import type { FeedbackVariant } from "@/components/dialogs"
 import { GROUP_MESSAGES } from "../constants/messages"
@@ -89,7 +90,7 @@ export const useGroupDialogActions = ({
         }
         onSuccess?.()
       } catch (error: unknown) {
-        const errorMessage = error instanceof Error ? error.message : GROUP_MESSAGES.UNKNOWN_ERROR
+        const errorMessage = getErrorMessage(error) || GROUP_MESSAGES.UNKNOWN_ERROR
         showFeedback("error", actionConfig.errorTitle, actionConfig.errorDescription, errorMessage)
         if (action === "restore") {
           logger.error(`Failed to ${action} group`, error as Error)

@@ -3,7 +3,6 @@
  * Component hiển thị grid của images
  */
 
-import * as React from "react"
 import { ImageItem } from "./image-item"
 import type { ImageItem as ImageItemType } from "../types"
 import { Grid } from "@/components/ui/grid"

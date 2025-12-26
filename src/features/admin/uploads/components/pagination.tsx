@@ -3,12 +3,10 @@
  * Component hiển thị pagination controls
  */
 
-import * as React from "react"
 import { Button } from "@/components/ui/button"
-import { TypographySpanSmallMuted } from "@/components/ui/typography"
+import { TypographySpanSmallMuted, IconSize } from "@/components/ui/typography"
 import { Flex } from "@/components/ui/flex"
 import { ChevronLeft, ChevronRight } from "lucide-react"
-import { IconSize } from "@/components/ui/typography"
 
 interface PaginationProps {
   currentPage: number
@@ -19,18 +17,21 @@ interface PaginationProps {
 export const Pagination = ({ currentPage, totalPages, onPageChange }: PaginationProps) => {
   if (totalPages <= 1) return null
 
+  const handlePrevious = () => onPageChange(Math.max(1, currentPage - 1))
+  const handleNext = () => onPageChange(Math.min(totalPages, currentPage + 1))
+
   return (
-    <Flex 
-      direction="col" 
-      align="center" 
-      justify="center" 
-      gap={3} 
+    <Flex
+      direction="col"
+      align="center"
+      justify="center"
+      gap={3}
       className="sm:flex-row mt-8 pt-6 border-t"
     >
       <Button
         variant="outline"
         size="sm"
-        onClick={() => onPageChange(Math.max(1, currentPage - 1))}
+        onClick={handlePrevious}
         disabled={currentPage === 1}
         className="w-full sm:w-auto"
       >
@@ -45,7 +46,7 @@ export const Pagination = ({ currentPage, totalPages, onPageChange }: Pagination
       <Button
         variant="outline"
         size="sm"
-        onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
+        onClick={handleNext}
         disabled={currentPage === totalPages}
         className="w-full sm:w-auto"
       >

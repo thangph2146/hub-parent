@@ -3,6 +3,7 @@
  */
 
 import type { Message } from "../types"
+import { deduplicateById } from "@/lib/utils"
 
 /**
  * Filter messages by search query
@@ -37,9 +38,7 @@ export function getParentMessage(
  * Deduplicate messages by ID (tránh duplicate key error trong React)
  */
 export function deduplicateMessages(messages: Message[]): Message[] {
-  return messages.filter((msg, index, self) => 
-    index === self.findIndex((m) => m.id === msg.id)
-  )
+  return deduplicateById(messages)
 }
 
 /**

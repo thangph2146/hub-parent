@@ -137,10 +137,34 @@ export const useDeleteFolder = () => {
   return useMutation({
     mutationFn: async (folderPath: string) => {
       logger.info("Deleting folder", { folderPath })
-      await apiClient.delete(apiRoutes.uploads.deleteFolder, {
-        params: { path: folderPath, deleteFolder: true },
-      })
-      return folderPath
+      try {
+        const response = await apiClient.delete<{ success: boolean; message?: string }>(
+          apiRoutes.uploads.deleteFolder,
+          {
+            params: { path: folderPath, deleteFolder: true },
+          }
+        )
+        
+        logger.debug("Delete folder response", { 
+          folderPath, 
+          responseData: response.data,
+          status: response.status 
+        })
+        
+        // Check if response indicates success
+        if (response.data && typeof response.data === 'object' && 'success' in response.data) {
+          if (!response.data.success) {
+            throw new Error(response.data.message || "Không thể xóa thư mục")
+          }
+        } else if (response.status < 200 || response.status >= 300) {
+          throw new Error(`HTTP ${response.status}: Không thể xóa thư mục`)
+        }
+        
+        return folderPath
+      } catch (error) {
+        logger.error("Error in delete folder mutation", { folderPath, error })
+        throw error
+      }
     },
     onSuccess: (folderPath) => {
       logger.success("Folder deleted successfully", { folderPath })
@@ -156,12 +180,14 @@ export const useDeleteFolder = () => {
         setSelectedFolder(null)
       }
 
-      // Invalidate queries
+      // Invalidate và refetch queries - use "all" to ensure all queries are refetched
       queryClient.invalidateQueries({
         queryKey: queryKeys.uploads.folders.list(),
+        refetchType: "all",
       })
       queryClient.invalidateQueries({
         queryKey: queryKeys.uploads.images.all(),
+        refetchType: "all",
       })
     },
     onError: (error: Error) => {
@@ -185,10 +211,34 @@ export const useDeleteImage = () => {
   return useMutation({
     mutationFn: async (relativePath: string) => {
       logger.info("Deleting image", { relativePath })
-      await apiClient.delete(apiRoutes.uploads.delete, {
-        params: { path: relativePath },
-      })
-      return relativePath
+      try {
+        const response = await apiClient.delete<{ success: boolean; message?: string }>(
+          apiRoutes.uploads.delete,
+          {
+            params: { path: relativePath },
+          }
+        )
+        
+        logger.debug("Delete image response", { 
+          relativePath, 
+          responseData: response.data,
+          status: response.status 
+        })
+        
+        // Check if response indicates success
+        if (response.data && typeof response.data === 'object' && 'success' in response.data) {
+          if (!response.data.success) {
+            throw new Error(response.data.message || "Không thể xóa hình ảnh")
+          }
+        } else if (response.status < 200 || response.status >= 300) {
+          throw new Error(`HTTP ${response.status}: Không thể xóa hình ảnh`)
+        }
+        
+        return relativePath
+      } catch (error) {
+        logger.error("Error in delete image mutation", { relativePath, error })
+        throw error
+      }
     },
     onSuccess: (relativePath) => {
       logger.success("Image deleted successfully", { relativePath })
@@ -207,9 +257,10 @@ export const useDeleteImage = () => {
         setSelectedImages(newSet)
       }
 
-      // Invalidate images queries
+      // Invalidate và refetch images queries - use "all" to ensure all queries are refetched
       queryClient.invalidateQueries({
         queryKey: queryKeys.uploads.images.all(),
+        refetchType: "all",
       })
     },
     onError: (error: Error) => {
@@ -235,12 +286,20 @@ export const useBulkDeleteImages = () => {
       logger.info("Bulk deleting images", { count: relativePaths.length })
       
       const deletePromises = relativePaths.map((path) =>
-        apiClient.delete(apiRoutes.uploads.delete, {
-          params: { path },
-        }).catch((error) => {
-          logger.error("Error deleting image in bulk", { path, error })
-          return { error: true, path }
-        })
+        apiClient
+          .delete<{ success: boolean; message?: string }>(apiRoutes.uploads.delete, {
+            params: { path },
+          })
+          .then((response) => {
+            if (!response.data.success) {
+              throw new Error(response.data.message || "Không thể xóa hình ảnh")
+            }
+            return { success: true, path }
+          })
+          .catch((error) => {
+            logger.error("Error deleting image in bulk", { path, error })
+            return { error: true, path }
+          })
       )
 
       const results = await Promise.all(deletePromises)
@@ -268,9 +327,10 @@ export const useBulkDeleteImages = () => {
       // Clear selection
       useUploadsStore.getState().clearSelection()
 
-      // Invalidate images queries
+      // Invalidate và refetch images queries - use "all" to ensure all queries are refetched
       queryClient.invalidateQueries({
         queryKey: queryKeys.uploads.images.all(),
+        refetchType: "all",
       })
     },
     onError: (error: Error) => {

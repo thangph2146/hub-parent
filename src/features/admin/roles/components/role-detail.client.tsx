@@ -1,6 +1,6 @@
 "use client"
 
-import * as React from "react"
+import type React from "react"
 import { useQueryClient } from "@tanstack/react-query"
 import { Shield, FileText, Calendar, Clock, CheckCircle2, XCircle, Edit } from "lucide-react"
 import { 

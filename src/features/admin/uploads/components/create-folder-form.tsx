@@ -6,27 +6,16 @@
 import * as React from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Loader2 } from "lucide-react"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandItem,
-  CommandInput,
-  CommandList,
-} from "@/components/ui/command"
-import { Check, Folder, ChevronsUpDown } from "lucide-react"
-import { cn } from "@/lib/utils"
+import { Field, FieldLabel, FieldDescription, FieldContent, FieldSet, FieldLegend, FieldGroup } from "@/components/ui/field"
 import { useToast } from "@/hooks/use-toast"
 import { useUploadsStore } from "../store/uploads-store"
 import { useCreateFolder } from "../hooks/use-uploads-queries"
-import { FolderTreeSelectItem } from "./folder-tree-select-item"
-import { useFolderTree } from "../hooks/use-folder-tree"
-import { expandFolderTreeLevels } from "../utils/folder-utils"
+import { FolderTreeSelect } from "./folder-tree-select"
+import { SubmitButton } from "./submit-button"
+import { ModeToggleButtons } from "./mode-toggle-buttons"
+import { parseFolderPath, buildFullPath } from "../utils/folder-validation"
+import { showValidationError, validateTreeMode, validateStringMode } from "../utils/validation-helpers"
 import { getTodayDatePath } from "../utils/date-utils"
-import { TypographyPSmallMuted, IconSize } from "@/components/ui/typography"
 import type { FolderItem } from "../types"
 import { Flex } from "@/components/ui/flex"
 
@@ -63,62 +52,35 @@ export const CreateFolderForm = ({ availableFolders, isLoadingFolders }: CreateF
     resetCreateFolderForm,
   } = useUploadsStore()
 
-  const folderTreeForSelect = useFolderTree(availableFolders)
-
-  const handleCreateFolder = React.useCallback(async () => {
+  const handleCreateFolder = React.useCallback(() => {
     let folderName = ""
     let parentPath: string | null = null
 
     if (folderInputMode === "tree") {
-      if (!newFolderName.trim()) {
-        toast({
-          title: "Lỗi",
-          description: "Vui lòng nhập tên thư mục",
-          variant: "destructive",
-        })
+      const validation = validateTreeMode(newFolderName)
+      if (!validation.isValid) {
+        showValidationError(toast, validation.error!)
         return
       }
-      folderName = newFolderName.trim()
+      folderName = validation.folderName
       parentPath = parentFolderForCreate
     } else {
-      if (!folderPathString.trim() && !rootFolderForString) {
-        toast({
-          title: "Lỗi",
-          description: "Vui lòng chọn thư mục gốc hoặc nhập đường dẫn",
-          variant: "destructive",
-        })
+      const validation = validateStringMode(folderPathString, rootFolderForString)
+      if (!validation.isValid) {
+        showValidationError(toast, validation.error!)
         return
       }
 
-      let fullPath = ""
-      if (rootFolderForString && folderPathString.trim()) {
-        fullPath = `${rootFolderForString}/${folderPathString.trim()}`
-      } else if (rootFolderForString) {
-        toast({
-          title: "Lỗi",
-          description: "Vui lòng nhập tên thư mục hoặc đường dẫn con",
-          variant: "destructive",
-        })
+      const fullPath = buildFullPath(rootFolderForString, folderPathString)
+      const parsed = parseFolderPath(fullPath)
+      
+      if (!parsed) {
+        showValidationError(toast, "Đường dẫn thư mục không hợp lệ")
         return
-      } else {
-        fullPath = folderPathString.trim()
       }
 
-      if (fullPath) {
-        const pathParts = fullPath.split("/").filter(Boolean)
-        if (pathParts.length === 0) {
-          toast({
-            title: "Lỗi",
-            description: "Đường dẫn thư mục không hợp lệ",
-            variant: "destructive",
-          })
-          return
-        }
-        folderName = pathParts[pathParts.length - 1]
-        if (pathParts.length > 1) {
-          parentPath = pathParts.slice(0, -1).join("/")
-        }
-      }
+      folderName = parsed.folderName
+      parentPath = parsed.parentPath
     }
 
     createFolderMutation.mutate(
@@ -140,45 +102,40 @@ export const CreateFolderForm = ({ availableFolders, isLoadingFolders }: CreateF
     resetCreateFolderForm,
   ])
 
-  const handleToggleForm = React.useCallback(() => {
-    setShowCreateFolderForm(!showCreateFolderForm)
-    if (!showCreateFolderForm) {
+  const handleToggleForm = () => {
+    if (showCreateFolderForm) {
       resetCreateFolderForm()
     }
-  }, [showCreateFolderForm, setShowCreateFolderForm, resetCreateFolderForm])
+    setShowCreateFolderForm(!showCreateFolderForm)
+  }
 
-  const handlePopoverOpenChange = React.useCallback(
-    (open: boolean) => {
-      setFolderTreeSelectOpen(open)
-      if (open && openFolderPaths.size === 0) {
-        const initialOpenPaths = expandFolderTreeLevels(folderTreeForSelect, 2)
-        setOpenFolderPaths(initialOpenPaths)
-      }
-    },
-    [folderTreeForSelect, openFolderPaths.size, setFolderTreeSelectOpen, setOpenFolderPaths]
-  )
+  const handleTreeSelectChange = (path: string | null) => {
+    setParentFolderForCreate(path)
+    setFolderTreeSelectOpen(false)
+  }
 
-  const handleStringPopoverOpenChange = React.useCallback(
-    (open: boolean) => {
-      setFolderTreeSelectOpenString(open)
-      if (open && openFolderPathsString.size === 0) {
-        const initialOpenPaths = expandFolderTreeLevels(folderTreeForSelect, 2)
-        setOpenFolderPathsString(initialOpenPaths)
-      }
-    },
-    [
-      folderTreeForSelect,
-      openFolderPathsString.size,
-      setFolderTreeSelectOpenString,
-      setOpenFolderPathsString,
-    ]
-  )
+  const handleStringSelectChange = (path: string | null) => {
+    setRootFolderForString(path)
+    setFolderTreeSelectOpenString(false)
+  }
+
+  const handleAddTodayPath = () => {
+    const todayPath = getTodayDatePath()
+    const newPath = folderPathString.trim() ? `${folderPathString.trim()}/${todayPath}` : todayPath
+    setFolderPathString(newPath)
+  }
+
+  const handleEnterKey = (e: React.KeyboardEvent, canSubmit: boolean) => {
+    if (e.key === "Enter" && !createFolderMutation.isPending && canSubmit) {
+      handleCreateFolder()
+    }
+  }
 
   if (!showCreateFolderForm) {
     return (
       <Flex direction="col" gap={2} className="border-b pb-4">
         <Flex direction="col" align="start" justify="between" gap={2} className="sm:flex-row sm:items-center">
-          <Label>Tạo thư mục mới</Label>
+          <FieldLabel>Tạo thư mục mới</FieldLabel>
           <Button type="button" variant="default" size="sm" onClick={handleToggleForm} className="w-full sm:w-auto">
             Tạo thư mục
           </Button>
@@ -188,232 +145,114 @@ export const CreateFolderForm = ({ availableFolders, isLoadingFolders }: CreateF
   }
 
   return (
-      <Flex direction="col" gap={4} className="border-b pb-4">
-        <Flex direction="col" align="start" justify="between" gap={2} className="sm:flex-row sm:items-center">
-          <Label className="text-base font-semibold">Tạo thư mục mới</Label>
+      <FieldSet className="group/field-set">
+        <Flex direction="col" align="start" justify="between" gap={2} className="sm:flex-row sm:items-center mb-4">
+          <FieldLegend variant="legend">Tạo thư mục mới</FieldLegend>
           <Button type="button" variant="outline" size="sm" onClick={handleToggleForm} className="w-full sm:w-auto">
             Hủy
           </Button>
         </Flex>
-      <Flex direction="col" gap={4} className="p-4 bg-muted/50 rounded-lg border border-border/50">
-        {/* Mode Selection */}
-        <Flex direction="col" gap={2}>
-          <Label className="font-medium">Chế độ nhập</Label>
-          <Flex direction="col" align="stretch" gap={2} className="sm:flex-row sm:items-center">
-            <Button
-              type="button"
-              variant={folderInputMode === "tree" ? "default" : "outline"}
-              size="sm"
-              onClick={() => {
-                setFolderInputMode("tree")
-                setFolderPathString("")
-              }}
-              className="flex-1 sm:flex-initial"
-            >
-              Tree (chọn từ danh sách)
-            </Button>
-            <Button
-              type="button"
-              variant={folderInputMode === "string" ? "default" : "outline"}
-              size="sm"
-              onClick={() => {
-                setFolderInputMode("string")
+        <FieldGroup>
+        <Field>
+          <FieldLabel>Chế độ nhập</FieldLabel>
+          <FieldContent>
+            <ModeToggleButtons
+              mode={folderInputMode}
+              onModeChange={setFolderInputMode}
+              onTreeModeSelect={() => setFolderPathString("")}
+              onStringModeSelect={() => {
                 setParentFolderForCreate(null)
                 setNewFolderName("")
               }}
-              className="flex-1 sm:flex-initial"
-            >
-              String (nhập đường dẫn)
-            </Button>
-          </Flex>
-        </Flex>
+            />
+          </FieldContent>
+        </Field>
 
         {folderInputMode === "tree" && (
           <>
-            <Flex direction="col" gap={2}>
-              <Label htmlFor="parent-folder-select">Thư mục cha (tùy chọn)</Label>
-              <Popover open={folderTreeSelectOpen} onOpenChange={handlePopoverOpenChange}>
-                <PopoverTrigger asChild>
-                  <Button
-                    id="parent-folder-select"
-                    variant="outline"
-                    role="combobox"
-                    aria-expanded={folderTreeSelectOpen}
-                    className="w-full justify-between"
-                    disabled={isLoadingFolders || createFolderMutation.isPending}
-                  >
-                    {parentFolderForCreate
-                      ? availableFolders.find((f) => f.path === parentFolderForCreate)?.path ||
-                        parentFolderForCreate
-                      : "Root (tạo ở thư mục gốc)"}
-                    <IconSize size="sm" className="ml-2 shrink-0 opacity-50">
-                      <ChevronsUpDown />
-                    </IconSize>
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent 
-                  className="p-0 w-[var(--radix-popover-trigger-width)]" 
-                  align="start"
-                >
-                  <Command>
-                    <CommandList>
-                      <CommandEmpty>Không tìm thấy thư mục.</CommandEmpty>
-                      <CommandGroup>
-                        <CommandItem
-                          value="__root__"
-                          onSelect={() => {
-                            setParentFolderForCreate(null)
-                            setFolderTreeSelectOpen(false)
-                          }}
-                        >
-                          <IconSize size="sm" className={cn("mr-2", !parentFolderForCreate ? "opacity-100" : "opacity-0")}>
-                            <Check />
-                          </IconSize>
-                          <IconSize size="sm" className="mr-2 hover:text-foreground">
-                            <Folder />
-                          </IconSize>
-                          Root (tạo ở thư mục gốc)
-                        </CommandItem>
-                        {folderTreeForSelect.map((node) => (
-                          <FolderTreeSelectItem
-                            key={node.path}
-                            node={node}
-                            selectedValue={parentFolderForCreate}
-                            onSelect={(path) => setParentFolderForCreate(path)}
-                            openPaths={openFolderPaths}
-                            setOpenPaths={setOpenFolderPaths}
-                            onClose={() => setFolderTreeSelectOpen(false)}
-                          />
-                        ))}
-                      </CommandGroup>
-                    </CommandList>
-                  </Command>
-                </PopoverContent>
-              </Popover>
-              <TypographyPSmallMuted>
-                {parentFolderForCreate
-                  ? `Thư mục mới sẽ được tạo trong: ${parentFolderForCreate}/`
-                  : "Thư mục mới sẽ được tạo ở thư mục gốc"}
-              </TypographyPSmallMuted>
-            </Flex>
-            <Flex direction="col" gap={2}>
-              <Label htmlFor="new-folder-name">Tên thư mục</Label>
-              <Flex direction="col" align="stretch" gap={2} className="sm:flex-row sm:items-center">
+            <Field>
+              <FieldLabel htmlFor="parent-folder-select">Thư mục cha (tùy chọn)</FieldLabel>
+              <FieldContent>
+                <FolderTreeSelect
+                  availableFolders={availableFolders}
+                  selectedValue={parentFolderForCreate}
+                  openPaths={openFolderPaths}
+                  isOpen={folderTreeSelectOpen}
+                  isLoading={isLoadingFolders}
+                  disabled={createFolderMutation.isPending}
+                  placeholder="Root (tạo ở thư mục gốc)"
+                  rootLabel="Root (tạo ở thư mục gốc)"
+                  onSelect={handleTreeSelectChange}
+                  onOpenChange={setFolderTreeSelectOpen}
+                  setOpenPaths={setOpenFolderPaths}
+                  onClose={() => setFolderTreeSelectOpen(false)}
+                />
+                <FieldDescription>
+                  {parentFolderForCreate
+                    ? `Thư mục mới sẽ được tạo trong: ${parentFolderForCreate}/`
+                    : "Thư mục mới sẽ được tạo ở thư mục gốc"}
+                </FieldDescription>
+              </FieldContent>
+            </Field>
+            <Field>
+              <FieldLabel htmlFor="new-folder-name">Tên thư mục</FieldLabel>
+              <FieldContent>
+                <Flex direction="col" align="stretch" gap={2} className="sm:flex-row sm:items-center">
                 <Input
                   id="new-folder-name"
                   placeholder="Nhập tên thư mục (ví dụ: products, events)"
                   value={newFolderName}
                   onChange={(e) => setNewFolderName(e.target.value)}
                   disabled={createFolderMutation.isPending}
-                  onKeyDown={(e) => {
-                    if (
-                      e.key === "Enter" &&
-                      !createFolderMutation.isPending &&
-                      newFolderName.trim()
-                    ) {
-                      handleCreateFolder()
-                    }
-                  }}
+                  onKeyDown={(e) => handleEnterKey(e, !!newFolderName.trim())}
                   className="flex-1"
                 />
-                <Button
-                  type="button"
+                <SubmitButton
+                  isLoading={createFolderMutation.isPending}
+                  disabled={!newFolderName.trim()}
                   onClick={handleCreateFolder}
-                  disabled={!newFolderName.trim() || createFolderMutation.isPending}
+                  loadingText="Đang tạo..."
                   className="w-full sm:w-auto"
                 >
-                  {createFolderMutation.isPending ? (
-                    <>
-                      <IconSize size="sm" className="mr-2">
-                        <Loader2 className="animate-spin" />
-                      </IconSize>
-                      <span className="hidden sm:inline">Đang tạo...</span>
-                      <span className="sm:hidden">Đang tạo</span>
-                    </>
-                  ) : (
-                    "Tạo"
-                  )}
-                </Button>
+                  Tạo
+                </SubmitButton>
               </Flex>
-            </Flex>
+              </FieldContent>
+            </Field>
           </>
         )}
 
         {folderInputMode === "string" && (
-          <Flex direction="col" gap={2}>
-            <Flex direction="col" gap={2}>
-              <Label htmlFor="root-folder-string">Chọn thư mục (tùy chọn)</Label>
-              <Popover
-                open={folderTreeSelectOpenString}
-                onOpenChange={handleStringPopoverOpenChange}
-              >
-                <PopoverTrigger asChild>
-                  <Button
-                    id="root-folder-string"
-                    variant="outline"
-                    role="combobox"
-                    aria-expanded={folderTreeSelectOpenString}
-                    className="w-full justify-between"
-                    disabled={isLoadingFolders || createFolderMutation.isPending}
-                  >
-                    {rootFolderForString
-                      ? availableFolders.find((f) => f.path === rootFolderForString)?.path ||
-                        rootFolderForString
-                      : "Chọn thư mục (để trống để tạo ở root)"}
-                    <IconSize size="sm" className="ml-2 shrink-0 opacity-50">
-                      <ChevronsUpDown />
-                    </IconSize>
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent 
-                  className="p-0 w-[var(--radix-popover-trigger-width)]" 
-                  align="start"
-                >
-                  <Command>
-                    <CommandInput placeholder="Tìm kiếm thư mục..." />
-                    <CommandList>
-                      <CommandEmpty>Không tìm thấy thư mục.</CommandEmpty>
-                      <CommandGroup>
-                        <CommandItem
-                          value="__root__"
-                          onSelect={() => {
-                            setRootFolderForString(null)
-                            setFolderTreeSelectOpenString(false)
-                          }}
-                        >
-                          <IconSize size="sm" className={cn("mr-2", !rootFolderForString ? "opacity-100" : "opacity-0")}>
-                            <Check />
-                          </IconSize>
-                          <IconSize size="sm" className="mr-2 hover:text-foreground">
-                            <Folder />
-                          </IconSize>
-                          Root (tạo ở thư mục gốc)
-                        </CommandItem>
-                        {folderTreeForSelect.map((node) => (
-                          <FolderTreeSelectItem
-                            key={node.path}
-                            node={node}
-                            selectedValue={rootFolderForString}
-                            onSelect={(path) => setRootFolderForString(path)}
-                            openPaths={openFolderPathsString}
-                            setOpenPaths={setOpenFolderPathsString}
-                            onClose={() => setFolderTreeSelectOpenString(false)}
-                          />
-                        ))}
-                      </CommandGroup>
-                    </CommandList>
-                  </Command>
-                </PopoverContent>
-              </Popover>
-              <TypographyPSmallMuted>
-                {rootFolderForString
-                  ? `Thư mục sẽ được tạo trong: ${rootFolderForString}/`
-                  : "Thư mục sẽ được tạo ở thư mục gốc. Chọn bất kỳ folder nào để tạo folder con bên trong."}
-              </TypographyPSmallMuted>
-            </Flex>
-            <Flex direction="col" gap={2}>
-              <Label htmlFor="folder-path-string">Đường dẫn thư mục</Label>
-              <Flex direction="col" gap={2}>
+          <>
+            <Field>
+              <FieldLabel htmlFor="root-folder-string">Chọn thư mục (tùy chọn)</FieldLabel>
+              <FieldContent>
+                <FolderTreeSelect
+                  availableFolders={availableFolders}
+                  selectedValue={rootFolderForString}
+                  openPaths={openFolderPathsString}
+                  isOpen={folderTreeSelectOpenString}
+                  isLoading={isLoadingFolders}
+                  disabled={createFolderMutation.isPending}
+                  placeholder="Chọn thư mục (để trống để tạo ở root)"
+                  rootLabel="Root (tạo ở thư mục gốc)"
+                  showSearch
+                  onSelect={handleStringSelectChange}
+                  onOpenChange={setFolderTreeSelectOpenString}
+                  setOpenPaths={setOpenFolderPathsString}
+                  onClose={() => setFolderTreeSelectOpenString(false)}
+                />
+                <FieldDescription>
+                  {rootFolderForString
+                    ? `Thư mục sẽ được tạo trong: ${rootFolderForString}/`
+                    : "Thư mục sẽ được tạo ở thư mục gốc. Chọn bất kỳ folder nào để tạo folder con bên trong."}
+                </FieldDescription>
+              </FieldContent>
+            </Field>
+            <Field>
+              <FieldLabel htmlFor="folder-path-string">Đường dẫn thư mục</FieldLabel>
+              <FieldContent>
+                <Flex direction="col" gap={2}>
                 <Flex direction="col" align="stretch" gap={2} className="sm:flex-row sm:items-center">
                   <Input
                     id="folder-path-string"
@@ -425,29 +264,14 @@ export const CreateFolderForm = ({ availableFolders, isLoadingFolders }: CreateF
                     value={folderPathString}
                     onChange={(e) => setFolderPathString(e.target.value)}
                     disabled={createFolderMutation.isPending}
-                    onKeyDown={(e) => {
-                      if (
-                        e.key === "Enter" &&
-                        !createFolderMutation.isPending &&
-                        (folderPathString.trim() || rootFolderForString)
-                      ) {
-                        handleCreateFolder()
-                      }
-                    }}
+                    onKeyDown={(e) => handleEnterKey(e, !!(folderPathString.trim() || rootFolderForString))}
                     className="flex-1"
                   />
                   <Button
                     type="button"
                     variant="outline"
                     size="sm"
-                    onClick={() => {
-                      const todayPath = getTodayDatePath()
-                      if (folderPathString.trim()) {
-                        setFolderPathString(`${folderPathString.trim()}/${todayPath}`)
-                      } else {
-                        setFolderPathString(todayPath)
-                      }
-                    }}
+                    onClick={handleAddTodayPath}
                     disabled={createFolderMutation.isPending}
                     title="Thêm ngày hôm nay (YYYY/MM/DD)"
                     className="w-full sm:w-auto shrink-0"
@@ -455,37 +279,27 @@ export const CreateFolderForm = ({ availableFolders, isLoadingFolders }: CreateF
                     Hôm nay
                   </Button>
                 </Flex>
-                <TypographyPSmallMuted>
+                <FieldDescription>
                   {rootFolderForString
                     ? `Nhập đường dẫn con. Ví dụ: 2025/12/04 sẽ tạo ${rootFolderForString}/2025/12/04`
                     : "Nhập đường dẫn đầy đủ. Ví dụ: products/2025/12/04 sẽ tạo folder 04 trong products/2025/12/"}
-                </TypographyPSmallMuted>
-                <Button
-                  type="button"
+                </FieldDescription>
+                <SubmitButton
+                  isLoading={createFolderMutation.isPending}
+                  disabled={!folderPathString.trim() && !rootFolderForString}
                   onClick={handleCreateFolder}
-                  disabled={
-                    (!folderPathString.trim() && !rootFolderForString) ||
-                    createFolderMutation.isPending
-                  }
+                  loadingText="Đang tạo..."
                   className="w-full"
                 >
-                  {createFolderMutation.isPending ? (
-                    <>
-                      <IconSize size="sm" className="mr-2">
-                        <Loader2 className="animate-spin" />
-                      </IconSize>
-                      Đang tạo...
-                    </>
-                  ) : (
-                    "Tạo"
-                  )}
-                </Button>
+                  Tạo
+                </SubmitButton>
               </Flex>
-            </Flex>
-          </Flex>
+              </FieldContent>
+            </Field>
+          </>
         )}
-      </Flex>
-    </Flex>
+        </FieldGroup>
+      </FieldSet>
   )
 }
 

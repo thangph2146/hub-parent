@@ -17,6 +17,8 @@ export {
 } from "./api-utils"
 export { getRouteFromFeature } from "./route-helpers"
 export { generateSlug } from "./generate-slug"
+export { deduplicateBy, deduplicateById, getDuplicateIds, arraysEqual } from "./array-helpers"
+export { invalidateAndRefetchQueries, invalidateAndRefetchMultipleQueries } from "./query-helpers"
 
 /**
  * Build query string from params

@@ -3,13 +3,13 @@
  * Component chứa tất cả các confirmation dialogs cho delete operations
  */
 
-import * as React from "react"
 import { ConfirmDialog } from "@/components/dialogs/confirm-dialog"
 import type {
   BulkDeleteConfirmState,
   SingleDeleteConfirmState,
   FolderDeleteConfirmState,
 } from "../hooks/use-dialogs"
+import type { ImageItem } from "../types"
 
 interface DeleteDialogsProps {
   bulkDeleteConfirm: BulkDeleteConfirmState | null
@@ -19,11 +19,15 @@ interface DeleteDialogsProps {
   isSingleDeleting: (fileName: string) => boolean
   isFolderDeleting: (folderPath: string) => boolean
   onBulkDeleteConfirm: () => void
-  onSingleDeleteConfirm: () => void
-  onFolderDeleteConfirm: () => void
+  onSingleDeleteConfirm: (image: ImageItem) => void
+  onFolderDeleteConfirm: (folderPath: string) => void
   onCloseBulkDelete: () => void
   onCloseSingleDelete: () => void
   onCloseFolderDelete: () => void
+}
+
+const createCloseHandler = (onClose: () => void) => (open: boolean) => {
+  if (!open) onClose()
 }
 
 export const DeleteDialogs = ({
@@ -40,15 +44,18 @@ export const DeleteDialogs = ({
   onCloseSingleDelete,
   onCloseFolderDelete,
 }: DeleteDialogsProps) => {
+  console.log("DeleteDialogs render", {
+    bulkDeleteConfirm,
+    hasBulkDeleteConfirm: !!bulkDeleteConfirm,
+    bulkDeleteConfirmOpen: bulkDeleteConfirm?.open,
+  })
+  
   return (
     <>
-      {/* Bulk Delete Confirmation Dialog */}
       {bulkDeleteConfirm && (
         <ConfirmDialog
           open={bulkDeleteConfirm.open}
-          onOpenChange={(open) => {
-            if (!open) onCloseBulkDelete()
-          }}
+          onOpenChange={createCloseHandler(onCloseBulkDelete)}
           title="Xác nhận xóa nhiều hình ảnh"
           description={`Bạn có chắc chắn muốn xóa ${bulkDeleteConfirm.count} hình ảnh đã chọn? Hành động này không thể hoàn tác.`}
           variant="destructive"
@@ -59,36 +66,30 @@ export const DeleteDialogs = ({
         />
       )}
 
-      {/* Single Delete Confirmation Dialog */}
-      {singleDeleteConfirm && singleDeleteConfirm.image && (
+      {singleDeleteConfirm?.image && (
         <ConfirmDialog
           open={singleDeleteConfirm.open}
-          onOpenChange={(open) => {
-            if (!open) onCloseSingleDelete()
-          }}
+          onOpenChange={createCloseHandler(onCloseSingleDelete)}
           title="Xác nhận xóa hình ảnh"
           description={`Bạn có chắc chắn muốn xóa hình ảnh "${singleDeleteConfirm.image.originalName}"? Hành động này không thể hoàn tác.`}
           variant="destructive"
           confirmLabel="Xóa"
           cancelLabel="Hủy"
-          onConfirm={onSingleDeleteConfirm}
+          onConfirm={() => onSingleDeleteConfirm(singleDeleteConfirm.image!)}
           isLoading={isSingleDeleting(singleDeleteConfirm.image.fileName)}
         />
       )}
 
-      {/* Folder Delete Confirmation Dialog */}
       {folderDeleteConfirm && (
         <ConfirmDialog
           open={folderDeleteConfirm.open}
-          onOpenChange={(open) => {
-            if (!open) onCloseFolderDelete()
-          }}
+          onOpenChange={createCloseHandler(onCloseFolderDelete)}
           title="Xác nhận xóa thư mục"
           description={`Bạn có chắc chắn muốn xóa thư mục "${folderDeleteConfirm.folderPath}"? Tất cả hình ảnh và thư mục con bên trong sẽ bị xóa vĩnh viễn. Hành động này không thể hoàn tác.`}
           variant="destructive"
           confirmLabel="Xóa"
           cancelLabel="Hủy"
-          onConfirm={onFolderDeleteConfirm}
+          onConfirm={() => onFolderDeleteConfirm(folderDeleteConfirm.folderPath)}
           isLoading={isFolderDeleting(folderDeleteConfirm.folderPath)}
         />
       )}

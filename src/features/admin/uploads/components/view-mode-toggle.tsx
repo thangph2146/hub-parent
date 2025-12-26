@@ -14,13 +14,16 @@ interface ViewModeToggleProps {
 }
 
 export const ViewModeToggle = ({ viewMode, onViewModeChange }: ViewModeToggleProps) => {
+  const handleTreeMode = () => onViewModeChange("tree")
+  const handleFlatMode = () => onViewModeChange("flat")
+
   return (
     <Flex align="center" gap={1.5} className="w-full sm:w-auto">
       <Button
         type="button"
         variant={viewMode === "tree" ? "default" : "outline"}
         size="sm"
-        onClick={() => onViewModeChange("tree")}
+        onClick={handleTreeMode}
         className="flex-1 sm:flex-initial px-3 gap-1.5 h-9"
       >
         <IconSize size="sm">
@@ -32,7 +35,7 @@ export const ViewModeToggle = ({ viewMode, onViewModeChange }: ViewModeTogglePro
         type="button"
         variant={viewMode === "flat" ? "default" : "outline"}
         size="sm"
-        onClick={() => onViewModeChange("flat")}
+        onClick={handleFlatMode}
         className="flex-1 sm:flex-initial px-3 gap-1.5 h-9"
       >
         <IconSize size="sm">

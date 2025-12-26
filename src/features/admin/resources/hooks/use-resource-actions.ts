@@ -5,6 +5,7 @@ import { createAdminMutationOptions } from "../config"
 import { useResourceBulkProcessing } from "./use-resource-bulk-processing"
 import { resourceLogger } from "@/lib/config/resource-logger"
 import { invalidateAndRefreshResource } from "../utils"
+import { getErrorMessage, invalidateAndRefetchQueries } from "@/lib/utils"
 import type { ResourceRefreshHandler } from "../types"
 import type { FeedbackVariant } from "@/components/dialogs"
 import type { QueryKey } from "@tanstack/react-query"
@@ -136,7 +137,7 @@ export const useResourceActions = <T extends { id: string }>(
       },
       onError: (error, variables) => {
         const actionType = getActionType(variables.action, false)
-        const errorMessage = error instanceof Error ? error.message : config.messages.UNKNOWN_ERROR
+        const errorMessage = getErrorMessage(error) || config.messages.UNKNOWN_ERROR
         
         resourceLogger.actionFlow({
           resource: config.resourceName,
@@ -174,17 +175,11 @@ export const useResourceActions = <T extends { id: string }>(
         
         // Invalidate detail queries cho tất cả affected IDs (nếu có)
         // Điều này đảm bảo detail pages cũng được cập nhật
-        if (config.queryKeys.detail) {
-          for (const id of variables.ids) {
-            await queryClient.invalidateQueries({
-              queryKey: config.queryKeys.detail(id),
-              refetchType: "all"
-            })
-            await queryClient.refetchQueries({
-              queryKey: config.queryKeys.detail(id),
-              type: "all"
-            })
-          }
+        const detailKey = config.queryKeys.detail
+        if (detailKey) {
+          await Promise.all(
+            variables.ids.map((id) => invalidateAndRefetchQueries(queryClient, detailKey(id)))
+          )
         }
         
         const actionType = getActionType(variables.action, true)
