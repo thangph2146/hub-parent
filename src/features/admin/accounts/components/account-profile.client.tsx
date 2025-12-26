@@ -292,7 +292,7 @@ export const AccountProfileClient = ({
                   </TypographyP>
                   {accountData.emailVerified && (
                     <Badge
-                      className="bg-green-500/15 hover:bg-green-500/25 text-green-700 dark:text-green-400 border-green-500/30 px-3 py-1"
+                      className="w-fit bg-green-500/15 hover:bg-green-500/25 text-green-700 dark:text-green-400 border-green-500/30 px-3 py-1"
                       variant="outline"
                     >
                       <IconSize size="xs" className="mr-1.5">
@@ -303,7 +303,7 @@ export const AccountProfileClient = ({
                   )}
                   {!accountData.emailVerified && (
                     <Badge
-                      className="bg-yellow-500/15 hover:bg-yellow-500/25 text-yellow-700 dark:text-yellow-400 border-yellow-500/30 px-3 py-1"
+                      className="w-fit bg-yellow-500/15 hover:bg-yellow-500/25 text-yellow-700 dark:text-yellow-400 border-yellow-500/30 px-3 py-1"
                       variant="outline"
                     >
                       <TypographySpanSmall>Chưa xác thực</TypographySpanSmall>

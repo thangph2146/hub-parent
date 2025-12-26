@@ -6,9 +6,10 @@
  */
 
 import { Skeleton } from "@/components/ui/skeleton"
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Flex } from "@/components/ui/flex"
 import { Grid } from "@/components/ui/grid"
+import { FieldSet, FieldLegend } from "@/components/ui/field"
+import { cn } from "@/lib/utils"
 
 export interface ResourceDetailSkeletonProps {
   showHeader?: boolean
@@ -37,28 +38,32 @@ export function ResourceDetailSkeleton({
         </Flex>
       )}
 
-      <Grid cols={sectionCount === 1 ? "2-lg" : 1} fullWidth gap={6}>
+      <Flex direction="col" gap={6} fullWidth>
         {Array.from({ length: sectionCount }).map((_, sectionIndex) => (
-          <Card key={sectionIndex}>
-            <CardHeader className="pb-3">
-              <Flex direction="col" gap={2} fullWidth>
-                <Skeleton className="h-6 w-48" />
-                <Skeleton className="h-4 w-64" />
-              </Flex>
-            </CardHeader>
-            <CardContent className="pt-0 pb-4">
-              <Flex direction="col" gap={4} fullWidth>
-                {Array.from({ length: Math.max(2, fieldCount) }).map((_, fieldIndex) => (
-                  <Flex key={fieldIndex} direction="col" gap={2} fullWidth paddingY={2.5} className={fieldIndex < Math.max(2, fieldCount) - 1 ? "border-b border-border/50" : ""}>
-                    <Skeleton className="h-4 w-32" />
-                    <Skeleton className="h-5 w-full" />
-                  </Flex>
-                ))}
-              </Flex>
-            </CardContent>
-          </Card>
+          <FieldSet 
+            key={sectionIndex}
+            className={cn(
+              "group/field-set",
+              "transition-all duration-300"
+            )}
+          >
+            <FieldLegend variant="legend">
+              <Skeleton className="h-5 w-48 inline-block" />
+            </FieldLegend>
+            <div className="mx-0 mb-3 px-2 border-b-0 w-auto text-xs sm:text-sm md:text-base font-normal text-muted-foreground">
+              <Skeleton className="h-4 w-64 inline-block" />
+            </div>
+            <Grid cols={fieldCount > 2 ? "2-lg" : 1} fullWidth gap={6}>
+              {Array.from({ length: Math.max(2, fieldCount) }).map((_, fieldIndex) => (
+                <Flex key={fieldIndex} direction="col" gap={2} fullWidth paddingY={2.5}>
+                  <Skeleton className="h-4 w-32" />
+                  <Skeleton className="h-5 w-full" />
+                </Flex>
+              ))}
+            </Grid>
+          </FieldSet>
         ))}
-      </Grid>
+      </Flex>
     </Flex>
   )
 }

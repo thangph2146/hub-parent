@@ -42,7 +42,7 @@ export interface ResourceFormField<T = unknown> {
   name: keyof T | string
   label: string
   description?: string
-  type?: "text" | "email" | "password" | "number" | "textarea" | "select" | "multiple-select" | "checkbox" | "switch" | "date" | "image" | "editor" | "slug"
+  type?: "text" | "email" | "password" | "number" | "textarea" | "select" | "multiple-select" | "permissions-table" | "checkbox" | "switch" | "date" | "image" | "editor" | "slug"
   sourceField?: string
   placeholder?: string
   required?: boolean
@@ -437,7 +437,7 @@ export const ResourceForm = <T extends Record<string, unknown>>({
     const value = formData[field.name as keyof T]
     const error = errors[fieldName]
     const sourceValue = field.sourceField ? formData[field.sourceField as keyof T] : undefined
-    const fullWidthTypes = ["textarea", "select", "image", "editor", "slug"]
+    const fullWidthTypes = ["textarea", "select", "image", "editor", "slug", "permissions-table"]
     const isFullWidth = fullWidthTypes.includes(field.type || "") || !!field.render
     const isEditorField = field.type === "editor"
     const isCheckbox = field.type === "checkbox"

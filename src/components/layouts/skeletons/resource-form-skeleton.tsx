@@ -9,6 +9,8 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Flex } from "@/components/ui/flex"
 import { Grid } from "@/components/ui/grid"
+import { FieldSet, FieldLegend } from "@/components/ui/field"
+import { cn } from "@/lib/utils"
 import {
   Dialog,
   DialogContent,
@@ -27,6 +29,7 @@ export interface ResourceFormSkeletonProps {
   fieldCount?: number
   title?: boolean
   showCard?: boolean
+  sectionCount?: number
 }
 
 export function ResourceFormSkeleton({
@@ -34,8 +37,38 @@ export function ResourceFormSkeleton({
   fieldCount = 6,
   title = true,
   showCard = true,
+  sectionCount = 1,
 }: ResourceFormSkeletonProps) {
-  const formFields = (
+  const fieldsPerSection = Math.ceil(fieldCount / sectionCount)
+  
+  const formFields = sectionCount > 1 ? (
+    <Flex direction="col" gap={6} fullWidth>
+      {Array.from({ length: sectionCount }).map((_, sectionIndex) => (
+        <FieldSet 
+          key={sectionIndex}
+          className={cn(
+            "group/field-set",
+            "transition-all duration-300"
+          )}
+        >
+          <FieldLegend variant="legend">
+            <Skeleton className="h-5 w-48 inline-block" />
+          </FieldLegend>
+          <div className="mx-0 mb-3 px-2 border-b-0 w-auto text-xs sm:text-sm md:text-base font-normal text-muted-foreground">
+            <Skeleton className="h-4 w-64 inline-block" />
+          </div>
+          <Grid cols="2-lg" fullWidth gap={6}>
+            {Array.from({ length: fieldsPerSection }).map((_, fieldIndex) => (
+              <Flex key={fieldIndex} direction="col" gap={2} fullWidth>
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-10 w-full" />
+              </Flex>
+            ))}
+          </Grid>
+        </FieldSet>
+      ))}
+    </Flex>
+  ) : (
     <Grid cols="2-lg" fullWidth gap={6}>
       {Array.from({ length: fieldCount }).map((_, index) => (
         <Flex key={index} direction="col" gap={2} fullWidth>

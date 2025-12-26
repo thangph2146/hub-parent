@@ -121,19 +121,6 @@ export const getBaseRoleFields = (
       className: "col-span-full",
     },
     {
-      name: "permissions",
-      label: "Quyền",
-      type: "multiple-select",
-      required: false,
-      placeholder: "Chọn quyền",
-      ...(permissionsOptionGroups
-        ? { optionGroups: permissionsOptionGroups }
-        : { options: flatPermissionsOptions }),
-      description: "Chọn các quyền cho vai trò này",
-      icon: React.createElement(Shield, { className: "h-4 w-4" }),
-      section: "permissions",
-    },
-    {
       name: "isActive",
       label: "Trạng thái",
       description: "Bật/tắt để kích hoạt hoặc vô hiệu hóa vai trò",
@@ -141,6 +128,21 @@ export const getBaseRoleFields = (
       defaultValue: true,
       icon: React.createElement(ToggleLeft, { className: "h-4 w-4" }),
       section: "permissions",
+      className: "col-span-full",
+    },
+    {
+      name: "permissions",
+      label: "Quyền",
+      type: "permissions-table",
+      required: false,
+      placeholder: "Chọn quyền",
+      ...(permissionsOptionGroups
+        ? { optionGroups: permissionsOptionGroups }
+        : { options: flatPermissionsOptions }),
+      description: "Cấu hình các quyền cho vai trò này",
+      icon: React.createElement(Shield, { className: "h-4 w-4" }),
+      section: "permissions",
+      className: "col-span-full",
     },
   ]
 }
