@@ -6,4 +6,5 @@ export * from "./use-uploads-queries"
 export * from "./use-folder-tree"
 export * from "./use-dialogs"
 export * from "./use-folder-tree-initialization"
+export * from "./use-uploads-handlers"
 

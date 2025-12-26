@@ -8,6 +8,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { Folder, ChevronRight } from "lucide-react"
 import { TypographySpanSmallMuted, IconSize, TypographyP } from "@/components/ui/typography"
 import { cn } from "@/lib/utils"
+import { toggleSetItem } from "../utils/set-utils"
 import { ImageGrid } from "./image-grid"
 import type { FolderNode, ImageItem } from "../types"
 import { Flex } from "@/components/ui/flex"
@@ -36,24 +37,9 @@ export const FolderTreeNode = React.memo(function FolderTreeNode({
   const hasContent = folder.images.length > 0 || folder.subfolders.length > 0
   const isOpen = openFolders.has(folder.path)
 
-  const handleOpenChange = React.useCallback(
-    (open: boolean) => {
-      if (open) {
-        setOpenFolders((prev) => {
-          const newSet = new Set(prev)
-          newSet.add(folder.path)
-          return newSet
-        })
-      } else {
-        setOpenFolders((prev) => {
-          const newSet = new Set(prev)
-          newSet.delete(folder.path)
-          return newSet
-        })
-      }
-    },
-    [folder.path, setOpenFolders]
-  )
+  const handleOpenChange = (_open: boolean) => {
+    setOpenFolders((prev) => toggleSetItem(prev, folder.path))
+  }
 
   if (!hasContent) return null
 

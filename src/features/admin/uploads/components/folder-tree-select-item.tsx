@@ -9,6 +9,7 @@ import { CommandItem } from "@/components/ui/command"
 import { Folder, ChevronRight, Check } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { TypographySpanSmall, IconSize } from "@/components/ui/typography"
+import { toggleSetItem } from "../utils/set-utils"
 import type { FolderTreeSelectNode } from "../utils/folder-utils"
 import { Flex } from "@/components/ui/flex"
 
@@ -19,7 +20,7 @@ interface FolderTreeSelectItemProps {
   onSelect: (path: string) => void
   openPaths: Set<string>
   setOpenPaths: React.Dispatch<React.SetStateAction<Set<string>>>
-  onClose: () => void
+  onClose?: () => void
 }
 
 export const FolderTreeSelectItem = ({
@@ -35,18 +36,24 @@ export const FolderTreeSelectItem = ({
   const hasChildren = node.children.length > 0
   const isOpen = openPaths.has(node.path)
 
+  const handleSelect = () => {
+    onSelect(node.path)
+    onClose?.()
+  }
+
+  const handleToggle = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    setOpenPaths((prev) => toggleSetItem(prev, node.path))
+  }
+
   return (
-    <div key={node.path}>
-      <CommandItem
-        value={node.path}
-        onSelect={() => {
-          onSelect(node.path)
-          onClose()
-        }}
-        className={cn(level > 0 && "ml-4")}
-      >
+    <>
+      <CommandItem value={node.path} onSelect={handleSelect} className={cn(level > 0 && "ml-4")}>
         <Flex align="center" gap={2} className="w-full">
-          <IconSize size="sm" className={cn("rounded-sm hover:text-foreground", isSelected ? "opacity-100" : "opacity-0")}>
+          <IconSize
+            size="sm"
+            className={cn("rounded-sm hover:text-foreground", isSelected ? "opacity-100" : "opacity-0")}
+          >
             <Check />
           </IconSize>
           {!hasChildren && <div className="w-4" />}
@@ -54,28 +61,19 @@ export const FolderTreeSelectItem = ({
             <Folder className="hover:text-foreground" />
           </IconSize>
           <span className="flex-1">{node.name}</span>
-
           {hasChildren && (
             <Button
               variant="ghost"
               size="icon"
-              onClick={(e) => {
-                e.stopPropagation()
-                setOpenPaths((prev) => {
-                  const newSet = new Set(prev)
-                  if (isOpen) {
-                    newSet.delete(node.path)
-                  } else {
-                    newSet.add(node.path)
-                  }
-                  return newSet
-                })
-              }}
+              onClick={handleToggle}
               className="w-fit px-2 hover:bg-muted/10 rounded-sm"
             >
               <Flex align="center" justify="end" gap={2}>
                 <TypographySpanSmall>{node.path}</TypographySpanSmall>
-                <IconSize size="lg" className={cn("transition-transform hover:text-foreground", isOpen && "rotate-90")}>
+                <IconSize
+                  size="lg"
+                  className={cn("transition-transform hover:text-foreground", isOpen && "rotate-90")}
+                >
                   <ChevronRight />
                 </IconSize>
               </Flex>
@@ -99,7 +97,7 @@ export const FolderTreeSelectItem = ({
           ))}
         </div>
       )}
-    </div>
+    </>
   )
 }
 

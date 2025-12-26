@@ -13,31 +13,7 @@ import {
   FieldSet,
   FieldLegend,
 } from "@/components/ui/field";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { cn } from "@/lib/utils";
+import { cn, arraysEqual } from "@/lib/utils";
 import { renderFieldInput } from "./form-fields";
 import { applyResourceSegmentToPath } from "@/lib/permissions";
 import {
@@ -143,12 +119,12 @@ export const ResourceForm = <T extends Record<string, unknown>>({
   onCancel,
   onSuccess,
   onBack,
-  className,
+  className: _className,
   formClassName,
   contentClassName,
   showCard = true,
   variant = "page",
-  open = true,
+  open: _open = true,
   onOpenChange,
   resourceName,
   resourceId,
@@ -215,7 +191,7 @@ export const ResourceForm = <T extends Record<string, unknown>>({
 
           // So sánh array
           const currentArray = Array.isArray(currentValue) ? currentValue : [];
-          if (JSON.stringify(newValue) !== JSON.stringify(currentArray)) {
+          if (!arraysEqual(newValue, currentArray)) {
             updated[key] = newValue as T[keyof T];
             hasChanges = true;
           }
@@ -240,13 +216,13 @@ export const ResourceForm = <T extends Record<string, unknown>>({
         } else {
           if (dataValue !== undefined) {
             const newValue = dataValue === null ? "" : dataValue;
-            const arraysEqual =
+            const isArrayChanged =
               Array.isArray(newValue) && Array.isArray(currentValue)
-                ? JSON.stringify(newValue) !== JSON.stringify(currentValue)
+                ? !arraysEqual(newValue, currentValue)
                 : false;
 
             if (
-              arraysEqual ||
+              isArrayChanged ||
               (!Array.isArray(newValue) && newValue !== currentValue)
             ) {
               updated[key] = newValue as T[keyof T];

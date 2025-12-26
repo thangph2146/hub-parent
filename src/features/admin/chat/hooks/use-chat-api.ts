@@ -1,5 +1,6 @@
 import { toast } from "@/hooks/use-toast"
 import { requestJson, toJsonBody } from "@/lib/api/client"
+import { getErrorMessage } from "@/lib/utils"
 import { withApiBase } from "@/lib/config/api-paths"
 
 // Kept for reference when using raw fetch in other areas
@@ -52,7 +53,7 @@ export const handleAPIError = (error: unknown, defaultMessage: string): void => 
   import("@/lib/config").then(({ logger }) => {
     logger.error(defaultMessage, error)
   })
-  const errorMessage = error instanceof Error ? error.message : defaultMessage
+  const errorMessage = getErrorMessage(error) || defaultMessage
   toast({
     variant: "destructive",
     title: "Lỗi",

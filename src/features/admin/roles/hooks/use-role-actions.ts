@@ -4,6 +4,7 @@ import { apiClient } from "@/lib/api/axios"
 import { apiRoutes } from "@/lib/api/routes"
 import { queryKeys } from "@/lib/query-keys"
 import { useResourceActions } from "@/features/admin/resources/hooks"
+import { getErrorMessage, invalidateAndRefetchQueries } from "@/lib/utils"
 import type { ResourceRefreshHandler } from "@/features/admin/resources/types"
 import { resourceLogger } from "@/lib/config"
 import type { RoleRow } from "../types"
@@ -129,17 +130,15 @@ export const useRoleActions = ({
         )
         
         // Invalidate và refetch list queries - sử dụng "all" để đảm bảo refetch tất cả queries
-        await queryClient.invalidateQueries({ queryKey: queryKeys.adminRoles.all(), refetchType: "all" })
-        await queryClient.refetchQueries({ queryKey: queryKeys.adminRoles.all(), type: "all" })
+        await invalidateAndRefetchQueries(queryClient, queryKeys.adminRoles.all())
         
         // Invalidate và refetch detail query
-        await queryClient.invalidateQueries({ queryKey: queryKeys.adminRoles.detail(row.id), refetchType: "all" })
-        await queryClient.refetchQueries({ queryKey: queryKeys.adminRoles.detail(row.id), type: "all" })
+        await invalidateAndRefetchQueries(queryClient, queryKeys.adminRoles.detail(row.id))
         
         // Gọi refresh callback để cập nhật UI ngay lập tức
         await _refresh()
       } catch (error: unknown) {
-        const errorMessage = error instanceof Error ? error.message : ROLE_MESSAGES.UNKNOWN_ERROR
+        const errorMessage = getErrorMessage(error) || ROLE_MESSAGES.UNKNOWN_ERROR
         
         resourceLogger.actionFlow({
           resource: "roles",

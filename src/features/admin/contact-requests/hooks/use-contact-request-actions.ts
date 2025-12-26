@@ -4,6 +4,7 @@ import { apiClient } from "@/lib/api/axios"
 import { apiRoutes } from "@/lib/api/routes"
 import { queryKeys } from "@/lib/query-keys"
 import { useResourceActions, useResourceBulkProcessing } from "@/features/admin/resources/hooks"
+import { getErrorMessage, invalidateAndRefetchQueries } from "@/lib/utils"
 import type { ResourceRefreshHandler } from "@/features/admin/resources/types"
 import type { ContactRequestRow, BulkActionResult } from "../types"
 import type { FeedbackVariant } from "@/components/dialogs"
@@ -83,12 +84,10 @@ export const useContactRequestActions = ({
         await apiClient.put(apiRoutes.contactRequests.update(row.id), { isRead: newStatus })
         
         // Invalidate và refetch list queries - sử dụng "all" để đảm bảo refetch tất cả queries
-        await queryClient.invalidateQueries({ queryKey: queryKeys.adminContactRequests.all(), refetchType: "all" })
-        await queryClient.refetchQueries({ queryKey: queryKeys.adminContactRequests.all(), type: "all" })
+        await invalidateAndRefetchQueries(queryClient, queryKeys.adminContactRequests.all())
         
         // Invalidate và refetch detail query
-        await queryClient.invalidateQueries({ queryKey: queryKeys.adminContactRequests.detail(row.id), refetchType: "all" })
-        await queryClient.refetchQueries({ queryKey: queryKeys.adminContactRequests.detail(row.id), type: "all" })
+        await invalidateAndRefetchQueries(queryClient, queryKeys.adminContactRequests.detail(row.id))
         
         // Gọi refresh callback để cập nhật UI ngay lập tức
         await refresh?.()
@@ -101,7 +100,7 @@ export const useContactRequestActions = ({
             : `Yêu cầu liên hệ "${row.subject}" đã được đánh dấu là chưa đọc.`
         )
       } catch (error: unknown) {
-        const errorMessage = error instanceof Error ? error.message : CONTACT_REQUEST_MESSAGES.UNKNOWN_ERROR
+        const errorMessage = getErrorMessage(error) || CONTACT_REQUEST_MESSAGES.UNKNOWN_ERROR
         showFeedback(
           "error",
           newStatus ? CONTACT_REQUEST_MESSAGES.MARK_READ_ERROR : CONTACT_REQUEST_MESSAGES.MARK_UNREAD_ERROR,
@@ -157,19 +156,17 @@ export const useContactRequestActions = ({
         clearSelection()
 
         // Invalidate và refetch list queries - sử dụng "all" để đảm bảo refetch tất cả queries
-        await queryClient.invalidateQueries({ queryKey: queryKeys.adminContactRequests.all(), refetchType: "all" })
-        await queryClient.refetchQueries({ queryKey: queryKeys.adminContactRequests.all(), type: "all" })
+        await invalidateAndRefetchQueries(queryClient, queryKeys.adminContactRequests.all())
         
         // Invalidate detail queries cho tất cả affected IDs
-        for (const id of ids) {
-          await queryClient.invalidateQueries({ queryKey: queryKeys.adminContactRequests.detail(id), refetchType: "all" })
-          await queryClient.refetchQueries({ queryKey: queryKeys.adminContactRequests.detail(id), type: "all" })
-        }
+        await Promise.all(
+          ids.map((id) => invalidateAndRefetchQueries(queryClient, queryKeys.adminContactRequests.detail(id)))
+        )
         
         // Gọi refresh callback để cập nhật UI ngay lập tức
         await refresh?.()
       } catch (error: unknown) {
-        const errorMessage = error instanceof Error ? error.message : CONTACT_REQUEST_MESSAGES.UNKNOWN_ERROR
+        const errorMessage = getErrorMessage(error) || CONTACT_REQUEST_MESSAGES.UNKNOWN_ERROR
         showFeedback("error", CONTACT_REQUEST_MESSAGES.MARK_READ_ERROR, "Không thể đánh dấu đã đọc yêu cầu liên hệ.", errorMessage)
       } finally {
         stopBulkProcessing()
@@ -211,19 +208,17 @@ export const useContactRequestActions = ({
         clearSelection()
 
         // Invalidate và refetch list queries - sử dụng "all" để đảm bảo refetch tất cả queries
-        await queryClient.invalidateQueries({ queryKey: queryKeys.adminContactRequests.all(), refetchType: "all" })
-        await queryClient.refetchQueries({ queryKey: queryKeys.adminContactRequests.all(), type: "all" })
+        await invalidateAndRefetchQueries(queryClient, queryKeys.adminContactRequests.all())
         
         // Invalidate detail queries cho tất cả affected IDs
-        for (const id of ids) {
-          await queryClient.invalidateQueries({ queryKey: queryKeys.adminContactRequests.detail(id), refetchType: "all" })
-          await queryClient.refetchQueries({ queryKey: queryKeys.adminContactRequests.detail(id), type: "all" })
-        }
+        await Promise.all(
+          ids.map((id) => invalidateAndRefetchQueries(queryClient, queryKeys.adminContactRequests.detail(id)))
+        )
         
         // Gọi refresh callback để cập nhật UI ngay lập tức
         await refresh?.()
       } catch (error: unknown) {
-        const errorMessage = error instanceof Error ? error.message : CONTACT_REQUEST_MESSAGES.UNKNOWN_ERROR
+        const errorMessage = getErrorMessage(error) || CONTACT_REQUEST_MESSAGES.UNKNOWN_ERROR
         showFeedback("error", CONTACT_REQUEST_MESSAGES.MARK_UNREAD_ERROR, "Không thể đánh dấu chưa đọc yêu cầu liên hệ.", errorMessage)
       } finally {
         stopBulkProcessing()
@@ -273,19 +268,17 @@ export const useContactRequestActions = ({
         clearSelection()
 
         // Invalidate và refetch list queries - sử dụng "all" để đảm bảo refetch tất cả queries
-        await queryClient.invalidateQueries({ queryKey: queryKeys.adminContactRequests.all(), refetchType: "all" })
-        await queryClient.refetchQueries({ queryKey: queryKeys.adminContactRequests.all(), type: "all" })
+        await invalidateAndRefetchQueries(queryClient, queryKeys.adminContactRequests.all())
         
         // Invalidate detail queries cho tất cả affected IDs
-        for (const id of ids) {
-          await queryClient.invalidateQueries({ queryKey: queryKeys.adminContactRequests.detail(id), refetchType: "all" })
-          await queryClient.refetchQueries({ queryKey: queryKeys.adminContactRequests.detail(id), type: "all" })
-        }
+        await Promise.all(
+          ids.map((id) => invalidateAndRefetchQueries(queryClient, queryKeys.adminContactRequests.detail(id)))
+        )
         
         // Gọi refresh callback để cập nhật UI ngay lập tức
         await refresh?.()
       } catch (error: unknown) {
-        const errorMessage = error instanceof Error ? error.message : CONTACT_REQUEST_MESSAGES.UNKNOWN_ERROR
+        const errorMessage = getErrorMessage(error) || CONTACT_REQUEST_MESSAGES.UNKNOWN_ERROR
         showFeedback("error", "Cập nhật trạng thái thất bại", "Không thể cập nhật trạng thái yêu cầu liên hệ.", errorMessage)
       } finally {
         stopBulkProcessing()

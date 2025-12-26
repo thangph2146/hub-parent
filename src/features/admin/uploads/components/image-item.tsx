@@ -9,7 +9,10 @@ import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Loader2, Trash2 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import { cn } from "@/lib/utils"
 import { TypographySpanSmall, IconSize } from "@/components/ui/typography"
+import { copyToClipboard } from "../utils/clipboard-utils"
+import { formatFileSize } from "../utils/format-utils"
 import type { ImageItem as ImageItemType } from "../types"
 import { Flex } from "@/components/ui/flex"
 
@@ -30,14 +33,25 @@ export const ImageItem = ({
 }: ImageItemProps) => {
   const { toast } = useToast()
 
+  const handleCopyUrl = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    copyToClipboard(image.url, toast)
+  }
+
+  const handleDelete = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    onDelete(image)
+  }
+
   return (
     <Flex
       position="relative"
-      className={`aspect-square rounded-lg overflow-hidden border-2 transition-all duration-200 bg-muted group cursor-pointer ${
-        isSelected 
-          ? "ring-2 ring-primary ring-offset-2 border-primary shadow-md" 
+      className={cn(
+        "aspect-square rounded-lg overflow-hidden border-2 transition-all duration-200 bg-muted group cursor-pointer",
+        isSelected
+          ? "ring-2 ring-primary ring-offset-2 border-primary shadow-md"
           : "border-border hover:border-primary/50 hover:shadow-md"
-      }`}
+      )}
     >
       <Image
         src={image.url}
@@ -65,7 +79,7 @@ export const ImageItem = ({
           {image.originalName}
         </TypographySpanSmall>
         <TypographySpanSmall className="text-white/80 text-xs">
-          {(image.size / 1024).toFixed(1)} KB
+          {formatFileSize(image.size)}
         </TypographySpanSmall>
       </Flex>
       <Flex 
@@ -75,27 +89,13 @@ export const ImageItem = ({
         position="absolute-inset"
         className="bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10"
       >
-        <Button
-          size="sm"
-          onClick={(e) => {
-            e.stopPropagation()
-            navigator.clipboard.writeText(image.url)
-            toast({
-              title: "Đã copy",
-              description: "URL đã được copy vào clipboard",
-            })
-          }}
-          title="Copy URL"
-        >
+        <Button size="sm" onClick={handleCopyUrl} title="Copy URL">
           Copy URL
         </Button>
         <Button
           variant="destructive"
           size="sm"
-          onClick={(e) => {
-            e.stopPropagation()
-            onDelete(image)
-          }}
+          onClick={handleDelete}
           disabled={isDeleting}
           title="Xóa hình ảnh"
           className="bg-red-600/90 hover:bg-red-600"

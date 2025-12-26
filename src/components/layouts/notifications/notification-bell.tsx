@@ -3,7 +3,7 @@
  */
 "use client"
 
-import * as React from "react"
+import { useState, useEffect, useMemo, useRef, Fragment } from "react"
 import { useRouter } from "next/navigation"
 import { Bell, CheckCheck, Loader2, ArrowRight, Wifi, WifiOff } from "lucide-react"
 import { useSession } from "@/lib/auth"
@@ -21,6 +21,7 @@ import { Badge } from "@/components/ui/badge"
 import { isSuperAdmin } from "@/lib/permissions"
 import { logger } from "@/lib/config/logger"
 import { TypographyH3, TypographyP, TypographyPSmall, TypographyPSmallMuted, TypographySpanSmall, IconSize } from "@/components/ui/typography"
+import { deduplicateById, getDuplicateIds } from "@/lib/utils"
 
 export function NotificationBell() {
   const router = useRouter()
@@ -28,35 +29,24 @@ export function NotificationBell() {
   const { socket } = useNotificationsSocketBridge()
   
   // Track socket connection status để tắt polling khi socket connected
-  const [isSocketConnected, setIsSocketConnected] = React.useState(false)
-  const [connectionError, setConnectionError] = React.useState<string | null>(null)
+  const [isSocketConnected, setIsSocketConnected] = useState(() => socket?.connected ?? false)
+  const [connectionError, setConnectionError] = useState<string | null>(() => 
+    socket ? null : "Socket không kết nối"
+  )
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!socket) {
-      setIsSocketConnected(false)
-      setConnectionError("Socket không khả dụng")
       return
     }
-
-    // Check initial connection status
-    setIsSocketConnected(socket.connected)
-    setConnectionError(null)
-
+    
     const handleConnect = () => {
-      setIsSocketConnected(true)
-      setConnectionError(null)
-      logger.debug("NotificationBell: Socket connected", {
-        socketId: socket.id,
-        userId: session?.user?.id,
-      })
+      setIsSocketConnected(socket.connected)
+      setConnectionError(socket.connected ? null : "Socket không kết nối")
     }
 
-    const handleDisconnect = (reason: string) => {
+    const handleDisconnect = (_reason: string) => {
       setIsSocketConnected(false)
-      logger.warn("NotificationBell: Socket disconnected", {
-        reason,
-        userId: session?.user?.id,
-      })
+      setConnectionError("Socket không kết nối")
     }
 
     const handleConnectError = (error: Error) => {
@@ -102,10 +92,10 @@ export function NotificationBell() {
   })
   const markAllAsRead = useMarkAllAsRead()
   const markAsRead = useMarkNotificationRead()
-  const [open, setOpen] = React.useState(false)
+  const [open, setOpen] = useState(false)
   
   // Log mark as read mutations
-  React.useEffect(() => {
+  useEffect(() => {
     if (markAsRead.isSuccess) {
       logger.success("NotificationBell: Mark as read successful", {
         notificationId: markAsRead.data?.id,
@@ -118,51 +108,23 @@ export function NotificationBell() {
     }
   }, [markAsRead.isSuccess, markAsRead.isError, markAsRead.data, markAsRead.error, session?.user?.id])
 
-  const rawNotifications = React.useMemo(() => data?.notifications || [], [data?.notifications])
+  const rawNotifications = useMemo(() => data?.notifications || [], [data?.notifications])
   
   // Filter duplicate notifications by ID (fix duplicate key issue)
-  // Sử dụng useMemo với stable dependencies để tránh re-run quá nhiều lần
-  const uniqueNotifications = React.useMemo(() => {
-    if (!rawNotifications || rawNotifications.length === 0) {
-      return []
-    }
-    
-    const seen = new Set<string>()
-    const unique: typeof rawNotifications = []
-    
-    for (const notification of rawNotifications) {
-      if (!seen.has(notification.id)) {
-        seen.add(notification.id)
-        unique.push(notification)
-      }
-    }
-    
-    return unique
-  }, [rawNotifications])
+  const uniqueNotifications = useMemo(
+    () => deduplicateById(rawNotifications),
+    [rawNotifications]
+  )
   
-  // Track duplicates để log (trong useEffect để tránh access ref trong render)
-  const duplicateIds = React.useMemo(() => {
-    if (!rawNotifications || rawNotifications.length === 0) {
-      return new Set<string>()
-    }
-    
-    const seen = new Set<string>()
-    const duplicates = new Set<string>()
-    
-    for (const notification of rawNotifications) {
-      if (seen.has(notification.id)) {
-        duplicates.add(notification.id)
-      } else {
-        seen.add(notification.id)
-      }
-    }
-    
-    return duplicates
-  }, [rawNotifications])
+  // Track duplicates để log
+  const duplicateIds = useMemo(
+    () => getDuplicateIds(rawNotifications),
+    [rawNotifications]
+  )
   
   // Log duplicates trong useEffect để tránh access ref trong render
-  const lastLoggedDuplicates = React.useRef<string>("")
-  React.useEffect(() => {
+  const lastLoggedDuplicates = useRef<string>("")
+  useEffect(() => {
     if (duplicateIds.size > 0) {
       const duplicateIdsStr = Array.from(duplicateIds).sort().join(",")
       
@@ -197,7 +159,7 @@ export function NotificationBell() {
   // Filter notifications:
   // - Chỉ superadmin@hub.edu.vn: hiển thị tất cả notifications (của mình và của user khác)
   // - Các user khác: chỉ hiển thị notifications của chính họ (owner)
-  const ownedNotifications = React.useMemo(() => {
+  const ownedNotifications = useMemo(() => {
     if (isProtectedSuperAdmin) {
       // superadmin@hub.edu.vn: hiển thị tất cả notifications
       return uniqueNotifications
@@ -208,12 +170,12 @@ export function NotificationBell() {
   }, [uniqueNotifications, currentUserId, isProtectedSuperAdmin])
   
   // Tính lại unread count chỉ cho owned notifications
-  const ownedUnreadCount = React.useMemo(() => {
+  const ownedUnreadCount = useMemo(() => {
     return ownedNotifications.filter(n => !n.isRead).length
   }, [ownedNotifications])
   
   // Log notifications data để debug
-  React.useEffect(() => {
+  useEffect(() => {
     if (data) {
       const otherNotifications = uniqueNotifications.filter(n => n.userId !== currentUserId)
       const otherUnread = otherNotifications.filter(n => !n.isRead).length
@@ -379,7 +341,7 @@ export function NotificationBell() {
             <Flex direction="col" className="divide-y">
               {/* Chỉ hiển thị tối đa 10 thông báo đầu tiên của chính user (owner) */}
               {ownedNotifications.slice(0, 10).map((notification, index) => (
-                <React.Fragment key={notification.id}>
+                <Fragment key={notification.id}>
                   <NotificationItem
                     notification={notification}
                     onClick={() => {
@@ -442,7 +404,7 @@ export function NotificationBell() {
                     }}
                   />
                   {index < Math.min(ownedNotifications.length, 10) - 1 && <Separator />}
-                </React.Fragment>
+                </Fragment>
               ))}
             </Flex>
           )}

@@ -4,6 +4,7 @@ import { apiClient } from "@/lib/api/axios"
 import { apiRoutes } from "@/lib/api/routes"
 import { queryKeys } from "@/lib/query-keys"
 import { useResourceActions } from "@/features/admin/resources/hooks"
+import { getErrorMessage, invalidateAndRefetchQueries } from "@/lib/utils"
 import type { ResourceRefreshHandler } from "@/features/admin/resources/types"
 import type { StudentRow } from "../types"
 import type { FeedbackVariant } from "@/components/dialogs"
@@ -92,17 +93,15 @@ export const useStudentActions = ({
         )
         
         // Invalidate và refetch list queries - sử dụng "all" để đảm bảo refetch tất cả queries
-        await queryClient.invalidateQueries({ queryKey: queryKeys.adminStudents.all(), refetchType: "all" })
-        await queryClient.refetchQueries({ queryKey: queryKeys.adminStudents.all(), type: "all" })
+        await invalidateAndRefetchQueries(queryClient, queryKeys.adminStudents.all())
         
         // Invalidate và refetch detail query
-        await queryClient.invalidateQueries({ queryKey: queryKeys.adminStudents.detail(row.id), refetchType: "all" })
-        await queryClient.refetchQueries({ queryKey: queryKeys.adminStudents.detail(row.id), type: "all" })
+        await invalidateAndRefetchQueries(queryClient, queryKeys.adminStudents.detail(row.id))
         
         // Gọi refresh callback để cập nhật UI ngay lập tức
         await _refresh()
       } catch (error: unknown) {
-        const errorMessage = error instanceof Error ? error.message : STUDENT_MESSAGES.UNKNOWN_ERROR
+        const errorMessage = getErrorMessage(error) || STUDENT_MESSAGES.UNKNOWN_ERROR
         showFeedback(
           "error",
           STUDENT_MESSAGES.TOGGLE_ACTIVE_ERROR,

@@ -13,6 +13,7 @@ import { apiRoutes } from "@/lib/api/routes"
 import { logger } from "@/lib/config"
 import { invalidateAndRefreshResource } from "@/features/admin/resources/utils"
 import type { UnreadCountsResponse } from "@/hooks/use-unread-counts"
+import { deduplicateById, getDuplicateIds } from "@/lib/utils"
 
 /**
  * Helper to extract payload from API response or throw error
@@ -543,18 +544,8 @@ export const useNotificationsSocketBridge = () => {
         .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
       
       // Filter duplicates by ID (quan trọng để tránh duplicate notifications)
-      const seen = new Set<string>()
-      const uniqueNotifications: Notification[] = []
-      const duplicateIds = new Set<string>()
-      
-      for (const notification of userNotifications) {
-        if (!seen.has(notification.id)) {
-          seen.add(notification.id)
-          uniqueNotifications.push(notification)
-        } else {
-          duplicateIds.add(notification.id)
-        }
-      }
+      const uniqueNotifications = deduplicateById(userNotifications)
+      const duplicateIds = getDuplicateIds(userNotifications)
       
       if (duplicateIds.size > 0) {
         logger.warn("useNotificationsSocketBridge: Duplicate notifications in sync payload", {

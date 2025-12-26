@@ -1,6 +1,7 @@
 import { useCallback } from "react"
 import { useToast } from "@/hooks/use-toast"
 import { logger } from "@/lib/config"
+import { getErrorMessage } from "@/lib/utils"
 import type { Contact } from "@/components/chat/types"
 import { refreshGroupData, updateContactWithGroupData } from "../components/chat-template-helpers"
 
@@ -38,7 +39,7 @@ export const useGroupActions = ({
     } catch (error) {
       logger.error("Failed to refresh group data", error as Error)
       // Hiển thị error message từ API nếu có, nếu không thì dùng message mặc định
-      const errorMessage = error instanceof Error ? error.message : "Không thể cập nhật thông tin nhóm. Vui lòng thử lại sau."
+      const errorMessage = getErrorMessage(error) || "Không thể cập nhật thông tin nhóm. Vui lòng thử lại sau."
       toast({
         variant: "destructive",
         title: "Không thể tải nhóm",
