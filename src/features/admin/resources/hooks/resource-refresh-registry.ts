@@ -85,6 +85,13 @@ class ResourceRefreshRegistry {
       }),
     })
 
+    // Nếu không có registrations nào, log warning nhưng vẫn tiếp tục để trigger fallback
+    if (this.registrations.size === 0) {
+      logger.warn("No refresh callbacks registered - table may not be mounted yet, will try fallback", {
+        invalidateKey: invalidateKey.slice(0, 3),
+      })
+    }
+
     for (const [registeredKey, registrations] of this.registrations.entries()) {
       const registeredQueryKey = this.parseKeyString(registeredKey)
       
@@ -214,6 +221,7 @@ class ResourceRefreshRegistry {
     // Trigger all matching callbacks ngay lập tức
     // Queries đã được invalidate và refetch trong mutation onSuccess trước khi trigger refresh
     // Gọi callback trực tiếp để đảm bảo UI cập nhật ngay lập tức
+    // Sử dụng flushSync trong callback để đảm bảo state update ngay lập tức
     for (const registration of matchingRegistrations) {
       try {
         logger.debug("Triggering refresh callback", {
@@ -222,7 +230,7 @@ class ResourceRefreshRegistry {
           queryKeyFull: JSON.stringify(registration.queryKey),
           hasCallback: !!registration.callback,
         })
-        // Gọi callback ngay lập tức - không cần delay vì React sẽ batch updates
+        // Gọi callback ngay lập tức - callback sử dụng flushSync để đảm bảo state update ngay lập tức
         if (registration.callback) {
           registration.callback()
           logger.debug("Refresh callback executed successfully", {
@@ -258,8 +266,12 @@ class ResourceRefreshRegistry {
 
   /**
    * Check if two query keys match (prefix match)
-   * key1: ["adminUsers"] should match key2: ["adminUsers", {...}]
-   * key2: ["adminUsers"] should match key1: ["adminUsers", {...}]
+   * key1: ["notifications", "admin"] should match key2: ["notifications", "admin", "all", 1, 10, ...]
+   * key2: ["notifications", "admin"] should match key1: ["notifications", "admin", "all", 1, 10, ...]
+   * 
+   * Logic:
+   * - If same length: deep equality check for all elements
+   * - If different lengths: shorter key must be a prefix of longer key
    */
   private keysMatch(key1: QueryKey, key2: QueryKey): boolean {
     if (!Array.isArray(key1) || !Array.isArray(key2)) {
@@ -270,17 +282,9 @@ class ResourceRefreshRegistry {
       return false
     }
 
-    // Check if the shorter key is a prefix of the longer key
-    // Compare first elements (resource name) - they must match
-    if (key1[0] !== key2[0]) {
-      return false
-    }
-
-    // If both keys have same length, they must be exactly equal
+    // If both keys have same length, they must be exactly equal (deep equality)
     if (key1.length === key2.length) {
-      // Deep equality check for first few elements
-      const minLength = Math.min(key1.length, 3) // Check first 3 elements
-      for (let i = 0; i < minLength; i++) {
+      for (let i = 0; i < key1.length; i++) {
         if (JSON.stringify(key1[i]) !== JSON.stringify(key2[i])) {
           return false
         }
@@ -293,6 +297,7 @@ class ResourceRefreshRegistry {
     const longer = key1.length < key2.length ? key2 : key1
 
     // Check if shorter key is a prefix of longer key
+    // Compare all elements of shorter key with corresponding elements of longer key
     for (let i = 0; i < shorter.length; i++) {
       if (JSON.stringify(shorter[i]) !== JSON.stringify(longer[i])) {
         return false

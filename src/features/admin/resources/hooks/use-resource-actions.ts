@@ -4,7 +4,7 @@ import { apiClient } from "@/lib/api/axios"
 import { createAdminMutationOptions } from "../config"
 import { useResourceBulkProcessing } from "./use-resource-bulk-processing"
 import { resourceLogger } from "@/lib/config/resource-logger"
-import { resourceRefreshRegistry } from "./resource-refresh-registry"
+import { invalidateAndRefreshResource } from "../utils"
 import type { ResourceRefreshHandler } from "../types"
 import type { FeedbackVariant } from "@/components/dialogs"
 import type { QueryKey } from "@tanstack/react-query"
@@ -112,28 +112,14 @@ export const useResourceActions = <T extends { id: string }>(
         }
       },
       onSuccess: async (_, variables) => {
-        // Invalidate và refetch queries để đảm bảo data được cập nhật ngay lập tức
-        // Sử dụng refetchType: "all" để đảm bảo refetch tất cả queries, không chỉ active
-        await queryClient.invalidateQueries({ 
-          queryKey: config.queryKeys.all(), 
-          refetchType: "all" 
+        // Sử dụng utility function chung để invalidate, refetch và trigger registry refresh
+        // Đảm bảo UI tự động cập nhật ngay sau khi mutation thành công
+        await invalidateAndRefreshResource({
+          queryClient,
+          allQueryKey: config.queryKeys.all(),
+          detailQueryKey: config.queryKeys.detail,
+          resourceId: variables.row.id,
         })
-        await queryClient.refetchQueries({ 
-          queryKey: config.queryKeys.all(), 
-          type: "all" 
-        })
-        
-        // Invalidate và refetch detail query nếu có (để đảm bảo detail page cũng được cập nhật)
-        if (config.queryKeys.detail) {
-          await queryClient.invalidateQueries({
-            queryKey: config.queryKeys.detail(variables.row.id),
-            refetchType: "all"
-          })
-          await queryClient.refetchQueries({
-            queryKey: config.queryKeys.detail(variables.row.id),
-            type: "all"
-          })
-        }
 
         const actionType = getActionType(variables.action, false)
         
@@ -147,11 +133,6 @@ export const useResourceActions = <T extends { id: string }>(
             ...(config.getLogMetadata ? config.getLogMetadata(variables.row) : {}),
           },
         })
-        
-        // Trigger UI refresh ngay lập tức thông qua registry
-        // Registry sẽ gọi handleRefresh để update refreshKey, trigger DataTable re-render và fetch fresh data
-        // Gọi trực tiếp ngay lập tức - queries đã được refetch xong và cache đã được cập nhật
-        resourceRefreshRegistry.triggerRefresh(config.queryKeys.all())
       },
       onError: (error, variables) => {
         const actionType = getActionType(variables.action, false)
@@ -181,18 +162,18 @@ export const useResourceActions = <T extends { id: string }>(
         const result = response.data?.data
         const affected = result?.affected ?? 0
         
-        // Invalidate và refetch queries để đảm bảo data được cập nhật ngay lập tức
-        // Sử dụng refetchType: "all" để đảm bảo refetch tất cả queries, không chỉ active
-        await queryClient.invalidateQueries({ 
-          queryKey: config.queryKeys.all(), 
-          refetchType: "all" 
-        })
-        await queryClient.refetchQueries({ 
-          queryKey: config.queryKeys.all(), 
-          type: "all" 
+        // Sử dụng utility function chung để invalidate, refetch và trigger registry refresh
+        // Đảm bảo UI tự động cập nhật ngay sau khi mutation thành công
+        await invalidateAndRefreshResource({
+          queryClient,
+          allQueryKey: config.queryKeys.all(),
+          detailQueryKey: config.queryKeys.detail,
+          // Bulk actions không cần invalidate từng detail query riêng lẻ
+          // Chỉ cần invalidate all query và registry sẽ trigger refresh cho table
         })
         
-        // Invalidate và refetch detail queries cho tất cả affected IDs
+        // Invalidate detail queries cho tất cả affected IDs (nếu có)
+        // Điều này đảm bảo detail pages cũng được cập nhật
         if (config.queryKeys.detail) {
           for (const id of variables.ids) {
             await queryClient.invalidateQueries({
@@ -205,11 +186,6 @@ export const useResourceActions = <T extends { id: string }>(
             })
           }
         }
-
-        // Trigger UI refresh ngay lập tức thông qua registry
-        // Registry sẽ gọi handleRefresh để update refreshKey, trigger DataTable re-render và fetch fresh data
-        // Gọi trực tiếp ngay lập tức - queries đã được refetch xong và cache đã được cập nhật
-        resourceRefreshRegistry.triggerRefresh(config.queryKeys.all())
         
         const actionType = getActionType(variables.action, true)
         
@@ -247,7 +223,7 @@ export const useResourceActions = <T extends { id: string }>(
     async (
       action: "delete" | "restore" | "hard-delete",
       row: T,
-      refresh: ResourceRefreshHandler
+      _refresh: ResourceRefreshHandler // Không sử dụng vì registry đã tự động trigger refresh
     ): Promise<void> => {
       const actionConfig = {
         delete: {
@@ -333,7 +309,7 @@ export const useResourceActions = <T extends { id: string }>(
     async (
       action: "delete" | "restore" | "hard-delete" | "active" | "unactive",
       ids: string[],
-      refresh: ResourceRefreshHandler,
+      _refresh: ResourceRefreshHandler, // Không sử dụng vì registry đã tự động trigger refresh
       clearSelection: () => void
     ): Promise<void> => {
       if (ids.length === 0) return

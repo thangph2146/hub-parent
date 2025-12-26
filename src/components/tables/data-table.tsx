@@ -225,16 +225,35 @@ export function DataTable<T extends object>({
     const debouncedApplyFilters = useDebouncedCallback(applyFilters, 300)
 
     const prevQueryRef = useRef<DataTableQueryState>(query)
-    const prevRefreshKeyRef = useRef(refreshKey)
+    // Khởi tạo prevRefreshKeyRef với giá trị undefined để đảm bảo lần đầu tiên refreshKey được set sẽ được detect
+    const prevRefreshKeyRef = useRef<string | number | undefined>(undefined)
+    const isFirstMountRef = useRef(true)
 
     useEffect(() => {
+        // Kiểm tra refreshKey thay đổi - so sánh với giá trị trước đó
         const refreshKeyChanged = prevRefreshKeyRef.current !== refreshKey
+        
+        // Lần đầu mount - initialize prevRefreshKeyRef với refreshKey hiện tại và return sớm
+        // Không trigger fetch ở đây vì đã có initialData hoặc đã fetch trong useState
+        if (isFirstMountRef.current) {
+            isFirstMountRef.current = false
+            prevRefreshKeyRef.current = refreshKey
+            prevQueryRef.current = query
+            console.debug("[DataTable] First mount - initialized prevRefreshKeyRef", {
+                refreshKey,
+                query: { page: query.page, limit: query.limit },
+            })
+            return
+        }
+        
+        // Update prevRefreshKeyRef nếu refreshKey thay đổi
         if (refreshKeyChanged) {
             prevRefreshKeyRef.current = refreshKey
         }
 
         const queryChanged = !areQueriesEqual(query, prevQueryRef.current)
         
+        // Nếu không có thay đổi nào, return sớm
         if (!queryChanged && !refreshKeyChanged) {
             prevQueryRef.current = query
             return
@@ -247,8 +266,13 @@ export function DataTable<T extends object>({
         if (refreshKeyChanged) {
             // Refresh từ mutation - fetch ngay lập tức để đảm bảo UI cập nhật ngay
             // Không dùng startTransition để tránh delay
+            console.debug("[DataTable] refreshKey changed, triggering immediate fetch", {
+                previousKey: prevRefreshKeyRef.current,
+                newKey: refreshKey,
+                query: { page: query.page, limit: query.limit },
+            })
             setDataPromise(safeLoad(loader, query))
-        } else {
+        } else if (queryChanged) {
             // Query change từ user action - có thể dùng startTransition
             startTransition(() => {
                 setDataPromise(safeLoad(loader, query))

@@ -11,7 +11,7 @@ import { useSocket, type SocketNotificationPayload } from "@/hooks/use-socket"
 import { queryKeys, invalidateQueries } from "@/lib/query-keys"
 import { apiRoutes } from "@/lib/api/routes"
 import { logger } from "@/lib/config"
-import { resourceRefreshRegistry } from "@/features/admin/resources/hooks/resource-refresh-registry"
+import { invalidateAndRefreshResource } from "@/features/admin/resources/utils"
 import type { UnreadCountsResponse } from "@/hooks/use-unread-counts"
 
 /**
@@ -208,15 +208,12 @@ export const useMarkNotificationRead = () => {
       // Cũng invalidate unreadCounts để cập nhật badge count trong nav-main-with-badges
       invalidateQueries.notificationsAndCounts(queryClient, session?.user?.id)
       
-      // Refetch admin queries để đảm bảo UI cập nhật ngay lập tức
-      await queryClient.refetchQueries({ 
-        queryKey: queryKeys.notifications.admin(), 
-        type: "all" 
+      // Sử dụng utility function chung để invalidate, refetch và trigger registry refresh
+      // Đảm bảo UI tự động cập nhật ngay sau khi mutation thành công
+      await invalidateAndRefreshResource({
+        queryClient,
+        allQueryKey: queryKeys.notifications.admin(),
       })
-      
-      // Trigger UI refresh cho notification page thông qua registry
-      // Đảm bảo notification page và bell đồng bộ với nhau
-      resourceRefreshRegistry.triggerRefresh(queryKeys.notifications.admin())
     },
   })
 }
@@ -238,15 +235,12 @@ export const useDeleteNotification = () => {
       // Invalidate cả user và admin notifications vì xóa notification ảnh hưởng đến cả 2
       invalidateQueries.allNotifications(queryClient, session?.user?.id)
       
-      // Refetch admin queries để đảm bảo UI cập nhật ngay lập tức
-      await queryClient.refetchQueries({ 
-        queryKey: queryKeys.notifications.admin(), 
-        type: "all" 
+      // Sử dụng utility function chung để invalidate, refetch và trigger registry refresh
+      // Đảm bảo UI tự động cập nhật ngay sau khi mutation thành công
+      await invalidateAndRefreshResource({
+        queryClient,
+        allQueryKey: queryKeys.notifications.admin(),
       })
-      
-      // Trigger UI refresh cho notification page thông qua registry
-      // Đảm bảo notification page và bell đồng bộ với nhau
-      resourceRefreshRegistry.triggerRefresh(queryKeys.notifications.admin())
     },
     onError: (error: unknown) => {
       logger.error("Error deleting notification", { error, userId: session?.user?.id })
@@ -294,15 +288,12 @@ export const useMarkAllAsRead = () => {
       // Cũng invalidate unreadCounts để cập nhật badge count trong nav-main-with-badges
       invalidateQueries.notificationsAndCounts(queryClient, session?.user?.id)
       
-      // Refetch admin queries để đảm bảo UI cập nhật ngay lập tức
-      await queryClient.refetchQueries({ 
-        queryKey: queryKeys.notifications.admin(), 
-        type: "all" 
+      // Sử dụng utility function chung để invalidate, refetch và trigger registry refresh
+      // Đảm bảo UI tự động cập nhật ngay sau khi mutation thành công
+      await invalidateAndRefreshResource({
+        queryClient,
+        allQueryKey: queryKeys.notifications.admin(),
       })
-      
-      // Trigger UI refresh cho notification page thông qua registry
-      // Đảm bảo notification page và bell đồng bộ với nhau
-      resourceRefreshRegistry.triggerRefresh(queryKeys.notifications.admin())
     },
   })
 }
@@ -334,15 +325,12 @@ export const useDeleteAllNotifications = () => {
       // Invalidate cả user và admin notifications vì xóa tất cả ảnh hưởng đến cả 2
       invalidateQueries.allNotifications(queryClient, session?.user?.id)
       
-      // Refetch admin queries để đảm bảo UI cập nhật ngay lập tức
-      await queryClient.refetchQueries({ 
-        queryKey: queryKeys.notifications.admin(), 
-        type: "all" 
+      // Sử dụng utility function chung để invalidate, refetch và trigger registry refresh
+      // Đảm bảo UI tự động cập nhật ngay sau khi mutation thành công
+      await invalidateAndRefreshResource({
+        queryClient,
+        allQueryKey: queryKeys.notifications.admin(),
       })
-      
-      // Trigger UI refresh cho notification page thông qua registry
-      // Đảm bảo notification page và bell đồng bộ với nhau
-      resourceRefreshRegistry.triggerRefresh(queryKeys.notifications.admin())
     },
     onError: (error: unknown) => {
       logger.error("Error deleting all notifications", { error, userId: session?.user?.id })

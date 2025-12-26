@@ -58,6 +58,16 @@ export const useResourceTableRefresh = ({
 
   const onRefreshReady = useCallback(
     (refreshFn: () => void) => {
+      if (!refreshFn) {
+        logger.warn("onRefreshReady called with null/undefined refreshFn")
+        return
+      }
+
+      logger.debug("onRefreshReady called", {
+        hasRefreshFn: !!refreshFn,
+        hasGetInvalidateQueryKey: !!getInvalidateQueryKey,
+      })
+
       // Lưu refreshFn vào ref để có thể gọi từ bất kỳ đâu
       softRefreshRef.current = refreshFn
       refreshRef.current = async () => {
@@ -74,8 +84,10 @@ export const useResourceTableRefresh = ({
         }
       }
 
+      // Xử lý pending realtime refresh nếu có
       if (pendingRealtimeRefreshRef.current) {
         pendingRealtimeRefreshRef.current = false
+        logger.debug("Executing pending realtime refresh")
         refreshFn()
       }
 
@@ -85,6 +97,7 @@ export const useResourceTableRefresh = ({
       if (invalidateKey) {
         // Unregister callback cũ nếu có
         if (unregisterRef.current) {
+          logger.debug("Unregistering old refresh callback")
           unregisterRef.current()
         }
 
@@ -106,7 +119,7 @@ export const useResourceTableRefresh = ({
         })
       }
     },
-    [getInvalidateQueryKey, queryClient],
+    [getInvalidateQueryKey],
   )
 
   // Cleanup khi component unmount
@@ -155,7 +168,7 @@ export const useResourceTableRefresh = ({
     const invalidateKey = getInvalidateQueryKey()
     if (!invalidateKey || !Array.isArray(invalidateKey)) return
 
-    let refreshTimeout: NodeJS.Timeout | null = null
+    const refreshTimeout: NodeJS.Timeout | null = null
 
     // Không cần initialize lastDataUpdatedAt nữa vì không trigger refresh từ dataUpdatedAt changes
     // Chỉ trigger refresh từ registry (mutation onSuccess) hoặc khi query invalidated (fallback)

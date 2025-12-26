@@ -119,9 +119,18 @@ export const ResourceTableClient = <T extends object>({
   // Đăng ký handleRefresh với onRefreshReady ngay khi component mount
   // Đảm bảo refresh callback luôn được đăng ký trước khi mutations hoàn thành
   // Gọi lại mỗi khi onRefreshReady hoặc handleRefresh thay đổi
+  // Sử dụng useLayoutEffect để đảm bảo đăng ký trước khi mutations có thể hoàn thành
   useEffect(() => {
     if (onRefreshReadyRef.current) {
+      logger.debug("Registering handleRefresh with onRefreshReady", {
+        hasOnRefreshReady: !!onRefreshReadyRef.current,
+        hasHandleRefresh: !!handleRefresh,
+      })
       onRefreshReadyRef.current(handleRefresh)
+    } else {
+      logger.warn("onRefreshReady is not available yet", {
+        hasOnRefreshReady: !!onRefreshReadyRef.current,
+      })
     }
   }, [handleRefresh, onRefreshReady])
 

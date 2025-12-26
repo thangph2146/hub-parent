@@ -252,6 +252,39 @@ const getResourceSingularName = (resourceName: string): string => {
   return specialCases[resourceName] || (resourceName.endsWith("s") ? resourceName.slice(0, -1) : resourceName)
 }
 
+/**
+ * Utility function để invalidate, refetch queries và trigger registry refresh
+ * Đảm bảo UI tự động cập nhật ngay sau khi mutation thành công
+ */
+export const invalidateAndRefreshResource = async ({
+  queryClient,
+  allQueryKey,
+  detailQueryKey,
+  resourceId,
+}: {
+  queryClient: ReturnType<typeof import("@tanstack/react-query").useQueryClient>
+  allQueryKey: readonly unknown[]
+  detailQueryKey?: (id: string) => readonly unknown[]
+  resourceId?: string
+}): Promise<void> => {
+  // Invalidate và refetch queries để đảm bảo data được cập nhật ngay lập tức
+  // Sử dụng refetchType: "all" để đảm bảo refetch tất cả queries, không chỉ active
+  await queryClient.invalidateQueries({ queryKey: allQueryKey, refetchType: "all" })
+  await queryClient.refetchQueries({ queryKey: allQueryKey, type: "all" })
+  
+  // Invalidate và refetch detail query nếu có
+  if (resourceId && detailQueryKey) {
+    await queryClient.invalidateQueries({ queryKey: detailQueryKey(resourceId), refetchType: "all" })
+    await queryClient.refetchQueries({ queryKey: detailQueryKey(resourceId), type: "all" })
+  }
+
+  // Trigger UI refresh ngay lập tức thông qua registry
+  // Registry sẽ gọi handleRefresh để update refreshKey, trigger DataTable re-render và fetch fresh data
+  // Gọi trực tiếp ngay lập tức - queries đã được refetch xong và cache đã được cập nhật
+  // handleRefresh sử dụng flushSync để đảm bảo state update ngay lập tức, không cần queueMicrotask
+  resourceRefreshRegistry.triggerRefresh(allQueryKey)
+}
+
 export const createResourceEditOnSuccess = ({
   queryClient,
   resourceId,
@@ -272,19 +305,13 @@ export const createResourceEditOnSuccess = ({
   return async (response: import("axios").AxiosResponse) => {
     const responseData = response?.data?.data
 
-    // Invalidate và refetch queries để đảm bảo data được cập nhật ngay lập tức
-    // Sử dụng refetchType: "all" để đảm bảo refetch tất cả queries, không chỉ active
-    await queryClient.invalidateQueries({ queryKey: allQueryKey, refetchType: "all" })
-    await queryClient.refetchQueries({ queryKey: allQueryKey, type: "all" })
-    if (resourceId) {
-      await queryClient.invalidateQueries({ queryKey: detailQueryKey(resourceId), refetchType: "all" })
-      await queryClient.refetchQueries({ queryKey: detailQueryKey(resourceId), type: "all" })
-    }
-
-    // Trigger UI refresh ngay lập tức thông qua registry
-    // Registry sẽ gọi handleRefresh để update refreshKey, trigger DataTable re-render và fetch fresh data
-    // Gọi trực tiếp ngay lập tức - queries đã được refetch xong và cache đã được cập nhật
-    resourceRefreshRegistry.triggerRefresh(allQueryKey)
+    // Sử dụng utility function chung để invalidate và refresh
+    await invalidateAndRefreshResource({
+      queryClient,
+      allQueryKey,
+      detailQueryKey,
+      resourceId,
+    })
 
     const recordName = getRecordName?.(responseData) || (responseData?.name as string | undefined)
     const singularName = getResourceSingularName(resourceName)
@@ -296,6 +323,50 @@ export const createResourceEditOnSuccess = ({
     })
 
     onSuccess?.()
+  }
+}
+
+/**
+ * Utility function cho create mutations
+ * Tương tự như createResourceEditOnSuccess nhưng cho create operations
+ */
+export const createResourceCreateOnSuccess = ({
+  queryClient,
+  allQueryKey,
+  detailQueryKey,
+  resourceName,
+  getRecordName,
+  onSuccess,
+}: {
+  queryClient: ReturnType<typeof import("@tanstack/react-query").useQueryClient>
+  allQueryKey: readonly unknown[]
+  detailQueryKey?: (id: string) => readonly unknown[]
+  resourceName: string
+  getRecordName?: (responseData: Record<string, unknown>) => string | undefined
+  onSuccess?: (response: import("axios").AxiosResponse) => void
+}) => {
+  return async (response: import("axios").AxiosResponse) => {
+    const responseData = response?.data?.data
+    const resourceId = responseData?.id as string | undefined
+
+    // Sử dụng utility function chung để invalidate và refresh
+    await invalidateAndRefreshResource({
+      queryClient,
+      allQueryKey,
+      detailQueryKey,
+      resourceId,
+    })
+
+    const recordName = getRecordName?.(responseData) || (responseData?.name as string | undefined)
+    const singularName = getResourceSingularName(resourceName)
+    logActionFlow(resourceName, "create", "success", {
+      [`${singularName}Id`]: resourceId,
+      [`${singularName}Name`]: recordName,
+      responseStatus: response?.status,
+      cacheStrategy: "invalidate-and-refetch-nextjs16",
+    })
+
+    onSuccess?.(response)
   }
 }
 

@@ -6,7 +6,7 @@ import { apiRoutes } from "@/lib/api/routes"
 import { queryKeys } from "@/lib/query-keys"
 import { useDeleteNotification } from "@/hooks/use-notifications"
 import { useResourceBulkProcessing } from "@/features/admin/resources/hooks"
-import { resourceRefreshRegistry } from "@/features/admin/resources/hooks/resource-refresh-registry"
+import { invalidateAndRefreshResource } from "@/features/admin/resources/utils"
 import type { FeedbackVariant } from "@/components/dialogs"
 import type { NotificationRow } from "../types"
 import { NOTIFICATION_MESSAGES } from "../constants"
@@ -25,12 +25,11 @@ const getErrorMessage = (error: unknown, defaultMessage: string): string => {
 
 interface UseNotificationActionsOptions {
   showFeedback: (variant: FeedbackVariant, title: string, description?: string, details?: string) => void
-  triggerTableRefresh: () => void
+  // triggerTableRefresh đã được loại bỏ vì registry đã trigger refresh tự động
 }
 
 export const useNotificationActions = ({
   showFeedback,
-  triggerTableRefresh,
 }: UseNotificationActionsOptions) => {
   const { data: session } = useSession()
   const queryClient = useQueryClient()
@@ -43,7 +42,7 @@ export const useNotificationActions = ({
   const { bulkState, startBulkProcessing, stopBulkProcessing } = useResourceBulkProcessing()
 
   const handleToggleRead = useCallback(
-    async (row: NotificationRow, newStatus: boolean, refresh: () => void) => {
+    async (row: NotificationRow, newStatus: boolean) => {
       const isOwner = session?.user?.id === row.userId
       
       if (!isOwner) {
@@ -60,13 +59,12 @@ export const useNotificationActions = ({
       try {
         await apiClient.patch(apiRoutes.notifications.markRead(row.id), { isRead: newStatus })
         
-        // Invalidate và refetch queries để đảm bảo UI cập nhật ngay lập tức - sử dụng "all" để đảm bảo refetch tất cả queries
-        await queryClient.invalidateQueries({ queryKey: queryKeys.notifications.admin(), refetchType: "all" })
-        await queryClient.refetchQueries({ queryKey: queryKeys.notifications.admin(), type: "all" })
-        
-        // Trigger UI refresh ngay lập tức thông qua registry
-        // Registry sẽ gọi handleRefresh để update refreshKey, trigger DataTable re-render và fetch fresh data
-        resourceRefreshRegistry.triggerRefresh(queryKeys.notifications.admin())
+        // Sử dụng utility function chung để invalidate, refetch và trigger registry refresh
+        // Đảm bảo UI tự động cập nhật ngay sau khi mutation thành công
+        await invalidateAndRefreshResource({
+          queryClient,
+          allQueryKey: queryKeys.notifications.admin(),
+        })
         
         showFeedback(
           "success",
@@ -75,7 +73,7 @@ export const useNotificationActions = ({
             ? "Thông báo đã được đánh dấu là đã đọc."
             : "Thông báo đã được đánh dấu là chưa đọc."
         )
-        refresh()
+        // refresh() không cần thiết vì registry đã trigger refresh
       } catch (error: unknown) {
         const defaultMessage = newStatus
           ? "Không thể đánh dấu đã đọc thông báo."
@@ -142,13 +140,12 @@ export const useNotificationActions = ({
         const count = response.data.data?.count ?? 0
 
         if (count > 0) {
-          // Invalidate và refetch queries để đảm bảo UI cập nhật ngay lập tức - sử dụng "all" để đảm bảo refetch tất cả queries
-          await queryClient.invalidateQueries({ queryKey: queryKeys.notifications.admin(), refetchType: "all" })
-          await queryClient.refetchQueries({ queryKey: queryKeys.notifications.admin(), type: "all" })
-          
-          // Trigger UI refresh ngay lập tức thông qua registry
-          // Registry sẽ gọi handleRefresh để update refreshKey, trigger DataTable re-render và fetch fresh data
-          resourceRefreshRegistry.triggerRefresh(queryKeys.notifications.admin())
+          // Sử dụng utility function chung để invalidate, refetch và trigger registry refresh
+          // Đảm bảo UI tự động cập nhật ngay sau khi mutation thành công
+          await invalidateAndRefreshResource({
+            queryClient,
+            allQueryKey: queryKeys.notifications.admin(),
+          })
           
           showFeedback(
             "success",
@@ -217,13 +214,12 @@ export const useNotificationActions = ({
         const count = response.data.data?.count ?? 0
 
         if (count > 0) {
-          // Invalidate và refetch queries để đảm bảo UI cập nhật ngay lập tức - sử dụng "all" để đảm bảo refetch tất cả queries
-          await queryClient.invalidateQueries({ queryKey: queryKeys.notifications.admin(), refetchType: "all" })
-          await queryClient.refetchQueries({ queryKey: queryKeys.notifications.admin(), type: "all" })
-          
-          // Trigger UI refresh ngay lập tức thông qua registry
-          // Registry sẽ gọi handleRefresh để update refreshKey, trigger DataTable re-render và fetch fresh data
-          resourceRefreshRegistry.triggerRefresh(queryKeys.notifications.admin())
+          // Sử dụng utility function chung để invalidate, refetch và trigger registry refresh
+          // Đảm bảo UI tự động cập nhật ngay sau khi mutation thành công
+          await invalidateAndRefreshResource({
+            queryClient,
+            allQueryKey: queryKeys.notifications.admin(),
+          })
           
           showFeedback(
             "success",
@@ -250,7 +246,7 @@ export const useNotificationActions = ({
   )
 
   const handleDeleteSingle = useCallback(
-    async (row: NotificationRow, refresh: () => void) => {
+    async (row: NotificationRow) => {
       const isOwner = session?.user?.id === row.userId
       
       if (!isOwner) {
@@ -268,16 +264,15 @@ export const useNotificationActions = ({
       try {
         await deleteNotificationMutation.mutateAsync(row.id)
         
-        // Invalidate và refetch queries để đảm bảo UI cập nhật ngay lập tức - sử dụng "all" để đảm bảo refetch tất cả queries
-        await queryClient.invalidateQueries({ queryKey: queryKeys.notifications.admin(), refetchType: "all" })
-        await queryClient.refetchQueries({ queryKey: queryKeys.notifications.admin(), type: "all" })
-        
-        // Trigger UI refresh ngay lập tức thông qua registry
-        // Registry sẽ gọi handleRefresh để update refreshKey, trigger DataTable re-render và fetch fresh data
-        resourceRefreshRegistry.triggerRefresh(queryKeys.notifications.admin())
+        // Sử dụng utility function chung để invalidate, refetch và trigger registry refresh
+        // Đảm bảo UI tự động cập nhật ngay sau khi mutation thành công
+        await invalidateAndRefreshResource({
+          queryClient,
+          allQueryKey: queryKeys.notifications.admin(),
+        })
         
         showFeedback("success", NOTIFICATION_MESSAGES.DELETE_SUCCESS, "Thông báo đã được xóa thành công.")
-        refresh()
+        // refresh() không cần thiết vì registry đã trigger refresh
       } catch (error: unknown) {
         const errorMessage = getErrorMessage(error, "Không thể xóa thông báo.")
         showFeedback("error", NOTIFICATION_MESSAGES.DELETE_ERROR, errorMessage)
@@ -338,13 +333,12 @@ export const useNotificationActions = ({
         const deletedCount = response.data.data?.count || 0
 
         if (deletedCount > 0) {
-          // Invalidate và refetch queries để đảm bảo UI cập nhật ngay lập tức - sử dụng "all" để đảm bảo refetch tất cả queries
-          await queryClient.invalidateQueries({ queryKey: queryKeys.notifications.admin(), refetchType: "all" })
-          await queryClient.refetchQueries({ queryKey: queryKeys.notifications.admin(), type: "all" })
-          
-          // Trigger UI refresh ngay lập tức thông qua registry
-          // Registry sẽ gọi handleRefresh để update refreshKey, trigger DataTable re-render và fetch fresh data
-          resourceRefreshRegistry.triggerRefresh(queryKeys.notifications.admin())
+          // Sử dụng utility function chung để invalidate, refetch và trigger registry refresh
+          // Đảm bảo UI tự động cập nhật ngay sau khi mutation thành công
+          await invalidateAndRefreshResource({
+            queryClient,
+            allQueryKey: queryKeys.notifications.admin(),
+          })
           
           let message = `Đã xóa ${deletedCount} thông báo.`
           if (systemCount > 0) {
