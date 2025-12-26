@@ -1,7 +1,7 @@
 import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
 
-import { cn } from "@/lib/utils/index"
+import { cn } from "@/lib/utils"
 import { responsiveTextSizes, fontWeights, lineHeights, iconSizes, headingSizes } from "@/lib/typography"
 
 const alertBodySmall = `${responsiveTextSizes.small} ${fontWeights.normal} ${lineHeights.relaxed}`

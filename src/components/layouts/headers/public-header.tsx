@@ -29,7 +29,7 @@ import {
   Info,
   Mail,
 } from "lucide-react";
-import { Logo } from "../../../../public/svg/Logo"
+import { Logo } from "@/public/svg/Logo"
 import { appFeatures } from "@/lib/config/app-features";
 import { getResourceMainRoute } from "@/lib/permissions/route-helpers";
 import { Separator } from "@/components/ui/separator";

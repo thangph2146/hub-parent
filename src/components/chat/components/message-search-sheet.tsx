@@ -11,7 +11,7 @@ import { Flex } from "@/components/ui/flex"
 import { Search, X } from "lucide-react"
 import { TypographyP, TypographyPSmallMuted, TypographyPMuted, IconSize } from "@/components/ui/typography"
 import type { Message } from "../types"
-import { formatMessageTime } from "../utils"
+import { formatMessageTime } from "../utils/date-helpers"
 import { highlightText } from "../utils/text-helpers"
 
 interface MessageSearchSheetProps {

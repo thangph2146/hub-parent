@@ -62,7 +62,7 @@ import {
   InsertImageDialog,
   InsertImagePayload,
 } from "@/components/editor/plugins/images-plugin"
-import { Logo } from "../../../../public/svg/Logo"
+import { Logo } from "@/public/svg/Logo"
 
 const imageCache = new Set()
 const RESIZE_HANDLE_HIDE_DELAY = 200

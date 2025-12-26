@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { Trash2 } from "lucide-react"
 import { TypographyP, TypographyPSmallMuted, IconSize } from "@/components/ui/typography"
 import type { Contact } from "../types"
-import { formatTime } from "../utils"
+import { formatTime } from "../utils/date-helpers"
 
 interface ContactItemProps {
   contact: Contact

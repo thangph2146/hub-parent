@@ -1,6 +1,6 @@
 import type { Metadata } from "next"
 import { appConfig, getOpenGraphConfig, getTwitterConfig } from "@/lib/config"
-import { GuideClient } from "@/features/public/help/components/guide-client"
+import { GuideClient } from "@/features/public/help/components"
 
 /**
  * Guide Page Metadata
