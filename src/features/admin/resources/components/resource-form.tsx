@@ -1,19 +1,25 @@
-"use client"
+"use client";
 
-import { useState, useEffect, useRef } from "react"
-import { useResourceSegment } from "@/hooks/use-resource-segment"
-import { useResourceNavigation, useResourceFormLogger } from "../hooks"
-import { logger } from "@/lib/config/logger"
-import { Loader2, Save, ArrowLeft, X } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { useState, useEffect, useRef } from "react";
+import { useResourceSegment } from "@/hooks/use-resource-segment";
+import { useResourceNavigation, useResourceFormLogger } from "../hooks";
+import { logger } from "@/lib/config/logger";
+import { Loader2, Save, ArrowLeft, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   Field,
   FieldDescription,
   FieldLabel,
   FieldSet,
   FieldLegend,
-} from "@/components/ui/field"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+} from "@/components/ui/field";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -21,7 +27,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
+} from "@/components/ui/dialog";
 import {
   Sheet,
   SheetContent,
@@ -29,71 +35,98 @@ import {
   SheetFooter,
   SheetHeader,
   SheetTitle,
-} from "@/components/ui/sheet"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { cn } from "@/lib/utils"
-import { renderFieldInput } from "./form-fields"
-import { applyResourceSegmentToPath } from "@/lib/permissions"
-import { TypographyH1, TypographyPMuted, TypographySpanMuted, TypographySpanDestructive, IconSize } from "@/components/ui/typography"
-import { Flex } from "@/components/ui/flex"
-import { Grid } from "@/components/ui/grid"
+} from "@/components/ui/sheet";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { cn } from "@/lib/utils";
+import { renderFieldInput } from "./form-fields";
+import { applyResourceSegmentToPath } from "@/lib/permissions";
+import {
+  TypographyH1,
+  TypographyPMuted,
+  TypographySpanMuted,
+  TypographySpanDestructive,
+  IconSize,
+} from "@/components/ui/typography";
+import { Flex } from "@/components/ui/flex";
+import { Grid } from "@/components/ui/grid";
 
 export interface ResourceFormField<T = unknown> {
-  name: keyof T | string
-  label: string
-  description?: string
-  type?: "text" | "email" | "password" | "number" | "textarea" | "select" | "multiple-select" | "permissions-table" | "checkbox" | "switch" | "date" | "image" | "editor" | "slug"
-  sourceField?: string
-  placeholder?: string
-  required?: boolean
-  disabled?: boolean
-  defaultValue?: unknown
-  options?: Array<{ label: string; value: string | number }>
-  optionGroups?: Array<{ label: string; options: Array<{ label: string; value: string | number }> }>
-  icon?: React.ReactNode
-  render?: (field: ResourceFormField<T>, value: unknown, onChange: (value: unknown) => void) => React.ReactNode
-  validate?: (value: unknown) => { valid: boolean; error?: string }
-  section?: string
-  className?: string
+  name: keyof T | string;
+  label: string;
+  description?: string;
+  type?:
+    | "text"
+    | "email"
+    | "password"
+    | "number"
+    | "textarea"
+    | "select"
+    | "multiple-select"
+    | "permissions-table"
+    | "checkbox"
+    | "switch"
+    | "date"
+    | "image"
+    | "editor"
+    | "slug";
+  sourceField?: string;
+  placeholder?: string;
+  required?: boolean;
+  disabled?: boolean;
+  defaultValue?: unknown;
+  options?: Array<{ label: string; value: string | number }>;
+  optionGroups?: Array<{
+    label: string;
+    options: Array<{ label: string; value: string | number }>;
+  }>;
+  icon?: React.ReactNode;
+  render?: (
+    field: ResourceFormField<T>,
+    value: unknown,
+    onChange: (value: unknown) => void
+  ) => React.ReactNode;
+  validate?: (value: unknown) => { valid: boolean; error?: string };
+  section?: string;
+  className?: string;
 }
 
 export interface ResourceFormSection {
-  id: string
-  title?: string
-  description?: string
+  id: string;
+  title?: string;
+  description?: string;
 }
 
 export interface ResourceFormProps<T extends Record<string, unknown>> {
-  data: T | null
-  fields: ResourceFormField<T>[]
-  sections?: ResourceFormSection[]
+  data: T | null;
+  fields: ResourceFormField<T>[];
+  sections?: ResourceFormSection[];
 
-  title?: string
-  description?: string
-  submitLabel?: string
-  cancelLabel?: string
-  backUrl?: string
-  backLabel?: string
+  title?: string;
+  description?: string;
+  submitLabel?: string;
+  cancelLabel?: string;
+  backUrl?: string;
+  backLabel?: string;
 
-  onSubmit: (data: Partial<T>) => Promise<{ success: boolean; error?: string }>
-  onCancel?: () => void
-  onSuccess?: () => void
-  onBack?: () => void | Promise<void>
+  onSubmit: (data: Partial<T>) => Promise<{ success: boolean; error?: string }>;
+  onCancel?: () => void;
+  onSuccess?: () => void;
+  onBack?: () => void | Promise<void>;
 
   // UI
-  className?: string
-  formClassName?: string
-  contentClassName?: string
-  showCard?: boolean
+  className?: string;
+  formClassName?: string;
+  contentClassName?: string;
+  showCard?: boolean;
 
   // Dialog/Sheet mode
-  variant?: "page" | "dialog" | "sheet"
-  open?: boolean
-  onOpenChange?: (open: boolean) => void
+  variant?: "page" | "dialog" | "sheet";
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 
-  resourceName?: string
-  resourceId?: string
-  action?: "create" | "update"
+  resourceName?: string;
+  resourceId?: string;
+  action?: "create" | "update";
 }
 
 export const ResourceForm = <T extends Record<string, unknown>>({
@@ -121,101 +154,114 @@ export const ResourceForm = <T extends Record<string, unknown>>({
   resourceId,
   action,
 }: ResourceFormProps<T>) => {
-  const resourceSegment = useResourceSegment()
-  const resolvedBackUrl = backUrl ? applyResourceSegmentToPath(backUrl, resourceSegment) : undefined
-  const { navigateBack, router } = useResourceNavigation()
+  const resourceSegment = useResourceSegment();
+  const resolvedBackUrl = backUrl
+    ? applyResourceSegmentToPath(backUrl, resourceSegment)
+    : undefined;
+  const { navigateBack, router } = useResourceNavigation();
 
   const handleBack = async () => {
-    if (resolvedBackUrl) await navigateBack(resolvedBackUrl, onBack)
-  }
-  const [isPending, setIsPending] = useState(false)
+    if (resolvedBackUrl) await navigateBack(resolvedBackUrl, onBack);
+  };
+  const [isPending, setIsPending] = useState(false);
   const [formData, setFormData] = useState<Partial<T>>(() => {
-    const initial: Partial<T> = {}
+    const initial: Partial<T> = {};
     fields.forEach((field) => {
-      const key = field.name as keyof T
-      const dataValue = data?.[key]
+      const key = field.name as keyof T;
+      const dataValue = data?.[key];
 
       if (dataValue !== undefined && dataValue !== null) {
-        initial[key] = dataValue as T[keyof T]
+        initial[key] = dataValue as T[keyof T];
       } else if (field.defaultValue !== undefined) {
-        initial[key] = field.defaultValue as T[keyof T]
+        initial[key] = field.defaultValue as T[keyof T];
       } else if (field.type === "multiple-select") {
-        initial[key] = [] as T[keyof T]
+        initial[key] = [] as T[keyof T];
       } else if (field.type === "checkbox" || field.type === "switch") {
-        initial[key] = false as T[keyof T]
+        initial[key] = false as T[keyof T];
       } else if (field.type !== "number") {
-        initial[key] = "" as T[keyof T]
+        initial[key] = "" as T[keyof T];
       }
-    })
-    return initial
-  })
-  const [errors, setErrors] = useState<Record<string, string>>({})
-  const [submitError, setSubmitError] = useState<string | null>(null)
-  const [submitSuccess, setSubmitSuccess] = useState(false)
-  const formRef = useRef<HTMLFormElement>(null)
+    });
+    return initial;
+  });
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submitSuccess, setSubmitSuccess] = useState(false);
+  const formRef = useRef<HTMLFormElement>(null);
 
-  const detectedAction: "create" | "update" = action || (data?.id ? "update" : "create")
-  const detectedResourceId = resourceId || (data?.id as string | undefined)
-  const detectedResourceName = resourceName || "resource"
+  const detectedAction: "create" | "update" =
+    action || (data?.id ? "update" : "create");
+  const detectedResourceId = resourceId || (data?.id as string | undefined);
+  const detectedResourceName = resourceName || "resource";
 
   useEffect(() => {
-    if (!data) return
+    if (!data) return;
 
     setFormData((prev) => {
-      const updated: Partial<T> = { ...prev }
-      let hasChanges = false
+      const updated: Partial<T> = { ...prev };
+      let hasChanges = false;
 
       fields.forEach((field) => {
-        const key = field.name as keyof T
-        const dataValue = data[key]
-        const currentValue = prev[key]
+        const key = field.name as keyof T;
+        const dataValue = data[key];
+        const currentValue = prev[key];
         if (field.type === "multiple-select") {
           // Multiple-select: luôn là array
           const newValue = Array.isArray(dataValue)
             ? dataValue
-            : (dataValue !== undefined && dataValue !== null ? [dataValue] : [])
+            : dataValue !== undefined && dataValue !== null
+            ? [dataValue]
+            : [];
 
           // So sánh array
-          const currentArray = Array.isArray(currentValue) ? currentValue : []
+          const currentArray = Array.isArray(currentValue) ? currentValue : [];
           if (JSON.stringify(newValue) !== JSON.stringify(currentArray)) {
-            updated[key] = newValue as T[keyof T]
-            hasChanges = true
+            updated[key] = newValue as T[keyof T];
+            hasChanges = true;
           }
         } else if (field.type === "checkbox" || field.type === "switch") {
-          const newValue = dataValue !== undefined && dataValue !== null ? Boolean(dataValue) : false
+          const newValue =
+            dataValue !== undefined && dataValue !== null
+              ? Boolean(dataValue)
+              : false;
           if (newValue !== currentValue) {
-            updated[key] = newValue as T[keyof T]
-            hasChanges = true
+            updated[key] = newValue as T[keyof T];
+            hasChanges = true;
           }
         } else if (field.type === "number") {
           if (dataValue !== undefined && dataValue !== null) {
-            const newValue = typeof dataValue === "number" ? dataValue : Number(dataValue)
+            const newValue =
+              typeof dataValue === "number" ? dataValue : Number(dataValue);
             if (newValue !== currentValue && !isNaN(newValue)) {
-              updated[key] = newValue as T[keyof T]
-              hasChanges = true
+              updated[key] = newValue as T[keyof T];
+              hasChanges = true;
             }
           }
         } else {
           if (dataValue !== undefined) {
-            const newValue = dataValue === null ? "" : dataValue
-            const arraysEqual = Array.isArray(newValue) && Array.isArray(currentValue)
-              ? JSON.stringify(newValue) !== JSON.stringify(currentValue)
-              : false
+            const newValue = dataValue === null ? "" : dataValue;
+            const arraysEqual =
+              Array.isArray(newValue) && Array.isArray(currentValue)
+                ? JSON.stringify(newValue) !== JSON.stringify(currentValue)
+                : false;
 
-            if (arraysEqual || (!Array.isArray(newValue) && newValue !== currentValue)) {
-              updated[key] = newValue as T[keyof T]
-              hasChanges = true
+            if (
+              arraysEqual ||
+              (!Array.isArray(newValue) && newValue !== currentValue)
+            ) {
+              updated[key] = newValue as T[keyof T];
+              hasChanges = true;
             }
           } else if (currentValue === undefined && field.type !== undefined) {
-            updated[key] = "" as T[keyof T]
-            hasChanges = true
+            updated[key] = "" as T[keyof T];
+            hasChanges = true;
           }
         }
-      })
+      });
 
-      return hasChanges ? updated : prev
-    })
-  }, [data, fields])
+      return hasChanges ? updated : prev;
+    });
+  }, [data, fields]);
 
   useResourceFormLogger({
     resourceName: detectedResourceName,
@@ -225,165 +271,189 @@ export const ResourceForm = <T extends Record<string, unknown>>({
     isSubmitting: isPending,
     submitSuccess,
     submitError,
-  })
+  });
 
   const handleFieldChange = (fieldName: string, value: unknown) => {
-    setFormData((prev) => ({ ...prev, [fieldName]: value } as Partial<T>))
+    setFormData((prev) => ({ ...prev, [fieldName]: value } as Partial<T>));
     if (errors[fieldName]) {
       setErrors((prev) => {
-        const next = { ...prev }
-        delete next[fieldName]
-        return next
-      })
+        const next = { ...prev };
+        delete next[fieldName];
+        return next;
+      });
     }
-    setSubmitError(null)
-  }
+    setSubmitError(null);
+  };
 
   const validateForm = (): boolean => {
-    const newErrors: Record<string, string> = {}
+    const newErrors: Record<string, string> = {};
 
     fields.forEach((field) => {
-      const fieldName = String(field.name)
-      const value = formData[field.name as keyof T]
+      const fieldName = String(field.name);
+      const value = formData[field.name as keyof T];
 
       if (!field.required) {
-        if (field.validate && value !== undefined && value !== null && value !== "") {
-          const validation = field.validate(value)
+        if (
+          field.validate &&
+          value !== undefined &&
+          value !== null &&
+          value !== ""
+        ) {
+          const validation = field.validate(value);
           if (!validation.valid && validation.error) {
-            newErrors[fieldName] = validation.error
+            newErrors[fieldName] = validation.error;
           }
         }
-        return
+        return;
       }
 
-      const hasValue = field.name in formData
-      let isEmpty = false
+      const hasValue = field.name in formData;
+      let isEmpty = false;
 
       if (!hasValue) {
-        isEmpty = true
+        isEmpty = true;
       } else if (field.type === "multiple-select") {
-        isEmpty = !Array.isArray(value) || value.length === 0
+        isEmpty = !Array.isArray(value) || value.length === 0;
       } else if (field.type === "select") {
-        isEmpty = value === undefined || value === null || value === ""
+        isEmpty = value === undefined || value === null || value === "";
       } else if (field.type === "checkbox" || field.type === "switch") {
-        isEmpty = value !== true
+        isEmpty = value !== true;
       } else if (field.type === "number") {
-        isEmpty = value === undefined || value === null || (typeof value === "number" && isNaN(value))
+        isEmpty =
+          value === undefined ||
+          value === null ||
+          (typeof value === "number" && isNaN(value));
       } else {
-        isEmpty = value === undefined || value === null || value === ""
+        isEmpty = value === undefined || value === null || value === "";
       }
 
       if (isEmpty) {
-        newErrors[fieldName] = `${field.label} là bắt buộc`
-        return
+        newErrors[fieldName] = `${field.label} là bắt buộc`;
+        return;
       }
 
       if (field.validate) {
-        const validation = field.validate(value)
+        const validation = field.validate(value);
         if (!validation.valid && validation.error) {
-          newErrors[fieldName] = validation.error
+          newErrors[fieldName] = validation.error;
         }
       }
-    })
+    });
 
-    setErrors(newErrors)
+    setErrors(newErrors);
     if (Object.keys(newErrors).length > 0) {
-      scrollToField(Object.keys(newErrors)[0])
+      scrollToField(Object.keys(newErrors)[0]);
     }
-    return Object.keys(newErrors).length === 0
-  }
+    return Object.keys(newErrors).length === 0;
+  };
 
   const scrollToField = (fieldName: string) => {
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
-        const fieldElement = document.getElementById(fieldName)
+        const fieldElement = document.getElementById(fieldName);
         if (!fieldElement) {
-          const fieldByName = document.querySelector(`[name="${fieldName}"]`) as HTMLElement
-          if (!fieldByName) return
-          fieldByName.scrollIntoView({ behavior: "smooth", block: "center" })
-          fieldByName.focus()
-          return
+          const fieldByName = document.querySelector(
+            `[name="${fieldName}"]`
+          ) as HTMLElement;
+          if (!fieldByName) return;
+          fieldByName.scrollIntoView({ behavior: "smooth", block: "center" });
+          fieldByName.focus();
+          return;
         }
 
-        let scrollContainer: HTMLElement | null = null
+        let scrollContainer: HTMLElement | null = null;
 
         if (variant === "dialog") {
-          const dialog = fieldElement.closest('[role="dialog"]')
-          scrollContainer = dialog?.querySelector('[data-slot="scroll-area-viewport"]') as HTMLElement | null
+          const dialog = fieldElement.closest('[role="dialog"]');
+          scrollContainer = dialog?.querySelector(
+            '[data-slot="scroll-area-viewport"]'
+          ) as HTMLElement | null;
         } else if (variant === "sheet") {
-          const sheet = fieldElement.closest('[data-state]')
-          scrollContainer = sheet?.querySelector('[data-slot="scroll-area-viewport"]') as HTMLElement | null
+          const sheet = fieldElement.closest("[data-state]");
+          scrollContainer = sheet?.querySelector(
+            '[data-slot="scroll-area-viewport"]'
+          ) as HTMLElement | null;
         } else {
-          const form = fieldElement.closest('form')
+          const form = fieldElement.closest("form");
           if (form) {
-            let parent = form.parentElement
+            let parent = form.parentElement;
             while (parent && parent !== document.body) {
-              const overflow = window.getComputedStyle(parent).overflowY
+              const overflow = window.getComputedStyle(parent).overflowY;
               if (overflow === "auto" || overflow === "scroll") {
-                scrollContainer = parent
-                break
+                scrollContainer = parent;
+                break;
               }
-              parent = parent.parentElement
+              parent = parent.parentElement;
             }
           }
         }
 
         if (scrollContainer) {
-          const elementRect = fieldElement.getBoundingClientRect()
-          const containerRect = scrollContainer.getBoundingClientRect()
-          const scrollTop = scrollContainer.scrollTop + (elementRect.top - containerRect.top) - 20
-          scrollContainer.scrollTo({ top: Math.max(0, scrollTop), behavior: "smooth" })
+          const elementRect = fieldElement.getBoundingClientRect();
+          const containerRect = scrollContainer.getBoundingClientRect();
+          const scrollTop =
+            scrollContainer.scrollTop +
+            (elementRect.top - containerRect.top) -
+            20;
+          scrollContainer.scrollTo({
+            top: Math.max(0, scrollTop),
+            behavior: "smooth",
+          });
         } else {
-          fieldElement.scrollIntoView({ behavior: "smooth", block: "center" })
+          fieldElement.scrollIntoView({ behavior: "smooth", block: "center" });
         }
 
         setTimeout(() => {
-          const input = fieldElement.querySelector<HTMLElement>("input, textarea, select, [role='combobox']")
+          const input = fieldElement.querySelector<HTMLElement>(
+            "input, textarea, select, [role='combobox']"
+          );
           if (input) {
-            input.focus()
+            input.focus();
             if (input instanceof HTMLElement) {
-              input.scrollIntoView({ behavior: "smooth", block: "nearest" })
+              input.scrollIntoView({ behavior: "smooth", block: "nearest" });
             }
           }
-        }, 100)
-      })
-    })
-  }
+        }, 100);
+      });
+    });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setSubmitError(null)
+    e.preventDefault();
+    setSubmitError(null);
 
     if (!validateForm()) {
-      return
+      return;
     }
 
-    setIsPending(true)
-    setSubmitSuccess(false)
-    setSubmitError(null)
+    setIsPending(true);
+    setSubmitSuccess(false);
+    setSubmitError(null);
     try {
-      const result = await onSubmit(formData)
+      const result = await onSubmit(formData);
       if (result.success) {
-        setSubmitSuccess(true)
-        onSuccess?.()
+        setSubmitSuccess(true);
+        onSuccess?.();
         if (variant === "page") {
           if (onOpenChange) {
-            onOpenChange(false)
+            onOpenChange(false);
           }
         } else {
-          onOpenChange?.(false)
+          onOpenChange?.(false);
         }
       } else {
-        setSubmitError(result.error ?? "Đã xảy ra lỗi khi lưu")
-        setSubmitSuccess(false)
+        setSubmitError(result.error ?? "Đã xảy ra lỗi khi lưu");
+        setSubmitSuccess(false);
       }
     } catch (error) {
-      setSubmitError(error instanceof Error ? error.message : "Đã xảy ra lỗi khi lưu")
-      setSubmitSuccess(false)
+      setSubmitError(
+        error instanceof Error ? error.message : "Đã xảy ra lỗi khi lưu"
+      );
+      setSubmitSuccess(false);
     } finally {
-      setIsPending(false)
+      setIsPending(false);
     }
-  }
+  };
 
   const handleCancel = () => {
     logger.info("❌ Cancel button clicked", {
@@ -394,54 +464,65 @@ export const ResourceForm = <T extends Record<string, unknown>>({
       resourceName,
       resourceId,
       action,
-      currentPath: typeof window !== "undefined" ? window.location.pathname : undefined,
-    })
+      currentPath:
+        typeof window !== "undefined" ? window.location.pathname : undefined,
+    });
 
     if (onCancel) {
-      logger.debug("📞 Gọi onCancel callback")
-      onCancel()
+      logger.debug("📞 Gọi onCancel callback");
+      onCancel();
     } else if (variant === "dialog" || variant === "sheet") {
-      logger.debug("🚪 Đóng dialog/sheet")
-      onOpenChange?.(false)
+      logger.debug("🚪 Đóng dialog/sheet");
+      onOpenChange?.(false);
     } else if (resolvedBackUrl) {
       logger.debug("➡️ Navigate về backUrl từ cancel button", {
         backUrl: resolvedBackUrl,
-      })
+      });
       navigateBack(resolvedBackUrl, onBack).catch(() => {
         logger.warn("⚠️ NavigateBack failed, fallback to router.replace", {
           backUrl: resolvedBackUrl,
-        })
-        router.replace(resolvedBackUrl)
-      })
+        });
+        router.replace(resolvedBackUrl);
+      });
     }
-  }
+  };
 
   const groupFieldsBySection = () => {
-    const grouped: Record<string, ResourceFormField<T>[]> = {}
-    const ungrouped: ResourceFormField<T>[] = []
+    const grouped: Record<string, ResourceFormField<T>[]> = {};
+    const ungrouped: ResourceFormField<T>[] = [];
 
     fields.forEach((field) => {
       if (field.section) {
-        grouped[field.section] ??= []
-        grouped[field.section].push(field)
+        grouped[field.section] ??= [];
+        grouped[field.section].push(field);
       } else {
-        ungrouped.push(field)
+        ungrouped.push(field);
       }
-    })
+    });
 
-    return { grouped, ungrouped }
-  }
+    return { grouped, ungrouped };
+  };
 
   const renderField = (field: ResourceFormField<T>) => {
-    const fieldName = String(field.name)
-    const value = formData[field.name as keyof T]
-    const error = errors[fieldName]
-    const sourceValue = field.sourceField ? formData[field.sourceField as keyof T] : undefined
-    const fullWidthTypes = ["textarea", "select", "image", "editor", "slug", "permissions-table"]
-    const isFullWidth = fullWidthTypes.includes(field.type || "") || !!field.render
-    const isEditorField = field.type === "editor"
-    const isCheckbox = field.type === "checkbox"
-    const hasError = !!error
+    const fieldName = String(field.name);
+    const value = formData[field.name as keyof T];
+    const error = errors[fieldName];
+    const sourceValue = field.sourceField
+      ? formData[field.sourceField as keyof T]
+      : undefined;
+    const fullWidthTypes = [
+      "textarea",
+      "select",
+      "image",
+      "editor",
+      "slug",
+      "permissions-table",
+    ];
+    const isFullWidth =
+      fullWidthTypes.includes(field.type || "") || !!field.render;
+    const isEditorField = field.type === "editor";
+    const isCheckbox = field.type === "checkbox";
+    const hasError = !!error;
     const fieldInput = renderFieldInput({
       field,
       value,
@@ -449,7 +530,7 @@ export const ResourceForm = <T extends Record<string, unknown>>({
       onChange: (newValue) => handleFieldChange(field.name as string, newValue),
       isPending,
       sourceValue,
-    })
+    });
 
     return (
       <Flex
@@ -459,17 +540,17 @@ export const ResourceForm = <T extends Record<string, unknown>>({
         minWidth={isFullWidth ? "full" : "120"}
         className={cn(
           "transition-all duration-200 ease-in-out",
-          isEditorField ? "col-span-full" : (isFullWidth && "@md:col-span-full"),
+          isEditorField ? "col-span-full" : isFullWidth && "@md:col-span-full",
           field.className
         )}
       >
-        <Field 
+        <Field
           orientation={isCheckbox ? undefined : "responsive"}
           data-invalid={hasError}
           className="transition-all duration-200"
         >
           {(!isCheckbox || field.icon) && (
-            <FieldLabel 
+            <FieldLabel
               htmlFor={fieldName}
               className={cn(
                 "transition-colors duration-200",
@@ -490,11 +571,9 @@ export const ResourceForm = <T extends Record<string, unknown>>({
               )}
             </FieldLabel>
           )}
-          <div className="relative">
-            {fieldInput}
-          </div>
+          <div className="relative">{fieldInput}</div>
           {field.description && (
-            <FieldDescription 
+            <FieldDescription
               className={cn(
                 "transition-opacity duration-200",
                 hasError && "opacity-70"
@@ -505,30 +584,29 @@ export const ResourceForm = <T extends Record<string, unknown>>({
           )}
         </Field>
       </Flex>
-    )
-  }
+    );
+  };
 
-  const renderSection = (sectionId: string, sectionFields: ResourceFormField<T>[]) => {
-    const sectionInfo = sections?.find((s) => s.id === sectionId)
-    const gridCols = sectionFields.length >= 2 ? ("2-lg" as const) : (1 as const)
+  const renderSection = (
+    sectionId: string,
+    sectionFields: ResourceFormField<T>[]
+  ) => {
+    const sectionInfo = sections?.find((s) => s.id === sectionId);
+    const gridCols =
+      sectionFields.length >= 2 ? ("2-lg" as const) : (1 as const);
 
     return (
-      <FieldSet 
-        key={sectionId} 
-        className={cn(
-          "group/field-set",
-          "transition-all duration-300"
-        )}
+      <FieldSet
+        key={sectionId}
+        className={cn("group/field-set", "transition-all duration-300")}
       >
         {sectionInfo && (sectionInfo.title || sectionInfo.description) && (
           <>
             {sectionInfo.title && (
-              <FieldLegend variant="legend">
-                {sectionInfo.title}
-              </FieldLegend>
+              <FieldLegend variant="legend">{sectionInfo.title}</FieldLegend>
             )}
             {sectionInfo.description && (
-              <p 
+              <p
                 className={cn(
                   "mx-0 mb-3 px-2 border-b-0 w-auto",
                   "text-xs sm:text-sm md:text-base font-normal text-muted-foreground",
@@ -540,44 +618,53 @@ export const ResourceForm = <T extends Record<string, unknown>>({
             )}
           </>
         )}
-        <Grid 
-          cols={gridCols} 
-          fullWidth 
+        <Grid
+          cols={gridCols}
+          fullWidth
           gap={6}
           className="transition-all duration-300"
         >
           {sectionFields.map(renderField)}
         </Grid>
       </FieldSet>
-    )
-  }
+    );
+  };
 
-  const { grouped, ungrouped } = groupFieldsBySection()
+  const { grouped, ungrouped } = groupFieldsBySection();
 
   const formContent = (
-    <form id="resource-form" ref={formRef} onSubmit={handleSubmit} className={formClassName}>
+    <form
+      id="resource-form"
+      ref={formRef}
+      onSubmit={handleSubmit}
+      className={formClassName}
+    >
       <Flex direction="col" fullWidth gap={6}>
         {submitError && (
-          <Flex 
-            align="center" 
-            gap={2} 
-            fullWidth 
-            rounded="lg" 
-            bg="destructive-text" 
-            border="all" 
-            padding="md" 
+          <Flex
+            align="center"
+            gap={2}
+            fullWidth
+            rounded="lg"
+            bg="destructive-text"
+            border="all"
+            padding="md"
             className={cn(
               "border-destructive/20",
               "transition-all duration-300",
               "shadow-sm"
             )}
           >
-            <TypographySpanMuted className="font-medium">{submitError}</TypographySpanMuted>
+            <TypographySpanMuted className="font-medium">
+              {submitError}
+            </TypographySpanMuted>
           </Flex>
         )}
 
         <Flex direction="col" gap={8} fullWidth className={contentClassName}>
-          {Object.entries(grouped).map(([sectionId, sectionFields]) => renderSection(sectionId, sectionFields))}
+          {Object.entries(grouped).map(([sectionId, sectionFields]) =>
+            renderSection(sectionId, sectionFields)
+          )}
           {ungrouped.length > 0 && (
             <Grid cols="2-lg" fullWidth gap={6}>
               {ungrouped.map(renderField)}
@@ -586,102 +673,50 @@ export const ResourceForm = <T extends Record<string, unknown>>({
         </Flex>
       </Flex>
     </form>
-  )
-
+  );
 
   const footerButtons = (
     <>
-      <Button type="button" variant="outline" onClick={handleCancel} disabled={isPending} className="h-9">
+      <Button
+        type="button"
+        variant="outline"
+        onClick={handleCancel}
+        disabled={isPending}
+        className="h-9"
+      >
         <Flex align="center" gap={2}>
-          <IconSize size="sm">{variant === "page" && resolvedBackUrl ? <ArrowLeft /> : <X />}</IconSize>
+          <IconSize size="sm">
+            {variant === "page" && resolvedBackUrl ? <ArrowLeft /> : <X />}
+          </IconSize>
           {cancelLabel}
         </Flex>
       </Button>
-      <Button type="submit" form="resource-form" disabled={isPending} className="h-9">
+      <Button
+        type="submit"
+        form="resource-form"
+        disabled={isPending}
+        className="h-9"
+      >
         <Flex align="center" gap={2}>
           {isPending ? (
             <>
-              <IconSize size="sm"><Loader2 className="animate-spin" /></IconSize>
+              <IconSize size="sm">
+                <Loader2 className="animate-spin" />
+              </IconSize>
               <span>Đang lưu...</span>
             </>
           ) : (
             <>
-              <IconSize size="sm"><Save /></IconSize>
+              <IconSize size="sm">
+                <Save />
+              </IconSize>
               <span>{submitLabel || "Lưu"}</span>
             </>
           )}
         </Flex>
       </Button>
     </>
-  )
-
-  if (variant === "dialog") {
-    return (
-      <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-2xl w-full p-0">
-          <Flex direction="col" align="start" justify="start" gap={0} fullWidth height="full">
-            <DialogHeader className="px-6 pt-6 pb-4 border-b border-border/50">
-              <DialogTitle>{title}</DialogTitle>
-              {description && <DialogDescription className="mt-2">{description}</DialogDescription>}
-            </DialogHeader>
-            <ScrollArea className="max-h-[calc(60dvh)] overflow-y-auto flex-1">
-              <Flex direction="col" align="start" justify="start" gap={0} fullWidth padding="lg">
-                {formContent}
-              </Flex>
-            </ScrollArea>
-            <DialogFooter className="px-6 pb-6 pt-4 border-t border-border/50">
-              <Flex align="center" gap={3}>
-                {footerButtons}
-              </Flex>
-            </DialogFooter>
-          </Flex>
-        </DialogContent>
-      </Dialog>
-    )
-  }
-
-  if (variant === "sheet") {
-    return (
-      <Sheet open={open} onOpenChange={onOpenChange}>
-        <SheetContent>
-          <Flex direction="col" fullWidth height="full">
-            <SheetHeader className="pb-4 border-b border-border/50">
-              <SheetTitle>{title}</SheetTitle>
-              {description && <SheetDescription className="mt-2">{description}</SheetDescription>}
-            </SheetHeader>
-            <ScrollArea className="flex-1 -mx-6 px-6 mt-6">
-              <Flex direction="col" fullWidth className="pr-4">
-                {formContent}
-              </Flex>
-            </ScrollArea>
-            <SheetFooter className="mt-6 border-t border-border/50 pt-4">
-              <Flex align="center" gap={3}>
-                {footerButtons}
-              </Flex>
-            </SheetFooter>
-          </Flex>
-        </SheetContent>
-      </Sheet>
-    )
-  }
-
-  const formElement = showCard ? (
-    <Card className={className}>
-      {(title || description) && (
-        <CardHeader>
-          {title && <CardTitle>{title}</CardTitle>}
-          {description && <CardDescription>{description}</CardDescription>}
-        </CardHeader>
-      )}
-      <CardContent className={title || description ? undefined : "pt-6"}>
-        {formContent}
-      </CardContent>
-    </Card>
-  ) : (
-    <Flex direction="col" gap={4} fullWidth flex="1" marginX="auto" padding="md" className={className}>
-      {formContent}
-    </Flex>
-  )
+  );
 
   return (
     <>
@@ -695,26 +730,44 @@ export const ResourceForm = <T extends Record<string, unknown>>({
           paddingBottom={6}
           border="b-border"
         >
-          <Flex direction="col" gap={3} fullWidth flex="1" minWidth="0" className="lg:w-1/3">
+          <Flex
+            direction="col"
+            gap={3}
+            fullWidth
+            flex="1"
+            minWidth="0"
+            className="lg:w-1/3"
+          >
             {resolvedBackUrl && (
-              <Button variant="outline" size="sm" onClick={handleBack} className="h-8">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleBack}
+                className="h-8"
+              >
                 <Flex align="center" gap={2}>
-                  <IconSize size="sm"><ArrowLeft /></IconSize>
+                  <IconSize size="sm">
+                    <ArrowLeft />
+                  </IconSize>
                   {backLabel}
                 </Flex>
               </Button>
             )}
             <Flex direction="col" gap={2} minWidth="0">
-              {title && <TypographyH1 className="truncate">{title}</TypographyH1>}
-              {description && <TypographyPMuted className="line-clamp-2">{description}</TypographyPMuted>}
+              {title && (
+                <TypographyH1 className="truncate">{title}</TypographyH1>
+              )}
+              {description && (
+                <TypographyPMuted className="line-clamp-2">
+                  {description}
+                </TypographyPMuted>
+              )}
             </Flex>
           </Flex>
         </Flex>
       )}
 
-      <Flex fullWidth flex="1" marginX="auto" padding="md">
-        {formElement}
-      </Flex>
+      {formContent}
 
       <Flex
         align="center"
@@ -729,6 +782,5 @@ export const ResourceForm = <T extends Record<string, unknown>>({
         {footerButtons}
       </Flex>
     </>
-  )
-}
-
+  );
+};
