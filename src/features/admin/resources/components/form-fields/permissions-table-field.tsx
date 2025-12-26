@@ -1,7 +1,19 @@
 "use client";
 
-import React, { useState, useMemo, useRef, useEffect, useLayoutEffect } from "react";
-import { ChevronDown, CheckSquare2, Square, ChevronRight, ChevronsDownUp, ChevronsUpDown } from "lucide-react";
+import React, {
+  useState,
+  useMemo,
+  useRef,
+  useEffect,
+  useLayoutEffect,
+} from "react";
+import {
+  ChevronDown,
+  CheckSquare2,
+  Square,
+  ChevronsDownUp,
+  ChevronsUpDown,
+} from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import {
@@ -55,7 +67,7 @@ export const PermissionsTableField = <T,>({
   readOnly = false,
 }: PermissionsTableFieldProps<T>) => {
   const { ref: tableRef, width: tableWidth } = useElementSize<HTMLDivElement>();
-  
+
   // Initialize state
   const [openGroups, setOpenGroups] = useState<Set<string>>(new Set());
   const [openResources, setOpenResources] = useState<Set<string>>(new Set());
@@ -141,30 +153,25 @@ export const PermissionsTableField = <T,>({
   }, [groups]);
 
   // Auto-expand all in read-only mode
-  // Using useLayoutEffect to sync state before paint for better UX
   useLayoutEffect(() => {
-    if (readOnly && parsedGroups.length > 0) {
-      const allGroupLabels = new Set(parsedGroups.map((g) => g.groupLabel));
-      const allResourceKeys = new Set<string>();
-      parsedGroups.forEach((group) => {
-        group.resources.forEach((resource) => {
-          const resourceKey = `${group.groupLabel}-${resource.resource}`;
-          allResourceKeys.add(resourceKey);
-        });
-      });
-      
-      // Only update if different to avoid unnecessary renders
-      const groupsChanged = 
-        openGroups.size !== allGroupLabels.size ||
-        Array.from(allGroupLabels).some(g => !openGroups.has(g));
-      const resourcesChanged = 
-        openResources.size !== allResourceKeys.size ||
-        Array.from(allResourceKeys).some(r => !openResources.has(r));
-      
-      if (groupsChanged || resourcesChanged) {
-        setOpenGroups(allGroupLabels);
-        setOpenResources(allResourceKeys);
-      }
+    if (!readOnly || parsedGroups.length === 0) return;
+    const allGroupLabels = new Set(parsedGroups.map((g) => g.groupLabel));
+    const allResourceKeys = new Set(
+      parsedGroups.flatMap((group) =>
+        group.resources.map(
+          (resource) => `${group.groupLabel}-${resource.resource}`
+        )
+      )
+    );
+    const groupsChanged =
+      openGroups.size !== allGroupLabels.size ||
+      Array.from(allGroupLabels).some((g) => !openGroups.has(g));
+    const resourcesChanged =
+      openResources.size !== allResourceKeys.size ||
+      Array.from(allResourceKeys).some((r) => !openResources.has(r));
+    if (groupsChanged || resourcesChanged) {
+      setOpenGroups(allGroupLabels);
+      setOpenResources(allResourceKeys);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [readOnly, parsedGroups]);
@@ -187,66 +194,48 @@ export const PermissionsTableField = <T,>({
   }, [allAvailablePermissions, selectedValues]);
 
   const toggleGroup = (groupLabel: string) => {
-    const newOpenGroups = new Set(openGroups);
-    if (newOpenGroups.has(groupLabel)) {
-      newOpenGroups.delete(groupLabel);
-    } else {
-      newOpenGroups.add(groupLabel);
-    }
-    setOpenGroups(newOpenGroups);
+    setOpenGroups((prev) => {
+      const next = new Set(prev);
+      if (next.has(groupLabel)) {
+        next.delete(groupLabel);
+      } else {
+        next.add(groupLabel);
+      }
+      return next;
+    });
   };
 
-  const toggleResource = (resourceKey: string) => {
-    const newOpenResources = new Set(openResources);
-    if (newOpenResources.has(resourceKey)) {
-      newOpenResources.delete(resourceKey);
-    } else {
-      newOpenResources.add(resourceKey);
-    }
-    setOpenResources(newOpenResources);
-  };
 
   // Check if all groups and resources are open
   const allExpanded = useMemo(() => {
     if (parsedGroups.length === 0) return false;
-    
-    // Check if all groups are open
-    const allGroupsOpen = parsedGroups.every((group) =>
-      openGroups.has(group.groupLabel)
+    return (
+      parsedGroups.every((group) => openGroups.has(group.groupLabel)) &&
+      parsedGroups.every((group) =>
+        group.resources.every(
+          (resource) =>
+            openResources.has(`${group.groupLabel}-${resource.resource}`)
+        )
+      )
     );
-    
-    if (!allGroupsOpen) return false;
-    
-    // Check if all resources in all groups are open
-    const allResourcesOpen = parsedGroups.every((group) =>
-      group.resources.every((resource) => {
-        const resourceKey = `${group.groupLabel}-${resource.resource}`;
-        return openResources.has(resourceKey);
-      })
-    );
-    
-    return allResourcesOpen;
   }, [parsedGroups, openGroups, openResources]);
 
   // Handle expand/collapse all
   const handleExpandAll = () => {
     if (allExpanded) {
-      // Collapse all
       setOpenGroups(new Set());
       setOpenResources(new Set());
     } else {
-      // Expand all
-      const allGroupLabels = new Set(parsedGroups.map((g) => g.groupLabel));
-      setOpenGroups(allGroupLabels);
-      
-      const allResourceKeys = new Set<string>();
-      parsedGroups.forEach((group) => {
-        group.resources.forEach((resource) => {
-          const resourceKey = `${group.groupLabel}-${resource.resource}`;
-          allResourceKeys.add(resourceKey);
-        });
-      });
-      setOpenResources(allResourceKeys);
+      setOpenGroups(new Set(parsedGroups.map((g) => g.groupLabel)));
+      setOpenResources(
+        new Set(
+          parsedGroups.flatMap((group) =>
+            group.resources.map(
+              (resource) => `${group.groupLabel}-${resource.resource}`
+            )
+          )
+        )
+      );
     }
   };
 
@@ -260,86 +249,49 @@ export const PermissionsTableField = <T,>({
 
   const handlePermissionToggle = (permissionValue: string) => {
     if (!isPermissionAvailable(permissionValue)) return;
-
     const valueStr = String(permissionValue);
-    const currentValues = selectedValues;
-
-    if (currentValues.includes(valueStr)) {
-      const newValues = currentValues.filter((v) => v !== valueStr);
-      onChange(newValues.length > 0 ? newValues : []);
-    } else {
-      onChange([...currentValues, valueStr]);
-    }
+    const newValues = selectedValues.includes(valueStr)
+      ? selectedValues.filter((v) => v !== valueStr)
+      : [...selectedValues, valueStr];
+    onChange(newValues.length > 0 ? newValues : []);
   };
 
-  const handleResourceToggle = (resource: string, groupLabel: string) => {
-    const group = parsedGroups.find((g) => g.groupLabel === groupLabel);
-    if (!group) return;
-
-    const resourceData = group.resources.find((r) => r.resource === resource);
-    if (!resourceData) return;
-
-    // Filter only available permissions
-    const resourcePermissions = resourceData.permissions
-      .filter((p) => isPermissionAvailable(p.fullValue))
-      .map((p) => p.fullValue);
-
-    if (resourcePermissions.length === 0) return;
-
-    const allSelected = resourcePermissions.every((p) =>
-      selectedValues.includes(p)
-    );
-
-    if (allSelected) {
-      const newValues = selectedValues.filter(
-        (v) => !resourcePermissions.includes(v)
-      );
-      onChange(newValues);
-    } else {
-      const newValues = [
-        ...new Set([...selectedValues, ...resourcePermissions]),
-      ];
-      onChange(newValues);
-    }
-  };
 
   const isPermissionSelected = (permissionValue: string) => {
     return selectedValues.includes(String(permissionValue));
   };
 
-  const isResourceFullySelected = (resource: string, groupLabel: string) => {
-    const group = parsedGroups.find((g) => g.groupLabel === groupLabel);
-    if (!group) return false;
 
-    const resourceData = group.resources.find((r) => r.resource === resource);
-    if (!resourceData) return false;
-
-    const resourcePermissions = resourceData.permissions
+  // Get available permissions from array
+  const getAvailablePermissions = (permissions: ParsedPermission[]) =>
+    permissions
       .filter((p) => isPermissionAvailable(p.fullValue))
       .map((p) => p.fullValue);
 
-    if (resourcePermissions.length === 0) return false;
-    return resourcePermissions.every((p) => selectedValues.includes(p));
+  // Check if all permissions in a permissions array are selected
+  const areAllPermissionsSelected = (permissions: ParsedPermission[]) => {
+    const availablePerms = getAvailablePermissions(permissions);
+    return availablePerms.length > 0 && availablePerms.every((p) => selectedValues.includes(p));
   };
 
-  const isResourcePartiallySelected = (
-    resource: string,
-    groupLabel: string
-  ) => {
-    const group = parsedGroups.find((g) => g.groupLabel === groupLabel);
-    if (!group) return false;
+  // Check if some permissions in a permissions array are selected
+  const areSomePermissionsSelected = (permissions: ParsedPermission[]) => {
+    const availablePerms = getAvailablePermissions(permissions);
+    if (availablePerms.length === 0) return false;
+    const selectedCount = availablePerms.filter((p) => selectedValues.includes(p)).length;
+    return selectedCount > 0 && selectedCount < availablePerms.length;
+  };
 
-    const resourceData = group.resources.find((r) => r.resource === resource);
-    if (!resourceData) return false;
+  // Toggle all permissions in a permissions array
+  const handleToggleAllPermissions = (permissions: ParsedPermission[]) => {
+    const availablePerms = getAvailablePermissions(permissions);
+    if (availablePerms.length === 0) return;
 
-    const resourcePermissions = resourceData.permissions
-      .filter((p) => isPermissionAvailable(p.fullValue))
-      .map((p) => p.fullValue);
-
-    const selectedCount = resourcePermissions.filter((p) =>
-      selectedValues.includes(p)
-    ).length;
-    return selectedCount > 0 && selectedCount < resourcePermissions.length;
+    const allSelected = availablePerms.every((p) => selectedValues.includes(p));
+    const newValues = allSelected
+      ? selectedValues.filter((v) => !availablePerms.includes(v))
+      : [...new Set([...selectedValues, ...availablePerms])];
+    onChange(newValues);
   };
 
   const getPermissionDisplayName = (permission: ParsedPermission) => {
@@ -405,7 +357,9 @@ export const PermissionsTableField = <T,>({
               size="sm"
               onClick={handleSelectAll}
               disabled={
-                field.disabled || isPending || allAvailablePermissions.length === 0
+                field.disabled ||
+                isPending ||
+                allAvailablePermissions.length === 0
               }
               className="gap-2"
             >
@@ -426,7 +380,9 @@ export const PermissionsTableField = <T,>({
               variant="outline"
               size="sm"
               onClick={handleExpandAll}
-              disabled={field.disabled || isPending || parsedGroups.length === 0}
+              disabled={
+                field.disabled || isPending || parsedGroups.length === 0
+              }
               className="gap-2"
             >
               {allExpanded ? (
@@ -450,7 +406,7 @@ export const PermissionsTableField = <T,>({
           )}
         </Flex>
       )}
-      
+
       {/* Summary info for read-only mode */}
       {readOnly && (
         <Flex align="center" justify="between" fullWidth paddingX={1}>
@@ -493,37 +449,55 @@ export const PermissionsTableField = <T,>({
               <TableRow className="bg-muted/50 hover:bg-muted/50 border-b border-border">
                 <TableHead
                   className="font-semibold text-foreground h-12 px-4 border-r border-border/50 align-middle"
-                  style={{ width: `${columnWidths.function}px`, minWidth: `${columnWidths.function}px` }}
+                  style={{
+                    width: `${columnWidths.function}px`,
+                    minWidth: `${columnWidths.function}px`,
+                  }}
                 >
                   Chức năng
                 </TableHead>
                 <TableHead
                   className="text-center font-semibold text-foreground h-12 px-2 border-r border-border/50 align-middle"
-                  style={{ width: `${columnWidths.action}px`, minWidth: `${columnWidths.action}px` }}
+                  style={{
+                    width: `${columnWidths.action}px`,
+                    minWidth: `${columnWidths.action}px`,
+                  }}
                 >
                   Xem
                 </TableHead>
                 <TableHead
                   className="text-center font-semibold text-foreground h-12 px-2 border-r border-border/50 align-middle"
-                  style={{ width: `${columnWidths.action}px`, minWidth: `${columnWidths.action}px` }}
+                  style={{
+                    width: `${columnWidths.action}px`,
+                    minWidth: `${columnWidths.action}px`,
+                  }}
                 >
                   Thêm
                 </TableHead>
                 <TableHead
                   className="text-center font-semibold text-foreground h-12 px-2 border-r border-border/50 align-middle"
-                  style={{ width: `${columnWidths.action}px`, minWidth: `${columnWidths.action}px` }}
+                  style={{
+                    width: `${columnWidths.action}px`,
+                    minWidth: `${columnWidths.action}px`,
+                  }}
                 >
                   Sửa
                 </TableHead>
                 <TableHead
                   className="text-center font-semibold text-foreground h-12 px-2 border-r border-border/50 align-middle"
-                  style={{ width: `${columnWidths.action}px`, minWidth: `${columnWidths.action}px` }}
+                  style={{
+                    width: `${columnWidths.action}px`,
+                    minWidth: `${columnWidths.action}px`,
+                  }}
                 >
                   Xóa
                 </TableHead>
                 <TableHead
                   className="text-left font-semibold text-foreground h-12 px-4 align-middle"
-                  style={{ width: `${columnWidths.options}px`, minWidth: `${columnWidths.options}px` }}
+                  style={{
+                    width: `${columnWidths.options}px`,
+                    minWidth: `${columnWidths.options}px`,
+                  }}
                 >
                   Tùy chọn
                 </TableHead>
@@ -536,7 +510,10 @@ export const PermissionsTableField = <T,>({
                 return (
                   <React.Fragment key={parsedGroup.groupLabel}>
                     {/* Group Header Row */}
-                    <TableRow className="bg-muted/40 hover:bg-muted/60 border-b-2 border-border/50">
+                    <TableRow
+                      className="bg-muted/40 hover:bg-muted/60 border-b-2 border-border/50"
+                      data-display-name={`Group-${parsedGroup.groupLabel}`}
+                    >
                       <TableCell colSpan={6} className="p-0">
                         <button
                           type="button"
@@ -546,7 +523,8 @@ export const PermissionsTableField = <T,>({
                           <ChevronDown
                             className={cn(
                               "h-5 w-5 transition-transform shrink-0 text-muted-foreground",
-                              isGroupOpen && "transform rotate-180 text-foreground"
+                              isGroupOpen &&
+                                "transform rotate-180 text-foreground"
                             )}
                           />
                           <span className="font-semibold text-base text-foreground flex-1 text-left">
@@ -558,130 +536,84 @@ export const PermissionsTableField = <T,>({
                     {/* Resources Rows - Only render when group is open */}
                     {isGroupOpen &&
                       parsedGroup.resources.map((resourceData) => {
-                                const resourceKey = `${parsedGroup.groupLabel}-${resourceData.resource}`;
-                                const isResourceOpen = openResources.has(resourceKey);
-                                const isResourceFully = isResourceFullySelected(
-                                  resourceData.resource,
-                                  parsedGroup.groupLabel
-                                );
-                                const isResourcePartial = isResourcePartiallySelected(
-                                  resourceData.resource,
-                                  parsedGroup.groupLabel
-                                );
+                        const resourceKey = `${parsedGroup.groupLabel}-${resourceData.resource}`;
+                        const isResourceOpen = openResources.has(resourceKey);
 
-                                // Get all permissions for this resource, grouped by display name
-                                const permissionsByDisplay = new Map<
-                                  string,
-                                  ParsedPermission[]
-                                >();
-                                resourceData.permissions.forEach((perm) => {
-                                  const displayName = getPermissionDisplayName(perm);
-                                  if (!permissionsByDisplay.has(displayName)) {
-                                    permissionsByDisplay.set(displayName, []);
-                                  }
-                                  permissionsByDisplay.get(displayName)!.push(perm);
-                                });
+                        // Group permissions by display name
+                        const permissionsByDisplay = resourceData.permissions.reduce(
+                          (map, perm) => {
+                            const displayName = getPermissionDisplayName(perm);
+                            if (!map.has(displayName)) map.set(displayName, []);
+                            map.get(displayName)!.push(perm);
+                            return map;
+                          },
+                          new Map<string, ParsedPermission[]>()
+                        );
 
                         return (
                           <React.Fragment key={resourceData.resource}>
-                            {/* Resource Row - Parent Node */}
-                            <TableRow className="bg-muted/30 hover:bg-muted/40 border-b border-border/40">
-                                      <TableCell
-                                        className="pl-4 h-12 px-4 py-0 border-r border-border/30 align-middle"
-                                        style={{ width: `${columnWidths.function}px` }}
-                                      >
-                                        <Flex align="center" gap={2} height="12" className="h-12">
-                                          <button
-                                            type="button"
-                                            onClick={() => toggleResource(resourceKey)}
-                                            className="p-0.5 hover:bg-muted/60 rounded transition-colors"
-                                            disabled={field.disabled || isPending}
-                                          >
-                                            {isResourceOpen ? (
-                                              <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                                            ) : (
-                                              <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                                            )}
-                                          </button>
-                                          <ResourceCheckbox
-                                            checked={isResourceFully}
-                                            indeterminate={isResourcePartial}
-                                            onCheckedChange={() =>
-                                              handleResourceToggle(
-                                                resourceData.resource,
-                                                parsedGroup.groupLabel
-                                              )
-                                            }
-                                            disabled={field.disabled || isPending}
-                                            label={resourceData.resource}
-                                          />
-                                        </Flex>
-                                      </TableCell>
-                                      <TableCell
-                                        className="h-12 py-0 border-r border-border/30"
-                                        style={{ width: `${columnWidths.action}px` }}
-                                      ></TableCell>
-                                      <TableCell
-                                        className="h-12 py-0 border-r border-border/30"
-                                        style={{ width: `${columnWidths.action}px` }}
-                                      ></TableCell>
-                                      <TableCell
-                                        className="h-12 py-0 border-r border-border/30"
-                                        style={{ width: `${columnWidths.action}px` }}
-                                      ></TableCell>
-                                      <TableCell
-                                        className="h-12 py-0 border-r border-border/30"
-                                        style={{ width: `${columnWidths.action}px` }}
-                                      ></TableCell>
-                                      <TableCell
-                                        className="h-12 py-0"
-                                        style={{ width: `${columnWidths.options}px` }}
-                              ></TableCell>
-                            </TableRow>
-
                             {/* Permission Rows - Child Nodes */}
                             {isResourceOpen &&
                               Array.from(permissionsByDisplay.entries()).map(
                                 ([displayName, perms]) => {
-                                          // Find standard actions
-                                          const viewPerm = perms.find(
-                                            (p) => p.action === "view"
-                                          );
-                                          const createPerm = perms.find(
-                                            (p) => p.action === "create"
-                                          );
-                                          const updatePerm = perms.find(
-                                            (p) => p.action === "update"
-                                          );
-                                          const deletePerm = perms.find(
-                                            (p) => p.action === "delete"
-                                          );
-                                          const otherPerms = perms.filter(
-                                            (p) =>
-                                              ![
-                                                "view",
-                                                "create",
-                                                "update",
-                                                "delete",
-                                              ].includes(p.action)
-                                          );
+                                  // Find standard actions
+                                  const viewPerm = perms.find(
+                                    (p) => p.action === "view"
+                                  );
+                                  const createPerm = perms.find(
+                                    (p) => p.action === "create"
+                                  );
+                                  const updatePerm = perms.find(
+                                    (p) => p.action === "update"
+                                  );
+                                  const deletePerm = perms.find(
+                                    (p) => p.action === "delete"
+                                  );
+                                  const otherPerms = perms.filter(
+                                    (p) =>
+                                      ![
+                                        "view",
+                                        "create",
+                                        "update",
+                                        "delete",
+                                      ].includes(p.action)
+                                  );
 
                                   return (
                                     <TableRow
                                       key={displayName}
                                       className="hover:bg-muted/20 transition-colors border-b border-border/30"
+                                      data-display-name={`Permission-${displayName}`}
                                     >
                                       <TableCell
                                         className="pl-16 h-12 px-4 py-0 border-r border-border/30 align-middle"
-                                        style={{ width: `${columnWidths.function}px` }}
+                                        style={{
+                                          width: `${columnWidths.function}px`,
+                                        }}
                                       >
-                                        <span className="text-sm font-medium text-foreground leading-relaxed">
-                                          {displayName}
-                                        </span>
+                                        <ResourceCheckbox
+                                          checked={areAllPermissionsSelected(perms)}
+                                          indeterminate={areSomePermissionsSelected(perms)}
+                                          onCheckedChange={() =>
+                                            handleToggleAllPermissions(perms)
+                                          }
+                                          disabled={
+                                            field.disabled ||
+                                            isPending ||
+                                            perms.length === 0 ||
+                                            perms.every(
+                                              (p) =>
+                                                !isPermissionAvailable(p.fullValue)
+                                            )
+                                          }
+                                          label={displayName}
+                                        />
                                       </TableCell>
                                       <TableCell
                                         className="text-center align-middle h-12 px-2 py-0 border-r border-border/30"
-                                        style={{ width: `${columnWidths.action}px` }}
+                                        style={{
+                                          width: `${columnWidths.action}px`,
+                                        }}
                                       >
                                         {viewPerm && (
                                           <Flex
@@ -690,29 +622,36 @@ export const PermissionsTableField = <T,>({
                                             height="12"
                                             className="h-12"
                                           >
-                                            <Checkbox
-                                              checked={isPermissionSelected(
-                                                viewPerm.fullValue
-                                              )}
-                                              onCheckedChange={() =>
-                                                handlePermissionToggle(
+                                            <label className="flex items-center gap-2 cursor-pointer">
+                                              <Checkbox
+                                                checked={isPermissionSelected(
                                                   viewPerm.fullValue
-                                                )
-                                              }
-                                              disabled={
-                                                field.disabled ||
-                                                isPending ||
-                                                !isPermissionAvailable(
-                                                  viewPerm.fullValue
-                                                )
-                                              }
-                                            />
+                                                )}
+                                                onCheckedChange={() =>
+                                                  handlePermissionToggle(
+                                                    viewPerm.fullValue
+                                                  )
+                                                }
+                                                disabled={
+                                                  field.disabled ||
+                                                  isPending ||
+                                                  !isPermissionAvailable(
+                                                    viewPerm.fullValue
+                                                  )
+                                                }
+                                              />
+                                              <span className="text-xs text-foreground leading-relaxed select-none group-hover:text-foreground">
+                                                Xem
+                                              </span>
+                                            </label>
                                           </Flex>
                                         )}
                                       </TableCell>
                                       <TableCell
                                         className="text-center align-middle h-12 px-2 py-0 border-r border-border/30"
-                                        style={{ width: `${columnWidths.action}px` }}
+                                        style={{
+                                          width: `${columnWidths.action}px`,
+                                        }}
                                       >
                                         {createPerm && (
                                           <Flex
@@ -721,29 +660,36 @@ export const PermissionsTableField = <T,>({
                                             height="12"
                                             className="h-12"
                                           >
-                                            <Checkbox
-                                              checked={isPermissionSelected(
-                                                createPerm.fullValue
-                                              )}
-                                              onCheckedChange={() =>
-                                                handlePermissionToggle(
+                                            <label className="flex items-center gap-2 cursor-pointer">
+                                              <Checkbox
+                                                checked={isPermissionSelected(
                                                   createPerm.fullValue
-                                                )
-                                              }
-                                              disabled={
-                                                field.disabled ||
-                                                isPending ||
-                                                !isPermissionAvailable(
-                                                  createPerm.fullValue
-                                                )
-                                              }
-                                            />
+                                                )}
+                                                onCheckedChange={() =>
+                                                  handlePermissionToggle(
+                                                    createPerm.fullValue
+                                                  )
+                                                }
+                                                disabled={
+                                                  field.disabled ||
+                                                  isPending ||
+                                                  !isPermissionAvailable(
+                                                    createPerm.fullValue
+                                                  )
+                                                }
+                                              />
+                                              <span className="text-xs text-foreground leading-relaxed select-none group-hover:text-foreground">
+                                                Thêm
+                                              </span>
+                                            </label>
                                           </Flex>
                                         )}
                                       </TableCell>
                                       <TableCell
                                         className="text-center align-middle h-12 px-2 py-0 border-r border-border/30"
-                                        style={{ width: `${columnWidths.action}px` }}
+                                        style={{
+                                          width: `${columnWidths.action}px`,
+                                        }}
                                       >
                                         {updatePerm && (
                                           <Flex
@@ -752,29 +698,36 @@ export const PermissionsTableField = <T,>({
                                             height="12"
                                             className="h-12"
                                           >
-                                            <Checkbox
-                                              checked={isPermissionSelected(
-                                                updatePerm.fullValue
-                                              )}
-                                              onCheckedChange={() =>
-                                                handlePermissionToggle(
+                                            <label className="flex items-center gap-2 cursor-pointer group">
+                                              <Checkbox
+                                                checked={isPermissionSelected(
                                                   updatePerm.fullValue
-                                                )
-                                              }
-                                              disabled={
-                                                field.disabled ||
-                                                isPending ||
-                                                !isPermissionAvailable(
-                                                  updatePerm.fullValue
-                                                )
-                                              }
-                                            />
+                                                )}
+                                                onCheckedChange={() =>
+                                                  handlePermissionToggle(
+                                                    updatePerm.fullValue
+                                                  )
+                                                }
+                                                disabled={
+                                                  field.disabled ||
+                                                  isPending ||
+                                                  !isPermissionAvailable(
+                                                    updatePerm.fullValue
+                                                  )
+                                                }
+                                              />
+                                              <span className="text-xs text-foreground leading-relaxed select-none group-hover:text-foreground">
+                                                Sửa
+                                              </span>
+                                            </label>
                                           </Flex>
                                         )}
                                       </TableCell>
                                       <TableCell
                                         className="text-center align-middle h-12 px-2 py-0 border-r border-border/30"
-                                        style={{ width: `${columnWidths.action}px` }}
+                                        style={{
+                                          width: `${columnWidths.action}px`,
+                                        }}
                                       >
                                         {deletePerm && (
                                           <Flex
@@ -783,29 +736,36 @@ export const PermissionsTableField = <T,>({
                                             height="12"
                                             className="h-12"
                                           >
-                                            <Checkbox
-                                              checked={isPermissionSelected(
-                                                deletePerm.fullValue
-                                              )}
-                                              onCheckedChange={() =>
-                                                handlePermissionToggle(
+                                            <label className="flex items-center gap-2 cursor-pointer group">
+                                              <Checkbox
+                                                checked={isPermissionSelected(
                                                   deletePerm.fullValue
-                                                )
-                                              }
-                                              disabled={
-                                                field.disabled ||
-                                                isPending ||
-                                                !isPermissionAvailable(
-                                                  deletePerm.fullValue
-                                                )
-                                              }
-                                            />
+                                                )}
+                                                onCheckedChange={() =>
+                                                  handlePermissionToggle(
+                                                    deletePerm.fullValue
+                                                  )
+                                                }
+                                                disabled={
+                                                  field.disabled ||
+                                                  isPending ||
+                                                  !isPermissionAvailable(
+                                                    deletePerm.fullValue
+                                                  )
+                                                }
+                                              />
+                                              <span className="text-xs text-foreground leading-relaxed select-none group-hover:text-foreground">
+                                                Xóa
+                                              </span>
+                                            </label>
                                           </Flex>
                                         )}
                                       </TableCell>
                                       <TableCell
                                         className="align-center h-12 px-4 py-0"
-                                        style={{ width: `${columnWidths.options}px` }}
+                                        style={{
+                                          width: `${columnWidths.options}px`,
+                                        }}
                                       >
                                         {otherPerms.length > 0 && (
                                           <Flex
@@ -831,9 +791,12 @@ export const PermissionsTableField = <T,>({
                                                 active: "Kích hoạt",
                                               };
 
-                                              let optionLabel = perm.displayLabel;
+                                              let optionLabel =
+                                                perm.displayLabel;
                                               if (
-                                                perm.displayLabel.includes(" - ")
+                                                perm.displayLabel.includes(
+                                                  " - "
+                                                )
                                               ) {
                                                 const actionPart =
                                                   perm.displayLabel.split(
@@ -882,10 +845,11 @@ export const PermissionsTableField = <T,>({
                                       </TableCell>
                                     </TableRow>
                                   );
-                                })}
-                            </React.Fragment>
-                          );
-                        })}
+                                }
+                              )}
+                          </React.Fragment>
+                        );
+                      })}
                   </React.Fragment>
                 );
               })}
