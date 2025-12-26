@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useRef, useEffect } from "react";
+import React, { useState, useMemo, useRef, useEffect, useLayoutEffect } from "react";
 import { ChevronDown, CheckSquare2, Square, ChevronRight, ChevronsDownUp, ChevronsUpDown } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
@@ -25,6 +25,7 @@ interface PermissionsTableFieldProps<T> {
   onChange: (value: unknown) => void;
   isPending?: boolean;
   availablePermissions?: string[]; // Optional: permissions that user can assign
+  readOnly?: boolean; // If true, hide action buttons and make it view-only
 }
 
 interface PermissionOption {
@@ -51,10 +52,13 @@ export const PermissionsTableField = <T,>({
   onChange,
   isPending = false,
   availablePermissions,
+  readOnly = false,
 }: PermissionsTableFieldProps<T>) => {
+  const { ref: tableRef, width: tableWidth } = useElementSize<HTMLDivElement>();
+  
+  // Initialize state
   const [openGroups, setOpenGroups] = useState<Set<string>>(new Set());
   const [openResources, setOpenResources] = useState<Set<string>>(new Set());
-  const { ref: tableRef, width: tableWidth } = useElementSize<HTMLDivElement>();
 
   const selectedValues = useMemo(() => {
     return Array.isArray(fieldValue)
@@ -135,6 +139,31 @@ export const PermissionsTableField = <T,>({
       };
     });
   }, [groups]);
+
+  // Auto-expand all in read-only mode
+  // Using useLayoutEffect to sync state before paint for better UX
+  useLayoutEffect(() => {
+    if (readOnly && parsedGroups.length > 0) {
+      const allGroupLabels = new Set(parsedGroups.map((g) => g.groupLabel));
+      const allResourceKeys = new Set<string>();
+      parsedGroups.forEach((group) => {
+        group.resources.forEach((resource) => {
+          const resourceKey = `${group.groupLabel}-${resource.resource}`;
+          allResourceKeys.add(resourceKey);
+        });
+      });
+      
+      // Only update if different
+      if (
+        openGroups.size !== allGroupLabels.size ||
+        openResources.size !== allResourceKeys.size
+      ) {
+        setOpenGroups(allGroupLabels);
+        setOpenResources(allResourceKeys);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [readOnly, parsedGroups.length]);
 
   // Check if all permissions are selected
   const allSelected = useMemo(() => {
@@ -362,59 +391,90 @@ export const PermissionsTableField = <T,>({
 
   return (
     <FieldContent className="items-start justify-start w-full gap-3">
-      {/* Action Buttons */}
-      <Flex align="center" justify="between" fullWidth paddingX={1} gap={2}>
-        <Flex align="center" gap={2}>
+      {/* Action Buttons - Only show in edit mode */}
+      {!readOnly && (
+        <Flex align="center" justify="between" fullWidth paddingX={1} gap={2}>
+          <Flex align="center" gap={2}>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleSelectAll}
+              disabled={
+                field.disabled || isPending || allAvailablePermissions.length === 0
+              }
+              className="gap-2"
+            >
+              {allSelected ? (
+                <>
+                  <Square className="h-4 w-4" />
+                  Bỏ chọn tất cả
+                </>
+              ) : (
+                <>
+                  <CheckSquare2 className="h-4 w-4" />
+                  Chọn tất cả
+                </>
+              )}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleExpandAll}
+              disabled={field.disabled || isPending || parsedGroups.length === 0}
+              className="gap-2"
+            >
+              {allExpanded ? (
+                <>
+                  <ChevronsUpDown className="h-4 w-4" />
+                  Thu gọn tất cả
+                </>
+              ) : (
+                <>
+                  <ChevronsDownUp className="h-4 w-4" />
+                  Mở tất cả
+                </>
+              )}
+            </Button>
+          </Flex>
+          {someSelected && (
+            <span className="text-sm text-muted-foreground">
+              Đã chọn {selectedValues.length} / {allAvailablePermissions.length}{" "}
+              quyền
+            </span>
+          )}
+        </Flex>
+      )}
+      
+      {/* Summary info for read-only mode */}
+      {readOnly && (
+        <Flex align="center" justify="between" fullWidth paddingX={1}>
+          <span className="text-sm text-muted-foreground">
+            {selectedValues.length} quyền đã được gán
+          </span>
           <Button
             type="button"
-            variant="outline"
-            size="sm"
-            onClick={handleSelectAll}
-            disabled={
-              field.disabled || isPending || allAvailablePermissions.length === 0
-            }
-            className="gap-2"
-          >
-            {allSelected ? (
-              <>
-                <Square className="h-4 w-4" />
-                Bỏ chọn tất cả
-              </>
-            ) : (
-              <>
-                <CheckSquare2 className="h-4 w-4" />
-                Chọn tất cả
-              </>
-            )}
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
+            variant="ghost"
             size="sm"
             onClick={handleExpandAll}
-            disabled={field.disabled || isPending || parsedGroups.length === 0}
-            className="gap-2"
+            disabled={parsedGroups.length === 0}
+            className="gap-2 h-7"
           >
             {allExpanded ? (
               <>
-                <ChevronsUpDown className="h-4 w-4" />
-                Thu gọn tất cả
+                <ChevronsUpDown className="h-3.5 w-3.5" />
+                Thu gọn
               </>
             ) : (
               <>
-                <ChevronsDownUp className="h-4 w-4" />
+                <ChevronsDownUp className="h-3.5 w-3.5" />
                 Mở tất cả
               </>
             )}
           </Button>
         </Flex>
-        {someSelected && (
-          <span className="text-sm text-muted-foreground">
-            Đã chọn {selectedValues.length} / {allAvailablePermissions.length}{" "}
-            quyền
-          </span>
-        )}
-      </Flex>
+      )}
 
       <div
         ref={tableRef}
