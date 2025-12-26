@@ -2,7 +2,7 @@
 
 import type { Prisma } from "@prisma/client"
 import { PERMISSIONS, canPerformAnyAction, isSuperAdmin } from "@/lib/permissions"
-import { prisma } from "@/lib/database"
+import { prisma } from "@/lib/prisma"
 import { mapStudentRecord } from "./helpers"
 import type { ListedStudent } from "../types"
 import {

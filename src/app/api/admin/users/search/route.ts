@@ -9,7 +9,7 @@
 
 import { NextRequest, NextResponse } from "next/server"
 import { createApiRoute } from "@/lib/api/api-route-wrapper"
-import { prisma } from "@/lib/database"
+import { prisma } from "@/lib/prisma"
 import type { ApiRouteContext } from "@/lib/api/types"
 
 async function searchUsersHandler(req: NextRequest, context: ApiRouteContext) {

@@ -1,6 +1,6 @@
 import { validatePagination, buildPagination, type ResourcePagination, applyBooleanFilter } from "@/features/admin/resources/server"
 import { Prisma, NotificationKind } from "@prisma/client"
-import { prisma } from "@/lib/database"
+import { prisma } from "@/lib/prisma"
 import { logger } from "@/lib/config/logger"
 
 export interface ListNotificationsInput {

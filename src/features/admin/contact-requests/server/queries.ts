@@ -1,5 +1,5 @@
 import type { Prisma } from "@prisma/client"
-import { prisma } from "@/lib/database"
+import { prisma } from "@/lib/prisma"
 import { validatePagination, buildPagination } from "@/features/admin/resources/server"
 import { mapContactRequestRecord, buildWhereClause } from "./helpers"
 import type { ListContactRequestsInput, ContactRequestDetail, ListContactRequestsResult } from "../types"

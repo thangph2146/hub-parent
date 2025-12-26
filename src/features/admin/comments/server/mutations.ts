@@ -1,7 +1,7 @@
 "use server"
 
 import { PERMISSIONS, canPerformAnyAction } from "@/lib/permissions"
-import { prisma } from "@/lib/database"
+import { prisma } from "@/lib/prisma"
 import { mapCommentRecord } from "./helpers"
 import type { ListedComment } from "../types"
 import { UpdateCommentSchema, type UpdateCommentInput } from "./schemas"

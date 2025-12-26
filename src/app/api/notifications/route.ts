@@ -13,7 +13,7 @@
  */
 import { NextRequest } from "next/server"
 import { auth } from "@/lib/auth/auth"
-import { prisma } from "@/lib/database"
+import { prisma } from "@/lib/prisma"
 import { createErrorResponse, createSuccessResponse } from "@/lib/config"
 import { isSuperAdmin } from "@/lib/permissions"
 import { logger } from "@/lib/config/logger"

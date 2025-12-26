@@ -2,7 +2,7 @@
 
 import type { Prisma } from "@prisma/client"
 import { PERMISSIONS, canPerformAnyAction } from "@/lib/permissions"
-import { prisma } from "@/lib/database"
+import { prisma } from "@/lib/prisma"
 import { mapSessionRecord, type SessionWithRelations } from "./helpers"
 import type { ListedSession } from "../types"
 import type { BulkActionResult } from "../types"

@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/database"
+import { prisma } from "@/lib/prisma"
 import type { MessageWithRelations } from "./queries"
 import {
   ApplicationError,

@@ -1,6 +1,6 @@
 import { Server as IOServer, type Socket } from "socket.io"
 import { NotificationKind, type Prisma } from "@prisma/client"
-import { prisma } from "@/lib/database"
+import { prisma } from "@/lib/prisma"
 import { logger } from "@/lib/config"
 import { normalizeError } from "@/lib/utils/api-utils"
 import {

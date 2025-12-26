@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/database"
+import { prisma } from "@/lib/prisma"
 import { getSocketServer } from "@/lib/socket/state"
 import { mapRoleRecord, serializeRoleForTable } from "./helpers"
 import type { RoleRow } from "../types"

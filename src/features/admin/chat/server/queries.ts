@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/database"
+import { prisma } from "@/lib/prisma"
 import { mapMessageRecord } from "./helpers"
 
 export interface ListConversationsInput {

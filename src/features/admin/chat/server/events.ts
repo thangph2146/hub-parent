@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/database"
+import { prisma } from "@/lib/prisma"
 import { getSocketServer } from "@/lib/socket/state"
 import { logger } from "@/lib/config"
 

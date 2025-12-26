@@ -3,7 +3,7 @@
  */
 import { auth } from "./auth";
 import type { Permission } from "@/lib/permissions";
-import { prisma } from "@/lib/database";
+import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/config";
 import { getErrorMessage } from "@/lib/utils/api-utils";
 

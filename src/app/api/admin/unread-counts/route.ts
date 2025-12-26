@@ -4,7 +4,7 @@
  */
 
 import { NextRequest } from "next/server"
-import { prisma } from "@/lib/database"
+import { prisma } from "@/lib/prisma"
 import { createGetRoute } from "@/lib/api/api-route-wrapper"
 import { createErrorResponse, createSuccessResponse } from "@/lib/config"
 import { isSuperAdmin } from "@/lib/permissions"

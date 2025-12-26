@@ -1,5 +1,5 @@
 import type { Prisma } from "@prisma/client"
-import { prisma } from "@/lib/database"
+import { prisma } from "@/lib/prisma"
 import { validatePagination, buildPagination, type ResourcePagination } from "@/features/admin/resources/server"
 import { mapPostRecord, buildWhereClause } from "./helpers"
 

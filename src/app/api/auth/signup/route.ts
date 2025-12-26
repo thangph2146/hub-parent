@@ -2,7 +2,7 @@
  * Sign Up API Route - Tạo user mới
  */
 import { NextRequest, NextResponse } from "next/server"
-import { prisma } from "@/lib/database"
+import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
 import { createPostRoute } from "@/lib/api/api-route-wrapper"
 import { DEFAULT_ROLES } from "@/lib/permissions"
