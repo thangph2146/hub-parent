@@ -153,17 +153,21 @@ export const PermissionsTableField = <T,>({
         });
       });
       
-      // Only update if different
-      if (
+      // Only update if different to avoid unnecessary renders
+      const groupsChanged = 
         openGroups.size !== allGroupLabels.size ||
-        openResources.size !== allResourceKeys.size
-      ) {
+        Array.from(allGroupLabels).some(g => !openGroups.has(g));
+      const resourcesChanged = 
+        openResources.size !== allResourceKeys.size ||
+        Array.from(allResourceKeys).some(r => !openResources.has(r));
+      
+      if (groupsChanged || resourcesChanged) {
         setOpenGroups(allGroupLabels);
         setOpenResources(allResourceKeys);
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [readOnly, parsedGroups.length]);
+  }, [readOnly, parsedGroups]);
 
   // Check if all permissions are selected
   const allSelected = useMemo(() => {
