@@ -6,7 +6,7 @@ import { apiRoutes } from "@/lib/api/routes"
 import { useToast } from "@/hooks/use-toast"
 import { useRoles } from "../hooks/use-roles"
 import { normalizeRoleIds, type Role } from "../utils"
-import { getBaseUserFields, getPasswordField, type UserFormData } from "../form-fields"
+import { getBaseUserFields, getPasswordField, getUserFormSections, type UserFormData } from "../form-fields"
 import { usePageLoadLogger } from "@/hooks/use-page-load-logger"
 
 export interface UserCreateClientProps {
@@ -74,6 +74,7 @@ export const UserCreateClient = ({ backUrl = "/admin/users", roles: rolesFromSer
     <ResourceForm<UserFormData>
       data={null}
       fields={createFields}
+      sections={getUserFormSections()}
       onSubmit={handleSubmit}
       title="Tạo người dùng mới"
       description="Nhập thông tin để tạo người dùng mới"

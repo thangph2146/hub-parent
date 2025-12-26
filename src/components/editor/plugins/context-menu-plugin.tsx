@@ -25,6 +25,7 @@ import {
   Scissors,
   Trash2,
 } from "lucide-react"
+import { IconSize } from "@/components/ui/typography"
 
 export function ContextMenuPlugin(): JSX.Element {
   const [editor] = useLexicalComposerContext()
@@ -37,7 +38,7 @@ export function ContextMenuPlugin(): JSX.Element {
         },
         $showOn: (node: LexicalNode) => $isLinkNode(node.getParent()),
         disabled: false,
-        icon: <Link2Off className="h-4 w-4" />,
+        icon: <IconSize size="sm"><Link2Off /></IconSize>,
       }),
       new NodeContextMenuSeparator({
         $showOn: (node: LexicalNode) => $isLinkNode(node.getParent()),
@@ -47,14 +48,14 @@ export function ContextMenuPlugin(): JSX.Element {
           editor.dispatchCommand(CUT_COMMAND, null)
         },
         disabled: false,
-        icon: <Scissors className="h-4 w-4" />,
+        icon: <IconSize size="sm"><Scissors /></IconSize>,
       }),
       new NodeContextMenuOption(`Copy`, {
         $onSelect: () => {
           editor.dispatchCommand(COPY_COMMAND, null)
         },
         disabled: false,
-        icon: <Copy className="h-4 w-4" />,
+        icon: <IconSize size="sm"><Copy /></IconSize>,
       }),
       new NodeContextMenuOption(`Paste`, {
         $onSelect: () => {
@@ -86,7 +87,7 @@ export function ContextMenuPlugin(): JSX.Element {
           })
         },
         disabled: false,
-        icon: <Clipboard className="h-4 w-4" />,
+        icon: <IconSize size="sm"><Clipboard /></IconSize>,
       }),
       new NodeContextMenuOption(`Paste as Plain Text`, {
         $onSelect: () => {
@@ -112,7 +113,7 @@ export function ContextMenuPlugin(): JSX.Element {
           })
         },
         disabled: false,
-        icon: <ClipboardType className="h-4 w-4" />,
+        icon: <IconSize size="sm"><ClipboardType /></IconSize>,
       }),
       new NodeContextMenuSeparator(),
       new NodeContextMenuOption(`Delete Node`, {
@@ -133,7 +134,7 @@ export function ContextMenuPlugin(): JSX.Element {
           }
         },
         disabled: false,
-        icon: <Trash2 className="h-4 w-4" />,
+        icon: <IconSize size="sm"><Trash2 /></IconSize>,
       }),
     ]
   }, [editor])

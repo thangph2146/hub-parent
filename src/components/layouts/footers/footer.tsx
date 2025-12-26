@@ -18,7 +18,11 @@ import Link from "next/link";
 import { appConfig } from "@/lib/config";
 import { appFeatures } from "@/lib/config/app-features";
 import { getResourceMainRoute } from "@/lib/permissions/route-helpers";
-import { TypographyH3, TypographyH4, TypographyP, TypographyPSmall, TypographySpan, IconSize } from "@/components/ui/typography";
+import { Flex } from "@/components/ui/flex";
+import { Grid } from "@/components/ui/grid";
+import { Card } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { TypographyH3, TypographyH4, TypographyP, TypographyPSmall, TypographySpan, TypographySpanMuted, TypographySpanWhite, IconSize } from "@/components/ui/typography";
 import { Logo } from "../../../../public/svg/Logo"
 
 /**
@@ -55,238 +59,140 @@ export function PublicFooter() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="relative bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800 text-white mt-auto overflow-hidden">
-      {/* Background Pattern */}
-      <div className="absolute inset-0 bg-grid-white/[0.02] bg-[size:20px_20px] pointer-events-none" />
-      <div className="absolute inset-0 bg-primary pointer-events-none" />
-
-      <div className="relative container mx-auto px-4 sm:px-6 lg:px-8 py-16">
+    <footer>
+      <Flex direction="col" position="relative" padding="responsive-lg" fullWidth bg="primary" margin="t-auto" overflow="hidden">
         {/* Main Footer Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 mb-16">
+        <Grid cols={3} gap={8} fullWidth>
           {/* Company Info - Takes 2 columns on large screens */}
-          <div className="lg:col-span-2 space-y-8">
-            {/* Logo and Brand */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
-              <div className="flex-shrink-0 bg-white p-4 rounded-lg">
+          {/* Logo and Brand */}
+          <Flex direction="col" align="start" justify="start" gap={6}>
+            <Card>
+              <Flex align="center" justify="center" padding="md">
                 <Logo className="h-28 w-28 text-blue-100" />
-              </div>
-              <div className="space-y-2">
-                <TypographyH3>
-                  Trường Đại học Ngân hàng
-                </TypographyH3>
-                <TypographyP>
-                  Thành Phố Hồ Chí Minh
-                </TypographyP>
-                <TypographyPSmall>
-                  {appConfig.description}
-                </TypographyPSmall>
-              </div>
-            </div>
-
+              </Flex>
+            </Card>
+            <Flex direction="col" gap={2}>
+              <TypographyH3>
+                Trường Đại học Ngân hàng
+              </TypographyH3>
+              <TypographyP>
+                Thành Phố Hồ Chí Minh
+              </TypographyP>
+              <TypographyPSmall>
+                {appConfig.description}
+              </TypographyPSmall>
+            </Flex>
             {/* Contact Information */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {/* Locations */}
-              <div className="space-y-2">
-                <TypographyH4 className="text-white flex items-center gap-2 mb-1">
-                  <IconSize size="md" className="h-5 w-5 sm:h-6 sm:w-6">
-                    <Building2 className="text-blue-400" />
+            {/* Locations */}
+            <Flex direction="col" gap={4}>
+              <Flex align="center" gap={2}>
+                <IconSize size="md">
+                  <Building2 />
+                </IconSize>
+                <TypographyH4>Cơ sở đào tạo</TypographyH4>
+              </Flex>
+              <Flex direction="col" gap={1}>
+                <TypographyP>Trụ sở chính</TypographyP>
+                <Flex align="start" gap={3}>
+                  <IconSize size="sm">
+                    <MapPin />
                   </IconSize>
-                  Cơ sở đào tạo
-                </TypographyH4>
-                <div className="space-y-4">
-                  <div className="group mb-1">
-                    <TypographyP className="font-medium text-blue-200 mb-1">Trụ sở chính</TypographyP>
-                    <div className="flex items-start gap-3 text-white/80 group-hover:text-white transition-colors">
-                      <IconSize size="sm" className="flex-shrink-0 mt-0.5">
-                        <MapPin className="text-blue-400" />
-                      </IconSize>
-                      <TypographyP className="leading-relaxed">36 Tôn Thất Đạm, Phường Sài Gòn, TP.Hồ Chí Minh</TypographyP>
-                    </div>
-                  </div>
+                  <TypographyP>36 Tôn Thất Đạm, Phường Sài Gòn, TP.Hồ Chí Minh</TypographyP>
+                </Flex>
+              </Flex>
 
-                  <div className="group mb-1">
-                    <TypographyP className="font-medium text-blue-200 mb-1">Cơ sở Hàm Nghi</TypographyP>
-                    <div className="flex items-start gap-3 text-white/80 group-hover:text-white transition-colors">
-                      <IconSize size="sm" className="flex-shrink-0 mt-0.5">
-                        <MapPin className="text-blue-400" />
-                      </IconSize>
-                      <TypographyP className="leading-relaxed">39 Hàm Nghi, Phường Sài Gòn, TP. Hồ Chí Minh</TypographyP>
-                    </div>
-                  </div>
+              <Flex direction="col" gap={1}>
+                <TypographyP>Cơ sở Hàm Nghi</TypographyP>
+                <Flex align="start" gap={3}>
+                  <IconSize size="sm">
+                    <MapPin />
+                  </IconSize>
+                  <TypographyP>39 Hàm Nghi, Phường Sài Gòn, TP. Hồ Chí Minh</TypographyP>
+                </Flex>
+              </Flex>
 
-                  <div className="group mb-1">
-                    <TypographyP className="font-medium text-blue-200 mb-1">Cơ sở Hoàng Diệu</TypographyP>
-                    <div className="flex items-start gap-3 text-white/80 group-hover:text-white transition-colors">
-                      <IconSize size="sm" className="flex-shrink-0 mt-0.5">
-                        <MapPin className="text-blue-400" />
-                      </IconSize>
-                      <TypographyP className="leading-relaxed">56 Hoàng Diệu 2, Phường Thủ Đức, TP. Hồ Chí Minh</TypographyP>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <Flex direction="col" gap={1}>
+                <TypographyP>Cơ sở Hoàng Diệu</TypographyP>
+                <Flex align="start" gap={3}>
+                  <IconSize size="sm">
+                    <MapPin />
+                  </IconSize>
+                  <TypographyP>56 Hoàng Diệu 2, Phường Thủ Đức, TP. Hồ Chí Minh</TypographyP>
+                </Flex>
+              </Flex>
+            </Flex>
+          </Flex>
 
-              {/* Contact Details */}
-              <div className="space-y-2">
-                <TypographyH4 className="text-white flex items-center gap-2 mb-2">
-                  <IconSize size="md">
-                    <GraduationCap className="text-blue-400" />
-                  </IconSize>
-                  Liên hệ
-                </TypographyH4>
-                <div className="space-y-4">
-                  <Link
-                    href="mailto:dhnhtphcm@hub.edu.vn"
-                    className="group flex items-start gap-3 text-white/80 hover:text-white transition-all duration-200"
-                  >
-                    <div className="flex-shrink-0 rounded-lg bg-white/10 p-2 flex items-center justify-center group-hover:bg-white/20 transition-colors">
-                      <IconSize size="md">
-                        <Mail className="text-blue-400" />
-                      </IconSize>
-                    </div>
-                    <div>
-                      <TypographyP className="font-medium text-blue-200 mb-1">Email</TypographyP>
-                      <TypographyP className="leading-relaxed">dhnhtphcm@hub.edu.vn</TypographyP>
-                    </div>
-                  </Link>
 
-                  <Link
-                    href="tel:0888353488"
-                    className="group flex items-start gap-3 text-white/80 hover:text-white transition-all duration-200"
-                  >
-                    <div className="flex-shrink-0 rounded-lg bg-white/10 p-2 flex items-center justify-center group-hover:bg-white/20 transition-colors">
-                      <IconSize size="md">
-                        <Phone className="text-blue-400" />
-                      </IconSize>
-                    </div>
-                    <div>
-                      <TypographyP className="font-medium text-blue-200 mb-1">Tuyển sinh</TypographyP>
-                      <TypographyP className="leading-relaxed">0888353488</TypographyP>
-                    </div>
-                  </Link>
 
-                  <Link
-                    href="tel:02838212430"
-                    className="group flex items-start gap-3 text-white/80 hover:text-white transition-all duration-200"
-                  >
-                    <div className="flex-shrink-0 rounded-lg bg-white/10 p-2 flex items-center justify-center group-hover:bg-white/20 transition-colors">
-                      <IconSize size="md">
-                        <Phone className="text-blue-400" />
-                      </IconSize>
-                    </div>
-                    <div>
-                      <TypographyP className="font-medium text-blue-200 mb-1">Đào tạo</TypographyP>
-                      <TypographyP className="leading-relaxed">(028) 38 212 430</TypographyP>
-                    </div>
-                  </Link>
-                </div>
-              </div>
-            </div>
-          </div>
+          {/* Contact Details */}
+          <Flex direction="col" gap={2}>
+            <Flex align="center" gap={2}>
+              <IconSize size="md">
+                <GraduationCap />
+              </IconSize>
+              <TypographyH4>Liên hệ</TypographyH4>
+            </Flex>
+            <Flex direction="col" gap={4}>
+              <Link href="mailto:dhnhtphcm@hub.edu.vn">
+                <Flex align="start" gap={3}>
+                  <Flex align="center" justify="center" padding="sm" shrink rounded="lg" bg="white-10">
+                    <IconSize size="md">
+                      <Mail />
+                    </IconSize>
+                  </Flex>
+                  <Flex direction="col" gap={1}>
+                    <TypographyP>Email</TypographyP>
+                    <TypographyP>dhnhtphcm@hub.edu.vn</TypographyP>
+                  </Flex>
+                </Flex>
+              </Link>
 
-          {/* Quick Links & Social */}
-          <div className="space-y-2 mb-2">
-            {/* Quick Links */}
-            <div className="space-y-6">
-              <TypographyH4 className="text-white flex items-center gap-2 mb-1">
-                <div className="h-1 w-8 rounded-full bg-white" />
-                Liên kết nhanh
-              </TypographyH4>
-              <nav className="space-y-3">
-                <Link
-                  href={FOOTER_ROUTES.home}
-                  className="flex items-center gap-2 text-white/80 hover:text-white transition-all duration-200 group mb-1"
-                >
-                  <IconSize size="sm" className="group-hover:translate-x-1 transition-transform">
-                    <ArrowRight />
-                  </IconSize>
-                  <TypographySpan>Trang chủ</TypographySpan>
-                </Link>
-                <Link
-                  href={FOOTER_ROUTES.blog}
-                  className="flex items-center gap-2 text-white/80 hover:text-white transition-all duration-200 group mb-1"
-                >
-                  <IconSize size="sm" className="group-hover:translate-x-1 transition-transform">
-                    <ArrowRight />
-                  </IconSize>
-                  <TypographySpan>Blog</TypographySpan>
-                </Link>
-                <Link
-                  href={FOOTER_ROUTES.categories}
-                  className="flex items-center gap-2 text-white/80 hover:text-white transition-all duration-200 group mb-1"
-                >
-                  <IconSize size="sm" className="group-hover:translate-x-1 transition-transform">
-                    <ArrowRight />
-                  </IconSize>
-                  <TypographySpan>Danh mục</TypographySpan>
-                </Link>
-              </nav>
-            </div>
+              <Link href="tel:0888353488">
+                <Flex align="start" gap={3}>
+                  <Flex align="center" justify="center" padding="sm" shrink rounded="lg" bg="white-10">
+                    <IconSize size="md">
+                      <Phone />
+                    </IconSize>
+                  </Flex>
+                  <Flex direction="col" gap={1}>
+                    <TypographyP>Tuyển sinh</TypographyP>
+                    <TypographyP>0888353488</TypographyP>
+                  </Flex>
+                </Flex>
+              </Link>
 
-            {/* Resources */}
-            <div className="space-y-2 mb-2">
-              <TypographyH4 className="text-white flex items-center gap-2 mb-1">
-                <div className="h-1 w-8 rounded-full bg-white" />
-                Tài nguyên
-              </TypographyH4>
-              <nav className="space-y-3">
-                <Link
-                  href={FOOTER_ROUTES.admin}
-                  className="flex items-center gap-2 text-white/80 hover:text-white transition-all duration-200 group mb-1"
-                >
-                  <IconSize size="sm" className="group-hover:translate-x-1 transition-transform">
-                    <ArrowRight />
-                  </IconSize>
-                  <TypographySpan>Quản trị</TypographySpan>
-                </Link>
-                <Link
-                  href="#"
-                  className="flex items-center gap-2 text-white/80 hover:text-white transition-all duration-200 group mb-1"
-                >
-                  <IconSize size="sm" className="group-hover:translate-x-1 transition-transform">
-                    <ArrowRight />
-                  </IconSize>
-                  <TypographySpan>Hướng dẫn sử dụng</TypographySpan>
-                </Link>
-                <Link
-                  href="#"
-                  className="flex items-center gap-2 text-white/80 hover:text-white transition-all duration-200 group mb-1"
-                >
-                  <IconSize size="sm" className="group-hover:translate-x-1 transition-transform">
-                    <ArrowRight />
-                  </IconSize>
-                  <TypographySpan>Điều khoản dịch vụ</TypographySpan>
-                </Link>
-                <Link
-                  href="#"
-                  className="flex items-center gap-2 text-white/80 hover:text-white transition-all duration-200 group mb-1"
-                >
-                  <IconSize size="sm" className="group-hover:translate-x-1 transition-transform">
-                    <ArrowRight />
-                  </IconSize>
-                  <TypographySpan>Chính sách bảo mật</TypographySpan>
-                </Link>
-              </nav>
-            </div>
-
+              <Link href="tel:02838212430">
+                <Flex align="start" gap={3}>
+                  <Flex align="center" justify="center" padding="sm" shrink rounded="lg" bg="white-10">
+                    <IconSize size="md">
+                      <Phone />
+                    </IconSize>
+                  </Flex>
+                  <Flex direction="col" gap={1}>
+                    <TypographyP>Đào tạo</TypographyP>
+                    <TypographyP>(028) 38 212 430</TypographyP>
+                  </Flex>
+                </Flex>
+              </Link>
+            </Flex>
             {/* Social Media */}
-            <div className="space-y-2 mb-2">
-              <TypographyH4 className="text-white flex items-center gap-2 mb-1">
-                <div className="h-1 w-8 rounded-full bg-white" />
-                Kết nối
-              </TypographyH4>
-              <div className="flex items-center gap-3">
+            <Flex direction="col" gap={2}>
+              <Flex align="center" gap={2}>
+                <Flex height="16" maxWidth="32" rounded="full" bg="white" />
+                <TypographyH4>Kết nối</TypographyH4>
+              </Flex>
+              <Flex direction="row" align="center" gap={3}>
                 {appConfig.social.facebook && (
                   <Link
                     href={`https://facebook.com/${appConfig.social.facebook}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label="Facebook - Trường Đại học Ngân hàng TP.HCM"
-                    className="group flex items-center justify-center h-12 w-12 rounded-xl bg-white/10 hover:bg-blue-500/20 transition-all duration-300 hover:scale-110"
                   >
-                    <IconSize size="md" className="h-5 w-5 sm:h-6 sm:w-6">
-                      <Facebook className="text-white/80 group-hover:text-white" />
-                    </IconSize>
+                      <IconSize size="md">
+                        <Facebook />
+                      </IconSize>
                   </Link>
                 )}
                 {appConfig.social.twitter && (
@@ -295,11 +201,10 @@ export function PublicFooter() {
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label="Twitter - Trường Đại học Ngân hàng TP.HCM"
-                    className="group flex items-center justify-center h-12 w-12 rounded-xl bg-white/10 hover:bg-sky-500/20 transition-all duration-300 hover:scale-110"
                   >
-                    <IconSize size="md" className="h-5 w-5 sm:h-6 sm:w-6">
-                      <Twitter className="text-white/80 group-hover:text-white" />
-                    </IconSize>
+                      <IconSize size="md">
+                        <Twitter />
+                      </IconSize>
                   </Link>
                 )}
                 {appConfig.social.linkedin && (
@@ -308,11 +213,12 @@ export function PublicFooter() {
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label="LinkedIn - Trường Đại học Ngân hàng TP.HCM"
-                    className="group flex items-center justify-center h-12 w-12 rounded-xl bg-white/10 hover:bg-blue-600/20 transition-all duration-300 hover:scale-110"
                   >
-                    <IconSize size="md" className="h-5 w-5 sm:h-6 sm:w-6">
-                      <Linkedin className="text-white/80 group-hover:text-white" />
-                    </IconSize>
+                    <Flex align="center" justify="center" height="64" rounded="xl" bg="white-10" fullWidth>
+                      <IconSize size="md">
+                        <Linkedin />
+                      </IconSize>
+                    </Flex>
                   </Link>
                 )}
                 <Link
@@ -320,64 +226,159 @@ export function PublicFooter() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="Instagram - Trường Đại học Ngân hàng TP.HCM"
-                  className="group flex items-center justify-center h-12 w-12 rounded-xl bg-white/10 hover:bg-pink-500/20 transition-all duration-300 hover:scale-110"
                 >
-                  <IconSize size="md" className="h-5 w-5 sm:h-6 sm:w-6">
-                    <Instagram className="text-white/80 group-hover:text-white" />
-                  </IconSize>
+                    <IconSize size="md">
+                      <Instagram />
+                    </IconSize>
                 </Link>
                 <Link
                   href={appConfig.social.youtube}
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="YouTube - Trường Đại học Ngân hàng TP.HCM"
-                  className="group flex items-center justify-center h-12 w-12 rounded-xl bg-white/10 hover:bg-red-500/20 transition-all duration-300 hover:scale-110"
                 >
-                  <IconSize size="md" className="h-5 w-5 sm:h-6 sm:w-6">
-                    <Youtube className="text-white/80 group-hover:text-white" />
-                  </IconSize>
+                    <IconSize size="md">
+                      <Youtube />
+                    </IconSize>
                 </Link>
-              </div>
-            </div>
-          </div>
-        </div>
+              </Flex>
+            </Flex>
+          </Flex>
+
+          {/* Quick Links & Social */}
+          <Flex direction="col" gap={2}>
+            {/* Quick Links */}
+            <Flex direction="col" gap={6}>
+              <Flex align="center" gap={2}>
+                <Flex height="16" maxWidth="32" rounded="full" bg="white" />
+                <TypographyH4>Liên kết nhanh</TypographyH4>
+              </Flex>
+              <nav>
+                <Flex direction="col" gap={3}>
+                  <Link href={FOOTER_ROUTES.home}>
+                    <Flex align="center" gap={2}>
+                      <IconSize size="sm">
+                        <ArrowRight />
+                      </IconSize>
+                      <TypographySpanWhite>Trang chủ</TypographySpanWhite>
+                    </Flex>
+                  </Link>
+                  <Link href={FOOTER_ROUTES.blog}>
+                    <Flex align="center" gap={2}>
+                      <IconSize size="sm">
+                        <ArrowRight />
+                      </IconSize>
+                      <TypographySpanWhite>Blog</TypographySpanWhite>
+                    </Flex>
+                  </Link>
+                  <Link href={FOOTER_ROUTES.categories}>
+                    <Flex align="center" gap={2}>
+                      <IconSize size="sm">
+                        <ArrowRight />
+                      </IconSize>
+                      <TypographySpanWhite>Danh mục</TypographySpanWhite>
+                    </Flex>
+                  </Link>
+                </Flex>
+              </nav>
+            </Flex>
+
+            {/* Resources */}
+            <Flex direction="col" gap={2}>
+              <Flex align="center" gap={2}>
+                <Flex height="16" maxWidth="32" rounded="full" bg="white" />
+                <TypographyH4>Tài nguyên</TypographyH4>
+              </Flex>
+              <nav>
+                <Flex direction="col" gap={3}>
+                  <Link href={FOOTER_ROUTES.admin}>
+                    <Flex align="center" gap={2}>
+                      <IconSize size="sm">
+                        <ArrowRight />
+                      </IconSize>
+                      <TypographySpanWhite>Quản trị</TypographySpanWhite>
+                    </Flex>
+                  </Link>
+                  <Link href="#">
+                    <Flex align="center" gap={2}>
+                      <IconSize size="sm">
+                        <ArrowRight />
+                      </IconSize>
+                      <TypographySpanWhite>Hướng dẫn sử dụng</TypographySpanWhite>
+                    </Flex>
+                  </Link>
+                  <Link href="#">
+                    <Flex align="center" gap={2}>
+                      <IconSize size="sm">
+                        <ArrowRight />
+                      </IconSize>
+                      <TypographySpanWhite>Điều khoản dịch vụ</TypographySpanWhite>
+                    </Flex>
+                  </Link>
+                  <Link href="#">
+                    <Flex align="center" gap={2}>
+                      <IconSize size="sm">
+                        <ArrowRight />
+                      </IconSize>
+                      <TypographySpanWhite>Chính sách bảo mật</TypographySpanWhite>
+                    </Flex>
+                  </Link>
+                </Flex>
+              </nav>
+            </Flex>
+
+            
+          </Flex>
+        </Grid>
 
         {/* Divider */}
-        <div className="h-px bg-gradient-to-r from-transparent via-white/20 to-transparent mb-8" />
+        <Separator variant="gradientWhite" margin="y-4"/>
 
         {/* Bottom Footer */}
-        <div className="flex flex-col lg:flex-row items-center justify-between gap-6 text-white/60">
-          <div className="flex flex-col sm:flex-row items-center gap-2">
-            <TypographySpan>© {currentYear} {appConfig.namePublic}.</TypographySpan>
-            <TypographySpan className="hidden sm:inline">Được phát triển bởi</TypographySpan>
-            <TypographySpan className="font-semibold text-white hover:text-blue-300 transition-colors cursor-pointer">
-              {appConfig.company}
+        <Flex
+          direction="col"
+          align="center"
+          justify="between"
+          gap={4}
+          fullWidth
+        >
+          <Flex
+            direction="col"
+            align="center"
+            gap={2}
+            fullWidth
+          >
+            <TypographySpan>
+              © {currentYear} {appConfig.namePublic} . Được phát triển bởi {appConfig.company} Trường Đại học Ngân hàng TP.Hồ Chí Minh
             </TypographySpan>
-            <TypographySpan className="font-semibold text-white hover:text-blue-300 transition-colors cursor-pointer">Trường Đại học Ngân hàng TP.Hồ Chí Minh</TypographySpan>
-          </div>
+          </Flex>
 
-
-          <div className="flex items-center gap-6">
-            <Link href={FOOTER_ROUTES.about} className="hover:text-white transition-colors">
+          <Flex
+            align="center"
+            justify="center"
+            gap={4}
+            wrap
+            fullWidth
+          >
+            <Link href={FOOTER_ROUTES.about}>
               <TypographySpan>Về chúng tôi</TypographySpan>
             </Link>
-            <span className="text-white/20">•</span>
-            <Link href={FOOTER_ROUTES.contact} className="hover:text-white transition-colors">
+            <TypographySpanMuted>•</TypographySpanMuted>
+            <Link href={FOOTER_ROUTES.contact}>
               <TypographySpan>Liên hệ</TypographySpan>
             </Link>
-            <span className="text-white/20">•</span>
-            <Link
-              href={FOOTER_ROUTES.help}
-              className="hover:text-white transition-colors flex items-center gap-1"
-            >
-              <TypographySpan>Trợ giúp</TypographySpan>
-              <IconSize size="xs">
-                <ExternalLink />
-              </IconSize>
+            <TypographySpanMuted>•</TypographySpanMuted>
+            <Link href={FOOTER_ROUTES.help}>
+              <Flex align="center" gap={1}>
+                <TypographySpan>Trợ giúp</TypographySpan>
+                <IconSize size="xs">
+                  <ExternalLink />
+                </IconSize>
+              </Flex>
             </Link>
-          </div>
-        </div>
-      </div>
+          </Flex>
+        </Flex>
+      </Flex>
     </footer>
   );
 }

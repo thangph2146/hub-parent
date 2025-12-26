@@ -1,6 +1,7 @@
 "use client"
 
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { Flex } from "@/components/ui/flex"
 import { TypographyPSmallMuted, TypographyPMuted } from "@/components/ui/typography"
 import type { Message, GroupRole, Contact } from "../types"
 import { EmptyState } from "./empty-state"
@@ -13,7 +14,7 @@ interface MessagesAreaProps {
   currentUserId: string
   messagesMaxHeight?: number
   messagesMinHeight?: number
-  scrollAreaRef: React.RefObject<HTMLDivElement | null>
+  scrollAreaRef?: React.RefObject<HTMLDivElement | null>
   messagesEndRef: React.RefObject<HTMLDivElement | null>
   onReply?: (message: Message) => void
   onMarkAsRead?: (messageId: string) => void
@@ -54,19 +55,29 @@ export function MessagesArea({
 
   return (
     <ScrollArea
+      ref={scrollAreaRef}
+      fullWidth
       style={{
         height: messagesMaxHeight ? `${messagesMaxHeight}px` : undefined,
         maxHeight: messagesMaxHeight ? `${messagesMaxHeight}px` : "calc(100dvh - 13rem)",
         minHeight: messagesMinHeight ? `${messagesMinHeight}px` : "calc(100dvh - 13rem)",
       }}
     >
-      <div className="flex flex-col p-4 gap-2" ref={scrollAreaRef}>
+      <Flex 
+        direction="col" 
+        gap={2} 
+        padding="md"
+        fullWidth
+        minWidth="0"
+      >
         {filteredMessages.length > 0 ? (
           <>
             {searchQuery.trim() && (
-              <TypographyPSmallMuted className="text-center py-2">
-                Tìm thấy {filteredMessages.length} tin nhắn
-              </TypographyPSmallMuted>
+              <Flex justify="center" padding="responsive-y">
+                <TypographyPSmallMuted>
+                  Tìm thấy {filteredMessages.length} tin nhắn
+                </TypographyPSmallMuted>
+              </Flex>
             )}
             {filteredMessages.map((message) => (
               <MessageBubble
@@ -95,12 +106,20 @@ export function MessagesArea({
             )}
           </>
         ) : searchQuery.trim() ? (
-          <div className="flex flex-col items-center justify-center py-8 text-center">
+          <Flex 
+            direction="col" 
+            align="center" 
+            justify="center" 
+            gap={1} 
+            padding="responsive-lg"
+            fullWidth
+            textAlign="center"
+          >
             <TypographyPMuted>Không tìm thấy tin nhắn nào</TypographyPMuted>
-            <TypographyPSmallMuted className="mt-1">Thử tìm kiếm với từ khóa khác</TypographyPSmallMuted>
-          </div>
+            <TypographyPSmallMuted>Thử tìm kiếm với từ khóa khác</TypographyPSmallMuted>
+          </Flex>
         ) : isGroupDeleted ? (
-          <>
+          <Flex direction="col" gap={2} fullWidth>
             <EmptyState variant="messages" />
             <DeletedGroupBanner
               currentUserRole={currentUserRole}
@@ -110,11 +129,11 @@ export function MessagesArea({
               role={role}
               setContactsState={setContactsState}
             />
-          </>
+          </Flex>
         ) : (
           <EmptyState variant="messages" />
         )}
-      </div>
+      </Flex>
     </ScrollArea>
   )
 }

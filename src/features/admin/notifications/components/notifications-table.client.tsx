@@ -93,7 +93,7 @@ export const NotificationsTableClient = ({
   })
   
   const getInvalidateQueryKey = useCallback(() => queryKeys.notifications.admin(), [])
-  const { onRefreshReady, refresh: refreshTable } = useResourceTableRefresh({
+  const { onRefreshReady } = useResourceTableRefresh({
     queryClient,
     getInvalidateQueryKey,
     cacheVersion,
@@ -101,11 +101,6 @@ export const NotificationsTableClient = ({
 
   const { feedback, showFeedback, handleFeedbackOpenChange } = useNotificationFeedback()
   const { deleteConfirm, setDeleteConfirm, handleDeleteConfirm } = useNotificationDeleteConfirm()
-
-  const triggerTableRefresh = useCallback(() => {
-    logger.info("triggerTableRefresh called")
-    refreshTable()
-  }, [refreshTable])
 
   const {
     handleToggleRead,
@@ -120,7 +115,6 @@ export const NotificationsTableClient = ({
     bulkState,
   } = useNotificationActions({
     showFeedback,
-    triggerTableRefresh,
   })
 
   const handleToggleReadWithRefresh = useCallback(
@@ -130,11 +124,11 @@ export const NotificationsTableClient = ({
         type: checked ? "mark-read" : "mark-unread",
         row,
         onConfirm: async () => {
-          await handleToggleRead(row, checked, refreshTable)
+          await handleToggleRead(row, checked)
         },
       })
     },
-    [handleToggleRead, refreshTable, setDeleteConfirm],
+    [handleToggleRead, setDeleteConfirm],
   )
 
   const handleDeleteSingleWithRefresh = useCallback(
@@ -144,11 +138,11 @@ export const NotificationsTableClient = ({
         type: "delete",
         row,
         onConfirm: async () => {
-          await handleDeleteSingle(row, refreshTable)
+          await handleDeleteSingle(row)
         },
       })
     },
-    [handleDeleteSingle, refreshTable, setDeleteConfirm],
+    [handleDeleteSingle, setDeleteConfirm],
   )
 
   const { baseColumns } = useNotificationColumns({

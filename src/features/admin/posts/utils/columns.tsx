@@ -5,6 +5,7 @@ import { apiRoutes } from "@/lib/api/routes"
 import { Switch } from "@/components/ui/switch"
 import type { PostRow } from "../types"
 import { TypographySpanSmall, TypographySpanSmallMuted, TypographyP } from "@/components/ui/typography"
+import { Flex } from "@/components/ui/flex"
 
 interface UsePostColumnsOptions {
   togglingPosts: Set<string>
@@ -53,19 +54,19 @@ export const usePostColumns = ({
         className: "min-w-[200px]",
         headerClassName: "min-w-[200px]",
         cell: (row) => (
-          <div className="flex flex-col gap-1.5">
-            <span className="font-medium">{row.title}</span>
+          <Flex direction="col" gap={1.5}>
+            <TypographyP>{row.title}</TypographyP>
             {row.excerpt && (
               <TypographySpanSmallMuted className="line-clamp-1">{row.excerpt}</TypographySpanSmallMuted>
             )}
             {(row.categories && row.categories.length > 0) || (row.tags && row.tags.length > 0) ? (
-              <div className="flex flex-wrap gap-1 mt-0.5">
+              <Flex wrap gap={1} marginTop={0.5}>
                 {row.categories && row.categories.length > 0 && (
                   <>
                     {row.categories.slice(0, 2).map((category) => (
                       <TypographySpanSmall
                         key={category.id}
-                        className="inline-flex items-center rounded-md bg-primary/10 px-1.5 py-0.5 font-medium text-primary"
+                        className="inline-flex items-center rounded-md bg-primary/10 px-1.5 py-0.5 text-primary"
                       >
                         {category.name}
                       </TypographySpanSmall>
@@ -82,7 +83,7 @@ export const usePostColumns = ({
                     {row.tags.slice(0, 2).map((tag) => (
                       <TypographySpanSmall
                         key={tag.id}
-                        className="inline-flex items-center rounded-md bg-secondary/50 px-1.5 py-0.5 font-medium text-secondary-foreground"
+                        className="inline-flex items-center rounded-md bg-secondary/50 px-1.5 py-0.5 text-secondary-foreground"
                       >
                         {tag.name}
                       </TypographySpanSmall>
@@ -94,9 +95,9 @@ export const usePostColumns = ({
                     )}
                   </>
                 )}
-              </div>
+              </Flex>
             ) : null}
-          </div>
+          </Flex>
         ),
       },
       {
@@ -123,10 +124,10 @@ export const usePostColumns = ({
         className: "min-w-[150px]",
         headerClassName: "min-w-[150px]",
         cell: (row) => (
-          <div className="flex flex-col gap-0.5">
+          <Flex direction="col" gap={0.5}>
             <TypographyP>{row.author.name || "N/A"}</TypographyP>
             <TypographySpanSmallMuted>{row.author.email}</TypographySpanSmallMuted>
-          </div>
+          </Flex>
         ),
       },
       {
@@ -147,14 +148,14 @@ export const usePostColumns = ({
         cell: (row) => {
           if (row.deletedAt) {
             return (
-              <TypographySpanSmall className="inline-flex min-w-[88px] items-center justify-center rounded-full bg-rose-100 px-2 py-1 font-medium text-rose-700">
+              <TypographySpanSmall className="inline-flex min-w-[88px] items-center justify-center rounded-full bg-rose-100 px-2 py-1 text-rose-700">
                 Đã xóa
               </TypographySpanSmall>
             )
           }
 
           return (
-            <div className="flex items-center gap-2">
+            <Flex align="center" gap={2}>
               <Switch
                 checked={row.published}
                 disabled={togglingPosts.has(row.id) || !canToggleStatus}
@@ -166,7 +167,7 @@ export const usePostColumns = ({
               <TypographySpanSmallMuted>
                 {row.published ? "Đã xuất bản" : "Bản nháp"}
               </TypographySpanSmallMuted>
-            </div>
+            </Flex>
           )
         },
       },
@@ -175,7 +176,7 @@ export const usePostColumns = ({
         header: "Ngày xuất bản",
         filter: {
           type: "date",
-          placeholder: "Chọn ngày xuất bản",
+          placeholder: "Chọn ngày",
           dateFormat: "dd/MM/yyyy",
         },
         className: "min-w-[140px] max-w-[180px]",
@@ -194,7 +195,7 @@ export const usePostColumns = ({
         header: "Ngày tạo",
         filter: {
           type: "date",
-          placeholder: "Chọn ngày tạo",
+          placeholder: "Chọn ngày",
           dateFormat: "dd/MM/yyyy",
         },
         className: "min-w-[140px] max-w-[180px]",

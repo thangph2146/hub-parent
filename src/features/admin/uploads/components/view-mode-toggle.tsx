@@ -6,6 +6,7 @@
 import { Button } from "@/components/ui/button"
 import { Folder, List } from "lucide-react"
 import { IconSize } from "@/components/ui/typography"
+import { Flex } from "@/components/ui/flex"
 
 interface ViewModeToggleProps {
   viewMode: "flat" | "tree"
@@ -14,32 +15,32 @@ interface ViewModeToggleProps {
 
 export const ViewModeToggle = ({ viewMode, onViewModeChange }: ViewModeToggleProps) => {
   return (
-    <div className="flex items-center gap-1 sm:gap-2">
+    <Flex align="center" gap={1.5} className="w-full sm:w-auto">
       <Button
         type="button"
         variant={viewMode === "tree" ? "default" : "outline"}
         size="sm"
         onClick={() => onViewModeChange("tree")}
-        className="px-2 gap-1"
+        className="flex-1 sm:flex-initial px-3 gap-1.5 h-9"
       >
         <IconSize size="sm">
           <Folder />
         </IconSize>
-        <span className="inline">Thư mục</span>
+        <span className="inline whitespace-nowrap">Thư mục</span>
       </Button>
       <Button
         type="button"
         variant={viewMode === "flat" ? "default" : "outline"}
         size="sm"
         onClick={() => onViewModeChange("flat")}
-        className="px-2 gap-1"
+        className="flex-1 sm:flex-initial px-3 gap-1.5 h-9"
       >
         <IconSize size="sm">
           <List />
         </IconSize>
-        <span className="inline">Danh sách</span>
+        <span className="inline whitespace-nowrap">Danh sách</span>
       </Button>
-    </div>
+    </Flex>
   )
 }
 

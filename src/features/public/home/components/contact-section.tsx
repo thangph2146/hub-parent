@@ -1,11 +1,9 @@
-import { cn } from "@/lib/utils";
 import { ReactNode } from "react";
 import {
   Card,
-  CardHeader,
-  CardTitle,
+  CardContent,
 } from "@/components/ui/card";
-import { IconSize } from "@/components/ui/typography";
+import { Flex } from "@/components/ui/flex";
 import { TypographyH3, TypographyPSmallMuted, TypographySpanSmall } from "@/components/ui/typography";
 
 export interface FeatureItem {
@@ -30,7 +28,6 @@ export interface ContactSectionProps {
   formComponent?: ReactNode;
   titleClassName?: string;
   descriptionClassName?: string;
-  className?: string;
 }
 
 export const ContactSection = ({
@@ -40,54 +37,43 @@ export const ContactSection = ({
   formComponent,
   titleClassName,
   descriptionClassName,
-  className,
 }: ContactSectionProps) => {
   return (
-    <div className={cn("flex flex-col lg:flex-row gap-8 lg:gap-16", className)}>
+    <Flex direction="col-lg-row" gap="6-lg-8" fullWidth>
       {/* Left Side - Features & Contact Info - 1/3 */}
-      <div className="w-full lg:w-1/3">
-        <div className="mb-6 sm:mb-8">
-          <TypographyH3
-            className={cn("mb-3 sm:mb-4", titleClassName)}
-          >
+      <Flex direction="col" gap={6} width="1/3">
+        <Flex direction="col" gap={4}>
+          <TypographyH3 className={titleClassName}>
             {title}
           </TypographyH3>
           <TypographyPSmallMuted className={descriptionClassName}>
             {description}
           </TypographyPSmallMuted>
-        </div>
-        <div className="space-y-4 sm:space-y-6">
-          {/* Contact Info */}
-          {contactInfo && (
-            <Card className="bg-muted/50 dark:bg-muted rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-border">
-              <CardHeader className="px-0">
-                <CardTitle className="text-card-foreground">
-                  {contactInfo.title}
-                </CardTitle>
-              </CardHeader>
-              <div className="space-y-2 sm:space-y-3">
+        </Flex>
+        {/* Contact Info */}
+        {contactInfo && (
+          <Card>
+            <CardContent>
+              <Flex direction="col" gap={3}>
                 {contactInfo.items.map((item, index) => (
-                  <div key={index} className="flex items-center gap-2 sm:gap-3">
-                    <div className="sm:block hidden text-primary flex-shrink-0">
-                      <div className="hidden sm:block">
-                        <IconSize size="md">{item.icon}</IconSize>
-                      </div>
-                      <div className="block sm:hidden">
-                        <IconSize size="sm">{item.icon}</IconSize>
-                      </div>
-                    </div>
-                    <TypographySpanSmall className="break-words">{item.text}</TypographySpanSmall>
-                  </div>
+                  <Flex key={index} align="center" gap={3}>
+                    {item.icon}
+                    <TypographySpanSmall>{item.text}</TypographySpanSmall>
+                  </Flex>
                 ))}
-              </div>
-            </Card>
-          )}
-        </div>
-      </div>
+              </Flex>
+            </CardContent>
+          </Card>
+        )}
+      </Flex>
 
       {/* Right Side - Form - 2/3 */}
-      {formComponent && <div className="w-full lg:w-2/3">{formComponent}</div>}
-    </div>
+      {formComponent && (
+        <Flex direction="col" width="2/3">
+          {formComponent}
+        </Flex>
+      )}
+    </Flex>
   );
 }
 

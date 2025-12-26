@@ -3,10 +3,12 @@ import { cva, type VariantProps } from "class-variance-authority";
 import * as React from "react";
 
 import { cn } from "@/lib/utils/index";
-import { iconSizes, typography } from "@/lib/typography";
+import { iconSizes, responsiveTextSizes, fontWeights, lineHeights } from "@/lib/typography";
+
+const buttonBodySmall = `${responsiveTextSizes.small} ${fontWeights.normal} ${lineHeights.relaxed}`
 
 const buttonVariants = cva(
-  `inline-flex items-center justify-center whitespace-nowrap rounded-lg ${typography.body.small} font-medium transition-colors outline-offset-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring/70 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 cursor-pointer`,
+  `inline-flex items-center justify-center whitespace-nowrap rounded-lg ${buttonBodySmall} font-medium transition-colors outline-offset-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring/70 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 cursor-pointer`,
   {
     variants: {
       variant: {
@@ -22,14 +24,20 @@ const buttonVariants = cva(
       },
       size: {
         default: "h-9 min-h-[44px] px-4 py-2", // 44px minimum for mobile touch targets
-        sm: `h-8 min-h-[44px] rounded-lg px-3 ${typography.body.small}`, // Ensure mobile-friendly
+        sm: `h-8 min-h-[44px] rounded-lg px-3 ${buttonBodySmall}`, // Ensure mobile-friendly
         lg: "h-10 min-h-[44px] rounded-lg px-8",
         icon: `${iconSizes["3xl"]} min-h-[44px] min-w-[44px]`, // 44x44px minimum for icon buttons
+        "icon-absolute": "absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent",
+      },
+      fullWidth: {
+        true: "w-full",
+        false: "",
       },
     },
     defaultVariants: {
       variant: "default",
       size: "default",
+      fullWidth: false,
     },
   },
 );
@@ -42,7 +50,7 @@ export interface ButtonProps
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   (
-    { className, variant, size, asChild = false, type = "button", ...props },
+    { className, variant, size, fullWidth, asChild = false, type = "button", ...props },
     ref,
   ) => {
     const Comp = asChild ? Slot : "button";
@@ -50,7 +58,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 
     return (
       <Comp
-        className={cn(buttonVariants({ variant, size, className }))}
+        className={cn(buttonVariants({ variant, size, fullWidth, className }))}
         ref={ref}
         {...componentProps}
       />

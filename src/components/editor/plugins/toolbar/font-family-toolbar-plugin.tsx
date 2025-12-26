@@ -16,6 +16,7 @@ import {
   SelectItem,
   SelectTrigger,
 } from "@/components/ui/select"
+import { IconSize } from "@/components/ui/typography"
 
 const FONT_FAMILY_OPTIONS = [
   "Arial",
@@ -67,8 +68,10 @@ export function FontFamilyToolbarPlugin() {
       }}
       aria-label={buttonAriaLabel}
     >
-      <SelectTrigger className="!h-8 w-min gap-1">
-        <TypeIcon className="size-4" />
+      <SelectTrigger className="!min-h-11 w-min gap-1">
+        <IconSize size="sm">
+          <TypeIcon />
+        </IconSize>
         <span style={{ fontFamily }}>{fontFamily}</span>
       </SelectTrigger>
       <SelectContent>

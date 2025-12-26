@@ -5,6 +5,7 @@
 
 "use client"
 
+import { Flex } from "@/components/ui/flex"
 import type { Contact, Message, GroupRole } from "../types"
 import { ChatHeader } from "./chat-header"
 import { MessagesArea } from "./messages-area"
@@ -53,7 +54,7 @@ export function ChatWindow({
   scrollAreaRef,
   messagesEndRef,
   inputRef,
-  replyBannerRef,
+  replyBannerRef: _replyBannerRef,
   deletedBannerRef,
   messageInput,
   setMessageInput,
@@ -80,13 +81,20 @@ export function ChatWindow({
     chatHeaderRef,
     chatInputRef,
     messagesHeight: calculatedMessagesHeight,
-  } = useChatMessagesHeight()
+  } = useChatMessagesHeight({
+    additionalOffsets: 40, // Trừ bớt 40px từ message scroll height
+  })
 
   const resolvedMaxHeight = calculatedMessagesHeight ?? messagesMaxHeight
   const resolvedMinHeight = calculatedMessagesHeight ?? messagesMinHeight
 
   return (
-    <>
+    <Flex 
+      direction="col" 
+      fullWidth
+      height="full"
+      overflow="hidden"
+    >
       <ChatHeader 
         ref={chatHeaderRef}
         contact={currentChat} 
@@ -127,10 +135,9 @@ export function ChatWindow({
         currentChat={currentChat}
         replyingTo={replyingTo}
         onCancelReply={handleCancelReply}
-        replyBannerRef={replyBannerRef}
         deletedBannerRef={deletedBannerRef}
         isGroupDeleted={isGroupDeleted}
       />
-    </>
+    </Flex>
   )
 }

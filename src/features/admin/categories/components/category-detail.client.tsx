@@ -1,11 +1,10 @@
 "use client"
 
 import { Tag, Hash, AlignLeft, Calendar, Clock, Edit } from "lucide-react"
-import { 
-  ResourceDetailClient, 
+import {
+  ResourceDetailClient,
   FieldItem,
-  type ResourceDetailField, 
-  type ResourceDetailSection 
+  type ResourceDetailSection
 } from "@/features/admin/resources/components"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -14,7 +13,9 @@ import { formatDateVi } from "../utils"
 import { queryKeys } from "@/lib/query-keys"
 import { usePermissions } from "@/hooks/use-permissions"
 import { PERMISSIONS } from "@/lib/permissions"
-import { TypographyP, IconSize } from "@/components/ui/typography"
+import { TypographyP, TypographyPMuted, IconSize } from "@/components/ui/typography"
+import { Flex } from "@/components/ui/flex"
+import { Grid } from "@/components/ui/grid"
 
 export interface CategoryDetailData {
   id: string
@@ -38,8 +39,6 @@ export const CategoryDetailClient = ({ categoryId, category, backUrl = "/admin/c
     invalidateQueryKey: queryKeys.adminCategories.all(),
   })
   const { hasAnyPermission } = usePermissions()
-  
-  // Check permission for edit
   const canUpdate = hasAnyPermission([PERMISSIONS.CATEGORIES_UPDATE, PERMISSIONS.CATEGORIES_MANAGE])
 
   const { data: detailData, isFetched, isFromApi, fetchedData } = useResourceDetailData({
@@ -59,97 +58,75 @@ export const CategoryDetailClient = ({ categoryId, category, backUrl = "/admin/c
     fetchedData,
   })
 
-  const detailFields: ResourceDetailField<CategoryDetailData>[] = []
-
   const detailSections: ResourceDetailSection<CategoryDetailData>[] = [
     {
       id: "basic",
       title: "Thông tin cơ bản",
       description: "Thông tin chính về danh mục và thời gian",
       fieldsContent: (_fields, data) => {
-        const categoryData = data as CategoryDetailData
-        
+        const cat = data as CategoryDetailData
         return (
-          <div className="space-y-6">
-            {/* Name & Slug */}
-            <div className="grid gap-6 grid-cols-1 sm:grid-cols-2">
+          <Flex direction="col" fullWidth gap={6}>
+            <Grid cols="2-lg" fullWidth gap={6}>
               <FieldItem icon={Tag} label="Tên danh mục">
-                <TypographyP className="font-medium text-foreground">
-                  {categoryData.name || "—"}
-                </TypographyP>
+                <TypographyP>{cat.name || "—"}</TypographyP>
               </FieldItem>
-
               <FieldItem icon={Hash} label="Slug">
-                <TypographyP className="font-medium text-foreground font-mono">
-                  {categoryData.slug || "—"}
-                </TypographyP>
+                <TypographyP className="font-mono">{cat.slug || "—"}</TypographyP>
               </FieldItem>
-            </div>
+            </Grid>
 
-            {/* Description */}
-            {categoryData.description && (
-              <Card className="border border-border/50 bg-card p-5">
-                <div className="flex items-start gap-3">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted">
-                    <IconSize size="sm" className="text-muted-foreground">
-                      <AlignLeft />
-                    </IconSize>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <TypographyP className="font-medium text-foreground mb-2">Mô tả</TypographyP>
-                    <TypographyP className="leading-relaxed whitespace-pre-wrap text-foreground break-words">
-                      {categoryData.description || "—"}
-                    </TypographyP>
-                  </div>
-                </div>
+            {cat.description && (
+              <Card className="border border-border/50">
+                <Flex align="start" gap={3} fullWidth padding="lg">
+                  <Flex align="center" justify="center" shrink rounded="lg" bg="muted" className="h-10 w-10">
+                    <IconSize size="sm"><AlignLeft /></IconSize>
+                  </Flex>
+                  <Flex direction="col" gap={2} fullWidth flex="1" minWidth="0">
+                    <TypographyP className="font-medium">Mô tả</TypographyP>
+                    <TypographyPMuted>{cat.description}</TypographyPMuted>
+                  </Flex>
+                </Flex>
               </Card>
             )}
 
-            {/* Timestamps */}
-            <div className="grid gap-6 grid-cols-1 sm:grid-cols-2">
+            <Grid cols="2-lg" fullWidth gap={6}>
               <FieldItem icon={Calendar} label="Ngày tạo">
-                <TypographyP className="font-medium text-foreground">
-                  {categoryData.createdAt ? formatDateVi(categoryData.createdAt) : "—"}
-                </TypographyP>
+                <TypographyP>{formatDateVi(cat.createdAt)}</TypographyP>
               </FieldItem>
-
               <FieldItem icon={Clock} label="Cập nhật lần cuối">
-                <TypographyP className="font-medium text-foreground">
-                  {categoryData.updatedAt ? formatDateVi(categoryData.updatedAt) : "—"}
-                </TypographyP>
+                <TypographyP>{formatDateVi(cat.updatedAt)}</TypographyP>
               </FieldItem>
-            </div>
-          </div>
+            </Grid>
+          </Flex>
         )
       },
     },
   ]
 
-  const isDeleted = detailData.deletedAt !== null && detailData.deletedAt !== undefined
+  const isDeleted = !!detailData?.deletedAt
+
+  const editUrl = `/admin/categories/${categoryId}/edit`
 
   return (
     <ResourceDetailClient<CategoryDetailData>
       data={detailData}
-      fields={detailFields}
+      fields={[]}
       detailSections={detailSections}
-      title={detailData.name}
-      description={`Chi tiết danh mục ${detailData.slug}`}
+      title={detailData?.name}
+      description={`Chi tiết danh mục ${detailData?.slug}`}
       backUrl={backUrl}
       backLabel="Quay lại danh sách"
       onBack={() => navigateBack(backUrl)}
       actions={
-        !isDeleted && canUpdate ? (
-          <Button
-            variant="outline"
-            onClick={() => router.push(`/admin/categories/${categoryId}/edit`)}
-            className="gap-2"
-          >
-            <IconSize size="sm">
-              <Edit />
-            </IconSize>
-            Chỉnh sửa
+        !isDeleted && canUpdate && (
+          <Button variant="outline" onClick={() => router.push(editUrl)}>
+            <Flex align="center" gap={2}>
+              <IconSize size="sm"><Edit /></IconSize>
+              Chỉnh sửa
+            </Flex>
           </Button>
-        ) : null
+        )
       }
     />
   )

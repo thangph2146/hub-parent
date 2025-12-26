@@ -37,6 +37,7 @@ import { TypographySpanSmall, TypographySpanSmallMuted, IconSize } from "@/compo
 import type { AdminUsersListParams } from "@/lib/query-keys"
 import type { UserRow, UsersResponse, UsersTableClientProps } from "../types"
 import { USER_CONFIRM_MESSAGES, USER_LABELS, PROTECTED_SUPER_ADMIN_EMAIL } from "../constants"
+import { Flex } from "@/components/ui/flex"
 export const UsersTableClient = ({
   canDelete = false,
   canRestore = false,
@@ -47,7 +48,7 @@ export const UsersTableClient = ({
 }: UsersTableClientProps) => {
   const queryClient = useQueryClient()
   const router = useResourceRouter()
-  
+
   // Log page load
   usePageLoadLogger("list")
   const { cacheVersion } = useUsersSocketBridge()
@@ -119,10 +120,10 @@ export const UsersTableClient = ({
           filterParams.set(`filter[${key}]`, value)
         }
       })
-      
+
       const filterString = filterParams.toString()
       const url = filterString ? `${baseUrl}&${filterString}` : baseUrl
-      
+
       const response = await apiClient.get<UsersResponse>(url)
       const payload = response.data
 
@@ -301,69 +302,75 @@ export const UsersTableClient = ({
         selectionEnabled: canDelete,
         selectionActions: canDelete
           ? ({ selectedIds, selectedRows, clearSelection, refresh }) => {
-              const deletableRows = selectedRows.filter((row) => row.email !== PROTECTED_SUPER_ADMIN_EMAIL)
-              const hasSuperAdmin = selectedRows.some((row) => row.email === PROTECTED_SUPER_ADMIN_EMAIL)
-              
-              return (
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                  <div className="flex-shrink-0">
-                    <TypographySpanSmall className="block sm:inline">
-                      {USER_LABELS.SELECTED_USERS(selectedIds.length)}
-                    </TypographySpanSmall>
-                    {hasSuperAdmin && (
-                      <TypographySpanSmallMuted className="block sm:inline ml-0 sm:ml-2 mt-1 sm:mt-0">
-                        (Tài khoản super admin không thể xóa)
-                      </TypographySpanSmallMuted>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-2 flex-wrap">
+            const deletableRows = selectedRows.filter((row) => row.email !== PROTECTED_SUPER_ADMIN_EMAIL)
+            const hasSuperAdmin = selectedRows.some((row) => row.email === PROTECTED_SUPER_ADMIN_EMAIL)
+
+            return (
+              <Flex direction="col" align="start" justify="between" gap={3} className="sm:flex-row sm:items-center">
+                <Flex direction="col" gap={1} className="flex-shrink-0 sm:flex-row sm:items-center">
+                  <TypographySpanSmall>
+                    {USER_LABELS.SELECTED_USERS(selectedIds.length)}
+                  </TypographySpanSmall>
+                  {hasSuperAdmin && (
+                    <TypographySpanSmallMuted className="sm:ml-2">
+                      (Tài khoản super admin không thể xóa)
+                    </TypographySpanSmallMuted>
+                  )}
+                </Flex>
+                <Flex align="center" gap={2} wrap>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="destructive"
+                    disabled={bulkState.isProcessing || deletableRows.length === 0}
+                    onClick={() => executeBulk("delete", deletableRows.map((r) => r.id), deletableRows, refresh, clearSelection)}
+                    className="whitespace-nowrap"
+                  >
+                    <IconSize size="md">
+                      <Trash2 />
+                    </IconSize>
+                    <span className="hidden sm:inline">
+                      {USER_LABELS.DELETE_SELECTED(deletableRows.length)}
+                    </span>
+                    <span className="sm:hidden">Xóa</span>
+                  </Button>
+                  {canManage && (
                     <Button
                       type="button"
                       size="sm"
                       variant="destructive"
                       disabled={bulkState.isProcessing || deletableRows.length === 0}
-                      onClick={() => executeBulk("delete", deletableRows.map((r) => r.id), deletableRows, refresh, clearSelection)}
+                      onClick={() => executeBulk("hard-delete", deletableRows.map((r) => r.id), deletableRows, refresh, clearSelection)}
                       className="whitespace-nowrap"
                     >
-                      <IconSize size="md" className="mr-2 shrink-0">
-                        <Trash2 />
-                      </IconSize>
+                        <Flex align="center" gap={2}>
+                          <IconSize size="md">
+                            <AlertTriangle />
+                          </IconSize>
+                          <span className="hidden sm:inline">
+                            {USER_LABELS.HARD_DELETE_SELECTED(deletableRows.length)}
+                          </span>
+                          <span className="sm:hidden">Xóa vĩnh viễn</span>
+                        </Flex>
                       <span className="hidden sm:inline">
-                        {USER_LABELS.DELETE_SELECTED(deletableRows.length)}
+                        {USER_LABELS.HARD_DELETE_SELECTED(deletableRows.length)}
                       </span>
-                      <span className="sm:hidden">Xóa</span>
+                      <span className="sm:hidden">Xóa vĩnh viễn</span>
                     </Button>
-                    {canManage && (
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="destructive"
-                        disabled={bulkState.isProcessing || deletableRows.length === 0}
-                        onClick={() => executeBulk("hard-delete", deletableRows.map((r) => r.id), deletableRows, refresh, clearSelection)}
-                        className="whitespace-nowrap"
-                      >
-                        <IconSize size="md" className="mr-2 shrink-0">
-                          <AlertTriangle />
-                        </IconSize>
-                        <span className="hidden sm:inline">
-                          {USER_LABELS.HARD_DELETE_SELECTED(deletableRows.length)}
-                        </span>
-                        <span className="sm:hidden">Xóa vĩnh viễn</span>
-                      </Button>
-                    )}
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="outline"
-                      onClick={clearSelection}
-                      className="whitespace-nowrap"
-                    >
-                      {USER_LABELS.CLEAR_SELECTION}
-                    </Button>
-                  </div>
-                </div>
-              )
-            }
+                  )}
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={clearSelection}
+                    className="whitespace-nowrap"
+                  >
+                    {USER_LABELS.CLEAR_SELECTION}
+                  </Button>
+                </Flex>
+              </Flex>
+            )
+          }
           : undefined,
         rowActions: (row) => renderActiveRowActions(row),
         emptyMessage: USER_LABELS.NO_USERS,
@@ -376,26 +383,28 @@ export const UsersTableClient = ({
         selectionEnabled: canRestore || canManage,
         selectionActions: canRestore || canManage
           ? ({ selectedIds, selectedRows, clearSelection, refresh }) => (
-              <SelectionActionsWrapper
-                label={USER_LABELS.SELECTED_DELETED_USERS(selectedIds.length)}
-                actions={
-                  <>
+            <SelectionActionsWrapper
+              label={USER_LABELS.SELECTED_DELETED_USERS(selectedIds.length)}
+              actions={
+                <>
                   {canRestore && (
                     <Button
                       type="button"
                       size="sm"
                       variant="outline"
-                        disabled={bulkState.isProcessing || selectedIds.length === 0}
-                        onClick={() => executeBulk("restore", selectedIds, selectedRows, refresh, clearSelection)}
-                        className="whitespace-nowrap"
-                      >
-                        <IconSize size="md" className="mr-2 shrink-0">
-                          <RotateCcw />
-                        </IconSize>
-                        <span className="hidden sm:inline">
-                          {USER_LABELS.RESTORE_SELECTED(selectedIds.length)}
-                        </span>
-                        <span className="sm:hidden">Khôi phục</span>
+                      disabled={bulkState.isProcessing || selectedIds.length === 0}
+                      onClick={() => executeBulk("restore", selectedIds, selectedRows, refresh, clearSelection)}
+                      className="whitespace-nowrap"
+                    >
+                        <Flex align="center" gap={2}>
+                          <IconSize size="md">
+                            <RotateCcw />
+                          </IconSize>
+                          <span className="hidden sm:inline">
+                            {USER_LABELS.RESTORE_SELECTED(selectedIds.length)}
+                          </span>
+                          <span className="sm:hidden">Khôi phục</span>
+                        </Flex>
                     </Button>
                   )}
                   {canManage && (
@@ -403,32 +412,38 @@ export const UsersTableClient = ({
                       type="button"
                       size="sm"
                       variant="destructive"
-                        disabled={bulkState.isProcessing || selectedIds.length === 0}
-                        onClick={() => executeBulk("hard-delete", selectedIds, selectedRows, refresh, clearSelection)}
-                        className="whitespace-nowrap"
-                      >
-                        <IconSize size="md" className="mr-2 shrink-0">
-                          <AlertTriangle />
-                        </IconSize>
-                        <span className="hidden sm:inline">
-                          {USER_LABELS.HARD_DELETE_SELECTED(selectedIds.length)}
-                        </span>
-                        <span className="sm:hidden">Xóa vĩnh viễn</span>
-                      </Button>
-                    )}
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="outline"
-                      onClick={clearSelection}
+                      disabled={bulkState.isProcessing || selectedIds.length === 0}
+                      onClick={() => executeBulk("hard-delete", selectedIds, selectedRows, refresh, clearSelection)}
                       className="whitespace-nowrap"
                     >
-                      {USER_LABELS.CLEAR_SELECTION}
+                        <Flex align="center" gap={2}>
+                          <IconSize size="md">
+                            <AlertTriangle />
+                          </IconSize>
+                          <span className="hidden sm:inline">
+                            {USER_LABELS.HARD_DELETE_SELECTED(selectedIds.length)}
+                          </span>
+                          <span className="sm:hidden">Xóa vĩnh viễn</span>
+                        </Flex>
+                      <span className="hidden sm:inline">
+                        {USER_LABELS.HARD_DELETE_SELECTED(selectedIds.length)}
+                      </span>
+                      <span className="sm:hidden">Xóa vĩnh viễn</span>
                     </Button>
-                  </>
-                }
-              />
-            )
+                  )}
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={clearSelection}
+                    className="whitespace-nowrap"
+                  >
+                    {USER_LABELS.CLEAR_SELECTION}
+                  </Button>
+                </>
+              }
+            />
+          )
           : undefined,
         rowActions: (row) => renderDeletedRowActions(row),
         emptyMessage: USER_LABELS.NO_DELETED_USERS,
@@ -526,10 +541,12 @@ export const UsersTableClient = ({
       }}
       className="h-8 px-3"
     >
-      <IconSize size="md" className="mr-2">
-        <Plus />
-      </IconSize>
-      {USER_LABELS.ADD_NEW}
+      <Flex align="center" gap={2}>
+        <IconSize size="md">
+          <Plus />
+        </IconSize>
+        {USER_LABELS.ADD_NEW}
+      </Flex>
     </Button>
   ) : undefined
 
@@ -559,11 +576,11 @@ export const UsersTableClient = ({
           description={getDeleteConfirmDescription()}
           variant={deleteConfirm.type === "hard" ? "destructive" : deleteConfirm.type === "restore" ? "default" : "destructive"}
           confirmLabel={
-            deleteConfirm.type === "hard" 
-              ? USER_CONFIRM_MESSAGES.HARD_DELETE_LABEL 
+            deleteConfirm.type === "hard"
+              ? USER_CONFIRM_MESSAGES.HARD_DELETE_LABEL
               : deleteConfirm.type === "restore"
-              ? USER_CONFIRM_MESSAGES.RESTORE_LABEL
-              : USER_CONFIRM_MESSAGES.CONFIRM_LABEL
+                ? USER_CONFIRM_MESSAGES.RESTORE_LABEL
+                : USER_CONFIRM_MESSAGES.CONFIRM_LABEL
           }
           cancelLabel={USER_CONFIRM_MESSAGES.CANCEL_LABEL}
           onConfirm={handleDeleteConfirm}
@@ -573,8 +590,8 @@ export const UsersTableClient = ({
               ? deleteConfirm.type === "restore"
                 ? restoringUsers.has(deleteConfirm.row.id)
                 : deleteConfirm.type === "hard"
-                ? hardDeletingUsers.has(deleteConfirm.row.id)
-                : deletingUsers.has(deleteConfirm.row.id)
+                  ? hardDeletingUsers.has(deleteConfirm.row.id)
+                  : deletingUsers.has(deleteConfirm.row.id)
               : false)
           }
         />

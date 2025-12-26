@@ -13,7 +13,12 @@ import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { useClientOnly } from "@/hooks/use-client-only"
-import { typography, iconSizes, textSizes } from "@/lib/typography"
+import { responsiveTextSizes, fontWeights, lineHeights, iconSizes, textSizes } from "@/lib/typography"
+
+const datePickerBodySmall = `${responsiveTextSizes.small} ${fontWeights.normal} ${lineHeights.relaxed}`
+const datePickerBodyMedium = `${responsiveTextSizes.medium} ${fontWeights.normal} ${lineHeights.relaxed}`
+const datePickerIconSizeXs = iconSizes.xs
+const datePickerIconSize2xl = iconSizes["2xl"]
 
 interface DatePickerProps {
   date?: Date
@@ -206,7 +211,7 @@ export function DatePicker({
             <Button
               variant="ghost"
               size="icon"
-              className={`${iconSizes["2xl"]} text-muted-foreground hover:text-foreground`}
+              className={`${datePickerIconSize2xl} text-muted-foreground hover:text-foreground`}
               onClick={handlePreviousMonth}
               aria-label="Tháng trước"
             >
@@ -216,7 +221,7 @@ export function DatePicker({
               <select
                 value={currentMonthIndex}
                 onChange={handleMonthChange}
-                className={`h-8 rounded-md border border-input bg-background px-2 font-medium outline-none focus-visible:ring-1 focus-visible:ring-ring cursor-pointer ${typography.body.small}`}
+                className={`h-8 rounded-md border border-input bg-background px-2 font-medium outline-none focus-visible:ring-1 focus-visible:ring-ring cursor-pointer ${datePickerBodySmall}`}
                 aria-label="Chọn tháng"
               >
                 {monthNames.map((monthName, index) => (
@@ -225,11 +230,11 @@ export function DatePicker({
                   </option>
                 ))}
               </select>
-              <span className={`${typography.body.small} font-medium text-muted-foreground`}>/</span>
+              <span className={`${datePickerBodySmall} font-medium text-muted-foreground`}>/</span>
               <select
                 value={currentYear}
                 onChange={handleYearChange}
-                className={`h-8 rounded-md border border-input bg-background px-2 font-medium outline-none focus-visible:ring-1 focus-visible:ring-ring cursor-pointer ${typography.body.small}`}
+                className={`h-8 rounded-md border border-input bg-background px-2 font-medium outline-none focus-visible:ring-1 focus-visible:ring-ring cursor-pointer ${datePickerBodySmall}`}
                 aria-label="Chọn năm"
               >
                 {years.map((year) => (
@@ -242,7 +247,7 @@ export function DatePicker({
             <Button
               variant="ghost"
               size="icon"
-              className={`${iconSizes["2xl"]} text-muted-foreground hover:text-foreground`}
+              className={`${datePickerIconSize2xl} text-muted-foreground hover:text-foreground`}
               onClick={handleNextMonth}
               aria-label="Tháng sau"
             >
@@ -272,7 +277,7 @@ export function DatePicker({
               <ScrollArea className="h-full">
                 <div className="space-y-3">
                   <div className="flex h-5 shrink-0 items-center px-5">
-                    <p className={`${typography.body.small} font-medium`}>
+                    <p className={`${datePickerBodySmall} font-medium`}>
                       {currentDate ? format(currentDate, "EEEE, d", { locale: vi }) : format(today, "EEEE, d", { locale: vi })}
                     </p>
                   </div>
@@ -307,13 +312,13 @@ export function DatePicker({
       <Button
         variant="outline"
         className={cn(
-          `h-8 w-full justify-start text-left ${typography.body.small} font-normal`,
+          `h-8 w-full justify-start text-left ${datePickerBodySmall} font-normal`,
           !hasValue && "text-muted-foreground",
           className,
         )}
         disabled={disabled}
       >
-        <CalendarIcon className={`mr-2 ${iconSizes.xs}`} />
+        <CalendarIcon className={`mr-2 ${datePickerIconSizeXs}`} />
         {displayDate}
       </Button>
     )
@@ -325,14 +330,14 @@ export function DatePicker({
         <Button
           variant="outline"
           className={cn(
-            `h-8 w-full justify-start text-left font-normal ${typography.body.small}`,
+            `h-8 w-full justify-start text-left font-normal ${datePickerBodySmall}`,
             !hasValue && "text-muted-foreground",
             className,
           )}
           disabled={disabled}
           aria-controls={datePickerId}
         >
-          <CalendarIcon className={`mr-2 ${iconSizes.xs}`} />
+          <CalendarIcon className={`mr-2 ${datePickerIconSizeXs}`} />
           {displayDate}
         </Button>
       </PopoverTrigger>
@@ -351,7 +356,7 @@ export function DatePicker({
             <Button
               variant="ghost"
               size="icon"
-              className={`${iconSizes["2xl"]} text-muted-foreground hover:text-foreground`}
+              className={`${datePickerIconSize2xl} text-muted-foreground hover:text-foreground`}
               onClick={handlePreviousMonth}
               aria-label="Tháng trước"
             >
@@ -361,7 +366,7 @@ export function DatePicker({
               <select
                 value={currentMonthIndex}
                 onChange={handleMonthChange}
-                className={`h-8 rounded-md border border-input bg-background px-2 font-medium outline-none focus-visible:ring-1 focus-visible:ring-ring cursor-pointer ${typography.body.small}`}
+                className={`h-8 rounded-md border border-input bg-background px-2 font-medium outline-none focus-visible:ring-1 focus-visible:ring-ring cursor-pointer ${datePickerBodySmall}`}
                 aria-label="Chọn tháng"
               >
                 {monthNames.map((monthName, index) => (
@@ -370,11 +375,11 @@ export function DatePicker({
                   </option>
                 ))}
               </select>
-              <span className={`${typography.body.small} font-medium text-muted-foreground`}>/</span>
+              <span className={`${datePickerBodySmall} font-medium text-muted-foreground`}>/</span>
               <select
                 value={currentYear}
                 onChange={handleYearChange}
-                className={`h-8 rounded-md border border-input bg-background px-2 font-medium outline-none focus-visible:ring-1 focus-visible:ring-ring cursor-pointer ${typography.body.small}`}
+                className={`h-8 rounded-md border border-input bg-background px-2 font-medium outline-none focus-visible:ring-1 focus-visible:ring-ring cursor-pointer ${datePickerBodySmall}`}
                 aria-label="Chọn năm"
               >
                 {years.map((year) => (
@@ -387,7 +392,7 @@ export function DatePicker({
             <Button
               variant="ghost"
               size="icon"
-              className={`${iconSizes["2xl"]} text-muted-foreground hover:text-foreground`}
+              className={`${datePickerIconSize2xl} text-muted-foreground hover:text-foreground`}
               onClick={handleNextMonth}
               aria-label="Tháng sau"
             >
@@ -413,7 +418,7 @@ export function DatePicker({
           {enableTime && (
             <div className="border-t bg-muted/30">
               <div className="px-4 py-3 space-y-2.5">
-                <label className={`${typography.body.small} font-medium text-foreground block`}>Thời gian</label>
+                <label className={`${datePickerBodySmall} font-medium text-foreground block`}>Thời gian</label>
                 <div className="flex items-end gap-2 justify-center">
                   <div className="flex flex-col items-center gap-1.5">
                     <label htmlFor="time-hour" className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
@@ -433,7 +438,7 @@ export function DatePicker({
                         const val = Math.max(0, Math.min(23, parseInt(e.target.value) || 0))
                         handleTimeInputChange("hour", val)
                       }}
-                      className={`h-10 w-16 text-center ${typography.body.medium} font-semibold`}
+                      className={`h-10 w-16 text-center ${datePickerBodyMedium} font-semibold`}
                       placeholder="00"
                       disabled={disabled}
                     />
@@ -457,7 +462,7 @@ export function DatePicker({
                         const val = Math.max(0, Math.min(59, parseInt(e.target.value) || 0))
                         handleTimeInputChange("minute", val)
                       }}
-                      className={`h-10 w-16 text-center ${typography.body.medium} font-semibold`}
+                      className={`h-10 w-16 text-center ${datePickerBodyMedium} font-semibold`}
                       placeholder="00"
                       disabled={disabled}
                     />
@@ -483,7 +488,7 @@ export function DatePicker({
                             const val = Math.max(0, Math.min(59, parseInt(e.target.value) || 0))
                             handleTimeInputChange("second", val)
                           }}
-                          className={`h-10 w-16 text-center ${typography.body.medium} font-semibold`}
+                          className={`h-10 w-16 text-center ${datePickerBodyMedium} font-semibold`}
                           placeholder="00"
                           disabled={disabled}
                         />
@@ -499,7 +504,7 @@ export function DatePicker({
               <Button
                 variant="ghost"
                 size="sm"
-                className={`h-8 w-full ${typography.body.small}`}
+                className={`h-8 w-full ${datePickerBodySmall}`}
                 onClick={() => {
                   setInternalDate(undefined)
                   setTimeInputs({ hour: 0, minute: 0, second: 0 })

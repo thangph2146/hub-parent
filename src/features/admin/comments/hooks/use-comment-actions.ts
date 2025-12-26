@@ -44,6 +44,7 @@ export const useCommentActions = ({
     resourceName: "comments",
     queryKeys: {
       all: () => queryKeys.adminComments.all(),
+      detail: (id) => queryKeys.adminComments.detail(id),
     },
     apiRoutes: {
       delete: (id) => apiRoutes.comments.delete(id),
@@ -118,8 +119,15 @@ export const useCommentActions = ({
           },
         })
         
-        await queryClient.invalidateQueries({ queryKey: queryKeys.adminComments.all(), refetchType: "active" })
-        await queryClient.refetchQueries({ queryKey: queryKeys.adminComments.all(), type: "active" })
+        // Invalidate và refetch list queries - sử dụng "all" để đảm bảo refetch tất cả queries
+        await queryClient.invalidateQueries({ queryKey: queryKeys.adminComments.all(), refetchType: "all" })
+        await queryClient.refetchQueries({ queryKey: queryKeys.adminComments.all(), type: "all" })
+        
+        // Invalidate và refetch detail query
+        await queryClient.invalidateQueries({ queryKey: queryKeys.adminComments.detail(row.id), refetchType: "all" })
+        await queryClient.refetchQueries({ queryKey: queryKeys.adminComments.detail(row.id), type: "all" })
+        
+        // Gọi refresh callback để cập nhật UI ngay lập tức
         await refreshTable?.()
       } catch (error: unknown) {
         let errorMessage: string = COMMENT_MESSAGES.UNKNOWN_ERROR
@@ -191,8 +199,9 @@ export const useCommentActions = ({
         showFeedback("success", title, description)
         clearSelection()
 
-        await queryClient.invalidateQueries({ queryKey: queryKeys.adminComments.all(), refetchType: "active" })
-        await queryClient.refetchQueries({ queryKey: queryKeys.adminComments.all(), type: "active" })
+        // Invalidate và refetch queries - sử dụng "all" để đảm bảo refetch tất cả queries
+        await queryClient.invalidateQueries({ queryKey: queryKeys.adminComments.all(), refetchType: "all" })
+        await queryClient.refetchQueries({ queryKey: queryKeys.adminComments.all(), type: "all" })
         await refreshTable?.()
       } catch (error: unknown) {
         await refreshTable?.()

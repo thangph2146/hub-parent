@@ -5,8 +5,9 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
+import { Flex } from "@/components/ui/flex"
 import { X } from "lucide-react"
-import { TypographyPSmall, IconSize } from "@/components/ui/typography"
+import { TypographyPSmall, TypographyPSmallMuted, IconSize } from "@/components/ui/typography"
 import type { Message } from "../types"
 
 interface ReplyBannerProps {
@@ -16,15 +17,22 @@ interface ReplyBannerProps {
 
 export function ReplyBanner({ replyingTo, onCancel }: ReplyBannerProps) {
   return (
-    <div className="flex items-center justify-between px-4 py-2 bg-muted/50 border-b">
-      <div className="flex-1 min-w-0">
-        <TypographyPSmall className="font-medium text-muted-foreground mb-0.5">Replying to:</TypographyPSmall>
-        <TypographyPSmall className="truncate">{replyingTo.content}</TypographyPSmall>
-      </div>
-      <Button variant="ghost" size="icon" className="h-10 w-10 shrink-0" onClick={onCancel}>
+    <Flex 
+      align="center" 
+      justify="between" 
+      gap={2} 
+      padding="sm"
+      fullWidth
+      border="bottom"
+    >
+      <Flex direction="col" fullWidth minWidth="0" gap={0.5}>
+        <TypographyPSmallMuted>Replying to:</TypographyPSmallMuted>
+        <TypographyPSmall>{replyingTo.content}</TypographyPSmall>
+      </Flex>
+      <Button variant="ghost" size="icon" onClick={onCancel}>
         <IconSize size="xs"><X /></IconSize>
       </Button>
-    </div>
+    </Flex>
   )
 }
 

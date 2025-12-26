@@ -20,6 +20,7 @@ import {
 import { cn } from "@/lib/utils"
 import { TypographyPMuted, TypographyP, IconSize } from "@/components/ui/typography"
 import type { ResourceFormField } from "../../resource-form"
+import { Flex } from "@/components/ui/flex"
 
 interface MultipleSelectComboboxProps<T> {
   field: ResourceFormField<T>
@@ -55,9 +56,9 @@ export const MultipleSelectCombobox = <T,>({
 
   if (allOptions.length === 0) {
     return (
-      <div className="flex h-10 w-full items-center rounded-md border border-input bg-background px-3 py-2">
+      <Flex align="center" fullWidth height="10" rounded="md" border="all" bg="background" paddingX={3} paddingY={2}>
         <TypographyPMuted>Không có tùy chọn</TypographyPMuted>
-      </div>
+      </Flex>
     )
   }
 
@@ -116,7 +117,7 @@ export const MultipleSelectCombobox = <T,>({
           )}
           disabled={field.disabled || isPending}
         >
-          <div className="flex flex-1 flex-wrap gap-1.5 items-center min-w-0">
+          <Flex wrap align="center" gap={1.5} flex="1" minWidth="0">
             {selectedOptions.length > 0 ? (
               selectedOptions.length <= 3 ? (
                 // Show badges if <= 3 items
@@ -124,14 +125,13 @@ export const MultipleSelectCombobox = <T,>({
                   <Badge
                     key={option.value}
                     variant="secondary"
-                    className="mr-0"
                     onClick={(e) => {
                       e.stopPropagation()
                       handleToggle(option.value)
                     }}
                   >
                     {option.label}
-                    <IconSize size="xs" className="ml-1.5">
+                    <IconSize size="xs">
                       <X />
                     </IconSize>
                   </Badge>
@@ -143,19 +143,37 @@ export const MultipleSelectCombobox = <T,>({
             ) : (
               <TypographyP>{displayText}</TypographyP>
             )}
-          </div>
-          <div className="flex items-center gap-1 ml-2 flex-shrink-0">
+          </Flex>
+          <Flex align="center" gap={1} marginLeft={2} shrink>
             {selectedValues.length > 0 && (
-              <button type="button" onClick={handleClear} className="text-muted-foreground hover:text-foreground">
-                <IconSize size="sm">
+              <Flex
+                as="span"
+                role="button"
+                tabIndex={0}
+                align="center"
+                justify="center"
+                rounded="md"
+                height="auto"
+                cursor="pointer"
+                className="text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-auto w-auto p-0 hover:opacity-70"
+                onClick={handleClear}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault()
+                    handleClear(e as unknown as React.MouseEvent<HTMLButtonElement>)
+                  }
+                }}
+                aria-label="Xóa tất cả"
+              >
+                <IconSize size="md">
                   <X />
                 </IconSize>
-              </button>
+              </Flex>
             )}
-            <IconSize size="sm" className="shrink-0 opacity-50">
+            <IconSize size="md">
               <ChevronsUpDown />
             </IconSize>
-          </div>
+          </Flex>
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
@@ -178,12 +196,12 @@ export const MultipleSelectCombobox = <T,>({
                         }
                       }}
                       className={cn(
-                        "font-medium border rounded-md",
+                        "border rounded-md",
                         allSelected && "text-primary"
                       )}
                     >
-                      <IconSize size="md" className={cn("mr-2", allSelected ? "opacity-100" : "opacity-0")}>
-                        <Check />
+                      <IconSize size="md">
+                        <Check className={cn(allSelected ? "opacity-100" : "opacity-0")} />
                       </IconSize>
                       {allSelected ? "Bỏ chọn tất cả" : "Chọn tất cả"}
                     </CommandItem>
@@ -199,10 +217,12 @@ export const MultipleSelectCombobox = <T,>({
                           value={String(option.value)}
                           onSelect={() => handleToggle(option.value)}
                         >
-                          <IconSize size="md" className={cn("mr-2", isSelected ? "opacity-100" : "opacity-0")}>
-                            <Check />
+                          <Flex align="center" gap={2}>
+                            <IconSize size="md" className={cn(isSelected ? "opacity-100" : "opacity-0")}>
+                              <Check />
                           </IconSize>
                           {option.label}
+                          </Flex>
                         </CommandItem>
                       )
                     })}
@@ -223,17 +243,15 @@ export const MultipleSelectCombobox = <T,>({
                       }
                     }}
                     className={cn(
-                      "font-medium",
                       allSelected && "text-primary"
                     )}
                   >
-                    <Check
-                      className={cn(
-                        "mr-2 h-5 w-5",
-                        allSelected ? "opacity-100" : "opacity-0"
-                      )}
-                    />
+                    <Flex align="center" gap={2}>
+                      <IconSize size="md" className={cn(allSelected ? "opacity-100" : "opacity-0")}>
+                        <Check />
+                    </IconSize>
                     {allSelected ? "Bỏ chọn tất cả" : "Chọn tất cả"}
+                    </Flex>
                   </CommandItem>
                 )}
                 {allOptions.map((option) => {
@@ -244,13 +262,12 @@ export const MultipleSelectCombobox = <T,>({
                       value={String(option.value)}
                       onSelect={() => handleToggle(option.value)}
                     >
-                      <Check
-                        className={cn(
-                          "mr-2 h-5 w-5",
-                          isSelected ? "opacity-100" : "opacity-0"
-                        )}
-                      />
+                      <Flex align="center" gap={2}>
+                        <IconSize size="md" className={cn(isSelected ? "opacity-100" : "opacity-0")}>
+                          <Check />
+                      </IconSize>
                       {option.label}
+                      </Flex>
                     </CommandItem>
                   )
                 })}

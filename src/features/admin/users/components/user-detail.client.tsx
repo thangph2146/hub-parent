@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Mail, User, Shield, Phone, MapPin, Calendar, Clock, CheckCircle2, XCircle, FileText, Edit } from "lucide-react"
+import { Mail, User, Shield, Phone, MapPin, Calendar, Clock, CheckCircle2, XCircle, FileText, Edit, Building2, Navigation } from "lucide-react"
 import { 
   ResourceDetailClient, 
   FieldItem,
@@ -21,7 +21,9 @@ import { logger } from "@/lib/config/logger"
 import { usePageLoadLogger } from "@/hooks/use-page-load-logger"
 import { usePermissions } from "@/hooks/use-permissions"
 import { PERMISSIONS } from "@/lib/permissions"
-import { TypographyH3, TypographyH4, TypographyP, TypographySpanLarge, TypographySpanMuted, TypographySpanSmallMuted, TypographyPMuted, IconSize } from "@/components/ui/typography"
+import { TypographyH3, TypographyH4, TypographyP, TypographySpanLarge, TypographySpanMuted, TypographySpanSmallMuted, TypographyPMuted, TypographySpanSmall, IconSize } from "@/components/ui/typography"
+import { Flex } from "@/components/ui/flex"
+import { Grid } from "@/components/ui/grid"
 
 export interface UserDetailData {
   id: string
@@ -31,6 +33,12 @@ export interface UserDetailData {
   bio?: string | null
   phone?: string | null
   address?: string | null
+  // Structured address fields
+  addressStreet?: string | null
+  addressWard?: string | null
+  addressDistrict?: string | null
+  addressCity?: string | null
+  addressPostalCode?: string | null
   emailVerified?: string | null
   updatedAt?: string
   createdAt?: string
@@ -47,6 +55,69 @@ export interface UserDetailClientProps {
   userId: string
   user: UserDetailData
   backUrl?: string
+}
+
+// Helper function to parse JSON string or object
+const parseAddressValue = (value: unknown): string | null => {
+  if (!value) return null
+  
+  // If it's already a string
+  if (typeof value === "string") {
+    const trimmed = value.trim()
+    // If it's a JSON string, try to parse it
+    if (trimmed.startsWith("{") || trimmed.startsWith("[")) {
+      try {
+        const parsed = JSON.parse(trimmed)
+        // If parsed is an object, extract values
+        if (typeof parsed === "object" && parsed !== null) {
+          // Try common address field names
+          const addressFields = [
+            "postalCode", "postal_code", "postal",
+            "street", "ward", "district", "city",
+            "addressStreet", "addressWard", "addressDistrict", "addressCity", "addressPostalCode"
+          ]
+          for (const field of addressFields) {
+            if (parsed[field] && typeof parsed[field] === "string") {
+              return parsed[field].trim()
+            }
+          }
+          // If no known field, return first string value
+          const firstValue = Object.values(parsed).find(v => typeof v === "string" && v.trim().length > 0)
+          if (firstValue) return String(firstValue).trim()
+        }
+        return null
+      } catch {
+        // If parsing fails, return null
+        return null
+      }
+    }
+    // Regular string
+    return trimmed.length > 0 ? trimmed : null
+  }
+  
+  // If it's an object, extract values
+  if (typeof value === "object" && value !== null) {
+    const addressFields = [
+      "postalCode", "postal_code", "postal",
+      "street", "ward", "district", "city",
+      "addressStreet", "addressWard", "addressDistrict", "addressCity", "addressPostalCode"
+    ]
+    for (const field of addressFields) {
+      if ((value as Record<string, unknown>)[field] && typeof (value as Record<string, unknown>)[field] === "string") {
+        return String((value as Record<string, unknown>)[field]).trim()
+      }
+    }
+    // If no known field, return first string value
+    const firstValue = Object.values(value).find(v => typeof v === "string" && v.trim().length > 0)
+    if (firstValue) return String(firstValue).trim()
+  }
+  
+  return null
+}
+
+// Helper function to validate and get address field value
+const getAddressFieldValue = (value: unknown): string | null => {
+  return parseAddressValue(value)
 }
 
 export const UserDetailClient = ({ userId, user, backUrl = "/admin/users" }: UserDetailClientProps) => {
@@ -84,8 +155,8 @@ export const UserDetailClient = ({ userId, user, backUrl = "/admin/users" }: Use
       title: "Thông tin cơ bản",
       description: "Thông tin đăng nhập và cá nhân",
       fieldHeader: (
-        <div className="flex items-center gap-4 p-4 bg-muted/50 rounded-lg border border-border/50">
-          <div className="relative">
+        <Flex fullWidth align="center" gap={4} padding="md" rounded="lg" border="all" className="bg-muted/50 border-border/50">
+          <Flex className="h-24 w-24 relative" fullWidth>
             <Avatar className="h-24 w-24 border-2 border-border">
               <AvatarImage 
                 src={detailData.avatar || undefined} 
@@ -93,73 +164,73 @@ export const UserDetailClient = ({ userId, user, backUrl = "/admin/users" }: Use
                 referrerPolicy="no-referrer"
                 crossOrigin="anonymous"
               />
-              <AvatarFallback className="font-bold bg-gradient-to-br from-primary to-chart-1 text-primary-foreground">
-                <TypographySpanLarge className="font-bold">{getUserInitials(detailData.name, detailData.email)}</TypographySpanLarge>
+              <AvatarFallback className="bg-gradient-to-br from-primary to-chart-1 text-primary-foreground">
+                <TypographySpanLarge>{getUserInitials(detailData.name, detailData.email)}</TypographySpanLarge>
               </AvatarFallback>
             </Avatar>
             {detailData.isActive && (
-              <div className="absolute -bottom-1 -right-1 rounded-full bg-green-500 border-2 border-background flex items-center justify-center">
-                <IconSize size="lg">
-                  <IconSize size="xs">
-                    <CheckCircle2 className="text-white" />
-                  </IconSize>
+              <Flex position="absolute" className="bottom-0 right-0 rounded-full bg-green-500 border-2 border-background" align="center" justify="center">
+                <IconSize size="md">
+                  <CheckCircle2 className="text-white" />
                 </IconSize>
-              </div>
+              </Flex>
             )}
-          </div>
-          <div className="flex-1">
-            <TypographyH4 className="font-semibold">{detailData.name || "Chưa có tên"}</TypographyH4>
-            <TypographyPMuted className="flex items-center gap-2 mt-1">
+          </Flex>
+          <Flex direction="col" gap={1} flex="1" fullWidth>
+            <TypographyH4>{detailData.name || "Chưa có tên"}</TypographyH4>
+            <Flex align="center" gap={2} className="text-muted-foreground" fullWidth>
               <IconSize size="sm">
                 <Mail />
               </IconSize>
-              {detailData.email}
-            </TypographyPMuted>
+              <TypographySpanMuted>{detailData.email}</TypographySpanMuted>
+            </Flex>
             {detailData.roles && detailData.roles.length > 0 && (
-              <div className="flex flex-wrap items-center gap-2 mt-2">
+              <Flex wrap align="center" gap={2} fullWidth>
                 {detailData.roles.map((role) => (
                   <Badge
                     key={role.name}
                     variant="outline"
-                    className="inline-flex items-center gap-1.5 bg-primary/10 px-2 py-0.5 font-semibold text-primary border-primary/20"
+                    className="bg-primary/10 px-2 py-0.5 border-primary/20"
                   >
-                    <IconSize size="xs">
-                      <Shield />
-                    </IconSize>
-                    {role.displayName || role.name}
+                    <Flex align="center" gap={1}>
+                      <IconSize size="xs">
+                        <Shield />
+                      </IconSize>
+                      <TypographySpanSmall className="text-primary">{role.displayName || role.name}</TypographySpanSmall>
+                    </Flex>
                   </Badge>
                 ))}
-              </div>
+              </Flex>
             )}
-          </div>
-        </div>
+          </Flex>
+        </Flex>
       ),
       fieldsContent: (_fields, data) => {
         const userData = data as UserDetailData
         
         return (
-          <div className="grid gap-6 grid-cols-1 sm:grid-cols-2">
+          <Grid cols={2} gap={6} fullWidth>
             {/* Email */}
             <FieldItem icon={Mail} label="Email">
-              <div className="space-y-1">
+              <Flex direction="col" gap={1}>
                 <TypographySpanMuted>
                   {userData.email || "—"}
                 </TypographySpanMuted>
                 {userData.emailVerified && (
-                  <div className="flex items-center gap-1.5">
+                  <Flex align="center" gap={2}>
                     <IconSize size="xs">
                       <CheckCircle2 className="text-green-600 dark:text-green-500" />
                     </IconSize>
                     <TypographySpanSmallMuted>Đã xác thực</TypographySpanSmallMuted>
-                  </div>
+                  </Flex>
                 )}
-              </div>
+              </Flex>
             </FieldItem>
 
             {/* Email Verified */}
             {userData.emailVerified && (
               <FieldItem icon={Clock} label="Email đã xác thực">
-                <TypographySpanMuted className="font-medium text-foreground">
+                <TypographySpanMuted>
                   {formatDateVi(userData.emailVerified)}
                 </TypographySpanMuted>
               </FieldItem>
@@ -167,7 +238,7 @@ export const UserDetailClient = ({ userId, user, backUrl = "/admin/users" }: Use
 
             {/* Name */}
             <FieldItem icon={User} label="Tên">
-              <TypographySpanMuted className="font-medium text-foreground">
+              <TypographySpanMuted>
                 {userData.name || "—"}
               </TypographySpanMuted>
             </FieldItem>
@@ -180,7 +251,7 @@ export const UserDetailClient = ({ userId, user, backUrl = "/admin/users" }: Use
                 </TypographySpanMuted>
               </FieldItem>
             )}
-          </div>
+          </Grid>
         )
       },
     },
@@ -192,102 +263,180 @@ export const UserDetailClient = ({ userId, user, backUrl = "/admin/users" }: Use
         const userData = data as UserDetailData
         
         return (
-          <div className="space-y-6">
+          <Flex direction="col" gap={6} fullWidth>
             {/* Bio */}
             {userData.bio && (
               <Card className="border border-border/50 bg-card p-5">
-                <div className="flex items-start gap-3">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted">
+                <Flex align="start" gap={3} fullWidth>
+                  <Flex align="center" justify="center" shrink className="h-9 w-9" rounded="lg" bg="muted">
                     <IconSize size="sm">
-                      <FileText className="text-muted-foreground" />
+                      <FileText />
                     </IconSize>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <TypographyH3 className="font-medium text-foreground mb-2">Giới thiệu</TypographyH3>
-                    <TypographyP className="leading-relaxed whitespace-pre-wrap text-foreground break-words">
+                  </Flex>
+                  <Flex direction="col" gap={2} flex="1" minWidth="0" fullWidth>
+                    <TypographyH3>Giới thiệu</TypographyH3>
+                    <TypographyP>
                       {userData.bio || "—"}
                     </TypographyP>
-                  </div>
-                </div>
+                  </Flex>
+                </Flex>
               </Card>
             )}
 
             {/* Address */}
-            {userData.address && (
-              <FieldItem icon={MapPin} label="Địa chỉ">
-                <TypographySpanMuted className="font-medium text-foreground">
-                  {userData.address}
-                </TypographySpanMuted>
-              </FieldItem>
-            )}
+            {(() => {
+              // Parse and extract address values
+              const addressValue = getAddressFieldValue(userData.address)
+              const streetValue = getAddressFieldValue(userData.addressStreet)
+              const wardValue = getAddressFieldValue(userData.addressWard)
+              const districtValue = getAddressFieldValue(userData.addressDistrict)
+              const cityValue = getAddressFieldValue(userData.addressCity)
+              const postalCodeValue = getAddressFieldValue(userData.addressPostalCode)
+              
+              // Also check if postalCode is in JSON format in any field
+              const parsedPostalCode = postalCodeValue || 
+                (userData.addressPostalCode ? getAddressFieldValue(userData.addressPostalCode) : null)
+              
+              const hasStructuredAddress = !!(streetValue || wardValue || districtValue || cityValue || parsedPostalCode)
+              const shouldShowAddress = !!(addressValue || hasStructuredAddress)
 
-            {/* Roles */}
-            {userData.roles && userData.roles.length > 0 && (
-              <FieldItem icon={Shield} label="Vai trò">
-                <div className="flex flex-wrap gap-2">
-                  {userData.roles.map((role) => (
-                    <Badge
-                      key={role.name}
-                      variant="outline"
-                      className="inline-flex items-center gap-1.5 bg-primary/10 px-2.5 py-1 font-medium text-primary border-primary/20"
-                    >
-                      <IconSize size="xs">
-                      <Shield />
-                    </IconSize>
-                      {role.displayName || role.name}
-                    </Badge>
-                  ))}
-                </div>
-              </FieldItem>
-            )}
+              if (!shouldShowAddress) return null
 
-            {/* Status */}
-            <FieldItem 
-              icon={userData.isActive ? CheckCircle2 : XCircle} 
-              label="Trạng thái"
-            >
-              <Badge
-                className={cn(
-                  "font-medium px-2.5 py-1",
-                  userData.isActive
-                    ? "bg-green-500/10 hover:bg-green-500/20 text-green-700 dark:text-green-400 border-green-500/20"
-                    : "bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 dark:text-amber-400 border-amber-500/20"
-                )}
-                variant={userData.isActive ? "default" : "secondary"}
+              return (
+                <Card className="border border-border/50 bg-card p-5">
+                  <Flex direction="col" gap={4}>
+                    <Flex align="start" gap={3}>
+                      <Flex align="center" shrink className="h-9 w-9" rounded="lg" bg="muted">
+                        <IconSize size="sm">
+                          <MapPin />
+                        </IconSize>
+                      </Flex>
+                      <Flex direction="col" gap={1} flex="1" minWidth="0">
+                        <TypographyH3>Địa chỉ</TypographyH3>
+                        {/* Show legacy address only if no structured address fields */}
+                        {addressValue && !hasStructuredAddress && (
+                          <TypographyPMuted>{addressValue}</TypographyPMuted>
+                        )}
+                      </Flex>
+                    </Flex>
+                    
+                    {/* Structured address fields */}
+                    {hasStructuredAddress && (
+                      <Grid cols={2} gap={4} className="pt-2 border-t border-border/50">
+                        {streetValue && (
+                          <FieldItem icon={MapPin} label="Số nhà, Đường">
+                            <TypographySpanMuted>
+                              {streetValue}
+                            </TypographySpanMuted>
+                          </FieldItem>
+                        )}
+                        {wardValue && (
+                          <FieldItem icon={Building2} label="Phường/Xã">
+                            <TypographySpanMuted>
+                              {wardValue}
+                            </TypographySpanMuted>
+                          </FieldItem>
+                        )}
+                        {districtValue && (
+                          <FieldItem icon={Navigation} label="Quận/Huyện">
+                            <TypographySpanMuted>
+                              {districtValue}
+                            </TypographySpanMuted>
+                          </FieldItem>
+                        )}
+                        {cityValue && (
+                          <FieldItem icon={MapPin} label="Thành phố/Tỉnh">
+                            <TypographySpanMuted>
+                              {cityValue}
+                            </TypographySpanMuted>
+                          </FieldItem>
+                        )}
+                        {parsedPostalCode && (
+                          <FieldItem icon={MapPin} label="Mã bưu điện">
+                            <TypographySpanMuted>
+                              {parsedPostalCode}
+                            </TypographySpanMuted>
+                          </FieldItem>
+                        )}
+                      </Grid>
+                    )}
+                  </Flex>
+                </Card>
+              )
+            })()}
+
+            {/* Roles & Status */}
+            <Grid cols={2} gap={6} fullWidth>
+              {/* Roles */}
+              {userData.roles && userData.roles.length > 0 && (
+                <FieldItem icon={Shield} label="Vai trò">
+                  <Flex wrap gap={2}>
+                    {userData.roles.map((role) => (
+                      <Badge
+                        key={role.name}
+                        variant="outline"
+                        className="bg-primary/10 px-2.5 py-1 text-primary border-primary/20"
+                      >
+                        <Flex align="center" gap={1}>
+                          <IconSize size="xs">
+                            <Shield />
+                          </IconSize>
+                          <TypographySpanSmall>{role.displayName || role.name}</TypographySpanSmall>
+                        </Flex>
+                      </Badge>
+                    ))}
+                  </Flex>
+                </FieldItem>
+              )}
+
+              {/* Status */}
+              <FieldItem 
+                icon={userData.isActive ? CheckCircle2 : XCircle} 
+                label="Trạng thái"
               >
-                {userData.isActive ? (
-                  <>
-                    <IconSize size="xs" className="mr-1.5">
-                      <CheckCircle2 />
-                    </IconSize>
-                    Đang hoạt động
-                  </> 
-                ) : (
-                  <>
-                    <IconSize size="xs" className="mr-1.5">
-                      <XCircle />
-                    </IconSize>
-                    Đã vô hiệu hóa
-                  </>
-                )}
-              </Badge>
-            </FieldItem>
+                <Badge
+                  className={cn(
+                    "px-2.5 py-1",
+                    userData.isActive
+                      ? "bg-green-500/10 hover:bg-green-500/20 text-green-700 dark:text-green-400 border-green-500/20"
+                      : "bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 dark:text-amber-400 border-amber-500/20"
+                  )}
+                  variant={userData.isActive ? "default" : "secondary"}
+                >
+                  {userData.isActive ? (
+                    <Flex align="center" gap={2}>
+                      <IconSize size="xs">
+                        <CheckCircle2 />
+                      </IconSize>
+                      <TypographySpanSmall>Đang hoạt động</TypographySpanSmall>
+                    </Flex>
+                  ) : (
+                    <Flex align="center" gap={2}>
+                      <IconSize size="xs">
+                        <XCircle />
+                      </IconSize>
+                      <TypographySpanSmall>Đã vô hiệu hóa</TypographySpanSmall>
+                    </Flex>
+                  )}
+                </Badge>
+              </FieldItem>
+            </Grid>
 
             {/* Timestamps */}
-            <div className="grid gap-6 grid-cols-1 sm:grid-cols-2">
+            <Grid cols={2} gap={6} fullWidth>
               <FieldItem icon={Calendar} label="Ngày tạo">
-                <TypographySpanMuted className="font-medium text-foreground">
+                <TypographySpanMuted>
                   {userData.createdAt ? formatDateVi(userData.createdAt) : "—"}
                 </TypographySpanMuted>
               </FieldItem>
 
               <FieldItem icon={Clock} label="Cập nhật lần cuối">
-                <TypographySpanMuted className="font-medium text-foreground">
+                <TypographySpanMuted>
                   {userData.updatedAt ? formatDateVi(userData.updatedAt) : "—"}
                 </TypographySpanMuted>
               </FieldItem>
-            </div>
-          </div>
+            </Grid>
+          </Flex>
         )
       },
     },
@@ -318,12 +467,13 @@ export const UserDetailClient = ({ userId, user, backUrl = "/admin/users" }: Use
               })
               router.push(`/admin/users/${userId}/edit`)
             }}
-            className="gap-2"
           >
-            <IconSize size="sm">
-              <Edit />
-            </IconSize>
-            Chỉnh sửa
+            <Flex align="center" gap={2}>
+              <IconSize size="sm">
+                <Edit />
+              </IconSize>
+              Chỉnh sửa
+            </Flex>
           </Button>
         ) : null
       }

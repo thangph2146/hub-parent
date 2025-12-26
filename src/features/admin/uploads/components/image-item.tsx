@@ -11,6 +11,7 @@ import { Loader2, Trash2 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { TypographySpanSmall, IconSize } from "@/components/ui/typography"
 import type { ImageItem as ImageItemType } from "../types"
+import { Flex } from "@/components/ui/flex"
 
 interface ImageItemProps {
   image: ImageItemType
@@ -30,65 +31,88 @@ export const ImageItem = ({
   const { toast } = useToast()
 
   return (
-    <div
-      className={`relative aspect-square rounded-lg overflow-hidden border bg-muted group ${
-        isSelected ? "ring-2 ring-primary ring-offset-2" : ""
+    <Flex
+      position="relative"
+      className={`aspect-square rounded-lg overflow-hidden border-2 transition-all duration-200 bg-muted group cursor-pointer ${
+        isSelected 
+          ? "ring-2 ring-primary ring-offset-2 border-primary shadow-md" 
+          : "border-border hover:border-primary/50 hover:shadow-md"
       }`}
     >
       <Image
         src={image.url}
         alt={image.originalName}
         fill
-        className="object-cover"
-        sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+        className="object-cover transition-transform duration-200 group-hover:scale-105"
+        sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
         unoptimized
       />
-      <div className="absolute top-2 left-2 z-10">
+      <Flex position="absolute" className="top-2 left-2 z-20">
         <Checkbox
           checked={isSelected}
           onCheckedChange={() => onToggleSelect(image.fileName)}
           onClick={(e) => e.stopPropagation()}
-          className="bg-white/90 backdrop-blur-sm"
+          className="h-5 w-5 bg-white/95 backdrop-blur-sm shadow-md border-2"
         />
-      </div>
-      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/60 to-transparent p-2 opacity-0 group-hover:opacity-100 transition-opacity">
-        <TypographySpanSmall className="text-white font-medium truncate">{image.originalName}</TypographySpanSmall>
-        <TypographySpanSmall className="text-white/80">{(image.size / 1024).toFixed(1)} KB</TypographySpanSmall>
-      </div>
-      <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
-        <button
-          onClick={() => {
+      </Flex>
+      <Flex 
+        direction="col" 
+        gap={0.5}
+        position="absolute"
+        className="bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/70 to-transparent p-2.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10"
+      >
+        <TypographySpanSmall className="text-white truncate font-medium">
+          {image.originalName}
+        </TypographySpanSmall>
+        <TypographySpanSmall className="text-white/80 text-xs">
+          {(image.size / 1024).toFixed(1)} KB
+        </TypographySpanSmall>
+      </Flex>
+      <Flex 
+        align="center" 
+        justify="center"
+        gap={2} 
+        position="absolute-inset"
+        className="bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10"
+      >
+        <Button
+          size="sm"
+          onClick={(e) => {
+            e.stopPropagation()
             navigator.clipboard.writeText(image.url)
             toast({
               title: "Đã copy",
               description: "URL đã được copy vào clipboard",
             })
           }}
-          className="bg-black/60 text-white px-2 py-1 rounded hover:bg-black/80 transition-colors"
           title="Copy URL"
         >
           Copy URL
-        </button>
+        </Button>
         <Button
           variant="destructive"
-          size="icon"
-          className="bg-red-600/80 hover:bg-red-600"
-          onClick={() => onDelete(image)}
+          size="sm"
+          onClick={(e) => {
+            e.stopPropagation()
+            onDelete(image)
+          }}
           disabled={isDeleting}
           title="Xóa hình ảnh"
+          className="bg-red-600/90 hover:bg-red-600"
         >
           {isDeleting ? (
-            <IconSize size="xs">
+            <IconSize size="sm" className="mr-1">
               <Loader2 className="animate-spin" />
             </IconSize>
           ) : (
-            <IconSize size="xs">
+            <IconSize size="sm" className="mr-1">
               <Trash2 />
             </IconSize>
           )}
+          Xóa
         </Button>
-      </div>
-    </div>
+      </Flex>
+    </Flex>
   )
 }
 

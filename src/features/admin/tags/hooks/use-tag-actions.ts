@@ -24,6 +24,7 @@ export const useTagActions = ({
     resourceName: "tags",
     queryKeys: {
       all: () => queryKeys.adminTags.all(),
+      detail: (id) => queryKeys.adminTags.detail(id),
     },
     apiRoutes: {
       delete: (id) => apiRoutes.tags.delete(id),

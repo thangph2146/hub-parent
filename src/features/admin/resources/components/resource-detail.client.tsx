@@ -25,6 +25,8 @@ import { applyResourceSegmentToPath } from "@/lib/permissions";
 import { useResourceNavigation } from "../hooks";
 import { logger } from "@/lib/config/logger";
 import { TypographySpanSmall, TypographySpanMuted, TypographyH1, TypographyPMuted, IconSize } from "@/components/ui/typography";
+import { Flex } from "@/components/ui/flex";
+import { Grid } from "@/components/ui/grid";
 
 export interface ResourceDetailField<T = unknown> {
   name: keyof T | string;
@@ -51,12 +53,12 @@ export interface ResourceDetailClientProps<T extends Record<string, unknown>> {
   isLoading?: boolean;
 
   fields:
-    | ResourceDetailField<T>[]
-    | {
-        title?: string;
-        description?: string;
-        fields: ResourceDetailField<T>[];
-      };
+  | ResourceDetailField<T>[]
+  | {
+    title?: string;
+    description?: string;
+    fields: ResourceDetailField<T>[];
+  };
 
   // UI
   title?: string;
@@ -93,442 +95,337 @@ export const ResourceDetailClient = <T extends Record<string, unknown>>({
   afterSections,
   onBack,
 }: ResourceDetailClientProps<T>) => {
-  const resourceSegment = useResourceSegment();
+  const resourceSegment = useResourceSegment()
   const resolvedBackUrl = React.useMemo(
-    () =>
-      backUrl
-        ? applyResourceSegmentToPath(backUrl, resourceSegment)
-        : undefined,
+    () => backUrl ? applyResourceSegmentToPath(backUrl, resourceSegment) : undefined,
     [backUrl, resourceSegment]
-  );
+  )
 
-  const { navigateBack } = useResourceNavigation();
+  const { navigateBack } = useResourceNavigation()
 
   const handleBack = async () => {
-    if (resolvedBackUrl) {
-      logger.info("🔙 Back button clicked", {
-        source: "detail-back-button",
-        backUrl: resolvedBackUrl,
-        currentPath:
-          typeof window !== "undefined" ? window.location.pathname : undefined,
-        hasOnBack: !!onBack,
-      });
-      await navigateBack(resolvedBackUrl, onBack);
-    }
-  };
+    if (!resolvedBackUrl) return
+    logger.info("🔙 Back button clicked", {
+      source: "detail-back-button",
+      backUrl: resolvedBackUrl,
+      currentPath: typeof window !== "undefined" ? window.location.pathname : undefined,
+      hasOnBack: !!onBack,
+    })
+    await navigateBack(resolvedBackUrl, onBack)
+  }
 
-  const allFields = React.useMemo(
-    () => (Array.isArray(fields) ? fields : fields.fields),
+  const allFields = React.useMemo(() =>
+    Array.isArray(fields) ? fields : fields.fields,
     [fields]
-  );
+  )
 
   const groupFieldsBySection = React.useMemo(() => {
-    const grouped: Record<string, ResourceDetailField<T>[]> = {};
-    const ungrouped: ResourceDetailField<T>[] = [];
+    const grouped: Record<string, ResourceDetailField<T>[]> = {}
+    const ungrouped: ResourceDetailField<T>[] = []
 
     allFields.forEach((field) => {
       if (field.section) {
-        grouped[field.section] ??= [];
-        grouped[field.section].push(field);
+        grouped[field.section] ??= []
+        grouped[field.section].push(field)
       } else {
-        ungrouped.push(field);
+        ungrouped.push(field)
       }
-    });
+    })
 
-    return { grouped, ungrouped };
-  }, [allFields]);
+    return { grouped, ungrouped }
+  }, [allFields])
 
   const formatValue = React.useCallback(
     (field: ResourceDetailField<T>, value: unknown): React.ReactNode => {
-      if (field.render) return field.render(value, data!);
-      if (value == null)
-        return <span className="text-muted-foreground">—</span>;
-      if (field.format) return field.format(value);
+      if (field.render) return field.render(value, data!)
+      if (value == null) return <TypographySpanMuted>—</TypographySpanMuted>
+      if (field.format) return field.format(value)
 
       switch (field.type) {
         case "boolean": {
-          const boolValue = Boolean(value);
+          const boolValue = Boolean(value)
           return (
-            <TypographySpanSmall
-              className={cn(
-                "inline-flex items-center rounded-full px-2 py-1 font-medium",
-                boolValue
-                  ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
-                  : "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300"
-              )}
-            >
-              {boolValue ? "Có" : "Không"}
-            </TypographySpanSmall>
-          );
+            <Flex align="center" rounded="full" paddingX={2} paddingY={1} bg={boolValue ? "green-100" : "gray-100"}>
+              <TypographySpanSmall>{boolValue ? "Có" : "Không"}</TypographySpanSmall>
+            </Flex>
+          )
         }
         case "date":
           try {
-            return new Date(value as string | number).toLocaleDateString(
-              "vi-VN",
-              {
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-                hour: "2-digit",
-                minute: "2-digit",
-              }
-            );
+            return new Date(value as string | number).toLocaleDateString("vi-VN", {
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+              hour: "2-digit",
+              minute: "2-digit",
+            })
           } catch {
-            return String(value);
+            return String(value)
           }
         case "number":
-          return typeof value === "number"
-            ? value.toLocaleString("vi-VN")
-            : String(value);
+          return typeof value === "number" ? value.toLocaleString("vi-VN") : String(value)
         default:
-          return (
-            <span className="break-words break-all whitespace-pre-wrap">
-              {String(value)}
-            </span>
-          );
+          return <TypographySpanMuted>{String(value)}</TypographySpanMuted>
       }
     },
     [data]
-  );
+  )
 
   const isComplexReactNode = (node: React.ReactNode): boolean => {
-    if (!node) return false;
-    if (typeof node === "string" || typeof node === "number") return false;
-    if (React.isValidElement(node)) {
-      const element = node as React.ReactElement<{ className?: string }>;
-      if (
-        element.type === Card ||
-        (typeof element.type === "string" &&
-          ["div", "section", "article"].includes(element.type))
-      ) {
-        return true;
-      }
-      const className = element.props?.className;
-      if (className && typeof className === "string") {
-        const layoutClasses = [
-          "flex",
-          "grid",
-          "card",
-          "border",
-          "p-",
-          "gap-",
-          "shadow",
-        ];
-        return layoutClasses.some((lc) => className.includes(lc));
-      }
+    if (!node || typeof node === "string" || typeof node === "number") return false
+    if (!React.isValidElement(node)) return false
+
+    const element = node as React.ReactElement<{ className?: string }>
+    if (element.type === Card || (typeof element.type === "string" && ["div", "section", "article"].includes(element.type))) {
+      return true
     }
-    return false;
-  };
+
+    const className = element.props?.className
+    if (className && typeof className === "string") {
+      return ["flex", "grid", "card", "border", "p-", "gap-", "shadow"].some((lc) => className.includes(lc))
+    }
+    return false
+  }
 
   const renderField = React.useCallback(
     (field: ResourceDetailField<T>, inSection = false) => {
-      const value = data?.[field.name as keyof T];
-      const formattedValue = isLoading ? (
-        <Skeleton className="h-4 w-32" />
-      ) : (
-        formatValue(field, value)
-      );
-      const isCustomRender = !!field.render;
-      const isComplexNode = isComplexReactNode(formattedValue);
+      const value = data?.[field.name as keyof T]
+      const formattedValue = isLoading
+        ? <Skeleton className="h-4 w-32" />
+        : formatValue(field, value)
+      const isCustomRender = !!field.render
+      const isComplexNode = isComplexReactNode(formattedValue)
 
       return (
         <Field
           orientation="vertical"
-          className={cn(
-            "py-2.5",
-            !inSection && "border-b border-border/50 last:border-0"
-          )}
+          className={cn("py-2.5", !inSection && "border-b border-border/50 last:border-0")}
         >
-          <FieldTitle className="text-muted-foreground font-medium mb-1">
-            {field.label}
-          </FieldTitle>
+          <FieldTitle>{field.label}</FieldTitle>
           <FieldContent>
-            {isCustomRender || isComplexNode ? (
-              formattedValue
-            ) : (
-              <TypographySpanMuted className="break-words break-all whitespace-pre-wrap">
-                {formattedValue}
-              </TypographySpanMuted>
-            )}
-            {field.description && (
-              <FieldDescription className="mt-1">
-                {field.description}
-              </FieldDescription>
-            )}
+            {isCustomRender || isComplexNode ? formattedValue : <TypographySpanMuted>{formattedValue}</TypographySpanMuted>}
+            {field.description && <FieldDescription>{field.description}</FieldDescription>}
           </FieldContent>
         </Field>
-      );
+      )
     },
     [data, isLoading, formatValue]
-  );
+  )
 
   const renderFields = React.useCallback(
     (fieldsToRender: ResourceDetailField<T>[]) => {
-      if (fieldsToRender.length === 0) return null;
-
+      if (fieldsToRender.length === 0) return null
       return (
-        <FieldGroup className="gap-0">
+        <FieldGroup>
           {fieldsToRender.map((field) => (
-            <React.Fragment key={String(field.name)}>
-              {renderField(field, false)}
-            </React.Fragment>
+            <React.Fragment key={String(field.name)}>{renderField(field, false)}</React.Fragment>
           ))}
         </FieldGroup>
-      );
+      )
     },
     [renderField]
-  );
+  )
 
-  const getGridClasses = React.useCallback((fieldCount: number) => {
-    if (fieldCount === 1) {
-      return { gridClass: "grid-cols-1", gridResponsiveAttr: "true" as const };
-    }
-    if (fieldCount === 2) {
-      return {
-        gridClass: "grid-cols-1 sm:grid-cols-2",
-        gridResponsiveAttr: "true" as const,
-      };
-    }
-    return {
-      gridClass: "grid-cols-1 sm:grid-cols-2",
-      gridResponsiveAttr: "auto-fit" as const,
-    };
-  }, []);
+  const getGridProps = React.useCallback((fieldCount: number) => ({
+    cols: (fieldCount === 1 ? 1 : "2-lg") as 1 | "2-lg",
+    gap: 6 as const,
+  }), [])
 
   const renderSection = React.useCallback(
     (sectionId: string, sectionFields: ResourceDetailField<T>[]) => {
-      const sectionInfo = detailSections?.find((s) => s.id === sectionId);
-      const { gridClass, gridResponsiveAttr } = getGridClasses(
-        sectionFields.length
-      );
+      const sectionInfo = detailSections?.find((s) => s.id === sectionId)
+      const gridProps = getGridProps(sectionFields.length)
 
-      const fieldsContent =
-        sectionInfo?.fieldsContent && data ? (
-          sectionInfo.fieldsContent(sectionFields, data)
-        ) : (
-          <div
-            className={cn("grid gap-6", gridClass)}
-            data-grid-responsive={gridResponsiveAttr}
-          >
+      const fieldsContent = sectionInfo?.fieldsContent && data
+        ? sectionInfo.fieldsContent(sectionFields, data)
+        : (
+          <Grid {...gridProps} fullWidth>
             {sectionFields.map((field) => (
-              <div key={String(field.name)} className="min-w-0">
+              <React.Fragment key={String(field.name)}>
                 {renderField(field, true)}
-              </div>
+              </React.Fragment>
             ))}
-          </div>
-        );
+          </Grid>
+        )
 
       return (
-        <Card key={sectionId} className="h-fit">
+        <Card key={sectionId}>
           <CardHeader className="pb-3">
-            <CardTitle>
-              {sectionInfo?.title || "Thông tin chi tiết"}
-            </CardTitle>
-            {sectionInfo?.description && (
-              <CardDescription className="mt-0.5">
-                {sectionInfo.description}
-              </CardDescription>
-            )}
+            <Flex direction="col" gap={0.5}>
+              <CardTitle>{sectionInfo?.title || "Thông tin chi tiết"}</CardTitle>
+              {sectionInfo?.description && <CardDescription>{sectionInfo.description}</CardDescription>}
+            </Flex>
           </CardHeader>
           <CardContent className="pt-0 pb-4">
-            {sectionInfo?.fieldHeader && (
-              <div className="mb-6">{sectionInfo.fieldHeader}</div>
-            )}
-            {fieldsContent}
-            {sectionInfo?.fieldFooter && (
-              <div className="mt-6">{sectionInfo.fieldFooter}</div>
-            )}
+            <Flex direction="col" gap={6} fullWidth>
+              {sectionInfo?.fieldHeader}
+              {fieldsContent}
+              {sectionInfo?.fieldFooter}
+            </Flex>
           </CardContent>
         </Card>
-      );
+      )
     },
-    [detailSections, data, getGridClasses, renderField]
-  );
+    [detailSections, data, getGridProps, renderField]
+  )
 
   if (isLoading) {
     return (
-      <div className="flex flex-1 flex-col gap-6 p-4 md:p-6 lg:p-8">
-        <div className="flex items-center justify-between">
-          <div className="space-y-2">
+      <Flex direction="col" gap={6} fullWidth>
+        <Flex align="center" justify="between" gap={2} fullWidth>
+          <Flex direction="col" gap={2} fullWidth>
             <Skeleton className="h-8 w-64" />
             <Skeleton className="h-4 w-96" />
-          </div>
+          </Flex>
           <Skeleton className="h-10 w-32" />
-        </div>
+        </Flex>
         <Card>
           <CardHeader>
             <Skeleton className="h-6 w-48" />
           </CardHeader>
-          <CardContent className="space-y-4">
-            {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="flex items-center justify-between">
-                <Skeleton className="h-4 w-32" />
-                <Skeleton className="h-5 w-58" />
-              </div>
-            ))}
+          <CardContent>
+            <Flex direction="col" gap={4} fullWidth>
+              {[1, 2, 3, 4].map((i) => (
+                <Flex key={i} align="center" justify="between" fullWidth>
+                  <Skeleton className="h-4 w-32" />
+                  <Skeleton className="h-5 w-58" />
+                </Flex>
+              ))}
+            </Flex>
           </CardContent>
         </Card>
-      </div>
-    );
+      </Flex>
+    )
   }
 
   if (!data) {
     return (
-      <div className="flex flex-1 flex-col items-center justify-center gap-4 p-4 md:p-6 lg:p-8">
-        <Card className="w-full max-w-md">
-          <CardContent className="pt-6">
-            <div className="text-center">
-              <p className="text-muted-foreground">Không tìm thấy dữ liệu</p>
+      <Flex direction="col" fullWidth align="center" justify="center" gap={4}>
+        <Card>
+          <CardContent>
+            <Flex direction="col" align="center" gap={4} fullWidth paddingTop={6}>
+              <TypographyPMuted>Không tìm thấy dữ liệu</TypographyPMuted>
               {resolvedBackUrl && (
-                <Button
-                  variant="outline"
-                  onClick={() => navigateBack(resolvedBackUrl, onBack)}
-                  className="mt-4"
-                >
-                  <IconSize size="md" className="mr-2">
-                    <ArrowLeft />
-                  </IconSize>
-                  {backLabel}
+                <Button variant="outline" onClick={() => navigateBack(resolvedBackUrl, onBack)}>
+                  <Flex align="center" gap={2}>
+                    <IconSize size="md"><ArrowLeft /></IconSize>
+                    {backLabel}
+                  </Flex>
                 </Button>
               )}
-            </div>
+            </Flex>
           </CardContent>
         </Card>
-      </div>
-    );
+      </Flex>
+    )
   }
 
   return (
-    <div className="flex flex-1 flex-col gap-6 mx-auto w-full max-w-[100%]">
+    <Flex direction="col" gap={6} fullWidth>
+      {resolvedBackUrl && (
+        <Button variant="outline" size="sm" onClick={handleBack} fullWidth>
+          <Flex align="center" gap={2}>
+            <IconSize size="sm"><ArrowLeft /></IconSize>
+            {backLabel}
+          </Flex>
+        </Button>
+      )}
       {(title || resolvedBackUrl || actions) && (
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-border/50">
-          <div className="space-y-1.5 flex-1 min-w-0">
-            {resolvedBackUrl && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleBack}
-                className="-ml-2"
-              >
-                <IconSize size="sm" className="mr-2">
-                  <ArrowLeft />
-                </IconSize>
-                {backLabel}
-              </Button>
-            )}
-            {title && (
-              <TypographyH1 className="tracking-tight">
-                {title}
-              </TypographyH1>
-            )}
-            {description && (
-              <TypographyPMuted className="max-w-2xl">
-                {description}
-              </TypographyPMuted>
-            )}
-          </div>
-          {/* Actions right */}
-          <div className="flex items-center gap-2 flex-shrink-0 bg-background py-2 -my-2 -mr-2 px-2 rounded-lg">
-            {actions}
-          </div>
-        </div>
+        <Flex
+          direction="col-lg-row-items-center"
+          fullWidth
+          align="start"
+          justify="between"
+          gap={4}
+          paddingBottom={6}
+          border="b-border"
+        >
+          <Flex direction="col" gap={3} fullWidth width="1/3" flex="1" minWidth="0">
+            <Flex direction="col" gap={2} minWidth="0">
+              {title && <TypographyH1 className="truncate">{title}</TypographyH1>}
+              {description && <TypographyPMuted className="line-clamp-2">{description}</TypographyPMuted>}
+            </Flex>
+          </Flex>
+          {actions && (
+            <Flex align="center" justify="start-lg-end" gap={2} wrap fullWidth width="2/3" shrink>
+              {actions}
+            </Flex>
+          )}
+        </Flex>
       )}
 
-      <div className="space-y-6">
+      <Flex direction="col" gap={6} fullWidth>
         {(() => {
-          const { grouped, ungrouped } = groupFieldsBySection;
-          const fieldsTitle = Array.isArray(fields)
-            ? "Thông tin chi tiết"
-            : fields.title || "Thông tin chi tiết";
-          const fieldsDesc = Array.isArray(fields)
-            ? description
-            : fields.description;
-          const detailSectionIds = new Set(
-            detailSections?.map((s) => s.id) || []
-          );
+          const { grouped, ungrouped } = groupFieldsBySection
+          const fieldsTitle = Array.isArray(fields) ? "Thông tin chi tiết" : fields.title || "Thông tin chi tiết"
+          const fieldsDesc = Array.isArray(fields) ? description : fields.description
+          const detailSectionIds = new Set(detailSections?.map((s) => s.id) || [])
 
           return (
             <>
-              {/* Render sections từ detailSections - bao gồm cả sections có fieldsContent nhưng không có fields */}
               {detailSections?.map((section) => {
-                const sectionFields = grouped[section.id] || [];
+                const sectionFields = grouped[section.id] || []
                 if (sectionFields.length > 0 || section.fieldsContent) {
-                  return (
-                    <React.Fragment key={section.id}>
-                      {renderSection(section.id, sectionFields)}
-                    </React.Fragment>
-                  );
+                  return <React.Fragment key={section.id}>{renderSection(section.id, sectionFields)}</React.Fragment>
                 }
-                return null;
+                return null
               })}
 
-              {/* Render sections từ grouped (legacy - cho backward compatibility) */}
               {Object.entries(grouped)
                 .filter(([sectionId]) => !detailSectionIds.has(sectionId))
                 .map(([sectionId, sectionFields]) => (
-                  <React.Fragment key={sectionId}>
-                    {renderSection(sectionId, sectionFields)}
-                  </React.Fragment>
+                  <React.Fragment key={sectionId}>{renderSection(sectionId, sectionFields)}</React.Fragment>
                 ))}
 
               {ungrouped.length > 0 && (
                 <Card>
                   <CardHeader className="pb-3">
-                    <CardTitle className="font-semibold">
-                      {fieldsTitle}
-                    </CardTitle>
-                    {fieldsDesc && (
-                      <CardDescription className="mt-0.5">
-                        {fieldsDesc}
-                      </CardDescription>
-                    )}
+                    <Flex direction="col" gap={0.5}>
+                      <CardTitle>{fieldsTitle}</CardTitle>
+                      {fieldsDesc && <CardDescription>{fieldsDesc}</CardDescription>}
+                    </Flex>
                   </CardHeader>
                   <CardContent className="pt-0 pb-4">
-                    {ungrouped.length > 4
-                      ? (() => {
-                          const mid = Math.ceil(ungrouped.length / 2);
-                          return (
-                            <div className="grid gap-6 lg:grid-cols-2">
-                              <div>{renderFields(ungrouped.slice(0, mid))}</div>
-                              {ungrouped.slice(mid).length > 0 && (
-                                <div>{renderFields(ungrouped.slice(mid))}</div>
-                              )}
-                            </div>
-                          );
-                        })()
-                      : renderFields(ungrouped)}
+                    {ungrouped.length > 4 ? (
+                      <Grid cols="2-lg" fullWidth gap={6}>
+                        {renderFields(ungrouped.slice(0, Math.ceil(ungrouped.length / 2)))}
+                        {renderFields(ungrouped.slice(Math.ceil(ungrouped.length / 2)))}
+                      </Grid>
+                    ) : (
+                      <Flex direction="col" fullWidth>
+                        {renderFields(ungrouped)}
+                      </Flex>
+                    )}
                   </CardContent>
                 </Card>
               )}
 
               {sections && sections.length > 0 && (
-                <div className="grid gap-6 lg:grid-cols-2">
+                <Grid cols="2-lg" fullWidth gap={6}>
                   {sections.map((section, i) => (
-                    <Card key={i} className="h-fit">
+                    <Card key={i}>
                       <CardHeader className="pb-3">
-                        <CardTitle className="font-semibold">
-                          {section.title}
-                        </CardTitle>
-                        {section.description && (
-                          <CardDescription className="mt-0.5">
-                            {section.description}
-                          </CardDescription>
-                        )}
+                        <Flex direction="col" gap={0.5}>
+                          <CardTitle>{section.title}</CardTitle>
+                          {section.description && <CardDescription>{section.description}</CardDescription>}
+                        </Flex>
                       </CardHeader>
-                      <CardContent className="pt-0 pb-4">
-                        {renderFields(section.fields)}
+                      <CardContent>
+                        <Flex direction="col" paddingTop={0} paddingBottom={4}>
+                          {renderFields(section.fields)}
+                        </Flex>
                       </CardContent>
                     </Card>
                   ))}
                   {sections.length % 2 === 1 && <div />}
-                </div>
+                </Grid>
               )}
 
-              {afterSections && <div>{afterSections}</div>}
+              {afterSections && <Flex fullWidth>{afterSections}</Flex>}
             </>
-          );
+          )
         })()}
-      </div>
-    </div>
-  );
+      </Flex>
+    </Flex>
+  )
 }

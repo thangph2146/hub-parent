@@ -3,6 +3,7 @@
 import { useToolbarContext } from "@/components/editor/context/toolbar-context"
 import { AutoEmbedDialogStandalone, EmbedConfigs } from "@/components/editor/plugins/embeds/auto-embed-plugin"
 import { SelectItem } from "@/components/ui/select"
+import { Flex } from "@/components/ui/flex"
 
 export function InsertEmbeds() {
   const { activeEditor, showModal } = useToolbarContext()
@@ -21,10 +22,10 @@ export function InsertEmbeds() {
       }}
       className=""
     >
-      <div className="flex items-center gap-1">
+      <Flex align="center" gap={1}>
         {embedConfig.icon}
         <span>{embedConfig.contentName}</span>
-      </div>
+      </Flex>
     </SelectItem>
   ))
 }

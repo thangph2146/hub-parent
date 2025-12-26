@@ -4,10 +4,11 @@ import { $getSelection, $isRangeSelection } from "lexical"
 import { CodeIcon } from "lucide-react"
 
 import { ComponentPickerOption } from "@/components/editor/plugins/picker/component-picker-option"
+import { IconSize } from "@/components/ui/typography"
 
 export function CodePickerPlugin() {
   return new ComponentPickerOption("Code", {
-    icon: <CodeIcon className="size-4" />,
+    icon: <IconSize size="sm"><CodeIcon /></IconSize>,
     keywords: ["javascript", "python", "js", "codeblock"],
     onSelect: (_, editor) =>
       editor.update(() => {

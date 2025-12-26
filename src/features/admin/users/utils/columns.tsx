@@ -5,7 +5,8 @@ import { apiRoutes } from "@/lib/api/routes"
 import type { UserRow } from "../types"
 import { Switch } from "@/components/ui/switch"
 import { USER_MESSAGES, PROTECTED_SUPER_ADMIN_EMAIL } from "../constants"
-import { TypographySpanSmallMuted, TypographySpanSmall } from "@/components/ui/typography"
+import { TypographySpanSmallMuted, TypographySpanSmall, TypographySpanMuted } from "@/components/ui/typography"
+import { Flex } from "@/components/ui/flex"
 
 interface UseUserColumnsOptions {
   rolesOptions: Array<{ label: string; value: string }>
@@ -86,7 +87,7 @@ export const useUserColumns = ({
         headerClassName: "min-w-[120px] max-w-[200px]",
         cell: (row) =>
           row.roles.length > 0 ? (
-            <div className="flex flex-wrap gap-2">
+            <Flex wrap gap={2}>
               {row.roles.map((role) => (
                 <TypographySpanSmallMuted
                   key={role.id}
@@ -95,9 +96,9 @@ export const useUserColumns = ({
                   {role.displayName}
                 </TypographySpanSmallMuted>
               ))}
-            </div>
+            </Flex>
           ) : (
-            <span className="text-muted-foreground">-</span>
+            <TypographySpanMuted>-</TypographySpanMuted>
           ),
       },
       {
@@ -121,11 +122,11 @@ export const useUserColumns = ({
           const isDisabled = togglingUsers.has(row.id) || !canManage || (isSuperAdmin && row.isActive)
 
           return row.deletedAt ? (
-            <TypographySpanSmall className="inline-flex min-w-[88px] items-center justify-center rounded-full bg-rose-100 px-2 py-1 font-medium text-rose-700">
+            <TypographySpanSmall className="inline-flex min-w-[88px] items-center justify-center rounded-full bg-rose-100 px-2 py-1 text-rose-700">
               Đã xóa
             </TypographySpanSmall>
           ) : (
-            <div className="flex items-center gap-2">
+            <Flex align="center" gap={2}>
               <Switch
                 checked={row.isActive}
                 disabled={isDisabled}
@@ -140,13 +141,15 @@ export const useUserColumns = ({
                 aria-label={row.isActive ? "Vô hiệu hóa người dùng" : "Kích hoạt người dùng"}
                 title={isSuperAdmin && row.isActive ? "Không thể vô hiệu hóa tài khoản super admin" : undefined}
               />
+              <Flex align="center" gap={1}>
               <TypographySpanSmallMuted>
                 {row.isActive ? "Hoạt động" : "Tạm khóa"}
+                </TypographySpanSmallMuted>
                 {isSuperAdmin && (
-                  <TypographySpanSmallMuted className="ml-1">(Super Admin)</TypographySpanSmallMuted>
+                  <TypographySpanSmallMuted>(Super Admin)</TypographySpanSmallMuted>
                 )}
-              </TypographySpanSmallMuted>
-            </div>
+              </Flex>
+            </Flex>
           )
         },
       },

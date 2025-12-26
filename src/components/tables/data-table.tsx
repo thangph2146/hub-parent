@@ -31,6 +31,7 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 import { TypographySpanSmallMuted, TypographyPMuted, IconSize } from "@/components/ui/typography"
+import { Flex } from "@/components/ui/flex"
 import { useDebouncedCallback } from "@/hooks/use-debounced-callback"
 import { ColumnFilterControl, type ColumnFilterConfig } from "./filter-controls"
 
@@ -224,16 +225,35 @@ export function DataTable<T extends object>({
     const debouncedApplyFilters = useDebouncedCallback(applyFilters, 300)
 
     const prevQueryRef = useRef<DataTableQueryState>(query)
-    const prevRefreshKeyRef = useRef(refreshKey)
+    // Khởi tạo prevRefreshKeyRef với giá trị undefined để đảm bảo lần đầu tiên refreshKey được set sẽ được detect
+    const prevRefreshKeyRef = useRef<string | number | undefined>(undefined)
+    const isFirstMountRef = useRef(true)
 
     useEffect(() => {
+        // Kiểm tra refreshKey thay đổi - so sánh với giá trị trước đó
         const refreshKeyChanged = prevRefreshKeyRef.current !== refreshKey
+        
+        // Lần đầu mount - initialize prevRefreshKeyRef với refreshKey hiện tại và return sớm
+        // Không trigger fetch ở đây vì đã có initialData hoặc đã fetch trong useState
+        if (isFirstMountRef.current) {
+            isFirstMountRef.current = false
+            prevRefreshKeyRef.current = refreshKey
+            prevQueryRef.current = query
+            console.debug("[DataTable] First mount - initialized prevRefreshKeyRef", {
+                refreshKey,
+                query: { page: query.page, limit: query.limit },
+            })
+            return
+        }
+        
+        // Update prevRefreshKeyRef nếu refreshKey thay đổi
         if (refreshKeyChanged) {
             prevRefreshKeyRef.current = refreshKey
         }
 
         const queryChanged = !areQueriesEqual(query, prevQueryRef.current)
         
+        // Nếu không có thay đổi nào, return sớm
         if (!queryChanged && !refreshKeyChanged) {
             prevQueryRef.current = query
             return
@@ -241,12 +261,24 @@ export function DataTable<T extends object>({
 
         prevQueryRef.current = query
 
-        startTransition(() => {
-            // Luôn fetch dữ liệu mới khi query thay đổi hoặc refresh
-            // initialData chỉ được sử dụng trong useState initializer
+        // Khi refreshKey thay đổi (từ mutation), cần fetch ngay lập tức không delay
+        // Khi query thay đổi (từ user action), có thể dùng startTransition để tránh blocking UI
+        if (refreshKeyChanged) {
+            // Refresh từ mutation - fetch ngay lập tức để đảm bảo UI cập nhật ngay
+            // Không dùng startTransition để tránh delay
+            console.debug("[DataTable] refreshKey changed, triggering immediate fetch", {
+                previousKey: prevRefreshKeyRef.current,
+                newKey: refreshKey,
+                query: { page: query.page, limit: query.limit },
+            })
             setDataPromise(safeLoad(loader, query))
-        })
-    }, [loader, query, refreshKey, initialData])
+        } else if (queryChanged) {
+            // Query change từ user action - có thể dùng startTransition
+            startTransition(() => {
+                setDataPromise(safeLoad(loader, query))
+            })
+        }
+    }, [loader, query, refreshKey])
 
     const hasAppliedFilters =
         query.search.trim().length > 0 ||
@@ -411,8 +443,10 @@ export function DataTable<T extends object>({
     )
 
     return (
-        <section
-            className={cn("flex flex-col gap-4", className)}
+        <Flex
+            direction="col"
+            gap={4}
+            className={cn("w-full",className)}
             style={
                 maxWidth
                     ? {
@@ -421,9 +455,9 @@ export function DataTable<T extends object>({
                     : undefined
             }
         >
-            <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-3">
-                <div className="w-full flex gap-2 sm:gap-3 sm:items-center justify-between">
-                    <div className="flex items-center gap-2">
+            <Flex wrap={true} align="center" justify="between" gap={3} className="w-full">
+                <Flex gap={3} align="center" justify="between" className="w-full sm:items-center">
+                    <Flex align="center" gap={2}>
                         <TypographySpanSmallMuted className="whitespace-nowrap">Hiển thị</TypographySpanSmallMuted>
                         <Select
                             value={String(query.limit)}
@@ -445,8 +479,8 @@ export function DataTable<T extends object>({
                                 ))}
                             </SelectContent>
                         </Select>
-                    </div>
-                    <div className="flex items-center gap-6 sm:gap-2 flex-wrap">
+                    </Flex>
+                    <Flex align="end" justify="end" gap={2} wrap={true} className="sm:gap-2">
                         {columns.some((col) => col.filter) && (
                             <Button
                                 type="button"
@@ -486,12 +520,12 @@ export function DataTable<T extends object>({
                                 <span className="inline">Xóa bộ lọc</span>
                             </Button>
                         )}
-                    </div>
-                </div>
-            </div>
+                    </Flex>
+                </Flex>
+            </Flex>
 
             {selectionEnabled && selectionActions && selectedIdsSet.size > 0 ? (
-                <div className="min-w-[100px] rounded-lg border border-border/80 bg-muted/40 p-2 sm:p-3">
+                <div className="w-full rounded-lg border border-border/80 bg-muted/40 p-2 sm:p-3">
                     {selectionActions({
                         selectedIds: Array.from(selectedIdsSet),
                         selectedRows: selectedVisibleRows,
@@ -500,17 +534,17 @@ export function DataTable<T extends object>({
                 </div>
             ) : null}
 
-            <div className="rounded-md border overflow-x-auto relative">
+            <div className="rounded-md border overflow-x-auto relative w-full">
                 {/* Loading overlay khi đang fetch data */}
                 {isPending && (
-                    <div className="absolute inset-0 bg-background/80 backdrop-blur-[2px] z-10 flex items-center justify-center rounded-md">
-                        <div className="flex flex-col items-center gap-3">
+                    <Flex align="center" justify="center" className="absolute inset-0 bg-background/80 backdrop-blur-[2px] z-10 rounded-md">
+                        <Flex direction="col" align="center" gap={3}>
                             <IconSize size="2xl" className="animate-spin rounded-full border-4 border-primary border-t-transparent">
                                 <Loader2 className="animate-spin" />
                             </IconSize>
-                            <TypographyPMuted className="font-medium">Đang tải dữ liệu...</TypographyPMuted>
-                        </div>
-                    </div>
+                            <TypographyPMuted>Đang tải dữ liệu...</TypographyPMuted>
+                        </Flex>
+                    </Flex>
                 )}
                 <div className="min-w-full inline-block">
                     <Table className="min-w-full">
@@ -587,7 +621,7 @@ export function DataTable<T extends object>({
                     onPageChange={handlePageChange}
                 />
             </Suspense>
-        </section>
+        </Flex>
     )
 }
 
@@ -596,6 +630,20 @@ function safeLoad<T extends object>(
     query: DataTableQueryState,
 ): Promise<DataTableResult<T>> {
     return loader(query).catch((error) => {
+        // Ignore CancelledError - đây là expected behavior khi query bị cancel do removeQueries
+        // CancelledError xảy ra khi refreshKey thay đổi và query cũ bị cancel để fetch fresh data
+        if (error?.name === "CancelledError" || error?.message?.includes("CancelledError")) {
+            // Return empty result để tránh error log, query mới sẽ được fetch ngay sau đó
+            return {
+                rows: [],
+                page: query.page,
+                limit: query.limit,
+                total: 0,
+                totalPages: 0,
+            }
+        }
+        
+        // Log other errors
         console.error("[DataTable] Failed to load data", error)
         return {
             rows: [],
@@ -735,44 +783,99 @@ function TableSummary<T extends object>({
     const endIndex = hasResults ? Math.min(result.page * result.limit, result.total) : 0
     const totalPages = result.totalPages || 1
 
+    // Tạo danh sách các trang từ 1 đến totalPages
+    const pageOptions = useMemo(() => {
+        return Array.from({ length: Math.max(totalPages, 1) }, (_, i) => i + 1)
+    }, [totalPages])
+
+    const handlePageSelect = (value: string) => {
+        const pageNum = parseInt(value, 10)
+        if (!isNaN(pageNum) && pageNum >= 1 && pageNum <= totalPages) {
+            onPageChange(pageNum, totalPages)
+        }
+    }
+
     return (
-        <div className="flex flex-col sm:flex-row flex-wrap items-center justify-between gap-2 sm:gap-3 border-t border-border px-2 sm:px-4 py-3 sm:py-4">
-            <div className="text-center sm:text-left">
-                <TypographySpanSmallMuted className="hidden sm:inline">Hiển thị {startIndex}-{endIndex} trong {result.total} kết quả</TypographySpanSmallMuted>
-                <TypographySpanSmallMuted className="sm:hidden">{startIndex}-{endIndex} / {result.total}</TypographySpanSmallMuted>
-            </div>
-            <div className="flex items-center gap-6 sm:gap-2">
+        <Flex 
+            direction="col" 
+            align="center" 
+            justify="between" 
+            gap={3} 
+            className="w-full border-t border-border px-4 py-3 sm:flex-row sm:items-center sm:px-6 sm:py-4"
+        >
+            <Flex direction="col" align="center" gap={1} className="w-auto flex-shrink-0 sm:items-start">
+                <TypographySpanSmallMuted className="text-center sm:text-left whitespace-nowrap">
+                    <span className="hidden sm:inline">Hiển thị </span>
+                    <span className="font-medium text-foreground">{startIndex}-{endIndex}</span>
+                    {hasResults && (
+                        <>
+                            <span className="hidden sm:inline"> trong </span>
+                            <span className="sm:hidden"> / </span>
+                            <span className="font-medium text-foreground">{result.total}</span>
+                            <span className="hidden sm:inline"> kết quả</span>
+                        </>
+                    )}
+                </TypographySpanSmallMuted>
+            </Flex>
+            <Flex align="center" gap={2} wrap={false} className="w-auto flex-shrink-0 justify-center sm:justify-end">
                 <Button
                     type="button"
                     variant="outline"
                     size="sm"
                     onClick={() => onPageChange(result.page - 1, totalPages)}
                     disabled={isPending || result.page <= 1}
+                    className="h-8 px-2 sm:px-3 flex-shrink-0"
+                    aria-label="Trang trước"
                 >
-                    <IconSize size="md" className="sm:mr-2">
-                      <ChevronLeft />
+                    <IconSize size="sm">
+                        <ChevronLeft />
                     </IconSize>
-                    <span className="hidden sm:inline">Trước</span>
+                    <span className="hidden sm:inline ml-2">Trước</span>
                 </Button>
-                <TypographySpanSmallMuted className="min-w-[80px] sm:min-w-[100px] text-center">
-                    <span className="hidden sm:inline">Trang </span>
-                    {totalPages === 0 ? 0 : result.page} / {Math.max(totalPages, 1)}
-                </TypographySpanSmallMuted>
+                <Flex align="center" gap={2} wrap={false}>
+                    <TypographySpanSmallMuted className="hidden sm:inline whitespace-nowrap">
+                        Trang
+                    </TypographySpanSmallMuted>
+                    <Select
+                        value={String(result.page)}
+                        onValueChange={handlePageSelect}
+                        disabled={isPending || totalPages === 0}
+                    >
+                        <SelectTrigger
+                            size="sm"
+                            className="w-16 min-w-[64px] h-8 flex-shrink-0"
+                            aria-label="Chọn trang"
+                        >
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="max-h-[200px] overflow-y-auto">
+                            {pageOptions.map((page) => (
+                                <SelectItem key={page} value={String(page)}>
+                                    {page}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                    <TypographySpanSmallMuted className="whitespace-nowrap flex-shrink-0">
+                        / {Math.max(totalPages, 1)}
+                    </TypographySpanSmallMuted>
+                </Flex>
                 <Button
                     type="button"
                     variant="outline"
                     size="sm"
                     onClick={() => onPageChange(result.page + 1, totalPages)}
                     disabled={isPending || result.page >= totalPages}
-                    className="px-2 sm:px-3"
+                    className="h-8 px-2 sm:px-3 flex-shrink-0"
+                    aria-label="Trang sau"
                 >
-                    <span className="hidden sm:inline">Sau</span>
-                    <IconSize size="md" className="sm:ml-2">
-                      <ChevronRight />
+                    <span className="hidden sm:inline mr-2">Sau</span>
+                    <IconSize size="sm">
+                        <ChevronRight />
                     </IconSize>
                 </Button>
-            </div>
-        </div>
+            </Flex>
+        </Flex>
     )
 }
 
@@ -799,14 +902,14 @@ function TableBodySkeleton({ columnCount, rowCount = 5 }: TableBodySkeletonProps
 
 function SummarySkeleton() {
     return (
-        <div className="flex items-center justify-between gap-3 border-t border-border px-2 py-4">
+        <Flex align="center" justify="between" gap={3} className="border-t border-border px-2 py-4">
             <Skeleton className="h-5 w-58" />
-            <div className="flex items-center gap-2">
+            <Flex align="center" gap={2}>
                 <Skeleton className="h-8 w-20" />
                 <Skeleton className="h-4 w-24" />
                 <Skeleton className="h-8 w-20" />
-            </div>
-        </div>
+            </Flex>
+        </Flex>
     )
 }
 

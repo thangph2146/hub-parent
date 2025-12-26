@@ -1,9 +1,9 @@
 "use client"
 
 import { TypographyH4, IconSize } from "@/components/ui/typography"
+import { Flex } from "@/components/ui/flex"
 
 import { useIsMobile } from "@/hooks/use-mobile"
-import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable"
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
 import { Menu } from "lucide-react"
@@ -37,13 +37,151 @@ export const ChatTemplate = ({
   onNewGroup,
 }: ChatTemplateProps) => {
   const isMobile = useIsMobile()
-  const [filterType, setFilterType] = useState<ChatFilterType>(initialFilterType)
+  const [filterType] = useState<ChatFilterType>(initialFilterType)
   const [contactSearch, setContactSearch] = useState("")
   const [searchedContacts, setSearchedContacts] = useState<Contact[] | null>(null)
   const [isChatListOpen, setIsChatListOpen] = useState(false)
   
-  // Lấy width của chat-list để truyền xuống ContactList
-  const { ref: chatListRef, width: chatListWidth } = useElementSize<HTMLDivElement>()
+  // Đo kích thước chat list container để truyền xuống ContactList
+  // Sử dụng use-element-size để đảm bảo responsive và chính xác
+  const { ref: chatListRef, width: chatListWidth, height: chatListHeight } = useElementSize<HTMLDivElement>()
+  
+  // Đo kích thước chat window container (chỉ desktop)
+  const { ref: chatWindowRef, width: chatWindowWidth, height: chatWindowHeight } = useElementSize<HTMLDivElement>()
+  
+  // Đo kích thước messages area để log height
+  const { ref: messagesAreaRef, height: messagesAreaHeight } = useElementSize<HTMLDivElement>()
+  
+  // Log element sizes để phân tích tỉ lệ và điều chỉnh layout
+  useEffect(() => {
+    if (!isMobile && (chatListWidth > 0 || chatWindowWidth > 0)) {
+      const viewportWidth = typeof window !== "undefined" ? window.innerWidth : 0
+      const viewportHeight = typeof window !== "undefined" ? window.innerHeight : 0
+      
+      // Tính toán tỉ lệ
+      const chatListRatio = viewportWidth > 0 ? ((chatListWidth / viewportWidth) * 100).toFixed(2) : "0"
+      const chatWindowRatio = viewportWidth > 0 && chatWindowWidth > 0 
+        ? ((chatWindowWidth / viewportWidth) * 100).toFixed(2) 
+        : viewportWidth > 0 && chatListWidth > 0
+        ? ((100 - parseFloat(chatListRatio)).toFixed(2))
+        : "0"
+      
+      // Tính toán độ lệch so với expected
+      // Ideal width: 36% của viewport (940 * 0.36 = 338.4px)
+      const idealChatListWidth = viewportWidth * 0.36
+      const expectedChatListWidth = 350 // Giữ 350px làm baseline nhưng tính ideal dựa trên viewport
+      const chatListWidthDeviation = chatListWidth > 0 
+        ? ((chatListWidth - expectedChatListWidth) / expectedChatListWidth * 100).toFixed(2)
+        : "0"
+      const chatListWidthVsIdeal = idealChatListWidth > 0
+        ? ((chatListWidth - idealChatListWidth) / idealChatListWidth * 100).toFixed(2)
+        : "0"
+      
+      // Tính tổng width để kiểm tra overflow và gap
+      const totalWidth = chatListWidth + chatWindowWidth
+      const widthOverflow = totalWidth > viewportWidth ? (totalWidth - viewportWidth).toFixed(2) : "0"
+      const remainingWidth = viewportWidth - totalWidth
+      const borderWidth = 1 // Border width của chat list
+      
+      // Tính toán tỉ lệ thực tế và đề xuất điều chỉnh
+      const idealChatListRatio = 36.0 // 36% cho chat list
+      const idealChatWindowRatio = 64.0 // 64% cho chat window
+      const actualChatListRatio = parseFloat(chatListRatio)
+      const actualChatWindowRatio = parseFloat(chatWindowRatio)
+      const chatListRatioDeviation = (actualChatListRatio - idealChatListRatio).toFixed(2)
+      const chatWindowRatioDeviation = (actualChatWindowRatio - idealChatWindowRatio).toFixed(2)
+      
+      // Đề xuất điều chỉnh dựa trên phân tích
+      const recommendations = []
+      if (Math.abs(parseFloat(chatListWidthDeviation)) > 1) {
+        recommendations.push(`Chat list width deviates ${chatListWidthDeviation}% from expected (${expectedChatListWidth}px)`)
+      }
+      if (Math.abs(parseFloat(chatListRatioDeviation)) > 2) {
+        recommendations.push(`Chat list ratio deviates ${chatListRatioDeviation}% from ideal (${idealChatListRatio}%)`)
+      }
+      if (Math.abs(parseFloat(chatWindowRatioDeviation)) > 2) {
+        recommendations.push(`Chat window ratio deviates ${chatWindowRatioDeviation}% from ideal (${idealChatWindowRatio}%)`)
+      }
+      if (remainingWidth > 20) {
+        recommendations.push(`Unused space: ${remainingWidth.toFixed(2)}px (consider adjusting layout)`)
+      }
+      if (widthOverflow !== "0") {
+        recommendations.push(`⚠️ Overflow detected: ${widthOverflow}px`)
+      }
+      if (recommendations.length === 0) {
+        recommendations.push("Layout matches expected dimensions")
+      }
+      
+      logger.debug("Chat Layout Element Sizes - Desktop", {
+        viewport: { 
+          width: viewportWidth, 
+          height: viewportHeight,
+          aspectRatio: viewportWidth > 0 ? (viewportWidth / viewportHeight).toFixed(2) : "0"
+        },
+        chatList: { 
+          width: chatListWidth, 
+          height: chatListHeight,
+          ratio: `${chatListRatio}%`,
+          expectedWidth: `${expectedChatListWidth}px`,
+          idealWidth: `${idealChatListWidth.toFixed(2)}px`,
+          actualVsExpected: `${chatListWidthDeviation}%`,
+          actualVsIdeal: `${chatListWidthVsIdeal}%`,
+          idealRatio: `${idealChatListRatio}%`,
+          ratioDeviation: `${chatListRatioDeviation}%`,
+          minWidth: "300px",
+          maxWidth: "400px"
+        },
+        chatWindow: {
+          width: chatWindowWidth,
+          height: chatWindowHeight,
+          ratio: `${chatWindowRatio}%`,
+          idealRatio: `${idealChatWindowRatio}%`,
+          ratioDeviation: `${chatWindowRatioDeviation}%`,
+          internalHeights: {
+            messagesArea: messagesAreaHeight,
+            expectedHeight: chatWindowHeight,
+            heightRatio: chatWindowHeight > 0 
+              ? ((messagesAreaHeight / chatWindowHeight) * 100).toFixed(2)
+              : "0",
+            heightDeviation: chatWindowHeight > 0 && messagesAreaHeight > 0
+              ? ((messagesAreaHeight - (chatWindowHeight * 0.8)) / (chatWindowHeight * 0.8) * 100).toFixed(2)
+              : "0"
+          }
+        },
+        layout: {
+          isMobile: false,
+          totalWidth: viewportWidth,
+          usedWidth: totalWidth,
+          remainingWidth: remainingWidth.toFixed(2),
+          borderWidth: `${borderWidth}px`,
+          overflow: widthOverflow !== "0" ? `${widthOverflow}px` : "none",
+          distribution: `${chatListRatio}% / ${chatWindowRatio}%`,
+          idealDistribution: `${idealChatListRatio}% / ${idealChatWindowRatio}%`,
+          recommendations: recommendations
+        }
+      })
+    } else if (isMobile && chatListHeight > 0) {
+      const viewportWidth = typeof window !== "undefined" ? window.innerWidth : 0
+      const viewportHeight = typeof window !== "undefined" ? window.innerHeight : 0
+      
+      logger.debug("Chat Layout Element Sizes - Mobile", {
+        viewport: { 
+          width: viewportWidth, 
+          height: viewportHeight,
+          aspectRatio: viewportWidth > 0 ? (viewportWidth / viewportHeight).toFixed(2) : "0"
+        },
+        chatList: { 
+          width: chatListWidth, 
+          height: chatListHeight,
+          isInSheet: true
+        },
+        layout: {
+          isMobile: true,
+          chatListOpen: isChatListOpen
+        }
+      })
+    }
+  }, [chatListWidth, chatListHeight, chatWindowWidth, chatWindowHeight, isMobile, isChatListOpen, messagesAreaHeight])
   
   const {
     contactsState,
@@ -73,6 +211,26 @@ export const ChatTemplate = ({
     scrollToMessage,
     isGroupDeleted,
   } = useChat({ contacts, currentUserId, role })
+
+  // Đo messages area height từ scrollAreaRef (sau khi scrollAreaRef được khai báo)
+  // Sử dụng ResizeObserver để đo height chính xác
+  useEffect(() => {
+    if (!scrollAreaRef.current || !messagesAreaRef) return
+    
+    const element = scrollAreaRef.current
+    // Tìm ScrollArea root element (parent của viewport)
+    const scrollAreaRoot = element.closest('[data-slot="scroll-area"]') as HTMLDivElement | null
+    const targetElement = (scrollAreaRoot || element) as HTMLDivElement
+    
+    if (targetElement) {
+      messagesAreaRef(targetElement)
+    }
+    
+    // Cleanup
+    return () => {
+      messagesAreaRef(null)
+    }
+  }, [scrollAreaRef, messagesAreaRef, currentChat?.id])
 
   const currentUserRole = getCurrentUserRole(currentChat, currentUserId)
   const currentChatId = currentChat?.id ?? null
@@ -406,8 +564,15 @@ export const ChatTemplate = ({
   }, [isMobile, setContactsState, setCurrentChat])
 
   // Chat List Content Component (reusable for both desktop and mobile)
+  // Sử dụng ref từ use-element-size để đo kích thước chính xác và truyền xuống ContactList
   const chatListContent = (
-    <div ref={chatListRef} className="flex flex-col h-full bg-background" id="chat-list">
+    <Flex 
+      ref={chatListRef} 
+      direction="col" 
+      fullWidth
+      className="h-full bg-background" 
+      id="chat-list"
+    >
       <ChatListHeader
         onNewConversation={handleNewConversation}
         existingContactIds={contactsState.map((c) => c.id)}
@@ -420,8 +585,6 @@ export const ChatTemplate = ({
         newGroupDialog={
           <NewGroupDialog onSelectGroup={handleNewGroup} />
         }
-        filterType={filterType}
-        onFilterChange={setFilterType}
       />
       <ContactList
         contacts={filteredContacts}
@@ -429,45 +592,51 @@ export const ChatTemplate = ({
         onContactSelect={handleContactSelect}
         searchValue={contactSearch}
         onSearchChange={setContactSearch}
-        width={chatListWidth}
+        width={chatListWidth > 0 ? chatListWidth : undefined}
       />
-    </div>
+    </Flex>
   )
 
   return (
-    <div className="flex flex-1 flex-col h-full overflow-hidden">
-      {/* Desktop: ResizablePanelGroup */}
+    <Flex direction="col" fullWidth className="flex-1 h-full overflow-hidden">
+      {/* Desktop: Flex Layout */}
       {!isMobile ? (
-        <ResizablePanelGroup direction="horizontal" className="flex-1 h-full">
+        <Flex 
+          fullWidth
+          className="flex-1 h-full"
+          gap={0}
+        >
           {/* Left Panel - Chat List */}
-          <ResizablePanel
-            defaultSize={30}
-            minSize={25}
-            maxSize={50}
-            className="flex flex-col min-w-0"
+          {/* Sử dụng width responsive: 36% của viewport (ideal), min 300px, max 400px */}
+          {/* Không dùng fullWidth vì có fixed width */}
+          <Flex 
+            direction="col" 
+            fullWidth={false}
+            className="h-full border-r bg-background shrink-0"
+            style={{ 
+              width: "36%", 
+              minWidth: "300px", 
+              maxWidth: "400px" 
+            }}
           >
-            <div className="flex flex-col h-full border-r bg-background">
               {chatListContent}
-            </div>
-          </ResizablePanel>
-
-          <ResizableHandle withHandle />
+            </Flex>
 
           {/* Right Panel - Chat Window */}
-          <ResizablePanel
-            defaultSize={70}
-            minSize={50}
-            className="flex flex-col min-w-0"
+          {/* Sử dụng flex-1 để chiếm toàn bộ phần còn lại, đảm bảo ổn định */}
+          <Flex 
+            ref={chatWindowRef}
+            direction="col" 
+            fullWidth={false}
+            className="h-full bg-background flex-1 min-w-0 overflow-hidden"
           >
             {chatWindowProps ? (
-              <div className="flex flex-col h-full bg-background">
                 <ChatWindow {...chatWindowProps} groupManagementMenu={groupMenu} />
-              </div>
             ) : (
               <EmptyState variant="no-chat" />
             )}
-          </ResizablePanel>
-        </ResizablePanelGroup>
+          </Flex>
+        </Flex>
       ) : (
         /* Mobile: Sheet for Chat List */
         <>
@@ -481,8 +650,14 @@ export const ChatTemplate = ({
 
           {/* Mobile: Show Chat List Button when no chat is selected */}
           {!showMobileChatWindow && (
-            <div className="flex flex-1 flex-col h-full">
-              <div className="flex items-center gap-2 h-14 px-4 border-b shrink-0">
+            <Flex direction="col" fullWidth className="flex-1 h-full">
+              <Flex 
+                align="center" 
+                gap={2} 
+                padding="md"
+                fullWidth
+                className="h-14 border-b shrink-0"
+              >
                 <Button
                   variant="ghost"
                   size="icon"
@@ -493,17 +668,17 @@ export const ChatTemplate = ({
                     <Menu />
                   </IconSize>
                 </Button>
-                <TypographyH4 className="font-semibold">Chats</TypographyH4>
-              </div>
-              <div className="flex-1 flex items-center justify-center">
+                <TypographyH4>Chats</TypographyH4>
+              </Flex>
+              <Flex align="center" justify="center" fullWidth className="flex-1">
                 <EmptyState variant="no-chat" />
-              </div>
-            </div>
+              </Flex>
+            </Flex>
           )}
 
           {/* Mobile Chat Window */}
           {showMobileChatWindow && chatWindowProps && (
-            <div className="fixed top-16 bottom-0 left-0 right-0 z-30 flex flex-col bg-background md:hidden">
+            <Flex direction="col" position="fixed" fullWidth className="top-16 bottom-0 left-0 right-0 z-30 bg-background md:hidden">
               <ChatWindow
                 {...chatWindowProps}
                 groupManagementMenu={groupMenu}
@@ -513,11 +688,11 @@ export const ChatTemplate = ({
                 }}
                 showBackButton
               />
-            </div>
+            </Flex>
           )}
         </>
       )}
-    </div>
+    </Flex>
   )
 }
 

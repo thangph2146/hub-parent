@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Send } from "lucide-react"
 import { IconSize } from "@/components/ui/typography"
+import { Flex } from "@/components/ui/flex"
 import type { Contact, Message } from "../types"
 import { ReplyBanner } from "./reply-banner"
 import { GroupDeletedBanner } from "./group-deleted-banner"
@@ -18,7 +19,6 @@ interface ChatInputProps {
   currentChat: Contact | null
   replyingTo: Message | null
   onCancelReply: () => void
-  replyBannerRef?: React.RefObject<HTMLDivElement | null>
   deletedBannerRef?: React.RefObject<HTMLDivElement | null>
   isGroupDeleted?: boolean
 }
@@ -34,7 +34,6 @@ function ChatInput(
     currentChat,
     replyingTo,
     onCancelReply,
-    replyBannerRef,
     deletedBannerRef,
     isGroupDeleted = false,
   }: ChatInputProps,
@@ -43,28 +42,25 @@ function ChatInput(
   const isDisabled = !currentChat || isGroupDeleted
 
   return (
-    <div ref={ref} className="flex flex-col border-t shrink-0">
+    <Flex 
+      ref={ref} 
+      direction="col" 
+      fullWidth
+      border="top"
+      shrink
+    >
       {replyingTo && !isGroupDeleted && (
-        <div ref={replyBannerRef}>
           <ReplyBanner replyingTo={replyingTo} onCancel={onCancelReply} />
-        </div>
       )}
       {isGroupDeleted && <GroupDeletedBanner ref={deletedBannerRef} />}
-      <div className="flex items-end gap-1 min-h-[64px] max-h-[152px] px-4 py-2">
-        {/* <Button variant="ghost" size="icon" className="h-9 w-9 shrink-0 mb-0.5" disabled={isDisabled}>
-          <Smile className="h-4 w-4" />
-        </Button>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-9 w-9 shrink-0 mb-0.5" disabled={isDisabled}>
-              <Paperclip className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <AttachmentMenu />
-        </DropdownMenu> */}
+      <Flex 
+        align="end" 
+        gap={1} 
+        padding="sm"
+        fullWidth
+      >
         <Textarea
           ref={inputRef}
-          className="flex-1 resize-none overflow-y-auto"
           style={{ maxHeight: "120px" , minHeight: "64px" }}
           placeholder={isGroupDeleted ? "Nhóm đã bị xóa" : "Type a message (Enter to send, Shift+Enter for new line)"}
           value={messageInput}
@@ -76,7 +72,6 @@ function ChatInput(
         <Button
           variant="ghost"
           size="icon"
-          className="shrink-0 mb-0.5"
           onClick={handleSendMessage}
           disabled={!messageInput.trim() || isDisabled}
         >
@@ -84,8 +79,8 @@ function ChatInput(
             <Send />
           </IconSize>
         </Button>
-      </div>
-    </div>
+      </Flex>
+    </Flex>
   )
 })
 

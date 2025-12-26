@@ -12,6 +12,8 @@ import { MultipleImageUpload } from "@/components/forms"
 import type { UploadResponse } from "@/features/admin/uploads/types"
 import { logger } from "@/lib/config/logger"
 import { TypographyPSmall, TypographyPSmallMuted, TypographyPMuted, IconSize } from "@/components/ui/typography"
+import { Flex } from "@/components/ui/flex"
+import { Grid } from "@/components/ui/grid"
 
 export interface ProductImage {
   url: string
@@ -50,13 +52,19 @@ const ImageItem = ({
   disabled?: boolean
 }) => {
   return (
-    <div
+    <Flex
+      direction="col"
+      position="relative"
+      border="all"
+      rounded="lg"
+      overflow="hidden"
+      bg="muted-50"
       className={cn(
-        "group relative border rounded-lg overflow-hidden bg-muted/30",
+        "group",
         image.isPrimary && "ring-2 ring-primary ring-offset-2"
       )}
     >
-      <div className="aspect-square relative">
+      <Flex align="center" justify="center" position="relative" className="aspect-square" fullWidth>
         <Image
           src={image.url}
           alt={image.alt || `Image ${index + 1}`}
@@ -64,8 +72,8 @@ const ImageItem = ({
           className="object-cover"
           unoptimized
         />
-        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center gap-2">
-          <div className="flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        <Flex align="center" justify="center" gap={2} position="absolute-inset" className="bg-black/0 group-hover:bg-black/40 transition-colors">
+          <Flex direction="col" gap={1} className="opacity-0 group-hover:opacity-100 transition-opacity">
             <Button
               type="button"
               variant="secondary"
@@ -90,7 +98,7 @@ const ImageItem = ({
                 <ArrowDown />
               </IconSize>
             </Button>
-          </div>
+          </Flex>
           <Button
             type="button"
             variant="secondary"
@@ -117,27 +125,26 @@ const ImageItem = ({
               <X />
             </IconSize>
           </Button>
-        </div>
+        </Flex>
         {image.isPrimary && (
-          <div className="absolute top-2 left-2 bg-primary text-primary-foreground px-2 py-1 rounded font-medium flex items-center gap-1">
+          <Flex align="center" gap={1} position="absolute" className="top-2 left-2 z-30" bg="primary" paddingX={2} paddingY={1} rounded="md">
             <IconSize size="xs" className="fill-current">
               <Star />
             </IconSize>
-            <TypographyPSmall className="font-medium">Chính</TypographyPSmall>
-          </div>
+            <TypographyPSmall>Chính</TypographyPSmall>
+          </Flex>
         )}
-      </div>
-      <div className="p-2">
+      </Flex>
+      <Flex padding="sm">
         <Input
           type="text"
           value={image.alt || ""}
           onChange={(e) => onAltChange(e.target.value)}
           placeholder="Mô tả ảnh (alt text)"
-          className=""
           disabled={disabled}
         />
-      </div>
-    </div>
+      </Flex>
+    </Flex>
   )
 }
 
@@ -349,9 +356,9 @@ export const MultipleImagesField = ({ value, onChange, error, disabled = false }
 
   return (
     <FieldContent>
-      <div className="space-y-4">
+      <Flex direction="col" gap={4}>
         {/* Upload controls */}
-        <div className="space-y-4">
+        <Flex direction="col" gap={4}>
           <MultipleImageUpload
             onUploadSuccess={handleUploadSuccess}
             onUploadError={handleUploadError}
@@ -361,7 +368,7 @@ export const MultipleImagesField = ({ value, onChange, error, disabled = false }
             disabled={disabled}
             className="w-full"
           />
-          <div className="flex gap-2">
+          <Flex gap={2}>
             <Input
               type="text"
               placeholder="Hoặc nhập URL ảnh"
@@ -389,12 +396,12 @@ export const MultipleImagesField = ({ value, onChange, error, disabled = false }
             >
               Thêm URL
             </Button>
-          </div>
-        </div>
+          </Flex>
+        </Flex>
 
         {/* Images grid */}
         {images.length > 0 ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 -4">
+          <Grid cols="responsive-3" fullWidth gap={4}>
             {images.map((image, index) => (
               <ImageItem
                 key={image.id || image.url}
@@ -409,20 +416,20 @@ export const MultipleImagesField = ({ value, onChange, error, disabled = false }
                 disabled={disabled}
               />
             ))}
-          </div>
+          </Grid>
         ) : (
-          <div className="border-2 border-dashed border-border rounded-lg p-8 text-center">
-            <IconSize size="4xl" className="mx-auto text-muted-foreground mb-2">
+          <Flex direction="col" align="center" gap={2} fullWidth border="all" rounded="lg" padding="xl" className="border-dashed">
+            <IconSize size="4xl" className="text-muted-foreground">
               <ImageIcon />
             </IconSize>
             <TypographyPMuted>Chưa có hình ảnh nào</TypographyPMuted>
-            <TypographyPSmallMuted className="mt-1">Upload hoặc thêm URL để bắt đầu</TypographyPSmallMuted>
-          </div>
+            <TypographyPSmallMuted>Upload hoặc thêm URL để bắt đầu</TypographyPSmallMuted>
+          </Flex>
         )}
 
         {/* Error message */}
         {error && <FieldError>{error}</FieldError>}
-      </div>
+      </Flex>
     </FieldContent>
   )
 }

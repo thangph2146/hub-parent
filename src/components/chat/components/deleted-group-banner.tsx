@@ -6,6 +6,7 @@
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
+import { Flex } from "@/components/ui/flex"
 import { Trash2 } from "lucide-react"
 import { TypographyP, IconSize } from "@/components/ui/typography"
 import type { GroupRole, Group, Contact } from "../types"
@@ -41,8 +42,16 @@ export function DeletedGroupBanner({
 
   return (
     <>
-      <div className="flex items-center justify-between py-4 px-4 bg-destructive/10 border border-destructive/20 rounded-lg mb-2">
-        <div className="flex items-center gap-2 text-destructive">
+      <Flex 
+        align="center" 
+        justify="between" 
+        gap={2}
+        padding="md"
+        fullWidth
+        border="all"
+        rounded="lg"
+      >
+        <Flex align="center" gap={2}>
           <IconSize size="sm">
             <svg
               fill="none"
@@ -58,15 +67,15 @@ export function DeletedGroupBanner({
               />
             </svg>
           </IconSize>
-          <TypographyP className="font-medium">Nhóm này đã bị xóa</TypographyP>
-        </div>
+          <TypographyP>Nhóm này đã bị xóa</TypographyP>
+        </Flex>
         {canHardDelete && (
-          <Button variant="destructive" size="sm" onClick={handleHardDeleteClick} className="h-7">
-            <IconSize size="xs" className="mr-1"><Trash2 /></IconSize>
+          <Button variant="destructive" size="sm" onClick={handleHardDeleteClick}>
+            <IconSize size="xs"><Trash2 /></IconSize>
             Xóa vĩnh viễn
           </Button>
         )}
-      </div>
+      </Flex>
 
       {currentUserId && setContactsState && (
         <HardDeleteGroupDialog

@@ -4,8 +4,8 @@ import { useState } from "react"
 import { signIn } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { Eye, EyeOff } from "lucide-react"
-import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import { Flex } from "@/components/ui/flex"
 import { Card, CardContent } from "@/components/ui/card"
 import {
   Field,
@@ -91,21 +91,23 @@ export function SignUpForm({
   }
 
   return (
-    <div className={cn("flex flex-col gap-6", className)} {...props}>
-      <Card className="overflow-hidden p-0">
-        <CardContent className="grid p-0 md:grid-cols-2">
+    <Flex direction="col" gap={6} className={className} {...props}>
+      <Card overflow="hidden" padding="0">
+        <CardContent padding="none" grid="2">
           <form onSubmit={handleSubmit} className="p-6 md:p-8">
             <FieldGroup>
-              <div className="flex flex-col items-center gap-2 text-center">
+              <Flex direction="col" align="center" gap={2} textAlign="center">
                 <TypographyH2>Tạo tài khoản</TypographyH2>
-                <TypographyPMuted className="text-balance">
+                <TypographyPMuted>
                   Đăng ký tài khoản của bạn
                 </TypographyPMuted>
-              </div>
+              </Flex>
               {error && (
-                <TypographyP className="rounded-lg bg-destructive/10 p-3 text-destructive">
-                  {error}
-                </TypographyP>
+                <Flex rounded="lg" bg="destructive-text" padding="md">
+                  <TypographyP>
+                    {error}
+                  </TypographyP>
+                </Flex>
               )}
               <Field>
                 <FieldLabel htmlFor="name">Tên</FieldLabel>
@@ -133,7 +135,7 @@ export function SignUpForm({
               </Field>
               <Field>
                 <FieldLabel htmlFor="password">Mật khẩu</FieldLabel>
-                <div className="relative">
+                <Flex position="relative">
                   <Input
                     id="password"
                     name="password"
@@ -142,31 +144,30 @@ export function SignUpForm({
                     placeholder="Tạo mật khẩu"
                     required
                     disabled={isLoading}
-                    className="pr-10"
+                    paddingRight="10"
                   />
                   <Button
                     type="button"
                     variant="ghost"
-                    size="sm"
-                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                    size="icon-absolute"
                     onClick={() => setShowPassword(!showPassword)}
                     disabled={isLoading}
                   >
                     {showPassword ? (
                       <IconSize size="sm">
-                        <EyeOff className="text-muted-foreground" />
+                        <EyeOff />
                       </IconSize>
                     ) : (
                       <IconSize size="sm">
-                        <Eye className="text-muted-foreground" />
+                        <Eye />
                       </IconSize>
                     )}
                   </Button>
-                </div>
+                </Flex>
               </Field>
               <Field>
                 <FieldLabel htmlFor="confirm-password">Xác nhận mật khẩu</FieldLabel>
-                <div className="relative">
+                <Flex position="relative">
                   <Input
                     id="confirm-password"
                     name="confirm-password"
@@ -175,27 +176,26 @@ export function SignUpForm({
                     placeholder="Xác nhận mật khẩu của bạn"
                     required
                     disabled={isLoading}
-                    className="pr-10"
+                    paddingRight="10"
                   />
                   <Button
                     type="button"
                     variant="ghost"
-                    size="sm"
-                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                    size="icon-absolute"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                     disabled={isLoading}
                   >
                     {showConfirmPassword ? (
                       <IconSize size="sm">
-                        <EyeOff className="text-muted-foreground" />
+                        <EyeOff />
                       </IconSize>
                     ) : (
                       <IconSize size="sm">
-                        <Eye className="text-muted-foreground" />
+                        <Eye />
                       </IconSize>
                     )}
                   </Button>
-                </div>
+                </Flex>
               </Field>
               <Field>
                 <Button type="submit" disabled={isLoading}>
@@ -205,24 +205,26 @@ export function SignUpForm({
               <FieldSeparator className="*:data-[slot=field-separator-content]:bg-card">
                 Hoặc tiếp tục với
               </FieldSeparator>
-              <Field className="flex justify-center">
-                <Button
-                  variant="outline"
-                  type="button"
-                  onClick={handleGoogleSignIn}
-                  disabled={isLoading}
-                  className="w-full"
-                >
-                  <IconBrandGoogleFilled />
-                  Đăng ký bằng Google
-                </Button>
+              <Field>
+                <Flex justify="center" fullWidth>
+                  <Button
+                    variant="outline"
+                    type="button"
+                    onClick={handleGoogleSignIn}
+                    disabled={isLoading}
+                    fullWidth
+                  >
+                    <IconBrandGoogleFilled />
+                    Đăng ký bằng Google
+                  </Button>
+                </Flex>
               </Field>
-              <FieldDescription className="text-center">
-                Đã có tài khoản? <Link href="/auth/sign-in" className="underline-offset-2 hover:underline">Đăng nhập</Link>
+              <FieldDescription textAlign="center">
+                Đã có tài khoản? <Link href="/auth/sign-in">Đăng nhập</Link>
               </FieldDescription>
             </FieldGroup>
           </form>
-          <div className="bg-muted relative hidden md:block">
+          <Flex bg="muted" position="relative" display="hidden-md-flex">
             <Image
               src="https://hub.edu.vn/DATA/IMAGES/2025/06/06/20250606095214z6676928339374_824596735893cad9e9d4402075fcccd2.jpg"
               alt="Hình ảnh"
@@ -231,10 +233,10 @@ export function SignUpForm({
               loading="eager"
               className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
             />    
-          </div>
+          </Flex>
         </CardContent>
       </Card>
-    </div>
+    </Flex>
   )
 }
 

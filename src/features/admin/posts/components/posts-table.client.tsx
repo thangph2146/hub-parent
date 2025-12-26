@@ -110,7 +110,14 @@ export const PostsTableClient = ({
           metadata: { postId: row.id, postTitle: row.title, newStatus },
         })
 
-        // Socket events đã update cache và trigger refresh qua cacheVersion
+        // Invalidate và refetch queries để đảm bảo UI cập nhật ngay lập tức
+        await queryClient.invalidateQueries({ queryKey: queryKeys.adminPosts.all(), refetchType: "all" })
+        await queryClient.refetchQueries({ queryKey: queryKeys.adminPosts.all(), type: "all" })
+        await queryClient.invalidateQueries({ queryKey: queryKeys.adminPosts.detail(row.id), refetchType: "all" })
+        await queryClient.refetchQueries({ queryKey: queryKeys.adminPosts.detail(row.id), type: "all" })
+        
+        // Gọi refresh callback để trigger re-render của table
+        await _refresh()
       } catch (error: unknown) {
         // Extract error message từ response nếu có
         let errorMessage: string = "Đã xảy ra lỗi không xác định"
@@ -142,7 +149,7 @@ export const PostsTableClient = ({
         })
       }
     },
-    [canToggleStatus, showFeedback],
+    [canToggleStatus, showFeedback, queryClient],
   )
 
   const { baseColumns, deletedColumns } = usePostColumns({

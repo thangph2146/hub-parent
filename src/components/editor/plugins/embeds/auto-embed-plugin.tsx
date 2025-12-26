@@ -30,6 +30,7 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command"
+import { IconSize } from "@/components/ui/typography"
 import { DialogFooter } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import {
@@ -61,7 +62,7 @@ export const YoutubeEmbedConfig: CustomEmbedConfig = {
   exampleUrl: "https://www.youtube.com/watch?v=jNQXAC9IVRw",
 
   // Icon for display.
-  icon: <YoutubeIcon className="size-4" />,
+  icon: <IconSize size="sm"><YoutubeIcon /></IconSize>,
 
   insertNode: (editor: LexicalEditor, result: EmbedMatchResult) => {
     editor.dispatchCommand(INSERT_YOUTUBE_COMMAND, result.id)
@@ -96,7 +97,7 @@ export const TwitterEmbedConfig: CustomEmbedConfig = {
   exampleUrl: "https://twitter.com/jack/status/20",
 
   // Icon for display.
-  icon: <TwitterIcon className="size-4" />,
+  icon: <IconSize size="sm"><TwitterIcon /></IconSize>,
 
   // Create the Lexical embed node from the url data.
   insertNode: (editor: LexicalEditor, result: EmbedMatchResult) => {

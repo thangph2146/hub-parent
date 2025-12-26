@@ -15,6 +15,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
+import { IconSize } from "@/components/ui/typography"
 
 export function TreeViewPlugin(): JSX.Element {
   const [editor] = useLexicalComposerContext()
@@ -22,7 +23,9 @@ export function TreeViewPlugin(): JSX.Element {
     <Dialog>
       <DialogTrigger asChild>
         <Button size={"sm"} variant={"ghost"} className="p-2">
-          <NotebookPenIcon className="h-4 w-4" />
+          <IconSize size="sm">
+            <NotebookPenIcon />
+          </IconSize>
         </Button>
       </DialogTrigger>
       <DialogContent>

@@ -1,5 +1,6 @@
 import * as React from "react"
 import { cn } from "@/lib/utils"
+import { Flex } from "@/components/ui/flex"
 import { TypographySpanSmallMuted, IconSize } from "@/components/ui/typography"
 
 export interface FieldItemProps {
@@ -14,19 +15,23 @@ export const FieldItem = ({
   icon: Icon, 
   label, 
   children, 
-  iconColor = "bg-muted",
+  iconColor = "muted",
   className 
-}: FieldItemProps) => (
-  <div className={cn("flex items-start gap-3", className)}>
-    <div className={cn("flex h-9 w-9 shrink-0 items-center justify-center rounded-lg", iconColor)}>
-      <IconSize size="sm">
-        <Icon className="text-muted-foreground" />
-      </IconSize>
-    </div>
-    <div className="flex-1 min-w-0">
-      <TypographySpanSmallMuted className="font-medium mb-1.5">{label}</TypographySpanSmallMuted><br />
-      {children}
-    </div>
-  </div>
-)
+}: FieldItemProps) => {
+  const isBgClass = iconColor.startsWith("bg-")
+  const bgProp = isBgClass ? undefined : (iconColor as "muted" | "primary" | "destructive" | undefined)
+  const bgClassName = isBgClass ? iconColor : undefined
+  
+  return (
+    <Flex align="start" gap={3} fullWidth className={className}>
+      <Flex align="center" justify="center" shrink rounded="lg" bg={bgProp} className={cn("h-10 w-10", bgClassName)}>
+        <IconSize size="sm"><Icon /></IconSize>
+      </Flex>
+      <Flex direction="col" gap={1} fullWidth flex="1" minWidth="0">
+        <TypographySpanSmallMuted>{label}</TypographySpanSmallMuted>
+        {children}
+      </Flex>
+    </Flex>
+  )
+}
 

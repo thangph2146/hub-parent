@@ -1,7 +1,8 @@
 "use client"
 
 import Link from "next/link"
-import { IconSize } from "@/components/ui/typography"
+import { IconSize, TypographySpanSmall } from "@/components/ui/typography"
+import { Flex } from "@/components/ui/flex"
 import { useSearchParams } from "next/navigation"
 import { useMemo } from "react"
 import { FolderOpen, X } from "lucide-react"
@@ -58,26 +59,27 @@ export const PostCategoryNav = ({ categories }: PostCategoryNavProps) => {
   return (
     <nav aria-label="Category navigation">
       {/* Mobile: Flex wrap */}
-      <div className="lg:hidden">
-        <div className="flex flex-wrap items-stretch gap-2">
+      <Flex wrap={true} align="stretch" gap={2} className="lg:hidden">
           <Link
             href={clearAllCategories()}
             className={cn(
-              "group flex items-center gap-2 px-3 sm:px-4 py-2 rounded-md font-medium whitespace-nowrap transition-all border",
+              "group px-3 sm:px-4 py-2 rounded-md whitespace-nowrap transition-all border",
               selectedCategories.size === 0
                 ? "bg-accent/10 hover:bg-accent/10 text-primary border-primary/20 shadow-sm"
                 : "hover:bg-accent/10 text-muted-foreground border-transparent hover:border-border"
             )}
           >
-            <IconSize size="sm" className={cn("transition-transform", selectedCategories.size === 0 && "scale-110")}>
-              <FolderOpen />
-            </IconSize>
-            <span>Tất cả</span>
-            {selectedCategories.size > 0 && (
-              <IconSize size="xs" className="opacity-50 group-hover:opacity-100">
-                <X />
+            <Flex align="center" gap={2}>
+              <IconSize size="sm" className={cn("transition-transform", selectedCategories.size === 0 && "scale-110")}>
+                <FolderOpen />
               </IconSize>
-            )}
+              <TypographySpanSmall>Tất cả</TypographySpanSmall>
+              {selectedCategories.size > 0 && (
+                <IconSize size="xs" className="opacity-50 group-hover:opacity-100">
+                  <X />
+                </IconSize>
+              )}
+            </Flex>
           </Link>
           {categories.map((category) => {
             const isActive = selectedCategories.has(category.slug)
@@ -86,49 +88,56 @@ export const PostCategoryNav = ({ categories }: PostCategoryNavProps) => {
                 key={category.id}
                 href={toggleCategory(category.slug)}
                 className={cn(
-                  "group flex items-center gap-2 px-3 sm:px-4 py-2 rounded-md font-medium whitespace-nowrap transition-all border",
+                  "group px-3 sm:px-4 py-2 rounded-md whitespace-nowrap transition-all border",
                   isActive
                     ? "bg-accent/10 hover:bg-accent/10 text-primary border-primary/20 shadow-sm"
                     : "hover:bg-accent/10 text-muted-foreground border-transparent hover:border-border"
                 )}
               >
-                <IconSize size="sm" className={cn("transition-transform", isActive && "scale-110")}>
-                  <FolderOpen />
-                </IconSize>
-                <span>{category.name}</span>
-                {isActive && (
-                  <IconSize size="xs" className="opacity-50 group-hover:opacity-100 ml-auto">
-                    <X />
-                  </IconSize>
-                )}
+                <Flex align="center" gap={2} justify="between">
+                  <Flex align="center" gap={2}>
+                    <IconSize size="sm" className={cn("transition-transform", isActive && "scale-110")}>
+                      <FolderOpen />
+                    </IconSize>
+                    <TypographySpanSmall>{category.name}</TypographySpanSmall>
+                  </Flex>
+                  {isActive && (
+                    <IconSize size="xs" className="opacity-50 group-hover:opacity-100">
+                      <X />
+                    </IconSize>
+                  )}
+                </Flex>
               </Link>
             )
           })}
-        </div>
-      </div>
+        </Flex>
 
       {/* Desktop: Vertical scroll */}
-      <div className="hidden lg:block">
+      <Flex className="hidden lg:block">
         <ScrollArea className="w-full max-h-[calc(100vh-12rem)]">
-          <div className="flex flex-col items-stretch gap-2 pr-4">
+          <Flex direction="col" align="stretch" gap={2} className="pr-4">
             <Link
               href={clearAllCategories()}
               className={cn(
-                "group flex items-center gap-2 px-4 py-2 rounded-md font-medium whitespace-nowrap transition-all border w-full",
+                "group px-4 py-2 rounded-md whitespace-nowrap transition-all border w-full",
                 selectedCategories.size === 0
                   ? "bg-primary/10 text-primary border-primary/20 shadow-sm"
                   : "hover:bg-accent/10 text-muted-foreground border-transparent hover:border-border"
               )}
             >
-              <IconSize size="sm" className={cn("transition-transform", selectedCategories.size === 0 && "scale-110")}>
-                <FolderOpen />
-              </IconSize>
-              <span>Tất cả</span>
-              {selectedCategories.size > 0 && (
-                <IconSize size="xs" className="opacity-50 group-hover:opacity-100 ml-auto">
-                  <X />
-                </IconSize>
-              )}
+              <Flex align="center" gap={2} justify="between">
+                <Flex align="center" gap={2}>
+                  <IconSize size="sm" className={cn("transition-transform", selectedCategories.size === 0 && "scale-110")}>
+                    <FolderOpen />
+                  </IconSize>
+                  <TypographySpanSmall>Tất cả</TypographySpanSmall>
+                </Flex>
+                {selectedCategories.size > 0 && (
+                  <IconSize size="xs" className="opacity-50 group-hover:opacity-100">
+                    <X />
+                  </IconSize>
+                )}
+              </Flex>
             </Link>
             {categories.map((category) => {
               const isActive = selectedCategories.has(category.slug)
@@ -137,28 +146,32 @@ export const PostCategoryNav = ({ categories }: PostCategoryNavProps) => {
                   key={category.id}
                   href={toggleCategory(category.slug)}
                   className={cn(
-                    "group flex items-center gap-2 px-4 py-2 rounded-md font-medium whitespace-nowrap transition-all border w-full",
+                    "group px-4 py-2 rounded-md whitespace-nowrap transition-all border w-full",
                     isActive
                       ? "bg-primary/10 text-primary border-primary/20 shadow-sm"
                       : "hover:bg-accent/10 text-muted-foreground border-transparent hover:border-border"
                   )}
                 >
-                  <IconSize size="sm" className={cn("transition-transform", isActive && "scale-110")}>
-                    <FolderOpen />
-                  </IconSize>
-                  <span>{category.name}</span>
-                  {isActive && (
-                    <IconSize size="xs" className="opacity-50 group-hover:opacity-100 ml-auto">
-                  <X />
-                </IconSize>
-                  )}
+                  <Flex align="center" gap={2} justify="between">
+                    <Flex align="center" gap={2}>
+                      <IconSize size="sm" className={cn("transition-transform", isActive && "scale-110")}>
+                        <FolderOpen />
+                      </IconSize>
+                      <TypographySpanSmall>{category.name}</TypographySpanSmall>
+                    </Flex>
+                    {isActive && (
+                      <IconSize size="xs" className="opacity-50 group-hover:opacity-100">
+                        <X />
+                      </IconSize>
+                    )}
+                  </Flex>
                 </Link>
               )
             })}
-          </div>
+          </Flex>
           <ScrollBar orientation="vertical" />
         </ScrollArea>
-      </div>
+      </Flex>
     </nav>
   )
 }

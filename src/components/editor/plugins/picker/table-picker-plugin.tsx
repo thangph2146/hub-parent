@@ -3,10 +3,11 @@ import { TableIcon } from "lucide-react"
 
 import { ComponentPickerOption } from "@/components/editor/plugins/picker/component-picker-option"
 import { InsertTableDialog } from "@/components/editor/plugins/table-plugin"
+import { IconSize } from "@/components/ui/typography"
 
 export function TablePickerPlugin() {
   return new ComponentPickerOption("Table", {
-    icon: <TableIcon className="size-4" />,
+    icon: <IconSize size="sm"><TableIcon /></IconSize>,
     keywords: ["table", "grid", "spreadsheet", "rows", "columns"],
     onSelect: (_, editor, showModal) =>
       showModal("Insert Table", (onClose) => (

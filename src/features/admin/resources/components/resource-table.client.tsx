@@ -1,6 +1,7 @@
 "use client"
 
 import { useCallback, useState, useEffect, useMemo, useRef } from "react"
+import { flushSync } from "react-dom"
 import {
   DataTable,
   type DataTableColumn,
@@ -18,8 +19,9 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { ChevronDown } from "lucide-react"
 import { useIsMobile } from "@/hooks/use-mobile"
-import { useDebouncedCallback } from "@/hooks/use-debounced-callback"
+import { Flex } from "@/components/ui/flex"
 import { TypographyH4, TypographySpanSmall, IconSize } from "@/components/ui/typography"
+import { logger } from "@/lib/config/logger"
 import type {
   ResourceTableLoader,
   ResourceViewMode,
@@ -61,7 +63,10 @@ export const ResourceTableClient = <T extends object>({
   const isMobile = useIsMobile()
   const [currentViewId, setCurrentViewId] = useState(defaultViewId ?? viewModes[0].id)
   const [selectedIds, setSelectedIds] = useState<string[]>([])
-  const [refreshKey, setRefreshKey] = useState(0)
+  const refreshCounterRef = useRef(0)
+  // Khởi tạo refreshKey với giá trị stable (0) để tránh hydration mismatch
+  // refreshKey sẽ chỉ được update sau khi component mount trên client thông qua handleRefresh
+  const [refreshKey, setRefreshKey] = useState<string | number>(0)
   const lastViewIdRef = useRef<string | undefined>(currentViewId)
   const [hasViewChanged, setHasViewChanged] = useState(false)
 
@@ -71,41 +76,65 @@ export const ResourceTableClient = <T extends object>({
   const columns = activeView.columns ?? baseColumns
   const emptyMessage = activeView.emptyMessage
 
-  const lastRefreshKeyRef = useRef(0)
-  const lastRefreshTimeRef = useRef(0)
-  
-  const debouncedRefresh = useDebouncedCallback(
-    () => {
-      const now = Date.now()
-      if (now - lastRefreshTimeRef.current < 200) return
-      lastRefreshTimeRef.current = now
-      setRefreshKey((prev) => {
-        const next = prev + 1
-        if (prev !== next && lastRefreshKeyRef.current !== next) {
-          lastRefreshKeyRef.current = next
-        }
-        return next
-      })
-    },
-    200
-  )
-  
+  // Update refreshKey ngay lập tức để trigger re-render của DataTable
+  // Sử dụng counter + timestamp + random để đảm bảo refreshKey luôn thay đổi và unique
+  // Điều này đảm bảo DataTable sẽ luôn detect được sự thay đổi và trigger refetch
+  // Sử dụng flushSync để đảm bảo state update được apply ngay lập tức, không bị React batching
   const handleRefresh = useCallback(() => {
-    debouncedRefresh()
-  }, [debouncedRefresh])
+    refreshCounterRef.current += 1
+    
+    // Tạo refreshKey mới với timestamp, counter và random để đảm bảo luôn unique
+    // Sử dụng Date.now() + performance.now() + counter + random để đảm bảo giá trị luôn khác nhau
+    const timestamp = Date.now()
+    const performanceTime = performance.now()
+    const random = Math.random()
+    const currentCounter = refreshCounterRef.current
+    const newRefreshKey = `${timestamp}-${performanceTime}-${currentCounter}-${random}`
+    
+    // Sử dụng flushSync để đảm bảo state update được apply ngay lập tức
+    // Điều này đảm bảo DataTable detect được refreshKey thay đổi ngay lập tức
+    flushSync(() => {
+      setRefreshKey((prev) => {
+        // Luôn return giá trị mới để đảm bảo React detect được thay đổi
+        // Nếu prev === newRefreshKey (rất hiếm), thêm random để đảm bảo luôn khác
+        const finalKey = prev === newRefreshKey ? `${newRefreshKey}-${Math.random()}` : newRefreshKey
+        
+        logger.debug("ResourceTable refreshKey updated", {
+          previousKey: prev,
+          newKey: finalKey,
+          counter: currentCounter,
+          timestamp,
+          performanceTime,
+          random,
+        })
+        
+        return finalKey
+      })
+    })
+  }, [])
 
   const onRefreshReadyRef = useRef(onRefreshReady)
-  const exposedRefs = useRef<Set<string>>(new Set())
   useEffect(() => {
     onRefreshReadyRef.current = onRefreshReady
   }, [onRefreshReady])
 
+  // Đăng ký handleRefresh với onRefreshReady ngay khi component mount
+  // Đảm bảo refresh callback luôn được đăng ký trước khi mutations hoàn thành
+  // Gọi lại mỗi khi onRefreshReady hoặc handleRefresh thay đổi
+  // Sử dụng useLayoutEffect để đảm bảo đăng ký trước khi mutations có thể hoàn thành
   useEffect(() => {
-    const instanceId = `refresh-${handleRefresh.toString().slice(0, 20)}`
-    if (exposedRefs.current.has(instanceId)) return
-    exposedRefs.current.add(instanceId)
-    onRefreshReadyRef.current?.(handleRefresh)
-  }, [handleRefresh])
+    if (onRefreshReadyRef.current) {
+      logger.debug("Registering handleRefresh with onRefreshReady", {
+        hasOnRefreshReady: !!onRefreshReadyRef.current,
+        hasHandleRefresh: !!handleRefresh,
+      })
+      onRefreshReadyRef.current(handleRefresh)
+    } else {
+      logger.warn("onRefreshReady is not available yet", {
+        hasOnRefreshReady: !!onRefreshReadyRef.current,
+      })
+    }
+  }, [handleRefresh, onRefreshReady])
 
   const handleViewChange = useCallback(
     (viewId: string) => {
@@ -174,72 +203,82 @@ export const ResourceTableClient = <T extends object>({
   }, [hasViewChanged, initialDataByView, activeView.id])
 
   const viewModeButtons = useMemo(() => {
-    if (viewModes.length <= 1) return null
+    const hasViewModes = viewModes.length > 1
+    const hasHeaderActions = !!headerActions
 
-    if (isMobile) {
-      const currentView = viewModes.find((v) => v.id === currentViewId) ?? viewModes[0]
-      return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              type="button"
-              size="sm"
-              variant="outline"
-              className="h-8 px-3 min-w-[100px] max-w-[180px] justify-between"
-            >
-              <TypographySpanSmall className="truncate">{currentView.label}</TypographySpanSmall>
-              <IconSize size="sm" className="ml-2 shrink-0">
-                <ChevronDown />
-              </IconSize>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="min-w-[120px]">
-            {viewModes.map((view) => (
-              <DropdownMenuItem
-                key={view.id}
-                onClick={() => handleViewChange(view.id)}
-                className={currentViewId === view.id ? "bg-accent/10 font-medium" : ""}
-              >
-                {view.label}
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
-      )
+    if (!hasViewModes && !hasHeaderActions) return null
+
+    // Chỉ có headerActions, không có view modes
+    if (!hasViewModes && hasHeaderActions) {
+      return headerActions
     }
 
-    return (
-      <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
-        {viewModes.map((view) => (
-          <Button
-            key={view.id}
-            type="button"
-            size="sm"
-            variant={currentViewId === view.id ? "default" : "outline"}
-            onClick={() => handleViewChange(view.id)}
-            className="h-8 px-2 sm:px-3 whitespace-nowrap"
-          >
-            {view.label}
-          </Button>
-        ))}
-      </div>
+    // Có view modes - gắn headerActions vào viewModeSection
+    const viewModeSection = (
+      <Flex align="center" gap={2} wrap>
+        {isMobile ? (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                className="h-8 px-3 min-w-[100px] max-w-[180px] justify-between"
+              >
+                <TypographySpanSmall className="truncate">
+                  {viewModes.find((v) => v.id === currentViewId)?.label ?? viewModes[0].label}
+                </TypographySpanSmall>
+                <IconSize size="sm">
+                  <ChevronDown />
+                </IconSize>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="min-w-[120px]">
+              {viewModes.map((view) => (
+                <DropdownMenuItem
+                  key={view.id}
+                  onClick={() => handleViewChange(view.id)}
+                  className={currentViewId === view.id ? "bg-accent/10" : ""}
+                >
+                  {view.label}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        ) : (
+          <>
+            {viewModes.map((view) => (
+              <Button
+                key={view.id}
+                type="button"
+                size="sm"
+                variant={currentViewId === view.id ? "default" : "outline"}
+                onClick={() => handleViewChange(view.id)}
+                className="whitespace-nowrap"
+              >
+                {view.label}
+              </Button>
+            ))}
+          </>
+        )}
+        {hasHeaderActions && headerActions}
+      </Flex>
     )
-  }, [viewModes, currentViewId, isMobile, handleViewChange])
+
+    return viewModeSection
+  }, [viewModes, currentViewId, isMobile, handleViewChange, headerActions])
 
   return (
-    <div className="flex flex-col gap-3 sm:gap-4">
-      {(title || viewModes.length > 1 || headerActions) && (
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0">
-          {title ? (
-            <TypographyH4 className="truncate">{title}</TypographyH4>
-          ) : (
-            <span />
+    <Flex direction="col" gap={4} fullWidth>
+      {(title || viewModeButtons) && (
+        <Flex direction="col" align="start" justify="between" gap={2} fullWidth className="sm:flex-row sm:items-center">
+          {title && <TypographyH4 className="truncate">{title}</TypographyH4>}
+          {viewModeButtons && (
+            <Flex align="center" justify="end" gap={2} wrap fullWidth className="sm:w-auto sm:justify-end">
+              {viewModeButtons}
+            </Flex>
           )}
-          <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap w-full sm:w-auto justify-end sm:justify-start">
-            {viewModeButtons}
-            {headerActions}
-          </div>
-        </div>
+        </Flex>
       )}
 
       <DataTable<T>
@@ -254,6 +293,6 @@ export const ResourceTableClient = <T extends object>({
         refreshKey={refreshKey}
         initialData={initialData}
       />
-    </div>
+    </Flex>
   )
 }

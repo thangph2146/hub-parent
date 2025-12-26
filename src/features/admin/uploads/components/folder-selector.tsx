@@ -17,6 +17,7 @@ import {
 import { Check, Folder, ChevronsUpDown, Trash2, Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { TypographyPSmallMuted, IconSize } from "@/components/ui/typography"
+import { Flex } from "@/components/ui/flex"
 import { useUploadsStore } from "../store/uploads-store"
 import { useDeleteFolder } from "../hooks/use-uploads-queries"
 import { FolderTreeSelectItem } from "./folder-tree-select-item"
@@ -76,9 +77,9 @@ export const FolderSelector = ({
   }, [selectedFolder, selectedFolderData, onDeleteFolder])
 
   return (
-    <div className="space-y-2">
-      <Label>Chọn thư mục lưu file</Label>
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+    <Flex direction="col" gap={2}>
+      <Label className="font-medium">Chọn thư mục lưu file</Label>
+      <Flex direction="col" align="stretch" gap={2} className="sm:flex-row sm:items-center">
         <Popover open={folderTreeSelectOpenUpload} onOpenChange={handlePopoverOpenChange}>
           <PopoverTrigger asChild>
             <Button
@@ -164,13 +165,13 @@ export const FolderSelector = ({
             )}
           </Button>
         )}
-      </div>
+      </Flex>
       <TypographyPSmallMuted>
         {selectedFolder
           ? `File sẽ được lưu vào: ${selectedFolder}/ (upload trực tiếp vào folder này)`
           : "File sẽ được lưu theo ngày tháng năm (YYYY/MM/DD)"}
       </TypographyPSmallMuted>
-    </div>
+    </Flex>
   )
 }
 

@@ -78,6 +78,7 @@ import {
 } from "@/lib/permissions";
 import { cn } from "@/lib/utils";
 import { TypographySpanSmallMuted, TypographySpanMuted, IconSize } from "@/components/ui/typography";
+import { Flex } from "@/components/ui/flex";
 import { useClientOnly } from "@/hooks/use-client-only";
 import { useUnreadCounts } from "@/hooks/use-unread-counts";
 import { useNotificationsSocketBridge } from "@/hooks/use-notifications";
@@ -86,6 +87,7 @@ import { useSocket } from "@/hooks/use-socket";
 import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/query-keys";
 import { logger } from "@/lib/config";
+import { Grid } from "@/components/ui/grid";
 
 export function NavUser({ className }: { className?: string }) {
   const { data: session, status } = useSession();
@@ -331,11 +333,11 @@ export function NavUser({ className }: { className?: string }) {
   if (status === "loading" || !user) {
     if (!isInSidebar) {
       return (
-        <div className="flex items-center gap-2">
+        <Flex align="center" gap={2}>
           <Avatar className="h-8 w-8">
             <AvatarFallback>...</AvatarFallback>
           </Avatar>
-        </div>
+        </Flex>
       );
     }
     return (
@@ -345,10 +347,10 @@ export function NavUser({ className }: { className?: string }) {
             <Avatar className="h-8 w-8 rounded-lg">
               <AvatarFallback className="rounded-lg">...</AvatarFallback>
             </Avatar>
-            <div className="grid flex-1 text-left" suppressHydrationWarning>
-              <TypographySpanMuted className="truncate font-medium">Đang tải...</TypographySpanMuted>
+            <Flex direction="col" flex="1" textAlign="left" suppressHydrationWarning>
+              <TypographySpanMuted className="truncate">Đang tải...</TypographySpanMuted>
               <TypographySpanSmallMuted className="truncate">Vui lòng chờ</TypographySpanSmallMuted>
-            </div>
+            </Flex>
           </SidebarMenuButton>
         </SidebarMenuItem>
       </SidebarMenu>
@@ -357,14 +359,14 @@ export function NavUser({ className }: { className?: string }) {
 
   const dropdownMenuContent = (
     <DropdownMenuContent
-      className={"w-(--radix-dropdown-menu-trigger-width) min-w-62 rounded-lg"}
+      className={"w-[300px] rounded-lg"}
       side={!isInSidebar ? "bottom" : isMobile ? "bottom" : "right"}
       align="end"
       sideOffset={5}
     >
-      <DropdownMenuLabel className="p-0 font-normal">
-        <div className="flex items-center gap-2 px-1 py-1.5 text-left">
-          <Avatar className="h-8 w-8 rounded-lg">
+      <DropdownMenuLabel className="p-0">
+        <Flex align="center" gap={2} className="px-1 py-1.5 text-left min-w-0">
+          <Avatar className="h-8 w-8 rounded-lg shrink-0">
             <AvatarImage
               src={user.image || "/avatars/default.jpg"}
               alt={user.name || ""}
@@ -373,20 +375,17 @@ export function NavUser({ className }: { className?: string }) {
               {getInitials(user.name)}
             </AvatarFallback>
           </Avatar>
-          <div className="grid flex-1 text-left">
-            <TypographySpanMuted className="truncate font-medium">
+          <Flex direction="col" flex="1" minWidth="0" textAlign="left">
+            <TypographySpanMuted className="truncate">
               {user.name || user.email}
             </TypographySpanMuted>
-            <TypographySpanSmallMuted className="truncate">
-              {user.email}
-              {primaryRole && (
-                <span className="ml-1">
-                  • {primaryRole.displayName || primaryRole.name}
-                </span>
-              )}
-            </TypographySpanSmallMuted>
-          </div>
-        </div>
+            <Flex align="center" gap={1} className="min-w-0">
+              <TypographySpanSmallMuted className="truncate">
+                {user.email}
+              </TypographySpanSmallMuted>
+            </Flex>
+          </Flex>
+        </Flex>
       </DropdownMenuLabel>
       <DropdownMenuSeparator />
       <DropdownMenuGroup>
@@ -394,15 +393,17 @@ export function NavUser({ className }: { className?: string }) {
           <Link
             href={accountsRoute}
             className={cn(
-              "flex items-center justify-between w-full data-[highlighted]:bg-accent/20"
+              "w-full data-[highlighted]:bg-accent/20"
             )}
           >
-            <div className="flex items-center gap-2">
-              <IconSize size="md" className={cn(!isInSidebar && "mr-2")}>
-                <BadgeCheck />
-              </IconSize>
-              <span>Tài khoản</span>
-            </div>
+            <Flex align="center" justify="between" className="w-full">
+              <Flex align="center" gap={2}>
+                <IconSize size="md" className={cn(!isInSidebar && "mr-2")}>
+                  <BadgeCheck />
+                </IconSize>
+                <span>Tài khoản</span>
+              </Flex>
+            </Flex>
           </Link>
         </DropdownMenuItem>
       </DropdownMenuGroup>
@@ -425,26 +426,28 @@ export function NavUser({ className }: { className?: string }) {
                       <Link
                         href={item.url}
                         className={cn(
-                          "flex items-center justify-between w-full data-[highlighted]:bg-accent/20",
+                          "w-full data-[highlighted]:bg-accent/20",
                           isActive && "bg-accent/20"
                         )}
                       >
-                        <div className="flex items-center gap-2">
-                          <IconSize size="md" className={cn(!isInSidebar && "mr-2")}>
-                            <LayoutDashboard />
-                          </IconSize>
-                          <span>{item.title}</span>
-                        </div>
-                        {showBadge && (
-                          <Badge
-                            variant="destructive"
-                            className="ml-auto shrink-0"
-                          >
-                            {(item.badgeCount ?? 0) > 99
-                              ? "99+"
-                              : item.badgeCount}
-                          </Badge>
-                        )}
+                        <Flex align="center" justify="between" className="w-full">
+                          <Flex align="center" gap={2}>
+                            <IconSize size="md" className={cn(!isInSidebar && "mr-2")}>
+                              <LayoutDashboard />
+                            </IconSize>
+                            <span>{item.title}</span>
+                          </Flex>
+                          {showBadge && (
+                            <Badge
+                              variant="destructive"
+                              className="ml-auto shrink-0"
+                            >
+                              {(item.badgeCount ?? 0) > 99
+                                ? "99+"
+                                : item.badgeCount}
+                            </Badge>
+                          )}
+                        </Flex>
                       </Link>
                     </DropdownMenuItem>
                   );
@@ -455,24 +458,26 @@ export function NavUser({ className }: { className?: string }) {
                     <Link
                       href={item.url}
                       className={cn(
-                        "flex items-center justify-between w-full data-[highlighted]:bg-accent/10",
+                        "w-full data-[highlighted]:bg-accent/10",
                         isActive && "bg-accent/20"
                       )}
                     >
-                      <div className="flex items-center gap-2">
-                        {item.icon}
-                        <span>{item.title}</span>
-                      </div>
-                      {showBadge && (
-                        <Badge
-                          variant="destructive"
-                          className="ml-auto shrink-0"
-                        >
-                          {(item.badgeCount ?? 0) > 99
-                            ? "99+"
-                            : item.badgeCount}
-                        </Badge>
-                      )}
+                      <Flex align="center" justify="between" className="w-full">
+                        <Flex align="center" gap={2}>
+                          {item.icon}
+                          <span>{item.title}</span>
+                        </Flex>
+                        {showBadge && (
+                          <Badge
+                            variant="destructive"
+                            className="ml-auto shrink-0"
+                          >
+                            {(item.badgeCount ?? 0) > 99
+                              ? "99+"
+                              : item.badgeCount}
+                          </Badge>
+                        )}
+                      </Flex>
                     </Link>
                   </DropdownMenuItem>
                 );
@@ -508,7 +513,7 @@ export function NavUser({ className }: { className?: string }) {
   if (!isMounted) {
     if (!isInSidebar) {
       return (
-        <div className="flex items-center gap-2" suppressHydrationWarning>
+        <Flex align="center" gap={2} suppressHydrationWarning>
           <Avatar className="h-8 w-8" suppressHydrationWarning>
             <AvatarImage
               src={user.image || "/avatars/default.jpg"}
@@ -516,10 +521,10 @@ export function NavUser({ className }: { className?: string }) {
             />
             <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
           </Avatar>
-          <TypographySpanMuted className="inline-block font-medium truncate max-w-[120px]" suppressHydrationWarning>
+          <TypographySpanMuted className="inline-block truncate max-w-[120px]" suppressHydrationWarning>
             {user.name || user.email}
           </TypographySpanMuted>
-        </div>
+        </Flex>
       );
     }
     return (
@@ -535,14 +540,14 @@ export function NavUser({ className }: { className?: string }) {
                 {getInitials(user.name)}
               </AvatarFallback>
             </Avatar>
-            <div className="grid flex-1 text-left" suppressHydrationWarning>
-              <TypographySpanMuted className="truncate font-medium" suppressHydrationWarning>
+            <Grid cols={1} align="start" justify="start" suppressHydrationWarning>
+              <TypographySpanMuted className="truncate" suppressHydrationWarning>
                 {user.name || user.email}
               </TypographySpanMuted>
               <TypographySpanSmallMuted className="truncate" suppressHydrationWarning>
                 {primaryRole?.displayName || primaryRole?.name || user.email}
               </TypographySpanSmallMuted>
-            </div>
+            </Grid>
           </SidebarMenuButton>
         </SidebarMenuItem>
       </SidebarMenu>
@@ -556,22 +561,24 @@ export function NavUser({ className }: { className?: string }) {
         <DropdownMenuTrigger asChild>
           <Button
             variant="ghost"
-            className={cn("flex items-center gap-2 px-2", className)}
+            className={cn("px-2", className)}
             suppressHydrationWarning
           >
-            <Avatar className="h-8 w-8" suppressHydrationWarning>
-              <AvatarImage
-                src={user.image || "/avatars/default.jpg"}
-                alt={user.name || ""}
-              />
-              <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
-            </Avatar>
-            <TypographySpanMuted className="inline-block font-medium truncate max-w-[120px]" suppressHydrationWarning>
-              {user.name || user.email}
-            </TypographySpanMuted>
-            <IconSize size="md" className="opacity-50">
-              <ChevronsUpDown />
-            </IconSize>
+            <Flex align="center" gap={2}>
+              <Avatar className="h-8 w-8" suppressHydrationWarning>
+                <AvatarImage
+                  src={user.image || "/avatars/default.jpg"}
+                  alt={user.name || ""}
+                />
+                <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
+              </Avatar>
+              <TypographySpanMuted className="inline-block truncate max-w-[120px]" suppressHydrationWarning>
+                {user.name || user.email}
+              </TypographySpanMuted>
+              <IconSize size="md" className="opacity-50">
+                <ChevronsUpDown />
+              </IconSize>
+            </Flex>
           </Button>
         </DropdownMenuTrigger>
         {dropdownMenuContent}

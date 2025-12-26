@@ -1,6 +1,7 @@
 "use client"
 
 import { TypographyH4, TypographyPMuted, IconSize } from "@/components/ui/typography"
+import { Flex } from "@/components/ui/flex"
 
 import * as React from "react"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
@@ -9,7 +10,6 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { CheckCircle2, X } from "lucide-react"
 import { getUserInitials } from "@/features/admin/resources/utils"
-import { cn } from "@/lib/utils"
 
 interface AccountAvatarFieldProps {
   value: unknown
@@ -41,11 +41,11 @@ export const AccountAvatarField = ({
   }, [])
 
   return (
-    <div className="space-y-6">
+    <Flex direction="col" gap={6}>
       <Card className="overflow-hidden border-2 bg-gradient-to-br from-card via-card to-muted/20 shadow-sm">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 p-6">
-          <div className="relative group">
-            <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 via-primary/10 to-transparent rounded-full blur opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        <Flex direction="col" align="start" gap={6} padding="lg" fullWidth className="sm:flex-row">
+          <Flex position="relative" className="group">
+            <Flex position="absolute" className="-inset-1 bg-gradient-to-r from-primary/20 via-primary/10 to-transparent rounded-full blur opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             <Avatar className="relative h-28 w-28 border-4 border-background shadow-lg ring-2 ring-primary/10">
               <AvatarImage
                 src={hasAvatar && !imageError ? avatarUrl : undefined}
@@ -57,19 +57,19 @@ export const AccountAvatarField = ({
                 onLoad={() => setImageError(false)}
               />
               <AvatarFallback asChild>
-                <TypographyH4 className="font-bold bg-gradient-to-br from-primary via-primary/90 to-chart-1 text-primary-foreground">
+                <TypographyH4 className="bg-gradient-to-br from-primary via-primary/90 to-chart-1 text-primary-foreground">
                   {getUserInitials(name, "")}
                 </TypographyH4>
               </AvatarFallback>
             </Avatar>
             {hasAvatar && !imageError && (
-              <div className="absolute -bottom-1 -right-1 h-7 w-7 rounded-full bg-green-500 border-[3px] border-background flex items-center justify-center shadow-md">
+              <Flex align="center" justify="center" position="absolute" className="-bottom-1 -right-1 h-7 w-7 rounded-full bg-green-500 border-[3px] border-background shadow-md">
                 <CheckCircle2 className="h-4 w-4 text-white" />
-              </div>
+              </Flex>
             )}
-          </div>
-          <div className="flex-1 min-w-0 space-y-4">
-            <div className="space-y-2">
+          </Flex>
+          <Flex direction="col" gap={4} flex="1" minWidth="0" fullWidth>
+            <Flex direction="col" gap={2}>
               <Input
                 type="text"
                 value={avatarUrl}
@@ -78,7 +78,7 @@ export const AccountAvatarField = ({
                   setImageError(false)
                 }}
                 placeholder={placeholder}
-                className={cn("w-full")}
+                className="w-full"
               />
               {hasAvatar && (
                 <Button
@@ -97,14 +97,14 @@ export const AccountAvatarField = ({
                   Xóa ảnh đại diện
                 </Button>
               )}
-            </div>
+            </Flex>
             <TypographyPMuted>
               Nhập URL của ảnh đại diện hoặc để trống để sử dụng chữ cái đầu
             </TypographyPMuted>
-          </div>
-        </div>
+          </Flex>
+        </Flex>
       </Card>
-    </div>
+    </Flex>
   )
 }
 

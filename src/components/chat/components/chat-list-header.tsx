@@ -1,6 +1,7 @@
 "use client"
 
 import { TypographyH3 } from "@/components/ui/typography"
+import { Flex } from "@/components/ui/flex"
 import type { Contact } from "../types"
 
 export type ChatFilterType = "ACTIVE" | "DELETED"
@@ -10,8 +11,6 @@ interface ChatListHeaderProps {
   existingContactIds?: string[] // Deprecated: sử dụng newConversationDialog thay thế
   newConversationDialog?: React.ReactNode // Cho phép inject business component từ bên ngoài
   newGroupDialog?: React.ReactNode // Cho phép inject group dialog từ bên ngoài
-  filterType?: ChatFilterType
-  onFilterChange?: (filter: ChatFilterType) => void
 }
 
 export function ChatListHeader({ 
@@ -21,13 +20,21 @@ export function ChatListHeader({
   newGroupDialog,
 }: ChatListHeaderProps) {
   return (
-    <div className="flex items-center justify-between h-16 px-4 border-b shrink-0">
+    <Flex 
+      align="center" 
+      justify="between" 
+      padding="md"
+      fullWidth
+      height="16"
+      border="bottom"
+      shrink
+    >
       <TypographyH3>Chats</TypographyH3>
-      <div className="flex items-center gap-2 shrink-0 mr-8">
+      <Flex align="center" gap={2} shrink margin="r-6-sm-0">
         {newConversationDialog}
         {newGroupDialog}
-      </div>
-    </div>
+      </Flex>
+    </Flex>
   )
 }
 

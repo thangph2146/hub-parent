@@ -7,6 +7,7 @@ import {
 } from "lucide-react"
 
 import { ComponentPickerOption } from "@/components/editor/plugins/picker/component-picker-option"
+import { IconSize } from "@/components/ui/typography"
 
 export function AlignmentPickerPlugin({
   alignment,
@@ -28,12 +29,12 @@ function AlignIcons({
 }) {
   switch (alignment) {
     case "left":
-      return <AlignLeftIcon className="size-4" />
+      return <IconSize size="sm"><AlignLeftIcon /></IconSize>
     case "center":
-      return <AlignCenterIcon className="size-4" />
+      return <IconSize size="sm"><AlignCenterIcon /></IconSize>
     case "right":
-      return <AlignRightIcon className="size-4" />
+      return <IconSize size="sm"><AlignRightIcon /></IconSize>
     case "justify":
-      return <AlignJustifyIcon className="size-4" />
+      return <IconSize size="sm"><AlignJustifyIcon /></IconSize>
   }
 }

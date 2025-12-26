@@ -1,6 +1,8 @@
 "use client"
 
 import { TypographyP, TypographyPSmallMuted, IconSize } from "@/components/ui/typography"
+import { Flex } from "@/components/ui/flex"
+import { Grid } from "@/components/ui/grid"
 
 import * as React from "react"
 import { useQueryClient } from "@tanstack/react-query"
@@ -80,48 +82,34 @@ export const StudentDetailClient = ({ studentId, student, backUrl = "/admin/stud
         const studentData = (data || detailData) as StudentDetailData
         
         return (
-          <div className="grid gap-6 grid-cols-1 sm:grid-cols-2">
-            {/* Student Code & Name */}
+          <Grid cols={2} fullWidth gap={6}>
             <FieldItem icon={Hash} label="Mã sinh viên">
-              <TypographyP className="font-medium font-mono">
-                {studentData.studentCode || "—"}
-              </TypographyP>
+              <TypographyP className="font-mono">{studentData.studentCode || "—"}</TypographyP>
             </FieldItem>
-
             <FieldItem icon={User} label="Tên sinh viên">
-              <TypographyP className="font-medium">
-                {studentData.name || "—"}
-              </TypographyP>
+              <TypographyP>{studentData.name || "—"}</TypographyP>
             </FieldItem>
-
-            {/* Email */}
             {studentData.email && (
               <FieldItem icon={Mail} label="Email">
                 <a
                   href={`mailto:${studentData.email}`}
-                  className="font-medium text-primary hover:underline truncate block transition-colors"
+                  className="text-primary hover:underline truncate block transition-colors"
                 >
                   {studentData.email}
                 </a>
               </FieldItem>
             )}
-
-            {/* Linked Account */}
             {studentData.userId && studentData.userName && (
               <FieldItem icon={User} label="Tài khoản liên kết">
-                <div className="space-y-0.5">
-                  <TypographyP className="font-medium">
-                    {studentData.userName}
-                  </TypographyP>
+                <Flex direction="col" gap={1}>
+                  <TypographyP>{studentData.userName}</TypographyP>
                   {studentData.userEmail && (
-                    <TypographyPSmallMuted>
-                      {studentData.userEmail}
-                    </TypographyPSmallMuted>
+                    <TypographyPSmallMuted>{studentData.userEmail}</TypographyPSmallMuted>
                   )}
-                </div>
+                </Flex>
               </FieldItem>
             )}
-          </div>
+          </Grid>
         )
       },
     },
@@ -131,8 +119,10 @@ export const StudentDetailClient = ({ studentId, student, backUrl = "/admin/stud
   const isDeleted = detailData.deletedAt !== null && detailData.deletedAt !== undefined
 
   return (
-    <div className="space-y-6">
+    <Flex direction="col" fullWidth gap={6}>
       <ResourceDetailClient<StudentDetailData>
+        title="Thông tin sinh viên"
+        description={`Thông tin chính về sinh viên ${detailData.name}`}
         data={detailData}
         fields={detailFields}
         detailSections={detailSections}
@@ -143,12 +133,13 @@ export const StudentDetailClient = ({ studentId, student, backUrl = "/admin/stud
             <Button
               variant="outline"
               onClick={() => router.push(`/admin/students/${studentId}/edit`)}
-              className="gap-2"
             >
-              <IconSize size="sm">
-                <Edit />
-              </IconSize>
-              Chỉnh sửa
+              <Flex align="center" gap={2}>
+                <IconSize size="sm">
+                  <Edit />
+                </IconSize>
+                Chỉnh sửa
+              </Flex>
             </Button>
           ) : null
         }
@@ -160,6 +151,6 @@ export const StudentDetailClient = ({ studentId, student, backUrl = "/admin/stud
         isActive={detailData.isActive}
         studentName={detailData.name}
       />
-    </div>
+    </Flex>
   )
 }

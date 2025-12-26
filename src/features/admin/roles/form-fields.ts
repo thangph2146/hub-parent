@@ -118,6 +118,7 @@ export const getBaseRoleFields = (
       validate: validateDescription,
       icon: React.createElement(AlignLeft, { className: "h-4 w-4" }),
       section: "basic",
+      className: "col-span-full",
     },
     {
       name: "permissions",

@@ -61,24 +61,6 @@ export const getBaseContactRequestFields = (usersOptions: Array<{ label: string;
       icon: React.createElement(Phone, { className: "h-4 w-4" }),
     },
     {
-      name: "subject",
-      label: "Tiêu đề",
-      type: "text",
-      placeholder: "Nhập tiêu đề liên hệ",
-      required: true,
-      validate: validateSubject,
-      icon: React.createElement(FileText, { className: "h-4 w-4" }),
-    },
-    {
-      name: "content",
-      label: "Nội dung",
-      type: "textarea",
-      placeholder: "Nhập nội dung liên hệ",
-      required: true,
-      validate: validateContent,
-      icon: React.createElement(MessageSquare, { className: "h-4 w-4" }),
-    },
-    {
       name: "status",
       label: "Trạng thái",
       type: "select",
@@ -108,6 +90,15 @@ export const getBaseContactRequestFields = (usersOptions: Array<{ label: string;
       icon: React.createElement(UserCheck, { className: "h-4 w-4" }),
     },
     {
+      name: "subject",
+      label: "Tiêu đề",
+      type: "text",
+      placeholder: "Nhập tiêu đề liên hệ",
+      required: true,
+      validate: validateSubject,
+      icon: React.createElement(FileText, { className: "h-4 w-4" }),
+    },
+    {
       name: "isRead",
       label: "Đã đọc",
       description: "Đánh dấu yêu cầu liên hệ đã được đọc",
@@ -115,6 +106,16 @@ export const getBaseContactRequestFields = (usersOptions: Array<{ label: string;
       defaultValue: false,
       icon: React.createElement(MessageSquare, { className: "h-4 w-4" }),
     },
+    {
+      name: "content",
+      label: "Nội dung",
+      type: "textarea",
+      placeholder: "Nhập nội dung liên hệ",
+      required: true,
+      validate: validateContent,
+      icon: React.createElement(MessageSquare, { className: "h-4 w-4" }),
+      className: "col-span-full",
+    }
   ]
 }
 

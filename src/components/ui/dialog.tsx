@@ -5,7 +5,10 @@ import * as DialogPrimitive from "@radix-ui/react-dialog"
 import { XIcon } from "lucide-react"
 
 import { cn } from "@/lib/utils/index"
-import { typography, iconSizes } from "@/lib/typography"
+import { headingSizes, fontWeights, responsiveTextSizes, lineHeights } from "@/lib/typography"
+
+const dialogTitleDefault = `${headingSizes.h4} ${fontWeights.bold}`
+const dialogBodySmall = `${responsiveTextSizes.small} ${fontWeights.normal} ${lineHeights.relaxed}`
 
 function Dialog({
   ...props
@@ -70,7 +73,7 @@ function DialogContent({
         {showCloseButton && (
           <DialogPrimitive.Close
             data-slot="dialog-close"
-            className={`ring-offset-background focus:ring-ring data-[state=open]:bg-accent data-[state=open]:text-muted-foreground absolute top-4 right-4 rounded-xs opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:${iconSizes.sm}`}
+            className={`ring-offset-background focus:ring-ring data-[state=open]:bg-accent data-[state=open]:text-muted-foreground absolute top-4 right-4 rounded-xs opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0`}
           >
             <XIcon />
             <span className="sr-only">Close</span>
@@ -111,7 +114,7 @@ function DialogTitle({
   return (
     <DialogPrimitive.Title
       data-slot="dialog-title"
-      className={cn(`${typography.title.default} leading-none`, className)}
+      className={cn(`${dialogTitleDefault} leading-none`, className)}
       {...props}
     />
   )
@@ -124,7 +127,7 @@ function DialogDescription({
   return (
     <DialogPrimitive.Description
       data-slot="dialog-description"
-      className={cn(`text-muted-foreground ${typography.body.small}`, className)}
+      className={cn(`text-muted-foreground ${dialogBodySmall}`, className)}
       {...props}
     />
   )

@@ -2,10 +2,14 @@ import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "@/lib/utils/index"
-import { typography, iconSizes } from "@/lib/typography"
+import { responsiveTextSizes, fontWeights, lineHeights, iconSizes, headingSizes } from "@/lib/typography"
+
+const alertBodySmall = `${responsiveTextSizes.small} ${fontWeights.normal} ${lineHeights.relaxed}`
+const alertIconSize = iconSizes.sm
+const alertTitleSmall = `${headingSizes.h5} font-semibold`
 
 const alertVariants = cva(
-  `relative w-full rounded-lg border px-4 py-3 grid has-[>svg]:grid-cols-[calc(var(--spacing)*4)_1fr] grid-cols-[0_1fr] has-[>svg]:gap-x-3 gap-y-0.5 items-start [&>svg]:translate-y-0.5 [&>svg]:text-current ${typography.body.small} [&>svg]:${iconSizes.sm}`,
+  `relative w-full rounded-lg border px-4 py-3 grid has-[>svg]:grid-cols-[calc(var(--spacing)*4)_1fr] grid-cols-[0_1fr] has-[>svg]:gap-x-3 gap-y-0.5 items-start [&>svg]:translate-y-0.5 [&>svg]:text-current ${alertBodySmall} [&>svg]:${alertIconSize}`,
   {
     variants: {
       variant: {
@@ -40,7 +44,7 @@ function AlertTitle({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="alert-title"
       className={cn(
-        `col-start-2 line-clamp-1 min-h-4 ${typography.title.small}`,
+        `col-start-2 line-clamp-1 min-h-4 ${alertTitleSmall}`,
         className
       )}
       {...props}
@@ -56,7 +60,7 @@ function AlertDescription({
     <div
       data-slot="alert-description"
       className={cn(
-        `text-muted-foreground col-start-2 grid justify-items-start gap-1 [&_p]:leading-relaxed ${typography.body.small}`,
+        `text-muted-foreground col-start-2 grid justify-items-start gap-1 [&_p]:leading-relaxed ${alertBodySmall}`,
         className
       )}
       {...props}

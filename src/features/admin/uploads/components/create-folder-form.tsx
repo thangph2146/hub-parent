@@ -28,6 +28,7 @@ import { expandFolderTreeLevels } from "../utils/folder-utils"
 import { getTodayDatePath } from "../utils/date-utils"
 import { TypographyPSmallMuted, IconSize } from "@/components/ui/typography"
 import type { FolderItem } from "../types"
+import { Flex } from "@/components/ui/flex"
 
 interface CreateFolderFormProps {
   availableFolders: FolderItem[]
@@ -175,30 +176,30 @@ export const CreateFolderForm = ({ availableFolders, isLoadingFolders }: CreateF
 
   if (!showCreateFolderForm) {
     return (
-      <div className="space-y-2 border-b pb-4">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+      <Flex direction="col" gap={2} className="border-b pb-4">
+        <Flex direction="col" align="start" justify="between" gap={2} className="sm:flex-row sm:items-center">
           <Label>Tạo thư mục mới</Label>
           <Button type="button" variant="default" size="sm" onClick={handleToggleForm} className="w-full sm:w-auto">
             Tạo thư mục
           </Button>
-        </div>
-      </div>
+        </Flex>
+      </Flex>
     )
   }
 
   return (
-    <div className="space-y-2 border-b pb-4">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-        <Label>Tạo thư mục mới</Label>
-        <Button type="button" variant="outline" size="sm" onClick={handleToggleForm} className="w-full sm:w-auto">
-          Hủy
-        </Button>
-      </div>
-      <div className="space-y-3 p-4 bg-muted/50 rounded-lg">
+      <Flex direction="col" gap={4} className="border-b pb-4">
+        <Flex direction="col" align="start" justify="between" gap={2} className="sm:flex-row sm:items-center">
+          <Label className="text-base font-semibold">Tạo thư mục mới</Label>
+          <Button type="button" variant="outline" size="sm" onClick={handleToggleForm} className="w-full sm:w-auto">
+            Hủy
+          </Button>
+        </Flex>
+      <Flex direction="col" gap={4} className="p-4 bg-muted/50 rounded-lg border border-border/50">
         {/* Mode Selection */}
-        <div className="space-y-2">
-          <Label>Chế độ nhập</Label>
-          <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+        <Flex direction="col" gap={2}>
+          <Label className="font-medium">Chế độ nhập</Label>
+          <Flex direction="col" align="stretch" gap={2} className="sm:flex-row sm:items-center">
             <Button
               type="button"
               variant={folderInputMode === "tree" ? "default" : "outline"}
@@ -207,6 +208,7 @@ export const CreateFolderForm = ({ availableFolders, isLoadingFolders }: CreateF
                 setFolderInputMode("tree")
                 setFolderPathString("")
               }}
+              className="flex-1 sm:flex-initial"
             >
               Tree (chọn từ danh sách)
             </Button>
@@ -219,15 +221,16 @@ export const CreateFolderForm = ({ availableFolders, isLoadingFolders }: CreateF
                 setParentFolderForCreate(null)
                 setNewFolderName("")
               }}
+              className="flex-1 sm:flex-initial"
             >
               String (nhập đường dẫn)
             </Button>
-          </div>
-        </div>
+          </Flex>
+        </Flex>
 
         {folderInputMode === "tree" && (
           <>
-            <div className="space-y-2">
+            <Flex direction="col" gap={2}>
               <Label htmlFor="parent-folder-select">Thư mục cha (tùy chọn)</Label>
               <Popover open={folderTreeSelectOpen} onOpenChange={handlePopoverOpenChange}>
                 <PopoverTrigger asChild>
@@ -292,10 +295,10 @@ export const CreateFolderForm = ({ availableFolders, isLoadingFolders }: CreateF
                   ? `Thư mục mới sẽ được tạo trong: ${parentFolderForCreate}/`
                   : "Thư mục mới sẽ được tạo ở thư mục gốc"}
               </TypographyPSmallMuted>
-            </div>
-            <div className="space-y-2">
+            </Flex>
+            <Flex direction="col" gap={2}>
               <Label htmlFor="new-folder-name">Tên thư mục</Label>
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+              <Flex direction="col" align="stretch" gap={2} className="sm:flex-row sm:items-center">
                 <Input
                   id="new-folder-name"
                   placeholder="Nhập tên thư mục (ví dụ: products, events)"
@@ -331,14 +334,14 @@ export const CreateFolderForm = ({ availableFolders, isLoadingFolders }: CreateF
                     "Tạo"
                   )}
                 </Button>
-              </div>
-            </div>
+              </Flex>
+            </Flex>
           </>
         )}
 
         {folderInputMode === "string" && (
-          <div className="space-y-2">
-            <div className="space-y-2">
+          <Flex direction="col" gap={2}>
+            <Flex direction="col" gap={2}>
               <Label htmlFor="root-folder-string">Chọn thư mục (tùy chọn)</Label>
               <Popover
                 open={folderTreeSelectOpenString}
@@ -407,11 +410,11 @@ export const CreateFolderForm = ({ availableFolders, isLoadingFolders }: CreateF
                   ? `Thư mục sẽ được tạo trong: ${rootFolderForString}/`
                   : "Thư mục sẽ được tạo ở thư mục gốc. Chọn bất kỳ folder nào để tạo folder con bên trong."}
               </TypographyPSmallMuted>
-            </div>
-            <div className="space-y-2">
+            </Flex>
+            <Flex direction="col" gap={2}>
               <Label htmlFor="folder-path-string">Đường dẫn thư mục</Label>
-              <div className="space-y-2">
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+              <Flex direction="col" gap={2}>
+                <Flex direction="col" align="stretch" gap={2} className="sm:flex-row sm:items-center">
                   <Input
                     id="folder-path-string"
                     placeholder={
@@ -451,7 +454,7 @@ export const CreateFolderForm = ({ availableFolders, isLoadingFolders }: CreateF
                   >
                     Hôm nay
                   </Button>
-                </div>
+                </Flex>
                 <TypographyPSmallMuted>
                   {rootFolderForString
                     ? `Nhập đường dẫn con. Ví dụ: 2025/12/04 sẽ tạo ${rootFolderForString}/2025/12/04`
@@ -477,12 +480,12 @@ export const CreateFolderForm = ({ availableFolders, isLoadingFolders }: CreateF
                     "Tạo"
                   )}
                 </Button>
-              </div>
-            </div>
-          </div>
+              </Flex>
+            </Flex>
+          </Flex>
         )}
-      </div>
-    </div>
+      </Flex>
+    </Flex>
   )
 }
 

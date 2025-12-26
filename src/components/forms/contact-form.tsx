@@ -1,8 +1,9 @@
 "use client";
 
 import { useForm } from "react-hook-form";
-import { cn } from "@/lib/utils";
-import { TypographySpanSmall, IconSize } from "@/components/ui/typography";
+import { TypographySpanSmall, TypographySpanDestructive, IconSize } from "@/components/ui/typography";
+import { Flex } from "@/components/ui/flex";
+import { Grid } from "@/components/ui/grid";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -111,202 +112,216 @@ export function ContactForm({ onSubmit, className, apiUrl = "/api/contact" }: Co
   return (
     <Card className={className}>
       <CardContent>
-        <form onSubmit={handleFormSubmit(onSubmitForm)} className="space-y-4 sm:space-y-6">
-          <FieldGroup>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-              <Field data-invalid={Boolean(errors.name)}>
-                <FieldLabel htmlFor="name" className="flex items-center gap-1.5 sm:gap-2 text-foreground">
-                  <IconSize size="sm">
-                    <User className="text-primary flex-shrink-0" />
-                  </IconSize>
-                  <TypographySpanSmall>Họ tên <span className="text-destructive">*</span></TypographySpanSmall>
-                </FieldLabel>
-                <FieldContent>
-                  <Input
-                    id="name"
-                    type="text"
-                    placeholder="Nhập họ tên của bạn"
-                    aria-invalid={Boolean(errors.name)}
-                    className={errors.name ? "border-destructive" : ""}
-                    {...register("name", {
-                      required: "Họ tên là bắt buộc",
-                      minLength: {
-                        value: 2,
-                        message: "Họ tên phải có ít nhất 2 ký tự",
-                      },
-                      maxLength: {
-                        value: 100,
-                        message: "Họ tên không vượt quá 100 ký tự",
-                      },
-                      validate: (value) => {
-                        const trimmed = value.trim();
-                        if (!trimmed) return "Họ tên là bắt buộc";
-                        return true;
-                      },
-                    })}
-                  />
-                  {errors.name && <FieldError>{errors.name.message}</FieldError>}
-                </FieldContent>
-              </Field>
+        <form onSubmit={handleFormSubmit(onSubmitForm)}>
+          <Flex direction="col" gap={6}>
+            <FieldGroup>
+              <Flex fullWidth direction="col" gap={6}>
+                <Grid fullWidth cols={2} gap={6}>
+                  <Field data-invalid={Boolean(errors.name)}>
+                    <FieldLabel htmlFor="name">
+                      <Flex align="center" gap={2}>
+                        <IconSize size="sm">
+                          <User />
+                        </IconSize>
+                        <TypographySpanSmall>Họ tên <TypographySpanDestructive>*</TypographySpanDestructive></TypographySpanSmall>
+                      </Flex>
+                    </FieldLabel>
+                    <FieldContent>
+                      <Input
+                        id="name"
+                        type="text"
+                        placeholder="Nhập họ tên của bạn"
+                        aria-invalid={Boolean(errors.name)}
+                        error={Boolean(errors.name)}
+                        {...register("name", {
+                          required: "Họ tên là bắt buộc",
+                          minLength: {
+                            value: 2,
+                            message: "Họ tên phải có ít nhất 2 ký tự",
+                          },
+                          maxLength: {
+                            value: 100,
+                            message: "Họ tên không vượt quá 100 ký tự",
+                          },
+                          validate: (value) => {
+                            const trimmed = value.trim();
+                            if (!trimmed) return "Họ tên là bắt buộc";
+                            return true;
+                          },
+                        })}
+                      />
+                      {errors.name && <FieldError>{errors.name.message}</FieldError>}
+                    </FieldContent>
+                  </Field>
 
-              <Field data-invalid={Boolean(errors.email)}>
-                <FieldLabel htmlFor="email" className="flex items-center gap-1.5 sm:gap-2 text-foreground">
-                  <IconSize size="sm">
-                    <Mail className="text-primary flex-shrink-0" />
-                  </IconSize>
-                  <TypographySpanSmall>Email <span className="text-destructive">*</span></TypographySpanSmall>
-                </FieldLabel>
-                <FieldContent>
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="Nhập địa chỉ email của bạn"
-                    aria-invalid={Boolean(errors.email)}
-                    className={errors.email ? "border-destructive" : ""}
-                    {...register("email", {
-                      required: "Email là bắt buộc",
-                      pattern: {
-                        value: /\S+@\S+\.\S+/,
-                        message: "Email không hợp lệ",
-                      },
-                      maxLength: {
-                        value: 255,
-                        message: "Email không vượt quá 255 ký tự",
-                      },
-                      validate: (value) => {
-                        const trimmed = value.trim();
-                        if (!trimmed) return "Email là bắt buộc";
-                        return true;
-                      },
-                    })}
-                  />
-                  {errors.email && <FieldError>{errors.email.message}</FieldError>}
-                </FieldContent>
-              </Field>
-            </div>
+                  <Field data-invalid={Boolean(errors.email)}>
+                    <FieldLabel htmlFor="email">
+                      <Flex align="center" gap={2}>
+                        <IconSize size="sm">
+                          <Mail />
+                        </IconSize>
+                        <TypographySpanSmall>Email <TypographySpanDestructive>*</TypographySpanDestructive></TypographySpanSmall>
+                      </Flex>
+                    </FieldLabel>
+                    <FieldContent>
+                      <Input
+                        id="email"
+                        type="email"
+                        placeholder="Nhập địa chỉ email của bạn"
+                        aria-invalid={Boolean(errors.email)}
+                        error={Boolean(errors.email)}
+                        {...register("email", {
+                          required: "Email là bắt buộc",
+                          pattern: {
+                            value: /\S+@\S+\.\S+/,
+                            message: "Email không hợp lệ",
+                          },
+                          maxLength: {
+                            value: 255,
+                            message: "Email không vượt quá 255 ký tự",
+                          },
+                          validate: (value) => {
+                            const trimmed = value.trim();
+                            if (!trimmed) return "Email là bắt buộc";
+                            return true;
+                          },
+                        })}
+                      />
+                      {errors.email && <FieldError>{errors.email.message}</FieldError>}
+                    </FieldContent>
+                  </Field>
+                </Grid>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-              <Field data-invalid={Boolean(errors.phone)}>
-                <FieldLabel htmlFor="phone" className="flex items-center gap-1.5 sm:gap-2 text-foreground">
-                  <IconSize size="sm">
-                    <Phone className="text-primary flex-shrink-0" />
-                  </IconSize>
-                  <TypographySpanSmall>Số điện thoại</TypographySpanSmall>
-                </FieldLabel>
-                <FieldContent>
-                  <Input
-                    id="phone"
-                    type="tel"
-                    placeholder="Nhập số điện thoại (không bắt buộc)"
-                    aria-invalid={Boolean(errors.phone)}
-                    className={errors.phone ? "border-destructive" : ""}
-                    {...register("phone", {
-                      maxLength: {
-                        value: 20,
-                        message: "Số điện thoại không vượt quá 20 ký tự",
-                      },
-                      pattern: {
-                        value: /^[0-9+\-\s()]*$/,
-                        message: "Số điện thoại chỉ được chứa số, dấu +, -, khoảng trắng và dấu ngoặc",
-                      },
-                    })}
-                  />
-                  {errors.phone && <FieldError>{errors.phone.message}</FieldError>}
-                </FieldContent>
-              </Field>
+                <Grid fullWidth cols={2} gap={6}>
+                  <Field data-invalid={Boolean(errors.phone)}>
+                    <FieldLabel htmlFor="phone">
+                      <Flex align="center" gap={2}>
+                        <IconSize size="sm">
+                          <Phone />
+                        </IconSize>
+                        <TypographySpanSmall>Số điện thoại</TypographySpanSmall>
+                      </Flex>
+                    </FieldLabel>
+                    <FieldContent>
+                      <Input
+                        id="phone"
+                        type="tel"
+                        placeholder="Nhập số điện thoại (không bắt buộc)"
+                        aria-invalid={Boolean(errors.phone)}
+                        error={Boolean(errors.phone)}
+                        {...register("phone", {
+                          maxLength: {
+                            value: 20,
+                            message: "Số điện thoại không vượt quá 20 ký tự",
+                          },
+                          pattern: {
+                            value: /^[0-9+\-\s()]*$/,
+                            message: "Số điện thoại chỉ được chứa số, dấu +, -, khoảng trắng và dấu ngoặc",
+                          },
+                        })}
+                      />
+                      {errors.phone && <FieldError>{errors.phone.message}</FieldError>}
+                    </FieldContent>
+                  </Field>
 
-              <Field data-invalid={Boolean(errors.subject)}>
-                <FieldLabel htmlFor="subject" className="flex items-center gap-1.5 sm:gap-2 text-foreground">
-                  <IconSize size="sm">
-                    <FileText className="text-primary flex-shrink-0" />
-                  </IconSize>
-                  <TypographySpanSmall>Tiêu đề <span className="text-destructive">*</span></TypographySpanSmall>
-                </FieldLabel>
-                <FieldContent>
-                  <Input
-                    id="subject"
-                    type="text"
-                    placeholder="Nhập tiêu đề tin nhắn"
-                    aria-invalid={Boolean(errors.subject)}
-                    className={errors.subject ? "border-destructive" : ""}
-                    {...register("subject", {
-                      required: "Tiêu đề là bắt buộc",
-                      minLength: {
-                        value: 3,
-                        message: "Tiêu đề phải có ít nhất 3 ký tự",
-                      },
-                      maxLength: {
-                        value: 200,
-                        message: "Tiêu đề không vượt quá 200 ký tự",
-                      },
-                      validate: (value) => {
-                        const trimmed = value.trim();
-                        if (!trimmed) return "Tiêu đề là bắt buộc";
-                        return true;
-                      },
-                    })}
-                  />
-                  {errors.subject && <FieldError>{errors.subject.message}</FieldError>}
-                </FieldContent>
-              </Field>
-            </div>
+                  <Field data-invalid={Boolean(errors.subject)}>
+                    <FieldLabel htmlFor="subject">
+                      <Flex align="center" gap={2}>
+                        <IconSize size="sm">
+                          <FileText />
+                        </IconSize>
+                        <TypographySpanSmall>Tiêu đề <TypographySpanDestructive>*</TypographySpanDestructive></TypographySpanSmall>
+                      </Flex>
+                    </FieldLabel>
+                    <FieldContent>
+                      <Input
+                        id="subject"
+                        type="text"
+                        placeholder="Nhập tiêu đề tin nhắn"
+                        aria-invalid={Boolean(errors.subject)}
+                        error={Boolean(errors.subject)}
+                        {...register("subject", {
+                          required: "Tiêu đề là bắt buộc",
+                          minLength: {
+                            value: 3,
+                            message: "Tiêu đề phải có ít nhất 3 ký tự",
+                          },
+                          maxLength: {
+                            value: 200,
+                            message: "Tiêu đề không vượt quá 200 ký tự",
+                          },
+                          validate: (value) => {
+                            const trimmed = value.trim();
+                            if (!trimmed) return "Tiêu đề là bắt buộc";
+                            return true;
+                          },
+                        })}
+                      />
+                      {errors.subject && <FieldError>{errors.subject.message}</FieldError>}
+                    </FieldContent>
+                  </Field>
+                </Grid>
 
-            <Field data-invalid={Boolean(errors.message)}>
-              <FieldLabel htmlFor="message" className="flex items-center gap-1.5 sm:gap-2 text-foreground">
-                <IconSize size="sm">
-                  <MessageSquare className="text-primary flex-shrink-0" />
-                </IconSize>
-                <TypographySpanSmall>Nội dung tin nhắn <span className="text-destructive">*</span></TypographySpanSmall>
-              </FieldLabel>
-              <FieldContent>
-                <Textarea
-                  id="message"
-                  placeholder="Mô tả chi tiết vấn đề cần được giải quyết..."
-                  rows={5}
-                  className={cn(
-                    "min-h-[100px] sm:min-h-[120px]",
-                    errors.message ? "border-destructive" : ""
-                  )}
-                  aria-invalid={Boolean(errors.message)}
-                  {...register("message", {
-                    required: "Nội dung tin nhắn là bắt buộc",
-                    minLength: {
-                      value: 10,
-                      message: "Nội dung tin nhắn phải có ít nhất 10 ký tự",
-                    },
-                    maxLength: {
-                      value: 5000,
-                      message: "Nội dung tin nhắn không vượt quá 5000 ký tự",
-                    },
-                    validate: (value) => {
-                      const trimmed = value.trim();
-                      if (!trimmed) return "Nội dung tin nhắn là bắt buộc";
-                      return true;
-                    },
-                  })}
-                />
-                {errors.message && <FieldError>{errors.message.message}</FieldError>}
-              </FieldContent>
-            </Field>
-          </FieldGroup>
+                <Field data-invalid={Boolean(errors.message)}>
+                  <FieldLabel htmlFor="message">
+                    <Flex align="center" gap={2}>
+                      <IconSize size="sm">
+                        <MessageSquare />
+                      </IconSize>
+                      <TypographySpanSmall>Nội dung tin nhắn <TypographySpanDestructive>*</TypographySpanDestructive></TypographySpanSmall>
+                    </Flex>
+                  </FieldLabel>
+                  <FieldContent>
+                    <Textarea
+                      id="message"
+                      placeholder="Mô tả chi tiết vấn đề cần được giải quyết..."
+                      rows={5}
+                      minHeight="100"
+                      error={Boolean(errors.message)}
+                      aria-invalid={Boolean(errors.message)}
+                      {...register("message", {
+                        required: "Nội dung tin nhắn là bắt buộc",
+                        minLength: {
+                          value: 10,
+                          message: "Nội dung tin nhắn phải có ít nhất 10 ký tự",
+                        },
+                        maxLength: {
+                          value: 5000,
+                          message: "Nội dung tin nhắn không vượt quá 5000 ký tự",
+                        },
+                        validate: (value) => {
+                          const trimmed = value.trim();
+                          if (!trimmed) return "Nội dung tin nhắn là bắt buộc";
+                          return true;
+                        },
+                      })}
+                    />
+                    {errors.message && <FieldError>{errors.message.message}</FieldError>}
+                  </FieldContent>
+                </Field>
+              </Flex>
+            </FieldGroup>
 
-          <Button type="submit" className="w-full" disabled={isSubmitting}>
-            {isSubmitting ? (
-              <>
-                <IconSize size="sm" className="mr-1.5 sm:mr-2">
-                  <Loader2 className="animate-spin" />
-                </IconSize>
-                <TypographySpanSmall>Đang gửi...</TypographySpanSmall>
-              </>
-            ) : (
-              <>
-                <IconSize size="sm" className="mr-1.5 sm:mr-2">
-                  <Send />
-                </IconSize>
-                <TypographySpanSmall>Gửi tin nhắn</TypographySpanSmall>
-              </>
-            )}
-          </Button>
+            <Button type="submit" fullWidth disabled={isSubmitting}>
+              <Flex align="center" gap={2}>
+                {isSubmitting ? (
+                  <>
+                    <IconSize size="sm">
+                      <Loader2 className="animate-spin" />
+                    </IconSize>
+                    <TypographySpanSmall>Đang gửi...</TypographySpanSmall>
+                  </>
+                ) : (
+                  <>
+                    <IconSize size="sm">
+                      <Send />
+                    </IconSize>
+                    <TypographySpanSmall>Gửi tin nhắn</TypographySpanSmall>
+                  </>
+                )}
+              </Flex>
+            </Button>
+          </Flex>
         </form>
       </CardContent>
     </Card>

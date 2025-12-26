@@ -17,8 +17,9 @@ import {
   CommandList,
 } from "@/components/ui/command"
 import { cn } from "@/lib/utils"
-import { TypographyPMuted, IconSize } from "@/components/ui/typography"
+import { TypographyPMuted, TypographySpanSmall, IconSize } from "@/components/ui/typography"
 import type { ResourceFormField } from "../../resource-form"
+import { Flex } from "@/components/ui/flex"
 
 interface SelectComboboxProps<T> {
   field: ResourceFormField<T>
@@ -43,9 +44,9 @@ export const SelectCombobox = <T,>({
 
   if (!field.options || field.options.length === 0) {
     return (
-      <div className="flex h-10 w-full items-center rounded-md border border-input bg-background px-3 py-2">
+      <Flex align="center" fullWidth height="10" rounded="md" border="all" bg="background" paddingX={3} paddingY={2}>
         <TypographyPMuted>Không có tùy chọn</TypographyPMuted>
-      </div>
+      </Flex>
     )
   }
 
@@ -68,12 +69,14 @@ export const SelectCombobox = <T,>({
           )}
           disabled={field.disabled || isPending}
         >
-          <span className="truncate">
-            {selectedOption ? selectedOption.label : field.placeholder || "-- Chọn --"}
-          </span>
-          <IconSize size="md" className="ml-2 shrink-0 opacity-50">
-            <ChevronsUpDown />
-          </IconSize>
+          <Flex align="center" justify="between" gap={2} fullWidth>
+            <TypographySpanSmall className="truncate">
+              {selectedOption ? selectedOption.label : field.placeholder || "-- Chọn --"}
+            </TypographySpanSmall>
+            <IconSize size="md" className="shrink-0 opacity-50">
+              <ChevronsUpDown />
+            </IconSize>
+          </Flex>
         </Button>
       </PopoverTrigger>
       <PopoverContent className="p-0" align="start">
@@ -90,13 +93,12 @@ export const SelectCombobox = <T,>({
                     setSelectOpen(false)
                   }}
                 >
-                  <Check
-                    className={cn(
-                      "mr-2",
-                      !fieldValue || fieldValue === "" ? "opacity-100" : "opacity-0"
-                    )}
-                  />
+                  <Flex align="center" gap={2}>
+                    <IconSize size="md" className={cn(!fieldValue || fieldValue === "" ? "opacity-100" : "opacity-0")}>
+                      <Check />
+                    </IconSize>
                   {field.placeholder || "-- Chọn --"}
+                  </Flex>
                 </CommandItem>
               )}
               {field.options.map((option) => (
@@ -108,10 +110,12 @@ export const SelectCombobox = <T,>({
                     setSelectOpen(false)
                   }}
                 >
-                  <IconSize size="md" className={cn("mr-2", String(fieldValue) === String(option.value) ? "opacity-100" : "opacity-0")}>
+                  <Flex align="center" gap={2}>
+                    <IconSize size="md" className={cn(String(fieldValue) === String(option.value) ? "opacity-100" : "opacity-0")}>
                     <Check />
                   </IconSize>
                   {option.label}
+                  </Flex>
                 </CommandItem>
               ))}
             </CommandGroup>

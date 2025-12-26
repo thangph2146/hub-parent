@@ -1,6 +1,6 @@
-import { cn } from "@/lib/utils";
 import { ReactNode } from "react";
 import { TypographyH2, TypographyP } from "@/components/ui/typography";
+import { Flex } from "@/components/ui/flex";
 
 export interface ParagraphItem {
   text: string;
@@ -25,17 +25,17 @@ export const SectionText = ({
   className,
 }: SectionTextProps) => {
   return (
-    <div className={className}>
-      <TypographyH2 className={cn("mb-2 sm:text-left text-card-foreground", titleClassName)}>
+    <Flex direction="col" gap={2} className={className}>
+      <TypographyH2 className={titleClassName}>
         {title}
       </TypographyH2>
-      <div className={cn("leading-relaxed", contentClassName)}>
+      <Flex direction="col" gap={2} className={contentClassName}>
         {paragraphs && paragraphs.length > 0 && (
           <>
             {paragraphs.map((item, index) => {
               if (typeof item === "string") {
                 return (
-                  <TypographyP key={index} className="mb-2">
+                  <TypographyP key={index}>
                     {item}
                   </TypographyP>
                 );
@@ -43,7 +43,7 @@ export const SectionText = ({
               return (
                 <TypographyP
                   key={index}
-                  className={cn("mb-2", item.className)}
+                  className={item.className}
                 >
                   {item.text}
                 </TypographyP>
@@ -52,8 +52,8 @@ export const SectionText = ({
           </>
         )}
         {children}
-      </div>
-    </div>
+      </Flex>
+    </Flex>
   );
 }
 

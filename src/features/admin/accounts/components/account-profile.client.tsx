@@ -1,6 +1,8 @@
 "use client";
 
-import { TypographyH1, TypographyH3, TypographyH4, TypographyDescription, TypographyP, TypographyPLarge, TypographyPMuted, TypographySpanSmall, IconSize } from "@/components/ui/typography";
+import { TypographyH1, TypographyH3, TypographyH4, TypographyDescription, TypographyP, TypographyPLarge, TypographySpanSmall, TypographySpanMuted, IconSize } from "@/components/ui/typography";
+import { Flex } from "@/components/ui/flex";
+import { Grid } from "@/components/ui/grid";
 
 import * as React from "react";
 import {
@@ -94,7 +96,7 @@ export const AccountProfileClient = ({
       description: "Thông tin đăng nhập và cá nhân",
       fieldHeader: (
         <Card className="overflow-hidden border-2 bg-gradient-to-br from-card via-card to-muted/20 shadow-sm">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 p-6">
+          <Flex direction="col" align="start" gap={6} padding="lg" fullWidth className="sm:flex-row sm:items-center">
             <div className="relative group">
               <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 via-primary/10 to-transparent rounded-full blur opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               <Avatar className="relative h-28 w-28 border-4 border-background shadow-lg ring-2 ring-primary/10">
@@ -105,37 +107,37 @@ export const AccountProfileClient = ({
                   crossOrigin="anonymous"
                   className="object-cover"
                 />
-                <AvatarFallback className="font-bold bg-gradient-to-br from-primary via-primary/90 to-chart-1 text-primary-foreground">
+                <AvatarFallback className="bg-gradient-to-br from-primary via-primary/90 to-chart-1 text-primary-foreground">
                   <TypographyH4>
                     {getUserInitials(account.name, account.email)}
                   </TypographyH4>
                 </AvatarFallback>
               </Avatar>
-              <div className="absolute -bottom-1 -right-1 h-7 w-7 rounded-full bg-green-500 border-[3px] border-background flex items-center justify-center shadow-md">
+              <Flex align="center" justify="center" position="absolute" className="-bottom-1 -right-1 h-7 w-7 rounded-full bg-green-500 border-[3px] border-background shadow-md">
                 <IconSize size="sm">
                   <CheckCircle2 className="text-white" />
                 </IconSize>
-              </div>
+              </Flex>
             </div>
-            <div className="flex-1 min-w-0 space-y-3">
-              <div>
-                <TypographyH3 className="font-bold tracking-tight">
+            <Flex direction="col" gap={3} flex="1" minWidth="0">
+              <Flex direction="col" gap={1.5}>
+                <TypographyH3 className="tracking-tight">
                   {account.name || "Chưa có tên"}
                 </TypographyH3>
-                <TypographyPMuted className="flex items-center gap-2 mt-1.5">
+                <Flex align="center" gap={2}>
                   <IconSize size="sm" className="shrink-0">
                     <Mail />
                   </IconSize>
-                  <span className="truncate">{account.email}</span>
-                </TypographyPMuted>
-              </div>
+                  <TypographySpanSmall className="truncate">{account.email}</TypographySpanSmall>
+                </Flex>
+              </Flex>
               {account.roles && account.roles.length > 0 && (
-                <div className="flex flex-wrap items-center gap-2">
+                <Flex wrap align="center" gap={2}>
                   {account.roles.map((role) => (
                     <Badge
                       key={role.id}
                       variant="secondary"
-                      className="font-medium bg-primary/10 text-primary border-primary/20 hover:bg-primary/20 transition-colors"
+                      className="bg-primary/10 text-primary border-primary/20 hover:bg-primary/20 transition-colors"
                     >
                       <IconSize size="xs" className="mr-1.5">
                         <Shield />
@@ -143,60 +145,60 @@ export const AccountProfileClient = ({
                       <TypographySpanSmall>{role.displayName || role.name}</TypographySpanSmall>
                     </Badge>
                   ))}
-                </div>
+                </Flex>
               )}
-            </div>
-          </div>
+            </Flex>
+          </Flex>
         </Card>
       ),
       fieldsContent: (_fields, data) => {
         const accountData = data as AccountProfile;
 
         return (
-          <div className="space-y-6">
-            <div className="grid gap-4 sm:grid-cols-2">
-              <Card className="p-4 border-border/50 bg-card/50 hover:bg-card transition-colors">
+          <Flex direction="col" gap={6}>
+            <Grid cols={2} gap={4}>
+              <Card padding="md" className="border-border/50 bg-card/50 hover:bg-card transition-colors">
                 <FieldItem icon={User} label="Tên">
-                  <TypographyPLarge className="font-semibold mt-1">
+                  <TypographyPLarge className="mt-1">
                     {accountData.name || (
-                      <span className="text-muted-foreground italic">
+                      <TypographySpanMuted className="italic">
                         Chưa cập nhật
-                      </span>
+                      </TypographySpanMuted>
                     )}
                   </TypographyPLarge>
                 </FieldItem>
               </Card>
 
-              <Card className="p-4 border-border/50 bg-card/50 hover:bg-card transition-colors">
+              <Card padding="md" className="border-border/50 bg-card/50 hover:bg-card transition-colors">
                 <FieldItem icon={Phone} label="Số điện thoại">
-                  <TypographyPLarge className="font-semibold mt-1">
+                  <TypographyPLarge className="mt-1">
                     {accountData.phone || (
-                      <span className="text-muted-foreground italic">
+                      <TypographySpanMuted className="italic">
                         Chưa cập nhật
-                      </span>
+                      </TypographySpanMuted>
                     )}
                   </TypographyPLarge>
                 </FieldItem>
               </Card>
-            </div>
+            </Grid>
 
             {accountData.bio && (
-              <Card className="border-2 border-border/50 bg-gradient-to-br from-card to-muted/20 p-6 shadow-sm">
-                <div className="flex items-start gap-4">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 ring-2 ring-primary/5">
+              <Card padding="lg" className="border-2 border-border/50 bg-gradient-to-br from-card to-muted/20 shadow-sm">
+                <Flex align="start" gap={4}>
+                  <Flex align="center" className="h-10 w-10 shrink-0 rounded-xl bg-primary/10 ring-2 ring-primary/5">
                     <IconSize size="md">
                       <FileText className="text-primary" />
                     </IconSize>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <TypographyP className="font-semibold mb-3 uppercase tracking-wide">
+                  </Flex>
+                  <Flex direction="col" gap={3} flex="1" minWidth="0">
+                    <TypographyP className="uppercase tracking-wide">
                       Giới thiệu
                     </TypographyP>
                     <TypographyP className="whitespace-pre-wrap text-foreground/90 break-words">
                       {accountData.bio}
                     </TypographyP>
-                  </div>
-                </div>
+                  </Flex>
+                </Flex>
               </Card>
             )}
 
@@ -208,68 +210,68 @@ export const AccountProfileClient = ({
                   : accountData.address
 
                 return (
-                  <Card className="p-5 border-2 border-border/50 bg-gradient-to-br from-card to-muted/10 shadow-sm">
+                  <Card padding="lg" className="border-2 border-border/50 bg-gradient-to-br from-card to-muted/10 shadow-sm">
                     <FieldItem icon={MapPin} label="Địa chỉ">
-                      <div className="space-y-3 mt-2">
+                      <Flex direction="col" gap={3} marginTop={2}>
                         {structuredAddress ? (
-                          <div className="space-y-2">
-                            <TypographyPLarge className="font-semibold">
+                          <Flex direction="col" gap={2}>
+                            <TypographyPLarge>
                               {addressDisplay}
                             </TypographyPLarge>
-                            <TypographyPMuted className="grid gap-2 sm:grid-cols-2">
+                            <Grid cols={2} gap={2}>
                               {structuredAddress.address && (
-                                <div className="flex items-start gap-2">
-                                  <span className="font-medium min-w-[80px]">
+                                <Flex align="start" gap={2}>
+                                  <TypographySpanSmall className="min-w-[80px]">
                                     Số nhà:
-                                  </span>
-                                  <span>{structuredAddress.address}</span>
-                                </div>
+                                  </TypographySpanSmall>
+                                  <TypographySpanSmall>{structuredAddress.address}</TypographySpanSmall>
+                                </Flex>
                               )}
                               {structuredAddress.ward && (
-                                <div className="flex items-start gap-2">
-                                  <span className="font-medium min-w-[80px]">
+                                <Flex align="start" gap={2}>
+                                  <TypographySpanSmall className="min-w-[80px]">
                                     Phường/Xã:
-                                  </span>
-                                  <span>{structuredAddress.ward}</span>
-                                </div>
+                                  </TypographySpanSmall>
+                                  <TypographySpanSmall>{structuredAddress.ward}</TypographySpanSmall>
+                                </Flex>
                               )}
                               {structuredAddress.district && (
-                                <div className="flex items-start gap-2">
-                                  <span className="font-medium min-w-[80px]">
+                                <Flex align="start" gap={2}>
+                                  <TypographySpanSmall className="min-w-[80px]">
                                     Quận/Huyện:
-                                  </span>
-                                  <span>{structuredAddress.district}</span>
-                                </div>
+                                  </TypographySpanSmall>
+                                  <TypographySpanSmall>{structuredAddress.district}</TypographySpanSmall>
+                                </Flex>
                               )}
                               {structuredAddress.city && (
-                                <div className="flex items-start gap-2">
-                                  <span className="font-medium min-w-[80px]">
+                                <Flex align="start" gap={2}>
+                                  <TypographySpanSmall className="min-w-[80px]">
                                     Thành phố:
-                                  </span>
-                                  <span>{structuredAddress.city}</span>
-                                </div>
+                                  </TypographySpanSmall>
+                                  <TypographySpanSmall>{structuredAddress.city}</TypographySpanSmall>
+                                </Flex>
                               )}
                               {structuredAddress.postalCode && (
-                                <div className="flex items-start gap-2">
-                                  <span className="font-medium min-w-[80px]">
+                                <Flex align="start" gap={2}>
+                                  <TypographySpanSmall className="min-w-[80px]">
                                     Mã bưu điện:
-                                  </span>
-                                  <span>{structuredAddress.postalCode}</span>
-                                </div>
+                                  </TypographySpanSmall>
+                                  <TypographySpanSmall>{structuredAddress.postalCode}</TypographySpanSmall>
+                                </Flex>
                               )}
-                            </TypographyPMuted>
-                          </div>
+                            </Grid>
+                          </Flex>
                         ) : (
-                          <TypographyP className="font-semibold">
+                          <TypographyP>
                             {addressDisplay}
                           </TypographyP>
                         )}
-                      </div>
+                      </Flex>
                     </FieldItem>
                   </Card>
                 );
               })()}
-          </div>
+          </Flex>
         );
       },
     },
@@ -281,16 +283,16 @@ export const AccountProfileClient = ({
         const accountData = data as AccountProfile;
 
         return (
-          <div className="space-y-6">
-            <Card className="p-5 border-2 border-border/50 bg-gradient-to-br from-card to-muted/10 shadow-sm">
+          <Flex direction="col" gap={6}>
+            <Card padding="lg" className="border-2 border-border/50 bg-gradient-to-br from-card to-muted/10 shadow-sm">
               <FieldItem icon={Mail} label="Email">
-                <div className="space-y-3 mt-2">
-                  <TypographyP className="font-semibold text-foreground">
+                <Flex direction="col" gap={3} marginTop={2}>
+                  <TypographyP className="text-foreground">
                     {accountData.email}
                   </TypographyP>
                   {accountData.emailVerified && (
                     <Badge
-                      className="bg-green-500/15 hover:bg-green-500/25 text-green-700 dark:text-green-400 border-green-500/30 font-medium px-3 py-1"
+                      className="bg-green-500/15 hover:bg-green-500/25 text-green-700 dark:text-green-400 border-green-500/30 px-3 py-1"
                       variant="outline"
                     >
                       <IconSize size="xs" className="mr-1.5">
@@ -301,26 +303,26 @@ export const AccountProfileClient = ({
                   )}
                   {!accountData.emailVerified && (
                     <Badge
-                      className="bg-yellow-500/15 hover:bg-yellow-500/25 text-yellow-700 dark:text-yellow-400 border-yellow-500/30 font-medium px-3 py-1"
+                      className="bg-yellow-500/15 hover:bg-yellow-500/25 text-yellow-700 dark:text-yellow-400 border-yellow-500/30 px-3 py-1"
                       variant="outline"
                     >
                       <TypographySpanSmall>Chưa xác thực</TypographySpanSmall>
                     </Badge>
                   )}
-                </div>
+                </Flex>
               </FieldItem>
             </Card>
 
             {accountData.emailVerified && (
-              <Card className="p-4 border-border/50 bg-card/50 hover:bg-card transition-colors">
+              <Card padding="md" className="border-border/50 bg-card/50 hover:bg-card transition-colors">
                 <FieldItem icon={Clock} label="Ngày xác thực email">
-                  <TypographyPLarge className="font-semibold mt-1">
+                  <TypographyPLarge className="mt-1">
                     {formatDateVi(accountData.emailVerified)}
                   </TypographyPLarge>
                 </FieldItem>
               </Card>
             )}
-          </div>
+          </Flex>
         );
       },
     },
@@ -332,41 +334,41 @@ export const AccountProfileClient = ({
         const accountData = data as AccountProfile;
 
         return (
-          <div className="space-y-6">
-            <div className="grid gap-4 sm:grid-cols-2">
-              <Card className="p-4 border-border/50 bg-card/50 hover:bg-card transition-colors">
+          <Flex direction="col" gap={6}>
+            <Grid cols={2} gap={4}>
+              <Card padding="md" className="border-border/50 bg-card/50 hover:bg-card transition-colors">
                 <FieldItem icon={Calendar} label="Ngày tạo tài khoản">
-                  <TypographyPLarge className="font-semibold mt-1">
+                  <TypographyPLarge className="mt-1">
                     {accountData.createdAt ? (
                       formatDateVi(accountData.createdAt)
                     ) : (
-                      <span className="text-muted-foreground italic">—</span>
+                      <TypographySpanMuted className="italic">—</TypographySpanMuted>
                     )}
                   </TypographyPLarge>
                 </FieldItem>
               </Card>
 
-              <Card className="p-4 border-border/50 bg-card/50 hover:bg-card transition-colors">
+              <Card padding="md" className="border-border/50 bg-card/50 hover:bg-card transition-colors">
                 <FieldItem icon={Clock} label="Cập nhật lần cuối">
-                  <TypographyPLarge className="font-semibold mt-1">
+                  <TypographyPLarge className="mt-1">
                     {accountData.updatedAt ? (
                       formatDateVi(accountData.updatedAt)
                     ) : (
-                      <span className="text-muted-foreground italic">—</span>
+                      <TypographySpanMuted className="italic">—</TypographySpanMuted>
                     )}
                   </TypographyPLarge>
                 </FieldItem>
               </Card>
-            </div>
-          </div>
+            </Grid>
+          </Flex>
         );
       },
     },
   ];
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <Flex direction="col" gap={6}>
+      <Flex align="center" justify="between">
         <div>
           <TypographyH1>
             Thông tin tài khoản
@@ -388,7 +390,7 @@ export const AccountProfileClient = ({
             Chỉnh sửa
           </Button>
         )}
-      </div>
+      </Flex>
 
       <ResourceDetailClient<AccountProfile>
         data={account}
@@ -398,6 +400,6 @@ export const AccountProfileClient = ({
         description=""
         actions={null}
       />
-    </div>
+    </Flex>
   );
 };

@@ -39,6 +39,8 @@ import { setFloatingElemPositionForLinkEditor } from "@/components/editor/utils/
 import { sanitizeUrl, validateUrl } from "@/components/editor/utils/url"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Flex } from "@/components/ui/flex"
+import { TypographyPSmall } from "@/components/ui/typography"
 import { $isImageNode } from "@/components/editor/nodes/image-node"
 
 function FloatingLinkEditor({
@@ -391,61 +393,61 @@ function FloatingLinkEditor({
     >
       {isLinkEditMode || isLink ? (
         isLinkEditMode ? (
-          <div className="flex items-center space-x-2 rounded-md border bg-background/95 backdrop-blur-sm p-1 pl-2 shadow-lg">
-          <Input
-            ref={inputRef}
-            value={editedLinkUrl}
-            onChange={(event) => setEditedLinkUrl(event.target.value)}
-            onKeyDown={monitorInputInteraction}
-            className="flex-grow"
-          />
-          <Button
-            size="icon"
-            variant="ghost"
-            onClick={() => {
-              setIsLinkEditMode(false)
-              setIsLink(false)
-            }}
-            className="shrink-0"
-          >
-            <X className="h-4 w-4" />
-          </Button>
-          <Button
-            size="icon"
-            onClick={handleLinkSubmission}
-            className="shrink-0"
-          >
-            <Check className="h-4 w-4" />
-          </Button>
-        </div>
-        ) : (
-          <div className="flex items-center justify-between rounded-md border bg-background/95 backdrop-blur-sm p-1 pl-2 shadow-lg">
-          <a
-            href={sanitizeUrl(linkUrl)}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="overflow-hidden text-sm text-ellipsis whitespace-nowrap"
-          >
-            {linkUrl}
-          </a>
-          <div className="flex">
+          <Flex align="center" gap={2} className="space-x-2 rounded-md border bg-background/95 backdrop-blur-sm p-1 pl-2 shadow-lg">
+            <Input
+              ref={inputRef}
+              value={editedLinkUrl}
+              onChange={(event) => setEditedLinkUrl(event.target.value)}
+              onKeyDown={monitorInputInteraction}
+              className="flex-grow"
+            />
             <Button
               size="icon"
               variant="ghost"
               onClick={() => {
-                setEditedLinkUrl(linkUrl)
-                setIsLinkEditMode(true)
+                setIsLinkEditMode(false)
+                setIsLink(false)
               }}
+              className="shrink-0"
             >
-              <Pencil className="h-4 w-4" />
+              <X className="h-4 w-4" />
             </Button>
             <Button
               size="icon"
-              variant="destructive"
-              onClick={() => {
-                editor.update(() => {
-                  const selection = $getSelection()
-                  // Handle node selection (e.g., image nodes)
+              onClick={handleLinkSubmission}
+              className="shrink-0"
+            >
+              <Check className="h-4 w-4" />
+            </Button>
+          </Flex>
+        ) : (
+          <Flex align="center" justify="between" className="rounded-md border bg-background/95 backdrop-blur-sm p-1 pl-2 shadow-lg">
+            <a
+              href={sanitizeUrl(linkUrl)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="overflow-hidden text-ellipsis whitespace-nowrap"
+            >
+              <TypographyPSmall className="truncate">{linkUrl}</TypographyPSmall>
+            </a>
+            <Flex gap={0}>
+              <Button
+                size="icon"
+                variant="ghost"
+                onClick={() => {
+                  setEditedLinkUrl(linkUrl)
+                  setIsLinkEditMode(true)
+                }}
+              >
+                <Pencil className="h-4 w-4" />
+              </Button>
+              <Button
+                size="icon"
+                variant="destructive"
+                onClick={() => {
+                  editor.update(() => {
+                    const selection = $getSelection()
+                    // Handle node selection (e.g., image nodes)
                   if ($isNodeSelection(selection)) {
                     const nodes = selection.getNodes()
                     if (nodes.length > 0) {
@@ -475,8 +477,8 @@ function FloatingLinkEditor({
             >
               <Trash className="h-4 w-4" />
             </Button>
-          </div>
-        </div>
+            </Flex>
+          </Flex>
         )
       ) : null}
     </div>

@@ -1,7 +1,8 @@
 "use client";
 
 import { AlertTriangle, RefreshCw, Home } from "lucide-react";
-import { TypographyH1, TypographyDescriptionLarge, TypographyPSmallMuted, TypographyPMuted } from "@/components/ui/typography";
+import { TypographyH1, TypographyDescriptionLarge, TypographyPSmallMuted, TypographyPMuted, TypographySpanSmall, IconSize } from "@/components/ui/typography";
+import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { motion } from "framer-motion";
 
@@ -70,7 +71,9 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
                 className="flex justify-center mb-6"
               >
                 <div className="rounded-full bg-destructive/10 p-4">
-                  <AlertTriangle className="h-10 w-10 text-destructive" />
+                  <IconSize size="3xl" className="text-destructive">
+                    <AlertTriangle />
+                  </IconSize>
                 </div>
               </motion.div>
 
@@ -94,7 +97,7 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
                   className="rounded-lg bg-muted p-4 border mb-6"
                 >
                   <TypographyPSmallMuted className="font-mono text-center">
-                    <span className="font-semibold">Error ID:</span>{" "}
+                    <TypographySpanSmall>Error ID:</TypographySpanSmall>{" "}
                     {error.digest}
                   </TypographyPSmallMuted>
                 </motion.div>
@@ -117,20 +120,30 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
                 variants={itemVariants}
                 className="flex flex-col sm:flex-row gap-3 justify-center"
               >
-                <button
+                <Button
                   onClick={reset}
-                  className="inline-flex items-center justify-center whitespace-nowrap rounded-lg font-medium transition-colors outline-offset-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring/70 disabled:pointer-events-none disabled:opacity-50 h-10 px-6 bg-primary text-primary-foreground shadow-sm shadow-black/5 hover:bg-primary/90 cursor-pointer"
+                  size="lg"
+                  className="w-full sm:w-auto"
+                  variant="default"
                 >
-                  <RefreshCw className="mr-2 h-4 w-4" />
+                  <IconSize size="sm" className="mr-2">
+                    <RefreshCw />
+                  </IconSize>
                   Thử lại
-                </button>
-                <Link
-                  href="/"
-                  className="inline-flex items-center justify-center whitespace-nowrap rounded-lg font-medium transition-colors outline-offset-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring/70 disabled:pointer-events-none disabled:opacity-50 h-10 px-6 border border-input bg-background shadow-sm shadow-black/5 hover:bg-accent hover:text-accent-foreground"
+                </Button>
+                <Button
+                  asChild
+                  size="lg"
+                  variant="outline"
+                  className="w-full sm:w-auto"
                 >
-                  <Home className="mr-2 h-4 w-4" />
-                  Về trang chủ
-                </Link>
+                  <Link href="/">
+                    <IconSize size="sm" className="mr-2">
+                      <Home />
+                    </IconSize>
+                    Về trang chủ
+                  </Link>
+                </Button>
               </motion.div>
             </div>
           </motion.div>

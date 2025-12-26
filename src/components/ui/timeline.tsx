@@ -5,7 +5,15 @@ import {
   motion,
 } from "framer-motion";
 import React, { useEffect, useRef, useState } from "react";
-import { typography } from "@/lib/typography";
+import { headingSizes, fontWeights, responsiveTextSizes, lineHeights } from "@/lib/typography";
+
+const { semibold } = fontWeights
+
+const timelineHeadingH2 = `${headingSizes.h2} ${fontWeights.bold}`
+const timelineHeadingH3 = `${headingSizes.h3} ${semibold}`
+const timelineHeadingH4 = `${headingSizes.h4} ${semibold}`
+const timelineBodySmall = `${responsiveTextSizes.small} ${fontWeights.normal} ${lineHeights.relaxed}`
+const timelineBodyMedium = `${responsiveTextSizes.medium} ${fontWeights.normal} ${lineHeights.relaxed}`
 
 interface TimelineEntry {
   title: string;
@@ -38,10 +46,10 @@ export const Timeline = ({ data }: { data: TimelineEntry[] }) => {
       ref={containerRef}
     >
       <div className="container mx-auto py-20">
-        <h2 className={`${typography.heading.h2} mb-4 text-black dark:text-white max-w-4xl`}>
+        <h2 className={`${timelineHeadingH2} mb-4 text-black dark:text-white max-w-4xl`}>
           Changelog from my journey
         </h2>
-        <p className={`text-neutral-700 dark:text-neutral-300 max-w-sm ${typography.body.small} md:${typography.body.medium}`}>
+        <p className={`text-neutral-700 dark:text-neutral-300 max-w-sm ${timelineBodySmall} md:${timelineBodyMedium}`}>
           I&apos;ve been working on Aceternity for the past 2 years. Here&apos;s
           a timeline of my journey.
         </p>
@@ -54,13 +62,13 @@ export const Timeline = ({ data }: { data: TimelineEntry[] }) => {
             className="flex justify-start pt-10"
           >
             <div className="sticky flex flex-col md:flex-row z-10 items-center top-40 self-start max-w-[200px] md:w-full">
-              <h3 className={`hidden md:block ${typography.heading.h4} font-bold text-neutral-500 dark:text-neutral-500`}>
+              <h3 className={`hidden md:block ${timelineHeadingH4} font-bold text-neutral-500 dark:text-neutral-500`}>
                 {item.title}
               </h3>
             </div>
 
             <div className="relative pl-20 pr-4 md:pl-4 w-full z-10">
-              <h3 className={`md:hidden block ${typography.heading.h3} mb-4 text-left font-bold text-neutral-500 dark:text-neutral-500`}>
+              <h3 className={`md:hidden block ${timelineHeadingH3} mb-4 text-left font-bold text-neutral-500 dark:text-neutral-500`}>
                 {item.title}
               </h3>
               {item.content}{" "}

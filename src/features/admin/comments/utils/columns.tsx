@@ -2,6 +2,7 @@ import { useMemo } from "react"
 import { TypographySpanSmall, TypographySpanSmallMuted } from "@/components/ui/typography"
 import { Switch } from "@/components/ui/switch"
 import type { DataTableColumn } from "@/components/tables"
+import { Flex } from "@/components/ui/flex"
 import { useDynamicFilterOptions } from "@/features/admin/resources/hooks/use-dynamic-filter-options"
 import { apiRoutes } from "@/lib/api/routes"
 import type { CommentRow } from "../types"
@@ -55,9 +56,9 @@ export const useCommentColumns = ({ togglingComments, canApprove, onToggleApprov
         className: "min-w-[200px] max-w-[400px]",
         headerClassName: "min-w-[200px] max-w-[400px]",
         cell: (row) => (
-          <div className="max-w-[400px] truncate" title={row.content}>
+          <Flex truncate className="max-w-[400px]" title={row.content}>
             {row.content}
-          </div>
+          </Flex>
         ),
       },
       {
@@ -77,11 +78,11 @@ export const useCommentColumns = ({ togglingComments, canApprove, onToggleApprov
         headerClassName: "min-w-[140px] max-w-[180px]",
         cell: (row) =>
           row.deletedAt ? (
-            <TypographySpanSmall className="inline-flex min-w-[88px] items-center justify-center rounded-full bg-rose-100 px-2 py-1 font-medium text-rose-700">
-              Đã xóa
-            </TypographySpanSmall>
+            <Flex align="center" justify="center" rounded="full" paddingX={2} paddingY={1} className="inline-flex min-w-[88px] bg-rose-100 text-rose-700">
+              <TypographySpanSmall>Đã xóa</TypographySpanSmall>
+            </Flex>
           ) : (
-            <div className="flex items-center gap-2">
+            <Flex align="center" gap={2}>
               <Switch
                 checked={row.approved}
                 disabled={togglingComments.has(row.id) || !canApprove}
@@ -91,7 +92,7 @@ export const useCommentColumns = ({ togglingComments, canApprove, onToggleApprov
               <TypographySpanSmallMuted>
                 {row.approved ? "Đã duyệt" : "Chờ duyệt"}
               </TypographySpanSmallMuted>
-            </div>
+            </Flex>
           ),
       },
       {
@@ -140,9 +141,9 @@ export const useCommentColumns = ({ togglingComments, canApprove, onToggleApprov
         className: "min-w-[150px] max-w-[250px]",
         headerClassName: "min-w-[150px] max-w-[250px]",
         cell: (row) => (
-          <div className="max-w-[250px] truncate" title={row.postTitle}>
+          <Flex truncate className="max-w-[250px]" title={row.postTitle || undefined}>
             {row.postTitle}
-          </div>
+          </Flex>
         ),
       },
       {

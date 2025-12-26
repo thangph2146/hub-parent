@@ -5,8 +5,8 @@ import { signIn } from "next-auth/react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Eye, EyeOff } from "lucide-react"
 import { IconBrandGoogleFilled } from "@tabler/icons-react"
-import { cn } from "@/lib/utils"
 import { TypographyH2, TypographyP, IconSize } from "@/components/ui/typography"
+import { Flex } from "@/components/ui/flex"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import {
@@ -161,18 +161,20 @@ export function SignInForm({
   }
 
   return (
-    <div className={cn("flex flex-col gap-6", className)} {...props}>
-      <Card className="overflow-hidden p-0">
-        <CardContent className="grid p-0 md:grid-cols-2">
+    <Flex direction="col" gap={6} className={className} {...props}>
+      <Card overflow="hidden" padding="0">
+        <CardContent grid="2" padding="none">
           <form onSubmit={handleSubmit} className="p-6 md:p-8">
             <FieldGroup>
-              <div className="flex flex-col items-center gap-2 text-center">
+              <Flex direction="col" align="center" gap={2} textAlign="center">
                 <TypographyH2>Đăng nhập vào hệ thống</TypographyH2>
-              </div>
+              </Flex>
               {error && (
-                <TypographyP className="rounded-lg bg-destructive/10 p-3 text-destructive">
-                  {error}
-                </TypographyP>
+                <Flex rounded="lg" bg="destructive-text" padding="md">
+                  <TypographyP>
+                    {error}
+                  </TypographyP>
+                </Flex>
               )}
               <Field>
                 <FieldLabel htmlFor="email">Email</FieldLabel>
@@ -187,16 +189,15 @@ export function SignInForm({
                 />
               </Field>
               <Field>
-                <div className="flex items-center">
+                <Flex align="center" justify="between" fullWidth>
                   <FieldLabel htmlFor="password">Mật khẩu</FieldLabel>
                   <Link
                     href="/auth/forgot-password"
-                    className="ml-auto underline-offset-2 hover:underline"
                   >
                     Quên mật khẩu?
                   </Link>
-                </div>
-                <div className="relative">
+                </Flex>
+                <Flex position="relative">
                   <Input
                     id="password"
                     name="password"
@@ -205,13 +206,12 @@ export function SignInForm({
                     placeholder="Nhập mật khẩu của bạn"
                     required
                     disabled={isLoading}
-                    className="pr-10"
+                    paddingRight="10"
                   />
                   <Button
                     type="button"
                     variant="ghost"
-                    size="sm"
-                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                    size="icon-absolute"
                     onClick={() => setShowPassword(!showPassword)}
                     disabled={isLoading}
                   >
@@ -225,7 +225,7 @@ export function SignInForm({
                       </IconSize>
                     )}
                   </Button>
-                </div>
+                </Flex>
               </Field>
               <Field>
                 <Button type="submit" disabled={isLoading}>
@@ -235,24 +235,26 @@ export function SignInForm({
               <FieldSeparator className="*:data-[slot=field-separator-content]:bg-card">
                 Hoặc tiếp tục với
               </FieldSeparator>
-              <Field className="flex justify-center">
-                <Button
-                  variant="outline"
-                  type="button"
-                  onClick={handleGoogleSignIn}
-                  disabled={isLoading}
-                  className="w-full"
-                >
+              <Field>
+                <Flex justify="center" fullWidth>
+                  <Button
+                    variant="outline"
+                    type="button"
+                    onClick={handleGoogleSignIn}
+                    disabled={isLoading}
+                    fullWidth
+                  >
                   <IconBrandGoogleFilled />
                   Đăng nhập bằng Google
-                </Button>
+                  </Button>
+                </Flex>
               </Field>
-              <FieldDescription className="text-center">
-                Chưa có tài khoản? <Link href="/auth/sign-up" className="underline-offset-2 hover:underline">Đăng ký</Link>
+              <FieldDescription textAlign="center">
+                Chưa có tài khoản? <Link href="/auth/sign-up">Đăng ký</Link>
               </FieldDescription>
             </FieldGroup>
           </form>
-          <div className="bg-muted relative hidden md:block">
+          <Flex bg="muted" position="relative" display="hidden-md-flex">
             <Image
               src="https://hub.edu.vn/DATA/IMAGES/2024/12/31/20241231235033-1vehub.jpg"
               alt="Hình ảnh"
@@ -261,9 +263,9 @@ export function SignInForm({
               loading="eager"
               className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
             />    
-          </div>
+          </Flex>
         </CardContent>
       </Card>
-    </div>
+    </Flex>
   )
 }

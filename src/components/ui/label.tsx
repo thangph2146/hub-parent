@@ -4,7 +4,9 @@ import * as React from "react"
 import * as LabelPrimitive from "@radix-ui/react-label"
 
 import { cn } from "@/lib/utils/index"
-import { typography } from "@/lib/typography"
+import { responsiveTextSizes, fontWeights, lineHeights } from "@/lib/typography"
+
+const labelBodySmall = `${responsiveTextSizes.small} ${fontWeights.normal} ${lineHeights.relaxed}`
 
 function Label({
   className,
@@ -14,7 +16,7 @@ function Label({
     <LabelPrimitive.Root
       data-slot="label"
       className={cn(
-        `flex items-center gap-2 ${typography.body.small} leading-none font-medium select-none group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-50`,
+        `flex items-center gap-2 ${labelBodySmall} leading-none font-medium select-none group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-50`,
         className
       )}
       {...props}

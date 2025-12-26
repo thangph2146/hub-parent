@@ -4,7 +4,12 @@ import { Slot } from "@radix-ui/react-slot"
 import { ChevronRight, MoreHorizontal } from "lucide-react"
 
 import { cn } from "@/lib/utils"
-import { typography, iconSizes, responsiveIconSizes } from "@/lib/typography"
+import { responsiveTextSizes, fontWeights, lineHeights, iconSizes, responsiveIconSizes } from "@/lib/typography"
+
+const breadcrumbBodySmall = `${responsiveTextSizes.small} ${fontWeights.normal} ${lineHeights.relaxed}`
+const breadcrumbIconSizeXs = iconSizes.xs
+const breadcrumbIconSizeSm = iconSizes.sm
+const breadcrumbResponsiveIconSizeLarge = responsiveIconSizes.large
 
 function Breadcrumb({ ...props }: React.ComponentProps<"nav">) {
   return <nav aria-label="breadcrumb" data-slot="breadcrumb" {...props} />
@@ -16,7 +21,7 @@ function BreadcrumbList({ className, ...props }: React.ComponentProps<"ol">) {
       data-slot="breadcrumb-list"
       className={cn(
         "text-muted-foreground flex flex-wrap items-center gap-1.5 break-words sm:gap-2.5",
-        typography.body.small,
+        breadcrumbBodySmall,
         className
       )}
       {...props}
@@ -85,7 +90,7 @@ function BreadcrumbSeparator({
       data-slot="breadcrumb-separator"
       role="presentation"
       aria-hidden="true"
-      className={cn(`[&>svg]:${iconSizes.xs}`, className)}
+      className={cn(`[&>svg]:${breadcrumbIconSizeXs}`, className)}
       {...props}
     >
       {children ?? <ChevronRight />}
@@ -102,10 +107,10 @@ function BreadcrumbEllipsis({
       data-slot="breadcrumb-ellipsis"
       role="presentation"
       aria-hidden="true"
-      className={cn(`flex ${responsiveIconSizes.large} items-center justify-center`, className)}
+      className={cn(`flex ${breadcrumbResponsiveIconSizeLarge} items-center justify-center`, className)}
       {...props}
     >
-      <MoreHorizontal className={iconSizes.sm} />
+      <MoreHorizontal className={breadcrumbIconSizeSm} />
       <span className="sr-only">More</span>
     </span>
   )

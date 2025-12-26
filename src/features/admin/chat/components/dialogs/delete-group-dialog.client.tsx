@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dialog"
 import { Loader2, AlertTriangle, Trash } from "lucide-react"
 import { IconSize } from "@/components/ui/typography"
+import { Flex } from "@/components/ui/flex"
 import type { Contact, Group } from "@/components/chat/types"
 import { HardDeleteGroupDialog } from "./hard-delete-group-dialog.client"
 import { useGroupDeleteConfirm } from "../../hooks/use-group-delete-confirm"
@@ -94,17 +95,19 @@ export const DeleteGroupDialog = ({
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
+            <DialogTitle asChild>
+              <Flex align="center" gap={2}>
               <IconSize size="md" className="text-destructive">
                 <AlertTriangle />
               </IconSize>
               {GROUP_CONFIRM_MESSAGES.DELETE_TITLE(group?.name)}
+              </Flex>
             </DialogTitle>
             <DialogDescription>
               {GROUP_CONFIRM_MESSAGES.DELETE_DESCRIPTION(group?.name)}
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-3 py-2">
+          <Flex direction="col" gap={3} paddingY={2}>
             <Button 
               variant="secondary" 
               onClick={handleSoftDelete} 
@@ -139,7 +142,7 @@ export const DeleteGroupDialog = ({
               )}
               {GROUP_LABELS.HARD_DELETE}
             </Button>
-          </div>
+          </Flex>
           <DialogFooter>
             <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isProcessing}>
               {GROUP_CONFIRM_MESSAGES.CANCEL_LABEL}
@@ -155,15 +158,17 @@ export const DeleteGroupDialog = ({
         }}>
           <DialogContent className="sm:max-w-[460px]">
             <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                <IconSize size="md" className="text-destructive">
-                <AlertTriangle />
-              </IconSize>
-                {deleteConfirm.type === "hard"
+              <DialogTitle asChild>
+                <Flex align="center" gap={2}>
+                  <IconSize size="md" className="text-destructive">
+                    <AlertTriangle />
+                  </IconSize>
+                  {deleteConfirm.type === "hard"
                   ? GROUP_CONFIRM_MESSAGES.HARD_DELETE_TITLE(deleteConfirm.row?.name)
                   : deleteConfirm.type === "restore"
                     ? GROUP_CONFIRM_MESSAGES.RESTORE_TITLE(deleteConfirm.row?.name)
                     : GROUP_CONFIRM_MESSAGES.DELETE_TITLE(deleteConfirm.row?.name)}
+                </Flex>
               </DialogTitle>
               <DialogDescription>
                 {deleteConfirm.type === "hard"

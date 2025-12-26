@@ -10,6 +10,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet"
+import { Flex } from "@/components/ui/flex"
 import { ArrowLeft, Search } from "lucide-react"
 import { TypographyPSmall, TypographyP, IconSize } from "@/components/ui/typography"
 import type { Contact, Message } from "../types"
@@ -71,42 +72,52 @@ function ChatHeader(
 
   return (
     <>
-      <div ref={ref} className="flex items-center gap-3 h-16 px-4 border-b shrink-0">
+      <Flex 
+        ref={ref} 
+        align="center" 
+        gap={3} 
+        padding="md"
+        fullWidth
+        height="16"
+        border="bottom"
+        shrink
+      >
         {showBackButton && onBack && (
-          <Button variant="ghost" size="icon" className="h-10 w-10" onClick={onBack}>
+          <Button variant="ghost" size="icon" onClick={onBack}>
             <IconSize size="sm"><ArrowLeft /></IconSize>
           </Button>
         )}
-        <Avatar className="h-10 w-10 shrink-0">
-          <AvatarImage src={contact.image || undefined} alt={contact.name} />
-          <AvatarFallback asChild>
-            <TypographyPSmall>{contact.name[0]}</TypographyPSmall>
-          </AvatarFallback>
-        </Avatar>
-        <div className="flex-1 min-w-0">
+        <Flex shrink>
+          <Avatar size="xl">
+            <AvatarImage src={contact.image || undefined} alt={contact.name} />
+            <AvatarFallback asChild>
+              <TypographyPSmall>{contact.name[0]}</TypographyPSmall>
+            </AvatarFallback>
+          </Avatar>
+        </Flex>
+        <Flex direction="col" fullWidth minWidth="0" gap={0.5}>
           <CardTitle>
-            <TypographyP className="font-semibold truncate">{contact.name}</TypographyP>
+            <TypographyP>{contact.name}</TypographyP>
           </CardTitle>
           <CardDescription>
-            <TypographyPSmall className="truncate">
+            <TypographyPSmall>
               {contact.type === "GROUP" ? `${contact.group?.memberCount || 0} thành viên` : "Contact Info"}
             </TypographyPSmall>
           </CardDescription>
-        </div>
-        <div className="flex items-center gap-1 shrink-0">
+        </Flex>
+        <Flex align="center" gap={1} shrink>
           {contact.type === "GROUP" && groupManagementMenu}
           <Button 
             variant="ghost" 
-            size="icon" 
-            className="h-10 w-10"
+            size="icon"
             onClick={() => setIsSearchOpen(true)}
           >
             <IconSize size="sm"><Search /></IconSize>
           </Button>
-        </div>
-      </div>
+        </Flex>
+      </Flex>
       <Sheet open={isSearchOpen} onOpenChange={setIsSearchOpen}>
-        <SheetContent side="right" className="w-full sm:max-w-md">
+        <SheetContent side="right">
           <SheetHeader>
             <SheetTitle>Tìm kiếm tin nhắn</SheetTitle>
           </SheetHeader>

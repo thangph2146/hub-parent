@@ -36,6 +36,7 @@ export const useSessionActions = ({
     resourceName: "sessions",
     queryKeys: {
       all: () => queryKeys.adminSessions.all(),
+      detail: (id) => queryKeys.adminSessions.detail(id),
     },
     apiRoutes: {
       delete: (id) => apiRoutes.sessions.delete(id),
@@ -73,8 +74,16 @@ export const useSessionActions = ({
           `Đã ${newStatus ? "kích hoạt" : "vô hiệu hóa"} session của ${row.userName || row.userEmail || "người dùng"}`
         )
         
-        await queryClient.invalidateQueries({ queryKey: queryKeys.adminSessions.all(), refetchType: "active" })
-        await queryClient.refetchQueries({ queryKey: queryKeys.adminSessions.all(), type: "active" })
+        // Invalidate và refetch list queries - sử dụng "all" để đảm bảo refetch tất cả queries
+        await queryClient.invalidateQueries({ queryKey: queryKeys.adminSessions.all(), refetchType: "all" })
+        await queryClient.refetchQueries({ queryKey: queryKeys.adminSessions.all(), type: "all" })
+        
+        // Invalidate và refetch detail query
+        await queryClient.invalidateQueries({ queryKey: queryKeys.adminSessions.detail(row.id), refetchType: "all" })
+        await queryClient.refetchQueries({ queryKey: queryKeys.adminSessions.detail(row.id), type: "all" })
+        
+        // Gọi refresh callback để cập nhật UI ngay lập tức
+        await _refresh()
       } catch (error: unknown) {
         const errorMessage = error instanceof Error ? error.message : SESSION_MESSAGES.UNKNOWN_ERROR
         showFeedback(

@@ -2,7 +2,7 @@ import type { ResourceFormField, ResourceFormSection } from "@/features/admin/re
 import { validateEmail, validateName, validatePassword } from "./utils"
 import type { Role } from "./utils"
 import React from "react"
-import { Mail, User, Shield, AlignLeft, Phone, MapPin, ToggleLeft, Lock } from "lucide-react"
+import { Mail, User, Shield, AlignLeft, Phone, MapPin, ToggleLeft, Lock, Building2, Navigation } from "lucide-react"
 import { IconSize } from "@/components/ui/typography"
 
 // Helper function to create icon with IconSize wrapper
@@ -17,6 +17,12 @@ export interface UserFormData {
   bio?: string | null
   phone?: string | null
   address?: string | null
+  // Structured address fields (for form input)
+  addressStreet?: string | null
+  addressWard?: string | null
+  addressDistrict?: string | null
+  addressCity?: string | null
+  addressPostalCode?: string | null
   password?: string
   [key: string]: unknown
 }
@@ -36,6 +42,11 @@ export const getUserFormSections = (): ResourceFormSection[] => [
     id: "additional",
     title: "Thông tin bổ sung",
     description: "Các thông tin bổ sung về người dùng",
+  },
+  {
+    id: "address",
+    title: "Địa chỉ",
+    description: "Thông tin địa chỉ chi tiết",
   },
   {
     id: "access",
@@ -82,12 +93,44 @@ export const getBaseUserFields = (roles: Role[], roleDefaultValue = ""): Resourc
       section: "additional",
     },
     {
-      name: "address",
-      label: "Địa chỉ",
-      type: "textarea",
-      placeholder: "Nhập địa chỉ",
+      name: "addressStreet",
+      label: "Số nhà, Đường",
+      type: "text",
+      placeholder: "Ví dụ: 125 Đường Đỗ Uyên",
       icon: createIcon(MapPin),
-      section: "additional",
+      section: "address",
+    },
+    {
+      name: "addressWard",
+      label: "Phường/Xã",
+      type: "text",
+      placeholder: "Ví dụ: Phường 2",
+      icon: createIcon(Building2),
+      section: "address",
+    },
+    {
+      name: "addressDistrict",
+      label: "Quận/Huyện",
+      type: "text",
+      placeholder: "Ví dụ: Quận Hoàn Kiếm",
+      icon: createIcon(Navigation),
+      section: "address",
+    },
+    {
+      name: "addressCity",
+      label: "Thành phố/Tỉnh",
+      type: "text",
+      placeholder: "Ví dụ: Hà Nội",
+      icon: createIcon(MapPin),
+      section: "address",
+    },
+    {
+      name: "addressPostalCode",
+      label: "Mã bưu điện",
+      type: "text",
+      placeholder: "Ví dụ: 71593 (tùy chọn)",
+      icon: createIcon(MapPin),
+      section: "address",
     },
     {
       name: "roleIds",

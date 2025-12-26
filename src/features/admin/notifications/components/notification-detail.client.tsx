@@ -1,6 +1,8 @@
 "use client";
 
 import { TypographyP, TypographyPSmallMuted, TypographyPMuted, IconSize } from "@/components/ui/typography";
+import { Flex } from "@/components/ui/flex";
+import { Grid } from "@/components/ui/grid";
 
 import {
   Bell,
@@ -178,47 +180,47 @@ export const NotificationDetailClient = ({
         };
 
         return (
-          <div className="space-y-6">
+          <Flex direction="col" gap={6}>
             {/* Kind & Title */}
-            <div className="grid gap-6 grid-cols-1 sm:grid-cols-2">
+            <Grid cols={2} gap={6}>
               <FieldItem icon={Bell} label="Loại thông báo">
-                <Badge variant={kindConfigData.variant} className="text-xs">
+                <Badge variant={kindConfigData.variant} className="w-fit">
                   {kindConfigData.label}
                 </Badge>
               </FieldItem>
 
               <FieldItem icon={FileText} label="Tiêu đề">
-                <TypographyP className="font-medium">
+                <TypographyP>
                   {notificationData.title || "—"}
                 </TypographyP>
               </FieldItem>
-            </div>
+            </Grid>
 
             {/* Description */}
             {notificationData.description && (
-              <Card className="border border-border/50 bg-card p-5">
-                <div className="flex items-start gap-3">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted">
-                    <IconSize size="sm" className="text-muted-foreground">
+              <Card className="border border-border/50" padding="lg">
+                <Flex align="start" gap={3} fullWidth>
+                  <Flex align="center" justify="center" shrink className="h-9 w-9" rounded="lg" bg="muted">
+                    <IconSize size="sm">
                       <FileText />
                     </IconSize>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <TypographyP className="font-medium mb-2">
+                  </Flex>
+                  <Flex direction="col" gap={2} flex="1" minWidth="0" fullWidth>
+                    <TypographyP>
                       Mô tả
                     </TypographyP>
                     <TypographyP className="whitespace-pre-wrap break-words">
                       {notificationData.description || "—"}
                     </TypographyP>
-                  </div>
-                </div>
+                  </Flex>
+                </Flex>
               </Card>
             )}
 
             {/* User */}
             <FieldItem icon={User} label="Người dùng">
-              <div className="space-y-0.5">
-                <TypographyP className="font-medium">
+              <Flex direction="col" gap={0.5}>
+                <TypographyP>
                   {notificationData.user?.email || "—"}
                 </TypographyP>
                 {notificationData.user?.name && (
@@ -226,9 +228,9 @@ export const NotificationDetailClient = ({
                     {notificationData.user.name}
                   </TypographyPSmallMuted>
                 )}
-              </div>
+              </Flex>
             </FieldItem>
-          </div>
+          </Flex> 
         );
       },
     },
@@ -241,9 +243,9 @@ export const NotificationDetailClient = ({
         const isNotificationOwner = session?.user?.id === notificationData.userId;
 
         return (
-          <div className="space-y-6">
+          <Flex direction="col" gap={6}>
             {/* Read Status & Read Date - 2 columns on sm+ */}
-            <div className="grid gap-6 grid-cols-1 sm:grid-cols-2">
+            <Grid cols={2} gap={6}>
               {/* Read Status */}
               <FieldItem
                 icon={notificationData.isRead ? CheckCircle : XCircleIcon}
@@ -254,7 +256,7 @@ export const NotificationDetailClient = ({
                     : "bg-amber-500/10 hover:bg-amber-500/20"
                 }
               >
-                <div className="flex items-center gap-3">
+                <Flex align="center" gap={3}>
                   <Switch
                     checked={notificationData.isRead}
                     disabled={isToggling || !isNotificationOwner}
@@ -266,24 +268,25 @@ export const NotificationDetailClient = ({
                     }
                   />
                   
-                </div>
+                </Flex>
                 {!isNotificationOwner && (
-                  <TypographyPSmallMuted className="mt-1.5">
-                    Chỉ có thể thay đổi trạng thái thông báo của chính mình
-                  </TypographyPSmallMuted>
+                  <Flex className="mt-1.5">
+                    <TypographyPSmallMuted>
+                      Chỉ có thể thay đổi trạng thái thông báo của chính mình
+                    </TypographyPSmallMuted>
+                  </Flex>
                 )}
               </FieldItem>
 
               {/* Read Date */}
               {notificationData.readAt && (
                 <FieldItem icon={Clock} label="Ngày đọc">
-                  <div className="flex items-center gap-2">
+                  <Flex align="center" gap={2}>
                     <IconSize size="xs" className="text-muted-foreground shrink-0">
                       <Clock />
                     </IconSize>
                     <time
                       dateTime={notificationData.readAt}
-                      className="font-medium"
                       title={new Date(notificationData.readAt).toLocaleString(
                         "vi-VN",
                         {
@@ -292,13 +295,15 @@ export const NotificationDetailClient = ({
                         }
                       )}
                     >
-                      {formatDateVi(notificationData.readAt)}
+                      <TypographyPSmallMuted>
+                        {formatDateVi(notificationData.readAt)}
+                      </TypographyPSmallMuted>
                     </time>
-                  </div>
+                  </Flex>
                 </FieldItem>
               )}
-            </div>
-          </div>
+            </Grid>
+          </Flex>
         );
       },
     },
@@ -315,14 +320,9 @@ export const NotificationDetailClient = ({
         const fieldCount = (hasActionUrl ? 1 : 0) + 1 + (hasExpiresAt ? 1 : 0); // actionUrl + createdAt + expiresAt
 
         return (
-          <div className="space-y-6">
+          <Flex direction="col" gap={6}>
             {/* Action URL & Timestamps - Grid layout */}
-            <div
-              className={cn(
-                "grid gap-6",
-                fieldCount === 1 ? "grid-cols-1" : "grid-cols-1 sm:grid-cols-2"
-              )}
-            >
+            <Grid cols={fieldCount === 1 ? 1 : "2-lg"} gap={6} fullWidth>
               {/* Action URL */}
               {notificationData.actionUrl && (
                 <FieldItem icon={ExternalLink} label="URL hành động">
@@ -330,12 +330,12 @@ export const NotificationDetailClient = ({
                     href={notificationData.actionUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="group inline-flex items-center gap-2 font-medium text-primary hover:text-primary/80 hover:underline transition-colors w-full min-w-0"
+                    className="group inline-flex items-center gap-2 text-primary hover:text-primary/80 hover:underline transition-colors w-full min-w-0"
                     title={notificationData.actionUrl}
                   >
-                    <span className="truncate flex-1 min-w-0">
+                    <TypographyP className="truncate flex-1 min-w-0">
                       {notificationData.actionUrl}
-                    </span>
+                    </TypographyP>
                   </a>
                 </FieldItem>
               )}
@@ -343,13 +343,12 @@ export const NotificationDetailClient = ({
               {/* Created At */}
               <FieldItem icon={Calendar} label="Ngày tạo">
                 {notificationData.createdAt ? (
-                  <div className="flex items-center gap-2">
+                  <Flex align="center" gap={2}>
                     <IconSize size="xs" className="text-muted-foreground shrink-0">
                       <Calendar />
                     </IconSize>
                     <time
                       dateTime={notificationData.createdAt}
-                      className="font-medium"
                       title={new Date(
                         notificationData.createdAt
                       ).toLocaleString("vi-VN", {
@@ -357,9 +356,11 @@ export const NotificationDetailClient = ({
                         timeStyle: "long",
                       })}
                     >
-                      {formatDateVi(notificationData.createdAt)}
+                      <TypographyPSmallMuted>
+                        {formatDateVi(notificationData.createdAt)}
+                      </TypographyPSmallMuted>
                     </time>
-                  </div>
+                  </Flex>
                 ) : (
                   <TypographyPMuted>—</TypographyPMuted>
                 )}
@@ -380,8 +381,8 @@ export const NotificationDetailClient = ({
                       : "bg-muted"
                   }
                 >
-                  <div className="space-y-1.5">
-                    <div className="flex items-center gap-2">
+                  <Flex direction="col" gap={2}>
+                    <Flex align="center" gap={2}>
                       <IconSize size="xs" className="text-muted-foreground shrink-0">
                         <Calendar />
                       </IconSize>
@@ -402,20 +403,22 @@ export const NotificationDetailClient = ({
                       >
                         {formatDateVi(notificationData.expiresAt)}
                       </time>
-                    </div>
+                    </Flex>
                     {new Date(notificationData.expiresAt) < new Date() && (
-                      <Badge variant="destructive" className="text-xs w-fit">
-                        <IconSize size="xs" className="mr-1">
-                          <AlertCircle />
-                        </IconSize>
-                        Đã hết hạn
+                      <Badge variant="destructive" className="w-fit">
+                        <Flex align="center" gap={1}>
+                          <IconSize size="xs">
+                            <AlertCircle />
+                          </IconSize>
+                          <span>Đã hết hạn</span>
+                        </Flex>
                       </Badge>
                     )}
-                  </div>
+                  </Flex>
                 </FieldItem>
               )}
-            </div>
-          </div>
+            </Grid>
+          </Flex>
         );
       },
     },

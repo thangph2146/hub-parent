@@ -10,6 +10,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import { IconSize } from "@/components/ui/typography"
 
 export function EditModeTogglePlugin() {
   const [editor] = useLexicalComposerContext()
@@ -30,9 +31,13 @@ export function EditModeTogglePlugin() {
           className="p-2"
         >
           {isEditable ? (
-            <LockIcon className="size-4" />
+            <IconSize size="sm">
+              <LockIcon />
+            </IconSize>
           ) : (
-            <UnlockIcon className="size-4" />
+            <IconSize size="sm">
+              <UnlockIcon />
+            </IconSize>
           )}
         </Button>
       </TooltipTrigger>

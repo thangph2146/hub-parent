@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react"
 import { Editor } from "@/components/editor/editor-x/editor"
 import { FieldContent } from "@/components/ui/field"
 import { TypographyP } from "@/components/ui/typography"
+import { Flex } from "@/components/ui/flex"
 import type { SerializedEditorState } from "lexical"
 
 export interface EditorFieldProps {
@@ -104,17 +105,17 @@ export const EditorField = ({
   }
 
   return (
-    <FieldContent className="w-full">
-      <div className={className || "w-full max-w-none"}>
+    <FieldContent>
+      <Flex direction="col" gap={2} fullWidth maxWidth={className ? undefined : "none"} className={className}>
         <Editor
           editorSerializedState={editorState || undefined}
           onSerializedChange={handleChange}
           readOnly={readOnly || disabled}
         />
         {error && (
-          <TypographyP className="text-destructive mt-2">{error}</TypographyP>
+          <TypographyP className="text-destructive">{error}</TypographyP>
         )}
-      </div>
+      </Flex>
     </FieldContent>
   )
 }

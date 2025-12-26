@@ -1,9 +1,12 @@
 import { useCallback, useState } from "react"
 import { useSession } from "next-auth/react"
+import { useQueryClient } from "@tanstack/react-query"
 import { apiClient } from "@/lib/api/axios"
 import { apiRoutes } from "@/lib/api/routes"
+import { queryKeys } from "@/lib/query-keys"
 import { useDeleteNotification } from "@/hooks/use-notifications"
 import { useResourceBulkProcessing } from "@/features/admin/resources/hooks"
+import { invalidateAndRefreshResource } from "@/features/admin/resources/utils"
 import type { FeedbackVariant } from "@/components/dialogs"
 import type { NotificationRow } from "../types"
 import { NOTIFICATION_MESSAGES } from "../constants"
@@ -22,14 +25,14 @@ const getErrorMessage = (error: unknown, defaultMessage: string): string => {
 
 interface UseNotificationActionsOptions {
   showFeedback: (variant: FeedbackVariant, title: string, description?: string, details?: string) => void
-  triggerTableRefresh: () => void
+  // triggerTableRefresh đã được loại bỏ vì registry đã trigger refresh tự động
 }
 
 export const useNotificationActions = ({
   showFeedback,
-  triggerTableRefresh,
 }: UseNotificationActionsOptions) => {
   const { data: session } = useSession()
+  const queryClient = useQueryClient()
   const deleteNotificationMutation = useDeleteNotification()
   const [togglingNotifications, setTogglingNotifications] = useState<Set<string>>(new Set())
   const [markingReadNotifications, setMarkingReadNotifications] = useState<Set<string>>(new Set())
@@ -39,7 +42,7 @@ export const useNotificationActions = ({
   const { bulkState, startBulkProcessing, stopBulkProcessing } = useResourceBulkProcessing()
 
   const handleToggleRead = useCallback(
-    async (row: NotificationRow, newStatus: boolean, refresh: () => void) => {
+    async (row: NotificationRow, newStatus: boolean) => {
       const isOwner = session?.user?.id === row.userId
       
       if (!isOwner) {
@@ -55,6 +58,14 @@ export const useNotificationActions = ({
 
       try {
         await apiClient.patch(apiRoutes.notifications.markRead(row.id), { isRead: newStatus })
+        
+        // Sử dụng utility function chung để invalidate, refetch và trigger registry refresh
+        // Đảm bảo UI tự động cập nhật ngay sau khi mutation thành công
+        await invalidateAndRefreshResource({
+          queryClient,
+          allQueryKey: queryKeys.notifications.admin(),
+        })
+        
         showFeedback(
           "success",
           newStatus ? NOTIFICATION_MESSAGES.MARK_READ_SUCCESS : NOTIFICATION_MESSAGES.MARK_UNREAD_SUCCESS,
@@ -62,7 +73,7 @@ export const useNotificationActions = ({
             ? "Thông báo đã được đánh dấu là đã đọc."
             : "Thông báo đã được đánh dấu là chưa đọc."
         )
-        refresh()
+        // refresh() không cần thiết vì registry đã trigger refresh
       } catch (error: unknown) {
         const defaultMessage = newStatus
           ? "Không thể đánh dấu đã đọc thông báo."
@@ -83,7 +94,7 @@ export const useNotificationActions = ({
         setLoadingState(removeFromSet)
       }
     },
-    [showFeedback, session?.user?.id],
+    [showFeedback, session?.user?.id, queryClient],
   )
 
   const handleBulkMarkAsRead = useCallback(
@@ -129,12 +140,18 @@ export const useNotificationActions = ({
         const count = response.data.data?.count ?? 0
 
         if (count > 0) {
+          // Sử dụng utility function chung để invalidate, refetch và trigger registry refresh
+          // Đảm bảo UI tự động cập nhật ngay sau khi mutation thành công
+          await invalidateAndRefreshResource({
+            queryClient,
+            allQueryKey: queryKeys.notifications.admin(),
+          })
+          
           showFeedback(
             "success",
             NOTIFICATION_MESSAGES.BULK_MARK_READ_SUCCESS,
             `Đã đánh dấu ${count} thông báo là đã đọc.`,
           )
-          triggerTableRefresh()
         } else {
           showFeedback(
             "error",
@@ -151,7 +168,7 @@ export const useNotificationActions = ({
         stopBulkProcessing()
       }
     },
-    [showFeedback, triggerTableRefresh, session?.user?.id, startBulkProcessing, stopBulkProcessing],
+    [showFeedback, session?.user?.id, startBulkProcessing, stopBulkProcessing, queryClient],
   )
 
   const handleBulkMarkAsUnread = useCallback(
@@ -197,12 +214,18 @@ export const useNotificationActions = ({
         const count = response.data.data?.count ?? 0
 
         if (count > 0) {
+          // Sử dụng utility function chung để invalidate, refetch và trigger registry refresh
+          // Đảm bảo UI tự động cập nhật ngay sau khi mutation thành công
+          await invalidateAndRefreshResource({
+            queryClient,
+            allQueryKey: queryKeys.notifications.admin(),
+          })
+          
           showFeedback(
             "success",
             NOTIFICATION_MESSAGES.BULK_MARK_UNREAD_SUCCESS,
             `Đã đánh dấu ${count} thông báo là chưa đọc.`,
           )
-          triggerTableRefresh()
         } else {
           showFeedback(
             "error",
@@ -219,11 +242,11 @@ export const useNotificationActions = ({
         stopBulkProcessing()
       }
     },
-    [showFeedback, triggerTableRefresh, session?.user?.id, startBulkProcessing, stopBulkProcessing],
+    [showFeedback, session?.user?.id, startBulkProcessing, stopBulkProcessing, queryClient],
   )
 
   const handleDeleteSingle = useCallback(
-    async (row: NotificationRow, refresh: () => void) => {
+    async (row: NotificationRow) => {
       const isOwner = session?.user?.id === row.userId
       
       if (!isOwner) {
@@ -240,8 +263,16 @@ export const useNotificationActions = ({
 
       try {
         await deleteNotificationMutation.mutateAsync(row.id)
+        
+        // Sử dụng utility function chung để invalidate, refetch và trigger registry refresh
+        // Đảm bảo UI tự động cập nhật ngay sau khi mutation thành công
+        await invalidateAndRefreshResource({
+          queryClient,
+          allQueryKey: queryKeys.notifications.admin(),
+        })
+        
         showFeedback("success", NOTIFICATION_MESSAGES.DELETE_SUCCESS, "Thông báo đã được xóa thành công.")
-        refresh()
+        // refresh() không cần thiết vì registry đã trigger refresh
       } catch (error: unknown) {
         const errorMessage = getErrorMessage(error, "Không thể xóa thông báo.")
         showFeedback("error", NOTIFICATION_MESSAGES.DELETE_ERROR, errorMessage)
@@ -253,7 +284,7 @@ export const useNotificationActions = ({
         })
       }
     },
-    [showFeedback, session?.user?.id, deleteNotificationMutation],
+    [showFeedback, session?.user?.id, deleteNotificationMutation, queryClient],
   )
 
   const handleBulkDelete = useCallback(
@@ -302,6 +333,13 @@ export const useNotificationActions = ({
         const deletedCount = response.data.data?.count || 0
 
         if (deletedCount > 0) {
+          // Sử dụng utility function chung để invalidate, refetch và trigger registry refresh
+          // Đảm bảo UI tự động cập nhật ngay sau khi mutation thành công
+          await invalidateAndRefreshResource({
+            queryClient,
+            allQueryKey: queryKeys.notifications.admin(),
+          })
+          
           let message = `Đã xóa ${deletedCount} thông báo.`
           if (systemCount > 0) {
             message += ` ${systemCount} thông báo hệ thống đã được bỏ qua.`
@@ -310,7 +348,6 @@ export const useNotificationActions = ({
             message += ` ${otherCount} thông báo không thuộc về bạn đã được bỏ qua.`
           }
           showFeedback("success", NOTIFICATION_MESSAGES.BULK_DELETE_SUCCESS, message)
-          triggerTableRefresh()
         } else {
           showFeedback("error", "Lỗi", NOTIFICATION_MESSAGES.NO_DELETE_OTHER)
         }
@@ -321,7 +358,7 @@ export const useNotificationActions = ({
         stopBulkProcessing()
       }
     },
-    [showFeedback, triggerTableRefresh, session?.user?.id, startBulkProcessing, stopBulkProcessing],
+    [showFeedback, session?.user?.id, startBulkProcessing, stopBulkProcessing, queryClient],
   )
 
   return {

@@ -41,6 +41,7 @@ export const useStudentActions = ({
     resourceName: "students",
     queryKeys: {
       all: () => queryKeys.adminStudents.all(),
+      detail: (id) => queryKeys.adminStudents.detail(id),
     },
     apiRoutes: {
       delete: (id) => apiRoutes.students.delete(id),
@@ -90,8 +91,16 @@ export const useStudentActions = ({
           `Đã ${newStatus ? "kích hoạt" : "vô hiệu hóa"} sinh viên ${row.studentCode}`
         )
         
-        await queryClient.invalidateQueries({ queryKey: queryKeys.adminStudents.all(), refetchType: "active" })
-        await queryClient.refetchQueries({ queryKey: queryKeys.adminStudents.all(), type: "active" })
+        // Invalidate và refetch list queries - sử dụng "all" để đảm bảo refetch tất cả queries
+        await queryClient.invalidateQueries({ queryKey: queryKeys.adminStudents.all(), refetchType: "all" })
+        await queryClient.refetchQueries({ queryKey: queryKeys.adminStudents.all(), type: "all" })
+        
+        // Invalidate và refetch detail query
+        await queryClient.invalidateQueries({ queryKey: queryKeys.adminStudents.detail(row.id), refetchType: "all" })
+        await queryClient.refetchQueries({ queryKey: queryKeys.adminStudents.detail(row.id), type: "all" })
+        
+        // Gọi refresh callback để cập nhật UI ngay lập tức
+        await _refresh()
       } catch (error: unknown) {
         const errorMessage = error instanceof Error ? error.message : STUDENT_MESSAGES.UNKNOWN_ERROR
         showFeedback(

@@ -13,6 +13,7 @@ import { useUpdateToolbarHandler } from "@/components/editor/editor-hooks/use-up
 import { Button } from "@/components/ui/button"
 import { ButtonGroup } from "@/components/ui/button-group"
 import { Input } from "@/components/ui/input"
+import { IconSize } from "@/components/ui/typography"
 
 const DEFAULT_FONT_SIZE = 16
 const MIN_FONT_SIZE = 1
@@ -62,7 +63,9 @@ export function FontSizeToolbarPlugin() {
         onClick={() => updateFontSize(fontSize - 1)}
         disabled={fontSize <= MIN_FONT_SIZE}
       >
-        <Minus className="size-3" />
+        <IconSize size="xs">
+          <Minus />
+        </IconSize>
       </Button>
       <Input
         type="number"
@@ -70,7 +73,7 @@ export function FontSizeToolbarPlugin() {
         onChange={(e) =>
           updateFontSize(parseInt(e.target.value) || DEFAULT_FONT_SIZE)
         }
-        className="!h-8 w-fit text-center"
+        className="bg-background !h-11 w-fit text-center"
         min={MIN_FONT_SIZE}
         max={MAX_FONT_SIZE}
         onKeyDown={(event) => {
@@ -87,7 +90,9 @@ export function FontSizeToolbarPlugin() {
         onClick={() => updateFontSize(fontSize + 1)}
         disabled={fontSize >= MAX_FONT_SIZE}
       >
-        <Plus className="size-3" />
+        <IconSize size="xs">
+          <Plus />
+        </IconSize>
       </Button>
     </ButtonGroup>
   )

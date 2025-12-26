@@ -7,6 +7,7 @@ import { useState, useId, useCallback } from "react"
 import { Check, ChevronsUpDown, X, Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { IconSize } from "@/components/ui/typography"
+import { Flex } from "@/components/ui/flex"
 import { Button } from "@/components/ui/button"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import {
@@ -64,7 +65,7 @@ export function CommandCombobox<T extends object = object>({
             <Button
                 variant="outline"
                 role="combobox"
-                className={cn("h-7 sm:h-8 w-full justify-between font-normal", !value && "text-muted-foreground")}
+                className={cn("h-7 sm:h-8 w-full justify-between", !value && "text-muted-foreground")}
                 disabled={true}
             >
                 <span className="truncate">
@@ -85,7 +86,7 @@ export function CommandCombobox<T extends object = object>({
                     role="combobox"
                     aria-expanded={open}
                     aria-controls={filterId}
-                    className={cn("h-7 sm:h-8 w-full justify-between font-normal", !value && "text-muted-foreground")}
+                    className={cn("h-7 sm:h-8 w-full justify-between", !value && "text-muted-foreground")}
                     disabled={disabled}
                 >
                     <span className="truncate">
@@ -137,9 +138,11 @@ export function CommandCombobox<T extends object = object>({
                     </div>
                     <CommandList>
                         {isLoading && options.length === 0 ? (
-                            <div className="flex items-center justify-center py-6">
-                                <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                            </div>
+                            <Flex align="center" justify="center" className="py-6">
+                                <IconSize size="sm" className="animate-spin text-muted-foreground">
+                                    <Loader2 />
+                                </IconSize>
+                            </Flex>
                         ) : (
                             <CommandEmpty>{column.filter.emptyMessage ?? "Không tìm thấy."}</CommandEmpty>
                         )}
@@ -171,7 +174,9 @@ export function CommandCombobox<T extends object = object>({
                                         setOpen(false)
                                     }}
                                 >
-                                    <Check className={cn("mr-2 h-3 w-3", value === option.value ? "opacity-100" : "opacity-0")} />
+                                    <IconSize size="xs" className={cn("mr-2", value === option.value ? "opacity-100" : "opacity-0")}>
+                                        <Check />
+                                    </IconSize>
                                     {option.label}
                                 </CommandItem>
                             ))}

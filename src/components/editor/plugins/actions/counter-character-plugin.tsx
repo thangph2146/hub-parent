@@ -3,6 +3,9 @@
 import { useEffect, useState } from "react"
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext"
 import { $rootTextContent } from "@lexical/text"
+import { TypographySpanSmallMuted } from "@/components/ui/typography"
+import { Separator } from "@/components/ui/separator"
+import { Flex } from "@/components/ui/flex"
 
 let textEncoderInstance: null | TextEncoder = null
 
@@ -68,8 +71,10 @@ export function CounterCharacterPlugin({
   }, [editor, charset])
 
   return (
-    <div className="flex gap-2 text-xs whitespace-nowrap text-gray-500">
-      <p>{stats.characters} characters</p>|<p>{stats.words} words</p>
-    </div>
+    <Flex gap={2} className="whitespace-nowrap">
+      <TypographySpanSmallMuted>{stats.characters} characters</TypographySpanSmallMuted>
+      <Separator orientation="vertical" className="h-4" />
+      <TypographySpanSmallMuted>{stats.words} words</TypographySpanSmallMuted>
+    </Flex>
   )
 }

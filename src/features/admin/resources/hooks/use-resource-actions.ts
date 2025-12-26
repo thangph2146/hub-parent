@@ -3,16 +3,32 @@ import { useQueryClient, useMutation } from "@tanstack/react-query"
 import { apiClient } from "@/lib/api/axios"
 import { createAdminMutationOptions } from "../config"
 import { useResourceBulkProcessing } from "./use-resource-bulk-processing"
-import { runResourceRefresh } from "./resource-refresh"
 import { resourceLogger } from "@/lib/config/resource-logger"
+import { invalidateAndRefreshResource } from "../utils"
 import type { ResourceRefreshHandler } from "../types"
 import type { FeedbackVariant } from "@/components/dialogs"
 import type { QueryKey } from "@tanstack/react-query"
+
+type SingleAction = "delete" | "restore" | "hard-delete"
+type BulkAction = SingleAction | "active" | "unactive"
+type ActionType = SingleAction | `bulk-${BulkAction}`
+
+const getActionType = (action: BulkAction, isBulk: boolean): ActionType => {
+  if (isBulk) {
+    return action === "delete" ? "bulk-delete"
+      : action === "restore" ? "bulk-restore"
+      : action === "active" ? "bulk-active"
+      : action === "unactive" ? "bulk-unactive"
+      : "bulk-hard-delete"
+  }
+  return action as SingleAction
+}
 
 export interface ResourceActionConfig<T extends { id: string }> {
   resourceName: string
   queryKeys: {
     all: () => QueryKey
+    detail?: (id: string) => QueryKey
   }
   apiRoutes: {
     delete: (id: string) => string
@@ -96,20 +112,16 @@ export const useResourceActions = <T extends { id: string }>(
         }
       },
       onSuccess: async (_, variables) => {
-        await queryClient.invalidateQueries({ 
-          queryKey: config.queryKeys.all(), 
-          refetchType: "active" 
+        // Sử dụng utility function chung để invalidate, refetch và trigger registry refresh
+        // Đảm bảo UI tự động cập nhật ngay sau khi mutation thành công
+        await invalidateAndRefreshResource({
+          queryClient,
+          allQueryKey: config.queryKeys.all(),
+          detailQueryKey: config.queryKeys.detail,
+          resourceId: variables.row.id,
         })
-        await queryClient.refetchQueries({ 
-          queryKey: config.queryKeys.all(), 
-          type: "active" 
-        })
-        
-        const actionType = variables.action === "delete" 
-          ? "delete" 
-          : variables.action === "restore" 
-          ? "restore" 
-          : "hard-delete"
+
+        const actionType = getActionType(variables.action, false)
         
         resourceLogger.actionFlow({
           resource: config.resourceName,
@@ -123,12 +135,7 @@ export const useResourceActions = <T extends { id: string }>(
         })
       },
       onError: (error, variables) => {
-        const actionType = variables.action === "delete" 
-          ? "delete" 
-          : variables.action === "restore" 
-          ? "restore" 
-          : "hard-delete"
-        
+        const actionType = getActionType(variables.action, false)
         const errorMessage = error instanceof Error ? error.message : config.messages.UNKNOWN_ERROR
         
         resourceLogger.actionFlow({
@@ -155,24 +162,32 @@ export const useResourceActions = <T extends { id: string }>(
         const result = response.data?.data
         const affected = result?.affected ?? 0
         
-        await queryClient.invalidateQueries({ 
-          queryKey: config.queryKeys.all(), 
-          refetchType: "active" 
-        })
-        await queryClient.refetchQueries({ 
-          queryKey: config.queryKeys.all(), 
-          type: "active" 
+        // Sử dụng utility function chung để invalidate, refetch và trigger registry refresh
+        // Đảm bảo UI tự động cập nhật ngay sau khi mutation thành công
+        await invalidateAndRefreshResource({
+          queryClient,
+          allQueryKey: config.queryKeys.all(),
+          detailQueryKey: config.queryKeys.detail,
+          // Bulk actions không cần invalidate từng detail query riêng lẻ
+          // Chỉ cần invalidate all query và registry sẽ trigger refresh cho table
         })
         
-        const actionType = variables.action === "delete" 
-          ? "bulk-delete" 
-          : variables.action === "restore" 
-          ? "bulk-restore" 
-          : variables.action === "active"
-          ? "bulk-active"
-          : variables.action === "unactive"
-          ? "bulk-unactive"
-          : "bulk-hard-delete"
+        // Invalidate detail queries cho tất cả affected IDs (nếu có)
+        // Điều này đảm bảo detail pages cũng được cập nhật
+        if (config.queryKeys.detail) {
+          for (const id of variables.ids) {
+            await queryClient.invalidateQueries({
+              queryKey: config.queryKeys.detail(id),
+              refetchType: "all"
+            })
+            await queryClient.refetchQueries({
+              queryKey: config.queryKeys.detail(id),
+              type: "all"
+            })
+          }
+        }
+        
+        const actionType = getActionType(variables.action, true)
         
         resourceLogger.actionFlow({
           resource: config.resourceName,
@@ -185,16 +200,7 @@ export const useResourceActions = <T extends { id: string }>(
         })
       },
       onError: (error, variables) => {
-        const actionType = variables.action === "delete" 
-          ? "bulk-delete" 
-          : variables.action === "restore" 
-          ? "bulk-restore" 
-          : variables.action === "active"
-          ? "bulk-active"
-          : variables.action === "unactive"
-          ? "bulk-unactive"
-          : "bulk-hard-delete"
-        
+        const actionType = getActionType(variables.action, true)
         const errorMessage = error instanceof Error 
           ? error.message 
           : config.messages.UNKNOWN_ERROR
@@ -217,7 +223,7 @@ export const useResourceActions = <T extends { id: string }>(
     async (
       action: "delete" | "restore" | "hard-delete",
       row: T,
-      refresh: ResourceRefreshHandler
+      _refresh: ResourceRefreshHandler // Không sử dụng vì registry đã tự động trigger refresh
     ): Promise<void> => {
       const actionConfig = {
         delete: {
@@ -278,9 +284,9 @@ export const useResourceActions = <T extends { id: string }>(
         
         config.showFeedback("success", actionConfig.successTitle, actionConfig.successDescription)
         
-        if (!config.isSocketConnected) {
-          await runResourceRefresh({ refresh, resource: config.resourceName })
-        }
+        // Refresh đã được trigger qua registry trong onSuccess của mutation
+        // Listener/polling sẽ handle refresh nếu registry không tìm thấy callback
+        // Không cần gọi thêm ở đây để tránh duplicate refresh calls
       } catch (error: unknown) {
         const errorMessage = error instanceof Error ? error.message : config.messages.UNKNOWN_ERROR
         config.showFeedback("error", actionConfig.errorTitle, actionConfig.errorDescription, errorMessage)
@@ -303,7 +309,7 @@ export const useResourceActions = <T extends { id: string }>(
     async (
       action: "delete" | "restore" | "hard-delete" | "active" | "unactive",
       ids: string[],
-      refresh: ResourceRefreshHandler,
+      _refresh: ResourceRefreshHandler, // Không sử dụng vì registry đã tự động trigger refresh
       clearSelection: () => void
     ): Promise<void> => {
       if (ids.length === 0) return
@@ -341,7 +347,7 @@ export const useResourceActions = <T extends { id: string }>(
       
       resourceLogger.actionFlow({
         resource: config.resourceName,
-        action: action === "delete" ? "bulk-delete" : action === "restore" ? "bulk-restore" : action === "active" ? "bulk-active" : action === "unactive" ? "bulk-unactive" : "bulk-hard-delete",
+        action: getActionType(action, true),
         step: "start",
         metadata: {
           count: ids.length,
@@ -357,14 +363,21 @@ export const useResourceActions = <T extends { id: string }>(
         const affected = result?.affected ?? 0
         
         if (affected === 0) {
-          const actionText = action === "restore" ? "khôi phục" : action === "delete" ? "xóa" : action === "active" ? "kích hoạt" : action === "unactive" ? "bỏ kích hoạt" : "xóa vĩnh viễn"
+          const actionTextMap: Record<BulkAction, string> = {
+            restore: "khôi phục",
+            delete: "xóa",
+            active: "kích hoạt",
+            unactive: "bỏ kích hoạt",
+            "hard-delete": "xóa vĩnh viễn",
+          }
+          const actionText = actionTextMap[action] || "xử lý"
           const errorMessage = result?.message || `Không có ${config.resourceName} nào được ${actionText}`
           config.showFeedback("error", "Không có thay đổi", errorMessage)
           clearSelection()
           
           resourceLogger.actionFlow({
             resource: config.resourceName,
-            action: action === "delete" ? "bulk-delete" : action === "restore" ? "bulk-restore" : action === "active" ? "bulk-active" : action === "unactive" ? "bulk-unactive" : "bulk-hard-delete",
+            action: getActionType(action, true),
             step: "error",
             metadata: { 
               requestedCount: ids.length, 
@@ -410,7 +423,7 @@ export const useResourceActions = <T extends { id: string }>(
         
         resourceLogger.actionFlow({
           resource: config.resourceName,
-          action: action === "delete" ? "bulk-delete" : action === "restore" ? "bulk-restore" : action === "active" ? "bulk-active" : action === "unactive" ? "bulk-unactive" : "bulk-hard-delete",
+          action: getActionType(action, true),
           step: "success",
           metadata: { 
             requestedCount: ids.length, 
@@ -419,7 +432,8 @@ export const useResourceActions = <T extends { id: string }>(
           },
         })
         
-        await refresh()
+        // Refresh đã được trigger qua registry trong onSuccess của mutation
+        // Không cần gọi thêm ở đây để tránh duplicate refresh calls
         stopBulkProcessing()
       } catch (error: unknown) {
         const errorMessage = error instanceof Error ? error.message : config.messages.UNKNOWN_ERROR
@@ -457,7 +471,7 @@ export const useResourceActions = <T extends { id: string }>(
         
         resourceLogger.actionFlow({
           resource: config.resourceName,
-          action: action === "delete" ? "bulk-delete" : action === "restore" ? "bulk-restore" : action === "active" ? "bulk-active" : action === "unactive" ? "bulk-unactive" : "bulk-hard-delete",
+          action: getActionType(action, true),
           step: "error",
           metadata: { 
             requestedCount: ids.length, 

@@ -24,6 +24,7 @@ export const useCategoryActions = ({
     resourceName: "categories",
     queryKeys: {
       all: () => queryKeys.adminCategories.all(),
+      detail: (id) => queryKeys.adminCategories.detail(id),
     },
     apiRoutes: {
       delete: (id) => apiRoutes.categories.delete(id),

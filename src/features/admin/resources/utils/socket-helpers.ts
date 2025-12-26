@@ -8,7 +8,9 @@ export const createMatchesSearch = <TRow extends { id: string }>(
 ) => {
   return (search: string | undefined, row: TRow): boolean => {
     if (!search) return true
-    const lowerSearch = search.toLowerCase()
+    // Đảm bảo search là string trước khi gọi toLowerCase()
+    const searchString = typeof search === "string" ? search : String(search)
+    const lowerSearch = searchString.toLowerCase()
 
     return searchFields.some((field) => {
       if (typeof field === "function") {
@@ -86,10 +88,13 @@ export const shouldIncludeInStatus = (
 }
 
 export const insertRowIntoPage = <TRow extends { id: string }>(
-  rows: TRow[],
+  rows: TRow[] | undefined,
   newRow: TRow,
   limit: number
 ): TRow[] => {
+  if (!rows || !Array.isArray(rows)) {
+    return [newRow]
+  }
   const existingIndex = rows.findIndex((item) => item.id === newRow.id)
   if (existingIndex >= 0) {
     const next = [...rows]
@@ -104,12 +109,15 @@ export const insertRowIntoPage = <TRow extends { id: string }>(
 }
 
 export const removeRowFromPage = <TRow extends { id: string }>(
-  rows: TRow[],
+  rows: TRow[] | undefined,
   id: string
 ): {
   rows: TRow[]
   removed: boolean
 } => {
+  if (!rows || !Array.isArray(rows)) {
+    return { rows: [], removed: false }
+  }
   const index = rows.findIndex((r) => r.id === id)
   if (index === -1) {
     return { rows, removed: false }

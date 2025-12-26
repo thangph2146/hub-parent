@@ -14,11 +14,9 @@ export interface CategoryCreateClientProps {
 
 export const CategoryCreateClient = ({ backUrl = "/admin/categories" }: CategoryCreateClientProps) => {
   const queryClient = useQueryClient()
+  const queryKey = queryKeys.adminCategories.all()
 
-  const handleBack = async () => {
-    await queryClient.invalidateQueries({ queryKey: queryKeys.adminCategories.all(), refetchType: "all" })
-    await queryClient.refetchQueries({ queryKey: queryKeys.adminCategories.all(), type: "all" })
-  }
+  const handleBack = () => queryClient.invalidateQueries({ queryKey, refetchType: "all" })
 
   const { handleSubmit } = useResourceFormSubmit({
     apiRoute: apiRoutes.categories.create,
@@ -29,11 +27,12 @@ export const CategoryCreateClient = ({ backUrl = "/admin/categories" }: Category
       errorTitle: "Lỗi tạo danh mục",
     },
     navigation: {
-      toDetail: (response) =>
-        response.data?.data?.id ? `/admin/categories/${response.data.data.id}` : backUrl,
+      toDetail: (response) => response.data?.data?.id 
+        ? `/admin/categories/${response.data.data.id}` 
+        : backUrl,
       fallback: backUrl,
     },
-    onSuccess: async (response) => {
+    onSuccess: (response) => {
       resourceLogger.actionFlow({
         resource: "categories",
         action: "create",
@@ -43,18 +42,14 @@ export const CategoryCreateClient = ({ backUrl = "/admin/categories" }: Category
           responseStatus: response?.status,
         },
       })
-
-      await queryClient.invalidateQueries({ queryKey: queryKeys.adminCategories.all(), refetchType: "all" })
-      await queryClient.refetchQueries({ queryKey: queryKeys.adminCategories.all(), type: "all" })
+      queryClient.invalidateQueries({ queryKey, refetchType: "all" })
     },
   })
-
-  const createFields = getBaseCategoryFields()
 
   return (
     <ResourceForm<CategoryFormData>
       data={null}
-      fields={createFields}
+      fields={getBaseCategoryFields()}
       onSubmit={handleSubmit}
       title="Tạo danh mục mới"
       description="Nhập thông tin để tạo danh mục mới"

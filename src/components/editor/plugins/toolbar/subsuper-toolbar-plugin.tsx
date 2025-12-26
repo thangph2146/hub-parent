@@ -11,6 +11,7 @@ import {
   ToggleGroup,
   ToggleGroupItem,
 } from "@/components/ui/toggle-group"
+import { IconSize } from "@/components/ui/typography"
 
 export function SubSuperToolbarPlugin() {
   const { activeEditor } = useToolbarContext()
@@ -46,7 +47,9 @@ export function SubSuperToolbarPlugin() {
         }}
         variant={"outline"}
       >
-        <SubscriptIcon className="h-4 w-4" />
+        <IconSize size="sm">
+          <SubscriptIcon />
+        </IconSize>
       </ToggleGroupItem>
       <ToggleGroupItem
         value="superscript"
@@ -57,7 +60,9 @@ export function SubSuperToolbarPlugin() {
         }}
         variant={"outline"}
       >
-        <SuperscriptIcon className="h-4 w-4" />
+        <IconSize size="sm">
+          <SuperscriptIcon />
+        </IconSize>
       </ToggleGroupItem>
     </ToggleGroup>
   )

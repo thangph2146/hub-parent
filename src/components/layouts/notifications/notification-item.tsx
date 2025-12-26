@@ -16,6 +16,7 @@ import {
 import { useMarkNotificationRead } from "@/hooks/use-notifications"
 import type { Notification } from "@/hooks/use-notifications"
 import { Button } from "@/components/ui/button"
+import { Flex } from "@/components/ui/flex"
 import { cn } from "@/lib/utils"
 import { logger } from "@/lib/config/logger"
 import { useSession } from "@/lib/auth"
@@ -145,9 +146,11 @@ export function NotificationItem({
   })
 
   return (
-    <div
+    <Flex
+      direction="col"
+      padding="md"
       className={cn(
-        "group relative border-l-4 p-4 transition-colors hover:bg-accent/10 cursor-pointer",
+        "group relative border-l-4 transition-colors hover:bg-accent/10 cursor-pointer",
         styleClass,
         !notification.isRead && "bg-accent/10"
       )}
@@ -160,8 +163,8 @@ export function NotificationItem({
         }
       }}
     >
-      <div className="flex items-start gap-3">
-        <div className="mt-0.5 flex-shrink-0">
+      <Flex align="start" gap={3}>
+        <Flex marginTop={0.5} shrink>
           <IconSize
             size="md"
             className={cn(
@@ -175,22 +178,17 @@ export function NotificationItem({
           >
             <Icon />
           </IconSize>
-        </div>
+        </Flex>
 
-        <div className="flex-1 space-y-1">
-          <div className="flex items-start justify-between gap-2">
-            <TypographyP
-              className={cn(
-                "font-medium leading-none",
-                !notification.isRead && "font-semibold"
-              )}
-            >
+        <Flex direction="col" gap={1} fullWidth flex="1">
+          <Flex align="start" justify="between" gap={2}>
+            <TypographyP className="leading-none">
               {notification.title}
             </TypographyP>
             {!notification.isRead && (
-              <div className="h-2 w-2 flex-shrink-0 rounded-full bg-primary" />
+              <Flex height="2" width="2" shrink rounded="full" bg="primary" />
             )}
-          </div>
+          </Flex>
 
           {notification.description && (
             <TypographyPMuted
@@ -203,9 +201,9 @@ export function NotificationItem({
             </TypographyPMuted>
           )}
 
-          <div className="flex items-center justify-between pt-2">
-            <TypographyPSmallMuted>{timeAgo}</TypographyPSmallMuted>
-            <div className="flex items-center gap-2">
+          <Flex align="center" justify="between" gap={2} className="w-full">
+            <TypographyPSmallMuted className="w-full">{timeAgo}</TypographyPSmallMuted>
+            <Flex align="end" justify="end" gap={2} className="w-full">
               <Button
                 variant={notification.isRead ? "outline" : "default"}
                 size="sm"
@@ -239,11 +237,11 @@ export function NotificationItem({
                 )}
               </Button>
            
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+            </Flex>
+          </Flex>
+        </Flex>
+      </Flex>
+    </Flex>
   )
 }
 

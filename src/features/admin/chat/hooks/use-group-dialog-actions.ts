@@ -21,7 +21,7 @@ export const useGroupDialogActions = ({
   canDelete,
   canRestore,
   canManage,
-  isSocketConnected,
+  isSocketConnected: _isSocketConnected,
   showFeedback,
   onSuccess,
 }: UseGroupActionsOptions) => {
@@ -82,8 +82,10 @@ export const useGroupDialogActions = ({
           await apiClient.post(actionConfig.endpoint)
         }
         showFeedback("success", actionConfig.successTitle, actionConfig.successDescription)
-        if (!isSocketConnected && refresh) {
-          refresh()
+        // Luôn gọi refresh callback để đảm bảo UI cập nhật ngay lập tức
+        // Socket events có thể không kịp trigger refresh trong một số trường hợp
+        if (refresh) {
+          await refresh()
         }
         onSuccess?.()
       } catch (error: unknown) {
@@ -102,7 +104,7 @@ export const useGroupDialogActions = ({
         })
       }
     },
-    [canDelete, canRestore, canManage, isSocketConnected, showFeedback, onSuccess],
+    [canDelete, canRestore, canManage, showFeedback, onSuccess],
   )
 
   return {

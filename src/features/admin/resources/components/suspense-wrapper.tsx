@@ -5,6 +5,8 @@ import {
   ResourceDetailSkeleton,
   ResourceTableSkeleton,
 } from "@/components/layouts/skeletons"
+import { Flex } from "@/components/ui/flex"
+import { TypographyPSmallMuted } from "@/components/ui/typography"
 
 type DetailSkeletonConfig = {
   showHeader?: boolean
@@ -33,9 +35,9 @@ const defaultTableSkeleton: Required<TableSkeletonConfig> = {
 }
 
 const LoadingPlaceholder = () => (
-  <div className="flex min-h-[200px] items-center justify-center">
-    <span className="text-muted-foreground">Loading...</span>
-  </div>
+  <Flex align="center" fullWidth>
+    <TypographyPSmallMuted>Loading...</TypographyPSmallMuted>
+  </Flex>
 )
 
 type FallbackConfig = {

@@ -21,6 +21,7 @@ import {
   ToggleGroup,
   ToggleGroupItem,
 } from "@/components/ui/toggle-group"
+import { IconSize } from "@/components/ui/typography"
 
 const FORMATS = [
   { format: "bold", icon: BoldIcon, label: "Bold" },
@@ -76,7 +77,9 @@ export function FontFormatToolbarPlugin() {
             )
           }}
         >
-          <Icon className="h-4 w-4" />
+          <IconSize size="sm">
+            <Icon />
+          </IconSize>
         </ToggleGroupItem>
       ))}
     </ToggleGroup>

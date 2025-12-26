@@ -1,5 +1,6 @@
 import * as React from "react"
 import type { LucideIcon } from "lucide-react"
+import { IconSize } from "@/components/ui/typography"
 import {
   BadgeHelp,
   Bell,
@@ -74,8 +75,13 @@ interface FeatureDefinition {
   api?: FeatureApiConfig
 }
 
-const createIcon = (Icon: LucideIcon) =>
-  React.createElement(Icon, { className: "h-4 w-4" })
+const createIcon = (Icon: LucideIcon): React.ReactElement => {
+  const iconElement = React.createElement(Icon)
+  return React.createElement(
+    IconSize,
+    { size: "sm" as const, children: iconElement } as React.ComponentProps<typeof IconSize>
+  )
+}
 
 export const appFeatures: FeatureDefinition[] = [
   {

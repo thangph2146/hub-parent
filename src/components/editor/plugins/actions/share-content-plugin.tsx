@@ -21,6 +21,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import { IconSize } from "@/components/ui/typography"
 
 export function ShareContentPlugin() {
   const [editor] = useLexicalComposerContext()
@@ -60,7 +61,9 @@ export function ShareContentPlugin() {
           size={"sm"}
           className="p-2"
         >
-          <SendIcon className="size-4" />
+          <IconSize size="sm">
+            <SendIcon />
+          </IconSize>
         </Button>
       </TooltipTrigger>
       <TooltipContent>Share Content</TooltipContent>

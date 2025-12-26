@@ -2,12 +2,37 @@
 
 import * as React from "react"
 import * as CollapsiblePrimitive from "@radix-ui/react-collapsible"
+import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
+const collapsibleVariants = cva("", {
+  variants: {
+    fullWidth: {
+      true: "w-full",
+      false: "",
+    },
+  },
+  defaultVariants: {
+    fullWidth: false,
+  },
+})
+
+export interface CollapsibleProps
+  extends React.ComponentProps<typeof CollapsiblePrimitive.Root>,
+    VariantProps<typeof collapsibleVariants> {}
+
 function Collapsible({
+  className,
+  fullWidth,
   ...props
-}: React.ComponentProps<typeof CollapsiblePrimitive.Root>) {
-  return <CollapsiblePrimitive.Root data-slot="collapsible" {...props} />
+}: CollapsibleProps) {
+  return (
+    <CollapsiblePrimitive.Root
+      data-slot="collapsible"
+      className={cn(collapsibleVariants({ fullWidth }), className)}
+      {...props}
+    />
+  )
 }
 
 function CollapsibleTrigger({

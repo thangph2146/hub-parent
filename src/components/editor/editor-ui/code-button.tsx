@@ -10,6 +10,7 @@ import {
 import { CircleCheckIcon, CopyIcon } from "lucide-react"
 
 import { useDebounce } from "@/components/editor/editor-hooks/use-debounce"
+import { IconSize } from "@/components/ui/typography"
 
 interface Props {
   editor: LexicalEditor
@@ -59,9 +60,13 @@ export function CopyButton({ editor, getCodeDOMNode }: Props) {
       aria-label="copy"
     >
       {isCopyCompleted ? (
-        <CircleCheckIcon className="size-4" />
+        <IconSize size="sm">
+          <CircleCheckIcon />
+        </IconSize>
       ) : (
-        <CopyIcon className="size-4" />
+        <IconSize size="sm">
+          <CopyIcon />
+        </IconSize>
       )}
     </button>
   )

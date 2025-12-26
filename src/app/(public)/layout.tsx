@@ -36,7 +36,7 @@ export default function PublicLayout({
   return (
     <>
       <PublicHeader />
-      <main id="main-content">
+      <main id="main-content" className="mb-8">
         {children}
       </main>
       <PublicFooter />

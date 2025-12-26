@@ -13,6 +13,7 @@ import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { TypographyH1, TypographyPMuted, IconSize } from "@/components/ui/typography"
+import { Flex } from "@/components/ui/flex"
 
 interface UnauthenticatedNoticeProps {
   onLogin?: () => void
@@ -80,7 +81,7 @@ export function UnauthenticatedNotice({ onLogin }: UnauthenticatedNoticeProps) {
   }
 
   return (
-    <div className="flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center p-4 md:p-6 lg:p-8 relative overflow-hidden">
+    <Flex direction="col" align="center" justify="center" className="min-h-[calc(100vh-4rem)] p-4 md:p-6 lg:p-8 relative overflow-hidden">
       {/* Background decorative elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-red-500/5 rounded-full blur-3xl" />
@@ -99,7 +100,7 @@ export function UnauthenticatedNotice({ onLogin }: UnauthenticatedNoticeProps) {
           <div className="absolute top-0 right-0 w-64 h-64 bg-red-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
 
           <CardContent className="relative pt-16 pb-10 px-6 md:px-10">
-            <div className="flex flex-col items-center text-center space-y-8">
+            <Flex direction="col" align="center" gap={8} className="text-center">
               {/* Animated Icon */}
               <motion.div variants={iconVariants} className="relative">
                 {/* Outer pulsing ring */}
@@ -122,7 +123,7 @@ export function UnauthenticatedNotice({ onLogin }: UnauthenticatedNoticeProps) {
                 <div className="absolute inset-0 rounded-full bg-red-500/10 animate-pulse" />
 
                 {/* Icon container */}
-                <div className="relative flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-red-500/20 via-red-500/10 to-red-500/5 border-2 border-red-500/30 shadow-lg shadow-red-500/20">
+                <Flex align="center" justify="center" className="relative h-24 w-24 rounded-full bg-gradient-to-br from-red-500/20 via-red-500/10 to-red-500/5 border-2 border-red-500/30 shadow-lg shadow-red-500/20">
                   <motion.div
                     animate={{
                       rotate: [0, -10, 10, 0],
@@ -155,24 +156,27 @@ export function UnauthenticatedNotice({ onLogin }: UnauthenticatedNoticeProps) {
                       </IconSize>
                     </div>
                   </motion.div>
-                </div>
+                </Flex>
               </motion.div>
 
               {/* Title và Message */}
-              <motion.div variants={itemVariants} className="space-y-4">
-                <TypographyH1 className="tracking-tight bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text">
-                  Chưa đăng nhập
-                </TypographyH1>
-                <TypographyPMuted className="max-w-md mx-auto">
-                  Bạn cần đăng nhập để truy cập trang này. Vui lòng đăng nhập hoặc quay lại trang trước.
-                </TypographyPMuted>
+              <motion.div variants={itemVariants}>
+                <Flex direction="col" gap={4} align="center">
+                  <TypographyH1 className="tracking-tight bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text">
+                    Chưa đăng nhập
+                  </TypographyH1>
+                  <TypographyPMuted className="max-w-md">
+                    Bạn cần đăng nhập để truy cập trang này. Vui lòng đăng nhập hoặc quay lại trang trước.
+                  </TypographyPMuted>
+                </Flex>
               </motion.div>
 
               {/* Action Buttons */}
               <motion.div
                 variants={itemVariants}
-                className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto pt-2"
+                className="w-full sm:w-auto pt-2"
               >
+                <Flex direction="col" align="center" justify="center" gap={3} className="sm:flex-row sm:items-center sm:justify-center">
                 <motion.div
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
@@ -182,7 +186,7 @@ export function UnauthenticatedNotice({ onLogin }: UnauthenticatedNoticeProps) {
                     onClick={handleGoBack}
                     className="w-full sm:w-auto min-w-[160px] h-11 shadow-sm hover:shadow-md transition-shadow"
                   >
-                    <IconSize size="sm" className="mr-2">
+                    <IconSize size="sm">
                       <ArrowLeft />
                     </IconSize>
                     Quay lại
@@ -197,18 +201,19 @@ export function UnauthenticatedNotice({ onLogin }: UnauthenticatedNoticeProps) {
                     onClick={handleLogin}
                     className="w-full sm:w-auto min-w-[160px] h-11 shadow-md hover:shadow-lg transition-shadow bg-red-600 hover:bg-red-700 text-white"
                   >
-                    <IconSize size="sm" className="mr-2">
+                    <IconSize size="sm">
                       <LogIn />
                     </IconSize>
                     Đăng nhập
                   </Button>
                 </motion.div>
+                </Flex>
               </motion.div>
-            </div>
+            </Flex>
           </CardContent>
         </Card>
       </motion.div>
-    </div>
+    </Flex>
   )
 }
 

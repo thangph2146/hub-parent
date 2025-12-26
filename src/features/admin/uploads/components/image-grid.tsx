@@ -6,6 +6,7 @@
 import * as React from "react"
 import { ImageItem } from "./image-item"
 import type { ImageItem as ImageItemType } from "../types"
+import { Grid } from "@/components/ui/grid"
 
 interface ImageGridProps {
   images: ImageItemType[]
@@ -23,7 +24,12 @@ export const ImageGrid = ({
   onDelete,
 }: ImageGridProps) => {
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-4">
+    <Grid 
+      cols={5} 
+      gap="responsive"
+      fullWidth
+      padding="sm"
+    >
       {images.map((image) => (
         <ImageItem
           key={image.fileName}
@@ -34,7 +40,7 @@ export const ImageGrid = ({
           onDelete={onDelete}
         />
       ))}
-    </div>
+    </Grid>
   )
 }
 

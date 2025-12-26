@@ -2,7 +2,7 @@
 
 import { IconSize } from "@/components/ui/typography"
 import { TypographySpanSmallMuted, TypographyH1 } from "@/components/ui/typography"
-import { cn } from "@/lib/utils"
+import { Flex } from "@/components/ui/flex"
 
 import { Calendar, User, Tag, Clock } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
@@ -31,78 +31,78 @@ export const PostDetailClient = ({ post }: PostDetailClientProps) => {
   }
 
   return (
-    <article className="space-y-8 py-8 sm:py-12">
+    <Flex direction="col" padding="responsive-lg">
+      <Flex direction="col" gap={8}>
         {/* Header */}
-        <header className="space-y-6">
-
+        <Flex direction="col" gap={6}>
           {/* Title */}
           <TypographyH1 className="tracking-tight leading-tight">
             {post.title}
           </TypographyH1>
 
           {/* Meta Info */}
-          <div className={cn("flex flex-wrap items-center gap-4 sm:gap-6 pt-2 border-t")}>
-            <div className="flex items-center gap-2">
-              <IconSize size="sm">
-                <User />
-              </IconSize>
-              <TypographySpanSmallMuted className="font-medium">{post.author.name ?? post.author.email}</TypographySpanSmallMuted>
-            </div>
-            {post.publishedAt && (
-              <div className="flex items-center gap-2">
+          <Flex align="center" gap={4} wrap className="sm:gap-6 pt-2 border-t">
+              <Flex align="center" gap={2}>
                 <IconSize size="sm">
-                  <Calendar />
+                  <User />
                 </IconSize>
-                <time dateTime={getPublishedAtISO()}>
-                  <TypographySpanSmallMuted>{formatPostDateLong(post.publishedAt)}</TypographySpanSmallMuted>
-                </time>
-              </div>
-            )}
-            {post.publishedAt && (
-              <div className="flex items-center gap-2">
-                <IconSize size="sm">
-                  <Clock />
-                </IconSize>
-                <TypographySpanSmallMuted>
-                  {(() => {
-                    try {
-                      const date = new Date(post.publishedAt)
-                      if (isNaN(date.getTime())) return ""
-                      return date.toLocaleTimeString("vi-VN", {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })
-                    } catch {
-                      return ""
-                    }
-                  })()}
-                </TypographySpanSmallMuted>
-              </div>
-            )}
-          </div>
-        </header>
+                <TypographySpanSmallMuted>{post.author.name ?? post.author.email}</TypographySpanSmallMuted>
+              </Flex>
+              {post.publishedAt && (
+                <Flex align="center" gap={2}>
+                  <IconSize size="sm">
+                    <Calendar />
+                  </IconSize>
+                  <time dateTime={getPublishedAtISO()}>
+                    <TypographySpanSmallMuted>{formatPostDateLong(post.publishedAt)}</TypographySpanSmallMuted>
+                  </time>
+                </Flex>
+              )}
+              {post.publishedAt && (
+                <Flex align="center" gap={2}>
+                  <IconSize size="sm">
+                    <Clock />
+                  </IconSize>
+                  <TypographySpanSmallMuted>
+                    {(() => {
+                      try {
+                        const date = new Date(post.publishedAt)
+                        if (isNaN(date.getTime())) return ""
+                        return date.toLocaleTimeString("vi-VN", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })
+                      } catch {
+                        return ""
+                      }
+                    })()}
+                  </TypographySpanSmallMuted>
+                </Flex>
+              )}
+            </Flex>
+        </Flex>
 
         {/* Content */}
-        <div className="prose prose-lg dark:prose-invert max-w-none prose-headings:font-bold prose-p:leading-relaxed prose-a:text-primary prose-a:no-underline hover:prose-a:underline">
+        <div className="prose prose-lg dark:prose-invert max-w-none prose-p:leading-relaxed prose-a:text-primary prose-a:no-underline hover:prose-a:underline">
           <PostContent content={post.content} />
         </div>
 
         {/* Tags */}
         {post.tags.length > 0 && (
-          <div className="flex flex-wrap items-center gap-3 pt-8 border-t">
-            <IconSize size="md" className="text-muted-foreground">
+          <Flex align="center" gap={3} wrap className="pt-8 border-t">
+            <IconSize size="md">
               <Tag />
             </IconSize>
-            <div className="flex flex-wrap gap-2">
+            <Flex gap={2} wrap>
               {post.tags.map((tag) => (
                 <Badge key={tag.id} variant="outline">
                   {tag.name}
                 </Badge>
               ))}
-            </div>
-          </div>
+            </Flex>
+          </Flex>
         )}
-      </article>
+      </Flex>
+    </Flex>
   )
 }
-
