@@ -149,7 +149,7 @@ export const PostsTableClient = ({
         })
       }
     },
-    [canToggleStatus, showFeedback],
+    [canToggleStatus, showFeedback, queryClient],
   )
 
   const { baseColumns, deletedColumns } = usePostColumns({

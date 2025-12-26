@@ -21,7 +21,7 @@ export const useGroupDialogActions = ({
   canDelete,
   canRestore,
   canManage,
-  isSocketConnected,
+  isSocketConnected: _isSocketConnected,
   showFeedback,
   onSuccess,
 }: UseGroupActionsOptions) => {
@@ -104,7 +104,7 @@ export const useGroupDialogActions = ({
         })
       }
     },
-    [canDelete, canRestore, canManage, isSocketConnected, showFeedback, onSuccess],
+    [canDelete, canRestore, canManage, showFeedback, onSuccess],
   )
 
   return {

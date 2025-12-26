@@ -6,7 +6,7 @@
 
 "use client"
 
-import { TypographyP, TypographyPSmall, TypographyPSmallMuted, TypographyPMuted, IconSize, TypographySpanSmall, TypographySpanSmallMuted } from "@/components/ui/typography"
+import { TypographyP, TypographyPSmall, TypographyPSmallMuted, TypographyPMuted, IconSize, TypographySpanSmall } from "@/components/ui/typography"
 import { Flex } from "@/components/ui/flex"
 import { Grid } from "@/components/ui/grid"
 

@@ -13,7 +13,7 @@ import {
 
 export interface ResourceSocketBridgeConfig<
   TRow extends { id: string },
-  TParams = Record<string, unknown>
+  _TParams = Record<string, unknown>
 > {
   resourceName: string
   queryKey: unknown[]
@@ -94,8 +94,8 @@ const createUpsertUpdater = <TRow extends { id: string }, TParams extends { stat
   }
 }
 
-const createRemoveUpdater = <TRow extends { id: string }>() => {
-  return ({ data }: { data: DataTableResult<TRow> }): DataTableResult<TRow> | null => {
+const _createRemoveUpdater = <TRow extends { id: string }>() => {
+  return ({ data: _data }: { data: DataTableResult<TRow> }): DataTableResult<TRow> | null => {
     // This will be called with id separately
     return null
   }

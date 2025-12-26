@@ -54,7 +54,7 @@ export function ChatWindow({
   scrollAreaRef,
   messagesEndRef,
   inputRef,
-  replyBannerRef,
+  replyBannerRef: _replyBannerRef,
   deletedBannerRef,
   messageInput,
   setMessageInput,

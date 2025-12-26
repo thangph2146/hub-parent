@@ -37,7 +37,7 @@ export const ChatTemplate = ({
   onNewGroup,
 }: ChatTemplateProps) => {
   const isMobile = useIsMobile()
-  const [filterType, setFilterType] = useState<ChatFilterType>(initialFilterType)
+  const [filterType] = useState<ChatFilterType>(initialFilterType)
   const [contactSearch, setContactSearch] = useState("")
   const [searchedContacts, setSearchedContacts] = useState<Contact[] | null>(null)
   const [isChatListOpen, setIsChatListOpen] = useState(false)
@@ -181,7 +181,7 @@ export const ChatTemplate = ({
         }
       })
     }
-  }, [chatListWidth, chatListHeight, chatWindowWidth, chatWindowHeight, isMobile, isChatListOpen])
+  }, [chatListWidth, chatListHeight, chatWindowWidth, chatWindowHeight, isMobile, isChatListOpen, messagesAreaHeight])
   
   const {
     contactsState,

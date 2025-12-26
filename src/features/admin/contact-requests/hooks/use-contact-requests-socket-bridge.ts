@@ -96,7 +96,7 @@ const invalidateUnreadCounts = (
 export const useContactRequestsSocketBridge = () => {
   const { data: session } = useSession()
   const queryClient = useQueryClient()
-  const { socket, on, isConnected, cacheVersion, setCacheVersion, sessionUserId } = useSocketConnection()
+  const { socket: _socket, on, isConnected: _isConnected, cacheVersion: _cacheVersion, setCacheVersion, sessionUserId } = useSocketConnection()
 
   // Sử dụng generic hook cho các event chuẩn
   const bridge = useResourceSocketBridge<ContactRequestRow, AdminContactRequestsListParams>({

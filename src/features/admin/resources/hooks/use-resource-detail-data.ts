@@ -50,7 +50,6 @@ export const useResourceDetailData = <T extends Record<string, unknown>>({
 
   // Check if we have fresh cached data
   const cachedData = queryClient.getQueryData<{ data: T }>(queryKey)
-  const hasFreshCache = !!cachedData?.data
 
   const baseQueryOptions = createAdminQueryOptions<{ data: T }>({
     queryKey,

@@ -64,6 +64,8 @@ export const ResourceTableClient = <T extends object>({
   const [currentViewId, setCurrentViewId] = useState(defaultViewId ?? viewModes[0].id)
   const [selectedIds, setSelectedIds] = useState<string[]>([])
   const refreshCounterRef = useRef(0)
+  // Khởi tạo refreshKey với giá trị stable (0) để tránh hydration mismatch
+  // refreshKey sẽ chỉ được update sau khi component mount trên client thông qua handleRefresh
   const [refreshKey, setRefreshKey] = useState<string | number>(0)
   const lastViewIdRef = useRef<string | undefined>(currentViewId)
   const [hasViewChanged, setHasViewChanged] = useState(false)

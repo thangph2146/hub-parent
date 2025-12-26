@@ -101,6 +101,7 @@ export default async function AdminLayout({
         <SidebarInset 
           className="flex flex-col w-full min-w-0 max-w-full"
           style={{ overflowX: 'clip' }}
+          suppressHydrationWarning
         >
           <PermissionGate>
             {children}
