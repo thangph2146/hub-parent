@@ -3,6 +3,7 @@
 import { FieldContent, FieldError } from "@/components/ui/field"
 import { Switch } from "@/components/ui/switch"
 import type { ResourceFormField } from "../resource-form"
+import { cn } from "@/lib/utils"
 
 interface SwitchFieldProps<T> {
   field: ResourceFormField<T>
@@ -40,7 +41,10 @@ export const SwitchField = <T,>({
         aria-invalid={error ? "true" : "false"}
         aria-label={field.label}
         aria-describedby={errorId || field.description ? `${fieldId}-description` : undefined}
-        className={isReadOnly ? "!opacity-100 disabled:!opacity-100 [&:disabled]:!opacity-100" : undefined}
+        className={cn(
+          isReadOnly && "!opacity-100 disabled:!opacity-100 [&:disabled]:!opacity-100 cursor-default bg-muted/30 border-muted-foreground/30",
+          isDisabled && !isReadOnly && "!opacity-100"
+        )}
       />
       {error && <FieldError id={errorId}>{error}</FieldError>}
     </FieldContent>

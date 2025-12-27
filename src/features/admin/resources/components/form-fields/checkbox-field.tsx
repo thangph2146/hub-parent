@@ -46,7 +46,8 @@ export const CheckboxField = <T,>({
           aria-describedby={errorId || field.description ? `${fieldId}-description` : undefined}
           className={cn(
             error && "border-destructive",
-            isReadOnly && "!opacity-100 disabled:!opacity-100 [&:disabled]:!opacity-100 cursor-default"
+            isReadOnly && "!opacity-100 disabled:!opacity-100 [&:disabled]:!opacity-100 cursor-default bg-muted/30 border-muted-foreground/30",
+            isDisabled && !isReadOnly && "!opacity-100"
           )}
         />
         <Label htmlFor={fieldId} asChild>

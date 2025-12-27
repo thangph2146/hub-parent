@@ -55,7 +55,8 @@ export const TextField = <T,>({
           className={cn(
             error && "border-destructive",
             isPassword && "pr-10",
-            isReadOnly && "!opacity-100 disabled:!opacity-100 [&:read-only]:!opacity-100 cursor-default"
+            isReadOnly && "!opacity-100 disabled:!opacity-100 [&:read-only]:!opacity-100 cursor-default bg-muted/50 border-muted-foreground/20",
+            isDisabled && !isReadOnly && "!opacity-100"
           )}
         />
         {isPassword && (
@@ -63,7 +64,7 @@ export const TextField = <T,>({
             type="button"
             variant="ghost"
             size="sm"
-            className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+            className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent disabled:!opacity-100"
             onClick={() => setShowPassword(!showPassword)}
             disabled={isDisabled || isReadOnly}
             aria-label={showPassword ? "Ẩn mật khẩu" : "Hiển thị mật khẩu"}

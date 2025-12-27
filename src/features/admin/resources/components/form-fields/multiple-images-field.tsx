@@ -87,6 +87,7 @@ const ImageItem = ({
                   onClick={onMoveUp}
                   disabled={disabled || index === 0}
                   title="Di chuyển lên"
+                  className="disabled:!opacity-100"
                 >
                   <IconSize size="sm">
                     <ArrowUp />
@@ -99,6 +100,7 @@ const ImageItem = ({
                   onClick={onMoveDown}
                   disabled={disabled || index === total - 1}
                   title="Di chuyển xuống"
+                  className="disabled:!opacity-100"
                 >
                   <IconSize size="sm">
                     <ArrowDown />
@@ -109,7 +111,7 @@ const ImageItem = ({
                 type="button"
                 variant="secondary"
                 size="icon"
-                className="opacity-0 group-hover:opacity-100 p-2 bg-white/90 hover:bg-white transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+                className="opacity-0 group-hover:opacity-100 p-2 bg-white/90 hover:bg-white transition-opacity disabled:!opacity-100 disabled:cursor-not-allowed"
                 onClick={onSetPrimary}
                 disabled={disabled || image.isPrimary}
                 title={image.isPrimary ? "Ảnh chính" : "Đặt làm ảnh chính"}
@@ -122,7 +124,7 @@ const ImageItem = ({
                 type="button"
                 variant="secondary"
                 size="icon"
-                className="opacity-0 group-hover:opacity-100 p-2 bg-white/90 hover:bg-white transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+                className="opacity-0 group-hover:opacity-100 p-2 bg-white/90 hover:bg-white transition-opacity disabled:!opacity-100 disabled:cursor-not-allowed"
                 onClick={onRemove}
                 disabled={disabled}
                 title="Xóa ảnh"
@@ -152,7 +154,8 @@ const ImageItem = ({
           disabled={disabled && !isReadOnly}
           readOnly={isReadOnly}
           className={cn(
-            isReadOnly && "!opacity-100 disabled:!opacity-100 [&:read-only]:!opacity-100 cursor-default"
+            isReadOnly && "!opacity-100 disabled:!opacity-100 [&:read-only]:!opacity-100 cursor-default bg-muted/50 border-muted-foreground/20",
+            disabled && !isReadOnly && "!opacity-100"
           )}
         />
       </Flex>

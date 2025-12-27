@@ -56,7 +56,8 @@ export const ImageField = ({
             className={cn(
               "flex-1 min-w-0",
               error && "border-destructive",
-              isReadOnly && "!opacity-100 disabled:!opacity-100 [&:read-only]:!opacity-100 cursor-default"
+              isReadOnly && "!opacity-100 disabled:!opacity-100 [&:read-only]:!opacity-100 cursor-default bg-muted/50 border-muted-foreground/20",
+              isDisabled && !isReadOnly && "!opacity-100"
             )}
             disabled={isDisabled && !isReadOnly}
             readOnly={isReadOnly}
@@ -72,7 +73,7 @@ export const ImageField = ({
                 onChange("")
                 setImageError(false)
               }}
-              className="shrink-0"
+              className="shrink-0 disabled:!opacity-100"
               disabled={isDisabled}
               aria-label="Xóa hình ảnh"
             >

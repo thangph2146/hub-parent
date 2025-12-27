@@ -120,7 +120,8 @@ export const SlugField = <T,>({
         aria-describedby={errorId || field.description ? `${fieldId}-description` : undefined}
         className={cn(
           error && "border-destructive",
-          isReadOnly && "!opacity-100 disabled:!opacity-100 [&:read-only]:!opacity-100 cursor-default"
+          isReadOnly && "!opacity-100 disabled:!opacity-100 [&:read-only]:!opacity-100 cursor-default bg-muted/50 border-muted-foreground/20",
+          isDisabled && !isReadOnly && "!opacity-100"
         )}
       />
       {error && <FieldError id={errorId}>{error}</FieldError>}

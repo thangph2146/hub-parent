@@ -546,7 +546,10 @@ export const PermissionsTableField = <T,>({
                                                   )
                                                 }
                                                 data-readonly={readOnly ? "true" : undefined}
-                                                className={readOnly ? "!opacity-100 disabled:!opacity-100 [&:disabled]:!opacity-100" : undefined}
+                                                className={cn(
+                                                  readOnly && "!opacity-100 disabled:!opacity-100 [&:disabled]:!opacity-100 cursor-default bg-muted/30 border-muted-foreground/30",
+                                                  disabled && !readOnly && "!opacity-100"
+                                                )}
                                               />
                                               <span className="text-xs text-foreground leading-relaxed select-none group-hover:text-foreground">
                                                 Xem
@@ -587,7 +590,10 @@ export const PermissionsTableField = <T,>({
                                                   )
                                                 }
                                                 data-readonly={readOnly ? "true" : undefined}
-                                                className={readOnly ? "!opacity-100 disabled:!opacity-100 [&:disabled]:!opacity-100" : undefined}
+                                                className={cn(
+                                                  readOnly && "!opacity-100 disabled:!opacity-100 [&:disabled]:!opacity-100 cursor-default bg-muted/30 border-muted-foreground/30",
+                                                  disabled && !readOnly && "!opacity-100"
+                                                )}
                                               />
                                               <span className="text-xs text-foreground leading-relaxed select-none group-hover:text-foreground">
                                                 Thêm
@@ -628,7 +634,10 @@ export const PermissionsTableField = <T,>({
                                                   )
                                                 }
                                                 data-readonly={readOnly ? "true" : undefined}
-                                                className={readOnly ? "!opacity-100 disabled:!opacity-100 [&:disabled]:!opacity-100" : undefined}
+                                                className={cn(
+                                                  readOnly && "!opacity-100 disabled:!opacity-100 [&:disabled]:!opacity-100 cursor-default bg-muted/30 border-muted-foreground/30",
+                                                  disabled && !readOnly && "!opacity-100"
+                                                )}
                                               />
                                               <span className="text-xs text-foreground leading-relaxed select-none group-hover:text-foreground">
                                                 Sửa
@@ -669,7 +678,10 @@ export const PermissionsTableField = <T,>({
                                                   )
                                                 }
                                                 data-readonly={readOnly ? "true" : undefined}
-                                                className={readOnly ? "!opacity-100 disabled:!opacity-100 [&:disabled]:!opacity-100" : undefined}
+                                                className={cn(
+                                                  readOnly && "!opacity-100 disabled:!opacity-100 [&:disabled]:!opacity-100 cursor-default bg-muted/30 border-muted-foreground/30",
+                                                  disabled && !readOnly && "!opacity-100"
+                                                )}
                                               />
                                               <span className="text-xs text-foreground leading-relaxed select-none group-hover:text-foreground">
                                                 Xóa
@@ -819,7 +831,10 @@ function ResourceCheckbox({
         onCheckedChange={onCheckedChange}
         disabled={disabled}
         data-readonly={readOnly ? "true" : undefined}
-        className={readOnly ? "!opacity-100 disabled:!opacity-100 [&:disabled]:!opacity-100" : undefined}
+        className={cn(
+          readOnly && "!opacity-100 disabled:!opacity-100 [&:disabled]:!opacity-100 cursor-default bg-muted/30 border-muted-foreground/30",
+          disabled && !readOnly && "!opacity-100"
+        )}
       />
       <span className="font-semibold text-sm text-foreground leading-relaxed">
         {label}

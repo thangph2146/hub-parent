@@ -72,7 +72,8 @@ export const SelectCombobox = <T,>({
         paddingX={3}
         paddingY={2}
         className={cn(
-          error && "border-destructive"
+          error && "border-destructive",
+          "border-muted-foreground/20 cursor-default bg-muted/50 !opacity-100"
         )}
       >
         <TypographySpanSmall className="truncate !opacity-100">
@@ -95,7 +96,8 @@ export const SelectCombobox = <T,>({
           className={cn(
             "w-full justify-between h-10",
             !fieldValue && "text-muted-foreground",
-            error && "border-destructive"
+            error && "border-destructive",
+            isDisabled && "!opacity-100"
           )}
           disabled={isDisabled}
         >
@@ -103,9 +105,11 @@ export const SelectCombobox = <T,>({
             <TypographySpanSmall className="truncate">
               {selectedOption ? selectedOption.label : field.placeholder || "-- Chọn --"}
             </TypographySpanSmall>
-            <IconSize size="md" className="shrink-0 opacity-50">
-              <ChevronsUpDown />
-            </IconSize>
+            {!isDisabled && (
+              <IconSize size="md" className="shrink-0 opacity-50">
+                <ChevronsUpDown />
+              </IconSize>
+            )}
           </Flex>
         </Button>
       </PopoverTrigger>

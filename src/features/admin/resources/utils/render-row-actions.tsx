@@ -37,6 +37,7 @@ export const renderRowActions = (actions: RowActionConfig[]) => {
         onClick={() => {
           if (!isDisabled) singleAction.onSelect()
         }}
+        className="disabled:!opacity-100"
       >
         <Flex align="center" gap={2}>
           <IconSize size="md" className={singleAction.isLoading ? "animate-spin" : ""}>
@@ -72,8 +73,8 @@ export const renderRowActions = (actions: RowActionConfig[]) => {
               }}
               className={
                 action.destructive
-                  ? "text-destructive focus:text-destructive data-[highlighted]:text-destructive data-[highlighted]:bg-destructive/10 disabled:opacity-50"
-                  : "data-[highlighted]:bg-accent/10 disabled:opacity-50"
+                  ? "text-destructive focus:text-destructive data-[highlighted]:text-destructive data-[highlighted]:bg-destructive/10 disabled:!opacity-100"
+                  : "data-[highlighted]:bg-accent/10 disabled:!opacity-100"
               }
             >
               <Flex align="center" gap={2}>

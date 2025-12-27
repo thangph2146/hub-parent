@@ -504,12 +504,16 @@ export const ResourceForm = <T extends Record<string, unknown>>({
     });
 
     return (
-      <Field
+        <Field
         key={fieldName}
         id={fieldName}
         orientation={isCheckbox ? undefined : "vertical"}
         data-invalid={hasError}
-        className={cn("py-2.5", field.className)}
+        className={cn(
+          "py-2.5",
+          readOnly && "!opacity-100",
+          field.className
+        )}
       >
         {(!isCheckbox || field.icon) && (
           <FieldLabel
@@ -566,14 +570,20 @@ export const ResourceForm = <T extends Record<string, unknown>>({
     return (
       <FieldSet
         key={sectionId}
-        className="group/field-set transition-all duration-300"
+        className={cn(
+          "group/field-set transition-all duration-300",
+          readOnly && "!opacity-100"
+        )}
       >
         {renderSectionHeader(sectionInfo?.title, sectionInfo?.description)}
         <Grid
           cols={gridCols}
           fullWidth
           gap="responsive"
-          className="transition-all duration-300"
+          className={cn(
+            "transition-all duration-300",
+            readOnly && "!opacity-100"
+          )}
         >
           {sectionFields.map(renderField)}
         </Grid>
@@ -617,7 +627,12 @@ export const ResourceForm = <T extends Record<string, unknown>>({
             renderSection(sectionId, sectionFields)
           )}
           {ungrouped.length > 0 && (
-            <Grid cols="responsive-2" fullWidth gap="responsive">
+            <Grid 
+              cols="responsive-2" 
+              fullWidth 
+              gap="responsive"
+              className={cn(readOnly && "!opacity-100")}
+            >
               {ungrouped.map(renderField)}
             </Grid>
           )}
@@ -633,7 +648,7 @@ export const ResourceForm = <T extends Record<string, unknown>>({
         variant="outline"
         onClick={handleCancel}
         disabled={isPending}
-        className="h-9"
+        className="h-9 disabled:!opacity-100"
       >
         <Flex align="center" gap={2}>
           <IconSize size="sm">
@@ -646,7 +661,7 @@ export const ResourceForm = <T extends Record<string, unknown>>({
         type="submit"
         form="resource-form"
         disabled={isPending}
-        className="h-9"
+        className="h-9 disabled:!opacity-100"
       >
         <Flex align="center" gap={2}>
           {isPending ? (
