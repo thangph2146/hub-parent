@@ -13,12 +13,7 @@ import {
   Tag,
   Tags,
 } from "lucide-react";
-import {
-  ResourceDetailClient,
-  FieldItem,
-  type ResourceDetailField,
-  type ResourceDetailSection,
-} from "@/features/admin/resources/components";
+import { ResourceForm } from "@/features/admin/resources/components";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -42,11 +37,11 @@ import {
   TypographyP,
   TypographyPLargeMuted,
   TypographyPMuted,
-  TypographyPSmallMuted,
   IconSize,
 } from "@/components/ui/typography";
 import { Flex } from "@/components/ui/flex";
 import { Grid } from "@/components/ui/grid";
+import { getBasePostFields, getPostFormSections, type PostFormData } from "../form-fields";
 
 export interface PostDetailData {
   id: string;
@@ -121,198 +116,195 @@ export const PostDetailClient = ({
     fetchedData,
   });
 
-  const detailFields: ResourceDetailField<PostDetailData>[] = [];
-
-  const detailSections: ResourceDetailSection<PostDetailData>[] = [
-    {
-      id: "basic",
-      title: "Thông tin cơ bản",
-      description: "Thông tin chính về bài viết",
-      fieldsContent: (_fields, data) => {
-        const postData = data as PostDetailData;
-
-        return (
-          <Flex direction="col" gap="responsive" fullWidth>
-            <Flex direction="col" gap="responsive" fullWidth className="lg:flex-row">
-              {/* Featured Image */}
-              {postData.image && (
-                <Flex
-                  align="center"
-                  justify="center"
-                  position="relative"
-                  className="aspect-[16/9] max-w-2xl mx-auto w-full overflow-hidden rounded-lg"
-                >
-                  <Image
-                    src={postData.image}
-                    alt={postData.title || "Ảnh bài viết"}
-                    fill
-                    className="object-cover"
-                    sizes="(min-width: 1280px) 1000px, 90vw"
-                    priority
-                  />
-                </Flex>
-              )}
-
-              <Flex direction="col" gap={2} fullWidth>
-                <TypographyH2>
-                  {postData.title || "Chưa có tiêu đề"}
-                </TypographyH2>
-                {postData.excerpt && (
-                  <TypographyPLargeMuted className="whitespace-pre-wrap">
-                    {postData.excerpt}
-                  </TypographyPLargeMuted>
-                )}
-              </Flex>
-            </Flex>
-
-            <Grid cols="responsive-2" gap="responsive" fullWidth>
-              <FieldItem icon={Hash} label="Slug">
-                <TypographyP className="font-mono break-all">
-                  {postData.slug || "---"}
-                </TypographyP>
-              </FieldItem>
-
-              <FieldItem icon={User} label="Tác giả">
-                <Flex direction="col" gap={0.5}>
-                  <TypographyP>
-                    {postData.author.name || "Không rõ tên"}
-                  </TypographyP>
-                  <TypographyPSmallMuted className="line-clamp-1">
-                    {postData.author.email}
-                  </TypographyPSmallMuted>
-                </Flex>
-              </FieldItem>
-
-              {postData.categories && postData.categories.length > 0 && (
-                <FieldItem icon={Tag} label="Danh mục">
-                  <Flex wrap gap={1.5}>
-                    {postData.categories.map((category) => (
-                      <Badge key={category.id} variant="default">
-                        {category.name}
-                      </Badge>
-                    ))}
-                  </Flex>
-                </FieldItem>
-              )}
-
-              {postData.tags && postData.tags.length > 0 && (
-                <FieldItem icon={Tags} label="Thẻ tag">
-                  <Flex wrap gap={1.5}>
-                    {postData.tags.map((tag) => (
-                      <Badge key={tag.id} variant="secondary">
-                        {tag.name}
-                      </Badge>
-                    ))}
-                  </Flex>
-                </FieldItem>
-              )}
-
-              <FieldItem
-                icon={postData.published ? Eye : EyeOff}
-                label="Trạng thái"
-              >
-                <Flex align="center" gap={2}>
-                  {postData.published ? (
-                    <>
-                      <IconSize size="sm">
-                        <CheckCircle2 className="text-green-600 dark:text-green-500" />
-                      </IconSize>
-                      <TypographyP>Đã xuất bản</TypographyP>
-                    </>
-                  ) : (
-                    <>
-                      <IconSize size="sm">
-                        <EyeOff className="text-gray-600 dark:text-gray-400" />
-                      </IconSize>
-                      <TypographyP>Bản nháp</TypographyP>
-                    </>
-                  )}
-                </Flex>
-              </FieldItem>
-
-              {postData.publishedAt && (
-                <FieldItem icon={Calendar} label="Ngày xuất bản">
-                  <TypographyP>
-                    {formatDateVi(postData.publishedAt)}
-                  </TypographyP>
-                </FieldItem>
-              )}
-              <FieldItem icon={Clock} label="Ngày tạo">
-                <TypographyP>{formatDateVi(postData.createdAt)}</TypographyP>
-              </FieldItem>
-
-              <FieldItem icon={Clock} label="Cập nhật lần cuối">
-                <TypographyP>{formatDateVi(postData.updatedAt)}</TypographyP>
-              </FieldItem>
-
-              {postData.deletedAt && (
-                <FieldItem icon={Clock} label="Ngày xóa">
-                  <TypographyP className="text-destructive">
-                    {formatDateVi(postData.deletedAt)}
-                  </TypographyP>
-                </FieldItem>
-              )}
-            </Grid>
-          </Flex>
-        );
-      },
-    },
-    {
-      id: "content",
-      title: "Nội dung",
-      description: "Nội dung bài viết",
-      fieldsContent: (_fields, data) => {
-        const postData = data as PostDetailData;
-
-        let editorState: SerializedEditorState | null = null;
-        try {
-          if (postData.content && typeof postData.content === "object") {
-            editorState = postData.content as unknown as SerializedEditorState;
-          }
-        } catch (error) {
-          resourceLogger.actionFlow({
-            resource: "posts",
-            action: "load-detail",
-            step: "error",
-            metadata: {
-              postId,
-              error: error instanceof Error ? error.message : String(error),
-            },
-          });
-        }
-
-        return (
-          <Flex direction="col" gap="responsive" fullWidth className="max-w-5xl mx-auto">
-            {editorState ? (
-              <Editor editorSerializedState={editorState} readOnly={true} />
-            ) : (
-              <Card className="border border-border/50" padding="lg">
-                <TypographyPMuted>
-                  Không có nội dung hoặc định dạng không hợp lệ
-                </TypographyPMuted>
-              </Card>
-            )}
-          </Flex>
-        );
-      },
-    },
-  ];
-
+  const fields = getBasePostFields()
+  const sections = getPostFormSections()
   const isDeleted =
     detailData.deletedAt !== null && detailData.deletedAt !== undefined;
 
+  // Parse editor content
+  let editorState: SerializedEditorState | null = null;
+  try {
+    if (detailData.content && typeof detailData.content === "object") {
+      editorState = detailData.content as unknown as SerializedEditorState;
+    }
+  } catch (error) {
+    resourceLogger.actionFlow({
+      resource: "posts",
+      action: "load-detail",
+      step: "error",
+      metadata: {
+        postId,
+        error: error instanceof Error ? error.message : String(error),
+      },
+    });
+  }
+
   return (
-    <ResourceDetailClient<PostDetailData>
-      data={detailData}
-      title={"Chi tiết bài viết"}
-      description={`Chi tiết bài viết ${detailData.title}`}
-      fields={detailFields}
-      detailSections={detailSections}
-      backUrl={backUrl}
-      backLabel="Quay lại danh sách"
-      onBack={() => navigateBack(backUrl)}
-      actions={
-        !isDeleted && canUpdate ? (
+    <>
+      {/* Featured Image & Title Header */}
+      <Flex direction="col" gap="responsive" fullWidth className="lg:flex-row mb-4">
+        {detailData.image && (
+          <Flex
+            align="center"
+            justify="center"
+            position="relative"
+            className="aspect-[16/9] max-w-2xl mx-auto w-full overflow-hidden rounded-lg"
+          >
+            <Image
+              src={detailData.image}
+              alt={detailData.title || "Ảnh bài viết"}
+              fill
+              className="object-cover"
+              sizes="(min-width: 1280px) 1000px, 90vw"
+              priority
+            />
+          </Flex>
+        )}
+
+        <Flex direction="col" gap={2} fullWidth>
+          <TypographyH2>
+            {detailData.title || "Chưa có tiêu đề"}
+          </TypographyH2>
+          {detailData.excerpt && (
+            <TypographyPLargeMuted className="whitespace-pre-wrap">
+              {detailData.excerpt}
+            </TypographyPLargeMuted>
+          )}
+        </Flex>
+      </Flex>
+
+      <ResourceForm<PostFormData>
+        data={detailData as PostFormData}
+        fields={fields}
+        sections={sections}
+        title="Chi tiết bài viết"
+        description={`Chi tiết bài viết ${detailData.title}`}
+        backUrl={backUrl}
+        backLabel="Quay lại danh sách"
+        readOnly={true}
+        showCard={false}
+        onSubmit={async () => ({ success: false, error: "Read-only mode" })}
+        resourceName="posts"
+        resourceId={postId}
+        action="update"
+      />
+
+      {/* Custom Fields: Author, Categories, Tags, Status, Timestamps */}
+      <Card className="border border-border/50" padding="lg" marginTop={4}>
+        <Grid cols="responsive-2" gap="responsive" fullWidth>
+          <Flex direction="col" gap={1}>
+            <TypographyP className="text-sm font-medium text-muted-foreground mb-2">Tác giả</TypographyP>
+            <Flex direction="col" gap={0.5}>
+              <TypographyP>
+                {detailData.author.name || "Không rõ tên"}
+              </TypographyP>
+              <TypographyPMuted className="line-clamp-1">
+                {detailData.author.email}
+              </TypographyPMuted>
+            </Flex>
+          </Flex>
+
+          {detailData.categories && detailData.categories.length > 0 && (
+            <Flex direction="col" gap={1}>
+              <TypographyP className="text-sm font-medium text-muted-foreground mb-2">Danh mục</TypographyP>
+              <Flex wrap gap={1.5}>
+                {detailData.categories.map((category) => (
+                  <Badge key={category.id} variant="default">
+                    {category.name}
+                  </Badge>
+                ))}
+              </Flex>
+            </Flex>
+          )}
+
+          {detailData.tags && detailData.tags.length > 0 && (
+            <Flex direction="col" gap={1}>
+              <TypographyP className="text-sm font-medium text-muted-foreground mb-2">Thẻ tag</TypographyP>
+              <Flex wrap gap={1.5}>
+                {detailData.tags.map((tag) => (
+                  <Badge key={tag.id} variant="secondary">
+                    {tag.name}
+                  </Badge>
+                ))}
+              </Flex>
+            </Flex>
+          )}
+
+          <Flex direction="col" gap={1}>
+            <TypographyP className="text-sm font-medium text-muted-foreground mb-2">Trạng thái</TypographyP>
+            <Flex align="center" gap={2}>
+              {detailData.published ? (
+                <>
+                  <IconSize size="sm">
+                    <CheckCircle2 className="text-green-600 dark:text-green-500" />
+                  </IconSize>
+                  <TypographyP>Đã xuất bản</TypographyP>
+                </>
+              ) : (
+                <>
+                  <IconSize size="sm">
+                    <EyeOff className="text-gray-600 dark:text-gray-400" />
+                  </IconSize>
+                  <TypographyP>Bản nháp</TypographyP>
+                </>
+              )}
+            </Flex>
+          </Flex>
+
+          {detailData.publishedAt && (
+            <Flex direction="col" gap={1}>
+              <TypographyP className="text-sm font-medium text-muted-foreground mb-2">Ngày xuất bản</TypographyP>
+              <TypographyP>
+                {formatDateVi(detailData.publishedAt)}
+              </TypographyP>
+            </Flex>
+          )}
+
+          <Flex direction="col" gap={1}>
+            <TypographyP className="text-sm font-medium text-muted-foreground mb-2">Ngày tạo</TypographyP>
+            <TypographyP>{formatDateVi(detailData.createdAt)}</TypographyP>
+          </Flex>
+
+          <Flex direction="col" gap={1}>
+            <TypographyP className="text-sm font-medium text-muted-foreground mb-2">Cập nhật lần cuối</TypographyP>
+            <TypographyP>{formatDateVi(detailData.updatedAt)}</TypographyP>
+          </Flex>
+
+          {detailData.deletedAt && (
+            <Flex direction="col" gap={1}>
+              <TypographyP className="text-sm font-medium text-muted-foreground mb-2">Ngày xóa</TypographyP>
+              <TypographyP className="text-destructive">
+                {formatDateVi(detailData.deletedAt)}
+              </TypographyP>
+            </Flex>
+          )}
+        </Grid>
+      </Card>
+
+      {/* Editor Content */}
+      <Card className="border border-border/50" padding="lg" marginTop={4}>
+        <TypographyP className="text-sm font-medium text-muted-foreground mb-4">Nội dung</TypographyP>
+        {editorState ? (
+          <Editor editorSerializedState={editorState} readOnly={true} />
+        ) : (
+          <Card className="border border-border/50" padding="lg">
+            <TypographyPMuted>
+              Không có nội dung hoặc định dạng không hợp lệ
+            </TypographyPMuted>
+          </Card>
+        )}
+      </Card>
+
+      {!isDeleted && canUpdate && (
+        <Flex
+          align="center"
+          justify="end"
+          gap={2}
+          fullWidth
+          paddingY={2}
+          border="top"
+          className="sticky bottom-0 bg-background/95 backdrop-blur-sm z-10 mt-4"
+        >
           <Button
             variant="outline"
             onClick={() => router.push(`/admin/posts/${detailData.id}/edit`)}
@@ -324,9 +316,9 @@ export const PostDetailClient = ({
               Chỉnh sửa
             </Flex>
           </Button>
-        ) : null
-      }
-    />
+        </Flex>
+      )}
+    </>
   );
 };
 

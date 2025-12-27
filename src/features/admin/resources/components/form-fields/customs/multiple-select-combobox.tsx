@@ -28,6 +28,8 @@ interface MultipleSelectComboboxProps<T> {
   error?: string
   onChange: (value: unknown) => void
   isPending?: boolean
+  disabled?: boolean
+  readOnly?: boolean
   fieldId?: string
   errorId?: string
 }
@@ -38,10 +40,14 @@ export const MultipleSelectCombobox = <T,>({
   error,
   onChange,
   isPending = false,
+  disabled = false,
+  readOnly = false,
   fieldId,
   errorId,
 }: MultipleSelectComboboxProps<T>) => {
   const [selectOpen, setSelectOpen] = useState(false)
+  const isDisabled = disabled || field.disabled || isPending
+  const isReadOnly = readOnly && !isDisabled
 
   const selectedValues = Array.isArray(fieldValue) 
     ? fieldValue.map(v => String(v))
@@ -100,6 +106,42 @@ export const MultipleSelectCombobox = <T,>({
     ? `${selectedOptions.length} mục đã chọn`
     : field.placeholder || "-- Chọn --"
 
+  // When readOnly, show plain text/badges instead of button
+  if (isReadOnly) {
+    return (
+      <Flex
+        id={fieldId || field.name as string}
+        align="center"
+        wrap
+        gap={1.5}
+        fullWidth
+        minHeight="10"
+        rounded="md"
+        border="all"
+        bg="background"
+        paddingX={3}
+        paddingY={2}
+        className={cn(
+          error && "border-destructive"
+        )}
+      >
+        {selectedOptions.length > 0 ? (
+          selectedOptions.map((option) => (
+            <Badge
+              key={option.value}
+              variant="secondary"
+              className="!opacity-100"
+            >
+              {option.label}
+            </Badge>
+          ))
+        ) : (
+          <TypographyPMuted className="!opacity-100">{displayText}</TypographyPMuted>
+        )}
+      </Flex>
+    )
+  }
+
   return (
     <Popover open={selectOpen} onOpenChange={setSelectOpen}>
       <PopoverTrigger asChild>
@@ -115,7 +157,7 @@ export const MultipleSelectCombobox = <T,>({
             selectedValues.length === 0 && "text-muted-foreground",
             error && "border-destructive"
           )}
-          disabled={field.disabled || isPending}
+          disabled={isDisabled}
         >
           <Flex wrap align="center" gap={1.5} flex="1" minWidth="0">
             {selectedOptions.length > 0 ? (

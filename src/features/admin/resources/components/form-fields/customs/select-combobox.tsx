@@ -27,6 +27,8 @@ interface SelectComboboxProps<T> {
   error?: string
   onChange: (value: unknown) => void
   isPending?: boolean
+  disabled?: boolean
+  readOnly?: boolean
   fieldId?: string
   errorId?: string
 }
@@ -37,10 +39,14 @@ export const SelectCombobox = <T,>({
   error,
   onChange,
   isPending = false,
+  disabled = false,
+  readOnly = false,
   fieldId,
   errorId,
 }: SelectComboboxProps<T>) => {
   const [selectOpen, setSelectOpen] = useState(false)
+  const isDisabled = disabled || field.disabled || isPending
+  const isReadOnly = readOnly && !isDisabled
 
   if (!field.options || field.options.length === 0) {
     return (
@@ -51,6 +57,30 @@ export const SelectCombobox = <T,>({
   }
 
   const selectedOption = field.options.find((opt) => String(opt.value) === String(fieldValue))
+
+  // When readOnly, show plain text instead of button
+  if (isReadOnly) {
+    return (
+      <Flex
+        id={fieldId || field.name as string}
+        align="center"
+        fullWidth
+        height="10"
+        rounded="md"
+        border="all"
+        bg="background"
+        paddingX={3}
+        paddingY={2}
+        className={cn(
+          error && "border-destructive"
+        )}
+      >
+        <TypographySpanSmall className="truncate !opacity-100">
+          {selectedOption ? selectedOption.label : field.placeholder || "-- Chọn --"}
+        </TypographySpanSmall>
+      </Flex>
+    )
+  }
 
   return (
     <Popover open={selectOpen} onOpenChange={setSelectOpen}>
@@ -67,7 +97,7 @@ export const SelectCombobox = <T,>({
             !fieldValue && "text-muted-foreground",
             error && "border-destructive"
           )}
-          disabled={field.disabled || isPending}
+          disabled={isDisabled}
         >
           <Flex align="center" justify="between" gap={2} fullWidth>
             <TypographySpanSmall className="truncate">

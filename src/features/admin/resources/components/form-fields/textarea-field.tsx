@@ -1,6 +1,7 @@
 "use client"
 
 import { FieldContent, FieldError } from "@/components/ui/field"
+import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
 import type { ResourceFormField } from "../resource-form"
 
@@ -10,6 +11,8 @@ interface TextareaFieldProps<T> {
   error?: string
   onChange: (value: unknown) => void
   isPending?: boolean
+  disabled?: boolean
+  readOnly?: boolean
 }
 
 export const TextareaField = <T,>({
@@ -18,28 +21,30 @@ export const TextareaField = <T,>({
   error,
   onChange,
   isPending = false,
+  disabled = false,
+  readOnly = false,
 }: TextareaFieldProps<T>) => {
   const fieldValue = value ?? ""
   const fieldId = field.name as string
   const errorId = error ? `${fieldId}-error` : undefined
+  const isDisabled = disabled || field.disabled || isPending
+  const isReadOnly = readOnly && !isDisabled
 
   return (
     <FieldContent>
-      <textarea
+      <Textarea
         id={fieldId}
         name={fieldId}
         value={String(fieldValue)}
         onChange={(e) => onChange(e.target.value)}
         placeholder={field.placeholder}
         required={field.required}
-        disabled={field.disabled || isPending}
+        disabled={isDisabled && !isReadOnly}
+        readOnly={isReadOnly}
         aria-invalid={error ? "true" : "false"}
         aria-describedby={errorId || field.description ? `${fieldId}-description` : undefined}
         className={cn(
-          "flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 ring-offset-background",
-          "placeholder:text-muted-foreground",
-          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-          "disabled:cursor-not-allowed disabled:opacity-50",
+          isReadOnly && "!opacity-100 disabled:!opacity-100 [&:read-only]:!opacity-100 cursor-default",
           error && "border-destructive"
         )}
       />

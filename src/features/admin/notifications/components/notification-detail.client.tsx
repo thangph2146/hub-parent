@@ -5,23 +5,15 @@ import { Flex } from "@/components/ui/flex";
 import { Grid } from "@/components/ui/grid";
 
 import {
-  Bell,
-  User,
   Calendar,
   Clock,
   ExternalLink,
-  FileText,
   AlertCircle,
   Info,
   CheckCircle,
   XCircle as XCircleIcon,
 } from "lucide-react";
-import {
-  ResourceDetailClient,
-  FieldItem,
-  type ResourceDetailField,
-  type ResourceDetailSection,
-} from "@/features/admin/resources/components";
+import { ResourceForm } from "@/features/admin/resources/components";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
@@ -37,6 +29,7 @@ import { useSession } from "next-auth/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useMemo, useCallback } from "react";
 import { NOTIFICATION_KINDS } from "../constants";
+import { getBaseNotificationFields, getNotificationFormSections, type NotificationFormData } from "../form-fields";
 
 export interface NotificationDetailData extends Record<string, unknown> {
   id: string;
@@ -165,276 +158,193 @@ export const NotificationDetailClient = ({
     }
   }, [notificationId, detailData, detailQueryKey, queryClient, markNotificationRead, isOwner, toast]);
 
-  const detailFields: ResourceDetailField<NotificationDetailData>[] = [];
-
-  const detailSections: ResourceDetailSection<NotificationDetailData>[] = [
-    {
-      id: "basic",
-      title: "Thông tin cơ bản",
-      description: "Thông tin chính của thông báo",
-      fieldsContent: (_fields, data) => {
-        const notificationData = (data || detailData) as NotificationDetailData;
-        const kindConfigData = NOTIFICATION_KINDS[notificationData.kind] || {
-          label: notificationData.kind,
-          variant: "secondary" as const,
-        };
-
-        return (
-          <Flex direction="col" gap="responsive">
-            {/* Kind & Title */}
-            <Grid cols="responsive-2" fullWidth gap="responsive">
-              <FieldItem icon={Bell} label="Loại thông báo">
-                <Badge variant={kindConfigData.variant} className="w-fit">
-                  {kindConfigData.label}
-                </Badge>
-              </FieldItem>
-
-              <FieldItem icon={FileText} label="Tiêu đề">
-                <TypographyP>
-                  {notificationData.title || "—"}
-                </TypographyP>
-              </FieldItem>
-            </Grid>
-
-            {/* Description */}
-            {notificationData.description && (
-              <Card className="border border-border/50" padding="lg">
-                <Flex align="start" gap={3} fullWidth>
-                  <Flex align="center" justify="center" shrink className="h-9 w-9" rounded="lg" bg="muted">
-                    <IconSize size="sm">
-                      <FileText />
-                    </IconSize>
-                  </Flex>
-                  <Flex direction="col" gap={2} flex="1" minWidth="0" fullWidth>
-                    <TypographyP>
-                      Mô tả
-                    </TypographyP>
-                    <TypographyP className="whitespace-pre-wrap break-words">
-                      {notificationData.description || "—"}
-                    </TypographyP>
-                  </Flex>
-                </Flex>
-              </Card>
-            )}
-
-            {/* User */}
-            <FieldItem icon={User} label="Người dùng">
-              <Flex direction="col" gap={0.5}>
-                <TypographyP>
-                  {notificationData.user?.email || "—"}
-                </TypographyP>
-                {notificationData.user?.name && (
-                  <TypographyPSmallMuted>
-                    {notificationData.user.name}
-                  </TypographyPSmallMuted>
-                )}
-              </Flex>
-            </FieldItem>
-          </Flex> 
-        );
-      },
-    },
-    {
-      id: "status",
-      title: "Trạng thái",
-      description: "Thông tin trạng thái của thông báo",
-      fieldsContent: (_fields, data) => {
-        const notificationData = data as NotificationDetailData;
-        const isNotificationOwner = session?.user?.id === notificationData.userId;
-
-        return (
-          <Flex direction="col" gap="responsive">
-            {/* Read Status & Read Date - 2 columns on sm+ */}
-            <Grid cols="responsive-2" fullWidth gap="responsive">
-              {/* Read Status */}
-              <FieldItem
-                icon={notificationData.isRead ? CheckCircle : XCircleIcon}
-                label="Trạng thái đọc"
-                iconColor={
-                  notificationData.isRead
-                    ? "bg-green-500/10 hover:bg-green-500/20"
-                    : "bg-amber-500/10 hover:bg-amber-500/20"
-                }
-              >
-                <Flex align="center" gap={3}>
-                  <Switch
-                    checked={notificationData.isRead}
-                    disabled={isToggling || !isNotificationOwner}
-                    onCheckedChange={handleToggleRead}
-                    aria-label={
-                      notificationData.isRead
-                        ? "Đánh dấu chưa đọc"
-                        : "Đánh dấu đã đọc"
-                    }
-                  />
-                  
-                </Flex>
-                {!isNotificationOwner && (
-                  <Flex className="mt-1.5">
-                    <TypographyPSmallMuted>
-                      Chỉ có thể thay đổi trạng thái thông báo của chính mình
-                    </TypographyPSmallMuted>
-                  </Flex>
-                )}
-              </FieldItem>
-
-              {/* Read Date */}
-              {notificationData.readAt && (
-                <FieldItem icon={Clock} label="Ngày đọc">
-                  <Flex align="center" gap={2}>
-                    <IconSize size="xs" className="text-muted-foreground shrink-0">
-                      <Clock />
-                    </IconSize>
-                    <time
-                      dateTime={notificationData.readAt}
-                      title={new Date(notificationData.readAt).toLocaleString(
-                        "vi-VN",
-                        {
-                          dateStyle: "full",
-                          timeStyle: "long",
-                        }
-                      )}
-                    >
-                      <TypographyPSmallMuted>
-                        {formatDateVi(notificationData.readAt)}
-                      </TypographyPSmallMuted>
-                    </time>
-                  </Flex>
-                </FieldItem>
-              )}
-            </Grid>
-          </Flex>
-        );
-      },
-    },
-    {
-      id: "additional",
-      title: "Thông tin bổ sung",
-      description: "Thông tin chi tiết về thông báo",
-      fieldsContent: (_fields, data) => {
-        const notificationData = data as NotificationDetailData;
-
-        // Count fields for grid layout
-        const hasActionUrl = !!notificationData.actionUrl;
-        const hasExpiresAt = !!notificationData.expiresAt;
-        const fieldCount = (hasActionUrl ? 1 : 0) + 1 + (hasExpiresAt ? 1 : 0); // actionUrl + createdAt + expiresAt
-
-        return (
-          <Flex direction="col" gap="responsive">
-            {/* Action URL & Timestamps - Grid layout */}
-            <Grid cols={fieldCount === 1 ? 1 : "responsive-2"} gap="responsive" fullWidth>
-              {/* Action URL */}
-              {notificationData.actionUrl && (
-                <FieldItem icon={ExternalLink} label="URL hành động">
-                  <a
-                    href={notificationData.actionUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="group inline-flex items-center gap-2 text-primary hover:text-primary/80 hover:underline transition-colors w-full min-w-0"
-                    title={notificationData.actionUrl}
-                  >
-                    <TypographyP className="truncate flex-1 min-w-0">
-                      {notificationData.actionUrl}
-                    </TypographyP>
-                  </a>
-                </FieldItem>
-              )}
-
-              {/* Created At */}
-              <FieldItem icon={Calendar} label="Ngày tạo">
-                {notificationData.createdAt ? (
-                  <Flex align="center" gap={2}>
-                    <IconSize size="xs" className="text-muted-foreground shrink-0">
-                      <Calendar />
-                    </IconSize>
-                    <time
-                      dateTime={notificationData.createdAt}
-                      title={new Date(
-                        notificationData.createdAt
-                      ).toLocaleString("vi-VN", {
-                        dateStyle: "full",
-                        timeStyle: "long",
-                      })}
-                    >
-                      <TypographyPSmallMuted>
-                        {formatDateVi(notificationData.createdAt)}
-                      </TypographyPSmallMuted>
-                    </time>
-                  </Flex>
-                ) : (
-                  <TypographyPMuted>—</TypographyPMuted>
-                )}
-              </FieldItem>
-
-              {/* Expires At */}
-              {notificationData.expiresAt && (
-                <FieldItem
-                  icon={
-                    new Date(notificationData.expiresAt) < new Date()
-                      ? AlertCircle
-                      : Info
-                  }
-                  label="Ngày hết hạn"
-                  iconColor={
-                    new Date(notificationData.expiresAt) < new Date()
-                      ? "bg-destructive/10"
-                      : "bg-muted"
-                  }
-                >
-                  <Flex direction="col" gap={2}>
-                    <Flex align="center" gap={2}>
-                      <IconSize size="xs" className="text-muted-foreground shrink-0">
-                        <Calendar />
-                      </IconSize>
-                      <time
-                        dateTime={notificationData.expiresAt}
-                        className={cn(
-                          "",
-                          new Date(notificationData.expiresAt) < new Date()
-                            ? "text-destructive"
-                            : "text-foreground"
-                        )}
-                        title={new Date(
-                          notificationData.expiresAt
-                        ).toLocaleString("vi-VN", {
-                          dateStyle: "full",
-                          timeStyle: "long",
-                        })}
-                      >
-                        {formatDateVi(notificationData.expiresAt)}
-                      </time>
-                    </Flex>
-                    {new Date(notificationData.expiresAt) < new Date() && (
-                      <Badge variant="destructive" className="w-fit">
-                        <Flex align="center" gap={1}>
-                          <IconSize size="xs">
-                            <AlertCircle />
-                          </IconSize>
-                          <span>Đã hết hạn</span>
-                        </Flex>
-                      </Badge>
-                    )}
-                  </Flex>
-                </FieldItem>
-              )}
-            </Grid>
-          </Flex>
-        );
-      },
-    },
-  ];
+  const kindConfigData = NOTIFICATION_KINDS[detailData.kind] || {
+    label: detailData.kind,
+    variant: "secondary" as const,
+  };
+  const isNotificationOwner = session?.user?.id === detailData.userId;
+  const fields = getBaseNotificationFields()
+  const sections = getNotificationFormSections()
+  const formData: NotificationFormData = {
+    ...detailData,
+    kind: kindConfigData.label,
+    userEmail: detailData.user?.email || "",
+    userName: detailData.user?.name || null,
+  }
 
   return (
-    <ResourceDetailClient<NotificationDetailData>
-      data={detailData}
-      fields={detailFields}
-      detailSections={detailSections}
-      title={detailData.title}
-      description={`Thông báo ${(
-        NOTIFICATION_KINDS[detailData.kind] || { label: detailData.kind }
-      ).label.toLowerCase()} cho ${detailData.user?.email || "người dùng"}`}
-      backUrl={backUrl}
-      backLabel="Quay lại danh sách"
-    />
+    <>
+      <ResourceForm<NotificationFormData>
+        data={formData}
+        fields={fields}
+        sections={sections}
+        title={detailData.title}
+        description={`Thông báo ${kindConfigData.label.toLowerCase()} cho ${detailData.user?.email || "người dùng"}`}
+        backUrl={backUrl}
+        backLabel="Quay lại danh sách"
+        readOnly={true}
+        showCard={false}
+        onSubmit={async () => ({ success: false, error: "Read-only mode" })}
+      />
+
+      {/* Custom Kind Badge */}
+      <Card className="border border-border/50" padding="lg" marginTop={4}>
+        <Flex direction="col" gap={1}>
+          <TypographyP className="text-sm font-medium text-muted-foreground mb-2">Loại thông báo</TypographyP>
+          <Badge variant={kindConfigData.variant} className="w-fit">
+            {kindConfigData.label}
+          </Badge>
+        </Flex>
+      </Card>
+
+      {/* Custom Toggle Read Status */}
+      <Card className="border border-border/50" padding="lg" marginTop={4}>
+        <Flex direction="col" gap="responsive">
+          <Grid cols="responsive-2" fullWidth gap="responsive">
+            <Flex direction="col" gap={1}>
+              <TypographyP className="text-sm font-medium text-muted-foreground mb-2">Trạng thái đọc</TypographyP>
+              <Flex align="center" gap={3}>
+                <Switch
+                  checked={detailData.isRead}
+                  disabled={isToggling || !isNotificationOwner}
+                  onCheckedChange={handleToggleRead}
+                  aria-label={
+                    detailData.isRead
+                      ? "Đánh dấu chưa đọc"
+                      : "Đánh dấu đã đọc"
+                  }
+                />
+                <TypographyP>
+                  {detailData.isRead ? "Đã đọc" : "Chưa đọc"}
+                </TypographyP>
+              </Flex>
+              {!isNotificationOwner && (
+                <Flex className="mt-1.5">
+                  <TypographyPSmallMuted>
+                    Chỉ có thể thay đổi trạng thái thông báo của chính mình
+                  </TypographyPSmallMuted>
+                </Flex>
+              )}
+            </Flex>
+
+            {detailData.readAt && (
+              <Flex direction="col" gap={1}>
+                <TypographyP className="text-sm font-medium text-muted-foreground mb-2">Ngày đọc</TypographyP>
+                <Flex align="center" gap={2}>
+                  <IconSize size="xs" className="text-muted-foreground shrink-0">
+                    <Clock />
+                  </IconSize>
+                  <time
+                    dateTime={detailData.readAt}
+                    title={new Date(detailData.readAt).toLocaleString(
+                      "vi-VN",
+                      {
+                        dateStyle: "full",
+                        timeStyle: "long",
+                      }
+                    )}
+                  >
+                    <TypographyPSmallMuted>
+                      {formatDateVi(detailData.readAt)}
+                    </TypographyPSmallMuted>
+                  </time>
+                </Flex>
+              </Flex>
+            )}
+          </Grid>
+        </Flex>
+      </Card>
+
+      {/* Additional Info: Action URL, Timestamps, Expires At */}
+      <Card className="border border-border/50" padding="lg" marginTop={4}>
+        <Grid cols="responsive-2" gap="responsive" fullWidth>
+          {detailData.actionUrl && (
+            <Flex direction="col" gap={1}>
+              <TypographyP className="text-sm font-medium text-muted-foreground mb-2">URL hành động</TypographyP>
+              <a
+                href={detailData.actionUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group inline-flex items-center gap-2 text-primary hover:text-primary/80 hover:underline transition-colors w-full min-w-0"
+                title={detailData.actionUrl}
+              >
+                <TypographyP className="truncate flex-1 min-w-0">
+                  {detailData.actionUrl}
+                </TypographyP>
+                <IconSize size="xs" className="shrink-0 opacity-50 group-hover:opacity-100 transition-opacity">
+                  <ExternalLink />
+                </IconSize>
+              </a>
+            </Flex>
+          )}
+
+          <Flex direction="col" gap={1}>
+            <TypographyP className="text-sm font-medium text-muted-foreground mb-2">Ngày tạo</TypographyP>
+            {detailData.createdAt ? (
+              <Flex align="center" gap={2}>
+                <IconSize size="xs" className="text-muted-foreground shrink-0">
+                  <Calendar />
+                </IconSize>
+                <time
+                  dateTime={detailData.createdAt}
+                  title={new Date(
+                    detailData.createdAt
+                  ).toLocaleString("vi-VN", {
+                    dateStyle: "full",
+                    timeStyle: "long",
+                  })}
+                >
+                  <TypographyPSmallMuted>
+                    {formatDateVi(detailData.createdAt)}
+                  </TypographyPSmallMuted>
+                </time>
+              </Flex>
+            ) : (
+              <TypographyPMuted>—</TypographyPMuted>
+            )}
+          </Flex>
+
+          {detailData.expiresAt && (
+            <Flex direction="col" gap={1}>
+              <TypographyP className="text-sm font-medium text-muted-foreground mb-2">Ngày hết hạn</TypographyP>
+              <Flex direction="col" gap={2}>
+                <Flex align="center" gap={2}>
+                  <IconSize size="xs" className="text-muted-foreground shrink-0">
+                    <Calendar />
+                  </IconSize>
+                  <time
+                    dateTime={detailData.expiresAt}
+                    className={cn(
+                      "",
+                      new Date(detailData.expiresAt) < new Date()
+                        ? "text-destructive"
+                        : "text-foreground"
+                    )}
+                    title={new Date(
+                      detailData.expiresAt
+                    ).toLocaleString("vi-VN", {
+                      dateStyle: "full",
+                      timeStyle: "long",
+                    })}
+                  >
+                    {formatDateVi(detailData.expiresAt)}
+                  </time>
+                </Flex>
+                {new Date(detailData.expiresAt) < new Date() && (
+                  <Badge variant="destructive" className="w-fit">
+                    <Flex align="center" gap={1}>
+                      <IconSize size="xs">
+                        <AlertCircle />
+                      </IconSize>
+                      <span>Đã hết hạn</span>
+                    </Flex>
+                  </Badge>
+                )}
+              </Flex>
+            </Flex>
+          )}
+        </Grid>
+      </Card>
+    </>
   );
 }

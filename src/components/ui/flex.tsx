@@ -56,7 +56,7 @@ const flexVariants = cva("flex", {
       "2-lg-6": "gap-2 lg:gap-6",
       "4-lg-6": "gap-4 lg:gap-6",
       "4-lg-8": "gap-4 lg:gap-8",
-      "responsive": "gap-2 sm:gap-4 md:gap-5 lg:gap-6 xl:gap-8 2xl:gap-8",
+      "responsive": "gap-2 sm:gap-4 md:gap-5 lg:gap-6",
     },
     gapX: {
       none: "",
@@ -128,7 +128,7 @@ const flexVariants = cva("flex", {
       "responsive": "px-4 sm:px-6 md:px-7 lg:px-8 xl:px-9 2xl:px-10",
       "responsive-y": "py-4 sm:py-6 md:py-6 lg:py-8 xl:py-10 2xl:py-10",
       "responsive-full": "px-4 sm:px-6 md:px-7 lg:px-8 xl:px-9 2xl:px-10 py-4 sm:py-6 md:py-6 lg:py-8 xl:py-10 2xl:py-10",
-      "responsive-lg": "px-4 sm:px-6 md:px-7 lg:px-8 xl:px-9 2xl:px-10 py-8 sm:py-12 md:py-14 lg:py-16 xl:py-20 2xl:py-20",
+      "responsive-lg": "px-4 sm:px-6 md:px-7 lg:px-8 xl:px-9 2xl:px-10 py-8",
       "md-lg": "p-6 md:p-8",
       "sm-md": "p-4 sm:p-6",
     },

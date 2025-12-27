@@ -104,6 +104,9 @@ export interface ResourceFormProps<T extends Record<string, unknown>> {
   resourceName?: string;
   resourceId?: string;
   action?: "create" | "update";
+
+  // Read-only mode (for detail view)
+  readOnly?: boolean;
 }
 
 export const ResourceForm = <T extends Record<string, unknown>>({
@@ -130,6 +133,7 @@ export const ResourceForm = <T extends Record<string, unknown>>({
   resourceName,
   resourceId,
   action,
+  readOnly = false,
 }: ResourceFormProps<T>) => {
   const resourceSegment = useResourceSegment();
   const resolvedBackUrl = backUrl
@@ -494,8 +498,9 @@ export const ResourceForm = <T extends Record<string, unknown>>({
       value,
       error,
       onChange: (newValue) => handleFieldChange(field.name as string, newValue),
-      isPending,
+      isPending: isPending || readOnly,
       sourceValue,
+      readOnly: readOnly || field.disabled,
     });
 
     return (
@@ -511,7 +516,8 @@ export const ResourceForm = <T extends Record<string, unknown>>({
             htmlFor={fieldName}
             className={cn(
               hasError && "text-destructive/90",
-              !hasError && "group-hover/field:text-foreground"
+              !hasError && "group-hover/field:text-foreground",
+              readOnly && "!opacity-100"
             )}
           >
             {field.icon && (
@@ -530,7 +536,7 @@ export const ResourceForm = <T extends Record<string, unknown>>({
         <FieldContent>
           {fieldInput}
           {field.description && (
-            <FieldDescription>
+            <FieldDescription className={cn(readOnly && "!opacity-100")}>
               {field.description}
             </FieldDescription>
           )}
@@ -715,17 +721,19 @@ export const ResourceForm = <T extends Record<string, unknown>>({
 
       {formContent}
 
-      <Flex
-        align="center"
-        justify="end"
-        gap={2}
-        fullWidth
-        paddingY={2}
-        border="top"
-        className="sticky bottom-0 bg-background/95 backdrop-blur-sm z-10"
-      >
-        {footerButtons}
-      </Flex>
+      {!readOnly && (
+        <Flex
+          align="center"
+          justify="end"
+          gap={2}
+          fullWidth
+          paddingY={2}
+          border="top"
+          className="sticky bottom-0 bg-background/95 backdrop-blur-sm z-10"
+        >
+          {footerButtons}
+        </Flex>
+      )}
     </>
   );
 };

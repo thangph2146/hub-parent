@@ -503,12 +503,14 @@ export const PermissionsTableField = <T,>({
                                           disabled={
                                             field.disabled ||
                                             isPending ||
+                                            readOnly ||
                                             perms.length === 0 ||
                                             perms.every(
                                               (p) =>
                                                 !isPermissionAvailable(p.fullValue)
                                             )
                                           }
+                                          readOnly={readOnly}
                                           label={displayName}
                                         />
                                       </TableCell>
@@ -538,10 +540,13 @@ export const PermissionsTableField = <T,>({
                                                 disabled={
                                                   field.disabled ||
                                                   isPending ||
+                                                  readOnly ||
                                                   !isPermissionAvailable(
                                                     viewPerm.fullValue
                                                   )
                                                 }
+                                                data-readonly={readOnly ? "true" : undefined}
+                                                className={readOnly ? "!opacity-100 disabled:!opacity-100 [&:disabled]:!opacity-100" : undefined}
                                               />
                                               <span className="text-xs text-foreground leading-relaxed select-none group-hover:text-foreground">
                                                 Xem
@@ -576,10 +581,13 @@ export const PermissionsTableField = <T,>({
                                                 disabled={
                                                   field.disabled ||
                                                   isPending ||
+                                                  readOnly ||
                                                   !isPermissionAvailable(
                                                     createPerm.fullValue
                                                   )
                                                 }
+                                                data-readonly={readOnly ? "true" : undefined}
+                                                className={readOnly ? "!opacity-100 disabled:!opacity-100 [&:disabled]:!opacity-100" : undefined}
                                               />
                                               <span className="text-xs text-foreground leading-relaxed select-none group-hover:text-foreground">
                                                 Thêm
@@ -614,10 +622,13 @@ export const PermissionsTableField = <T,>({
                                                 disabled={
                                                   field.disabled ||
                                                   isPending ||
+                                                  readOnly ||
                                                   !isPermissionAvailable(
                                                     updatePerm.fullValue
                                                   )
                                                 }
+                                                data-readonly={readOnly ? "true" : undefined}
+                                                className={readOnly ? "!opacity-100 disabled:!opacity-100 [&:disabled]:!opacity-100" : undefined}
                                               />
                                               <span className="text-xs text-foreground leading-relaxed select-none group-hover:text-foreground">
                                                 Sửa
@@ -652,10 +663,13 @@ export const PermissionsTableField = <T,>({
                                                 disabled={
                                                   field.disabled ||
                                                   isPending ||
+                                                  readOnly ||
                                                   !isPermissionAvailable(
                                                     deletePerm.fullValue
                                                   )
                                                 }
+                                                data-readonly={readOnly ? "true" : undefined}
+                                                className={readOnly ? "!opacity-100 disabled:!opacity-100 [&:disabled]:!opacity-100" : undefined}
                                               />
                                               <span className="text-xs text-foreground leading-relaxed select-none group-hover:text-foreground">
                                                 Xóa
@@ -731,8 +745,11 @@ export const PermissionsTableField = <T,>({
                                                     disabled={
                                                       field.disabled ||
                                                       isPending ||
+                                                      readOnly ||
                                                       !isAvailable
                                                     }
+                                                    data-readonly={readOnly ? "true" : undefined}
+                                                    className={readOnly ? "!opacity-100 disabled:!opacity-100 [&:disabled]:!opacity-100" : undefined}
                                                     onClick={(e) =>
                                                       e.stopPropagation()
                                                     }
@@ -771,12 +788,14 @@ function ResourceCheckbox({
   indeterminate,
   onCheckedChange,
   disabled,
+  readOnly,
   label,
 }: {
   checked: boolean;
   indeterminate: boolean;
   onCheckedChange: (checked: boolean) => void;
   disabled?: boolean;
+  readOnly?: boolean;
   label: string;
 }) {
   const checkboxRef = useRef<React.ElementRef<typeof Checkbox>>(null);
@@ -799,6 +818,8 @@ function ResourceCheckbox({
         checked={checked}
         onCheckedChange={onCheckedChange}
         disabled={disabled}
+        data-readonly={readOnly ? "true" : undefined}
+        className={readOnly ? "!opacity-100 disabled:!opacity-100 [&:disabled]:!opacity-100" : undefined}
       />
       <span className="font-semibold text-sm text-foreground leading-relaxed">
         {label}

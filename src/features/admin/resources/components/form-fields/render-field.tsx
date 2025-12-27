@@ -22,6 +22,7 @@ interface RenderFieldProps<T> {
   onChange: (value: unknown) => void
   isPending?: boolean
   sourceValue?: unknown
+  readOnly?: boolean
 }
 
 export const renderFieldInput = <T,>({
@@ -31,6 +32,7 @@ export const renderFieldInput = <T,>({
   onChange,
   isPending = false,
   sourceValue,
+  readOnly = false,
 }: RenderFieldProps<T>) => {
   const defaultValue = field.type === "multiple-select" || field.type === "permissions-table"
     ? (field.defaultValue ?? [])
@@ -59,6 +61,8 @@ export const renderFieldInput = <T,>({
           error={error}
           onChange={onChange}
           isPending={isPending}
+          disabled={field.disabled}
+          readOnly={readOnly}
         />
       )
 
@@ -70,6 +74,8 @@ export const renderFieldInput = <T,>({
           error={error}
           onChange={onChange}
           isPending={isPending}
+          disabled={field.disabled}
+          readOnly={readOnly}
         />
       )
 
@@ -81,6 +87,8 @@ export const renderFieldInput = <T,>({
           error={error}
           onChange={onChange}
           isPending={isPending}
+          disabled={field.disabled}
+          readOnly={readOnly}
         />
       )
 
@@ -91,7 +99,8 @@ export const renderFieldInput = <T,>({
           fieldValue={fieldValue}
           error={error}
           onChange={onChange}
-          isPending={isPending}
+          isPending={isPending || readOnly}
+          readOnly={readOnly || field.disabled}
         />
       )
 
@@ -103,6 +112,8 @@ export const renderFieldInput = <T,>({
           error={error}
           onChange={onChange}
           isPending={isPending}
+          disabled={field.disabled}
+          readOnly={readOnly}
         />
       )
 
@@ -114,6 +125,8 @@ export const renderFieldInput = <T,>({
           error={error}
           onChange={onChange}
           isPending={isPending}
+          disabled={field.disabled}
+          readOnly={readOnly}
         />
       )
 
@@ -125,6 +138,8 @@ export const renderFieldInput = <T,>({
           error={error}
           onChange={onChange}
           isPending={isPending}
+          disabled={field.disabled}
+          readOnly={readOnly}
         />
       )
 
@@ -136,6 +151,8 @@ export const renderFieldInput = <T,>({
           error={error}
           onChange={onChange}
           isPending={isPending}
+          disabled={field.disabled}
+          readOnly={readOnly}
         />
       )
 
@@ -147,6 +164,7 @@ export const renderFieldInput = <T,>({
           placeholder={field.placeholder}
           error={error}
           disabled={field.disabled || isPending}
+          readOnly={readOnly}
           fieldId={field.name as string}
         />
       )
@@ -158,6 +176,7 @@ export const renderFieldInput = <T,>({
           onChange={onChange}
           error={error}
           disabled={field.disabled || isPending}
+          readOnly={readOnly}
           className={field.className}
         />
       )
@@ -170,6 +189,8 @@ export const renderFieldInput = <T,>({
           onChange={onChange}
           error={error}
           isPending={isPending}
+          disabled={field.disabled}
+          readOnly={readOnly}
           sourceValue={sourceValue}
         />
       )
@@ -182,6 +203,8 @@ export const renderFieldInput = <T,>({
           error={error}
           onChange={onChange}
           isPending={isPending}
+          disabled={field.disabled}
+          readOnly={readOnly}
         />
       )
   }

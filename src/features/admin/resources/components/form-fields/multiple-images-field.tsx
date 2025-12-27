@@ -28,6 +28,7 @@ export interface MultipleImagesFieldProps {
   onChange: (value: unknown) => void
   error?: string
   disabled?: boolean
+  readOnly?: boolean
 }
 
 const ImageItem = ({
@@ -40,6 +41,7 @@ const ImageItem = ({
   onMoveUp,
   onMoveDown,
   disabled,
+  readOnly,
 }: {
   image: ProductImage
   index: number
@@ -50,7 +52,9 @@ const ImageItem = ({
   onMoveUp: () => void
   onMoveDown: () => void
   disabled?: boolean
+  readOnly?: boolean
 }) => {
+  const isReadOnly = readOnly && !disabled
   return (
     <Flex
       direction="col"
@@ -73,58 +77,62 @@ const ImageItem = ({
           unoptimized
         />
         <Flex align="center" justify="center" gap={2} position="absolute-inset" className="bg-black/0 group-hover:bg-black/40 transition-colors">
-          <Flex direction="col" gap={1} className="opacity-0 group-hover:opacity-100 transition-opacity">
-            <Button
-              type="button"
-              variant="secondary"
-              size="icon"
-              onClick={onMoveUp}
-              disabled={disabled || index === 0}
-              title="Di chuyển lên"
-            >
-              <IconSize size="sm">
-                <ArrowUp />
-              </IconSize>
-            </Button>
-            <Button
-              type="button"
-              variant="secondary"
-              size="icon"
-              onClick={onMoveDown}
-              disabled={disabled || index === total - 1}
-              title="Di chuyển xuống"
-            >
-              <IconSize size="sm">
-                <ArrowDown />
-              </IconSize>
-            </Button>
-          </Flex>
-          <Button
-            type="button"
-            variant="secondary"
-            size="icon"
-            className="opacity-0 group-hover:opacity-100 p-2 bg-white/90 hover:bg-white transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
-            onClick={onSetPrimary}
-            disabled={disabled || image.isPrimary}
-            title={image.isPrimary ? "Ảnh chính" : "Đặt làm ảnh chính"}
-          >
-            <IconSize size="sm" className={cn(image.isPrimary ? "fill-yellow-400 text-yellow-400" : "text-gray-700")}>
-              <Star />
-            </IconSize>
-          </Button>
-          <Button
-            type="button"
-            variant="secondary"
-            size="icon"
-            className="opacity-0 group-hover:opacity-100 p-2 bg-white/90 hover:bg-white transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
-            onClick={onRemove}
-            disabled={disabled}
-            title="Xóa ảnh"
-          >
-            <IconSize size="sm" className="text-destructive">
-              <X />
-            </IconSize>
-          </Button>
+          {!isReadOnly && (
+            <>
+              <Flex direction="col" gap={1} className="opacity-0 group-hover:opacity-100 transition-opacity">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="icon"
+                  onClick={onMoveUp}
+                  disabled={disabled || index === 0}
+                  title="Di chuyển lên"
+                >
+                  <IconSize size="sm">
+                    <ArrowUp />
+                  </IconSize>
+                </Button>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="icon"
+                  onClick={onMoveDown}
+                  disabled={disabled || index === total - 1}
+                  title="Di chuyển xuống"
+                >
+                  <IconSize size="sm">
+                    <ArrowDown />
+                  </IconSize>
+                </Button>
+              </Flex>
+              <Button
+                type="button"
+                variant="secondary"
+                size="icon"
+                className="opacity-0 group-hover:opacity-100 p-2 bg-white/90 hover:bg-white transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={onSetPrimary}
+                disabled={disabled || image.isPrimary}
+                title={image.isPrimary ? "Ảnh chính" : "Đặt làm ảnh chính"}
+              >
+                <IconSize size="sm" className={cn(image.isPrimary ? "fill-yellow-400 text-yellow-400" : "text-gray-700")}>
+                  <Star />
+                </IconSize>
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                size="icon"
+                className="opacity-0 group-hover:opacity-100 p-2 bg-white/90 hover:bg-white transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={onRemove}
+                disabled={disabled}
+                title="Xóa ảnh"
+              >
+                <IconSize size="sm" className="text-destructive">
+                  <X />
+                </IconSize>
+              </Button>
+            </>
+          )}
         </Flex>
         {image.isPrimary && (
           <Flex align="center" gap={1} position="absolute" className="top-2 left-2 z-30" bg="primary" paddingX={2} paddingY={1} rounded="md">
@@ -141,14 +149,18 @@ const ImageItem = ({
           value={image.alt || ""}
           onChange={(e) => onAltChange(e.target.value)}
           placeholder="Mô tả ảnh (alt text)"
-          disabled={disabled}
+          disabled={disabled && !isReadOnly}
+          readOnly={isReadOnly}
+          className={cn(
+            isReadOnly && "!opacity-100 disabled:!opacity-100 [&:read-only]:!opacity-100 cursor-default"
+          )}
         />
       </Flex>
     </Flex>
   )
 }
 
-export const MultipleImagesField = ({ value, onChange, error, disabled = false }: MultipleImagesFieldProps) => {
+export const MultipleImagesField = ({ value, onChange, error, disabled = false, readOnly = false }: MultipleImagesFieldProps) => {
   const { toast } = useToast()
   
   // Use ref to store latest value to avoid stale closure
@@ -359,44 +371,48 @@ export const MultipleImagesField = ({ value, onChange, error, disabled = false }
       <Flex direction="col" gap={4}>
         {/* Upload controls */}
         <Flex direction="col" gap={4}>
-          <MultipleImageUpload
-            onUploadSuccess={handleUploadSuccess}
-            onUploadError={handleUploadError}
-            label="Upload hình ảnh"
-            maxSizeMB={5}
-            maxDimension={500}
-            disabled={disabled}
-            className="w-full"
-          />
-          <Flex gap={2}>
-            <Input
-              type="text"
-              placeholder="Hoặc nhập URL ảnh"
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault()
-                  handleAddByUrl(e.currentTarget.value)
-                  e.currentTarget.value = ""
-                }
-              }}
-              disabled={disabled}
-              className="flex-1"
-            />
-            <Button
-              type="button"
-              variant="outline"
-              onClick={(e) => {
-                const input = e.currentTarget.previousElementSibling as HTMLInputElement
-                if (input) {
-                  handleAddByUrl(input.value)
-                  input.value = ""
-                }
-              }}
-              disabled={disabled}
-            >
-              Thêm URL
-            </Button>
-          </Flex>
+          {!readOnly && (
+            <>
+              <MultipleImageUpload
+                onUploadSuccess={handleUploadSuccess}
+                onUploadError={handleUploadError}
+                label="Upload hình ảnh"
+                maxSizeMB={5}
+                maxDimension={500}
+                disabled={disabled}
+                className="w-full"
+              />
+              <Flex gap={2}>
+                <Input
+                  type="text"
+                  placeholder="Hoặc nhập URL ảnh"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault()
+                      handleAddByUrl(e.currentTarget.value)
+                      e.currentTarget.value = ""
+                    }
+                  }}
+                  disabled={disabled}
+                  className="flex-1"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={(e) => {
+                    const input = e.currentTarget.previousElementSibling as HTMLInputElement
+                    if (input) {
+                      handleAddByUrl(input.value)
+                      input.value = ""
+                    }
+                  }}
+                  disabled={disabled}
+                >
+                  Thêm URL
+                </Button>
+              </Flex>
+            </>
+          )}
         </Flex>
 
         {/* Images grid */}
@@ -414,6 +430,7 @@ export const MultipleImagesField = ({ value, onChange, error, disabled = false }
                 onMoveUp={() => handleMoveUp(index)}
                 onMoveDown={() => handleMoveDown(index)}
                 disabled={disabled}
+                readOnly={readOnly}
               />
             ))}
           </Grid>

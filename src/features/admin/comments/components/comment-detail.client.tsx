@@ -2,13 +2,8 @@
 
 import * as React from "react"
 import { useQueryClient } from "@tanstack/react-query"
-import { MessageSquare, User, Mail, FileText, Calendar, Clock, ExternalLink } from "lucide-react"
-import { 
-  ResourceDetailClient, 
-  FieldItem,
-  type ResourceDetailField, 
-  type ResourceDetailSection 
-} from "@/features/admin/resources/components"
+import { MessageSquare, Calendar, Clock, ExternalLink } from "lucide-react"
+import { ResourceForm } from "@/features/admin/resources/components"
 import { Card } from "@/components/ui/card"
 import { Switch } from "@/components/ui/switch"
 import { formatDateVi } from "../utils"
@@ -21,6 +16,7 @@ import { getErrorMessage, invalidateAndRefetchQueries } from "@/lib/utils"
 import { TypographyP, TypographyPSmallMuted, IconSize } from "@/components/ui/typography"
 import { Flex } from "@/components/ui/flex"
 import { Grid } from "@/components/ui/grid"
+import { getBaseCommentFields, getCommentFormSections, type CommentFormData } from "../form-fields"
 
 export interface CommentDetailData {
   id: string
@@ -159,109 +155,71 @@ export const CommentDetailClient = ({ commentId, comment, backUrl = "/admin/comm
     [canApprove, commentId, isToggling, detailData, queryClient, isDeleted],
   )
 
-  const detailFields: ResourceDetailField<CommentDetailData>[] = []
-
-  const detailSections: ResourceDetailSection<CommentDetailData>[] = [
-    {
-      id: "basic",
-      title: "Thông tin cơ bản",
-      description: "Thông tin về bình luận, người bình luận, bài viết và thời gian",
-      fieldsContent: (_fields, data) => {
-        const commentData = (data || detailData) as CommentDetailData
-        
-        return (
-          <Flex direction="col" gap="responsive">
-            {/* Content Card */}
-            <Card className="border border-border/50 bg-card p-5">
-                <Flex align="start" gap={3} fullWidth>
-                <Flex align="center" justify="center" shrink className="h-9 w-9" rounded="lg" bg="muted">
-                  <IconSize size="sm">
-                    <MessageSquare />
-                  </IconSize>
-                </Flex>
-                <Flex direction="col" gap={2} flex="1" minWidth="0" fullWidth>
-                  <TypographyP>Nội dung</TypographyP>
-                  <TypographyP>
-                    {commentData.content || "—"}
-                  </TypographyP>
-                </Flex>
-              </Flex>
-            </Card>
-
-            {/* Status */}
-            <StatusField 
-              approved={approved} 
-              canApprove={canApprove && !isDeleted}
-              onToggle={handleToggleApprove}
-              isToggling={isToggling}
-            />
-
-            {/* Author Info */}
-            <Grid cols="responsive-2" fullWidth gap="responsive">
-              <FieldItem icon={User} label="Người bình luận">
-                <TypographyP className="truncate">
-                  {commentData.authorName || commentData.authorEmail || "—"}
-                </TypographyP>
-              </FieldItem>
-
-              <FieldItem icon={Mail} label="Email">
-                <a
-                  href={`mailto:${commentData.authorEmail}`}
-                  className="text-primary hover:underline truncate block transition-colors"
-                >
-                  <TypographyP>{commentData.authorEmail || "—"}</TypographyP>
-                </a>
-              </FieldItem>
-            </Grid>
-
-            {/* Post Info */}
-            <FieldItem icon={FileText} label="Bài viết">
-              {commentData.postId ? (
-                <a
-                  href={`/admin/posts/${commentData.postId}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="group inline-flex items-center gap-1.5 hover:underline transition-colors"
-                >
-                  <TypographyP className="truncate text-primary hover:text-primary/80">{commentData.postTitle || "—"}</TypographyP>
-                  <IconSize size="xs" className="shrink-0 opacity-50 group-hover:opacity-100 transition-opacity">
-                    <ExternalLink />
-                  </IconSize>
-                </a>
-              ) : (
-                <TypographyP className="truncate">{commentData.postTitle || "—"}</TypographyP>
-              )}
-            </FieldItem>
-
-            {/* Timestamps */}
-            <Grid cols="responsive-2" fullWidth gap="responsive">
-              <FieldItem icon={Calendar} label="Ngày tạo">
-                <TypographyP>
-                  {commentData.createdAt ? formatDateVi(commentData.createdAt) : "—"}
-                </TypographyP>
-              </FieldItem>
-
-              <FieldItem icon={Clock} label="Cập nhật lần cuối">
-                <TypographyP>
-                  {commentData.updatedAt ? formatDateVi(commentData.updatedAt) : "—"}
-                </TypographyP>
-              </FieldItem>
-            </Grid>
-          </Flex>
-        )
-      },
-    },
-  ]
+  const fields = getBaseCommentFields()
+  const sections = getCommentFormSections()
 
   return (
-    <ResourceDetailClient<CommentDetailData>
-      data={detailData}
-      fields={detailFields}
-      detailSections={detailSections}
-      title={`Bình luận từ ${detailData.authorName || detailData.authorEmail}`}
-      description={`Chi tiết bình luận trong bài viết "${detailData.postTitle}"`}
-      backUrl={backUrl}
-      backLabel="Quay lại danh sách"
-    />
+    <>
+      <ResourceForm<CommentFormData>
+        data={detailData as CommentFormData}
+        fields={fields}
+        sections={sections}
+        title={`Bình luận từ ${detailData.authorName || detailData.authorEmail}`}
+        description={`Chi tiết bình luận trong bài viết "${detailData.postTitle}"`}
+        backUrl={backUrl}
+        backLabel="Quay lại danh sách"
+        readOnly={true}
+        showCard={false}
+        onSubmit={async () => ({ success: false, error: "Read-only mode" })}
+      />
+
+      {/* Custom Toggle Approve Status */}
+      <Card className="border border-border/50" padding="lg" marginTop={4}>
+        <StatusField 
+          approved={approved} 
+          canApprove={canApprove && !isDeleted}
+          onToggle={handleToggleApprove}
+          isToggling={isToggling}
+        />
+      </Card>
+
+      {/* Post Link & Timestamps */}
+      <Card className="border border-border/50" padding="lg" marginTop={4}>
+        <Grid cols="responsive-2" fullWidth gap="responsive">
+          <Flex direction="col" gap={1}>
+            <TypographyP className="text-sm font-medium text-muted-foreground mb-2">Bài viết</TypographyP>
+            {detailData.postId ? (
+              <a
+                href={`/admin/posts/${detailData.postId}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group inline-flex items-center gap-1.5 hover:underline transition-colors"
+              >
+                <TypographyP className="truncate text-primary hover:text-primary/80">{detailData.postTitle || "—"}</TypographyP>
+                <IconSize size="xs" className="shrink-0 opacity-50 group-hover:opacity-100 transition-opacity">
+                  <ExternalLink />
+                </IconSize>
+              </a>
+            ) : (
+              <TypographyP className="truncate">{detailData.postTitle || "—"}</TypographyP>
+            )}
+          </Flex>
+
+          <Flex direction="col" gap={1}>
+            <TypographyP className="text-sm font-medium text-muted-foreground mb-2">Ngày tạo</TypographyP>
+            <TypographyP>
+              {detailData.createdAt ? formatDateVi(detailData.createdAt) : "—"}
+            </TypographyP>
+          </Flex>
+
+          <Flex direction="col" gap={1}>
+            <TypographyP className="text-sm font-medium text-muted-foreground mb-2">Cập nhật lần cuối</TypographyP>
+            <TypographyP>
+              {detailData.updatedAt ? formatDateVi(detailData.updatedAt) : "—"}
+            </TypographyP>
+          </Flex>
+        </Grid>
+      </Card>
+    </>
   )
 }

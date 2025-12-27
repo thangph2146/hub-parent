@@ -10,6 +10,8 @@ interface SelectFieldProps<T> {
   error?: string
   onChange: (value: unknown) => void
   isPending?: boolean
+  disabled?: boolean
+  readOnly?: boolean
 }
 export const SelectField = <T,>({
   field,
@@ -17,6 +19,8 @@ export const SelectField = <T,>({
   error,
   onChange,
   isPending = false,
+  disabled = false,
+  readOnly = false,
 }: SelectFieldProps<T>) => {
   const fieldId = field.name as string
   const errorId = error ? `${fieldId}-error` : undefined
@@ -29,6 +33,8 @@ export const SelectField = <T,>({
         error={error}
         onChange={onChange}
         isPending={isPending}
+        disabled={disabled}
+        readOnly={readOnly}
         fieldId={fieldId}
         errorId={errorId}
       />

@@ -1,4 +1,4 @@
-import type { ResourceFormField } from "@/features/admin/resources/components"
+import type { ResourceFormField, ResourceFormSection } from "@/features/admin/resources/components"
 import { validateName, validateEmail, validatePhone, validateSubject, validateContent } from "./utils"
 import React from "react"
 import { User, Mail, Phone, FileText, MessageSquare, AlertCircle, UserCheck } from "lucide-react"
@@ -31,6 +31,19 @@ const priorityOptions: Array<{ label: string; value: ContactPriority }> = [
   { label: "Khẩn cấp", value: "URGENT" },
 ]
 
+export const getContactRequestFormSections = (): ResourceFormSection[] => [
+  {
+    id: "basic",
+    title: "Thông tin cơ bản",
+    description: "Thông tin liên hệ và nội dung yêu cầu",
+  },
+  {
+    id: "status",
+    title: "Trạng thái và phân công",
+    description: "Trạng thái xử lý, độ ưu tiên và người được giao",
+  },
+]
+
 export const getBaseContactRequestFields = (usersOptions: Array<{ label: string; value: string }> = []): ResourceFormField<ContactRequestFormData>[] => {
   return [
     {
@@ -41,6 +54,7 @@ export const getBaseContactRequestFields = (usersOptions: Array<{ label: string;
       required: true,
       validate: validateName,
       icon: React.createElement(User, { className: "h-4 w-4" }),
+      section: "basic",
     },
     {
       name: "email",
@@ -50,6 +64,7 @@ export const getBaseContactRequestFields = (usersOptions: Array<{ label: string;
       required: true,
       validate: validateEmail,
       icon: React.createElement(Mail, { className: "h-4 w-4" }),
+      section: "basic",
     },
     {
       name: "phone",
@@ -59,35 +74,7 @@ export const getBaseContactRequestFields = (usersOptions: Array<{ label: string;
       required: false,
       validate: validatePhone,
       icon: React.createElement(Phone, { className: "h-4 w-4" }),
-    },
-    {
-      name: "status",
-      label: "Trạng thái",
-      type: "select",
-      required: false,
-      placeholder: "Chọn trạng thái",
-      options: statusOptions.map((opt) => ({ label: opt.label, value: opt.value })),
-      defaultValue: "NEW",
-      icon: React.createElement(AlertCircle, { className: "h-4 w-4" }),
-    },
-    {
-      name: "priority",
-      label: "Độ ưu tiên",
-      type: "select",
-      required: false,
-      placeholder: "Chọn độ ưu tiên",
-      options: priorityOptions.map((opt) => ({ label: opt.label, value: opt.value })),
-      defaultValue: "MEDIUM",
-      icon: React.createElement(AlertCircle, { className: "h-4 w-4" }),
-    },
-    {
-      name: "assignedToId",
-      label: "Giao cho",
-      type: "select",
-      required: false,
-      placeholder: "Chọn người được giao",
-      options: usersOptions,
-      icon: React.createElement(UserCheck, { className: "h-4 w-4" }),
+      section: "basic",
     },
     {
       name: "subject",
@@ -97,14 +84,7 @@ export const getBaseContactRequestFields = (usersOptions: Array<{ label: string;
       required: true,
       validate: validateSubject,
       icon: React.createElement(FileText, { className: "h-4 w-4" }),
-    },
-    {
-      name: "isRead",
-      label: "Đã đọc",
-      description: "Đánh dấu yêu cầu liên hệ đã được đọc",
-      type: "switch",
-      defaultValue: false,
-      icon: React.createElement(MessageSquare, { className: "h-4 w-4" }),
+      section: "basic",
     },
     {
       name: "content",
@@ -115,6 +95,48 @@ export const getBaseContactRequestFields = (usersOptions: Array<{ label: string;
       validate: validateContent,
       icon: React.createElement(MessageSquare, { className: "h-4 w-4" }),
       className: "col-span-full",
+      section: "basic",
+    },
+    {
+      name: "status",
+      label: "Trạng thái",
+      type: "select",
+      required: false,
+      placeholder: "Chọn trạng thái",
+      options: statusOptions.map((opt) => ({ label: opt.label, value: opt.value })),
+      defaultValue: "NEW",
+      icon: React.createElement(AlertCircle, { className: "h-4 w-4" }),
+      section: "status",
+    },
+    {
+      name: "priority",
+      label: "Độ ưu tiên",
+      type: "select",
+      required: false,
+      placeholder: "Chọn độ ưu tiên",
+      options: priorityOptions.map((opt) => ({ label: opt.label, value: opt.value })),
+      defaultValue: "MEDIUM",
+      icon: React.createElement(AlertCircle, { className: "h-4 w-4" }),
+      section: "status",
+    },
+    {
+      name: "assignedToId",
+      label: "Giao cho",
+      type: "select",
+      required: false,
+      placeholder: "Chọn người được giao",
+      options: usersOptions,
+      icon: React.createElement(UserCheck, { className: "h-4 w-4" }),
+      section: "status",
+    },
+    {
+      name: "isRead",
+      label: "Đã đọc",
+      description: "Đánh dấu yêu cầu liên hệ đã được đọc",
+      type: "switch",
+      defaultValue: false,
+      icon: React.createElement(MessageSquare, { className: "h-4 w-4" }),
+      section: "status",
     }
   ]
 }
