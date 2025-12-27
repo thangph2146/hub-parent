@@ -69,6 +69,8 @@
     "cmdk": "^1.1.1",
     "date-fns": "^4.1.0",
     "framer-motion": "^12.23.24",
+    "highcharts": "^12.4.0",
+    "highcharts-react-official": "^3.2.3",
     "jsonwebtoken": "^9.0.2",
     "lexical": "^0.38.2",
     "lodash": "^4.17.21",
