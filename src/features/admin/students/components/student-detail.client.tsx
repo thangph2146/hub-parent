@@ -75,8 +75,8 @@ export const StudentDetailClient = ({ studentId, student, backUrl = "/admin/stud
         data={detailData as StudentFormData}
         fields={fields}
         sections={sections}
-        title="Thông tin sinh viên"
-        description={`Thông tin chính về sinh viên ${detailData.name}`}
+        title={detailData.name || detailData.studentCode || "Thông tin sinh viên"}
+        description={`Thông tin chính về sinh viên ${detailData.name || detailData.studentCode || ""}`}
         backUrl={backUrl}
         onBack={() => navigateBack(backUrl)}
         readOnly={true}

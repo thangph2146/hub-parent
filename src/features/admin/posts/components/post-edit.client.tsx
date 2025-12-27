@@ -3,7 +3,15 @@
 import { useMemo } from "react"
 import { useSession } from "next-auth/react"
 import { useQueryClient } from "@tanstack/react-query"
-import { ResourceForm, type ResourceFormField, type ResourceFormSection } from "@/features/admin/resources/components"
+import { ResourceForm, type ResourceFormField } from "@/features/admin/resources/components"
+import {
+  getBasePostFields,
+  getPostFormSections,
+  getPostContentField,
+  getPostAuthorField,
+  getPostCategoriesField,
+  getPostTagsField,
+} from "../form-fields"
 import { useResourceFormSubmit, useResourceDetailData } from "@/features/admin/resources/hooks"
 import { createResourceEditOnSuccess } from "@/features/admin/resources/utils"
 import { apiRoutes } from "@/lib/api/routes"
@@ -169,105 +177,24 @@ export const PostEditClient = ({
     }
 
     const editFields: ResourceFormField<PostEditData>[] = [
-        {
-            name: "title",
-            label: "Tiêu đề",
-            type: "text",
-            required: true,
-            placeholder: "Nhập tiêu đề bài viết",
-            description: "Tiêu đề của bài viết",
-            section: "basic",
-        },
-        {
-            name: "slug",
-            label: "Slug",
-            type: "slug",
-            sourceField: "title",
-            required: true,
-            placeholder: "bai-viet-slug",
-            description: "URL-friendly version của tiêu đề (tự động tạo từ tiêu đề)",
-            section: "basic",
-        },
-        {
-            name: "excerpt",
-            label: "Tóm tắt",
-            type: "textarea",
-            placeholder: "Nhập tóm tắt bài viết",
-            description: "Mô tả ngắn gọn về nội dung bài viết",
-            section: "basic",
-        },
-        ...(isSuperAdminUser && users.length > 0 ? [{
-            name: "authorId",
-            label: "Tác giả",
-            type: "select",
-            options: users,
-            required: true,
-            description: "Chọn tác giả của bài viết",
-            section: "basic",
-        } as ResourceFormField<PostEditData>] : []),
-        ...(categories.length > 0 ? [{
-            name: "categoryIds",
-            label: "Danh mục",
-            type: "multiple-select",
-            options: categories,
-            description: "Chọn danh mục cho bài viết (có thể chọn nhiều)",
-            section: "basic",
-        } as ResourceFormField<PostEditData>] : []),
-        ...(tags.length > 0 ? [{
-            name: "tagIds",
-            label: "Thẻ tag",
-            type: "multiple-select",
-            options: tags,
-            description: "Chọn thẻ tag cho bài viết (có thể chọn nhiều)",
-            section: "basic",
-        } as ResourceFormField<PostEditData>] : []),
-        {
-            name: "image",
-            label: "Hình ảnh",
-            type: "image",
-            placeholder: "https://example.com/image.jpg",
-            description: "URL hình ảnh đại diện cho bài viết",
-            section: "basic",
-        },
-        {
-            name: "published",
-            label: "Trạng thái xuất bản",
-            type: "switch",
-            description: "Trạng thái xuất bản của bài viết",
-            section: "basic",
-        },
-        {
-            name: "content",
-            label: "",
-            type: "editor",
-            section: "content",
-            className: "w-full max-w-5xl mx-auto",
-        }
-    ]
-
-    const editSections: ResourceFormSection[] = [
-        {
-            id: "basic",
-            title: "Thông tin cơ bản",
-            description: "Tiêu đề, slug, tóm tắt và hình ảnh",
-        },
-        {
-            id: "content",
-            title: "Nội dung",
-            description: "Nội dung chính của bài viết",
-        },
-        {
-            id: "metadata",
-            title: "Thông tin bổ sung",
-            description: "Trạng thái xuất bản",
-        },
+        ...(getBasePostFields() as unknown as ResourceFormField<PostEditData>[]),
+        ...(isSuperAdminUser && users.length > 0
+            ? [getPostAuthorField<PostEditData>(users)]
+            : []),
+        ...(categories.length > 0
+            ? [getPostCategoriesField<PostEditData>(categories)]
+            : []),
+        ...(tags.length > 0
+            ? [getPostTagsField<PostEditData>(tags)]
+            : []),
+        getPostContentField<PostEditData>(),
     ]
 
     return (
         <ResourceForm<PostEditData>
             data={post}
             fields={editFields.map(field => ({ ...field, disabled: formDisabled || field.disabled }))}
-            sections={editSections}
+            sections={getPostFormSections()}
             onSubmit={handleSubmitWrapper}
             open={open}
             onOpenChange={onOpenChange}
