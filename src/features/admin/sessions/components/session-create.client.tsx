@@ -1,6 +1,6 @@
 "use client"
 
-import { ResourceForm } from "@/features/admin/resources/components"
+import { ResourceForm, type ResourceFormField } from "@/features/admin/resources/components"
 import { useResourceFormSubmit } from "@/features/admin/resources/hooks"
 import { apiRoutes } from "@/lib/api/routes"
 import { getBaseSessionFields, getSessionFormSections, type SessionFormData } from "../form-fields"
@@ -26,7 +26,7 @@ export const SessionCreateClient = ({ backUrl = "/admin/sessions", users: usersF
     },
   })
 
-  const createFields = getBaseSessionFields(usersFromServer)
+  const createFields: ResourceFormField<SessionFormData>[] = getBaseSessionFields(usersFromServer)
   const formSections = getSessionFormSections()
 
   return (

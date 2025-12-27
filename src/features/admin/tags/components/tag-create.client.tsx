@@ -1,7 +1,7 @@
 "use client"
 
 import { useQueryClient } from "@tanstack/react-query"
-import { ResourceForm } from "@/features/admin/resources/components"
+import { ResourceForm, type ResourceFormField } from "@/features/admin/resources/components"
 import { useResourceFormSubmit } from "@/features/admin/resources/hooks"
 import { apiRoutes } from "@/lib/api/routes"
 import { queryKeys } from "@/lib/query-keys"
@@ -49,13 +49,14 @@ export const TagCreateClient = ({ backUrl = "/admin/tags" }: TagCreateClientProp
     },
   })
 
-  const createFields = getBaseTagFields()
+  const createFields: ResourceFormField<TagFormData>[] = getBaseTagFields()
+  const formSections = getTagFormSections()
 
   return (
     <ResourceForm<TagFormData>
       data={null}
       fields={createFields}
-      sections={getTagFormSections()}
+      sections={formSections}
       onSubmit={handleSubmit}
       title="Tạo thẻ tag mới"
       description="Nhập thông tin để tạo thẻ tag mới"

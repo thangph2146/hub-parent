@@ -71,6 +71,9 @@ export const CategoryDetailClient = ({ categoryId, category, backUrl = "/admin/c
         readOnly={true}
         showCard={false}
         onSubmit={async () => ({ success: false, error: "Read-only mode" })}
+        resourceName="categories"
+        resourceId={categoryId}
+        action="update"
       />
       {!isDeleted && canUpdate && (
         <Flex

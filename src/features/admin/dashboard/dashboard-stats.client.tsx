@@ -1,25 +1,26 @@
 "use client";
 
-import { TypographyH1, TypographyH2, TypographyH4, TypographyP, TypographyPSmallMuted, TypographySpanSmall, TypographySpanSmallMuted, TypographyDescription, TypographyTitleLarge, IconSize } from "@/components/ui/typography";
+import { TypographyH1, TypographyH4, TypographyP, TypographyPSmallMuted, TypographySpanSmall, TypographySpanSmallMuted, TypographyDescription, TypographyTitleLarge, IconSize } from "@/components/ui/typography";
 import { Flex } from "@/components/ui/flex";
 import { Grid } from "@/components/ui/grid";
 
-import { useState, useMemo, useEffect, useRef, useCallback } from "react";
+import { useState, useMemo, useEffect, useRef, useCallback, useLayoutEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSession } from "next-auth/react";
 import { Calendar, BarChart3, PieChart, LineChart } from "lucide-react";
-import {
-  Line,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-  ComposedChart,
-  BarChart,
-} from "recharts";
+// Recharts components not currently used but may be needed for future charts
+// import {
+//   Line,
+//   Bar,
+//   XAxis,
+//   YAxis,
+//   CartesianGrid,
+//   Tooltip,
+//   Legend,
+//   ResponsiveContainer,
+//   ComposedChart,
+//   BarChart,
+// } from "recharts";
 import dynamic from "next/dynamic";
 
 // Dynamic import Highcharts để tránh lỗi SSR
@@ -107,6 +108,7 @@ interface CustomTooltipProps {
   label?: string;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
   if (active && payload && payload.length) {
     const total = payload.reduce((sum, entry) => sum + (entry.value || 0), 0);
@@ -184,6 +186,7 @@ interface CustomPieTooltipProps {
   }>;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const CustomPieTooltip = ({ active, payload }: CustomPieTooltipProps) => {
   if (active && payload && payload.length) {
     const data = payload[0];
@@ -272,7 +275,9 @@ const HighchartsMonthlyChart = ({
   chartType,
   onSeriesToggle,
 }: HighchartsMonthlyChartProps) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const chartRef = useRef<any>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [Highcharts, setHighcharts] = useState<any>(null);
   const [isDark, setIsDark] = useState(false);
 
@@ -494,6 +499,7 @@ const HighchartsMonthlyChart = ({
         },
         padding: 0,
         outside: false,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any, react-hooks/unsupported-syntax
         formatter: function (this: any) {
           const maxPoints = 8;
           const pointsToShow = this.points.slice(0, maxPoints);
@@ -518,8 +524,8 @@ const HighchartsMonthlyChart = ({
               ">${this.x}</div>
               <div style="display: flex; flex-direction: column; gap: 4px;">
           `;
-          pointsToShow.forEach((point: any, index: number) => {
-            const isLast = index === pointsToShow.length - 1 && !hasMore;
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          pointsToShow.forEach((point: any) => {
             tooltip += `
               <div style="
                 display: flex;
@@ -621,6 +627,7 @@ const HighchartsMonthlyChart = ({
         series: {
           cursor: "pointer",
           events: {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             legendItemClick: function (this: any) {
               const seriesKey = this.options.key || this.name;
               onSeriesToggle(seriesKey);
@@ -675,31 +682,16 @@ interface HighchartsPieChartProps {
 }
 
 const HighchartsPieChart = ({ categoryData, totalPosts }: HighchartsPieChartProps) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const chartRef = useRef<any>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [Highcharts, setHighcharts] = useState<any>(null);
-  const [isDark, setIsDark] = useState(false);
 
   useEffect(() => {
     // Dynamic import Highcharts
     import("highcharts").then((hc) => {
       setHighcharts(hc.default);
     });
-
-    // Kiểm tra theme
-    const checkTheme = () => {
-      const isDarkMode = document.documentElement.classList.contains("dark") ||
-        window.matchMedia("(prefers-color-scheme: dark)").matches;
-      setIsDark(isDarkMode);
-    };
-
-    checkTheme();
-    const observer = new MutationObserver(checkTheme);
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ["class"],
-    });
-
-    return () => observer.disconnect();
   }, []);
 
   const chartOptions = useMemo(() => {
@@ -734,7 +726,8 @@ const HighchartsPieChart = ({ categoryData, totalPosts }: HighchartsPieChartProp
       },
       tooltip: {
         valueSuffix: "%",
-        pointFormatter: function (this: any) {
+        // eslint-disable-next-line react-hooks/unsupported-syntax
+        pointFormatter: function (this: { percentage: number; color: string; name: string }) {
           const count = Math.round((this.percentage / 100) * totalPosts);
           return `<span style="color:${this.color}">●</span> <b>${this.name}</b>: ${this.percentage.toFixed(1)}%<br/>${count.toLocaleString("vi-VN")} bài viết`;
         },
@@ -796,7 +789,7 @@ const HighchartsPieChart = ({ categoryData, totalPosts }: HighchartsPieChartProp
         enabled: false,
       },
     };
-  }, [Highcharts, categoryData, totalPosts, isDark]);
+  }, [Highcharts, categoryData, totalPosts]);
 
   if (!Highcharts || !chartOptions) {
     return (
@@ -1004,14 +997,15 @@ export const DashboardStatsClient = ({ stats }: DashboardStatsClientProps) => {
   }, [selectedResourcesState, availableResources]);
 
   // Auto-select all on mount (chỉ một lần)
-  const [hasAutoSelected, setHasAutoSelected] = useState(false);
-  useEffect(() => {
-    if (!hasAutoSelected && selectedResourcesState.size === 0 && availableResources.length > 0) {
+  const hasAutoSelectedRef = useRef(false);
+  useLayoutEffect(() => {
+    if (!hasAutoSelectedRef.current && selectedResourcesState.size === 0 && availableResources.length > 0) {
       const availableKeys = new Set(availableResources.map((r) => r.key));
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSelectedResources(availableKeys);
-      setHasAutoSelected(true);
+      hasAutoSelectedRef.current = true;
     }
-  }, [availableResources.length, hasAutoSelected, selectedResourcesState.size]);
+  }, [availableResources, selectedResourcesState.size, setSelectedResources]);
 
   const toggleResource = (key: string) => {
     setSelectedResources((prev) => {
@@ -1041,7 +1035,7 @@ export const DashboardStatsClient = ({ stats }: DashboardStatsClientProps) => {
   const selectAll = useCallback(() => {
     const allKeys = new Set(availableResources.map((r) => r.key));
     setSelectedResources(allKeys);
-    setHasAutoSelected(true); // Đánh dấu đã select để không auto-select nữa
+    hasAutoSelectedRef.current = true; // Đánh dấu đã select để không auto-select nữa
   }, [availableResources]);
 
   const deselectAll = useCallback(() => {

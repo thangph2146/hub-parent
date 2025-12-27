@@ -33,7 +33,6 @@ import {
   type PermissionGroup,
   type ParsedPermission,
   parsePermissionGroups,
-  getPermissionDisplayName,
   groupPermissionsByDisplayName,
 } from "./permissions-utils";
 
@@ -548,7 +547,7 @@ export const PermissionsTableField = <T,>({
                                                 data-readonly={readOnly ? "true" : undefined}
                                                 className={cn(
                                                   readOnly && "!opacity-100 disabled:!opacity-100 [&:disabled]:!opacity-100 cursor-default bg-muted/30 border-muted-foreground/30",
-                                                  disabled && !readOnly && "!opacity-100"
+                                                  (field.disabled || isPending || readOnly) && !readOnly && "!opacity-100"
                                                 )}
                                               />
                                               <span className="text-xs text-foreground leading-relaxed select-none group-hover:text-foreground">
@@ -592,7 +591,7 @@ export const PermissionsTableField = <T,>({
                                                 data-readonly={readOnly ? "true" : undefined}
                                                 className={cn(
                                                   readOnly && "!opacity-100 disabled:!opacity-100 [&:disabled]:!opacity-100 cursor-default bg-muted/30 border-muted-foreground/30",
-                                                  disabled && !readOnly && "!opacity-100"
+                                                  (field.disabled || isPending || readOnly) && !readOnly && "!opacity-100"
                                                 )}
                                               />
                                               <span className="text-xs text-foreground leading-relaxed select-none group-hover:text-foreground">
@@ -636,7 +635,7 @@ export const PermissionsTableField = <T,>({
                                                 data-readonly={readOnly ? "true" : undefined}
                                                 className={cn(
                                                   readOnly && "!opacity-100 disabled:!opacity-100 [&:disabled]:!opacity-100 cursor-default bg-muted/30 border-muted-foreground/30",
-                                                  disabled && !readOnly && "!opacity-100"
+                                                  (field.disabled || isPending || readOnly) && !readOnly && "!opacity-100"
                                                 )}
                                               />
                                               <span className="text-xs text-foreground leading-relaxed select-none group-hover:text-foreground">
@@ -680,7 +679,7 @@ export const PermissionsTableField = <T,>({
                                                 data-readonly={readOnly ? "true" : undefined}
                                                 className={cn(
                                                   readOnly && "!opacity-100 disabled:!opacity-100 [&:disabled]:!opacity-100 cursor-default bg-muted/30 border-muted-foreground/30",
-                                                  disabled && !readOnly && "!opacity-100"
+                                                  (field.disabled || isPending || readOnly) && !readOnly && "!opacity-100"
                                                 )}
                                               />
                                               <span className="text-xs text-foreground leading-relaxed select-none group-hover:text-foreground">
@@ -761,7 +760,10 @@ export const PermissionsTableField = <T,>({
                                                       !isAvailable
                                                     }
                                                     data-readonly={readOnly ? "true" : undefined}
-                                                    className={readOnly ? "!opacity-100 disabled:!opacity-100 [&:disabled]:!opacity-100" : undefined}
+                                                    className={cn(
+                                                      readOnly && "!opacity-100 disabled:!opacity-100 [&:disabled]:!opacity-100 cursor-default bg-muted/30 border-muted-foreground/30",
+                                                      (field.disabled || isPending || readOnly) && !readOnly && "!opacity-100"
+                                                    )}
                                                     onClick={(e) =>
                                                       e.stopPropagation()
                                                     }

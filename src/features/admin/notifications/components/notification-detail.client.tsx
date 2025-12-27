@@ -9,9 +9,6 @@ import {
   Clock,
   ExternalLink,
   AlertCircle,
-  Info,
-  CheckCircle,
-  XCircle as XCircleIcon,
 } from "lucide-react";
 import { ResourceForm } from "@/features/admin/resources/components";
 import { Badge } from "@/components/ui/badge";
@@ -185,10 +182,13 @@ export const NotificationDetailClient = ({
         readOnly={true}
         showCard={false}
         onSubmit={async () => ({ success: false, error: "Read-only mode" })}
+        resourceName="notifications"
+        resourceId={notificationId}
+        action="update"
       />
 
       {/* Custom Kind Badge */}
-      <Card className="border border-border/50" padding="lg" marginTop={4}>
+      <Card className="border border-border/50 mt-4" padding="lg">
         <Flex direction="col" gap={1}>
           <TypographyP className="text-sm font-medium text-muted-foreground mb-2">Loại thông báo</TypographyP>
           <Badge variant={kindConfigData.variant} className="w-fit">
@@ -198,7 +198,7 @@ export const NotificationDetailClient = ({
       </Card>
 
       {/* Custom Toggle Read Status */}
-      <Card className="border border-border/50" padding="lg" marginTop={4}>
+      <Card className="border border-border/50 mt-4" padding="lg">
         <Flex direction="col" gap="responsive">
           <Grid cols="responsive-2" fullWidth gap="responsive">
             <Flex direction="col" gap={1}>
@@ -256,7 +256,7 @@ export const NotificationDetailClient = ({
       </Card>
 
       {/* Additional Info: Action URL, Timestamps, Expires At */}
-      <Card className="border border-border/50" padding="lg" marginTop={4}>
+      <Card className="border border-border/50 mt-4" padding="lg">
         <Grid cols="responsive-2" gap="responsive" fullWidth>
           {detailData.actionUrl && (
             <Flex direction="col" gap={1}>

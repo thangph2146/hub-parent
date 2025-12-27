@@ -1,7 +1,7 @@
 "use client"
 
 import { useQueryClient } from "@tanstack/react-query"
-import { ResourceForm } from "@/features/admin/resources/components"
+import { ResourceForm, type ResourceFormField } from "@/features/admin/resources/components"
 import { useResourceFormSubmit, useResourceNavigation, useResourceDetailData } from "@/features/admin/resources/hooks"
 import { createResourceEditOnSuccess } from "@/features/admin/resources/utils"
 import { apiRoutes } from "@/lib/api/routes"
@@ -90,11 +90,14 @@ export const CategoryEditClient = ({
     return handleSubmit(data)
   }
 
+  const editFields: ResourceFormField<CategoryFormData>[] = getBaseCategoryFields()
+  const formSections = getCategoryFormSections()
+
   return (
     <ResourceForm<CategoryFormData>
       data={category}
-      fields={getBaseCategoryFields().map(field => ({ ...field, disabled: formDisabled || field.disabled }))}
-      sections={getCategoryFormSections()}
+      fields={editFields.map(field => ({ ...field, disabled: formDisabled || field.disabled }))}
+      sections={formSections}
       onSubmit={handleSubmitWrapper}
       title="Chỉnh sửa danh mục"
       description={isDeleted ? "Bản ghi đã bị xóa, không thể chỉnh sửa" : "Cập nhật thông tin danh mục"}

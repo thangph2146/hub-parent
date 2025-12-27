@@ -166,6 +166,9 @@ export const ContactRequestDetailClient = ({ contactRequestId, contactRequest, b
         readOnly={true}
         showCard={false}
         onSubmit={async () => ({ success: false, error: "Read-only mode" })}
+        resourceName="contact-requests"
+        resourceId={contactRequestId}
+        action="update"
       />
       
       {/* Custom Read Status Toggle */}

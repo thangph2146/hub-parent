@@ -77,6 +77,9 @@ export const SessionDetailClient = ({ sessionId, session, backUrl = "/admin/sess
         readOnly={true}
         showCard={false}
         onSubmit={async () => ({ success: false, error: "Read-only mode" })}
+        resourceName="sessions"
+        resourceId={sessionId}
+        action="update"
       />
       {!isDeleted && canUpdate && (
         <Flex

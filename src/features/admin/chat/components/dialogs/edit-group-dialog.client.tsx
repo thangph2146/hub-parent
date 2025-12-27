@@ -23,7 +23,6 @@ import {
 } from "@/components/ui/field"
 import { Loader2 } from "lucide-react"
 import { IconSize } from "@/components/ui/typography"
-import { Flex } from "@/components/ui/flex"
 import { logger } from "@/lib/config"
 import type { Group } from "@/components/chat/types"
 import { apiRoutes } from "@/lib/api/routes"

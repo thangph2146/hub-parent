@@ -2,7 +2,7 @@
 
 import { useMemo } from "react"
 import { useQueryClient } from "@tanstack/react-query"
-import { ResourceForm } from "@/features/admin/resources/components"
+import { ResourceForm, type ResourceFormField } from "@/features/admin/resources/components"
 import { useResourceFormSubmit, useResourceNavigation, useResourceDetailData } from "@/features/admin/resources/hooks"
 import { createResourceEditOnSuccess } from "@/features/admin/resources/utils"
 import { apiRoutes } from "@/lib/api/routes"
@@ -100,13 +100,14 @@ export const TagEditClient = ({
     return handleSubmit(data)
   }
 
-  const editFields = getBaseTagFields()
+  const editFields: ResourceFormField<TagFormData>[] = getBaseTagFields()
+  const formSections = getTagFormSections()
 
   return (
     <ResourceForm<TagFormData>
       data={tag}
       fields={editFields.map(field => ({ ...field, disabled: formDisabled || field.disabled }))}
-      sections={getTagFormSections()}
+      sections={formSections}
       onSubmit={handleSubmitWrapper}
       title="Chỉnh sửa thẻ tag"
       description={isDeleted ? "Bản ghi đã bị xóa, không thể chỉnh sửa" : "Cập nhật thông tin thẻ tag"}

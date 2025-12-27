@@ -50,79 +50,16 @@ export interface UserDetailClientProps {
   backUrl?: string
 }
 
-// Helper function to parse JSON string or object
-const parseAddressValue = (value: unknown): string | null => {
-  if (!value) return null
-  
-  // If it's already a string
-  if (typeof value === "string") {
-    const trimmed = value.trim()
-    // If it's a JSON string, try to parse it
-    if (trimmed.startsWith("{") || trimmed.startsWith("[")) {
-      try {
-        const parsed = JSON.parse(trimmed)
-        // If parsed is an object, extract values
-        if (typeof parsed === "object" && parsed !== null) {
-          // Try common address field names
-          const addressFields = [
-            "postalCode", "postal_code", "postal",
-            "street", "ward", "district", "city",
-            "addressStreet", "addressWard", "addressDistrict", "addressCity", "addressPostalCode"
-          ]
-          for (const field of addressFields) {
-            if (parsed[field] && typeof parsed[field] === "string") {
-              return parsed[field].trim()
-            }
-          }
-          // If no known field, return first string value
-          const firstValue = Object.values(parsed).find(v => typeof v === "string" && v.trim().length > 0)
-          if (firstValue) return String(firstValue).trim()
-        }
-        return null
-      } catch {
-        // If parsing fails, return null
-        return null
-      }
-    }
-    // Regular string
-    return trimmed.length > 0 ? trimmed : null
-  }
-  
-  // If it's an object, extract values
-  if (typeof value === "object" && value !== null) {
-    const addressFields = [
-      "postalCode", "postal_code", "postal",
-      "street", "ward", "district", "city",
-      "addressStreet", "addressWard", "addressDistrict", "addressCity", "addressPostalCode"
-    ]
-    for (const field of addressFields) {
-      if ((value as Record<string, unknown>)[field] && typeof (value as Record<string, unknown>)[field] === "string") {
-        return String((value as Record<string, unknown>)[field]).trim()
-      }
-    }
-    // If no known field, return first string value
-    const firstValue = Object.values(value).find(v => typeof v === "string" && v.trim().length > 0)
-    if (firstValue) return String(firstValue).trim()
-  }
-  
-  return null
-}
-
-// Helper function to validate and get address field value
-const getAddressFieldValue = (value: unknown): string | null => {
-  return parseAddressValue(value)
-}
-
 export const UserDetailClient = ({ userId, user, backUrl = "/admin/users" }: UserDetailClientProps) => {
   const router = useResourceRouter()
   const { hasAnyPermission } = usePermissions()
-  
+
   // Log page load
   usePageLoadLogger("detail")
-  
+
   // Check permission for edit
   const canUpdate = hasAnyPermission([PERMISSIONS.USERS_UPDATE, PERMISSIONS.USERS_MANAGE])
-  
+
   const { data: detailData, isFetched, isFromApi, fetchedData } = useResourceDetailData({
     initialData: user,
     resourceId: userId,
@@ -152,61 +89,61 @@ export const UserDetailClient = ({ userId, user, backUrl = "/admin/users" }: Use
 
   return (
     <>
-      {/* Custom Avatar Header */}
-      <Flex fullWidth align="center" gap={4} padding="md" rounded="lg" border="all" className="bg-muted/50 border-border/50 mb-4">
-        <Flex className="h-24 w-24 relative" fullWidth>
-          <Avatar className="h-24 w-24 border-2 border-border">
-            <AvatarImage 
-              src={detailData.avatar || undefined} 
-              alt={detailData.name || detailData.email}
-              referrerPolicy="no-referrer"
-              crossOrigin="anonymous"
-            />
-            <AvatarFallback className="bg-gradient-to-br from-primary to-chart-1 text-primary-foreground">
-              <TypographySpanLarge>{getUserInitials(detailData.name, detailData.email)}</TypographySpanLarge>
-            </AvatarFallback>
-          </Avatar>
-          {detailData.isActive && (
-            <Flex position="absolute" className="bottom-0 right-0 rounded-full bg-green-500 border-2 border-background" align="center" justify="center">
-              <IconSize size="md">
-                <CheckCircle2 className="text-white" />
-              </IconSize>
-            </Flex>
-          )}
-        </Flex>
-        <Flex direction="col" gap={1} flex="1" fullWidth>
-          <TypographyH4>{detailData.name || "Chưa có tên"}</TypographyH4>
-          <Flex align="center" gap={2} className="text-muted-foreground" fullWidth>
-            <IconSize size="sm">
-              <Mail />
-            </IconSize>
-            <TypographySpanMuted>{detailData.email}</TypographySpanMuted>
-          </Flex>
-          {detailData.roles && detailData.roles.length > 0 && (
-            <Flex wrap align="center" gap={2} fullWidth>
-              {detailData.roles.map((role) => (
-                <Badge
-                  key={role.name}
-                  variant="outline"
-                  className="bg-primary/10 px-2 py-0.5 border-primary/20"
-                >
-                  <Flex align="center" gap={1}>
-                    <IconSize size="xs">
-                      <Shield />
-                    </IconSize>
-                    <TypographySpanSmall className="text-primary">{role.displayName || role.name}</TypographySpanSmall>
-                  </Flex>
-                </Badge>
-              ))}
-            </Flex>
-          )}
-        </Flex>
-      </Flex>
-
       <ResourceForm<UserFormData>
         data={detailData as UserFormData}
         fields={fields}
         sections={sections}
+        prefixContent={
+          <Flex fullWidth align="center" gap={4} padding="md" rounded="lg" border="all" className="bg-muted/50 border-border/50 mb-4">
+            <Flex className="h-24 w-24 relative" fullWidth>
+              <Avatar className="h-24 w-24 border-2 border-border">
+                <AvatarImage
+                  src={detailData.avatar || undefined}
+                  alt={detailData.name || detailData.email}
+                  referrerPolicy="no-referrer"
+                  crossOrigin="anonymous"
+                />
+                <AvatarFallback className="bg-gradient-to-br from-primary to-chart-1 text-primary-foreground">
+                  <TypographySpanLarge>{getUserInitials(detailData.name, detailData.email)}</TypographySpanLarge>
+                </AvatarFallback>
+              </Avatar>
+              {detailData.isActive && (
+                <Flex position="absolute" className="bottom-0 right-0 rounded-full bg-green-500 border-2 border-background" align="center" justify="center">
+                  <IconSize size="md">
+                    <CheckCircle2 className="text-white" />
+                  </IconSize>
+                </Flex>
+              )}
+            </Flex>
+            <Flex direction="col" gap={1} flex="1" fullWidth>
+              <TypographyH4>{detailData.name || "Chưa có tên"}</TypographyH4>
+              <Flex align="center" gap={2} className="text-muted-foreground" fullWidth>
+                <IconSize size="sm">
+                  <Mail />
+                </IconSize>
+                <TypographySpanMuted>{detailData.email}</TypographySpanMuted>
+              </Flex>
+              {detailData.roles && detailData.roles.length > 0 && (
+                <Flex wrap align="center" gap={2} fullWidth>
+                  {detailData.roles.map((role) => (
+                    <Badge
+                      key={role.name}
+                      variant="outline"
+                      className="bg-primary/10 px-2 py-0.5 border-primary/20"
+                    >
+                      <Flex align="center" gap={1}>
+                        <IconSize size="xs">
+                          <Shield />
+                        </IconSize>
+                        <TypographySpanSmall className="text-primary">{role.displayName || role.name}</TypographySpanSmall>
+                      </Flex>
+                    </Badge>
+                  ))}
+                </Flex>
+              )}
+            </Flex>
+          </Flex>
+        }
         title={detailData.name || detailData.email}
         description={`Chi tiết người dùng ${detailData.email}`}
         backUrl={backUrl}
@@ -214,6 +151,9 @@ export const UserDetailClient = ({ userId, user, backUrl = "/admin/users" }: Use
         readOnly={true}
         showCard={false}
         onSubmit={async () => ({ success: false, error: "Read-only mode" })}
+        resourceName="users"
+        resourceId={userId}
+        action="update"
       />
       {!isDeleted && canUpdate && (
         <Flex

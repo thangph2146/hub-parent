@@ -11,6 +11,7 @@ import { SelectField } from "./select-field"
 import { MultipleSelectField } from "./multiple-select-field"
 import { PermissionsTableField } from "./permissions-table-field"
 import { ImageField } from "./image-field"
+import { AvatarField } from "./avatar-field"
 import { EditorField } from "./editor-field"
 import { SlugField } from "./slug-field"
 import type { ResourceFormField } from "../resource-form"
@@ -159,6 +160,19 @@ export const renderFieldInput = <T,>({
     case "image":
       return (
         <ImageField
+          value={fieldValue}
+          onChange={onChange}
+          placeholder={field.placeholder}
+          error={error}
+          disabled={field.disabled || isPending}
+          readOnly={readOnly}
+          fieldId={field.name as string}
+        />
+      )
+
+    case "avatar":
+      return (
+        <AvatarField
           value={fieldValue}
           onChange={onChange}
           placeholder={field.placeholder}

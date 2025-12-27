@@ -2,7 +2,7 @@
 
 import { useMemo } from "react"
 import { useQueryClient } from "@tanstack/react-query"
-import { ResourceForm } from "@/features/admin/resources/components"
+import { ResourceForm, type ResourceFormField } from "@/features/admin/resources/components"
 import {
   useResourceFormSubmit,
   useResourceNavigation,
@@ -78,7 +78,7 @@ export const StudentEditClient = ({
   const formDisabled = isDeleted && !isPageVariant
   const isActive = student?.isActive === true
 
-  const editFields = useMemo(
+  const editFields = useMemo<ResourceFormField<StudentFormData>[]>(
     () =>
       getBaseStudentFields(usersFromServer, isSuperAdmin, canActivate).map(
         (field) => {

@@ -7,7 +7,6 @@ import {
   type ResourceFormField,
 } from "@/features/admin/resources/components";
 import { Button } from "@/components/ui/button";
-import Image from "next/image";
 import type { Prisma } from "@prisma/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/query-keys";
@@ -19,8 +18,6 @@ import {
 import { usePermissions } from "@/hooks/use-permissions";
 import { PERMISSIONS } from "@/lib/permissions";
 import {
-  TypographyH2,
-  TypographyPLargeMuted,
   IconSize,
 } from "@/components/ui/typography";
 import { Flex } from "@/components/ui/flex";
@@ -130,26 +127,36 @@ export const PostDetailClient = ({
   }, [detailData]);
 
   // Tạo options từ data hiện có
-  const authorOptions = detailData.author
-    ? [
-        {
-          label: detailData.author.name || detailData.author.email,
-          value: detailData.author.id,
-        },
-      ]
-    : [];
+  const authorOptions = React.useMemo(
+    () =>
+      detailData.author
+        ? [
+            {
+              label: detailData.author.name || detailData.author.email,
+              value: detailData.author.id,
+            },
+          ]
+        : [],
+    [detailData.author]
+  );
 
-  const categoryOptions =
-    detailData.categories?.map((cat) => ({
-      label: cat.name,
-      value: cat.id,
-    })) || [];
+  const categoryOptions = React.useMemo(
+    () =>
+      detailData.categories?.map((cat) => ({
+        label: cat.name,
+        value: cat.id,
+      })) || [],
+    [detailData.categories]
+  );
 
-  const tagOptions =
-    detailData.tags?.map((tag) => ({
-      label: tag.name,
-      value: tag.id,
-    })) || [];
+  const tagOptions = React.useMemo(
+    () =>
+      detailData.tags?.map((tag) => ({
+        label: tag.name,
+        value: tag.id,
+      })) || [],
+    [detailData.tags]
+  );
 
   // Tạo fields đầy đủ
   const fields = React.useMemo(

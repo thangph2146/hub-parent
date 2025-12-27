@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { useQueryClient } from "@tanstack/react-query"
-import { MessageSquare, Calendar, Clock, ExternalLink } from "lucide-react"
+import { MessageSquare, ExternalLink } from "lucide-react"
 import { ResourceForm } from "@/features/admin/resources/components"
 import { Card } from "@/components/ui/card"
 import { Switch } from "@/components/ui/switch"
@@ -171,10 +171,13 @@ export const CommentDetailClient = ({ commentId, comment, backUrl = "/admin/comm
         readOnly={true}
         showCard={false}
         onSubmit={async () => ({ success: false, error: "Read-only mode" })}
+        resourceName="comments"
+        resourceId={commentId}
+        action="update"
       />
 
       {/* Custom Toggle Approve Status */}
-      <Card className="border border-border/50" padding="lg" marginTop={4}>
+      <Card className="border border-border/50 mt-4" padding="lg">
         <StatusField 
           approved={approved} 
           canApprove={canApprove && !isDeleted}
@@ -184,7 +187,7 @@ export const CommentDetailClient = ({ commentId, comment, backUrl = "/admin/comm
       </Card>
 
       {/* Post Link & Timestamps */}
-      <Card className="border border-border/50" padding="lg" marginTop={4}>
+      <Card className="border border-border/50 mt-4" padding="lg">
         <Grid cols="responsive-2" fullWidth gap="responsive">
           <Flex direction="col" gap={1}>
             <TypographyP className="text-sm font-medium text-muted-foreground mb-2">Bài viết</TypographyP>

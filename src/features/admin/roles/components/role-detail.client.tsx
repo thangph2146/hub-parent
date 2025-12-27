@@ -78,6 +78,9 @@ export const RoleDetailClient = ({ roleId, role, backUrl = "/admin/roles" }: Rol
         readOnly={true}
         showCard={false}
         onSubmit={async () => ({ success: false, error: "Read-only mode" })}
+        resourceName="roles"
+        resourceId={roleId}
+        action="update"
       />
       {!isDeleted && canUpdate && (
         <Flex

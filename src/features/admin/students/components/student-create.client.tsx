@@ -1,6 +1,6 @@
 "use client"
 
-import { ResourceForm } from "@/features/admin/resources/components"
+import { ResourceForm, type ResourceFormField } from "@/features/admin/resources/components"
 import { useResourceFormSubmit } from "@/features/admin/resources/hooks"
 import { apiRoutes } from "@/lib/api/routes"
 import { getBaseStudentFields, getStudentFormSections, type StudentFormData } from "../form-fields"
@@ -43,7 +43,7 @@ export const StudentCreateClient = ({
     },
   })
 
-  const createFields = getBaseStudentFields(usersFromServer, isSuperAdmin, canActivate)
+  const createFields: ResourceFormField<StudentFormData>[] = getBaseStudentFields(usersFromServer, isSuperAdmin, canActivate)
   const formSections = getStudentFormSections()
 
   return (

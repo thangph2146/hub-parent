@@ -71,6 +71,9 @@ export const TagDetailClient = ({ tagId, tag, backUrl = "/admin/tags" }: TagDeta
         readOnly={true}
         showCard={false}
         onSubmit={async () => ({ success: false, error: "Read-only mode" })}
+        resourceName="tags"
+        resourceId={tagId}
+        action="update"
       />
       {!isDeleted && canUpdate && (
         <Flex

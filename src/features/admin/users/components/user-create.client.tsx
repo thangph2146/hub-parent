@@ -1,6 +1,6 @@
 "use client"
 
-import { ResourceForm } from "@/features/admin/resources/components"
+import { ResourceForm, type ResourceFormField } from "@/features/admin/resources/components"
 import { useResourceFormSubmit } from "@/features/admin/resources/hooks"
 import { apiRoutes } from "@/lib/api/routes"
 import { useToast } from "@/hooks/use-toast"
@@ -51,23 +51,10 @@ export const UserCreateClient = ({ backUrl = "/admin/users", roles: rolesFromSer
     },
   })
 
-  const createFields = [
-    {
-      name: "email",
-      label: "Email",
-      type: "email" as const,
-      placeholder: "email@example.com",
-      required: true,
-      validate: (value: unknown) => {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-        if (typeof value !== "string" || !emailRegex.test(value)) {
-          return { valid: false, error: "Email không hợp lệ" }
-        }
-        return { valid: true }
-      },
-    },
+  const baseFields = getBaseUserFields(roles)
+  const createFields: ResourceFormField<UserFormData>[] = [
+    ...baseFields.filter(field => field.name !== "roleIds" && field.name !== "isActive"),
     getPasswordField(),
-    ...getBaseUserFields(roles).slice(1),
   ]
 
   return (

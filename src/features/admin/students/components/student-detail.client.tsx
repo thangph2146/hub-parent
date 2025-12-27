@@ -82,6 +82,9 @@ export const StudentDetailClient = ({ studentId, student, backUrl = "/admin/stud
         readOnly={true}
         showCard={false}
         onSubmit={async () => ({ success: false, error: "Read-only mode" })}
+        resourceName="students"
+        resourceId={studentId}
+        action="update"
       />
       {!isDeleted && canUpdate && (
         <Flex

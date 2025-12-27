@@ -1,12 +1,6 @@
 import type { ResourceFormField, ResourceFormSection } from "@/features/admin/resources/components"
 import React from "react"
-import { User, AlignLeft, Phone, MapPin, Lock, UserCircle, Building2, Navigation } from "lucide-react"
-import { IconSize } from "@/components/ui/typography"
-
-// Helper function to create icon with IconSize wrapper
-const createIcon = (Icon: React.ComponentType<{ className?: string }>) =>
-  React.createElement(IconSize, { size: "sm" as const, children: React.createElement(Icon) } as React.ComponentProps<typeof IconSize>)
-import { AccountAvatarField } from "./components/account-avatar-field"
+import { User, AlignLeft, Phone, MapPin, Lock, UserCircle, Building2, Navigation, Mail, CheckCircle2, Calendar } from "lucide-react"
 
 export interface AccountFormData {
   name?: string | null
@@ -21,6 +15,10 @@ export interface AccountFormData {
   addressPostalCode?: string | null
   password?: string
   avatar?: string | null
+  email?: string | null
+  emailVerified?: string | null
+  createdAt?: string | null
+  updatedAt?: string | null
   [key: string]: unknown
 }
 
@@ -51,6 +49,11 @@ export const getAccountFormSections = (): ResourceFormSection[] => {
       title: "Bảo mật",
       description: "Thay đổi mật khẩu",
     },
+    {
+      id: "system",
+      title: "Thông tin hệ thống",
+      description: "Thông tin hệ thống và xác thực",
+    },
   ]
 }
 
@@ -59,18 +62,11 @@ export const getAccountFields = (): ResourceFormField<AccountFormData>[] => {
     {
       name: "avatar",
       label: "Ảnh đại diện",
-      type: "image",
+      type: "avatar",
       placeholder: "https://example.com/avatar.jpg",
       description: "URL của ảnh đại diện",
-      icon: createIcon(UserCircle),
+      icon: React.createElement(UserCircle, { className: "h-4 w-4" }),
       section: "avatar",
-      render: (field, value, onChange) => {
-        return React.createElement(AccountAvatarField, {
-          value,
-          onChange,
-          placeholder: field.placeholder,
-        })
-      },
     },
     {
       name: "name",
@@ -78,7 +74,7 @@ export const getAccountFields = (): ResourceFormField<AccountFormData>[] => {
       type: "text",
       placeholder: "Nhập tên",
       required: true,
-      icon: createIcon(User),
+      icon: React.createElement(User, { className: "h-4 w-4" }),
       section: "personal",
     },
     {
@@ -86,15 +82,25 @@ export const getAccountFields = (): ResourceFormField<AccountFormData>[] => {
       label: "Số điện thoại",
       type: "text",
       placeholder: "Nhập số điện thoại",
-      icon: createIcon(Phone),
+      icon: React.createElement(Phone, { className: "h-4 w-4" }),
       section: "personal",
+    },
+    {
+      name: "email",
+      label: "Email",
+      type: "text",
+      placeholder: "Email",
+      description: "Địa chỉ email của tài khoản",
+      icon: React.createElement(Mail, { className: "h-4 w-4" }),
+      section: "personal",
+      disabled: true,
     },
     {
       name: "bio",
       label: "Giới thiệu",
       type: "textarea",
       placeholder: "Nhập giới thiệu về bản thân",
-      icon: createIcon(AlignLeft),
+      icon: React.createElement(AlignLeft, { className: "h-4 w-4" }),
       section: "additional",
     },
     {
@@ -102,7 +108,7 @@ export const getAccountFields = (): ResourceFormField<AccountFormData>[] => {
       label: "Số nhà, Đường",
       type: "text",
       placeholder: "Ví dụ: 125 Đường Đỗ Uyên",
-      icon: createIcon(MapPin),
+      icon: React.createElement(MapPin, { className: "h-4 w-4" }),
       section: "address",
     },
     {
@@ -110,7 +116,7 @@ export const getAccountFields = (): ResourceFormField<AccountFormData>[] => {
       label: "Phường/Xã",
       type: "text",
       placeholder: "Ví dụ: Phường 2",
-      icon: createIcon(Building2),
+      icon: React.createElement(Building2, { className: "h-4 w-4" }),
       section: "address",
     },
     {
@@ -118,7 +124,7 @@ export const getAccountFields = (): ResourceFormField<AccountFormData>[] => {
       label: "Quận/Huyện",
       type: "text",
       placeholder: "Ví dụ: Quận Hoàn Kiếm",
-      icon: createIcon(Navigation),
+      icon: React.createElement(Navigation, { className: "h-4 w-4" }),
       section: "address",
     },
     {
@@ -126,7 +132,7 @@ export const getAccountFields = (): ResourceFormField<AccountFormData>[] => {
       label: "Thành phố/Tỉnh",
       type: "text",
       placeholder: "Ví dụ: Hà Nội",
-      icon: createIcon(MapPin),
+      icon: React.createElement(MapPin, { className: "h-4 w-4" }),
       section: "address",
     },
     {
@@ -134,7 +140,7 @@ export const getAccountFields = (): ResourceFormField<AccountFormData>[] => {
       label: "Mã bưu điện",
       type: "text",
       placeholder: "Ví dụ: 71593 (tùy chọn)",
-      icon: createIcon(MapPin),
+      icon: React.createElement(MapPin, { className: "h-4 w-4" }),
       section: "address",
     },
     {
@@ -144,8 +150,38 @@ export const getAccountFields = (): ResourceFormField<AccountFormData>[] => {
       placeholder: "Để trống nếu không muốn thay đổi",
       description: "Chỉ nhập nếu muốn thay đổi mật khẩu. Để trống để giữ nguyên mật khẩu hiện tại.",
       required: false,
-      icon: createIcon(Lock),
+      icon: React.createElement(Lock, { className: "h-4 w-4" }),
       section: "security",
+    },
+    {
+      name: "emailVerified",
+      label: "Trạng thái xác thực email",
+      type: "text",
+      placeholder: "Chưa xác thực",
+      description: "Trạng thái xác thực email",
+      icon: React.createElement(CheckCircle2, { className: "h-4 w-4" }),
+      section: "system",
+      disabled: true,
+    },
+    {
+      name: "createdAt",
+      label: "Ngày tạo tài khoản",
+      type: "text",
+      placeholder: "Ngày tạo",
+      description: "Ngày tạo tài khoản",
+      icon: React.createElement(Calendar, { className: "h-4 w-4" }),
+      section: "system",
+      disabled: true,
+    },
+    {
+      name: "updatedAt",
+      label: "Cập nhật lần cuối",
+      type: "text",
+      placeholder: "Ngày cập nhật",
+      description: "Ngày cập nhật lần cuối",
+      icon: React.createElement(Calendar, { className: "h-4 w-4" }),
+      section: "system",
+      disabled: true,
     },
   ]
 }

@@ -2,7 +2,7 @@
 
 import { useMemo } from "react"
 import { useQueryClient } from "@tanstack/react-query"
-import { ResourceForm } from "@/features/admin/resources/components"
+import { ResourceForm, type ResourceFormField } from "@/features/admin/resources/components"
 import { useResourceFormSubmit, useResourceDetailData } from "@/features/admin/resources/hooks"
 import { createResourceEditOnSuccess } from "@/features/admin/resources/utils"
 import { apiRoutes } from "@/lib/api/routes"
@@ -97,7 +97,7 @@ export const SessionEditClient = ({
     return handleSubmit(data)
   }
 
-  const editFields = getBaseSessionFields(usersFromServer)
+  const editFields: ResourceFormField<SessionFormData>[] = getBaseSessionFields(usersFromServer)
   const formSections = getSessionFormSections()
 
   return (

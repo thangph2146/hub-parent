@@ -44,6 +44,7 @@ export interface ResourceFormField<T = unknown> {
     | "switch"
     | "date"
     | "image"
+    | "avatar"
     | "editor"
     | "slug";
   sourceField?: string;
@@ -105,6 +106,14 @@ export interface ResourceFormProps<T extends Record<string, unknown>> {
   resourceId?: string;
   action?: "create" | "update";
 
+  // prefix content
+  prefixContent?: React.ReactNode;
+  prefixClassName?: string;
+
+  // suffix content
+  suffixContent?: React.ReactNode;
+  suffixClassName?: string;
+
   // Read-only mode (for detail view)
   readOnly?: boolean;
 }
@@ -133,6 +142,10 @@ export const ResourceForm = <T extends Record<string, unknown>>({
   resourceName,
   resourceId,
   action,
+  prefixContent,
+  prefixClassName,
+  suffixContent,
+  suffixClassName,
   readOnly = false,
 }: ResourceFormProps<T>) => {
   const resourceSegment = useResourceSegment();
@@ -621,7 +634,12 @@ export const ResourceForm = <T extends Record<string, unknown>>({
             </TypographySpanMuted>
           </Flex>
         )}
+        {/* prefix content */}
+        <Flex direction="col" gap="responsive" fullWidth className={prefixClassName}>
+          {prefixContent}
+        </Flex>
 
+        {/* Content */}
         <Flex direction="col" gap="responsive" fullWidth className={contentClassName}>
           {Object.entries(grouped).map(([sectionId, sectionFields]) =>
             renderSection(sectionId, sectionFields)
@@ -636,6 +654,11 @@ export const ResourceForm = <T extends Record<string, unknown>>({
               {ungrouped.map(renderField)}
             </Grid>
           )}
+        </Flex>
+
+        {/* suffix content */}
+        <Flex direction="col" gap="responsive" fullWidth className={suffixClassName}>
+          {suffixContent}
         </Flex>
       </Flex>
     </form>
