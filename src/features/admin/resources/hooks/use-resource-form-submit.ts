@@ -50,6 +50,9 @@ export const useResourceFormSubmit = ({
     
     // Resolve API route early để có thể sử dụng trong catch block
     let resolvedApiRoute: string = ""
+    // Khai báo submitData ở ngoài để có thể sử dụng trong catch block
+    let submitData: Record<string, unknown> | undefined = undefined
+    
     try {
       // Resolve API route (support function for dynamic routes)
       if (typeof apiRoute === "function") {
@@ -84,7 +87,6 @@ export const useResourceFormSubmit = ({
     
     try {
       // Transform data if needed
-      let submitData: Record<string, unknown>
       try {
         submitData = transformData ? transformData(data) : data
         logger.debug("[useResourceFormSubmit] Data transformed", { 
@@ -103,13 +105,25 @@ export const useResourceFormSubmit = ({
         return { success: false, error: errorMessage }
       }
 
+      // submitData chắc chắn đã được gán ở đây vì nếu không sẽ throw error ở trên
+      if (!submitData) {
+        logger.error("[useResourceFormSubmit] submitData is undefined")
+        return {
+          success: false,
+          error: "Lỗi xử lý dữ liệu",
+        }
+      }
+
+      // TypeScript guard: submitData không thể undefined ở đây
+      const finalSubmitData = submitData
+
       logger.debug("[useResourceFormSubmit] Making API call", { 
         method,
         url: resolvedApiRoute,
         resourceId,
-        dataKeys: Object.keys(submitData),
-        dataPreview: Object.keys(submitData).reduce((acc, key) => {
-          const value = submitData[key]
+        dataKeys: Object.keys(finalSubmitData),
+        dataPreview: Object.keys(finalSubmitData).reduce((acc, key) => {
+          const value = finalSubmitData[key]
           // Chỉ log preview, không log toàn bộ data (có thể rất lớn)
           if (typeof value === "string" && value.length > 100) {
             acc[key] = `${value.substring(0, 100)}... (${value.length} chars)`
@@ -128,7 +142,7 @@ export const useResourceFormSubmit = ({
       const response = await apiClient.request({
         method,
         url: resolvedApiRoute,
-        data: submitData,
+        data: finalSubmitData,
       })
 
       logger.debug("[useResourceFormSubmit] API call completed", { 
@@ -250,6 +264,30 @@ export const useResourceFormSubmit = ({
           if (responseData.errors) {
             errorDetails.validationErrors = responseData.errors
           }
+          // Log thêm error và message nếu có
+          if (responseData.error) {
+            errorDetails.serverError = responseData.error
+          }
+          if (responseData.message) {
+            errorDetails.serverMessage = responseData.message
+          }
+        }
+        
+        // Log request data để debug (chỉ preview, không log toàn bộ)
+        if (submitData) {
+          errorDetails.requestDataPreview = Object.keys(submitData).reduce((acc, key) => {
+            const value = submitData![key]
+            if (typeof value === "string" && value.length > 50) {
+              acc[key] = `${value.substring(0, 50)}... (${value.length} chars)`
+            } else if (Array.isArray(value)) {
+              acc[key] = `Array(${value.length})`
+            } else if (value && typeof value === "object") {
+              acc[key] = `Object(${Object.keys(value).length} keys)`
+            } else {
+              acc[key] = value
+            }
+            return acc
+          }, {} as Record<string, unknown>)
         }
       }
       

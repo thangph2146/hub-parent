@@ -33,8 +33,7 @@ import {
 import { emitContactRequestUpsert, emitContactRequestRemove, emitContactRequestAssigned, emitContactRequestBatchUpsert } from "./events"
 
 // Re-export for backward compatibility with API routes
-export { ApplicationError, ForbiddenError, NotFoundError, type AuthContext }
-export type { BulkActionResult }
+export { ApplicationError, ForbiddenError, NotFoundError, type AuthContext, type BulkActionResult }
 
 const sanitizeContactRequest = (contactRequest: ContactRequestWithRelations): ListedContactRequest => {
   return mapContactRequestRecord(contactRequest)

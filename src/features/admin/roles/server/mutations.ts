@@ -28,8 +28,7 @@ import type { BulkActionResult } from "@/features/admin/resources/types";
 import { emitRoleUpsert, emitRoleRemove } from "./events";
 
 // Re-export for backward compatibility with API routes
-export { ApplicationError, ForbiddenError, NotFoundError, type AuthContext };
-export type { BulkActionResult };
+export { ApplicationError, ForbiddenError, NotFoundError, type AuthContext, type BulkActionResult }
 
 export const createRole = async (
   ctx: AuthContext,

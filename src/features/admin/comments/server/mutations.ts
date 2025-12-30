@@ -21,8 +21,7 @@ import {
 import type { BulkActionResult } from "@/features/admin/resources/types"
 import { emitCommentUpsert, emitCommentRemove, emitCommentBatchUpsert } from "./events"
 
-export { ApplicationError, ForbiddenError, NotFoundError, type AuthContext }
-export type { BulkActionResult }
+export { ApplicationError, ForbiddenError, NotFoundError, type AuthContext, type BulkActionResult }
 
 type CommentWithRelations = {
   id: string
