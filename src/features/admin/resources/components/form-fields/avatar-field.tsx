@@ -9,7 +9,7 @@ import { FieldContent, FieldError } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { CheckCircle2, X } from "lucide-react"
+import { CheckCircle2, X, Copy, Check } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { TypographyH4, TypographyPMuted, IconSize } from "@/components/ui/typography"
 import { Flex } from "@/components/ui/flex"
@@ -39,9 +39,21 @@ export const AvatarField = ({
   const hasAvatar = avatarUrl && avatarUrl.trim() !== ""
   const [imageError, setImageError] = React.useState(false)
   const [name, setName] = React.useState("")
+  const [copied, setCopied] = React.useState(false)
   const errorId = error ? `${fieldId}-error` : undefined
   const isDisabled = disabled
   const isReadOnly = readOnly && !isDisabled
+
+  const handleCopyUrl = async () => {
+    if (!avatarUrl) return
+    try {
+      await navigator.clipboard.writeText(avatarUrl)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch (err) {
+      console.error("Failed to copy URL:", err)
+    }
+  }
 
   // Get name from form input when it changes
   React.useEffect(() => {
@@ -111,7 +123,7 @@ export const AvatarField = ({
                   aria-invalid={error ? "true" : "false"}
                   aria-describedby={errorId}
                 />
-                {hasAvatar && !isReadOnly && (
+                {hasAvatar && !readOnly && (
                   <Button
                     type="button"
                     variant="outline"
@@ -131,9 +143,25 @@ export const AvatarField = ({
                   </Button>
                 )}
               </Flex>
-              <TypographyPMuted className={cn(isReadOnly && "!opacity-100")}>
-                Nhập URL của ảnh đại diện hoặc để trống để sử dụng chữ cái đầu
-              </TypographyPMuted>
+              {readOnly && hasAvatar ? (
+                <Button
+                  type="button"
+                  variant="default"
+                  size="sm"
+                  onClick={handleCopyUrl}
+                  disabled={!hasAvatar}
+                  className="w-full sm:w-fit"
+                >
+                  <IconSize size="sm" className="mr-2">
+                    {copied ? <Check /> : <Copy />}
+                  </IconSize>
+                  {copied ? "Đã copy!" : "Copy URL"}
+                </Button>
+              ) : (
+                <TypographyPMuted className={cn(isReadOnly && "!opacity-100")}>
+                  Nhập URL của ảnh đại diện hoặc để trống để sử dụng chữ cái đầu
+                </TypographyPMuted>
+              )}
             </Flex>
           </Flex>
         </Card>

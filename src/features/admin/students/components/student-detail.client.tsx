@@ -84,7 +84,7 @@ export const StudentDetailClient = ({ studentId, student, backUrl = "/admin/stud
       footerButtons={
         !isDeleted && canUpdate ? (
           <Button
-            variant="outline"
+            variant="default"
             onClick={() => router.push(`/admin/students/${studentId}/edit`)}
           >
             <Flex align="center" gap={2}>

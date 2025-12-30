@@ -195,7 +195,7 @@ export const PostDetailClient = ({
       footerButtons={
         !isDeleted && canUpdate ? (
           <Button
-            variant="outline"
+            variant="default"
             onClick={() => router.push(`/admin/posts/${detailData.id}/edit`)}
           >
             <Flex align="center" gap={2}>

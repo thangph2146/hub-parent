@@ -80,7 +80,7 @@ export const RoleDetailClient = ({ roleId, role, backUrl = "/admin/roles" }: Rol
       footerButtons={
         !isDeleted && canUpdate ? (
           <Button
-            variant="outline"
+            variant="default"
             onClick={() => router.push(`/admin/roles/${roleId}/edit`)}
           >
             <Flex align="center" gap={2}>

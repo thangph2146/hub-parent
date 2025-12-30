@@ -79,7 +79,7 @@ export const SessionDetailClient = ({ sessionId, session, backUrl = "/admin/sess
       footerButtons={
         !isDeleted && canUpdate ? (
           <Button
-            variant="outline"
+            variant="default"
             onClick={() => router.push(`/admin/sessions/${sessionId}/edit`)}
           >
             <Flex align="center" gap={2}>
