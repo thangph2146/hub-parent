@@ -154,38 +154,30 @@ export const UserDetailClient = ({ userId, user, backUrl = "/admin/users" }: Use
         resourceName="users"
         resourceId={userId}
         action="update"
+        footerButtons={
+          !isDeleted && canUpdate ? (
+            <Button
+              variant="outline"
+              onClick={() => {
+                logger.info("✏️ Edit from detail page", {
+                  source: "detail-page-edit-button",
+                  resourceId: userId,
+                  resourceName: "users",
+                  targetUrl: `/admin/users/${userId}/edit`,
+                })
+                router.push(`/admin/users/${userId}/edit`)
+              }}
+            >
+              <Flex align="center" gap={2}>
+                <IconSize size="sm">
+                  <Edit />
+                </IconSize>
+                Chỉnh sửa
+              </Flex>
+            </Button>
+          ) : null
+        }
       />
-      {!isDeleted && canUpdate && (
-        <Flex
-          align="center"
-          justify="end"
-          gap={2}
-          fullWidth
-          paddingY={2}
-          border="top"
-          className="sticky bottom-0 bg-background/95 backdrop-blur-sm z-10"
-        >
-          <Button
-            variant="outline"
-            onClick={() => {
-              logger.info("✏️ Edit from detail page", {
-                source: "detail-page-edit-button",
-                resourceId: userId,
-                resourceName: "users",
-                targetUrl: `/admin/users/${userId}/edit`,
-              })
-              router.push(`/admin/users/${userId}/edit`)
-            }}
-          >
-            <Flex align="center" gap={2}>
-              <IconSize size="sm">
-                <Edit />
-              </IconSize>
-              Chỉnh sửa
-            </Flex>
-          </Button>
-        </Flex>
-      )}
     </>
   )
 }

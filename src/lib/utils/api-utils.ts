@@ -50,10 +50,47 @@ export const extractAxiosErrorMessage = (
   defaultMessage = "Đã xảy ra lỗi"
 ): string => {
   if (error && typeof error === "object" && "response" in error) {
-    const axiosError = error as { response?: { data?: { error?: string }; status?: number } }
-    if (axiosError.response?.data?.error) {
-      return axiosError.response.data.error
+    const axiosError = error as { 
+      response?: { 
+        data?: { 
+          error?: string
+          message?: string
+          errors?: Array<{ message?: string; path?: string }> | Record<string, string[]>
+        }
+        status?: number 
+      } 
     }
+    
+    const responseData = axiosError.response?.data
+    
+    // Ưu tiên error message
+    if (responseData?.error && typeof responseData.error === "string") {
+      return responseData.error
+    }
+    
+    // Nếu có message
+    if (responseData?.message && typeof responseData.message === "string") {
+      return responseData.message
+    }
+    
+    // Nếu có validation errors (array format)
+    if (Array.isArray(responseData?.errors) && responseData.errors.length > 0) {
+      const firstError = responseData.errors[0]
+      if (firstError?.message) {
+        return firstError.message
+      }
+    }
+    
+    // Nếu có validation errors (object format - Zod style)
+    if (responseData?.errors && typeof responseData.errors === "object" && !Array.isArray(responseData.errors)) {
+      const errors = responseData.errors as Record<string, string[]>
+      const firstKey = Object.keys(errors)[0]
+      if (firstKey && Array.isArray(errors[firstKey]) && errors[firstKey].length > 0) {
+        return `${firstKey}: ${errors[firstKey][0]}`
+      }
+    }
+    
+    // Fallback to status message
     if (axiosError.response?.status) {
       return STATUS_MESSAGES[axiosError.response.status] || defaultMessage
     }

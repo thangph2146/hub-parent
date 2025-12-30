@@ -181,33 +181,19 @@ export const PostDetailClient = ({
     detailData.deletedAt !== null && detailData.deletedAt !== undefined;
 
   return (
-    <>
-      <ResourceForm<PostFormData>
-        data={formData as PostFormData}
-        fields={fields}
-        sections={sections}
-        title={detailData.title || "Chi tiết bài viết"}
-        description={`Chi tiết bài viết ${detailData.title || ""}`}
-        backUrl={backUrl}
-        backLabel="Quay lại danh sách"
-        readOnly={true}
-        showCard={false}
-        onSubmit={async () => ({ success: false, error: "Read-only mode" })}
-        resourceName="posts"
-        resourceId={postId}
-        action="update"
-      />
-
-      {!isDeleted && canUpdate && (
-        <Flex
-          align="center"
-          justify="end"
-          gap={2}
-          fullWidth
-          paddingY={2}
-          border="top"
-          className="sticky bottom-0 bg-background/95 backdrop-blur-sm z-10 mt-4"
-        >
+    <ResourceForm<PostFormData>
+      data={formData as PostFormData}
+      fields={fields}
+      sections={sections}
+      title={detailData.title || "Chi tiết bài viết"}
+      description={`Chi tiết bài viết ${detailData.title || ""}`}
+      backUrl={backUrl}
+      backLabel="Quay lại danh sách"
+      readOnly={true}
+      showCard={false}
+      onSubmit={async () => ({ success: false, error: "Read-only mode" })}
+      footerButtons={
+        !isDeleted && canUpdate ? (
           <Button
             variant="outline"
             onClick={() => router.push(`/admin/posts/${detailData.id}/edit`)}
@@ -219,9 +205,12 @@ export const PostDetailClient = ({
               Chỉnh sửa
             </Flex>
           </Button>
-        </Flex>
-      )}
-    </>
+        ) : null
+      }
+      resourceName="posts"
+      resourceId={postId}
+      action="update"
+    />
   );
 };
 

@@ -55,7 +55,7 @@ export function ResourceDetailSkeleton({
             </div>
             <Grid cols={fieldCount > 2 ? "2-lg" : 1} fullWidth gap={6}>
               {Array.from({ length: Math.max(2, fieldCount) }).map((_, fieldIndex) => (
-                <Flex key={fieldIndex} direction="col" gap={2} fullWidth paddingY={2.5}>
+                <Flex key={fieldIndex} direction="col" gap={2} fullWidth className="py-2.5">
                   <Skeleton className="h-4 w-32" />
                   <Skeleton className="h-5 w-full" />
                 </Flex>

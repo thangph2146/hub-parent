@@ -58,42 +58,32 @@ export const CategoryDetailClient = ({ categoryId, category, backUrl = "/admin/c
   const editUrl = `/admin/categories/${categoryId}/edit`
 
   return (
-    <>
-      <ResourceForm<CategoryFormData>
-        data={detailData as CategoryFormData}
-        fields={fields}
-        sections={sections}
-        title={detailData?.name}
-        description={`Chi tiết danh mục ${detailData?.slug}`}
-        backUrl={backUrl}
-        backLabel="Quay lại danh sách"
-        onBack={() => navigateBack(backUrl)}
-        readOnly={true}
-        showCard={false}
-        onSubmit={async () => ({ success: false, error: "Read-only mode" })}
-        resourceName="categories"
-        resourceId={categoryId}
-        action="update"
-      />
-      {!isDeleted && canUpdate && (
-        <Flex
-          align="center"
-          justify="end"
-          gap={2}
-          fullWidth
-          paddingY={2}
-          border="top"
-          className="sticky bottom-0 bg-background/95 backdrop-blur-sm z-10"
-        >
+    <ResourceForm<CategoryFormData>
+      data={detailData as CategoryFormData}
+      fields={fields}
+      sections={sections}
+      title={detailData?.name}
+      description={`Chi tiết danh mục ${detailData?.slug}`}
+      backUrl={backUrl}
+      backLabel="Quay lại danh sách"
+      onBack={() => navigateBack(backUrl)}
+      readOnly={true}
+      showCard={false}
+      onSubmit={async () => ({ success: false, error: "Read-only mode" })}
+      footerButtons={
+        !isDeleted && canUpdate ? (
           <Button variant="outline" onClick={() => router.push(editUrl)}>
             <Flex align="center" gap={2}>
               <IconSize size="sm"><Edit /></IconSize>
               Chỉnh sửa
             </Flex>
           </Button>
-        </Flex>
-      )}
-    </>
+        ) : null
+      }
+      resourceName="categories"
+      resourceId={categoryId}
+      action="update"
+    />
   )
 }
 

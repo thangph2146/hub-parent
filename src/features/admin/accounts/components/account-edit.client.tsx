@@ -7,7 +7,7 @@ import {
 import { useResourceFormSubmit } from "@/features/admin/resources/hooks";
 import { apiRoutes } from "@/lib/api/routes";
 import {
-  getAccountFields,
+  getBaseAccountFields,
   getAccountFormSections,
   type AccountFormData,
 } from "../form-fields";
@@ -56,6 +56,17 @@ export const AccountEditClient = ({
     },
     transformData: (data) => {
       const submitData: Record<string, unknown> = { ...data };
+
+      // Remove read-only fields that should not be sent to server
+      const readOnlyFields: readonly string[] = [
+        "email",           // Email không thể thay đổi
+        "emailVerified",   // Trạng thái xác thực email (read-only)
+        "createdAt",       // Ngày tạo (read-only)
+        "updatedAt",       // Ngày cập nhật (read-only, tự động)
+      ];
+      readOnlyFields.forEach((field: string) => {
+        delete submitData[field];
+      });
 
       // Trim name field
       if (submitData.name) submitData.name = String(submitData.name).trim();
@@ -132,10 +143,11 @@ export const AccountEditClient = ({
     phone: account.phone,
     address: account.address,
     avatar: account.avatar,
+    email: account.email, // Hiển thị email nhưng disabled (không cho chỉnh sửa)
     ...parseAddressToFormFields(account.address),
   };
 
-  const editFields = getAccountFields() as ResourceFormField<AccountFormData>[];
+  const editFields = getBaseAccountFields() as ResourceFormField<AccountFormData>[];
   const formSections = getAccountFormSections();
 
   return (

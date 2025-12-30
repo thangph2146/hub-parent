@@ -20,7 +20,7 @@ import type { AccountProfile } from "../types";
 import { useResourceDetailLogger } from "@/features/admin/resources/hooks";
 import { usePermissions } from "@/hooks/use-permissions";
 import { PERMISSIONS } from "@/lib/permissions";
-import { getAccountFields, getAccountFormSections, type AccountFormData } from "../form-fields";
+import { getBaseAccountFields, getAccountFormSections, type AccountFormData } from "../form-fields";
 
 export interface AccountProfileClientProps {
   account: AccountProfile;
@@ -69,7 +69,7 @@ export const AccountProfileClient = ({
     );
   }
 
-  const fields = getAccountFields() as ResourceFormField<AccountFormData>[];
+  const fields = getBaseAccountFields() as ResourceFormField<AccountFormData>[];
   const sections = getAccountFormSections();
   const formData: AccountFormData = {
     name: account.name,
@@ -102,31 +102,22 @@ export const AccountProfileClient = ({
         resourceName="accounts"
         resourceId={account.id}
         action="update"
-      />
-
-      {canUpdate && (
-        <Flex
-          align="center"
-          justify="end"
-          gap={2}
-          fullWidth
-          paddingY={2}
-          border="top"
-          className="sticky bottom-0 bg-background/95 backdrop-blur-sm z-10 mt-4"
-        >
-          <Button
-            variant="outline"
-            onClick={() => setIsEditing(true)}
-          >
-            <Flex align="center" gap={2}>
-              <IconSize size="sm">
-                <Edit />
-              </IconSize>
-              Chỉnh sửa
-            </Flex>
-          </Button>
-        </Flex>
-      )}
+        footerButtons={
+          canUpdate ? (
+              <Button
+                variant="outline"
+                onClick={() => setIsEditing(true)}
+              >
+                <Flex align="center" gap={2}>
+                  <IconSize size="sm">
+                    <Edit />
+                  </IconSize>
+                  Chỉnh sửa
+                </Flex>
+              </Button>
+          ) : null
+        }
+    />
     </>
   );
 };

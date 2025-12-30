@@ -114,6 +114,9 @@ export interface ResourceFormProps<T extends Record<string, unknown>> {
   suffixContent?: React.ReactNode;
   suffixClassName?: string;
 
+  // Custom footer buttons (overrides default footer buttons)
+  footerButtons?: React.ReactNode;
+
   // Read-only mode (for detail view)
   readOnly?: boolean;
 }
@@ -146,6 +149,7 @@ export const ResourceForm = <T extends Record<string, unknown>>({
   prefixClassName,
   suffixContent,
   suffixClassName,
+  footerButtons: customFooterButtons,
   readOnly = false,
 }: ResourceFormProps<T>) => {
   const resourceSegment = useResourceSegment();
@@ -523,7 +527,7 @@ export const ResourceForm = <T extends Record<string, unknown>>({
         orientation={isCheckbox ? undefined : "vertical"}
         data-invalid={hasError}
         className={cn(
-          "py-2.5",
+          "py-1.5",
           readOnly && "!opacity-100",
           field.className
         )}
@@ -592,7 +596,7 @@ export const ResourceForm = <T extends Record<string, unknown>>({
         <Grid
           cols={gridCols}
           fullWidth
-          gap="responsive"
+          gap="2-md-4"
           className={cn(
             "transition-all duration-300",
             readOnly && "!opacity-100"
@@ -648,7 +652,7 @@ export const ResourceForm = <T extends Record<string, unknown>>({
             <Grid 
               cols="responsive-2" 
               fullWidth 
-              gap="responsive"
+              gap="2-md-4"
               className={cn(readOnly && "!opacity-100")}
             >
               {ungrouped.map(renderField)}
@@ -716,9 +720,8 @@ export const ResourceForm = <T extends Record<string, unknown>>({
           align="start"
           justify="between"
           gap={4}
-          paddingBottom={6}
           border="b-border"
-          className="sm:items-center"
+          className={cn("pb-6 sm:items-center", _className)}
         >
           <Flex
             direction="col"
@@ -759,17 +762,17 @@ export const ResourceForm = <T extends Record<string, unknown>>({
 
       {formContent}
 
-      {!readOnly && (
+      {(customFooterButtons || (!readOnly && footerButtons)) && (
         <Flex
           align="center"
           justify="end"
           gap={2}
           fullWidth
-          paddingY={2}
           border="top"
-          className="sticky bottom-0 bg-background/95 backdrop-blur-sm z-10"
+          padding="sm-y"
+          className={cn("sticky bottom-0 bg-background/95 backdrop-blur-sm z-10", _className)}
         >
-          {footerButtons}
+          {customFooterButtons || footerButtons}
         </Flex>
       )}
     </>

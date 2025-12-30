@@ -51,7 +51,7 @@ export function FeedbackDialog({
           </Flex>
 
           {details ? (
-            <Flex direction="col" gap={2} marginTop={4}>
+            <Flex direction="col" gap={2} className="mt-4">
               <TypographyP>
                 Chi tiết
               </TypographyP>

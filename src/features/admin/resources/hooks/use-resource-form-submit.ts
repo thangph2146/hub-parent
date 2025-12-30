@@ -48,6 +48,40 @@ export const useResourceFormSubmit = ({
       dataKeys: Object.keys(data),
     })
     
+    // Resolve API route early để có thể sử dụng trong catch block
+    let resolvedApiRoute: string = ""
+    try {
+      // Resolve API route (support function for dynamic routes)
+      if (typeof apiRoute === "function") {
+        if (!resourceId) {
+          return {
+            success: false,
+            error: "Resource ID is required for update operations",
+          }
+        }
+      }
+
+      resolvedApiRoute = typeof apiRoute === "function" && resourceId
+        ? apiRoute(resourceId)
+        : typeof apiRoute === "string"
+          ? apiRoute
+          : ""
+
+      if (!resolvedApiRoute) {
+        logger.error("[useResourceFormSubmit] API route is required")
+        return {
+          success: false,
+          error: "API route is required",
+        }
+      }
+    } catch (routeError) {
+      logger.error("[useResourceFormSubmit] Error resolving API route", routeError as Error)
+      return {
+        success: false,
+        error: "Lỗi xử lý API route",
+      }
+    }
+    
     try {
       // Transform data if needed
       let submitData: Record<string, unknown>
@@ -69,35 +103,25 @@ export const useResourceFormSubmit = ({
         return { success: false, error: errorMessage }
       }
 
-      // Resolve API route (support function for dynamic routes)
-      if (typeof apiRoute === "function") {
-        if (!resourceId) {
-          return {
-            success: false,
-            error: "Resource ID is required for update operations",
-          }
-        }
-      }
-
-      const resolvedApiRoute = typeof apiRoute === "function" && resourceId
-        ? apiRoute(resourceId)
-        : typeof apiRoute === "string"
-          ? apiRoute
-          : ""
-
-      if (!resolvedApiRoute) {
-        logger.error("[useResourceFormSubmit] API route is required")
-        return {
-          success: false,
-          error: "API route is required",
-        }
-      }
-
       logger.debug("[useResourceFormSubmit] Making API call", { 
         method,
         url: resolvedApiRoute,
         resourceId,
         dataKeys: Object.keys(submitData),
+        dataPreview: Object.keys(submitData).reduce((acc, key) => {
+          const value = submitData[key]
+          // Chỉ log preview, không log toàn bộ data (có thể rất lớn)
+          if (typeof value === "string" && value.length > 100) {
+            acc[key] = `${value.substring(0, 100)}... (${value.length} chars)`
+          } else if (Array.isArray(value)) {
+            acc[key] = `Array(${value.length})`
+          } else if (value && typeof value === "object") {
+            acc[key] = `Object(${Object.keys(value).length} keys)`
+          } else {
+            acc[key] = value
+          }
+          return acc
+        }, {} as Record<string, unknown>),
       })
 
       // Make API call
@@ -201,7 +225,37 @@ export const useResourceFormSubmit = ({
 
       return { success: false, error: messages.errorDescription || "Không thể thực hiện thao tác" }
     } catch (error: unknown) {
+      // Log chi tiết error để debug
+      const errorDetails: Record<string, unknown> = {
+        method,
+        url: resolvedApiRoute,
+        resourceId,
+      }
+      
+      if (error && typeof error === "object" && "response" in error) {
+        const axiosError = error as { 
+          response?: { 
+            data?: unknown
+            status?: number
+            statusText?: string
+          }
+        }
+        errorDetails.responseStatus = axiosError.response?.status
+        errorDetails.responseStatusText = axiosError.response?.statusText
+        errorDetails.responseData = axiosError.response?.data
+        
+        // Log validation errors nếu có
+        if (axiosError.response?.data && typeof axiosError.response.data === "object") {
+          const responseData = axiosError.response.data as Record<string, unknown>
+          if (responseData.errors) {
+            errorDetails.validationErrors = responseData.errors
+          }
+        }
+      }
+      
       logger.error("[useResourceFormSubmit] handleSubmit ERROR", error as Error)
+      logger.debug("[useResourceFormSubmit] Error details", errorDetails)
+      
       const errorMessage = extractAxiosErrorMessage(error, messages.errorDescription || "Đã xảy ra lỗi")
 
       toast({

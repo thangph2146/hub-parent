@@ -226,7 +226,7 @@ const YearAveragesList = ({ averages, isLoading }: { averages?: YearAverage[]; i
 
   if (isLoading) {
     return (
-      <Flex align="center" paddingY={8}>
+      <Flex align="center" className="py-8">
         <IconSize size="lg" className="animate-spin text-muted-foreground">
           <Loader2 />
         </IconSize>
@@ -236,7 +236,7 @@ const YearAveragesList = ({ averages, isLoading }: { averages?: YearAverage[]; i
 
   if (!averages || averages.length === 0) {
     return (
-      <Flex paddingY={8} align="center" className="text-muted-foreground">
+      <Flex className="py-8 text-muted-foreground" align="center">
         Chưa có dữ liệu điểm trung bình theo năm học
       </Flex>
     )
@@ -455,7 +455,7 @@ const TermAveragesList = ({ averages, isLoading }: { averages?: TermAverage[]; i
 
   if (isLoading) {
     return (
-      <Flex align="center" paddingY={8}>
+      <Flex align="center" className="py-8">
         <IconSize size="lg" className="animate-spin text-muted-foreground">
           <Loader2 />
         </IconSize>
@@ -536,7 +536,7 @@ const TermAveragesList = ({ averages, isLoading }: { averages?: TermAverage[]; i
             })}
         </Flex>
       ) : (
-        <Flex paddingY={8} align="center" fullWidth className="text-muted-foreground">
+        <Flex className="py-8 text-muted-foreground" align="center" fullWidth>
           Không tìm thấy dữ liệu phù hợp
         </Flex>
       )}
@@ -876,7 +876,7 @@ const DetailedScoresTable = ({ scores, isLoading }: { scores?: DetailedScore[]; 
                       </Flex>
                     </CollapsibleTrigger>
                     <CollapsibleContent className="w-full">
-                      <Flex paddingX={2} border="top" direction="col" gap={2} fullWidth>
+                      <Flex className="px-2" border="top" direction="col" gap={2} fullWidth>
                         {Object.entries(terms)
                           .sort(([a], [b]) => a.localeCompare(b))
                           .map(([termID, termScores]) => {
@@ -920,7 +920,7 @@ const DetailedScoresTable = ({ scores, isLoading }: { scores?: DetailedScore[]; 
             })}
         </Flex>
       ) : (
-        <Flex paddingY={8} align="center" fullWidth className="text-muted-foreground">
+        <Flex className="py-8 text-muted-foreground" align="center" fullWidth>
           Không tìm thấy dữ liệu phù hợp
         </Flex>
       )}

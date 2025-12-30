@@ -73,7 +73,7 @@ export default async function NotificationDetailPage({
             detailPath: `/admin/notifications/${id}`,
           })}
         />
-        <div className="flex flex-1 flex-col gap-4 p-4">
+        <div className="flex flex-1 flex-col gap-6 p-6 mx-auto w-full">
           <div className="flex min-h-[400px] flex-1 items-center justify-center">
             <div className="text-center">
               <TypographyH2 className="mb-2">ID không hợp lệ</TypographyH2>
@@ -97,7 +97,7 @@ export default async function NotificationDetailPage({
           detailPath: `/admin/notifications/${id}`,
         })}
       />
-      <div className="flex flex-1 flex-col gap-4 p-4">
+      <div className="flex flex-1 flex-col gap-6 p-6 mx-auto w-full">
         <FormPageSuspense fieldCount={6} sectionCount={1}>
           <NotificationDetailContent notificationId={validatedId} />
         </FormPageSuspense>

@@ -64,7 +64,7 @@ export function PostPagination({ currentPage, totalPages }: PostPaginationProps)
             <Link href={getPageUrl(1)}>1</Link>
           </Button>
           {startPage > 2 && (
-            <Flex paddingX={2}>
+            <Flex paddingX="2">
               <span>...</span>
             </Flex>
           )}
@@ -84,7 +84,7 @@ export function PostPagination({ currentPage, totalPages }: PostPaginationProps)
       {endPage < totalPages && (
         <>
           {endPage < totalPages - 1 && (
-            <Flex paddingX={2}>
+            <Flex paddingX="2">
               <span>...</span>
             </Flex>
           )}

@@ -159,70 +159,71 @@ export const CommentDetailClient = ({ commentId, comment, backUrl = "/admin/comm
   const sections = getCommentFormSections()
 
   return (
-    <>
-      <ResourceForm<CommentFormData>
-        data={detailData as CommentFormData}
-        fields={fields}
-        sections={sections}
-        title={`Bình luận từ ${detailData.authorName || detailData.authorEmail}`}
-        description={`Chi tiết bình luận trong bài viết "${detailData.postTitle}"`}
-        backUrl={backUrl}
-        backLabel="Quay lại danh sách"
-        readOnly={true}
-        showCard={false}
-        onSubmit={async () => ({ success: false, error: "Read-only mode" })}
-        resourceName="comments"
-        resourceId={commentId}
-        action="update"
-      />
+    <ResourceForm<CommentFormData>
+      data={detailData as CommentFormData}
+      fields={fields}
+      sections={sections}
+      title={`Bình luận từ ${detailData.authorName || detailData.authorEmail}`}
+      description={`Chi tiết bình luận trong bài viết "${detailData.postTitle}"`}
+      backUrl={backUrl}
+      backLabel="Quay lại danh sách"
+      readOnly={true}
+      showCard={false}
+      onSubmit={async () => ({ success: false, error: "Read-only mode" })}
+      suffixContent={
+        <>
+          {/* Custom Toggle Approve Status */}
+          <Card className="border border-border/50 mt-4" padding="lg">
+            <StatusField 
+              approved={approved} 
+              canApprove={canApprove && !isDeleted}
+              onToggle={handleToggleApprove}
+              isToggling={isToggling}
+            />
+          </Card>
 
-      {/* Custom Toggle Approve Status */}
-      <Card className="border border-border/50 mt-4" padding="lg">
-        <StatusField 
-          approved={approved} 
-          canApprove={canApprove && !isDeleted}
-          onToggle={handleToggleApprove}
-          isToggling={isToggling}
-        />
-      </Card>
+          {/* Post Link & Timestamps */}
+          <Card className="border border-border/50 mt-4" padding="lg">
+            <Grid cols="responsive-2" fullWidth gap="responsive">
+              <Flex direction="col" gap={1}>
+                <TypographyP className="text-sm font-medium text-muted-foreground mb-2">Bài viết</TypographyP>
+                {detailData.postId ? (
+                  <a
+                    href={`/admin/posts/${detailData.postId}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group inline-flex items-center gap-1.5 hover:underline transition-colors"
+                  >
+                    <TypographyP className="truncate text-primary hover:text-primary/80">{detailData.postTitle || "—"}</TypographyP>
+                    <IconSize size="xs" className="shrink-0 opacity-50 group-hover:opacity-100 transition-opacity">
+                      <ExternalLink />
+                    </IconSize>
+                  </a>
+                ) : (
+                  <TypographyP className="truncate">{detailData.postTitle || "—"}</TypographyP>
+                )}
+              </Flex>
 
-      {/* Post Link & Timestamps */}
-      <Card className="border border-border/50 mt-4" padding="lg">
-        <Grid cols="responsive-2" fullWidth gap="responsive">
-          <Flex direction="col" gap={1}>
-            <TypographyP className="text-sm font-medium text-muted-foreground mb-2">Bài viết</TypographyP>
-            {detailData.postId ? (
-              <a
-                href={`/admin/posts/${detailData.postId}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group inline-flex items-center gap-1.5 hover:underline transition-colors"
-              >
-                <TypographyP className="truncate text-primary hover:text-primary/80">{detailData.postTitle || "—"}</TypographyP>
-                <IconSize size="xs" className="shrink-0 opacity-50 group-hover:opacity-100 transition-opacity">
-                  <ExternalLink />
-                </IconSize>
-              </a>
-            ) : (
-              <TypographyP className="truncate">{detailData.postTitle || "—"}</TypographyP>
-            )}
-          </Flex>
+              <Flex direction="col" gap={1}>
+                <TypographyP className="text-sm font-medium text-muted-foreground mb-2">Ngày tạo</TypographyP>
+                <TypographyP>
+                  {detailData.createdAt ? formatDateVi(detailData.createdAt) : "—"}
+                </TypographyP>
+              </Flex>
 
-          <Flex direction="col" gap={1}>
-            <TypographyP className="text-sm font-medium text-muted-foreground mb-2">Ngày tạo</TypographyP>
-            <TypographyP>
-              {detailData.createdAt ? formatDateVi(detailData.createdAt) : "—"}
-            </TypographyP>
-          </Flex>
-
-          <Flex direction="col" gap={1}>
-            <TypographyP className="text-sm font-medium text-muted-foreground mb-2">Cập nhật lần cuối</TypographyP>
-            <TypographyP>
-              {detailData.updatedAt ? formatDateVi(detailData.updatedAt) : "—"}
-            </TypographyP>
-          </Flex>
-        </Grid>
-      </Card>
-    </>
+              <Flex direction="col" gap={1}>
+                <TypographyP className="text-sm font-medium text-muted-foreground mb-2">Cập nhật lần cuối</TypographyP>
+                <TypographyP>
+                  {detailData.updatedAt ? formatDateVi(detailData.updatedAt) : "—"}
+                </TypographyP>
+              </Flex>
+            </Grid>
+          </Card>
+        </>
+      }
+      resourceName="comments"
+      resourceId={commentId}
+      action="update"
+    />
   )
 }

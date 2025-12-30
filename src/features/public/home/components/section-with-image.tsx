@@ -43,10 +43,9 @@ export const SectionWithImage = ({
     <Flex
       direction="col"
       align="center"
-      gap={8}
       fullWidth
       className={cn(
-        "lg:flex-row lg:gap-16",
+        "lg:flex-row lg:gap-8",
         reverse && "lg:flex-row-reverse",
         className
       )}

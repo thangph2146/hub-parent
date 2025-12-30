@@ -57,7 +57,7 @@ export const getAccountFormSections = (): ResourceFormSection[] => {
   ]
 }
 
-export const getAccountFields = (): ResourceFormField<AccountFormData>[] => {
+export const getBaseAccountFields = (): ResourceFormField<AccountFormData>[] => {
   return [
     {
       name: "avatar",

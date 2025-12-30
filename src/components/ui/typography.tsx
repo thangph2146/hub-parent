@@ -206,7 +206,7 @@ export function TypographySpanMuted({
   ...props
 }: React.HTMLAttributes<HTMLSpanElement>) {
   return (
-    <span className={cn(typography.body.muted.medium, className)} {...props}>
+    <span className={cn(typography.body.muted.medium, "group-hover:text-primary-foreground transition-colors duration-200", className)} {...props}>
       {children}
     </span>
   )

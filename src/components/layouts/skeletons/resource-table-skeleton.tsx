@@ -72,7 +72,7 @@ export function ResourceTableSkeleton({
               </Table>
             </Flex>
           </Flex>
-          <Flex align="center" justify="between" gap={3} fullWidth border="top" paddingX={2} paddingY={4} marginTop={4} wrap>
+          <Flex align="center" justify="between" gap={3} fullWidth border="top" padding="sm-x" wrap>
             <Skeleton className="h-5 w-48" />
             <Flex align="center" gap={2} wrap>
               <Skeleton className="h-8 w-20" />
