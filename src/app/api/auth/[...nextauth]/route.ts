@@ -10,6 +10,60 @@ async function handleRequest(
   handler: (req: NextRequest) => Promise<Response>,
   req: NextRequest
 ): Promise<Response> {
+  // Kiểm tra sớm nếu là error endpoint - trả về JSON ngay lập tức
+  try {
+    const url = new URL(req.url)
+    const pathname = url.pathname
+    const isErrorEndpoint = pathname.includes("/error")
+    
+    if (isErrorEndpoint) {
+      const errorType = url.searchParams.get("error") || "UnknownError"
+      
+      // Log thông tin về error endpoint
+      logger.warn("NextAuth error endpoint accessed directly", {
+        pathname,
+        errorType,
+        requestHost: req.headers.get("host"),
+        nextAuthUrl: process.env.NEXTAUTH_URL,
+        hasNextAuthSecret: !!process.env.NEXTAUTH_SECRET,
+        hasNextAuthUrl: !!process.env.NEXTAUTH_URL,
+        hasGoogleClientId: !!process.env.GOOGLE_CLIENT_ID,
+        hasGoogleClientSecret: !!process.env.GOOGLE_CLIENT_SECRET,
+      })
+      
+      // Trả về JSON response ngay lập tức, không cần gọi NextAuth handler
+      // Vì NextAuth handler có thể throw exception nếu config không đúng
+      return NextResponse.json(
+        {
+          error: errorType,
+          message: errorType === "Configuration" 
+            ? "Authentication configuration error. Please check NEXTAUTH_SECRET, NEXTAUTH_URL, and OAuth provider credentials."
+            : "Authentication service error",
+          details: errorType === "Configuration" ? {
+            possibleCauses: [
+              "NEXTAUTH_SECRET không đúng hoặc chưa set",
+              "NEXTAUTH_URL không khớp với domain hiện tại",
+              "Google OAuth credentials không đúng",
+              "Callback URL trong Google Cloud Console không khớp",
+              "Domain mismatch trong callback request",
+            ],
+            hasNextAuthSecret: !!process.env.NEXTAUTH_SECRET,
+            hasNextAuthUrl: !!process.env.NEXTAUTH_URL,
+            nextAuthUrl: process.env.NEXTAUTH_URL,
+            hasGoogleClientId: !!process.env.GOOGLE_CLIENT_ID,
+            hasGoogleClientSecret: !!process.env.GOOGLE_CLIENT_SECRET,
+          } : undefined,
+        },
+        { status: 400 }
+      )
+    }
+  } catch (urlError) {
+    // Nếu không parse được URL, tiếp tục xử lý bình thường
+    logger.warn("Failed to parse URL for early error endpoint check", {
+      error: urlError instanceof Error ? urlError.message : String(urlError),
+    })
+  }
+  
   try {
     // Log để debug URL và headers
     const requestHost = req.headers.get("host")
@@ -443,9 +497,54 @@ async function handleRequest(
     // Nếu không phải JSON response
     if (response.status >= 400) {
       // Error response không phải JSON - chuyển đổi thành JSON
+      // Đặc biệt xử lý cho error endpoint
+      const pathname = new URL(req.url).pathname
+      const isErrorEndpoint = pathname.includes("/error")
+      
+      if (isErrorEndpoint) {
+        // Lấy error type từ query params
+        const queryParams = new URL(req.url).searchParams
+        const errorType = queryParams.get("error") || "UnknownError"
+        
+        logger.error("NextAuth error endpoint called", {
+          status: response.status,
+          contentType: responseContentType,
+          errorType,
+          pathname,
+          requestHost: req.headers.get("host"),
+          nextAuthUrl: process.env.NEXTAUTH_URL,
+        })
+        
+        // Trả về JSON error response với thông tin chi tiết
+        return NextResponse.json(
+          {
+            error: errorType,
+            message: errorType === "Configuration" 
+              ? "Authentication configuration error. Please check NEXTAUTH_SECRET, NEXTAUTH_URL, and OAuth provider credentials."
+              : "Authentication service error",
+            details: errorType === "Configuration" ? {
+              possibleCauses: [
+                "NEXTAUTH_SECRET không đúng hoặc chưa set",
+                "NEXTAUTH_URL không khớp với domain hiện tại",
+                "Google OAuth credentials không đúng",
+                "Callback URL trong Google Cloud Console không khớp",
+                "Domain mismatch trong callback request",
+              ],
+              hasNextAuthSecret: !!process.env.NEXTAUTH_SECRET,
+              hasNextAuthUrl: !!process.env.NEXTAUTH_URL,
+              nextAuthUrl: process.env.NEXTAUTH_URL,
+              hasGoogleClientId: !!process.env.GOOGLE_CLIENT_ID,
+              hasGoogleClientSecret: !!process.env.GOOGLE_CLIENT_SECRET,
+            } : undefined,
+          },
+          { status: response.status || 500 }
+        )
+      }
+      
       logger.error("NextAuth returned non-JSON error response", {
         status: response.status,
         contentType: responseContentType,
+        pathname,
       })
       
       return NextResponse.json(
@@ -463,7 +562,29 @@ async function handleRequest(
     logger.error("Error in NextAuth handler", {
       error: error instanceof Error ? error.message : String(error),
       stack: error instanceof Error ? error.stack : undefined,
+      pathname: req.url ? new URL(req.url).pathname : "unknown",
     })
+    
+    // Kiểm tra nếu là error endpoint và có error trong query
+    try {
+      const url = new URL(req.url)
+      const isErrorEndpoint = url.pathname.includes("/error")
+      const errorType = url.searchParams.get("error")
+      
+      if (isErrorEndpoint && errorType) {
+        return NextResponse.json(
+          {
+            error: errorType,
+            message: errorType === "Configuration" 
+              ? "Authentication configuration error. Please check NEXTAUTH_SECRET, NEXTAUTH_URL, and OAuth provider credentials."
+              : "Authentication service error",
+          },
+          { status: 500 }
+        )
+      }
+    } catch {
+      // Ignore URL parsing errors
+    }
     
     return NextResponse.json(
       {
