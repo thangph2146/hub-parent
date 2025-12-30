@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react"
 import { useQueryClient, useMutation } from "@tanstack/react-query"
 import { apiClient } from "@/lib/api/axios"
-import { createAdminMutationOptions } from "../config"
+import { createAdminMutationOptions } from "../query-config"
 import { useResourceBulkProcessing } from "./use-resource-bulk-processing"
 import { resourceLogger } from "@/lib/config/resource-logger"
 import { invalidateAndRefreshResource } from "../utils"

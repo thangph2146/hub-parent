@@ -1,5 +1,5 @@
 import type { Prisma } from "@prisma/client"
-import { prisma } from "@/lib/database"
+import { prisma } from "@/lib/prisma"
 import { resourceLogger } from "@/lib/config"
 import { validatePagination, buildPagination } from "@/features/admin/resources/server"
 import { mapCommentRecord, buildWhereClause } from "./helpers"

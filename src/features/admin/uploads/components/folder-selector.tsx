@@ -9,7 +9,7 @@ import { Field, FieldLabel, FieldDescription, FieldContent } from "@/components/
 import { Trash2, Loader2 } from "lucide-react"
 import { IconSize } from "@/components/ui/typography"
 import { Flex } from "@/components/ui/flex"
-import { useUploadsStore } from "../store/uploads-store"
+import { useUploadsStore } from "../uploads-store"
 import { useDeleteFolder } from "../hooks/use-uploads-queries"
 import { FolderTreeSelect } from "./folder-tree-select"
 import type { FolderItem } from "../types"

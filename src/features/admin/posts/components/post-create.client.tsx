@@ -2,7 +2,15 @@
 
 import { useSession } from "next-auth/react"
 import { useQueryClient } from "@tanstack/react-query"
-import { ResourceForm, type ResourceFormField, type ResourceFormSection } from "@/features/admin/resources/components"
+import { ResourceForm, type ResourceFormField } from "@/features/admin/resources/components"
+import {
+  getBasePostFields,
+  getPostFormSections,
+  getPostContentField,
+  getPostAuthorField,
+  getPostCategoriesField,
+  getPostTagsField,
+} from "../form-fields"
 import { useResourceFormSubmit } from "@/features/admin/resources/hooks"
 import { apiRoutes } from "@/lib/api/routes"
 import { isSuperAdmin } from "@/lib/permissions"
@@ -83,118 +91,24 @@ export const PostCreateClient = ({
   })
 
   const createFields: ResourceFormField<PostCreateData>[] = [
-    {
-      name: "title",
-      label: "Tiêu đề",
-      type: "text",
-      required: true,
-      placeholder: "Nhập tiêu đề bài viết",
-      description: "Tiêu đề của bài viết",
-      section: "basic",
-    },
-    {
-      name: "slug",
-      label: "Slug",
-      type: "slug",
-      sourceField: "title",
-      required: true,
-      placeholder: "bai-viet-slug",
-      description: "URL-friendly version của tiêu đề (tự động tạo từ tiêu đề)",
-      section: "basic",
-    },
-    {
-      name: "excerpt",
-      label: "Tóm tắt",
-      type: "textarea",
-      placeholder: "Nhập tóm tắt bài viết",
-      description: "Mô tả ngắn gọn về nội dung bài viết",
-      section: "basic",
-    },
+    ...(getBasePostFields() as unknown as ResourceFormField<PostCreateData>[]),
     ...(isSuperAdminUser && users.length > 0
-      ? [
-          {
-            name: "authorId",
-            label: "Tác giả",
-            type: "select",
-            options: users,
-            required: true,
-            description: "Chọn tác giả của bài viết",
-            section: "basic",
-          } as ResourceFormField<PostCreateData>,
-        ]
+      ? [getPostAuthorField<PostCreateData>(users)]
       : []),
-    {
-      name: "published",
-      label: "Trạng thái xuất bản",
-      type: "switch",
-      description: "Trạng thái xuất bản của bài viết",
-      section: "basic",
-    },
-   
     ...(categories.length > 0
-      ? [
-          {
-            name: "categoryIds",
-            label: "Danh mục",
-            type: "multiple-select",
-            options: categories,
-            description: "Chọn danh mục cho bài viết (có thể chọn nhiều)",
-            section: "basic",
-          } as ResourceFormField<PostCreateData>,
-        ]
+      ? [getPostCategoriesField<PostCreateData>(categories)]
       : []),
     ...(tags.length > 0
-      ? [
-          {
-            name: "tagIds",
-            label: "Thẻ tag",
-            type: "multiple-select",
-            options: tags,
-            description: "Chọn thẻ tag cho bài viết (có thể chọn nhiều)",
-            section: "basic",
-          } as ResourceFormField<PostCreateData>,
-        ]
+      ? [getPostTagsField<PostCreateData>(tags)]
       : []),
-    {
-      name: "content",
-      label: "",
-      type: "editor",
-      section: "content",
-      className: "w-full max-w-5xl mx-auto",
-    },
-    {
-      name: "image",
-      label: "Hình ảnh",
-      type: "image",
-      placeholder: "https://example.com/image.jpg",
-      description: "URL hình ảnh đại diện cho bài viết",
-      section: "basic",
-    },
-  ]
-
-  const createSections: ResourceFormSection[] = [
-    {
-      id: "basic",
-      title: "Thông tin cơ bản",
-      description: "Tiêu đề, slug, tóm tắt và hình ảnh",
-    },
-    {
-      id: "content",
-      title: "Nội dung",
-      description: "Nội dung chính của bài viết",
-    },
-    {
-      id: "metadata",
-      title: "Thông tin bổ sung",
-      description: "Trạng thái xuất bản",
-    },
+    getPostContentField<PostCreateData>(),
   ]
 
   return (
     <ResourceForm<PostCreateData>
       data={null}
       fields={createFields}
-      sections={createSections}
+      sections={getPostFormSections()}
       onSubmit={handleSubmit}
       title="Tạo bài viết mới"
       description="Nhập thông tin để tạo bài viết mới"

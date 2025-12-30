@@ -3,7 +3,7 @@
 import * as React from "react"
 import * as TooltipPrimitive from "@radix-ui/react-tooltip"
 
-import { cn } from "@/lib/utils/index"
+import { cn } from "@/lib/utils"
 import { responsiveTextSizes, fontWeights, lineHeights, iconSizes } from "@/lib/typography"
 
 const tooltipBodySmall = `${responsiveTextSizes.small} ${fontWeights.normal} ${lineHeights.relaxed}`

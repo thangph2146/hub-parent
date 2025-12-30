@@ -2,7 +2,7 @@
 
 import { useMemo } from "react"
 import { useQueryClient } from "@tanstack/react-query"
-import { ResourceForm } from "@/features/admin/resources/components"
+import { ResourceForm, type ResourceFormField } from "@/features/admin/resources/components"
 import { useResourceFormSubmit, useResourceNavigation, useResourceDetailData } from "@/features/admin/resources/hooks"
 import { createResourceEditOnSuccess } from "@/features/admin/resources/utils"
 import { apiRoutes } from "@/lib/api/routes"
@@ -114,7 +114,7 @@ export const RoleEditClient = ({
     return handleSubmit(data)
   }
 
-  const editFields = getBaseRoleFields(permissionsFromServer).map((field) => {
+  const editFields: ResourceFormField<RoleFormData>[] = getBaseRoleFields(permissionsFromServer).map((field) => {
     if (field.name === "name" && role.name === "super_admin") {
       return {
         ...field,

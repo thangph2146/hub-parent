@@ -1,5 +1,5 @@
 import { cache } from "react"
-import { prisma } from "@/lib/database"
+import { prisma } from "@/lib/prisma"
 
 export interface DashboardStatsData {
   overview: {

@@ -11,6 +11,7 @@ import { SelectField } from "./select-field"
 import { MultipleSelectField } from "./multiple-select-field"
 import { PermissionsTableField } from "./permissions-table-field"
 import { ImageField } from "./image-field"
+import { AvatarField } from "./avatar-field"
 import { EditorField } from "./editor-field"
 import { SlugField } from "./slug-field"
 import type { ResourceFormField } from "../resource-form"
@@ -22,6 +23,7 @@ interface RenderFieldProps<T> {
   onChange: (value: unknown) => void
   isPending?: boolean
   sourceValue?: unknown
+  readOnly?: boolean
 }
 
 export const renderFieldInput = <T,>({
@@ -31,6 +33,7 @@ export const renderFieldInput = <T,>({
   onChange,
   isPending = false,
   sourceValue,
+  readOnly = false,
 }: RenderFieldProps<T>) => {
   const defaultValue = field.type === "multiple-select" || field.type === "permissions-table"
     ? (field.defaultValue ?? [])
@@ -59,6 +62,8 @@ export const renderFieldInput = <T,>({
           error={error}
           onChange={onChange}
           isPending={isPending}
+          disabled={field.disabled}
+          readOnly={readOnly}
         />
       )
 
@@ -70,6 +75,8 @@ export const renderFieldInput = <T,>({
           error={error}
           onChange={onChange}
           isPending={isPending}
+          disabled={field.disabled}
+          readOnly={readOnly}
         />
       )
 
@@ -81,6 +88,8 @@ export const renderFieldInput = <T,>({
           error={error}
           onChange={onChange}
           isPending={isPending}
+          disabled={field.disabled}
+          readOnly={readOnly}
         />
       )
 
@@ -91,7 +100,8 @@ export const renderFieldInput = <T,>({
           fieldValue={fieldValue}
           error={error}
           onChange={onChange}
-          isPending={isPending}
+          isPending={isPending || readOnly}
+          readOnly={readOnly || field.disabled}
         />
       )
 
@@ -103,6 +113,8 @@ export const renderFieldInput = <T,>({
           error={error}
           onChange={onChange}
           isPending={isPending}
+          disabled={field.disabled}
+          readOnly={readOnly}
         />
       )
 
@@ -114,6 +126,8 @@ export const renderFieldInput = <T,>({
           error={error}
           onChange={onChange}
           isPending={isPending}
+          disabled={field.disabled}
+          readOnly={readOnly}
         />
       )
 
@@ -125,6 +139,8 @@ export const renderFieldInput = <T,>({
           error={error}
           onChange={onChange}
           isPending={isPending}
+          disabled={field.disabled}
+          readOnly={readOnly}
         />
       )
 
@@ -136,6 +152,8 @@ export const renderFieldInput = <T,>({
           error={error}
           onChange={onChange}
           isPending={isPending}
+          disabled={field.disabled}
+          readOnly={readOnly}
         />
       )
 
@@ -147,6 +165,20 @@ export const renderFieldInput = <T,>({
           placeholder={field.placeholder}
           error={error}
           disabled={field.disabled || isPending}
+          readOnly={readOnly}
+          fieldId={field.name as string}
+        />
+      )
+
+    case "avatar":
+      return (
+        <AvatarField
+          value={fieldValue}
+          onChange={onChange}
+          placeholder={field.placeholder}
+          error={error}
+          disabled={field.disabled || isPending}
+          readOnly={readOnly}
           fieldId={field.name as string}
         />
       )
@@ -158,6 +190,7 @@ export const renderFieldInput = <T,>({
           onChange={onChange}
           error={error}
           disabled={field.disabled || isPending}
+          readOnly={readOnly}
           className={field.className}
         />
       )
@@ -170,6 +203,8 @@ export const renderFieldInput = <T,>({
           onChange={onChange}
           error={error}
           isPending={isPending}
+          disabled={field.disabled}
+          readOnly={readOnly}
           sourceValue={sourceValue}
         />
       )
@@ -182,6 +217,8 @@ export const renderFieldInput = <T,>({
           error={error}
           onChange={onChange}
           isPending={isPending}
+          disabled={field.disabled}
+          readOnly={readOnly}
         />
       )
   }

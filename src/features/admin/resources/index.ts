@@ -1,4 +1,4 @@
-export * from "./config"
+export * from "./query-config"
 export * from "./hooks"
 export * from "./components"
 export * from "./server"

@@ -156,6 +156,9 @@ export const AccountEditClient = ({
       onCancel={onCancel}
       showCard={variant === "page" ? false : true}
       className={variant === "page" ? "max-w-[100%]" : undefined}
+      resourceName="accounts"
+      resourceId={account.id}
+      action="update"
     />
   );
 };

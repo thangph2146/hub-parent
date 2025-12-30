@@ -1,28 +1,33 @@
 "use client";
 
-import { TypographyH1, TypographyH2, TypographyH4, TypographyP, TypographyPSmallMuted, TypographySpanSmall, TypographySpanSmallMuted, TypographyDescription, TypographyTitleLarge, IconSize } from "@/components/ui/typography";
+import { TypographyH1, TypographyH4, TypographyP, TypographyPSmallMuted, TypographySpanSmall, TypographySpanSmallMuted, TypographyDescription, TypographyTitleLarge, IconSize } from "@/components/ui/typography";
 import { Flex } from "@/components/ui/flex";
 import { Grid } from "@/components/ui/grid";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef, useCallback, useLayoutEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSession } from "next-auth/react";
 import { Calendar, BarChart3, PieChart, LineChart } from "lucide-react";
-import {
-  Line,
-  Bar,
-  PieChart as RechartsPieChart,
-  Pie,
-  Cell,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-  ComposedChart,
-  BarChart,
-} from "recharts";
+// Recharts components not currently used but may be needed for future charts
+// import {
+//   Line,
+//   Bar,
+//   XAxis,
+//   YAxis,
+//   CartesianGrid,
+//   Tooltip,
+//   Legend,
+//   ResponsiveContainer,
+//   ComposedChart,
+//   BarChart,
+// } from "recharts";
+import dynamic from "next/dynamic";
+
+// Dynamic import Highcharts để tránh lỗi SSR
+const HighchartsReact = dynamic(
+  () => import("highcharts-react-official"),
+  { ssr: false }
+);
 import {
   Card,
   CardContent,
@@ -40,7 +45,7 @@ import {
 import { useClientOnly } from "@/hooks/use-client-only";
 import { usePermissions } from "@/hooks/use-permissions";
 import { PERMISSIONS, isSuperAdmin } from "@/lib/permissions";
-import type { DashboardStatsData } from "./server/queries";
+import type { DashboardStatsData } from "./queries";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 const containerVariants = {
@@ -103,6 +108,7 @@ interface CustomTooltipProps {
   label?: string;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
   if (active && payload && payload.length) {
     const total = payload.reduce((sum, entry) => sum + (entry.value || 0), 0);
@@ -180,6 +186,7 @@ interface CustomPieTooltipProps {
   }>;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const CustomPieTooltip = ({ active, payload }: CustomPieTooltipProps) => {
   if (active && payload && payload.length) {
     const data = payload[0];
@@ -207,6 +214,600 @@ const CustomPieTooltip = ({ active, payload }: CustomPieTooltipProps) => {
     );
   }
   return null;
+};
+
+// Helper function để chuyển đổi CSS variable sang màu hex/rgb
+const getComputedColor = (cssVar: string): string => {
+  if (typeof window === "undefined") return "#3b82f6";
+  
+  // Nếu đã là màu HSL, hex hoặc rgb, trả về trực tiếp
+  if (cssVar.startsWith("hsl(") || cssVar.startsWith("#") || cssVar.startsWith("rgb")) {
+    return cssVar;
+  }
+  
+  // Xử lý CSS variable
+  let varName = cssVar;
+  if (cssVar.startsWith("var(")) {
+    varName = cssVar.replace("var(", "").replace(")", "").trim();
+  }
+  
+  const root = document.documentElement;
+  const value = getComputedStyle(root).getPropertyValue(varName).trim();
+  
+  if (value) {
+    return value;
+  }
+  
+  // Fallback colors nếu không lấy được từ CSS variable
+  const fallbackColors: Record<string, string> = {
+    "var(--chart-1)": "#3d5a9e",
+    "var(--chart-2)": "#c9444f",
+    "var(--chart-3)": "#6b6b6b",
+    "var(--chart-4)": "#6b8cae",
+    "var(--chart-5)": "#e57580",
+  };
+  
+  return fallbackColors[cssVar] || "#3b82f6";
+};
+
+// Highcharts Monthly Trends Chart Component
+interface HighchartsMonthlyChartProps {
+  monthlyData: Array<{
+    month: string;
+    [key: string]: string | number;
+  }>;
+  availableResources: Array<{
+    key: string;
+    label: string;
+    color: string;
+  }>;
+  selectedResources: Set<string>;
+  hiddenSeries: Set<string>;
+  chartType: "line" | "bar" | "composed";
+  onSeriesToggle: (key: string) => void;
+}
+
+const HighchartsMonthlyChart = ({
+  monthlyData,
+  availableResources,
+  selectedResources,
+  hiddenSeries,
+  chartType,
+  onSeriesToggle,
+}: HighchartsMonthlyChartProps) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const chartRef = useRef<any>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [Highcharts, setHighcharts] = useState<any>(null);
+  const [isDark, setIsDark] = useState(false);
+
+  useEffect(() => {
+    // Dynamic import Highcharts
+    import("highcharts").then((hc) => {
+      setHighcharts(hc.default);
+    });
+
+    // Kiểm tra theme
+    const checkTheme = () => {
+      const isDarkMode = document.documentElement.classList.contains("dark") ||
+        window.matchMedia("(prefers-color-scheme: dark)").matches;
+      setIsDark(isDarkMode);
+    };
+
+    checkTheme();
+    const observer = new MutationObserver(checkTheme);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
+  const chartOptions = useMemo(() => {
+    if (!Highcharts) return null;
+
+
+    // Lọc các series được chọn (bao gồm cả những cái bị ẩn)
+    const selectedResourcesList = availableResources.filter(
+      (r) => selectedResources.has(r.key)
+    );
+
+    // Tạo series data cho Highcharts
+    const series = selectedResourcesList.map((resource) => {
+      const data = monthlyData.map((item) => {
+        const value = item[resource.key] as number;
+        return value || 0;
+      });
+
+      const baseSeries = {
+        name: resource.label,
+        key: resource.key,
+        color: getComputedColor(resource.color),
+        visible: !hiddenSeries.has(resource.key),
+      };
+
+      if (chartType === "line") {
+        return {
+          ...baseSeries,
+          type: "spline",
+          data: data,
+          lineWidth: 3,
+          marker: {
+            enabled: true,
+            radius: 5,
+            lineWidth: 2,
+            lineColor: "#ffffff",
+            fillColor: getComputedColor(resource.color),
+            states: {
+              hover: {
+                radius: 7,
+                lineWidth: 3,
+              },
+            },
+          },
+          states: {
+            hover: {
+              lineWidth: 4,
+              marker: {
+                radius: 7,
+              },
+            },
+          },
+          shadow: {
+            color: isDark ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.1)",
+            offsetX: 0,
+            offsetY: 2,
+            opacity: 0.3,
+            width: 3,
+          },
+        };
+      } else if (chartType === "bar") {
+        return {
+          ...baseSeries,
+          type: "column",
+          data: data,
+          borderRadius: 6,
+          borderWidth: 0,
+          pointPadding: 0.1,
+          groupPadding: 0.15,
+          states: {
+            hover: {
+              brightness: -0.1,
+            },
+          },
+        };
+      } else {
+        // Composed: 3 đầu tiên là bar, còn lại là line
+        const index = selectedResourcesList.findIndex((r) => r.key === resource.key);
+        if (index < 3) {
+          return {
+            ...baseSeries,
+            type: "column",
+            data: data,
+            borderRadius: 6,
+            borderWidth: 0,
+            opacity: 0.7,
+            pointPadding: 0.1,
+            groupPadding: 0.15,
+            states: {
+              hover: {
+                brightness: -0.1,
+                opacity: 1,
+              },
+            },
+          };
+        } else {
+          return {
+            ...baseSeries,
+            type: "spline",
+            data: data,
+            lineWidth: 3,
+            marker: {
+              enabled: true,
+              radius: 5,
+              lineWidth: 2,
+              lineColor: "#ffffff",
+              fillColor: getComputedColor(resource.color),
+              states: {
+                hover: {
+                  radius: 7,
+                  lineWidth: 3,
+                },
+              },
+            },
+            states: {
+              hover: {
+                lineWidth: 4,
+                marker: {
+                  radius: 7,
+                },
+              },
+            },
+          };
+        }
+      }
+    });
+
+    // Lấy categories từ monthlyData
+    const categories = monthlyData.map((item) => item.month);
+
+    return {
+      chart: {
+        type: chartType === "line" ? "spline" : chartType === "bar" ? "column" : undefined,
+        backgroundColor: "transparent",
+        height: 360,
+        spacing: [15, 15, 15, 15],
+        zooming: {
+          type: "xy",
+        },
+        panning: {
+          enabled: true,
+          type: "xy",
+        },
+        panKey: "shift",
+      },
+      title: {
+        text: "",
+      },
+      xAxis: {
+        categories: categories,
+        labels: {
+          style: {
+            fontSize: "12px",
+            fontWeight: "600",
+          },
+        },
+        lineWidth: 1,
+        tickWidth: 1,
+        gridLineColor: isDark ? "rgba(255, 255, 255, 0.05)" : "rgba(0, 0, 0, 0.05)",
+        gridLineWidth: 1,
+        gridLineDashStyle: "Dot",
+      },
+      yAxis: {
+        title: {
+          text: "",
+        },
+        labels: {
+          style: {
+            fontSize: "12px",
+            fontWeight: "600",
+          },
+        },
+        lineWidth: 1,
+        tickWidth: 1,
+        gridLineColor: isDark ? "rgba(255, 255, 255, 0.05)" : "rgba(0, 0, 0, 0.05)",
+        gridLineWidth: 1,
+        gridLineDashStyle: "Dot",
+      },
+      tooltip: {
+        shared: true,
+        useHTML: true,
+        borderRadius: 10,
+        borderWidth: 1,
+        shadow: {
+          color: isDark ? "rgba(0, 0, 0, 0.5)" : "rgba(0, 0, 0, 0.15)",
+          offsetX: 0,
+          offsetY: 4,
+          opacity: 0.8,
+          width: 4,
+        },
+        style: {
+          fontSize: "12px",
+          fontFamily: "inherit",
+          pointerEvents: "auto",
+        },
+        padding: 0,
+        outside: false,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any, react-hooks/unsupported-syntax
+        formatter: function (this: any) {
+          const maxPoints = 8;
+          const pointsToShow = this.points.slice(0, maxPoints);
+          const hasMore = this.points.length > maxPoints;
+          
+          let tooltip = `
+            <div style="
+              border-radius: 10px;
+              padding: 10px;
+              box-shadow: 0 4px 6px -1px ${isDark ? "rgba(0, 0, 0, 0.3)" : "rgba(0, 0, 0, 0.1)"};
+              min-width: 180px;
+              max-width: 280px;
+              max-height: 400px;
+              overflow-y: auto;
+              z-index: 9999;
+            ">
+              <div style="
+                font-weight: 700;
+                font-size: 14px;
+                margin-bottom: 8px;
+                padding-bottom: 6px;
+              ">${this.x}</div>
+              <div style="display: flex; flex-direction: column; gap: 4px;">
+          `;
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          pointsToShow.forEach((point: any) => {
+            tooltip += `
+              <div style="
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                padding: 4px 0;
+              ">
+                <div style="
+                  width: 10px;
+                  height: 10px;
+                  border-radius: 50%;
+                  background: ${point.color};
+                  flex-shrink: 0;
+                "></div>
+                <span style="
+                  flex: 1;
+                  font-size: 13px;
+                  font-weight: 600;
+                  white-space: nowrap;
+                  overflow: hidden;
+                  text-overflow: ellipsis;
+                ">${point.series.name}</span>
+                <span style="
+                  font-weight: 700;
+                  font-size: 13px;
+                  color: ${point.color};
+                  min-width: 60px;
+                  text-align: right;
+                  flex-shrink: 0;
+                ">${point.y.toLocaleString("vi-VN")}</span>
+              </div>
+            `;
+          });
+          if (hasMore) {
+            tooltip += `
+              <div style="
+                padding-top: 4px;
+                margin-top: 4px;
+                font-size: 11px;
+                text-align: center;
+              ">+${this.points.length - maxPoints} mục khác</div>
+            `;
+          }
+          tooltip += `
+              </div>
+            </div>
+          `;
+          return tooltip;
+        },
+      },
+      legend: {
+        enabled: true,
+        align: "center",
+        verticalAlign: "bottom",
+        layout: "horizontal",
+        itemMarginTop: 5,
+        itemMarginBottom: 5,
+        itemStyle: {
+          fontSize: "13px",
+          fontWeight: "600",
+        },
+        itemHoverStyle: {
+          fontWeight: "700",
+        },
+        itemHiddenStyle: {
+          textDecoration: "line-through",
+          opacity: 0.6,
+        },
+        symbolHeight: 10,
+        symbolWidth: 10,
+        symbolRadius: 5,
+        padding: 10,
+      },
+      plotOptions: {
+        spline: {
+          marker: {
+            enabled: true,
+          },
+          animation: {
+            duration: 500,
+            easing: "easeOut",
+          },
+        },
+        line: {
+          marker: {
+            enabled: true,
+          },
+          animation: {
+            duration: 500,
+            easing: "easeOut",
+          },
+        },
+        column: {
+          animation: {
+            duration: 500,
+            easing: "easeOut",
+          },
+        },
+        series: {
+          cursor: "pointer",
+          events: {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            legendItemClick: function (this: any) {
+              const seriesKey = this.options.key || this.name;
+              onSeriesToggle(seriesKey);
+              return false; // Ngăn Highcharts tự động ẩn/hiện
+            },
+          },
+        },
+      },
+      series: series,
+      credits: {
+        enabled: false,
+      },
+    };
+  }, [
+    Highcharts,
+    monthlyData,
+    availableResources,
+    selectedResources,
+    hiddenSeries,
+    chartType,
+    isDark,
+    onSeriesToggle,
+  ]);
+
+  if (!Highcharts || !chartOptions) {
+    return (
+      <Flex align="center" justify="center" className="h-80">
+        <TypographyP>Đang tải biểu đồ...</TypographyP>
+      </Flex>
+    );
+  }
+
+  return (
+    <div className="w-full" style={{ minHeight: "320px" }}>
+      <HighchartsReact
+        highcharts={Highcharts}
+        options={chartOptions}
+        ref={chartRef}
+      />
+    </div>
+  );
+};
+
+// Highcharts Pie Chart Component
+interface HighchartsPieChartProps {
+  categoryData: Array<{
+    name: string;
+    value: number;
+    color: string;
+  }>;
+  totalPosts: number;
+}
+
+const HighchartsPieChart = ({ categoryData, totalPosts }: HighchartsPieChartProps) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const chartRef = useRef<any>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [Highcharts, setHighcharts] = useState<any>(null);
+
+  useEffect(() => {
+    // Dynamic import Highcharts
+    import("highcharts").then((hc) => {
+      setHighcharts(hc.default);
+    });
+  }, []);
+
+  const chartOptions = useMemo(() => {
+    if (!Highcharts) return null;
+
+    // Chuyển đổi dữ liệu sang format Highcharts
+    const highchartsData = categoryData.map((item, index) => ({
+      name: item.name,
+      y: item.value,
+      color: getComputedColor(item.color),
+      sliced: index === 1, // Slice thứ 2 giống như ví dụ
+      selected: index === 1,
+    }));
+
+    return {
+      chart: {
+        type: "pie",
+        backgroundColor: "transparent",
+        height: 320,
+        spacing: [10, 10, 10, 10],
+        zooming: {
+          type: "xy",
+        },
+        panning: {
+          enabled: true,
+          type: "xy",
+        },
+        panKey: "shift",
+      },
+      title: {
+        text: "",
+      },
+      tooltip: {
+        valueSuffix: "%",
+        // eslint-disable-next-line react-hooks/unsupported-syntax
+        pointFormatter: function (this: { percentage: number; color: string; name: string }) {
+          const count = Math.round((this.percentage / 100) * totalPosts);
+          return `<span style="color:${this.color}">●</span> <b>${this.name}</b>: ${this.percentage.toFixed(1)}%<br/>${count.toLocaleString("vi-VN")} bài viết`;
+        },
+      },
+      subtitle: {
+        text: "",
+      },
+      plotOptions: {
+        pie: {
+          allowPointSelect: true,
+          cursor: "pointer",
+          showInLegend: false,
+          borderWidth: 2,
+          dataLabels: [
+            {
+              enabled: true,
+              distance: 15,
+              style: {
+                fontSize: "11px",
+                fontWeight: "500",
+                textOutline: "1px contrast",
+              },
+            },
+            {
+              enabled: true,
+              distance: -35,
+              format: "{point.percentage:.1f}%",
+              style: {
+                fontSize: "1.1em",
+                fontWeight: "600",
+                textOutline: "2px contrast",
+                opacity: 0.9,
+              },
+              filter: {
+                operator: ">",
+                property: "percentage",
+                value: 8,
+              },
+            },
+          ],
+          states: {
+            hover: {
+              brightness: 0.1,
+            },
+            select: {
+              brightness: 0.1,
+            },
+          },
+        },
+      },
+      series: [
+        {
+          name: "Tỷ lệ",
+          colorByPoint: true,
+          data: highchartsData,
+        },
+      ],
+      credits: {
+        enabled: false,
+      },
+    };
+  }, [Highcharts, categoryData, totalPosts]);
+
+  if (!Highcharts || !chartOptions) {
+    return (
+      <Flex align="center" justify="center" className="h-96">
+        <TypographyP>Đang tải biểu đồ...</TypographyP>
+      </Flex>
+    );
+  }
+
+  return (
+    <div className="w-full" style={{ minHeight: "320px" }}>
+      <HighchartsReact
+        highcharts={Highcharts}
+        options={chartOptions}
+        ref={chartRef}
+      />
+    </div>
+  );
 };
 
 export interface DashboardStatsClientProps {
@@ -386,15 +987,25 @@ export const DashboardStatsClient = ({ stats }: DashboardStatsClientProps) => {
       [...selectedResourcesState].filter((key) => availableKeys.has(key))
     );
     
+    // Auto-select tất cả khi lần đầu load và chưa có gì được chọn
     if (filtered.size === 0 && availableKeys.size > 0 && selectedResourcesState.size === 0) {
-      setTimeout(() => {
-        setSelectedResources(availableKeys);
-      }, 0);
+      // Sử dụng useEffect để set state thay vì setTimeout trong useMemo
       return availableKeys;
     }
     
     return filtered;
   }, [selectedResourcesState, availableResources]);
+
+  // Auto-select all on mount (chỉ một lần)
+  const hasAutoSelectedRef = useRef(false);
+  useLayoutEffect(() => {
+    if (!hasAutoSelectedRef.current && selectedResourcesState.size === 0 && availableResources.length > 0) {
+      const availableKeys = new Set(availableResources.map((r) => r.key));
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setSelectedResources(availableKeys);
+      hasAutoSelectedRef.current = true;
+    }
+  }, [availableResources, selectedResourcesState.size, setSelectedResources]);
 
   const toggleResource = (key: string) => {
     setSelectedResources((prev) => {
@@ -421,13 +1032,15 @@ export const DashboardStatsClient = ({ stats }: DashboardStatsClientProps) => {
   };
 
   // Select all / Deselect all
-  const selectAll = () => {
-    setSelectedResources(new Set(availableResources.map((r) => r.key)));
-  };
+  const selectAll = useCallback(() => {
+    const allKeys = new Set(availableResources.map((r) => r.key));
+    setSelectedResources(allKeys);
+    hasAutoSelectedRef.current = true; // Đánh dấu đã select để không auto-select nữa
+  }, [availableResources]);
 
-  const deselectAll = () => {
+  const deselectAll = useCallback(() => {
     setSelectedResources(new Set());
-  };
+  }, []);
 
   if (!isMounted) {
     return (
@@ -475,27 +1088,25 @@ export const DashboardStatsClient = ({ stats }: DashboardStatsClientProps) => {
           <Flex align="center" justify="between">
             <div>
               <TypographyH1>
-                <Flex align="center" gap={3}>
-                  <IconSize size="2xl">
-                    <BarChart3 className="text-primary" />
-                  </IconSize>
+                <div className="flex items-center gap-3">
+                  <BarChart3 className="h-8 w-8 text-primary" />
                   <span className="bg-gradient-to-r from-primary via-primary/90 to-primary/70 bg-clip-text text-transparent">
                     Thống kê chi tiết
                   </span>
-                </Flex>
+                </div>
               </TypographyH1>
               <TypographyDescription className="mt-2">
-                <Flex align="center" gap={2}>
-                  <IconSize size="md">
-                    <Calendar />
-                  </IconSize>
+                <div className="flex items-center gap-2">
+                  <Calendar className="h-4 w-4" />
+                  <span>
                   {new Date().toLocaleDateString("vi-VN", {
                     weekday: "long",
                     year: "numeric",
                     month: "long",
                     day: "numeric",
                   })}
-                </Flex>
+                  </span>
+                </div>
               </TypographyDescription>
             </div>
           </Flex>
@@ -528,25 +1139,23 @@ export const DashboardStatsClient = ({ stats }: DashboardStatsClientProps) => {
               canViewSessions ||
               canViewRoles) && (
               <motion.div variants={itemVariants} className="lg:col-span-2 xl:col-span-2">
-                <Card className="relative overflow-hidden backdrop-blur-md bg-card/80 border border-border shadow-lg">
-                  <Flex position="absolute-inset" className="bg-gradient-to-br from-primary/5 to-background" />
+                <Card className="relative backdrop-blur-md bg-card/80 border border-border shadow-lg">
+                  <Flex position="absolute-inset" className="bg-gradient-to-br from-primary/5 to-background overflow-hidden" />
                   <CardHeader className="relative z-10">
-                    <Flex direction="col" align="center" justify="between" gap={4} fullWidth className="sm:flex-row">
-                      <Flex direction="col" gap={2}>
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                      <div className="space-y-1">
                         <CardTitle>
                           <TypographyTitleLarge>
-                            <Flex align="center" gap={2}>
-                              <IconSize size="md">
-                                <LineChart className="text-primary" />
-                              </IconSize>
-                              Xu hướng theo tháng
-                            </Flex>
+                            <div className="flex items-center gap-2.5">
+                              <LineChart className="h-5 w-5 text-primary" />
+                              <span>Xu hướng theo tháng</span>
+                            </div>
                           </TypographyTitleLarge>
                         </CardTitle>
                         <CardDescription>
                           Thống kê các resources theo tháng
                         </CardDescription>
-                      </Flex>
+                      </div>
                       <Popover>
                         <PopoverTrigger asChild>
                           <Button 
@@ -555,454 +1164,127 @@ export const DashboardStatsClient = ({ stats }: DashboardStatsClientProps) => {
                             className="gap-2 w-full sm:w-auto"
                             aria-label="Chọn resources để hiển thị trên biểu đồ"
                           >
-                            <IconSize size="sm">
-                              <BarChart3 />
-                            </IconSize>
+                            <BarChart3 className="h-4 w-4" />
                             <span className="hidden sm:inline">Chọn mục hiển thị</span>
                             <span className="sm:hidden">Chọn</span>
                           </Button>
                         </PopoverTrigger>
-                        <PopoverContent className="w-64" align="end">
-                          <Flex direction="col" gap={3}>
-                            <Flex align="center" justify="between" fullWidth>
-                              <TypographyP>
+                        <PopoverContent align="end">
+                          <div className="space-y-3">
+                            <div className="flex items-center justify-between">
+                              <TypographyP className="font-medium">
                                 Chọn resources
                               </TypographyP>
-                              <Flex gap={1}>
                                 <Button
                                   variant="ghost"
                                   size="sm"
-                                  className="h-7 px-2"
-                                  onClick={selectAll}
-                                >
-                                  <TypographySpanSmall>Tất cả</TypographySpanSmall>
+                                className="h-7 px-2 text-xs"
+                                onClick={() => {
+                                  const allSelected = availableResources.length > 0 && 
+                                    availableResources.every(r => selectedResources.has(r.key));
+                                  if (allSelected) {
+                                    deselectAll();
+                                  } else {
+                                    selectAll();
+                                  }
+                                }}
+                              >
+                                {availableResources.length > 0 && 
+                                 availableResources.every(r => selectedResources.has(r.key))
+                                  ? "Bỏ chọn tất cả"
+                                  : "Chọn tất cả"}
                                 </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-7 px-2"
-                                  onClick={deselectAll}
-                                >
-                                  <TypographySpanSmall>Bỏ chọn</TypographySpanSmall>
-                                </Button>
-                              </Flex>
-                            </Flex>
-                            <Flex direction="col" gap={2} className="max-h-64 overflow-y-auto">
+                            </div>
+                            <div className="space-y-1 max-h-64 overflow-y-auto">
                               {availableResources.map((resource) => (
-                                <Flex
+                                <div
                                   key={resource.key}
-                                  align="center"
-                                  gap={2}
-                                  className="cursor-pointer hover:bg-muted/50 rounded-md p-2 -mx-2"
+                                  className="flex items-center gap-2.5 cursor-pointer hover:bg-muted/50 rounded-md p-2 -mx-2 transition-colors"
                                   onClick={() => toggleResource(resource.key)}
-                                  fullWidth
                                 >
                                   <Checkbox
                                     id={resource.key}
-                                    checked={selectedResources.has(
-                                      resource.key
-                                    )}
-                                    onCheckedChange={() =>
-                                      toggleResource(resource.key)
-                                    }
+                                    checked={selectedResources.has(resource.key)}
+                                    onCheckedChange={() => toggleResource(resource.key)}
                                   />
                                   <label
                                     htmlFor={resource.key}
-                                    className="leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex-1 cursor-pointer"
+                                    className="flex items-center gap-2 flex-1 cursor-pointer"
                                   >
-                                    <Flex align="center" gap={2} fullWidth>
-                                      <IconSize size="xs">
-                                        <Flex
-                                          rounded="full"
-                                          className="w-full h-full"
-                                          style={{
-                                            backgroundColor: resource.color,
-                                          }}
-                                        />
-                                      </IconSize>
-                                      <TypographyP>{resource.label}</TypographyP>
-                                    </Flex>
+                                    <div
+                                      className="h-3 w-3 rounded-full shrink-0"
+                                      style={{ backgroundColor: resource.color }}
+                                    />
+                                    <TypographyP className="text-sm">{resource.label}</TypographyP>
                                   </label>
-                                </Flex>
+                                </div>
                               ))}
-                            </Flex>
-                          </Flex>
+                            </div>
+                          </div>
                         </PopoverContent>
                       </Popover>
-                    </Flex>
+                    </div>
                   </CardHeader>
-                  <CardContent className="relative z-10">
+                  <CardContent className="relative z-10 overflow-visible">
                     {/* Chart Type Selector */}
-                    <Flex align="center" justify="end" gap={2} paddingBottom={4} fullWidth>
-                      <Flex align="center" gap={1} rounded="lg" border="all" bg="muted-50" padding="xs">
+                    <div className="flex items-center justify-between pb-4">
+                      <div className="text-xs text-muted-foreground">
+                        {selectedResources.size > 0 && (
+                          <span>
+                            Đang hiển thị {selectedResources.size} / {availableResources.length} mục
+                          </span>
+                        )}
+                      </div>
+                      <div className="inline-flex items-center gap-1 rounded-lg border bg-muted/50 p-1 shadow-sm">
                         <Button
                           variant={chartType === "line" ? "default" : "ghost"}
                           size="sm"
-                          className="h-7 px-3"
+                          className="h-8 px-3 gap-1.5 transition-all"
                           onClick={() => setChartType("line")}
                         >
-                          <IconSize size="xs" className="mr-1">
-                            <LineChart />
-                          </IconSize>
-                          <TypographySpanSmall>Đường</TypographySpanSmall>
+                          <LineChart className="h-3.5 w-3.5" />
+                          <span className="text-xs font-medium">Đường</span>
                         </Button>
                         <Button
                           variant={chartType === "bar" ? "default" : "ghost"}
                           size="sm"
-                          className="h-7 px-3"
+                          className="h-8 px-3 gap-1.5 transition-all"
                           onClick={() => setChartType("bar")}
                         >
-                          <IconSize size="xs" className="mr-1">
-                            <BarChart3 />
-                          </IconSize>
-                          <TypographySpanSmall>Cột</TypographySpanSmall>
+                          <BarChart3 className="h-3.5 w-3.5" />
+                          <span className="text-xs font-medium">Cột</span>
                         </Button>
                         <Button
                           variant={chartType === "composed" ? "default" : "ghost"}
                           size="sm"
-                          className="h-7 px-3"
+                          className="h-8 px-3 gap-1.5 transition-all"
                           onClick={() => setChartType("composed")}
                         >
-                          <IconSize size="xs" className="mr-1">
-                            <BarChart3 />
-                          </IconSize>
-                          <TypographySpanSmall>Kết hợp</TypographySpanSmall>
+                          <BarChart3 className="h-3.5 w-3.5" />
+                          <span className="text-xs font-medium">Kết hợp</span>
                         </Button>
-                      </Flex>
-                    </Flex>
+                      </div>
+                    </div>
 
                     {selectedResources.size === 0 ? (
                       <motion.div
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        className="h-80"
+                        className="h-80 flex flex-col items-center justify-center text-center text-muted-foreground"
                       >
-                        <Flex direction="col" align="center" gap={2} className="h-full text-muted-foreground text-center">
-                          <BarChart3 className="h-12 w-12 opacity-50" />
+                        <BarChart3 className="h-12 w-12 opacity-50 mb-3" />
                           <TypographyP>Vui lòng chọn ít nhất một resource để hiển thị</TypographyP>
-                        </Flex>
                       </motion.div>
                     ) : (
-                      <div className="h-64 sm:h-80">
-                        <ResponsiveContainer width="100%" height="100%">
-                          {chartType === "line" ? (
-                            <ComposedChart
-                              data={stats.monthlyData}
-                              margin={{ top: 5, right: 20, left: 0, bottom: 5 }}
-                            >
-                              <defs>
-                                {availableResources
-                                  .filter((r) => selectedResources.has(r.key))
-                                  .map((resource) => (
-                                    <linearGradient
-                                      key={`gradient-${resource.key}`}
-                                      id={`gradient-${resource.key}`}
-                                      x1="0"
-                                      y1="0"
-                                      x2="0"
-                                      y2="1"
-                                    >
-                                      <stop
-                                        offset="0%"
-                                        stopColor={resource.color}
-                                        stopOpacity={0.3}
-                                      />
-                                      <stop
-                                        offset="100%"
-                                        stopColor={resource.color}
-                                        stopOpacity={0}
-                                      />
-                                    </linearGradient>
-                                  ))}
-                              </defs>
-                              <CartesianGrid
-                                strokeDasharray="3 3"
-                                stroke="hsl(var(--border))"
-                                opacity={0.2}
-                                vertical={false}
-                              />
-                              <XAxis
-                                dataKey="month"
-                                stroke="hsl(var(--muted-foreground))"
-                                fontSize={11}
-                                tickLine={false}
-                                axisLine={false}
-                                tickMargin={8}
-                              />
-                              <YAxis
-                                stroke="hsl(var(--muted-foreground))"
-                                fontSize={11}
-                                tickLine={false}
-                                axisLine={false}
-                                tickMargin={8}
-                                width={50}
-                              />
-                              <Tooltip
-                                content={<CustomTooltip />}
-                                cursor={{ stroke: "hsl(var(--border))", strokeWidth: 1, strokeDasharray: "5 5" }}
-                              />
-                              <Legend
-                                wrapperStyle={{
-                                  fontSize: "11px",
-                                  paddingTop: "20px",
-                                }}
-                                iconType="circle"
-                                iconSize={8}
-                                onClick={(e) => {
-                                  const dataKey = e.dataKey as string;
-                                  if (dataKey) toggleSeriesVisibility(dataKey);
-                                }}
-                                formatter={(value, entry) => {
-                                  const isHidden = hiddenSeries.has(entry.dataKey as string);
-                                  return (
-                                    <span
-                                      style={{
-                                        opacity: isHidden ? 0.5 : 1,
-                                        cursor: "pointer",
-                                        textDecoration: isHidden ? "line-through" : "none",
-                                      }}
-                                    >
-                                      {value}
-                                    </span>
-                                  );
-                                }}
-                              />
-                              {availableResources
-                                .filter((r) => selectedResources.has(r.key) && !hiddenSeries.has(r.key))
-                                .map((resource) => (
-                                  <Line
-                                    key={resource.key}
-                                    type="monotone"
-                                    dataKey={resource.key}
-                                    stroke={resource.color}
-                                    strokeWidth={2.5}
-                                    dot={{ fill: resource.color, r: 4, strokeWidth: 2 }}
-                                    activeDot={{ r: 7, strokeWidth: 2, stroke: resource.color }}
-                                    name={resource.label}
-                                    strokeDasharray={hiddenSeries.has(resource.key) ? "5 5" : "0"}
-                                    opacity={hiddenSeries.has(resource.key) ? 0.3 : 1}
-                                    animationDuration={300}
-                                  />
-                                ))}
-                            </ComposedChart>
-                          ) : chartType === "bar" ? (
-                            <BarChart
-                              data={stats.monthlyData}
-                              margin={{ top: 5, right: 20, left: 0, bottom: 5 }}
-                            >
-                              <defs>
-                                {availableResources
-                                  .filter((r) => selectedResources.has(r.key))
-                                  .map((resource) => (
-                                    <linearGradient
-                                      key={`gradient-${resource.key}`}
-                                      id={`gradient-${resource.key}`}
-                                      x1="0"
-                                      y1="0"
-                                      x2="0"
-                                      y2="1"
-                                    >
-                                      <stop
-                                        offset="0%"
-                                        stopColor={resource.color}
-                                        stopOpacity={0.8}
-                                      />
-                                      <stop
-                                        offset="100%"
-                                        stopColor={resource.color}
-                                        stopOpacity={0.4}
-                                      />
-                                    </linearGradient>
-                                  ))}
-                              </defs>
-                              <CartesianGrid
-                                strokeDasharray="3 3"
-                                stroke="hsl(var(--border))"
-                                opacity={0.2}
-                                vertical={false}
-                              />
-                              <XAxis
-                                dataKey="month"
-                                stroke="hsl(var(--muted-foreground))"
-                                fontSize={11}
-                                tickLine={false}
-                                axisLine={false}
-                                tickMargin={8}
-                              />
-                              <YAxis
-                                stroke="hsl(var(--muted-foreground))"
-                                fontSize={11}
-                                tickLine={false}
-                                axisLine={false}
-                                tickMargin={8}
-                                width={50}
-                              />
-                              <Tooltip
-                                content={<CustomTooltip />}
-                                cursor={{ fill: "hsl(var(--muted))", opacity: 0.1 }}
-                              />
-                              <Legend
-                                wrapperStyle={{
-                                  fontSize: "11px",
-                                  paddingTop: "20px",
-                                }}
-                                iconType="square"
-                                iconSize={8}
-                                onClick={(e) => {
-                                  const dataKey = e.dataKey as string;
-                                  if (dataKey) toggleSeriesVisibility(dataKey);
-                                }}
-                                formatter={(value, entry) => {
-                                  const isHidden = hiddenSeries.has(entry.dataKey as string);
-                                  return (
-                                    <span
-                                      style={{
-                                        opacity: isHidden ? 0.5 : 1,
-                                        cursor: "pointer",
-                                        textDecoration: isHidden ? "line-through" : "none",
-                                      }}
-                                    >
-                                      {value}
-                                    </span>
-                                  );
-                                }}
-                              />
-                              {availableResources
-                                .filter((r) => selectedResources.has(r.key) && !hiddenSeries.has(r.key))
-                                .map((resource) => (
-                                  <Bar
-                                    key={resource.key}
-                                    dataKey={resource.key}
-                                    fill={`url(#gradient-${resource.key})`}
-                                    stroke={resource.color}
-                                    strokeWidth={1}
-                                    name={resource.label}
-                                    radius={[4, 4, 0, 0]}
-                                    opacity={hiddenSeries.has(resource.key) ? 0.3 : 1}
-                                    animationDuration={300}
-                                  />
-                                ))}
-                            </BarChart>
-                          ) : (
-                            <ComposedChart
-                              data={stats.monthlyData}
-                              margin={{ top: 5, right: 20, left: 0, bottom: 5 }}
-                            >
-                              <defs>
-                                {availableResources
-                                  .filter((r) => selectedResources.has(r.key))
-                                  .map((resource) => (
-                                    <linearGradient
-                                      key={`gradient-${resource.key}`}
-                                      id={`gradient-${resource.key}`}
-                                      x1="0"
-                                      y1="0"
-                                      x2="0"
-                                      y2="1"
-                                    >
-                                      <stop
-                                        offset="0%"
-                                        stopColor={resource.color}
-                                        stopOpacity={0.3}
-                                      />
-                                      <stop
-                                        offset="100%"
-                                        stopColor={resource.color}
-                                        stopOpacity={0}
-                                      />
-                                    </linearGradient>
-                                  ))}
-                              </defs>
-                              <CartesianGrid
-                                strokeDasharray="3 3"
-                                stroke="hsl(var(--border))"
-                                opacity={0.2}
-                                vertical={false}
-                              />
-                              <XAxis
-                                dataKey="month"
-                                stroke="hsl(var(--muted-foreground))"
-                                fontSize={11}
-                                tickLine={false}
-                                axisLine={false}
-                                tickMargin={8}
-                              />
-                              <YAxis
-                                stroke="hsl(var(--muted-foreground))"
-                                fontSize={11}
-                                tickLine={false}
-                                axisLine={false}
-                                tickMargin={8}
-                                width={50}
-                              />
-                              <Tooltip
-                                content={<CustomTooltip />}
-                                cursor={{ stroke: "hsl(var(--border))", strokeWidth: 1, strokeDasharray: "5 5" }}
-                              />
-                              <Legend
-                                wrapperStyle={{
-                                  fontSize: "11px",
-                                  paddingTop: "20px",
-                                }}
-                                iconType="circle"
-                                iconSize={8}
-                                onClick={(e) => {
-                                  const dataKey = e.dataKey as string;
-                                  if (dataKey) toggleSeriesVisibility(dataKey);
-                                }}
-                                formatter={(value, entry) => {
-                                  const isHidden = hiddenSeries.has(entry.dataKey as string);
-                                  return (
-                                    <span
-                                      style={{
-                                        opacity: isHidden ? 0.5 : 1,
-                                        cursor: "pointer",
-                                        textDecoration: isHidden ? "line-through" : "none",
-                                      }}
-                                    >
-                                      {value}
-                                    </span>
-                                  );
-                                }}
-                              />
-                              {availableResources
-                                .filter((r) => selectedResources.has(r.key) && !hiddenSeries.has(r.key))
-                                .map((resource, index) => {
-                                  // Show first 3 as bars, rest as lines
-                                  if (index < 3) {
-                                    return (
-                                      <Bar
-                                        key={resource.key}
-                                        dataKey={resource.key}
-                                        fill={`url(#gradient-${resource.key})`}
-                                        stroke={resource.color}
-                                        strokeWidth={1}
-                                        name={resource.label}
-                                        radius={[4, 4, 0, 0]}
-                                        opacity={hiddenSeries.has(resource.key) ? 0.3 : 0.6}
-                                        animationDuration={300}
-                                      />
-                                    );
-                                  }
-                                  return (
-                                    <Line
-                                      key={resource.key}
-                                      type="monotone"
-                                      dataKey={resource.key}
-                                      stroke={resource.color}
-                                      strokeWidth={2.5}
-                                      dot={{ fill: resource.color, r: 4, strokeWidth: 2 }}
-                                      activeDot={{ r: 7, strokeWidth: 2, stroke: resource.color }}
-                                      name={resource.label}
-                                      strokeDasharray={hiddenSeries.has(resource.key) ? "5 5" : "0"}
-                                      opacity={hiddenSeries.has(resource.key) ? 0.3 : 1}
-                                      animationDuration={300}
-                                    />
-                                  );
-                                })}
-                            </ComposedChart>
-                          )}
-                        </ResponsiveContainer>
+                      <div className="overflow-visible">
+                        <HighchartsMonthlyChart
+                          monthlyData={stats.monthlyData}
+                          availableResources={availableResources}
+                          selectedResources={selectedResources}
+                          hiddenSeries={hiddenSeries}
+                          chartType={chartType}
+                          onSeriesToggle={toggleSeriesVisibility}
+                        />
                       </div>
                     )}
                   </CardContent>
@@ -1013,16 +1295,14 @@ export const DashboardStatsClient = ({ stats }: DashboardStatsClientProps) => {
             {/* Pie Chart - Categories */}
             {canViewCategories && (
               <motion.div variants={itemVariants} className="xl:col-span-1">
-                <Card className="relative overflow-hidden backdrop-blur-md bg-card/80 border border-border shadow-lg">
-                  <Flex position="absolute-inset" className="bg-gradient-to-br from-primary/5 to-background" />
+                <Card className="relative backdrop-blur-md bg-card/80 border border-border shadow-lg">
+                  <Flex position="absolute-inset" className="bg-gradient-to-br from-primary/5 to-background overflow-hidden" />
                   <CardHeader className="relative z-10">
                     <CardTitle>
-                      <Flex align="center" gap={2}>
-                        <IconSize size="md">
-                          <PieChart className="text-primary" />
-                        </IconSize>
+                      <div className="flex items-center gap-2.5">
+                        <PieChart className="h-5 w-5 text-primary" />
                         <TypographyH4>Phân bố danh mục</TypographyH4>
-                      </Flex>
+                      </div>
                     </CardTitle>
                     <CardDescription>
                       Tỷ lệ bài viết theo từng danh mục
@@ -1033,135 +1313,89 @@ export const DashboardStatsClient = ({ stats }: DashboardStatsClientProps) => {
                       <motion.div
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        className="h-64 sm:h-80 text-muted-foreground"
+                        className="h-64 sm:h-80 flex flex-col items-center justify-center text-center text-muted-foreground"
                       >
-                        <Flex align="center" justify="center" direction="col" gap={2} textAlign="center">
-                          <PieChart className="h-12 w-12 opacity-50" />
+                        <PieChart className="h-12 w-12 opacity-50 mb-3" />
                           <TypographyP>Chưa có dữ liệu danh mục</TypographyP>
-                        </Flex>
                       </motion.div>
                     ) : (
-                      <Flex direction="col" gap={6}>
-                        {/* Enhanced Donut Chart */}
-                        <Flex align="center" justify="center" position="relative" fullWidth>
-                            <ResponsiveContainer width="100%" height={280}>
-                              <RechartsPieChart>
-                                <defs>
-                                  {categoryDataWithColors.map((entry, index) => (
-                                    <linearGradient
-                                      key={`pie-gradient-${index}`}
-                                      id={`pie-gradient-${index}`}
-                                      x1="0"
-                                      y1="0"
-                                      x2="1"
-                                      y2="1"
-                                    >
-                                      <stop
-                                        offset="0%"
-                                        stopColor={entry.color}
-                                        stopOpacity={1}
-                                      />
-                                      <stop
-                                        offset="100%"
-                                        stopColor={entry.color}
-                                        stopOpacity={0.7}
-                                      />
-                                    </linearGradient>
-                                  ))}
-                                </defs>
-                              <Pie
-                                data={categoryDataWithColors}
-                                cx="50%"
-                                cy="50%"
-                                innerRadius={70}
-                                outerRadius={110}
-                                paddingAngle={3}
-                                dataKey="value"
-                                label={false}
-                                labelLine={false}
-                                animationBegin={0}
-                                animationDuration={600}
-                                animationEasing="ease-out"
-                              >
-                                {categoryDataWithColors.map((entry, index) => (
-                                  <Cell
-                                    key={`cell-${index}`}
-                                    fill={`url(#pie-gradient-${index})`}
-                                    stroke="oklch(var(--background))"
-                                    strokeWidth={3}
-                                    style={{
-                                      filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.1))",
-                                    }}
-                                  />
-                                ))}
-                              </Pie>
-                              <Tooltip content={<CustomPieTooltip />} />
-                            </RechartsPieChart>
-                          </ResponsiveContainer>
-                          {/* Center label showing total */}
-                          <Flex align="center" justify="center" direction="col" gap={1} position="absolute-inset" className="pointer-events-none" textAlign="center">
-                            <TypographyH2>
-                              {stats.overview.totalPosts}
-                            </TypographyH2>
-                            <TypographyPSmallMuted>
-                              Tổng bài viết
-                            </TypographyPSmallMuted>
-                          </Flex>
-                        </Flex>
+                      <div className="space-y-4">
+                        {/* Highcharts Pie Chart */}
+                        <div className="relative">
+                          <HighchartsPieChart 
+                            categoryData={categoryDataWithColors}
+                            totalPosts={stats.overview.totalPosts}
+                          />
+                        </div>
 
                         {/* Enhanced Legend with values and animations */}
-                        <ScrollArea className="h-[200px]">
-                        <Flex direction="col" gap={3} className="px-4">
+                        <div className="border-t pt-4">
+                          <ScrollArea className="h-[220px]">
+                            <div className="space-y-2 pr-4">
                           <AnimatePresence>
                             {categoryDataWithColors.map((item, index) => {
                               const count = Math.round(
                                 (item.value / 100) * stats.overview.totalPosts
                               );
+                                  const percentage = item.value;
                               return (
                                 <motion.div
                                   key={item.name}
-                                  initial={{ opacity: 0, y: 10 }}
-                                  animate={{ opacity: 1, y: 0 }}
-                                  exit={{ opacity: 0, y: -10 }}
-                                  transition={{ delay: index * 0.05 }}
-                                  className="p-3 rounded-lg bg-background/50 border border-border/50 hover:bg-background/80 hover:border-border transition-all group cursor-pointer"
-                                >
-                                  <Flex align="center" gap={3} fullWidth>
-                                    <IconSize size="sm">
-                                      <Flex
-                                        rounded="full"
-                                        shrink
-                                        className="shadow-sm"
-                                        style={{ backgroundColor: item.color, width: "100%", height: "100%" }}
-                                      />
-                                    </IconSize>
-                                    <Flex direction="col" flex="1" minWidth="0" fullWidth>
-                                      <TypographyP className="truncate">
+                                      initial={{ opacity: 0, x: -10 }}
+                                      animate={{ opacity: 1, x: 0 }}
+                                      exit={{ opacity: 0, x: -10 }}
+                                      transition={{ delay: index * 0.03 }}
+                                      className="group relative p-3 rounded-lg bg-muted/30 hover:bg-muted/50 border border-transparent hover:border-border/50 transition-all cursor-pointer"
+                                    >
+                                      <div className="flex items-center gap-3">
+                                        <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                                          <div
+                                            className="h-3.5 w-3.5 rounded-full shrink-0 ring-2 ring-offset-1 ring-offset-background"
+                                            style={{ 
+                                              backgroundColor: item.color,
+                                            }}
+                                          />
+                                          <div className="flex-1 min-w-0">
+                                            <TypographyP className="truncate text-sm font-semibold text-foreground">
                                         {item.name}
                                       </TypographyP>
-                                      <Flex align="center" gap={2} className="mt-0.5">
-                                        <TypographySpanSmallMuted>
-                                          {item.value}%
-                                        </TypographySpanSmallMuted>
-                                        <span className="text-muted-foreground">•</span>
-                                        <TypographySpanSmall>
+                                            <div className="flex items-center gap-2 mt-1">
+                                              <span className="text-xs font-medium text-muted-foreground">
+                                                {percentage.toFixed(1)}%
+                                              </span>
+                                              <span className="text-muted-foreground/60">•</span>
+                                              <span className="text-xs text-muted-foreground">
                                           {count.toLocaleString("vi-VN")} bài viết
-                                        </TypographySpanSmall>
-                                      </Flex>
-                                    </Flex>
-                                    <Flex align="center" gap={2} className="flex-shrink-0">
-                                      <TypographySpanSmall className="bg-muted/50 px-2 py-1 rounded">
+                                              </span>
+                                            </div>
+                                          </div>
+                                        </div>
+                                        <div className="flex items-center gap-2 flex-shrink-0">
+                                          {/* Progress bar */}
+                                          <div className="w-16 h-1.5 bg-muted rounded-full overflow-hidden">
+                                            <div
+                                              className="h-full rounded-full transition-all duration-300"
+                                              style={{ 
+                                                width: `${percentage}%`,
+                                                backgroundColor: item.color,
+                                              }}
+                                            />
+                                          </div>
+                                          <div className="w-6 text-center">
+                                            <span className="text-xs font-medium text-muted-foreground">
                                         #{index + 1}
-                                      </TypographySpanSmall>
-                                    </Flex>
-                                  </Flex>
+                                            </span>
+                                          </div>
+                                        </div>
+                                      </div>
                                 </motion.div>
                               );
                               })}
                             </AnimatePresence>
-                          </Flex>
+                            </div>
                           </ScrollArea>
-                      </Flex>
+                        </div>
+                      </div>
                     )}
                   </CardContent>
                 </Card>

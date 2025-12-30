@@ -1,5 +1,5 @@
 import type { Prisma } from "@prisma/client"
-import { prisma } from "@/lib/database"
+import { prisma } from "@/lib/prisma"
 import { validatePagination, buildPagination, applyColumnOptionsStatusFilter, applyColumnOptionsSearchFilter, mapToColumnOptions } from "@/features/admin/resources/server"
 import { mapCategoryRecord, buildWhereClause } from "./helpers"
 import type { ListCategoriesInput, CategoryDetail, ListCategoriesResult } from "../types"

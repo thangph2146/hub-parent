@@ -4,13 +4,13 @@
  */
 
 import { NextRequest } from "next/server"
-import { prisma } from "@/lib/database"
+import { prisma } from "@/lib/prisma"
 import { createGetRoute } from "@/lib/api/api-route-wrapper"
 import { createErrorResponse, createSuccessResponse } from "@/lib/config"
 import { isSuperAdmin } from "@/lib/permissions"
 import { getTotalUnreadMessagesCountCached } from "@/features/admin/chat/server/unread-counts"
 import type { ApiRouteContext } from "@/lib/api/types"
-import { countUnreadNotificationsWithBreakdown } from "@/lib/notifications/count-helpers"
+import { countUnreadNotificationsWithBreakdown } from "@/lib/utils"
 
 async function getUnreadCountsHandler(_req: NextRequest, context: ApiRouteContext) {
   const userId = context.session.user?.id

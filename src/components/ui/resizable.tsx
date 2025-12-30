@@ -3,7 +3,7 @@
 import { GripVertical } from "lucide-react"
 import * as ResizablePrimitive from "react-resizable-panels"
 
-import { cn } from "@/lib/utils/index"
+import { cn } from "@/lib/utils"
 import { iconSizes } from "@/lib/typography"
 
 const resizableIconSize = iconSizes.xs

@@ -25,7 +25,11 @@ components/chat/
 │   ├── message-bubble.tsx
 │   └── messages-area.tsx
 ├── types.ts            # Type definitions
-├── utils.ts            # Utility functions
+├── utils/              # Utility functions
+│   ├── date-helpers.ts
+│   ├── message-helpers.ts
+│   ├── contact-helpers.ts
+│   └── text-helpers.ts
 ├── constants.ts        # Constants
 └── index.ts           # Public exports
 ```

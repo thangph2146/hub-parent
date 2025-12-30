@@ -1,7 +1,7 @@
 import type { Metadata } from "next"
 import { AdminHeader } from "@/components/layouts/headers"
 import { StudentDetail } from "@/features/admin/students/components/student-detail"
-import { validateRouteId } from "@/lib/validation/route-params"
+import { validateRouteId } from "@/lib/utils"
 import { FormPageSuspense } from "@/features/admin/resources/components"
 import { getStudentById } from "@/features/admin/students/server/queries"
 import { createDetailBreadcrumbs, truncateBreadcrumbLabel } from "@/features/admin/resources/utils"

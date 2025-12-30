@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query"
 import { apiClient } from "@/lib/api/axios"
 import { apiRoutes } from "@/lib/api/routes"
 import { queryKeys } from "@/lib/query-keys"
-import { createAdminQueryOptions } from "@/features/admin/resources/config"
+import { createAdminQueryOptions } from "@/features/admin/resources/query-config"
 import type { Role } from "../utils"
 
 export interface UseRolesOptions {

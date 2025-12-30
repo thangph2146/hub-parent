@@ -1,31 +1,12 @@
 "use client";
 
 import * as React from "react";
+import { Edit } from "lucide-react";
 import {
-  Hash,
-  User,
-  Calendar,
-  Clock,
-  Edit,
-  Eye,
-  EyeOff,
-  CheckCircle2,
-  Tag,
-  Tags,
-} from "lucide-react";
-import {
-  ResourceDetailClient,
-  FieldItem,
-  type ResourceDetailField,
-  type ResourceDetailSection,
+  ResourceForm,
+  type ResourceFormField,
 } from "@/features/admin/resources/components";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import Image from "next/image";
-import { formatDateVi } from "../utils";
-import { Editor } from "@/components/editor/editor-x/editor";
-import type { SerializedEditorState } from "lexical";
 import type { Prisma } from "@prisma/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/query-keys";
@@ -34,19 +15,23 @@ import {
   useResourceDetailData,
   useResourceDetailLogger,
 } from "@/features/admin/resources/hooks";
-import { resourceLogger } from "@/lib/config/resource-logger";
 import { usePermissions } from "@/hooks/use-permissions";
 import { PERMISSIONS } from "@/lib/permissions";
 import {
-  TypographyH2,
-  TypographyP,
-  TypographyPLargeMuted,
-  TypographyPMuted,
-  TypographyPSmallMuted,
   IconSize,
 } from "@/components/ui/typography";
 import { Flex } from "@/components/ui/flex";
-import { Grid } from "@/components/ui/grid";
+import {
+  getBasePostFields,
+  getPostFormSections,
+  getPostContentField,
+  getPostAuthorField,
+  getPostCategoriesField,
+  getPostTagsField,
+  type PostFormData,
+} from "../form-fields";
+import { useSession } from "next-auth/react";
+import { isSuperAdmin } from "@/lib/permissions";
 
 export interface PostDetailData {
   id: string;
@@ -88,7 +73,7 @@ export const PostDetailClient = ({
   backUrl = "/admin/posts",
 }: PostDetailClientProps) => {
   const queryClient = useQueryClient();
-  const { navigateBack, router } = useResourceNavigation({
+  const { router } = useResourceNavigation({
     queryClient,
     invalidateQueryKey: queryKeys.adminPosts.all(),
   });
@@ -121,198 +106,108 @@ export const PostDetailClient = ({
     fetchedData,
   });
 
-  const detailFields: ResourceDetailField<PostDetailData>[] = [];
+  const { data: session } = useSession();
+  const userRoles = session?.roles || [];
+  const isSuperAdminUser = isSuperAdmin(userRoles);
 
-  const detailSections: ResourceDetailSection<PostDetailData>[] = [
-    {
-      id: "basic",
-      title: "Thông tin cơ bản",
-      description: "Thông tin chính về bài viết",
-      fieldsContent: (_fields, data) => {
-        const postData = data as PostDetailData;
+  // Transform data để hiển thị đúng format
+  const formData = React.useMemo(() => {
+    return {
+      ...detailData,
+      authorId: detailData.author?.id || "",
+      categoryIds: detailData.categories?.map((cat) => cat.id) || [],
+      tagIds: detailData.tags?.map((tag) => tag.id) || [],
+      content: detailData.content,
+    } as PostFormData & {
+      authorId: string;
+      categoryIds: string[];
+      tagIds: string[];
+      content: Prisma.JsonValue;
+    };
+  }, [detailData]);
 
-        return (
-          <Flex direction="col" gap={8} fullWidth>
-            <Flex direction="col" gap={4} fullWidth className="lg:flex-row">
-              {/* Featured Image */}
-              {postData.image && (
-                <Flex
-                  align="center"
-                  justify="center"
-                  position="relative"
-                  className="aspect-[16/9] max-w-2xl mx-auto w-full overflow-hidden rounded-lg"
-                >
-                  <Image
-                    src={postData.image}
-                    alt={postData.title || "Ảnh bài viết"}
-                    fill
-                    className="object-cover"
-                    sizes="(min-width: 1280px) 1000px, 90vw"
-                    priority
-                  />
-                </Flex>
-              )}
-
-              <Flex direction="col" gap={2} fullWidth>
-                <TypographyH2>
-                  {postData.title || "Chưa có tiêu đề"}
-                </TypographyH2>
-                {postData.excerpt && (
-                  <TypographyPLargeMuted className="whitespace-pre-wrap">
-                    {postData.excerpt}
-                  </TypographyPLargeMuted>
-                )}
-              </Flex>
-            </Flex>
-
-            <Grid cols="responsive-2" gap={6} fullWidth>
-              <FieldItem icon={Hash} label="Slug">
-                <TypographyP className="font-mono break-all">
-                  {postData.slug || "---"}
-                </TypographyP>
-              </FieldItem>
-
-              <FieldItem icon={User} label="Tác giả">
-                <Flex direction="col" gap={0.5}>
-                  <TypographyP>
-                    {postData.author.name || "Không rõ tên"}
-                  </TypographyP>
-                  <TypographyPSmallMuted className="line-clamp-1">
-                    {postData.author.email}
-                  </TypographyPSmallMuted>
-                </Flex>
-              </FieldItem>
-
-              {postData.categories && postData.categories.length > 0 && (
-                <FieldItem icon={Tag} label="Danh mục">
-                  <Flex wrap gap={1.5}>
-                    {postData.categories.map((category) => (
-                      <Badge key={category.id} variant="default">
-                        {category.name}
-                      </Badge>
-                    ))}
-                  </Flex>
-                </FieldItem>
-              )}
-
-              {postData.tags && postData.tags.length > 0 && (
-                <FieldItem icon={Tags} label="Thẻ tag">
-                  <Flex wrap gap={1.5}>
-                    {postData.tags.map((tag) => (
-                      <Badge key={tag.id} variant="secondary">
-                        {tag.name}
-                      </Badge>
-                    ))}
-                  </Flex>
-                </FieldItem>
-              )}
-
-              <FieldItem
-                icon={postData.published ? Eye : EyeOff}
-                label="Trạng thái"
-              >
-                <Flex align="center" gap={2}>
-                  {postData.published ? (
-                    <>
-                      <IconSize size="sm">
-                        <CheckCircle2 className="text-green-600 dark:text-green-500" />
-                      </IconSize>
-                      <TypographyP>Đã xuất bản</TypographyP>
-                    </>
-                  ) : (
-                    <>
-                      <IconSize size="sm">
-                        <EyeOff className="text-gray-600 dark:text-gray-400" />
-                      </IconSize>
-                      <TypographyP>Bản nháp</TypographyP>
-                    </>
-                  )}
-                </Flex>
-              </FieldItem>
-
-              {postData.publishedAt && (
-                <FieldItem icon={Calendar} label="Ngày xuất bản">
-                  <TypographyP>
-                    {formatDateVi(postData.publishedAt)}
-                  </TypographyP>
-                </FieldItem>
-              )}
-              <FieldItem icon={Clock} label="Ngày tạo">
-                <TypographyP>{formatDateVi(postData.createdAt)}</TypographyP>
-              </FieldItem>
-
-              <FieldItem icon={Clock} label="Cập nhật lần cuối">
-                <TypographyP>{formatDateVi(postData.updatedAt)}</TypographyP>
-              </FieldItem>
-
-              {postData.deletedAt && (
-                <FieldItem icon={Clock} label="Ngày xóa">
-                  <TypographyP className="text-destructive">
-                    {formatDateVi(postData.deletedAt)}
-                  </TypographyP>
-                </FieldItem>
-              )}
-            </Grid>
-          </Flex>
-        );
-      },
-    },
-    {
-      id: "content",
-      title: "Nội dung",
-      description: "Nội dung bài viết",
-      fieldsContent: (_fields, data) => {
-        const postData = data as PostDetailData;
-
-        let editorState: SerializedEditorState | null = null;
-        try {
-          if (postData.content && typeof postData.content === "object") {
-            editorState = postData.content as unknown as SerializedEditorState;
-          }
-        } catch (error) {
-          resourceLogger.actionFlow({
-            resource: "posts",
-            action: "load-detail",
-            step: "error",
-            metadata: {
-              postId,
-              error: error instanceof Error ? error.message : String(error),
+  // Tạo options từ data hiện có
+  const authorOptions = React.useMemo(
+    () =>
+      detailData.author
+        ? [
+            {
+              label: detailData.author.name || detailData.author.email,
+              value: detailData.author.id,
             },
-          });
-        }
+          ]
+        : [],
+    [detailData.author]
+  );
 
-        return (
-          <Flex direction="col" gap={4} fullWidth className="max-w-5xl mx-auto">
-            {editorState ? (
-              <Editor editorSerializedState={editorState} readOnly={true} />
-            ) : (
-              <Card className="border border-border/50" padding="lg">
-                <TypographyPMuted>
-                  Không có nội dung hoặc định dạng không hợp lệ
-                </TypographyPMuted>
-              </Card>
-            )}
-          </Flex>
-        );
-      },
-    },
-  ];
+  const categoryOptions = React.useMemo(
+    () =>
+      detailData.categories?.map((cat) => ({
+        label: cat.name,
+        value: cat.id,
+      })) || [],
+    [detailData.categories]
+  );
 
+  const tagOptions = React.useMemo(
+    () =>
+      detailData.tags?.map((tag) => ({
+        label: tag.name,
+        value: tag.id,
+      })) || [],
+    [detailData.tags]
+  );
+
+  // Tạo fields đầy đủ
+  const fields = React.useMemo(
+    () => [
+      ...(getBasePostFields() as unknown as ResourceFormField<PostFormData>[]),
+      ...(isSuperAdminUser && authorOptions.length > 0
+        ? [getPostAuthorField<PostFormData>(authorOptions)]
+        : []),
+      ...(categoryOptions.length > 0
+        ? [getPostCategoriesField<PostFormData>(categoryOptions)]
+        : []),
+      ...(tagOptions.length > 0
+        ? [getPostTagsField<PostFormData>(tagOptions)]
+        : []),
+      getPostContentField<PostFormData>(),
+    ],
+    [isSuperAdminUser, authorOptions, categoryOptions, tagOptions]
+  );
+
+  const sections = getPostFormSections();
   const isDeleted =
     detailData.deletedAt !== null && detailData.deletedAt !== undefined;
 
   return (
-    <ResourceDetailClient<PostDetailData>
-      data={detailData}
-      title={"Chi tiết bài viết"}
-      description={`Chi tiết bài viết ${detailData.title}`}
-      fields={detailFields}
-      detailSections={detailSections}
-      backUrl={backUrl}
-      backLabel="Quay lại danh sách"
-      onBack={() => navigateBack(backUrl)}
-      actions={
-        !isDeleted && canUpdate ? (
+    <>
+      <ResourceForm<PostFormData>
+        data={formData as PostFormData}
+        fields={fields}
+        sections={sections}
+        title={detailData.title || "Chi tiết bài viết"}
+        description={`Chi tiết bài viết ${detailData.title || ""}`}
+        backUrl={backUrl}
+        backLabel="Quay lại danh sách"
+        readOnly={true}
+        showCard={false}
+        onSubmit={async () => ({ success: false, error: "Read-only mode" })}
+        resourceName="posts"
+        resourceId={postId}
+        action="update"
+      />
+
+      {!isDeleted && canUpdate && (
+        <Flex
+          align="center"
+          justify="end"
+          gap={2}
+          fullWidth
+          paddingY={2}
+          border="top"
+          className="sticky bottom-0 bg-background/95 backdrop-blur-sm z-10 mt-4"
+        >
           <Button
             variant="outline"
             onClick={() => router.push(`/admin/posts/${detailData.id}/edit`)}
@@ -324,9 +219,9 @@ export const PostDetailClient = ({
               Chỉnh sửa
             </Flex>
           </Button>
-        ) : null
-      }
-    />
+        </Flex>
+      )}
+    </>
   );
 };
 

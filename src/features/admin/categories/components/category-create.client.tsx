@@ -1,11 +1,11 @@
 "use client"
 
-import { ResourceForm } from "@/features/admin/resources/components"
+import { ResourceForm, type ResourceFormField } from "@/features/admin/resources/components"
 import { useResourceFormSubmit } from "@/features/admin/resources/hooks"
 import { apiRoutes } from "@/lib/api/routes"
 import { queryKeys } from "@/lib/query-keys"
 import { resourceLogger } from "@/lib/config"
-import { getBaseCategoryFields, type CategoryFormData } from "../form-fields"
+import { getBaseCategoryFields, getCategoryFormSections, type CategoryFormData } from "../form-fields"
 import { useQueryClient } from "@tanstack/react-query"
 
 export interface CategoryCreateClientProps {
@@ -46,10 +46,14 @@ export const CategoryCreateClient = ({ backUrl = "/admin/categories" }: Category
     },
   })
 
+  const createFields: ResourceFormField<CategoryFormData>[] = getBaseCategoryFields()
+  const formSections = getCategoryFormSections()
+
   return (
     <ResourceForm<CategoryFormData>
       data={null}
-      fields={getBaseCategoryFields()}
+      fields={createFields}
+      sections={formSections}
       onSubmit={handleSubmit}
       title="Tạo danh mục mới"
       description="Nhập thông tin để tạo danh mục mới"

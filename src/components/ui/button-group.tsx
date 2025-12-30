@@ -1,7 +1,7 @@
 import { Slot } from "@radix-ui/react-slot"
 import { cva, type VariantProps } from "class-variance-authority"
 
-import { cn } from "@/lib/utils/index"
+import { cn } from "@/lib/utils"
 import { responsiveTextSizes, fontWeights, lineHeights, iconSizes } from "@/lib/typography"
 import { Separator } from "@/components/ui/separator"
 

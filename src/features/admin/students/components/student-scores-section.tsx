@@ -46,7 +46,7 @@ import type {
   DetailedScore,
   YearAverage,
   TermAverage,
-} from "@/lib/api/types/student-scores"
+} from "@/lib/api/types"
 import { cn } from "@/lib/utils"
 import {
   DataTable,

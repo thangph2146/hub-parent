@@ -1,21 +1,15 @@
 "use client"
 
-import { Tag, Hash, AlignLeft, Calendar, Clock, Edit } from "lucide-react"
-import {
-  ResourceDetailClient,
-  FieldItem,
-  type ResourceDetailSection
-} from "@/features/admin/resources/components"
+import { Edit } from "lucide-react"
+import { ResourceForm } from "@/features/admin/resources/components"
 import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
 import { useResourceNavigation, useResourceDetailData, useResourceDetailLogger } from "@/features/admin/resources/hooks"
-import { formatDateVi } from "../utils"
 import { queryKeys } from "@/lib/query-keys"
 import { usePermissions } from "@/hooks/use-permissions"
 import { PERMISSIONS } from "@/lib/permissions"
-import { TypographyP, TypographyPMuted, IconSize } from "@/components/ui/typography"
+import { IconSize } from "@/components/ui/typography"
 import { Flex } from "@/components/ui/flex"
-import { Grid } from "@/components/ui/grid"
+import { getBaseCategoryFields, getCategoryFormSections, type CategoryFormData } from "../form-fields"
 
 export interface CategoryDetailData {
   id: string
@@ -58,77 +52,48 @@ export const CategoryDetailClient = ({ categoryId, category, backUrl = "/admin/c
     fetchedData,
   })
 
-  const detailSections: ResourceDetailSection<CategoryDetailData>[] = [
-    {
-      id: "basic",
-      title: "Thông tin cơ bản",
-      description: "Thông tin chính về danh mục và thời gian",
-      fieldsContent: (_fields, data) => {
-        const cat = data as CategoryDetailData
-        return (
-          <Flex direction="col" fullWidth gap={6}>
-            <Grid cols="2-lg" fullWidth gap={6}>
-              <FieldItem icon={Tag} label="Tên danh mục">
-                <TypographyP>{cat.name || "—"}</TypographyP>
-              </FieldItem>
-              <FieldItem icon={Hash} label="Slug">
-                <TypographyP className="font-mono">{cat.slug || "—"}</TypographyP>
-              </FieldItem>
-            </Grid>
-
-            {cat.description && (
-              <Card className="border border-border/50">
-                <Flex align="start" gap={3} fullWidth padding="lg">
-                  <Flex align="center" justify="center" shrink rounded="lg" bg="muted" className="h-10 w-10">
-                    <IconSize size="sm"><AlignLeft /></IconSize>
-                  </Flex>
-                  <Flex direction="col" gap={2} fullWidth flex="1" minWidth="0">
-                    <TypographyP className="font-medium">Mô tả</TypographyP>
-                    <TypographyPMuted>{cat.description}</TypographyPMuted>
-                  </Flex>
-                </Flex>
-              </Card>
-            )}
-
-            <Grid cols="2-lg" fullWidth gap={6}>
-              <FieldItem icon={Calendar} label="Ngày tạo">
-                <TypographyP>{formatDateVi(cat.createdAt)}</TypographyP>
-              </FieldItem>
-              <FieldItem icon={Clock} label="Cập nhật lần cuối">
-                <TypographyP>{formatDateVi(cat.updatedAt)}</TypographyP>
-              </FieldItem>
-            </Grid>
-          </Flex>
-        )
-      },
-    },
-  ]
-
+  const fields = getBaseCategoryFields()
+  const sections = getCategoryFormSections()
   const isDeleted = !!detailData?.deletedAt
-
   const editUrl = `/admin/categories/${categoryId}/edit`
 
   return (
-    <ResourceDetailClient<CategoryDetailData>
-      data={detailData}
-      fields={[]}
-      detailSections={detailSections}
-      title={detailData?.name}
-      description={`Chi tiết danh mục ${detailData?.slug}`}
-      backUrl={backUrl}
-      backLabel="Quay lại danh sách"
-      onBack={() => navigateBack(backUrl)}
-      actions={
-        !isDeleted && canUpdate && (
+    <>
+      <ResourceForm<CategoryFormData>
+        data={detailData as CategoryFormData}
+        fields={fields}
+        sections={sections}
+        title={detailData?.name}
+        description={`Chi tiết danh mục ${detailData?.slug}`}
+        backUrl={backUrl}
+        backLabel="Quay lại danh sách"
+        onBack={() => navigateBack(backUrl)}
+        readOnly={true}
+        showCard={false}
+        onSubmit={async () => ({ success: false, error: "Read-only mode" })}
+        resourceName="categories"
+        resourceId={categoryId}
+        action="update"
+      />
+      {!isDeleted && canUpdate && (
+        <Flex
+          align="center"
+          justify="end"
+          gap={2}
+          fullWidth
+          paddingY={2}
+          border="top"
+          className="sticky bottom-0 bg-background/95 backdrop-blur-sm z-10"
+        >
           <Button variant="outline" onClick={() => router.push(editUrl)}>
             <Flex align="center" gap={2}>
               <IconSize size="sm"><Edit /></IconSize>
               Chỉnh sửa
             </Flex>
           </Button>
-        )
-      }
-    />
+        </Flex>
+      )}
+    </>
   )
 }
 

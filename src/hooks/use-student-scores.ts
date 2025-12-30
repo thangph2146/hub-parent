@@ -9,13 +9,13 @@ import { useQuery } from "@tanstack/react-query"
 import { apiClient } from "@/lib/api/axios"
 import { queryKeys } from "@/lib/query-keys"
 import { apiRoutes } from "@/lib/api/routes"
-import { createAdminQueryOptions } from "@/features/admin/resources/config"
+import { createAdminQueryOptions } from "@/features/admin/resources/query-config"
 import type {
   StudentScoresResponse,
   StudentYearAveragesResponse,
   StudentTermAveragesResponse,
   StudentOverallAverageResponse,
-} from "@/lib/api/types/student-scores"
+} from "@/lib/api/types"
 
 /**
  * Helper to extract payload from API response or throw error

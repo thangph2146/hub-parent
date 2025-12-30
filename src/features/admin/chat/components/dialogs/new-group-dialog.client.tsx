@@ -22,7 +22,15 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { Label } from "@/components/ui/label"
+import {
+  Field,
+  FieldLabel,
+  FieldDescription,
+  FieldContent,
+  FieldSet,
+  FieldLegend,
+  FieldGroup,
+} from "@/components/ui/field"
 import { Loader2, Users } from "lucide-react"
 import type { Group, GroupMember } from "@/components/chat/types"
 import { useToast } from "@/hooks/use-toast"
@@ -209,22 +217,47 @@ export const NewGroupDialog = ({ onSelectGroup }: NewGroupDialogProps) => {
           </IconSize>
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[560px]">
+      <DialogContent className="sm:max-w-[560px] md:max-w-[600px] lg:max-w-[640px]">
         <DialogHeader>
           <DialogTitle>Tạo nhóm mới</DialogTitle>
           <DialogDescription>Đặt tên, thêm mô tả và chọn thành viên</DialogDescription>
         </DialogHeader>
-        <Flex direction="col" gap={4} paddingY={2}>
-          <Flex direction="col" gap={2}>
-            <Label htmlFor="group-name">Tên nhóm</Label>
-            <Input id="group-name" value={groupName} onChange={(e) => setGroupName(e.target.value)} />
-          </Flex>
-          <Flex direction="col" gap={2}>
-            <Label htmlFor="group-description">Mô tả</Label>
-            <Textarea id="group-description" value={groupDescription} onChange={(e) => setGroupDescription(e.target.value)} />
-          </Flex>
-          <Flex direction="col" gap={2}>
-            <Label>Thêm thành viên</Label>
+        <FieldSet className="group/field-set">
+          <FieldLegend variant="legend">Thông tin nhóm</FieldLegend>
+          <FieldGroup>
+            <Field orientation="responsive">
+              <FieldLabel htmlFor="group-name">Tên nhóm</FieldLabel>
+              <FieldContent>
+                <Input 
+                  id="group-name" 
+                  value={groupName} 
+                  onChange={(e) => setGroupName(e.target.value)}
+                  className="w-full"
+                  disabled={isCreating}
+                />
+                <FieldDescription>
+                  Tên nhóm sẽ hiển thị trong danh sách và cuộc trò chuyện
+                </FieldDescription>
+              </FieldContent>
+            </Field>
+            <Field orientation="responsive">
+              <FieldLabel htmlFor="group-description">Mô tả</FieldLabel>
+              <FieldContent>
+                <Textarea 
+                  id="group-description" 
+                  value={groupDescription} 
+                  onChange={(e) => setGroupDescription(e.target.value)}
+                  className="w-full min-h-[100px] sm:min-h-[120px]"
+                  disabled={isCreating}
+                />
+                <FieldDescription>
+                  Mô tả về nhóm (tùy chọn)
+                </FieldDescription>
+              </FieldContent>
+            </Field>
+            <Field orientation="responsive">
+              <FieldLabel>Thêm thành viên</FieldLabel>
+              <FieldContent>
             <Command shouldFilter={false}>
               <CommandInput placeholder="Tìm kiếm theo tên hoặc email..." value={searchValue} onValueChange={handleSearchChange} />
               <CommandList>
@@ -272,18 +305,34 @@ export const NewGroupDialog = ({ onSelectGroup }: NewGroupDialogProps) => {
                 )}
               </CommandList>
             </Command>
-          </Flex>
-          <Flex align="center" justify="end" gap={2} paddingTop={2}>
-            <Button variant="outline" onClick={() => setOpen(false)} disabled={isCreating}>Hủy</Button>
-            <Button onClick={handleCreateGroup} disabled={isCreating || !groupName.trim() || selectedUsers.length === 0}>
-              {isCreating && (
-                <IconSize size="sm" className="mr-2 animate-spin">
-                  <Loader2 />
-                </IconSize>
-              )}
-              Tạo nhóm
-            </Button>
-          </Flex>
+                <FieldDescription>
+                  Tìm kiếm và chọn thành viên để thêm vào nhóm (tối thiểu 1 thành viên)
+                </FieldDescription>
+              </FieldContent>
+            </Field>
+          </FieldGroup>
+        </FieldSet>
+        <Flex align="center" justify="end" gap={2} paddingTop={2} className="flex-col sm:flex-row">
+          <Button 
+            variant="outline" 
+            onClick={() => setOpen(false)} 
+            disabled={isCreating}
+            className="w-full sm:w-auto"
+          >
+            Hủy
+          </Button>
+          <Button 
+            onClick={handleCreateGroup} 
+            disabled={isCreating || !groupName.trim() || selectedUsers.length === 0}
+            className="w-full sm:w-auto"
+          >
+            {isCreating && (
+              <IconSize size="sm" className="mr-2 animate-spin">
+                <Loader2 />
+              </IconSize>
+            )}
+            Tạo nhóm
+          </Button>
         </Flex>
       </DialogContent>
     </Dialog>

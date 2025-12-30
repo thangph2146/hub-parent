@@ -1,3 +1,7 @@
+/**
+ * Date formatting utilities for chat components
+ */
+
 export const formatTime = (date: Date): string => {
   const diff = Date.now() - date.getTime()
   const minutes = Math.floor(diff / 60000)

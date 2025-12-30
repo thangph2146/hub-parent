@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/database"
+import { prisma } from "@/lib/prisma"
 import { getSocketServer } from "@/lib/socket/state"
 import { mapTagRecord, serializeTagForTable } from "./helpers"
 import type { TagRow } from "../types"

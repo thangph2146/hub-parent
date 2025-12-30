@@ -4,7 +4,7 @@ import * as React from "react"
 import * as TogglePrimitive from "@radix-ui/react-toggle"
 import { cva, type VariantProps } from "class-variance-authority"
 
-import { cn } from "@/lib/utils/index"
+import { cn } from "@/lib/utils"
 import { responsiveTextSizes, fontWeights, lineHeights, iconSizes } from "@/lib/typography"
 
 const toggleBodySmall = `${responsiveTextSizes.small} ${fontWeights.normal} ${lineHeights.relaxed}`

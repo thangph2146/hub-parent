@@ -84,7 +84,7 @@ export const HomeClient = ({ featuredPosts = [] }: HomeClientProps) => {
       />
 
       {/* Overview Section */}
-      <Section>
+      <Section padding="responsive-lg" background="background">
         <SectionText
           title="Giới thiệu"
           paragraphs={[
@@ -99,7 +99,7 @@ export const HomeClient = ({ featuredPosts = [] }: HomeClientProps) => {
       </Section>
 
       {/* Guide & Register Section */}
-      <Section>
+      <Section padding="responsive-lg" background="background">
         {/* Top Row - Guide Section */}
         <SectionWithImage
           title="Hướng dẫn cho Phụ huynh"

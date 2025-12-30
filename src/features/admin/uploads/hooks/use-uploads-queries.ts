@@ -9,7 +9,7 @@ import { apiRoutes } from "@/lib/api/routes"
 import { logger } from "@/lib/config"
 import { useToast } from "@/hooks/use-toast"
 import { queryKeys } from "../config/query-keys"
-import { useUploadsStore } from "../store/uploads-store"
+import { useUploadsStore } from "../uploads-store"
 import type { ImageItem, FolderNode, FolderItem } from "../types"
 
 export interface ImagesListResponse {

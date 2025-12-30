@@ -3,7 +3,7 @@
  * Đảm bảo logic đếm nhất quán giữa các API endpoints
  */
 
-import { prisma } from "@/lib/database"
+import { prisma } from "@/lib/prisma"
 import { NotificationKind, type Prisma } from "@prisma/client"
 
 export interface NotificationCountParams {

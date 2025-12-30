@@ -2,6 +2,7 @@
 
 import { FieldContent, FieldError } from "@/components/ui/field"
 import { Label } from "@/components/ui/label"
+import { Checkbox } from "@/components/ui/checkbox"
 import { cn } from "@/lib/utils"
 import { TypographyP } from "@/components/ui/typography"
 import type { ResourceFormField } from "../resource-form"
@@ -13,6 +14,8 @@ interface CheckboxFieldProps<T> {
   error?: string
   onChange: (value: unknown) => void
   isPending?: boolean
+  disabled?: boolean
+  readOnly?: boolean
 }
 
 export const CheckboxField = <T,>({
@@ -21,26 +24,30 @@ export const CheckboxField = <T,>({
   error,
   onChange,
   isPending = false,
+  disabled = false,
+  readOnly = false,
 }: CheckboxFieldProps<T>) => {
   const fieldValue = value ?? false
   const fieldId = field.name as string
   const errorId = error ? `${fieldId}-error` : undefined
+  const isDisabled = disabled || field.disabled || isPending
+  const isReadOnly = readOnly && !isDisabled
 
   return (
     <FieldContent>
       <Flex align="center" gap={2}>
-        <input
-          type="checkbox"
+        <Checkbox
           id={fieldId}
-          name={fieldId}
           checked={Boolean(fieldValue)}
-          onChange={(e) => onChange(e.target.checked)}
-          disabled={field.disabled || isPending}
+          onCheckedChange={(checked) => onChange(checked)}
+          disabled={isDisabled || isReadOnly}
+          data-readonly={isReadOnly ? "true" : undefined}
           aria-invalid={error ? "true" : "false"}
           aria-describedby={errorId || field.description ? `${fieldId}-description` : undefined}
           className={cn(
-            "h-5 w-5 rounded border border-input",
-            error && "border-destructive"
+            error && "border-destructive",
+            isReadOnly && "!opacity-100 disabled:!opacity-100 [&:disabled]:!opacity-100 cursor-default bg-muted/30 border-muted-foreground/30",
+            isDisabled && !isReadOnly && "!opacity-100"
           )}
         />
         <Label htmlFor={fieldId} asChild>

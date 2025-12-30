@@ -8,6 +8,7 @@ import { Loader2, Save, ArrowLeft, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Field,
+  FieldContent,
   FieldDescription,
   FieldLabel,
   FieldSet,
@@ -43,6 +44,7 @@ export interface ResourceFormField<T = unknown> {
     | "switch"
     | "date"
     | "image"
+    | "avatar"
     | "editor"
     | "slug";
   sourceField?: string;
@@ -103,6 +105,17 @@ export interface ResourceFormProps<T extends Record<string, unknown>> {
   resourceName?: string;
   resourceId?: string;
   action?: "create" | "update";
+
+  // prefix content
+  prefixContent?: React.ReactNode;
+  prefixClassName?: string;
+
+  // suffix content
+  suffixContent?: React.ReactNode;
+  suffixClassName?: string;
+
+  // Read-only mode (for detail view)
+  readOnly?: boolean;
 }
 
 export const ResourceForm = <T extends Record<string, unknown>>({
@@ -129,6 +142,11 @@ export const ResourceForm = <T extends Record<string, unknown>>({
   resourceName,
   resourceId,
   action,
+  prefixContent,
+  prefixClassName,
+  suffixContent,
+  suffixClassName,
+  readOnly = false,
 }: ResourceFormProps<T>) => {
   const resourceSegment = useResourceSegment();
   const resolvedBackUrl = backUrl
@@ -486,17 +504,6 @@ export const ResourceForm = <T extends Record<string, unknown>>({
     const sourceValue = field.sourceField
       ? formData[field.sourceField as keyof T]
       : undefined;
-    const fullWidthTypes = [
-      "textarea",
-      "select",
-      "image",
-      "editor",
-      "slug",
-      "permissions-table",
-    ];
-    const isFullWidth =
-      fullWidthTypes.includes(field.type || "") || !!field.render;
-    const isEditorField = field.type === "editor";
     const isCheckbox = field.type === "checkbox";
     const hasError = !!error;
     const fieldInput = renderFieldInput({
@@ -504,64 +511,66 @@ export const ResourceForm = <T extends Record<string, unknown>>({
       value,
       error,
       onChange: (newValue) => handleFieldChange(field.name as string, newValue),
-      isPending,
+      isPending: isPending || readOnly,
       sourceValue,
+      readOnly: readOnly || field.disabled,
     });
 
     return (
-      <Flex
+        <Field
         key={fieldName}
         id={fieldName}
-        direction="col"
-        minWidth={isFullWidth ? "full" : "120"}
+        orientation={isCheckbox ? undefined : "vertical"}
+        data-invalid={hasError}
         className={cn(
-          "transition-all duration-200 ease-in-out",
-          isEditorField ? "col-span-full" : isFullWidth && "@md:col-span-full",
+          "py-2.5",
+          readOnly && "!opacity-100",
           field.className
         )}
       >
-        <Field
-          orientation={isCheckbox ? undefined : "responsive"}
-          data-invalid={hasError}
-          className="transition-all duration-200"
-        >
-          {(!isCheckbox || field.icon) && (
-            <FieldLabel
-              htmlFor={fieldName}
-              className={cn(
-                "transition-colors duration-200",
-                hasError && "text-destructive/90",
-                !hasError && "group-hover/field:text-foreground"
-              )}
-            >
-              {field.icon && (
-                <span className="transition-transform duration-200 group-hover/field-label:scale-110">
-                  {field.icon}
-                </span>
-              )}
-              <span className="font-medium">{field.label}</span>
-              {field.required && (
-                <TypographySpanDestructive className="transition-opacity duration-200">
-                  *
-                </TypographySpanDestructive>
-              )}
-            </FieldLabel>
-          )}
-          <div className="relative">{fieldInput}</div>
+        {(!isCheckbox || field.icon) && (
+          <FieldLabel
+            htmlFor={fieldName}
+            className={cn(
+              hasError && "text-destructive/90",
+              !hasError && "group-hover/field:text-foreground",
+              readOnly && "!opacity-100"
+            )}
+          >
+            {field.icon && (
+              <span className="transition-transform duration-200 group-hover/field-label:scale-110">
+                {field.icon}
+              </span>
+            )}
+            <span className="font-medium">{field.label}</span>
+            {field.required && (
+              <TypographySpanDestructive>
+                *
+              </TypographySpanDestructive>
+            )}
+          </FieldLabel>
+        )}
+        <FieldContent>
+          {fieldInput}
           {field.description && (
-            <FieldDescription
-              className={cn(
-                "transition-opacity duration-200",
-                hasError && "opacity-70"
-              )}
-            >
+            <FieldDescription className={cn(readOnly && "!opacity-100")}>
               {field.description}
             </FieldDescription>
           )}
-        </Field>
-      </Flex>
+        </FieldContent>
+      </Field>
     );
   };
+
+  const renderSectionHeader = (title?: string, description?: string) => {
+    if (!title && !description) return null
+    return (
+      <>
+        {title && <FieldLegend variant="legend">{title}</FieldLegend>}
+        {description && <FieldDescription variant="section">{description}</FieldDescription>}
+      </>
+    )
+  }
 
   const renderSection = (
     sectionId: string,
@@ -569,36 +578,25 @@ export const ResourceForm = <T extends Record<string, unknown>>({
   ) => {
     const sectionInfo = sections?.find((s) => s.id === sectionId);
     const gridCols =
-      sectionFields.length >= 2 ? ("2-lg" as const) : (1 as const);
+      sectionFields.length >= 2 ? ("responsive-2" as const) : (1 as const);
 
     return (
       <FieldSet
         key={sectionId}
-        className={cn("group/field-set", "transition-all duration-300")}
-      >
-        {sectionInfo && (sectionInfo.title || sectionInfo.description) && (
-          <>
-            {sectionInfo.title && (
-              <FieldLegend variant="legend">{sectionInfo.title}</FieldLegend>
-            )}
-            {sectionInfo.description && (
-              <p
-                className={cn(
-                  "mx-0 mb-3 px-2 border-b-0 w-auto",
-                  "text-xs sm:text-sm md:text-base font-normal text-muted-foreground",
-                  "transition-colors duration-200"
-                )}
-              >
-                {sectionInfo.description}
-              </p>
-            )}
-          </>
+        className={cn(
+          "group/field-set transition-all duration-300",
+          readOnly && "!opacity-100"
         )}
+      >
+        {renderSectionHeader(sectionInfo?.title, sectionInfo?.description)}
         <Grid
           cols={gridCols}
           fullWidth
-          gap={6}
-          className="transition-all duration-300"
+          gap="responsive"
+          className={cn(
+            "transition-all duration-300",
+            readOnly && "!opacity-100"
+          )}
         >
           {sectionFields.map(renderField)}
         </Grid>
@@ -615,7 +613,7 @@ export const ResourceForm = <T extends Record<string, unknown>>({
       onSubmit={handleSubmit}
       className={formClassName}
     >
-      <Flex direction="col" fullWidth gap={6}>
+      <Flex direction="col" fullWidth gap="responsive">
         {submitError && (
           <Flex
             align="center"
@@ -636,16 +634,31 @@ export const ResourceForm = <T extends Record<string, unknown>>({
             </TypographySpanMuted>
           </Flex>
         )}
+        {/* prefix content */}
+        <Flex direction="col" gap="responsive" fullWidth className={prefixClassName}>
+          {prefixContent}
+        </Flex>
 
-        <Flex direction="col" gap={8} fullWidth className={contentClassName}>
+        {/* Content */}
+        <Flex direction="col" gap="responsive" fullWidth className={contentClassName}>
           {Object.entries(grouped).map(([sectionId, sectionFields]) =>
             renderSection(sectionId, sectionFields)
           )}
           {ungrouped.length > 0 && (
-            <Grid cols="2-lg" fullWidth gap={6}>
+            <Grid 
+              cols="responsive-2" 
+              fullWidth 
+              gap="responsive"
+              className={cn(readOnly && "!opacity-100")}
+            >
               {ungrouped.map(renderField)}
             </Grid>
           )}
+        </Flex>
+
+        {/* suffix content */}
+        <Flex direction="col" gap="responsive" fullWidth className={suffixClassName}>
+          {suffixContent}
         </Flex>
       </Flex>
     </form>
@@ -658,7 +671,7 @@ export const ResourceForm = <T extends Record<string, unknown>>({
         variant="outline"
         onClick={handleCancel}
         disabled={isPending}
-        className="h-9"
+        className="h-9 disabled:!opacity-100"
       >
         <Flex align="center" gap={2}>
           <IconSize size="sm">
@@ -671,7 +684,7 @@ export const ResourceForm = <T extends Record<string, unknown>>({
         type="submit"
         form="resource-form"
         disabled={isPending}
-        className="h-9"
+        className="h-9 disabled:!opacity-100"
       >
         <Flex align="center" gap={2}>
           {isPending ? (
@@ -698,13 +711,14 @@ export const ResourceForm = <T extends Record<string, unknown>>({
     <>
       {(title || resolvedBackUrl) && !showCard && (
         <Flex
-          direction="col-lg-row-items-center"
+          direction="col-sm-row"
           fullWidth
           align="start"
           justify="between"
           gap={4}
           paddingBottom={6}
           border="b-border"
+          className="sm:items-center"
         >
           <Flex
             direction="col"
@@ -712,7 +726,7 @@ export const ResourceForm = <T extends Record<string, unknown>>({
             fullWidth
             flex="1"
             minWidth="0"
-            className="lg:w-1/3"
+            className="w-full lg:w-1/3 xl:w-2/5"
           >
             {resolvedBackUrl && (
               <Button
@@ -745,18 +759,19 @@ export const ResourceForm = <T extends Record<string, unknown>>({
 
       {formContent}
 
-      <Flex
-        align="center"
-        justify="end"
-        gap={3}
-        fullWidth
-        paddingY={4}
-        paddingX={4}
-        border="top"
-        className="sticky bottom-0 bg-background/95 backdrop-blur-sm z-10"
-      >
-        {footerButtons}
-      </Flex>
+      {!readOnly && (
+        <Flex
+          align="center"
+          justify="end"
+          gap={2}
+          fullWidth
+          paddingY={2}
+          border="top"
+          className="sticky bottom-0 bg-background/95 backdrop-blur-sm z-10"
+        >
+          {footerButtons}
+        </Flex>
+      )}
     </>
   );
 };

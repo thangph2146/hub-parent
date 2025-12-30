@@ -2,6 +2,7 @@
 
 import { ChevronRight } from "lucide-react"
 import Link from "next/link"
+import { usePathname } from "next/navigation"
 import {
   Collapsible,
   CollapsibleContent,
@@ -38,13 +39,35 @@ export function NavMainItem({
   title,
   url,
   icon,
-  isActive = false,
+  isActive: propIsActive = false,
   items,
   badgeCount = 0,
 }: NavMainItemProps) {
   // Chỉ render Collapsible sau khi component đã mount trên client để tránh hydration mismatch
   // Radix UI generate ID random khác nhau giữa server và client
   const isMounted = useClientOnly()
+  const pathname = usePathname()
+
+  // Tính toán isActive cho menu item chính - chỉ active khi pathname khớp chính xác với URL của nó
+  const isActive = React.useMemo(() => {
+    if (!pathname) return propIsActive
+
+    // Normalize paths để so sánh
+    const normalizedPathname = pathname.toLowerCase()
+    const normalizedUrl = url.toLowerCase()
+
+    // Chỉ active khi pathname khớp chính xác với URL của menu item
+    // Không active khi chỉ có sub-item active
+    return normalizedPathname === normalizedUrl
+  }, [pathname, url, propIsActive])
+
+  // Tính toán isActive cho từng sub menu item
+  const getSubItemActive = React.useCallback((subItemUrl: string): boolean => {
+    if (!pathname) return false
+    const normalizedPathname = pathname.toLowerCase()
+    const normalizedSubUrl = subItemUrl.toLowerCase()
+    return normalizedPathname === normalizedSubUrl
+  }, [pathname])
 
   // Clone icon element để đảm bảo tính hợp lệ khi truyền từ server component
   // Giữ nguyên tất cả props gốc để đảm bảo icon hoạt động đúng
@@ -59,12 +82,16 @@ export function NavMainItem({
 
   const showBadge = badgeCount > 0 && isMounted // Chỉ hiển thị badge sau khi mount trên client
 
+  // Nếu có sub items, menu item chính không dùng link
+  const hasSubItems = items && items.length > 0
+  const isParentActive = hasSubItems && items.some(subItem => getSubItemActive(subItem.url))
+
   // Render placeholder trên server để tránh hydration mismatch
   if (!isMounted) {
     return (
       <SidebarMenuItem>
-        <SidebarMenuButton asChild tooltip={title} isActive={isActive}>
-          <Link href={url} className="w-full" suppressHydrationWarning>
+        {hasSubItems ? (
+          <SidebarMenuButton tooltip={title} isActive={isParentActive}>
             <Flex align="center" justify="between" fullWidth>
               <Flex align="center" gap={2} flex="1" minWidth="0">
                 <IconSize size="sm">{iconElement}</IconSize>
@@ -72,13 +99,25 @@ export function NavMainItem({
               </Flex>
               {/* Không render badge trên server để tránh hydration mismatch */}
             </Flex>
-          </Link>
-        </SidebarMenuButton>
-        {items?.length && isActive ? (
+          </SidebarMenuButton>
+        ) : (
+          <SidebarMenuButton asChild tooltip={title} isActive={isActive}>
+            <Link href={url} className="w-full" suppressHydrationWarning>
+              <Flex align="center" justify="between" fullWidth>
+                <Flex align="center" gap={2} flex="1" minWidth="0">
+                  <IconSize size="sm">{iconElement}</IconSize>
+                  <TypographySpan>{title}</TypographySpan>
+                </Flex>
+                {/* Không render badge trên server để tránh hydration mismatch */}
+              </Flex>
+            </Link>
+          </SidebarMenuButton>
+        )}
+        {items?.length && isParentActive ? (
           <SidebarMenuSub>
             {items.map((subItem) => (
               <SidebarMenuSubItem key={subItem.url}>
-                <SidebarMenuSubButton asChild>
+                <SidebarMenuSubButton asChild isActive={getSubItemActive(subItem.url)}>
                   <Link href={subItem.url}>
                     <TypographySpan>{subItem.title}</TypographySpan>
                   </Link>
@@ -92,27 +131,49 @@ export function NavMainItem({
   }
 
   return (
-    <Collapsible asChild defaultOpen={isActive}>
+    <Collapsible asChild defaultOpen={isParentActive || isActive}>
       <SidebarMenuItem>
-        <SidebarMenuButton asChild tooltip={title} isActive={isActive}>
-          <Link href={url} className="w-full">
-            <Flex align="center" justify="between" fullWidth>
-              <Flex align="center" gap={2} flex="1" minWidth="0">
-                <IconSize size="sm">{iconElement}</IconSize>
-                <TypographySpan>{title}</TypographySpan>
+        {hasSubItems ? (
+          <CollapsibleTrigger asChild>
+            <SidebarMenuButton tooltip={title} isActive={isParentActive}>
+              <Flex align="center" justify="between" fullWidth>
+                <Flex align="center" gap={2} flex="1" minWidth="0">
+                  <IconSize size="sm">{iconElement}</IconSize>
+                  <TypographySpan>{title}</TypographySpan>
+                </Flex>
+                {showBadge && (
+                  <Badge 
+                    variant="destructive" 
+                    shrink
+                    suppressHydrationWarning
+                  >
+                    {badgeCount > 99 ? "99+" : badgeCount}
+                  </Badge>
+                )}
               </Flex>
-              {showBadge && (
-                <Badge 
-                  variant="destructive" 
-                  shrink
-                  suppressHydrationWarning
-                >
-                  {badgeCount > 99 ? "99+" : badgeCount}
-                </Badge>
-              )}
-            </Flex>
-          </Link>
-        </SidebarMenuButton>
+            </SidebarMenuButton>
+          </CollapsibleTrigger>
+        ) : (
+          <SidebarMenuButton asChild tooltip={title} isActive={isActive}>
+            <Link href={url} className="w-full">
+              <Flex align="center" justify="between" fullWidth>
+                <Flex align="center" gap={2} flex="1" minWidth="0">
+                  <IconSize size="sm">{iconElement}</IconSize>
+                  <TypographySpan>{title}</TypographySpan>
+                </Flex>
+                {showBadge && (
+                  <Badge 
+                    variant="destructive" 
+                    shrink
+                    suppressHydrationWarning
+                  >
+                    {badgeCount > 99 ? "99+" : badgeCount}
+                  </Badge>
+                )}
+              </Flex>
+            </Link>
+          </SidebarMenuButton>
+        )}
         {items?.length ? (
           <>
             <CollapsibleTrigger asChild>
@@ -125,10 +186,10 @@ export function NavMainItem({
               <SidebarMenuSub>
                 {items.map((subItem) => (
                   <SidebarMenuSubItem key={subItem.url}>
-                    <SidebarMenuSubButton asChild>
-                  <Link href={subItem.url}>
-                    <TypographySpan>{subItem.title}</TypographySpan>
-                  </Link>
+                    <SidebarMenuSubButton asChild isActive={getSubItemActive(subItem.url)}>
+                      <Link href={subItem.url}>
+                        <TypographySpan>{subItem.title}</TypographySpan>
+                      </Link>
                     </SidebarMenuSubButton>
                   </SidebarMenuSubItem>
                 ))}

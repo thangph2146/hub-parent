@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/database"
+import { prisma } from "@/lib/prisma"
 import { cache } from "react"
 
 export const getTotalUnreadMessagesCount = async (userId: string): Promise<number> => {

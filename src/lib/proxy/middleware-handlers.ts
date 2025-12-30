@@ -10,8 +10,7 @@
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 import type { ProxyConfig } from "./config"
-import { getClientIP as getClientIPUtil } from "@/lib/utils/request-utils"
-import { applyBasicSecurityHeaders } from "@/lib/utils/response-utils"
+import { getClientIP as getClientIPUtil, applyBasicSecurityHeaders } from "@/lib/utils/http-utils"
 
 /**
  * Get client IP address from request headers

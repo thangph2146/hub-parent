@@ -6,7 +6,7 @@
 import * as React from "react"
 import { useQueryClient } from "@tanstack/react-query"
 import { logger } from "@/lib/config"
-import { useUploadsStore } from "../store/uploads-store"
+import { useUploadsStore } from "../uploads-store"
 import {
   useDeleteFolder,
   useDeleteImage,

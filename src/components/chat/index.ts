@@ -22,7 +22,7 @@ export { ChatInput } from "./components/chat-input"
 export { ChatWindow, type ChatWindowProps } from "./components/chat-window"
 
 // Utils
-export { formatTime, formatMessageTime } from "./utils"
+export { formatTime, formatMessageTime } from "./utils/date-helpers"
 export * from "./utils/message-helpers"
 export * from "./utils/contact-helpers"
 export * from "./utils/text-helpers"

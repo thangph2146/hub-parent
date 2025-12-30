@@ -2,34 +2,22 @@
 
 import * as React from "react"
 import { useCallback, useState } from "react"
-import { User, Mail, Phone, FileText, MessageSquare, AlertCircle, UserCheck, Calendar, Clock, Edit, CheckCircle2, XCircle } from "lucide-react"
-import {
-  ResourceDetailClient,
-  FieldItem,
-  type ResourceDetailField,
-  type ResourceDetailSection
-} from "@/features/admin/resources/components"
+import { Edit, CheckCircle2, XCircle } from "lucide-react"
+import { ResourceForm } from "@/features/admin/resources/components"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Card } from "@/components/ui/card"
 import { Switch } from "@/components/ui/switch"
 import { useResourceRouter } from "@/hooks/use-resource-segment"
 import { useResourceDetailData, useResourceDetailLogger } from "@/features/admin/resources/hooks"
 import { queryKeys } from "@/lib/query-keys"
-import { formatDateVi } from "../utils"
 import { usePermissions } from "@/hooks/use-permissions"
 import { PERMISSIONS } from "@/lib/permissions"
 import { useToast } from "@/hooks/use-toast"
 import { useContactRequestActions } from "../hooks/use-contact-request-actions"
 import { useContactRequestFeedback } from "../hooks/use-contact-request-feedback"
-import {
-  CONTACT_REQUEST_LABELS,
-  CONTACT_REQUEST_STATUS_COLORS,
-  CONTACT_REQUEST_PRIORITY_COLORS
-} from "../constants"
-import { TypographyP, TypographyPMuted, TypographyPSmallMuted, IconSize } from "@/components/ui/typography"
+import { CONTACT_REQUEST_LABELS } from "../constants"
+import { TypographyPMuted, TypographyPSmallMuted, IconSize } from "@/components/ui/typography"
 import { Flex } from "@/components/ui/flex"
-import { Grid } from "@/components/ui/grid"
+import { getBaseContactRequestFields, getContactRequestFormSections, type ContactRequestFormData } from "../form-fields"
 import type { ContactRequestRow, ContactStatus, ContactPriority } from "../types"
 
 export interface ContactRequestDetailData {
@@ -161,173 +149,75 @@ export const ContactRequestDetailClient = ({ contactRequestId, contactRequest, b
     [canUpdate, contactRequestId, detailData, handleToggleRead, showFeedback, toast],
   )
 
-  const detailFields: ResourceDetailField<ContactRequestDetailData>[] = []
-
-  const detailSections: ResourceDetailSection<ContactRequestDetailData>[] = [
-    {
-      id: "basic",
-      title: "Thông tin cơ bản",
-      description: "Thông tin liên hệ và nội dung yêu cầu",
-      fieldsContent: (_fields, data) => {
-        const requestData = data as ContactRequestDetailData
-
-        return (
-          <Flex direction="col" gap={6}>
-            {/* Contact Info */}
-            <Grid cols="3-lg" gap={6} fullWidth>
-              <FieldItem icon={User} label="Tên người liên hệ">
-                <TypographyP>
-                  {requestData.name || "—"}
-                </TypographyP>
-              </FieldItem>
-
-              <FieldItem icon={Mail} label="Email">
-                <a
-                  href={`mailto:${requestData.email}`}
-                  className="text-primary hover:underline truncate block transition-colors w-full"
-                >
-                  {requestData.email || "—"}
-                </a>
-              </FieldItem>
-              {requestData.phone && (
-                <FieldItem icon={Phone} label="Số điện thoại">
-                  <a
-                    href={`tel:${requestData.phone}`}
-                    className="text-primary hover:underline transition-colors"
-                  >
-                    {requestData.phone}
-                  </a>
-                </FieldItem>
-              )}
-            </Grid>
-
-            {/* Subject */}
-            <FieldItem icon={FileText} label="Tiêu đề">
-              <TypographyP>
-                {requestData.subject || "—"}
-              </TypographyP>
-            </FieldItem>
-
-            {/* Content */}
-            <FieldItem icon={MessageSquare} label="Nội dung">
-              <Card className="border border-border/50" padding="lg">
-                <TypographyP>
-                  {requestData.content || "—"}
-                </TypographyP>
-              </Card>
-            </FieldItem>
-          </Flex>
-        )
-      },
-    },
-    {
-      id: "status",
-      title: "Trạng thái và phân công",
-      description: "Trạng thái xử lý, độ ưu tiên và người được giao",
-      fieldsContent: (_fields, data) => {
-        const requestData = data as ContactRequestDetailData
-
-        return (
-            <Flex direction="col" gap={6}>
-            {/* Status & Priority */}
-            <Grid cols="2-lg" gap={6} fullWidth>
-              <FieldItem icon={AlertCircle} label="Trạng thái">
-                <Badge variant={CONTACT_REQUEST_STATUS_COLORS[requestData.status] || "default"} className="w-fit">
-                  {(requestData.status === "NEW" && CONTACT_REQUEST_LABELS.NEW) ||
-                    (requestData.status === "IN_PROGRESS" && CONTACT_REQUEST_LABELS.IN_PROGRESS) ||
-                    (requestData.status === "RESOLVED" && CONTACT_REQUEST_LABELS.RESOLVED) ||
-                    (requestData.status === "CLOSED" && CONTACT_REQUEST_LABELS.CLOSED) ||
-                    requestData.status}
-                </Badge>
-              </FieldItem>
-
-              <FieldItem icon={AlertCircle} label="Độ ưu tiên">
-                <Badge variant={CONTACT_REQUEST_PRIORITY_COLORS[requestData.priority] || "default"} className="w-fit">
-                  {(requestData.priority === "LOW" && CONTACT_REQUEST_LABELS.LOW) ||
-                    (requestData.priority === "MEDIUM" && CONTACT_REQUEST_LABELS.MEDIUM) ||
-                    (requestData.priority === "HIGH" && CONTACT_REQUEST_LABELS.HIGH) ||
-                    (requestData.priority === "URGENT" && CONTACT_REQUEST_LABELS.URGENT) ||
-                    requestData.priority}
-                </Badge>
-              </FieldItem>
-            </Grid>
-
-            {/* Read Status */}
-            <FieldItem
-              icon={requestData.isRead ? CheckCircle2 : XCircle}
-              label="Đã đọc"
-            >
-              <Flex align="center" gap={3}>
-                <Switch
-                  checked={requestData.isRead}
-                  disabled={isToggling || togglingRequests.has(contactRequestId) || !canUpdate}
-                  onCheckedChange={handleToggleReadStatus}
-                  aria-label={requestData.isRead ? "Đánh dấu chưa đọc" : "Đánh dấu đã đọc"}
-                />
-                <TypographyPMuted>
-                  {requestData.isRead ? CONTACT_REQUEST_LABELS.READ : CONTACT_REQUEST_LABELS.UNREAD}
-                </TypographyPMuted>
-              </Flex>
-              {!canUpdate && (
-                <Flex className="mt-1.5">
-                  <TypographyPSmallMuted>
-                    Bạn không có quyền thay đổi trạng thái đọc
-                  </TypographyPSmallMuted>
-                </Flex>
-              )}
-            </FieldItem>
-
-            {/* Assigned To */}
-            {requestData.assignedTo && (
-              <FieldItem icon={UserCheck} label="Người được giao">
-                <TypographyP>
-                  {requestData.assignedTo.name || requestData.assignedTo.email || "—"}
-                </TypographyP>
-              </FieldItem>
-            )}
-          </Flex>
-        )
-      },
-    },
-    {
-      id: "timestamps",
-      title: "Thông tin thời gian",
-      description: "Ngày tạo và cập nhật lần cuối",
-      fieldsContent: (_fields, data) => {
-        const requestData = data as ContactRequestDetailData
-
-        return (
-          <Grid cols="2-lg" gap={6} fullWidth>
-            <FieldItem icon={Calendar} label="Ngày tạo">
-              <TypographyP>
-                {requestData.createdAt ? formatDateVi(requestData.createdAt) : "—"}
-              </TypographyP>
-            </FieldItem>
-
-            <FieldItem icon={Clock} label="Cập nhật lần cuối">
-              <TypographyP>
-                {requestData.updatedAt ? formatDateVi(requestData.updatedAt) : "—"}
-              </TypographyP>
-            </FieldItem>
-          </Grid>
-        )
-      },
-    },
-  ]
-
+  const fields = getBaseContactRequestFields([])
+  const sections = getContactRequestFormSections()
   const isDeleted = detailData.deletedAt !== null && detailData.deletedAt !== undefined
 
   return (
-    <ResourceDetailClient<ContactRequestDetailData>
-      data={detailData}
-      fields={detailFields}
-      detailSections={detailSections}
-      title={detailData.subject}
-      description={`Yêu cầu liên hệ từ ${detailData.name}`}
-      backUrl={backUrl}
-      backLabel="Quay lại danh sách"
-      actions={
-        !isDeleted && canUpdate ? (
+    <>
+      <ResourceForm<ContactRequestFormData>
+        data={detailData as ContactRequestFormData}
+        fields={fields}
+        sections={sections}
+        title={detailData.subject}
+        description={`Yêu cầu liên hệ từ ${detailData.name}`}
+        backUrl={backUrl}
+        backLabel="Quay lại danh sách"
+        readOnly={true}
+        showCard={false}
+        onSubmit={async () => ({ success: false, error: "Read-only mode" })}
+        resourceName="contact-requests"
+        resourceId={contactRequestId}
+        action="update"
+      />
+      
+      {/* Custom Read Status Toggle */}
+      <Flex
+        align="center"
+        justify="between"
+        gap={2}
+        fullWidth
+        paddingY={3}
+        paddingX={4}
+        border="top"
+        className="bg-muted/30"
+      >
+        <Flex align="center" gap={3}>
+          <IconSize size="sm">
+            {detailData.isRead ? <CheckCircle2 className="text-green-600" /> : <XCircle className="text-amber-600" />}
+          </IconSize>
+          <Flex direction="col" gap={0.5}>
+            <TypographyPMuted className="font-medium">Trạng thái đọc</TypographyPMuted>
+            <TypographyPSmallMuted>
+              {detailData.isRead ? CONTACT_REQUEST_LABELS.READ : CONTACT_REQUEST_LABELS.UNREAD}
+            </TypographyPSmallMuted>
+          </Flex>
+        </Flex>
+        <Flex align="center" gap={3}>
+          <Switch
+            checked={detailData.isRead}
+            disabled={isToggling || togglingRequests.has(contactRequestId) || !canUpdate}
+            onCheckedChange={handleToggleReadStatus}
+            aria-label={detailData.isRead ? "Đánh dấu chưa đọc" : "Đánh dấu đã đọc"}
+          />
+          {!canUpdate && (
+            <TypographyPSmallMuted>
+              Bạn không có quyền thay đổi
+            </TypographyPSmallMuted>
+          )}
+        </Flex>
+      </Flex>
+
+      {!isDeleted && canUpdate && (
+        <Flex
+          align="center"
+          justify="end"
+          gap={2}
+          fullWidth
+          paddingY={2}
+          border="top"
+          className="sticky bottom-0 bg-background/95 backdrop-blur-sm z-10"
+        >
           <Button
             variant="outline"
             onClick={() => router.push(`/admin/contact-requests/${contactRequestId}/edit`)}
@@ -339,9 +229,9 @@ export const ContactRequestDetailClient = ({ contactRequestId, contactRequest, b
               Chỉnh sửa
             </Flex>
           </Button>
-        ) : null
-      }
-    />
+        </Flex>
+      )}
+    </>
   )
 }
 

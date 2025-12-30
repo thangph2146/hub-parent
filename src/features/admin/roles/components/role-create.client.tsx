@@ -1,7 +1,7 @@
 "use client"
 
 import { useQueryClient } from "@tanstack/react-query"
-import { ResourceForm } from "@/features/admin/resources/components"
+import { ResourceForm, type ResourceFormField } from "@/features/admin/resources/components"
 import { useResourceFormSubmit } from "@/features/admin/resources/hooks"
 import { apiRoutes } from "@/lib/api/routes"
 import { queryKeys } from "@/lib/query-keys"
@@ -42,7 +42,7 @@ export const RoleCreateClient = ({ backUrl = "/admin/roles", permissions: permis
     },
   })
 
-  const createFields = getBaseRoleFields(permissionsFromServer)
+  const createFields: ResourceFormField<RoleFormData>[] = getBaseRoleFields(permissionsFromServer)
   const formSections = getRoleFormSections()
 
   return (

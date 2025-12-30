@@ -3,7 +3,7 @@
 import bcrypt from "bcryptjs";
 import type { Prisma } from "@prisma/client";
 import { PERMISSIONS, canPerformAnyAction } from "@/lib/permissions";
-import { prisma } from "@/lib/database";
+import { prisma } from "@/lib/prisma";
 import { mapUserRecord, type ListedUser, type UserWithRoles } from "./queries";
 import {
   notifySuperAdminsOfUserAction,

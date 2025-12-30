@@ -9,7 +9,7 @@ import { createGetRoute } from "@/lib/api/api-route-wrapper"
 import type { ApiRouteContext } from "@/lib/api/types"
 import { isSuperAdmin } from "@/lib/permissions"
 import { callExternalApi } from "@/lib/api/external-api-client"
-import type { StudentOverallAverageResponse } from "@/lib/api/types/student-scores"
+import type { StudentOverallAverageResponse } from "@/lib/api/types"
 import { validateStudentAndGetCode } from "@/features/admin/students/server/helpers"
 import { logger } from "@/lib/config"
 

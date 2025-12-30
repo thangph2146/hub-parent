@@ -1,6 +1,9 @@
 /**
  * Shared Typography Configuration
  * Đồng bộ text sizes và header styles cho toàn bộ hệ thống
+ * 
+ * Typography Configuration Barrel Export
+ * Export tất cả typography utilities từ một nơi
  */
 
 /**

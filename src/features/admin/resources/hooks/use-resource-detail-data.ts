@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query"
 import type { QueryKey } from "@tanstack/react-query"
 import { apiClient } from "@/lib/api/axios"
 import { apiRoutes } from "@/lib/api/routes"
-import { createAdminQueryOptions } from "../config"
+import { createAdminQueryOptions } from "../query-config"
 
 interface UseResourceDetailDataOptions<T> {
   initialData: T

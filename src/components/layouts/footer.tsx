@@ -23,7 +23,7 @@ import { Grid } from "@/components/ui/grid";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { TypographyH3, TypographyH4, TypographyP, TypographyPSmall, TypographySpan, TypographySpanMuted, TypographySpanWhite, IconSize } from "@/components/ui/typography";
-import { Logo } from "../../../../public/svg/Logo"
+import { Logo } from "../../../public/svg/Logo"
 
 /**
  * Helper function để lấy route từ appFeatures

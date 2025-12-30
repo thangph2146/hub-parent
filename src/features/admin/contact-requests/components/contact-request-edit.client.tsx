@@ -2,12 +2,12 @@
 
 import { useMemo } from "react"
 import { useQueryClient } from "@tanstack/react-query"
-import { ResourceForm } from "@/features/admin/resources/components"
+import { ResourceForm, type ResourceFormField } from "@/features/admin/resources/components"
 import { useResourceFormSubmit, useResourceDetailData } from "@/features/admin/resources/hooks"
 import { createResourceEditOnSuccess } from "@/features/admin/resources/utils"
 import { apiRoutes } from "@/lib/api/routes"
 import { queryKeys } from "@/lib/query-keys"
-import { getBaseContactRequestFields, type ContactRequestFormData } from "../form-fields"
+import { getBaseContactRequestFields, getContactRequestFormSections, type ContactRequestFormData } from "../form-fields"
 import type { ContactStatus, ContactPriority } from "../types"
 
 interface ContactRequestEditData {
@@ -126,12 +126,14 @@ export const ContactRequestEditClient = ({
     return handleSubmit(data)
   }
 
-  const editFields = getBaseContactRequestFields(usersOptions)
+  const editFields: ResourceFormField<ContactRequestFormData>[] = getBaseContactRequestFields(usersOptions)
+  const formSections = getContactRequestFormSections()
 
   return (
     <ResourceForm<ContactRequestFormData>
       data={contactRequest}
       fields={editFields.map(field => ({ ...field, disabled: formDisabled || field.disabled }))}
+      sections={formSections}
       onSubmit={handleSubmitWrapper}
       title="Chỉnh sửa yêu cầu liên hệ"
       description={isDeleted ? "Bản ghi đã bị xóa, không thể chỉnh sửa" : `Cập nhật thông tin yêu cầu liên hệ: ${contactRequest?.subject || ""}`}

@@ -28,6 +28,8 @@ interface MultipleSelectComboboxProps<T> {
   error?: string
   onChange: (value: unknown) => void
   isPending?: boolean
+  disabled?: boolean
+  readOnly?: boolean
   fieldId?: string
   errorId?: string
 }
@@ -38,10 +40,14 @@ export const MultipleSelectCombobox = <T,>({
   error,
   onChange,
   isPending = false,
+  disabled = false,
+  readOnly = false,
   fieldId,
   errorId,
 }: MultipleSelectComboboxProps<T>) => {
   const [selectOpen, setSelectOpen] = useState(false)
+  const isDisabled = disabled || field.disabled || isPending
+  const isReadOnly = readOnly && !isDisabled
 
   const selectedValues = Array.isArray(fieldValue) 
     ? fieldValue.map(v => String(v))
@@ -100,6 +106,43 @@ export const MultipleSelectCombobox = <T,>({
     ? `${selectedOptions.length} mục đã chọn`
     : field.placeholder || "-- Chọn --"
 
+  // When readOnly, show plain text/badges instead of button
+  if (isReadOnly) {
+    return (
+      <Flex
+        id={fieldId || field.name as string}
+        align="center"
+        wrap
+        gap={1.5}
+        fullWidth
+        height="10"
+        rounded="md"
+        border="all"
+        bg="background"
+        paddingX={3}
+        paddingY={2}
+        className={cn(
+          error && "border-destructive",
+          "border-muted-foreground/20 cursor-default bg-muted/50 !opacity-100"
+        )}
+      >
+        {selectedOptions.length > 0 ? (
+          selectedOptions.map((option) => (
+            <Badge
+              key={option.value}
+              variant="secondary"
+              className="!opacity-100"
+            >
+              {option.label}
+            </Badge>
+          ))
+        ) : (
+          <TypographyPMuted className="!opacity-100">{displayText}</TypographyPMuted>
+        )}
+      </Flex>
+    )
+  }
+
   return (
     <Popover open={selectOpen} onOpenChange={setSelectOpen}>
       <PopoverTrigger asChild>
@@ -113,9 +156,10 @@ export const MultipleSelectCombobox = <T,>({
           className={cn(
             "w-full justify-between h-auto min-h-10 px-3 py-2",
             selectedValues.length === 0 && "text-muted-foreground",
-            error && "border-destructive"
+            error && "border-destructive",
+            isDisabled && "!opacity-100"
           )}
-          disabled={field.disabled || isPending}
+          disabled={isDisabled}
         >
           <Flex wrap align="center" gap={1.5} flex="1" minWidth="0">
             {selectedOptions.length > 0 ? (
@@ -126,14 +170,19 @@ export const MultipleSelectCombobox = <T,>({
                     key={option.value}
                     variant="secondary"
                     onClick={(e) => {
-                      e.stopPropagation()
-                      handleToggle(option.value)
+                      if (!isDisabled) {
+                        e.stopPropagation()
+                        handleToggle(option.value)
+                      }
                     }}
+                    className={cn(isDisabled && "cursor-default")}
                   >
                     {option.label}
-                    <IconSize size="xs">
-                      <X />
-                    </IconSize>
+                    {!isDisabled && (
+                      <IconSize size="xs">
+                        <X />
+                      </IconSize>
+                    )}
                   </Badge>
                 ))
               ) : (
@@ -145,7 +194,7 @@ export const MultipleSelectCombobox = <T,>({
             )}
           </Flex>
           <Flex align="center" gap={1} marginLeft={2} shrink>
-            {selectedValues.length > 0 && (
+            {selectedValues.length > 0 && !isDisabled && (
               <Flex
                 as="span"
                 role="button"
@@ -155,7 +204,7 @@ export const MultipleSelectCombobox = <T,>({
                 rounded="md"
                 height="auto"
                 cursor="pointer"
-                className="text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-auto w-auto p-0 hover:opacity-70"
+                className="text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:!opacity-100 hover:bg-accent hover:text-accent-foreground h-auto w-auto p-0 hover:opacity-70"
                 onClick={handleClear}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" || e.key === " ") {
@@ -170,9 +219,11 @@ export const MultipleSelectCombobox = <T,>({
                 </IconSize>
               </Flex>
             )}
-            <IconSize size="md">
-              <ChevronsUpDown />
-            </IconSize>
+            {!isDisabled && (
+              <IconSize size="md">
+                <ChevronsUpDown />
+              </IconSize>
+            )}
           </Flex>
         </Button>
       </PopoverTrigger>

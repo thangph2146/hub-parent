@@ -29,6 +29,12 @@ import { Flex } from "@/components/ui/flex";
 import { cn } from "@/lib/utils";
 import { useElementSize } from "@/hooks/use-element-size";
 import type { ResourceFormField } from "../resource-form";
+import {
+  type PermissionGroup,
+  type ParsedPermission,
+  parsePermissionGroups,
+  groupPermissionsByDisplayName,
+} from "./permissions-utils";
 
 interface PermissionsTableFieldProps<T> {
   field: ResourceFormField<T>;
@@ -38,23 +44,6 @@ interface PermissionsTableFieldProps<T> {
   isPending?: boolean;
   availablePermissions?: string[]; // Optional: permissions that user can assign
   readOnly?: boolean; // If true, hide action buttons and make it view-only
-}
-
-interface PermissionOption {
-  label: string;
-  value: string | number;
-}
-
-interface PermissionGroup {
-  label: string;
-  options: PermissionOption[];
-}
-
-interface ParsedPermission {
-  resource: string;
-  action: string;
-  fullValue: string;
-  displayLabel: string;
 }
 
 export const PermissionsTableField = <T,>({
@@ -105,51 +94,9 @@ export const PermissionsTableField = <T,>({
     return availablePermissions.includes(permissionValue);
   };
 
-  // Parse permissions từ groups và nhóm theo resource
+  // Parse permissions using shared utility
   const parsedGroups = useMemo(() => {
-    if (groups.length === 0) return [];
-    return groups.map((group) => {
-      const parsedPermissions: ParsedPermission[] = group.options.map(
-        (option) => {
-          const valueStr = String(option.value);
-          const [resource, action] = valueStr.split(":");
-          return {
-            resource,
-            action,
-            fullValue: valueStr,
-            displayLabel: option.label,
-          };
-        }
-      );
-
-      // Nhóm permissions theo resource
-      const resourceMap = new Map<string, ParsedPermission[]>();
-      parsedPermissions.forEach((perm) => {
-        if (!resourceMap.has(perm.resource)) {
-          resourceMap.set(perm.resource, []);
-        }
-        resourceMap.get(perm.resource)!.push(perm);
-      });
-
-      return {
-        groupLabel: group.label,
-        resources: Array.from(resourceMap.entries()).map(
-          ([resource, perms]) => ({
-            resource,
-            permissions: perms.sort((a, b) => {
-              // Sắp xếp: view, create, update, delete trước, sau đó các actions khác
-              const order = ["view", "create", "update", "delete"];
-              const aIndex = order.indexOf(a.action);
-              const bIndex = order.indexOf(b.action);
-              if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex;
-              if (aIndex !== -1) return -1;
-              if (bIndex !== -1) return 1;
-              return a.action.localeCompare(b.action);
-            }),
-          })
-        ),
-      };
-    });
+    return parsePermissionGroups(groups);
   }, [groups]);
 
   // Auto-expand all in read-only mode
@@ -294,14 +241,6 @@ export const PermissionsTableField = <T,>({
     onChange(newValues);
   };
 
-  const getPermissionDisplayName = (permission: ParsedPermission) => {
-    // Extract resource name from display label (format: "Action - Resource")
-    const parts = permission.displayLabel.split(" - ");
-    if (parts.length === 2) {
-      return parts[1]; // Return resource name
-    }
-    return permission.resource;
-  };
 
   // Calculate column widths based on table width
   const columnWidths = useMemo(() => {
@@ -346,7 +285,7 @@ export const PermissionsTableField = <T,>({
   }
 
   return (
-    <FieldContent className="items-start justify-start w-full gap-3">
+    <FieldContent className="items-start justify-start w-full gap-3 min-w-0">
       {/* Action Buttons - Only show in edit mode */}
       {!readOnly && (
         <Flex align="center" justify="between" fullWidth paddingX={1} gap={2}>
@@ -407,43 +346,14 @@ export const PermissionsTableField = <T,>({
         </Flex>
       )}
 
-      {/* Summary info for read-only mode */}
-      {readOnly && (
-        <Flex align="center" justify="between" fullWidth paddingX={1}>
-          <span className="text-sm text-muted-foreground">
-            {selectedValues.length} quyền đã được gán
-          </span>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={handleExpandAll}
-            disabled={parsedGroups.length === 0}
-            className="gap-2 h-7"
-          >
-            {allExpanded ? (
-              <>
-                <ChevronsUpDown className="h-3.5 w-3.5" />
-                Thu gọn
-              </>
-            ) : (
-              <>
-                <ChevronsDownUp className="h-3.5 w-3.5" />
-                Mở tất cả
-              </>
-            )}
-          </Button>
-        </Flex>
-      )}
-
       <div
         ref={tableRef}
         className={cn(
-          "rounded-lg border border-border bg-background overflow-hidden w-full shadow-sm",
+          "rounded-lg border border-border bg-background w-full shadow-sm",
           error && "border-destructive"
         )}
       >
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto overflow-y-visible -mx-1 px-1">
           <Table className="table-fixed w-full">
             <TableHeader>
               <TableRow className="bg-muted/50 hover:bg-muted/50 border-b border-border">
@@ -539,16 +449,8 @@ export const PermissionsTableField = <T,>({
                         const resourceKey = `${parsedGroup.groupLabel}-${resourceData.resource}`;
                         const isResourceOpen = openResources.has(resourceKey);
 
-                        // Group permissions by display name
-                        const permissionsByDisplay = resourceData.permissions.reduce(
-                          (map, perm) => {
-                            const displayName = getPermissionDisplayName(perm);
-                            if (!map.has(displayName)) map.set(displayName, []);
-                            map.get(displayName)!.push(perm);
-                            return map;
-                          },
-                          new Map<string, ParsedPermission[]>()
-                        );
+                        // Group permissions by display name using shared utility
+                        const permissionsByDisplay = groupPermissionsByDisplayName(resourceData.permissions);
 
                         return (
                           <React.Fragment key={resourceData.resource}>
@@ -600,12 +502,14 @@ export const PermissionsTableField = <T,>({
                                           disabled={
                                             field.disabled ||
                                             isPending ||
+                                            readOnly ||
                                             perms.length === 0 ||
                                             perms.every(
                                               (p) =>
                                                 !isPermissionAvailable(p.fullValue)
                                             )
                                           }
+                                          readOnly={readOnly}
                                           label={displayName}
                                         />
                                       </TableCell>
@@ -635,10 +539,16 @@ export const PermissionsTableField = <T,>({
                                                 disabled={
                                                   field.disabled ||
                                                   isPending ||
+                                                  readOnly ||
                                                   !isPermissionAvailable(
                                                     viewPerm.fullValue
                                                   )
                                                 }
+                                                data-readonly={readOnly ? "true" : undefined}
+                                                className={cn(
+                                                  readOnly && "!opacity-100 disabled:!opacity-100 [&:disabled]:!opacity-100 cursor-default bg-muted/30 border-muted-foreground/30",
+                                                  (field.disabled || isPending || readOnly) && !readOnly && "!opacity-100"
+                                                )}
                                               />
                                               <span className="text-xs text-foreground leading-relaxed select-none group-hover:text-foreground">
                                                 Xem
@@ -673,10 +583,16 @@ export const PermissionsTableField = <T,>({
                                                 disabled={
                                                   field.disabled ||
                                                   isPending ||
+                                                  readOnly ||
                                                   !isPermissionAvailable(
                                                     createPerm.fullValue
                                                   )
                                                 }
+                                                data-readonly={readOnly ? "true" : undefined}
+                                                className={cn(
+                                                  readOnly && "!opacity-100 disabled:!opacity-100 [&:disabled]:!opacity-100 cursor-default bg-muted/30 border-muted-foreground/30",
+                                                  (field.disabled || isPending || readOnly) && !readOnly && "!opacity-100"
+                                                )}
                                               />
                                               <span className="text-xs text-foreground leading-relaxed select-none group-hover:text-foreground">
                                                 Thêm
@@ -711,10 +627,16 @@ export const PermissionsTableField = <T,>({
                                                 disabled={
                                                   field.disabled ||
                                                   isPending ||
+                                                  readOnly ||
                                                   !isPermissionAvailable(
                                                     updatePerm.fullValue
                                                   )
                                                 }
+                                                data-readonly={readOnly ? "true" : undefined}
+                                                className={cn(
+                                                  readOnly && "!opacity-100 disabled:!opacity-100 [&:disabled]:!opacity-100 cursor-default bg-muted/30 border-muted-foreground/30",
+                                                  (field.disabled || isPending || readOnly) && !readOnly && "!opacity-100"
+                                                )}
                                               />
                                               <span className="text-xs text-foreground leading-relaxed select-none group-hover:text-foreground">
                                                 Sửa
@@ -749,10 +671,16 @@ export const PermissionsTableField = <T,>({
                                                 disabled={
                                                   field.disabled ||
                                                   isPending ||
+                                                  readOnly ||
                                                   !isPermissionAvailable(
                                                     deletePerm.fullValue
                                                   )
                                                 }
+                                                data-readonly={readOnly ? "true" : undefined}
+                                                className={cn(
+                                                  readOnly && "!opacity-100 disabled:!opacity-100 [&:disabled]:!opacity-100 cursor-default bg-muted/30 border-muted-foreground/30",
+                                                  (field.disabled || isPending || readOnly) && !readOnly && "!opacity-100"
+                                                )}
                                               />
                                               <span className="text-xs text-foreground leading-relaxed select-none group-hover:text-foreground">
                                                 Xóa
@@ -828,8 +756,14 @@ export const PermissionsTableField = <T,>({
                                                     disabled={
                                                       field.disabled ||
                                                       isPending ||
+                                                      readOnly ||
                                                       !isAvailable
                                                     }
+                                                    data-readonly={readOnly ? "true" : undefined}
+                                                    className={cn(
+                                                      readOnly && "!opacity-100 disabled:!opacity-100 [&:disabled]:!opacity-100 cursor-default bg-muted/30 border-muted-foreground/30",
+                                                      (field.disabled || isPending || readOnly) && !readOnly && "!opacity-100"
+                                                    )}
                                                     onClick={(e) =>
                                                       e.stopPropagation()
                                                     }
@@ -868,12 +802,14 @@ function ResourceCheckbox({
   indeterminate,
   onCheckedChange,
   disabled,
+  readOnly,
   label,
 }: {
   checked: boolean;
   indeterminate: boolean;
   onCheckedChange: (checked: boolean) => void;
   disabled?: boolean;
+  readOnly?: boolean;
   label: string;
 }) {
   const checkboxRef = useRef<React.ElementRef<typeof Checkbox>>(null);
@@ -896,6 +832,11 @@ function ResourceCheckbox({
         checked={checked}
         onCheckedChange={onCheckedChange}
         disabled={disabled}
+        data-readonly={readOnly ? "true" : undefined}
+        className={cn(
+          readOnly && "!opacity-100 disabled:!opacity-100 [&:disabled]:!opacity-100 cursor-default bg-muted/30 border-muted-foreground/30",
+          disabled && !readOnly && "!opacity-100"
+        )}
       />
       <span className="font-semibold text-sm text-foreground leading-relaxed">
         {label}

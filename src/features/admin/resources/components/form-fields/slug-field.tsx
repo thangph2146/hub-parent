@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, useCallback } from "react"
 import { FieldContent, FieldError } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { generateSlug } from "@/lib/utils/generate-slug"
+import { cn } from "@/lib/utils"
 import type { ResourceFormField } from "../resource-form"
 
 interface SlugFieldProps<T> {
@@ -12,6 +13,8 @@ interface SlugFieldProps<T> {
   error?: string
   onChange: (value: unknown) => void
   isPending?: boolean
+  disabled?: boolean
+  readOnly?: boolean
   sourceValue?: unknown 
 }
 
@@ -21,6 +24,8 @@ export const SlugField = <T,>({
   error,
   onChange,
   isPending = false,
+  disabled = false,
+  readOnly = false,
   sourceValue,
 }: SlugFieldProps<T>) => {
   const fieldValue = typeof value === "string" ? value : ""
@@ -96,6 +101,8 @@ export const SlugField = <T,>({
 
   const fieldId = field.name as string
   const errorId = error ? `${fieldId}-error` : undefined
+  const isDisabled = disabled || field.disabled || isPending
+  const isReadOnly = readOnly && !isDisabled
 
   return (
     <FieldContent>
@@ -107,10 +114,15 @@ export const SlugField = <T,>({
         onChange={handleChange}
         placeholder={field.placeholder}
         required={field.required}
-        disabled={field.disabled || isPending}
+        disabled={isDisabled && !isReadOnly}
+        readOnly={isReadOnly}
         aria-invalid={error ? "true" : "false"}
         aria-describedby={errorId || field.description ? `${fieldId}-description` : undefined}
-        className={error ? "border-destructive" : undefined}
+        className={cn(
+          error && "border-destructive",
+          isReadOnly && "!opacity-100 disabled:!opacity-100 [&:read-only]:!opacity-100 cursor-default bg-muted/50 border-muted-foreground/20",
+          isDisabled && !isReadOnly && "!opacity-100"
+        )}
       />
       {error && <FieldError id={errorId}>{error}</FieldError>}
     </FieldContent>

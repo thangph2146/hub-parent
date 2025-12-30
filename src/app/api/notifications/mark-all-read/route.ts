@@ -3,12 +3,12 @@
  */
 import { NextRequest } from "next/server"
 import { auth } from "@/lib/auth/auth"
-import { prisma } from "@/lib/database"
+import { prisma } from "@/lib/prisma"
 import { getSocketServer, getNotificationCache, mapNotificationToPayload } from "@/lib/socket/state"
 import { createErrorResponse, createSuccessResponse } from "@/lib/config"
 import { logger } from "@/lib/config/logger"
 import { isSuperAdmin } from "@/lib/permissions"
-import { buildOwnUnreadNotificationWhereClause, buildNotificationWhereClause, countUnreadNotificationsWithBreakdown } from "@/lib/notifications/count-helpers"
+import { buildOwnUnreadNotificationWhereClause, buildNotificationWhereClause, countUnreadNotificationsWithBreakdown } from "@/lib/utils"
 
 async function markAllAsReadHandler(_req: NextRequest) {
   const session = await auth()

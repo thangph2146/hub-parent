@@ -14,6 +14,7 @@ const flexVariants = cva("flex", {
       "row-md-col": "flex-row md:flex-col",
       "row-sm-col": "flex-row sm:flex-col",
       "col-lg-row-items-center": "flex-col lg:flex-row lg:items-center",
+      "row-lg-col-items-center": "flex-row lg:flex-col lg:items-center",
     },
     align: {
       start: "items-start",
@@ -32,6 +33,7 @@ const flexVariants = cva("flex", {
       evenly: "justify-evenly",
       normal: "justify-normal",
       "start-lg-end": "justify-start lg:justify-end",
+      "start-sm-end": "justify-start sm:justify-end",
     },
     gap: {
       0: "gap-0",
@@ -54,7 +56,7 @@ const flexVariants = cva("flex", {
       "2-lg-6": "gap-2 lg:gap-6",
       "4-lg-6": "gap-4 lg:gap-6",
       "4-lg-8": "gap-4 lg:gap-8",
-      "responsive": "gap-2 sm:gap-4 lg:gap-6",
+      "responsive": "gap-2 sm:gap-4 md:gap-5 lg:gap-6",
     },
     gapX: {
       none: "",
@@ -123,10 +125,10 @@ const flexVariants = cva("flex", {
       "pb-6": "pb-6",
       "pt-6": "pt-6",
       "mt-0.5": "mt-0.5",
-      "responsive": "px-4 sm:px-6 lg:px-8",
-      "responsive-y": "py-4 sm:py-6 lg:py-8",
-      "responsive-full": "px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8",
-      "responsive-lg": "px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16",
+      "responsive": "px-4 sm:px-6 md:px-7 lg:px-8 xl:px-9 2xl:px-10",
+      "responsive-y": "py-4 sm:py-6 md:py-6 lg:py-8 xl:py-10 2xl:py-10",
+      "responsive-full": "px-4 sm:px-6 md:px-7 lg:px-8 xl:px-9 2xl:px-10 py-4 sm:py-6 md:py-6 lg:py-8 xl:py-10 2xl:py-10",
+      "responsive-lg": "px-4 sm:px-6 md:px-7 lg:px-8 xl:px-9 2xl:px-10 py-8",
       "md-lg": "p-6 md:p-8",
       "sm-md": "p-4 sm:p-6",
     },
@@ -341,7 +343,7 @@ const flexVariants = cva("flex", {
       10: "px-10",
       12: "px-12",
       16: "px-16",
-      "responsive": "px-4 sm:px-6 lg:px-8",
+      "responsive": "px-4 sm:px-6 md:px-7 lg:px-8 xl:px-9 2xl:px-10",
     },
     paddingY: {
       none: "",
@@ -357,7 +359,7 @@ const flexVariants = cva("flex", {
       10: "py-10",
       12: "py-12",
       16: "py-16",
-      "responsive": "py-4 sm:py-6 lg:py-8",
+      "responsive": "py-4 sm:py-6 md:py-6 lg:py-8 xl:py-10 2xl:py-10",
     },
     paddingTop: {
       none: "",

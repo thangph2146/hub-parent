@@ -4,7 +4,7 @@ import * as React from "react"
 import * as DropdownMenuPrimitive from "@radix-ui/react-dropdown-menu"
 import { CheckIcon, ChevronRightIcon, CircleIcon } from "lucide-react"
 
-import { cn } from "@/lib/utils/index"
+import { cn } from "@/lib/utils"
 import { responsiveTextSizes, fontWeights, lineHeights, iconSizes } from "@/lib/typography"
 
 const dropdownMenuBodySmall = `${responsiveTextSizes.small} ${fontWeights.normal} ${lineHeights.relaxed}`

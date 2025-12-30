@@ -1,21 +1,15 @@
 "use client"
 
-import { Tag, Hash, Calendar, Clock, Edit } from "lucide-react"
-import { 
-  ResourceDetailClient, 
-  FieldItem,
-  type ResourceDetailField, 
-  type ResourceDetailSection 
-} from "@/features/admin/resources/components"
+import { Edit } from "lucide-react"
+import { ResourceForm } from "@/features/admin/resources/components"
 import { Button } from "@/components/ui/button"
 import { queryKeys } from "@/lib/query-keys"
-import { formatDateVi } from "../utils"
 import { useResourceNavigation, useResourceDetailData, useResourceDetailLogger } from "@/features/admin/resources/hooks"
 import { usePermissions } from "@/hooks/use-permissions"
 import { PERMISSIONS } from "@/lib/permissions"
-import { TypographyP, IconSize } from "@/components/ui/typography"
-import { Grid } from "@/components/ui/grid"
+import { IconSize } from "@/components/ui/typography"
 import { Flex } from "@/components/ui/flex"
+import { getBaseTagFields, getTagFormSections, type TagFormData } from "../form-fields"
 
 export interface TagDetailData {
   id: string
@@ -59,63 +53,38 @@ export const TagDetailClient = ({ tagId, tag, backUrl = "/admin/tags" }: TagDeta
     fetchedData,
   })
 
-  const detailFields: ResourceDetailField<TagDetailData>[] = []
-
-  const detailSections: ResourceDetailSection<TagDetailData>[] = [
-    {
-      id: "basic",
-      title: "Thông tin cơ bản",
-      description: "Thông tin chính về thẻ tag và thời gian",
-      fieldsContent: (_fields, data) => {
-        const tagData = data as TagDetailData
-        
-        return (
-          <Grid cols={2} gap={6}>
-            {/* Name & Slug */}
-            <FieldItem icon={Tag} label="Tên thẻ tag">
-              <TypographyP>
-                {tagData.name || "—"}
-              </TypographyP>
-            </FieldItem>
-
-            <FieldItem icon={Hash} label="Slug">
-              <TypographyP className="font-mono">
-                {tagData.slug || "—"}
-              </TypographyP>
-            </FieldItem>
-
-            {/* Timestamps */}
-            <FieldItem icon={Calendar} label="Ngày tạo">
-              <TypographyP>
-                {tagData.createdAt ? formatDateVi(tagData.createdAt) : "—"}
-              </TypographyP>
-            </FieldItem>
-
-            <FieldItem icon={Clock} label="Cập nhật lần cuối">
-              <TypographyP>
-                {tagData.updatedAt ? formatDateVi(tagData.updatedAt) : "—"}
-              </TypographyP>
-            </FieldItem>
-          </Grid>
-        )
-      },
-    },
-  ]
-
+  const fields = getBaseTagFields()
+  const sections = getTagFormSections()
   const isDeleted = detailData.deletedAt !== null && detailData.deletedAt !== undefined
 
   return (
-    <ResourceDetailClient<TagDetailData>
-      data={detailData}
-      fields={detailFields}
-      detailSections={detailSections}
-      title={detailData.name}
-      description={`Chi tiết thẻ tag ${detailData.slug}`}
-      backUrl={backUrl}
-      backLabel="Quay lại danh sách"
-      onBack={() => navigateBack(backUrl)}
-      actions={
-        !isDeleted && canUpdate ? (
+    <>
+      <ResourceForm<TagFormData>
+        data={detailData as TagFormData}
+        fields={fields}
+        sections={sections}
+        title={detailData.name}
+        description={`Chi tiết thẻ tag ${detailData.slug}`}
+        backUrl={backUrl}
+        backLabel="Quay lại danh sách"
+        onBack={() => navigateBack(backUrl)}
+        readOnly={true}
+        showCard={false}
+        onSubmit={async () => ({ success: false, error: "Read-only mode" })}
+        resourceName="tags"
+        resourceId={tagId}
+        action="update"
+      />
+      {!isDeleted && canUpdate && (
+        <Flex
+          align="center"
+          justify="end"
+          gap={2}
+          fullWidth
+          paddingY={2}
+          border="top"
+          className="sticky bottom-0 bg-background/95 backdrop-blur-sm z-10"
+        >
           <Button
             variant="outline"
             onClick={() => router.push(`/admin/tags/${tagId}/edit`)}
@@ -127,9 +96,9 @@ export const TagDetailClient = ({ tagId, tag, backUrl = "/admin/tags" }: TagDeta
               Chỉnh sửa
             </Flex>
           </Button>
-        ) : null
-      }
-    />
+        </Flex>
+      )}
+    </>
   )
 }
 

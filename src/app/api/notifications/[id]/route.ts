@@ -6,7 +6,7 @@
 import { NextRequest } from "next/server"
 import { auth } from "@/lib/auth/auth"
 import { deleteNotification } from "@/features/admin/notifications/server/mutations"
-import { prisma } from "@/lib/database"
+import { prisma } from "@/lib/prisma"
 import { getSocketServer } from "@/lib/socket/state"
 import { mapNotificationToPayload } from "@/lib/socket/state"
 import { createErrorResponse, createSuccessResponse } from "@/lib/config"

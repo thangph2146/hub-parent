@@ -2,11 +2,6 @@ import type { ResourceFormField, ResourceFormSection } from "@/features/admin/re
 import { validateStudentCode, validateName, validateEmail } from "./utils"
 import React from "react"
 import { User, Mail, Hash, ToggleLeft } from "lucide-react"
-import { IconSize } from "@/components/ui/typography"
-
-// Helper function to create icon with IconSize wrapper
-const createIcon = (Icon: React.ComponentType<{ className?: string }>) =>
-  React.createElement(IconSize, { size: "sm" as const, children: React.createElement(Icon) } as React.ComponentProps<typeof IconSize>)
 
 export interface StudentFormData {
   studentCode: string
@@ -46,7 +41,7 @@ export const getBaseStudentFields = (
       required: true,
       description: "Mã sinh viên (chữ cái, số, dấu gạch dưới và dấu gạch ngang)",
       validate: validateStudentCode,
-      icon: createIcon(Hash),
+      icon: React.createElement(Hash, { className: "h-4 w-4" }),
       section: "basic",
     },
     {
@@ -57,7 +52,7 @@ export const getBaseStudentFields = (
       required: false,
       description: "Tên đầy đủ của sinh viên",
       validate: (value) => (!value || value === "" ? { valid: true } : validateName(value)),
-      icon: createIcon(User),
+      icon: React.createElement(User, { className: "h-4 w-4" }),
       section: "basic",
     },
     {
@@ -68,7 +63,7 @@ export const getBaseStudentFields = (
       required: false,
       description: "Email của sinh viên",
       validate: (value) => (!value || value === "" ? { valid: true } : validateEmail(value)),
-      icon: createIcon(Mail),
+      icon: React.createElement(Mail, { className: "h-4 w-4" }),
       section: "basic",
     },
   ]
@@ -82,7 +77,7 @@ export const getBaseStudentFields = (
       placeholder: "Chọn tài khoản người dùng",
       options: usersOptions || [],
       description: "Liên kết sinh viên với tài khoản người dùng (tùy chọn)",
-      icon: createIcon(User),
+      icon: React.createElement(User, { className: "h-4 w-4" }),
       section: "basic",
     })
   }
@@ -95,7 +90,7 @@ export const getBaseStudentFields = (
       description: "Bật/tắt để kích hoạt hoặc vô hiệu hóa sinh viên. Mặc định là tắt (cần xét duyệt)",
       type: "switch",
       defaultValue: false, // Mặc định false, cần xét duyệt
-      icon: createIcon(ToggleLeft),
+      icon: React.createElement(ToggleLeft, { className: "h-4 w-4" }),
       section: "status",
     })
   }

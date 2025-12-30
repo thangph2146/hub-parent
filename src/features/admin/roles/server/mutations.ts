@@ -2,7 +2,7 @@
 
 import type { Prisma } from "@prisma/client";
 import { PERMISSIONS, canPerformAnyAction } from "@/lib/permissions";
-import { prisma } from "@/lib/database";
+import { prisma } from "@/lib/prisma";
 import { mapRoleRecord, type ListedRole } from "./queries";
 import {
   CreateRoleSchema,

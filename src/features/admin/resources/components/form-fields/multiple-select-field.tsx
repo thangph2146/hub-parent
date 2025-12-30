@@ -10,6 +10,8 @@ interface MultipleSelectFieldProps<T> {
   error?: string
   onChange: (value: unknown) => void
   isPending?: boolean
+  disabled?: boolean
+  readOnly?: boolean
 }
 
 export const MultipleSelectField = <T,>({
@@ -18,6 +20,8 @@ export const MultipleSelectField = <T,>({
   error,
   onChange,
   isPending = false,
+  disabled = false,
+  readOnly = false,
 }: MultipleSelectFieldProps<T>) => {
   const fieldId = field.name as string
   const errorId = error ? `${fieldId}-error` : undefined
@@ -30,6 +34,8 @@ export const MultipleSelectField = <T,>({
         error={error}
         onChange={onChange}
         isPending={isPending}
+        disabled={disabled}
+        readOnly={readOnly}
         fieldId={fieldId}
         errorId={errorId}
       />

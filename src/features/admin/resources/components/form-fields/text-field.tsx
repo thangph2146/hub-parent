@@ -16,6 +16,8 @@ interface TextFieldProps<T> {
   error?: string
   onChange: (value: unknown) => void
   isPending?: boolean
+  disabled?: boolean
+  readOnly?: boolean
 }
 
 export const TextField = <T,>({
@@ -24,12 +26,16 @@ export const TextField = <T,>({
   error,
   onChange,
   isPending = false,
+  disabled = false,
+  readOnly = false,
 }: TextFieldProps<T>) => {
   const fieldValue = value ?? ""
   const isPassword = field.type === "password"
   const [showPassword, setShowPassword] = React.useState(false)
   const fieldId = field.name as string
   const errorId = error ? `${fieldId}-error` : undefined
+  const isDisabled = disabled || field.disabled || isPending
+  const isReadOnly = readOnly && !isDisabled
 
   return (
     <FieldContent>
@@ -42,12 +48,15 @@ export const TextField = <T,>({
           onChange={(e) => onChange(e.target.value)}
           placeholder={field.placeholder}
           required={field.required}
-          disabled={field.disabled || isPending}
+          disabled={isDisabled && !isReadOnly}
+          readOnly={isReadOnly}
           aria-invalid={error ? "true" : "false"}
           aria-describedby={errorId || field.description ? `${fieldId}-description` : undefined}
           className={cn(
             error && "border-destructive",
-            isPassword && "pr-10"
+            isPassword && "pr-10",
+            isReadOnly && "!opacity-100 disabled:!opacity-100 [&:read-only]:!opacity-100 cursor-default bg-muted/50 border-muted-foreground/20",
+            isDisabled && !isReadOnly && "!opacity-100"
           )}
         />
         {isPassword && (
@@ -55,9 +64,9 @@ export const TextField = <T,>({
             type="button"
             variant="ghost"
             size="sm"
-            className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+            className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent disabled:!opacity-100"
             onClick={() => setShowPassword(!showPassword)}
-            disabled={field.disabled || isPending}
+            disabled={isDisabled || isReadOnly}
             aria-label={showPassword ? "Ẩn mật khẩu" : "Hiển thị mật khẩu"}
           >
             {showPassword ? (

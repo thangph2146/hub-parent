@@ -2,7 +2,7 @@
 
 import { useEffect } from "react"
 import type { Message } from "../types"
-import { formatMessageTime } from "../utils"
+import { formatMessageTime } from "../utils/date-helpers"
 import { highlightText } from "../utils/text-helpers"
 import { isMessageReadByUser } from "../utils/message-helpers"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"

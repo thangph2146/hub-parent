@@ -20,6 +20,7 @@ export interface ImageFieldProps {
   placeholder?: string
   error?: string
   disabled?: boolean
+  readOnly?: boolean
   fieldId?: string
 }
 
@@ -29,12 +30,15 @@ export const ImageField = ({
   placeholder = "https://example.com/image.jpg",
   error,
   disabled = false,
+  readOnly = false,
   fieldId = "image",
 }: ImageFieldProps) => {
   const imageUrl = typeof value === "string" ? value : ""
   const hasImage = imageUrl && imageUrl.trim() !== ""
   const [imageError, setImageError] = useState(false)
   const errorId = error ? `${fieldId}-error` : undefined
+  const isDisabled = disabled
+  const isReadOnly = readOnly && !isDisabled
 
   return (
     <FieldContent>
@@ -49,12 +53,18 @@ export const ImageField = ({
               setImageError(false)
             }}
             placeholder={placeholder}
-            className={cn("flex-1 min-w-0", error && "border-destructive")}
-            disabled={disabled}
+            className={cn(
+              "flex-1 min-w-0",
+              error && "border-destructive",
+              isReadOnly && "!opacity-100 disabled:!opacity-100 [&:read-only]:!opacity-100 cursor-default bg-muted/50 border-muted-foreground/20",
+              isDisabled && !isReadOnly && "!opacity-100"
+            )}
+            disabled={isDisabled && !isReadOnly}
+            readOnly={isReadOnly}
             aria-invalid={error ? "true" : "false"}
             aria-describedby={errorId}
           />
-          {hasImage && (
+          {hasImage && !isReadOnly && (
             <Button
               type="button"
               variant="outline"
@@ -63,8 +73,8 @@ export const ImageField = ({
                 onChange("")
                 setImageError(false)
               }}
-              className="shrink-0"
-              disabled={disabled}
+              className="shrink-0 disabled:!opacity-100"
+              disabled={isDisabled}
               aria-label="Xóa hình ảnh"
             >
               <IconSize size="sm">
