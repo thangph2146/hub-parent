@@ -58,33 +58,20 @@ export const TagDetailClient = ({ tagId, tag, backUrl = "/admin/tags" }: TagDeta
   const isDeleted = detailData.deletedAt !== null && detailData.deletedAt !== undefined
 
   return (
-    <>
-      <ResourceForm<TagFormData>
-        data={detailData as TagFormData}
-        fields={fields}
-        sections={sections}
-        title={detailData.name}
-        description={`Chi tiết thẻ tag ${detailData.slug}`}
-        backUrl={backUrl}
-        backLabel="Quay lại danh sách"
-        onBack={() => navigateBack(backUrl)}
-        readOnly={true}
-        showCard={false}
-        onSubmit={async () => ({ success: false, error: "Read-only mode" })}
-        resourceName="tags"
-        resourceId={tagId}
-        action="update"
-      />
-      {!isDeleted && canUpdate && (
-        <Flex
-          align="center"
-          justify="end"
-          gap={2}
-          fullWidth
-          paddingY={2}
-          border="top"
-          className="sticky bottom-0 bg-background/95 backdrop-blur-sm z-10"
-        >
+    <ResourceForm<TagFormData>
+      data={detailData as TagFormData}
+      fields={fields}
+      sections={sections}
+      title={detailData.name}
+      description={`Chi tiết thẻ tag ${detailData.slug}`}
+      backUrl={backUrl}
+      backLabel="Quay lại danh sách"
+      onBack={() => navigateBack(backUrl)}
+      readOnly={true}
+      showCard={false}
+      onSubmit={async () => ({ success: false, error: "Read-only mode" })}
+      footerButtons={
+        !isDeleted && canUpdate ? (
           <Button
             variant="outline"
             onClick={() => router.push(`/admin/tags/${tagId}/edit`)}
@@ -96,9 +83,12 @@ export const TagDetailClient = ({ tagId, tag, backUrl = "/admin/tags" }: TagDeta
               Chỉnh sửa
             </Flex>
           </Button>
-        </Flex>
-      )}
-    </>
+        ) : null
+      }
+      resourceName="tags"
+      resourceId={tagId}
+      action="update"
+    />
   )
 }
 

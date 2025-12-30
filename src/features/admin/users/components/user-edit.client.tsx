@@ -94,6 +94,8 @@ export const UserEditClient = ({
         ...data,
         roleIds: normalizeRoleIds(data.roleIds),
       }
+      // Không cho phép thay đổi email khi chỉnh sửa
+      delete submitData.email
       if (!submitData.password || submitData.password === "") {
         delete submitData.password
       }
@@ -131,6 +133,14 @@ export const UserEditClient = ({
   const baseFields = getBaseUserFields(roles, roleDefaultValue) as unknown as ResourceFormField<UserEditData>[]
   const isEditingSuperAdmin = user?.email === PROTECTED_SUPER_ADMIN_EMAIL
   const editFields = baseFields.map((field) => {
+    // Disable email field khi chỉnh sửa (không cho phép thay đổi email)
+    if (field.name === "email") {
+      return {
+        ...field,
+        disabled: true,
+        description: "Email không thể thay đổi sau khi tạo tài khoản",
+      }
+    }
     if (field.name === "isActive" && isEditingSuperAdmin && user?.isActive) {
       return {
         ...field,

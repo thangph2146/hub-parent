@@ -310,7 +310,7 @@ export function PublicHeader() {
           <Flex direction="col" height="full">
             {/* User Section - Top */}
             {isAuthenticated ? (
-              <Flex direction="col" border="bottom" padding="lg-y" marginBottom={4} fullWidth>
+              <Flex direction="col" border="bottom" padding="lg-y" className="mb-4" fullWidth>
                 <NavUser className="w-full" />
               </Flex>
             ) : (

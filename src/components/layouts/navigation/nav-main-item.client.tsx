@@ -146,6 +146,7 @@ export function NavMainItem({
                     variant="destructive" 
                     shrink
                     suppressHydrationWarning
+                    className="text-xs font-semibold min-w-[1.5rem] h-6 px-2 flex items-center justify-center"
                   >
                     {badgeCount > 99 ? "99+" : badgeCount}
                   </Badge>
@@ -166,6 +167,7 @@ export function NavMainItem({
                     variant="destructive" 
                     shrink
                     suppressHydrationWarning
+                    className="text-xs font-semibold min-w-[1.5rem] h-6 px-2 flex items-center justify-center"
                   >
                     {badgeCount > 99 ? "99+" : badgeCount}
                   </Badge>

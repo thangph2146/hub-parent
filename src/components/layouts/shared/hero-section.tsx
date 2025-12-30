@@ -264,7 +264,7 @@ export const HeroSection: React.FC = () => {
           }}
         />
 
-        <Flex as="main" flex="1" paddingX={4} position="relative" className="z-10 pt-32 pb-16">
+        <Flex as="main" flex="1" position="relative" className="z-10 pt-32 pb-16 px-4">
           <Flex direction="col" align="center" justify="center" gap={6} textAlign="center" height="full">
         <motion.h1
           variants={headlineVariants}

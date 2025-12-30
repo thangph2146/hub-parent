@@ -154,70 +154,54 @@ export const ContactRequestDetailClient = ({ contactRequestId, contactRequest, b
   const isDeleted = detailData.deletedAt !== null && detailData.deletedAt !== undefined
 
   return (
-    <>
-      <ResourceForm<ContactRequestFormData>
-        data={detailData as ContactRequestFormData}
-        fields={fields}
-        sections={sections}
-        title={detailData.subject}
-        description={`Yêu cầu liên hệ từ ${detailData.name}`}
-        backUrl={backUrl}
-        backLabel="Quay lại danh sách"
-        readOnly={true}
-        showCard={false}
-        onSubmit={async () => ({ success: false, error: "Read-only mode" })}
-        resourceName="contact-requests"
-        resourceId={contactRequestId}
-        action="update"
-      />
-      
-      {/* Custom Read Status Toggle */}
-      <Flex
-        align="center"
-        justify="between"
-        gap={2}
-        fullWidth
-        paddingY={3}
-        paddingX={4}
-        border="top"
-        className="bg-muted/30"
-      >
-        <Flex align="center" gap={3}>
-          <IconSize size="sm">
-            {detailData.isRead ? <CheckCircle2 className="text-green-600" /> : <XCircle className="text-amber-600" />}
-          </IconSize>
-          <Flex direction="col" gap={0.5}>
-            <TypographyPMuted className="font-medium">Trạng thái đọc</TypographyPMuted>
-            <TypographyPSmallMuted>
-              {detailData.isRead ? CONTACT_REQUEST_LABELS.READ : CONTACT_REQUEST_LABELS.UNREAD}
-            </TypographyPSmallMuted>
-          </Flex>
-        </Flex>
-        <Flex align="center" gap={3}>
-          <Switch
-            checked={detailData.isRead}
-            disabled={isToggling || togglingRequests.has(contactRequestId) || !canUpdate}
-            onCheckedChange={handleToggleReadStatus}
-            aria-label={detailData.isRead ? "Đánh dấu chưa đọc" : "Đánh dấu đã đọc"}
-          />
-          {!canUpdate && (
-            <TypographyPSmallMuted>
-              Bạn không có quyền thay đổi
-            </TypographyPSmallMuted>
-          )}
-        </Flex>
-      </Flex>
-
-      {!isDeleted && canUpdate && (
+    <ResourceForm<ContactRequestFormData>
+      data={detailData as ContactRequestFormData}
+      fields={fields}
+      sections={sections}
+      title={detailData.subject}
+      description={`Yêu cầu liên hệ từ ${detailData.name}`}
+      backUrl={backUrl}
+      backLabel="Quay lại danh sách"
+      readOnly={true}
+      showCard={false}
+      onSubmit={async () => ({ success: false, error: "Read-only mode" })}
+      suffixContent={
         <Flex
           align="center"
-          justify="end"
+          justify="between"
           gap={2}
           fullWidth
-          paddingY={2}
           border="top"
-          className="sticky bottom-0 bg-background/95 backdrop-blur-sm z-10"
+          padding="sm-y"
         >
+          <Flex align="center" gap={3}>
+            <IconSize size="sm">
+              {detailData.isRead ? <CheckCircle2 className="text-green-600" /> : <XCircle className="text-amber-600" />}
+            </IconSize>
+            <Flex direction="col" gap={0.5}>
+              <TypographyPMuted className="font-medium">Trạng thái đọc</TypographyPMuted>
+              <TypographyPSmallMuted>
+                {detailData.isRead ? CONTACT_REQUEST_LABELS.READ : CONTACT_REQUEST_LABELS.UNREAD}
+              </TypographyPSmallMuted>
+            </Flex>
+          </Flex>
+          <Flex align="center" gap={3}>
+            <Switch
+              checked={detailData.isRead}
+              disabled={isToggling || togglingRequests.has(contactRequestId) || !canUpdate}
+              onCheckedChange={handleToggleReadStatus}
+              aria-label={detailData.isRead ? "Đánh dấu chưa đọc" : "Đánh dấu đã đọc"}
+            />
+            {!canUpdate && (
+              <TypographyPSmallMuted>
+                Bạn không có quyền thay đổi
+              </TypographyPSmallMuted>
+            )}
+          </Flex>
+        </Flex>
+      }
+      footerButtons={
+        !isDeleted && canUpdate ? (
           <Button
             variant="outline"
             onClick={() => router.push(`/admin/contact-requests/${contactRequestId}/edit`)}
@@ -229,9 +213,12 @@ export const ContactRequestDetailClient = ({ contactRequestId, contactRequest, b
               Chỉnh sửa
             </Flex>
           </Button>
-        </Flex>
-      )}
-    </>
+        ) : null
+      }
+      resourceName="contact-requests"
+      resourceId={contactRequestId}
+      action="update"
+    />
   )
 }
 

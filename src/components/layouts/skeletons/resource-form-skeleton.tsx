@@ -123,8 +123,8 @@ export function ResourceFormSkeleton({
         <SheetContent>
           <Flex direction="col" fullWidth flex="1">
             <SheetHeader>{headerContent}</SheetHeader>
-            <Flex flex="1" overflow="auto" fullWidth paddingX={6} marginTop={6}>
-              <Flex paddingX={4} fullWidth>
+            <Flex flex="1" overflow="auto" fullWidth className="px-6 mt-6">
+              <Flex className="px-4" fullWidth>
                 {formFields}
               </Flex>
             </Flex>
@@ -158,7 +158,7 @@ export function ResourceFormSkeleton({
   return (
     <Flex direction="col" gap={6} flex="1" fullWidth marginX="auto" padding="md">
       {title && (
-        <Flex direction="col-lg-row-items-center" justify="between" gap={4} fullWidth paddingBottom={4} border="b-border">
+        <Flex direction="col-lg-row-items-center" justify="between" gap={4} fullWidth className="pb-4" border="b-border">
           <Flex direction="col" gap={2} fullWidth flex="1" minWidth="0">
             <Skeleton className="h-6 w-32" />
             <Skeleton className="h-8 w-64" />
@@ -169,7 +169,7 @@ export function ResourceFormSkeleton({
 
       {formContent}
 
-      <Flex align="center" justify="end" gap={3} fullWidth paddingY={4} border="top">
+      <Flex align="center" justify="end" gap={3} fullWidth className="py-4" border="top">
         {footerContent}
       </Flex>
     </Flex>

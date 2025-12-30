@@ -164,7 +164,7 @@ export function NotificationItem({
       }}
     >
       <Flex align="start" gap={3}>
-        <Flex marginTop={0.5} shrink>
+        <Flex className="mt-0.5" shrink>
           <IconSize
             size="md"
             className={cn(

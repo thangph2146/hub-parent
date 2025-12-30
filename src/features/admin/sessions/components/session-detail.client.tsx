@@ -65,32 +65,19 @@ export const SessionDetailClient = ({ sessionId, session, backUrl = "/admin/sess
   const isDeleted = detailData.deletedAt !== null && detailData.deletedAt !== undefined
 
   return (
-    <>
-      <ResourceForm<SessionFormData>
-        data={detailData as SessionFormData}
-        fields={fields}
-        sections={sections}
-        title={`Session ${detailData.userName || detailData.userEmail || detailData.id}`}
-        description={`Chi tiết phiên đăng nhập của ${session.userName || session.userEmail || "người dùng"}`}
-        backUrl={backUrl}
-        backLabel="Quay lại danh sách"
-        readOnly={true}
-        showCard={false}
-        onSubmit={async () => ({ success: false, error: "Read-only mode" })}
-        resourceName="sessions"
-        resourceId={sessionId}
-        action="update"
-      />
-      {!isDeleted && canUpdate && (
-        <Flex
-          align="center"
-          justify="end"
-          gap={2}
-          fullWidth
-          paddingY={2}
-          border="top"
-          className="sticky bottom-0 bg-background/95 backdrop-blur-sm z-10"
-        >
+    <ResourceForm<SessionFormData>
+      data={detailData as SessionFormData}
+      fields={fields}
+      sections={sections}
+      title={`Session ${detailData.userName || detailData.userEmail || detailData.id}`}
+      description={`Chi tiết phiên đăng nhập của ${session.userName || session.userEmail || "người dùng"}`}
+      backUrl={backUrl}
+      backLabel="Quay lại danh sách"
+      readOnly={true}
+      showCard={false}
+      onSubmit={async () => ({ success: false, error: "Read-only mode" })}
+      footerButtons={
+        !isDeleted && canUpdate ? (
           <Button
             variant="outline"
             onClick={() => router.push(`/admin/sessions/${sessionId}/edit`)}
@@ -102,9 +89,12 @@ export const SessionDetailClient = ({ sessionId, session, backUrl = "/admin/sess
               Chỉnh sửa
             </Flex>
           </Button>
-        </Flex>
-      )}
-    </>
+        ) : null
+      }
+      resourceName="sessions"
+      resourceId={sessionId}
+      action="update"
+    />
   )
 }
 

@@ -22,11 +22,11 @@ export function ModeToggle() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="icon">
-          <IconSize size="md" className="scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90">
+        <Button variant="outline" size="icon" className="group">
+          <IconSize size="md" className="scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90 group-hover:text-primary-foreground">
             <Sun />
           </IconSize>
-          <IconSize size="md" className="absolute scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0">
+          <IconSize size="md" className="absolute scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0 group-hover:text-primary-foreground">
             <Moon />
           </IconSize>
           <span className="sr-only">Chuyển đổi theme</span>

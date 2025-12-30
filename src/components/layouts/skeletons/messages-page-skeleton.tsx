@@ -19,7 +19,7 @@ export function MessagesPageSkeleton() {
     >
       {/* Chat window */}
       <Flex direction="col" flex="1" fullWidth>
-        <Flex align="center" justify="between" border="bottom" paddingX={4} paddingY={3} fullWidth>
+        <Flex align="center" justify="between" border="bottom" className="px-4 py-3" fullWidth>
           <Flex align="center" gap={3}>
             <Skeleton className="h-10 w-10 rounded-full" />
             <Flex direction="col" gap={1}>
@@ -49,7 +49,7 @@ export function MessagesPageSkeleton() {
           </Flex>
         </Flex>
 
-        <Flex align="center" gap={3} fullWidth border="top" paddingX={4} paddingY={3}>
+        <Flex align="center" gap={3} fullWidth border="top" className="px-4 py-3">
           <Skeleton className="h-12 flex-1 rounded-2xl" />
           <Skeleton className="h-10 w-10 rounded-full shrink" />
         </Flex>

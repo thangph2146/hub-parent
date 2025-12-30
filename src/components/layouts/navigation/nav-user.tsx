@@ -440,7 +440,7 @@ export function NavUser({ className }: { className?: string }) {
                           {showBadge && (
                             <Badge
                               variant="destructive"
-                              className="ml-auto shrink-0"
+                              className="ml-auto shrink-0 text-xs font-semibold min-w-[1.5rem] h-6 px-2 flex items-center justify-center"
                             >
                               {(item.badgeCount ?? 0) > 99
                                 ? "99+"
@@ -561,7 +561,7 @@ export function NavUser({ className }: { className?: string }) {
         <DropdownMenuTrigger asChild>
           <Button
             variant="ghost"
-            className={cn("px-2", className)}
+            className={cn("px-2 group", className)}
             suppressHydrationWarning
           >
             <Flex align="center" gap={2}>
@@ -575,7 +575,7 @@ export function NavUser({ className }: { className?: string }) {
               <TypographySpanMuted className="inline-block truncate max-w-[120px]" suppressHydrationWarning>
                 {user.name || user.email}
               </TypographySpanMuted>
-              <IconSize size="md" className="opacity-50">
+              <IconSize size="md" className="opacity-50 group-hover:text-primary-foreground group-hover:opacity-100 transition-colors duration-200">
                 <ChevronsUpDown />
               </IconSize>
             </Flex>

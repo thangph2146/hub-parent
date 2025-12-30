@@ -2,6 +2,30 @@ import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
+// Shared utilities
+const numberToRem = (value: number): string => `${value * 0.25}rem`
+const isStandardFlex = (value: string): boolean => 
+  ["normal", "none", "1", "auto", "initial"].includes(value)
+
+// Shared valid values constants
+const VALID_SPACING_VALUES = [0, 0.5, 1, 2, 3, 4, 5, 6, 8, 10, 12, 16] as const
+const VALID_GAP_VALUES = [0, 0.5, 1, 1.5, 2, 3, 4, 5, 6, 8, 12, 16] as const
+const VALID_SPACING_STRING_VALUES = ["0", "0.5", "1", "2", "3", "4", "5", "6", "8", "10", "12", "16"] as const
+
+// Generate spacing variants (padding/margin)
+const createSpacingVariants = (prefix: "p" | "px" | "py" | "pt" | "pb" | "mx" | "my" | "mt" | "mb" | "ml" | "mr") => {
+  const base: Record<string, string> = { none: "" }
+  VALID_SPACING_VALUES.forEach(v => base[v] = `${prefix}-${v}`)
+  return base
+}
+
+// Generate gap variants for gapX/gapY
+const createGapVariants = (prefix: string) => {
+  const variants: Record<string, string> = {}
+  VALID_GAP_VALUES.forEach(v => variants[String(v)] = `${prefix}-${v}`)
+  return variants
+}
+
 const flexVariants = cva("flex", {
   variants: {
     direction: {
@@ -36,18 +60,18 @@ const flexVariants = cva("flex", {
       "start-sm-end": "justify-start sm:justify-end",
     },
     gap: {
-      0: "gap-0",
-      0.5: "gap-0.5",
-      1: "gap-1",
-      1.5: "gap-1.5",
-      2: "gap-2",
-      3: "gap-3",
-      4: "gap-4",
-      5: "gap-5",
-      6: "gap-6",
-      8: "gap-8",
-      12: "gap-12",
-      16: "gap-16",
+      "0": "gap-0",
+      "0.5": "gap-0.5",
+      "1": "gap-1",
+      "1.5": "gap-1.5",
+      "2": "gap-2",
+      "3": "gap-3",
+      "4": "gap-4",
+      "5": "gap-5",
+      "6": "gap-6",
+      "8": "gap-8",
+      "12": "gap-12",
+      "16": "gap-16",
       small: "gap-2",
       middle: "gap-4",
       large: "gap-8",
@@ -56,38 +80,10 @@ const flexVariants = cva("flex", {
       "2-lg-6": "gap-2 lg:gap-6",
       "4-lg-6": "gap-4 lg:gap-6",
       "4-lg-8": "gap-4 lg:gap-8",
-      "responsive": "gap-2 sm:gap-4 md:gap-5 lg:gap-6",
+      responsive: "gap-2 sm:gap-4 md:gap-5 lg:gap-6",
     },
-    gapX: {
-      none: "",
-      0: "gap-x-0",
-      0.5: "gap-x-0.5",
-      1: "gap-x-1",
-      1.5: "gap-x-1.5",
-      2: "gap-x-2",
-      3: "gap-x-3",
-      4: "gap-x-4",
-      5: "gap-x-5",
-      6: "gap-x-6",
-      8: "gap-x-8",
-      12: "gap-x-12",
-      16: "gap-x-16",
-    },
-    gapY: {
-      none: "",
-      0: "gap-y-0",
-      0.5: "gap-y-0.5",
-      1: "gap-y-1",
-      1.5: "gap-y-1.5",
-      2: "gap-y-2",
-      3: "gap-y-3",
-      4: "gap-y-4",
-      5: "gap-y-5",
-      6: "gap-y-6",
-      8: "gap-y-8",
-      12: "gap-y-12",
-      16: "gap-y-16",
-    },
+    gapX: { none: "", ...createGapVariants("gap-x") },
+    gapY: { none: "", ...createGapVariants("gap-y") },
     wrap: {
       true: "flex-wrap",
       false: "flex-nowrap",
@@ -95,14 +91,8 @@ const flexVariants = cva("flex", {
       nowrap: "flex-nowrap",
       "wrap-reverse": "flex-wrap-reverse",
     },
-    fullWidth: {
-      true: "w-full",
-      false: "",
-    },
-    container: {
-      true: "container mx-auto",
-      false: "",
-    },
+    fullWidth: { true: "w-full", false: "" },
+    container: { true: "container mx-auto", false: "" },
     padding: {
       none: "",
       xs: "p-1",
@@ -125,13 +115,17 @@ const flexVariants = cva("flex", {
       "pb-6": "pb-6",
       "pt-6": "pt-6",
       "mt-0.5": "mt-0.5",
-      "responsive": "px-4 sm:px-6 md:px-7 lg:px-8 xl:px-9 2xl:px-10",
+      responsive: "px-4 sm:px-6 md:px-7 lg:px-8 xl:px-9 2xl:px-10",
       "responsive-y": "py-4 sm:py-6 md:py-6 lg:py-8 xl:py-10 2xl:py-10",
       "responsive-full": "px-4 sm:px-6 md:px-7 lg:px-8 xl:px-9 2xl:px-10 py-4 sm:py-6 md:py-6 lg:py-8 xl:py-10 2xl:py-10",
       "responsive-lg": "px-4 sm:px-6 md:px-7 lg:px-8 xl:px-9 2xl:px-10 py-8",
       "md-lg": "p-6 md:p-8",
       "sm-md": "p-4 sm:p-6",
     },
+    paddingX: { none: "", ...createSpacingVariants("px"), responsive: "px-4 sm:px-6 md:px-7 lg:px-8 xl:px-9 2xl:px-10" },
+    paddingY: { none: "", ...createSpacingVariants("py"), responsive: "py-4 sm:py-6 md:py-6 lg:py-8 xl:py-10 2xl:py-10" },
+    paddingTop: { none: "", ...createSpacingVariants("pt") },
+    paddingBottom: { none: "", ...createSpacingVariants("pb") },
     margin: {
       none: "",
       auto: "mx-auto",
@@ -140,97 +134,12 @@ const flexVariants = cva("flex", {
       "t-auto": "mt-auto",
       "b-4": "mb-4",
     },
-    marginX: {
-      none: "",
-      auto: "mx-auto",
-      0: "mx-0",
-      1: "mx-1",
-      2: "mx-2",
-      3: "mx-3",
-      4: "mx-4",
-      5: "mx-5",
-      6: "mx-6",
-      8: "mx-8",
-      10: "mx-10",
-      12: "mx-12",
-      16: "mx-16",
-    },
-    marginY: {
-      none: "",
-      auto: "my-auto",
-      0: "my-0",
-      1: "my-1",
-      2: "my-2",
-      3: "my-3",
-      4: "my-4",
-      5: "my-5",
-      6: "my-6",
-      8: "my-8",
-      10: "my-10",
-      12: "my-12",
-      16: "my-16",
-    },
-    marginTop: {
-      none: "",
-      auto: "mt-auto",
-      0: "mt-0",
-      0.5: "mt-0.5",
-      1: "mt-1",
-      2: "mt-2",
-      3: "mt-3",
-      4: "mt-4",
-      5: "mt-5",
-      6: "mt-6",
-      8: "mt-8",
-      10: "mt-10",
-      12: "mt-12",
-      16: "mt-16",
-    },
-    marginBottom: {
-      none: "",
-      0: "mb-0",
-      0.5: "mb-0.5",
-      1: "mb-1",
-      2: "mb-2",
-      3: "mb-3",
-      4: "mb-4",
-      5: "mb-5",
-      6: "mb-6",
-      8: "mb-8",
-      10: "mb-10",
-      12: "mb-12",
-      16: "mb-16",
-    },
-    marginLeft: {
-      none: "",
-      0: "ml-0",
-      0.5: "ml-0.5",
-      1: "ml-1",
-      2: "ml-2",
-      3: "ml-3",
-      4: "ml-4",
-      5: "ml-5",
-      6: "ml-6",
-      8: "ml-8",
-      10: "ml-10",
-      12: "ml-12",
-      16: "ml-16",
-    },
-    marginRight: {
-      none: "",
-      0: "mr-0",
-      0.5: "mr-0.5",
-      1: "mr-1",
-      2: "mr-2",
-      3: "mr-3",
-      4: "mr-4",
-      5: "mr-5",
-      6: "mr-6",
-      8: "mr-8",
-      10: "mr-10",
-      12: "mr-12",
-      16: "mr-16",
-    },
+    marginX: { none: "", auto: "mx-auto", ...createSpacingVariants("mx") },
+    marginY: { none: "", auto: "my-auto", ...createSpacingVariants("my") },
+    marginTop: { none: "", auto: "mt-auto", ...createSpacingVariants("mt") },
+    marginBottom: { none: "", ...createSpacingVariants("mb") },
+    marginLeft: { none: "", ...createSpacingVariants("ml") },
+    marginRight: { none: "", ...createSpacingVariants("mr") },
     position: {
       relative: "relative",
       absolute: "absolute",
@@ -243,12 +152,7 @@ const flexVariants = cva("flex", {
       "absolute-inset": "absolute inset-0",
       "absolute-top-right": "absolute top-2 right-2",
     },
-    objectFit: {
-      none: "",
-      cover: "object-cover",
-      contain: "object-contain",
-      fill: "object-fill",
-    },
+    objectFit: { none: "", cover: "object-cover", contain: "object-contain", fill: "object-fill" },
     imageStyle: {
       none: "",
       "cover-dark": "object-cover dark:brightness-[0.2] dark:grayscale",
@@ -283,7 +187,7 @@ const flexVariants = cva("flex", {
       "32": "h-32",
       "64": "h-64",
       "min-full": "min-h-full",
-      "hero": "min-h-[300px] sm:min-h-[350px] lg:min-h-[400px] xxl:min-h-[500px]",
+      hero: "min-h-[300px] sm:min-h-[350px] lg:min-h-[400px] xxl:min-h-[500px]",
     },
     maxHeight: {
       none: "",
@@ -294,24 +198,9 @@ const flexVariants = cva("flex", {
       "600": "max-h-[600px]",
       "48": "max-h-48",
     },
-    shrink: {
-      true: "shrink-0",
-      false: "",
-      "1": "shrink",
-    },
-    overflow: {
-      none: "",
-      hidden: "overflow-hidden",
-      auto: "overflow-auto",
-      scroll: "overflow-scroll",
-    },
-    minWidth: {
-      none: "",
-      "0": "min-w-0",
-      full: "min-w-full",
-      "120": "min-w-[120px]",
-      "140": "min-w-[140px]",
-    },
+    shrink: { true: "shrink-0", false: "", "1": "shrink" },
+    overflow: { none: "", hidden: "overflow-hidden", auto: "overflow-auto", scroll: "overflow-scroll" },
+    minWidth: { none: "", "0": "min-w-0", full: "min-w-full", "120": "min-w-[120px]", "140": "min-w-[140px]" },
     maxWidth: {
       none: "",
       full: "max-w-full",
@@ -321,74 +210,7 @@ const flexVariants = cva("flex", {
       "70": "max-w-[70%]",
       "32": "max-w-[32px]",
     },
-    rounded: {
-      none: "",
-      sm: "rounded-sm",
-      md: "rounded-md",
-      lg: "rounded-lg",
-      xl: "rounded-xl",
-      full: "rounded-full",
-      "[inherit]": "rounded-[inherit]",
-    },
-    paddingX: {
-      none: "",
-      0: "px-0",
-      1: "px-1",
-      2: "px-2",
-      3: "px-3",
-      4: "px-4",
-      5: "px-5",
-      6: "px-6",
-      8: "px-8",
-      10: "px-10",
-      12: "px-12",
-      16: "px-16",
-      "responsive": "px-4 sm:px-6 md:px-7 lg:px-8 xl:px-9 2xl:px-10",
-    },
-    paddingY: {
-      none: "",
-      0: "py-0",
-      1: "py-1",
-      2: "py-2",
-      2.5: "py-2.5",
-      3: "py-3",
-      4: "py-4",
-      5: "py-5",
-      6: "py-6",
-      8: "py-8",
-      10: "py-10",
-      12: "py-12",
-      16: "py-16",
-      "responsive": "py-4 sm:py-6 md:py-6 lg:py-8 xl:py-10 2xl:py-10",
-    },
-    paddingTop: {
-      none: "",
-      0: "pt-0",
-      1: "pt-1",
-      2: "pt-2",
-      3: "pt-3",
-      4: "pt-4",
-      5: "pt-5",
-      6: "pt-6",
-      8: "pt-8",
-      10: "pt-10",
-      12: "pt-12",
-      16: "pt-16",
-    },
-    paddingBottom: {
-      none: "",
-      0: "pb-0",
-      1: "pb-1",
-      2: "pb-2",
-      3: "pb-3",
-      4: "pb-4",
-      5: "pb-5",
-      6: "pb-6",
-      8: "pb-8",
-      10: "pb-10",
-      12: "pb-12",
-      16: "pb-16",
-    },
+    rounded: { none: "", sm: "rounded-sm", md: "rounded-md", lg: "rounded-lg", xl: "rounded-xl", full: "rounded-full", "[inherit]": "rounded-[inherit]" },
     bg: {
       none: "",
       primary: "bg-primary text-primary-foreground",
@@ -412,17 +234,8 @@ const flexVariants = cva("flex", {
       "green-100": "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400",
       "gray-100": "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300",
     },
-    hover: {
-      none: "",
-      default: "hover:bg-primary/10",
-      destructive: "hover:bg-destructive/10",
-      "accent-10": "hover:bg-accent/10",
-    },
-    opacity: {
-      none: "",
-      "60": "opacity-60",
-      "80": "opacity-80",
-    },
+    hover: { none: "", default: "hover:bg-primary/10", destructive: "hover:bg-destructive/10", "accent-10": "hover:bg-accent/10" },
+    opacity: { none: "", "60": "opacity-60", "80": "opacity-80" },
     width: {
       none: "",
       full: "w-full",
@@ -438,56 +251,21 @@ const flexVariants = cva("flex", {
       "2/3": "w-full lg:w-2/3",
       "400": "w-[400px] max-w-full",
     },
-    cursor: {
-      none: "",
-      pointer: "cursor-pointer",
-    },
-    textAlign: {
-      none: "",
-      center: "text-center",
-      left: "text-left",
-    },
-    flex: {
-      none: "",
-      "1": "flex-1",
-      auto: "flex-auto",
-      initial: "flex-initial",
-      normal: "",
-    },
-    grow: {
-      true: "grow",
-      false: "",
-    },
-    truncate: {
-      true: "truncate",
-      false: "",
-    },
-    lineClamp: {
-      none: "",
-      "1": "line-clamp-1",
-      "2": "line-clamp-2",
-      "3": "line-clamp-3",
-    },
-    display: {
-      none: "",
-      "hidden-md-flex": "hidden md:flex",
-    },
-    blur: {
-      none: "",
-      "xl": "blur-xl",
-      "2xl": "blur-2xl",
-      "3xl": "blur-3xl",
-    },
-    animate: {
-      none: "",
-      pulse: "animate-pulse",
-    },
+    cursor: { none: "", pointer: "cursor-pointer" },
+    textAlign: { none: "", center: "text-center", left: "text-left" },
+    flex: { none: "", "1": "flex-1", auto: "flex-auto", initial: "flex-initial", normal: "" },
+    grow: { true: "grow", false: "" },
+    truncate: { true: "truncate", false: "" },
+    lineClamp: { none: "", "1": "line-clamp-1", "2": "line-clamp-2", "3": "line-clamp-3" },
+    display: { none: "", "hidden-md-flex": "hidden md:flex" },
+    blur: { none: "", xl: "blur-xl", "2xl": "blur-2xl", "3xl": "blur-3xl" },
+    animate: { none: "", pulse: "animate-pulse" },
   },
   defaultVariants: {
     direction: "row",
     align: "normal",
     justify: "normal",
-    gap: 0,
+    gap: "0",
     gapX: "none",
     gapY: "none",
     wrap: false,
@@ -532,194 +310,240 @@ const flexVariants = cva("flex", {
   },
 })
 
+// Helper functions
+const computeDirection = (
+  direction?: VariantProps<typeof flexVariants>["direction"],
+  vertical?: boolean,
+  orientation?: "horizontal" | "vertical"
+): VariantProps<typeof flexVariants>["direction"] => {
+  if (direction) return direction
+  return (vertical || orientation === "vertical") ? "col" : "row"
+}
+
+const processGap = (
+  gap: VariantProps<typeof flexVariants>["gap"] | string | number | undefined,
+  validGapVariants: (string | number)[]
+): { gapVariant?: VariantProps<typeof flexVariants>["gap"]; gapStyle?: string } => {
+  if (!gap) return {}
+  if (validGapVariants.includes(gap as string | number)) {
+    return { gapVariant: (typeof gap === "number" ? String(gap) : gap) as VariantProps<typeof flexVariants>["gap"] }
+  }
+  return typeof gap === "number" ? { gapStyle: numberToRem(gap) } : typeof gap === "string" ? { gapStyle: gap } : {}
+}
+
+const processFlex = (
+  flexProp: string | undefined,
+  style: React.CSSProperties
+): { flexVariant: VariantProps<typeof flexVariants>["flex"]; flexStyle: React.CSSProperties } => {
+  const flexStyle = { ...style }
+  const isStandard = flexProp ? isStandardFlex(flexProp) : true
+  const flexVariant: VariantProps<typeof flexVariants>["flex"] = isStandard 
+    ? (flexProp as VariantProps<typeof flexVariants>["flex"] || "normal") 
+    : "normal"
+  if (flexProp && !isStandard) flexStyle.flex = flexProp
+  return { flexVariant, flexStyle }
+}
+
+const processWrap = (
+  wrap: boolean | VariantProps<typeof flexVariants>["wrap"] | undefined
+): VariantProps<typeof flexVariants>["wrap"] => {
+  if (wrap === true) return "wrap"
+  if (wrap === false) return "nowrap"
+  if (typeof wrap === "string") return wrap
+  return "nowrap"
+}
+
+const processSpacing = <T extends VariantProps<typeof flexVariants>["paddingX"] | VariantProps<typeof flexVariants>["marginLeft"] | VariantProps<typeof flexVariants>["marginX"]>(
+  spacing: T | number | string | undefined
+): T | undefined => {
+  if (!spacing) return undefined
+  if (typeof spacing === "number" && VALID_SPACING_VALUES.includes(spacing as typeof VALID_SPACING_VALUES[number])) {
+    return String(spacing) as T
+  }
+  if (typeof spacing === "string" && VALID_SPACING_STRING_VALUES.includes(spacing as typeof VALID_SPACING_STRING_VALUES[number])) {
+    return spacing as T
+  }
+  return spacing as T
+}
+
 export interface FlexProps
   extends Omit<React.HTMLAttributes<HTMLDivElement>, "style">,
-  Omit<VariantProps<typeof flexVariants>, "flex" | "gap" | "wrap"> {
-  /**
-   * Custom element type (alias for `as` prop)
-   * @default "div"
-   */
+    Omit<VariantProps<typeof flexVariants>, "flex" | "gap" | "wrap" | "paddingX" | "paddingY" | "paddingTop" | "paddingBottom" | "marginX" | "marginY" | "marginTop" | "marginBottom" | "marginLeft" | "marginRight"> {
   component?: React.ComponentType<React.HTMLAttributes<HTMLElement>>
-  /**
-   * Is direction of the flex vertical, use flex-direction: column
-   * @default false
-   */
   vertical?: boolean
-  /**
-   * Direction of the flex (horizontal | vertical)
-   * @default "horizontal"
-   */
   orientation?: "horizontal" | "vertical"
-  /**
-   * flex CSS shorthand properties
-   * @default "normal"
-   */
   flex?: "none" | "1" | "auto" | "initial" | "normal" | string
-  /**
-   * Sets the gap between grids
-   * Supports: small | middle | large | string | number
-   * @default 0
-   */
   gap?: VariantProps<typeof flexVariants>["gap"] | string | number
-  /**
-   * Set whether the element is displayed in a single line or in multiple lines
-   * Supports: flex-wrap | boolean
-   * @default false (nowrap)
-   */
   wrap?: VariantProps<typeof flexVariants>["wrap"] | boolean
-  /**
-   * Alias for `as` prop to match Ant Design API
-   */
+  paddingX?: VariantProps<typeof flexVariants>["paddingX"] | number | "0" | "0.5" | "1" | "2" | "3" | "4" | "5" | "6" | "8" | "10" | "12" | "16"
+  paddingY?: VariantProps<typeof flexVariants>["paddingY"] | number | "0" | "0.5" | "1" | "2" | "3" | "4" | "5" | "6" | "8" | "10" | "12" | "16"
+  paddingTop?: VariantProps<typeof flexVariants>["paddingTop"] | number
+  paddingBottom?: VariantProps<typeof flexVariants>["paddingBottom"] | number
+  marginX?: VariantProps<typeof flexVariants>["marginX"] | number
+  marginY?: VariantProps<typeof flexVariants>["marginY"] | number
+  marginTop?: VariantProps<typeof flexVariants>["marginTop"] | number
+  marginBottom?: VariantProps<typeof flexVariants>["marginBottom"] | number
+  marginLeft?: VariantProps<typeof flexVariants>["marginLeft"] | number
+  marginRight?: VariantProps<typeof flexVariants>["marginRight"] | number
   as?: React.ElementType
-  /**
-   * Inline styles
-   */
   style?: React.CSSProperties
 }
 
 export const Flex = React.forwardRef<HTMLDivElement, FlexProps>(
-  ({ 
-    className, 
-    direction, 
-    align, 
-    justify, 
-    gap, 
-    gapX, 
-    gapY, 
-    wrap = false, 
-    fullWidth, 
-    container, 
-    padding, 
-    paddingX, 
-    paddingY, 
-    paddingTop, 
-    paddingBottom, 
-    margin, 
-    marginX, 
-    marginY, 
-    marginTop, 
-    marginBottom, 
-    marginLeft, 
-    marginRight, 
-    position, 
-    border, 
-    height, 
-    maxHeight, 
-    shrink, 
-    overflow, 
-    minWidth, 
-    maxWidth, 
-    rounded, 
-    bg, 
-    hover, 
-    opacity, 
-    width, 
-    cursor, 
-    textAlign, 
-    flex: flexProp = "normal", 
-    grow, 
-    truncate, 
-    lineClamp, 
-    display, 
-    objectFit, 
-    imageStyle, 
-    blur, 
-    animate, 
-    component,
-    vertical = false,
-    orientation = "horizontal",
-    as: Component = component || "div", 
-    style,
-    ...props 
-  }, ref) => {
-    // Map vertical/orientation to direction
-    // Priority: direction > vertical > orientation
-    const computedDirection = direction 
-      ? direction
-      : (vertical || orientation === "vertical") 
-        ? "col"
-        : "row"
-    
-    // Handle flex prop with inline style if it's a custom value
-    const flexStyle: React.CSSProperties = { ...style }
-    const isStandardFlex = flexProp === "normal" || flexProp === "none" || flexProp === "1" || flexProp === "auto" || flexProp === "initial"
-    const flexVariant = isStandardFlex ? flexProp : "normal"
-    
-    if (flexProp && !isStandardFlex) {
-      // Custom flex value (string like "1 1 auto")
-      flexStyle.flex = flexProp
-    }
-    
-    // Handle gap prop with custom string/number values
-    // Check if gap is a valid variant value
-    const validGapVariants: (string | number)[] = [0, 0.5, 1, 1.5, 2, 3, 4, 5, 6, 8, 12, 16, "small", "middle", "large", "6-lg-8", "2-md-4", "2-lg-6", "4-lg-6", "4-lg-8", "responsive"]
-    let gapVariant: VariantProps<typeof flexVariants>["gap"] | undefined = undefined
-    
-    if (gap !== undefined && gap !== null) {
-      if (validGapVariants.includes(gap as string | number)) {
-        // Standard gap value - use variant
-        gapVariant = gap as VariantProps<typeof flexVariants>["gap"]
-      } else {
-        // Custom gap value (string like "10px" or number like 10) - use inline style
-        if (typeof gap === "number") {
-          flexStyle.gap = `${gap * 0.25}rem` // Convert to rem (assuming 4px base)
-        } else if (typeof gap === "string") {
-          flexStyle.gap = gap
-        }
-      }
-    }
-    
+  (
+    {
+      className,
+      direction,
+      align,
+      justify,
+      gap,
+      gapX,
+      gapY,
+      wrap = false,
+      fullWidth,
+      container,
+      padding,
+      paddingX,
+      paddingY,
+      paddingTop,
+      paddingBottom,
+      margin,
+      marginX,
+      marginY,
+      marginTop,
+      marginBottom,
+      marginLeft,
+      marginRight,
+      position,
+      border,
+      height,
+      maxHeight,
+      shrink,
+      overflow,
+      minWidth,
+      maxWidth,
+      rounded,
+      bg,
+      hover,
+      opacity,
+      width,
+      cursor,
+      textAlign,
+      flex: flexProp = "normal",
+      grow,
+      truncate,
+      lineClamp,
+      display,
+      objectFit,
+      imageStyle,
+      blur,
+      animate,
+      component,
+      vertical = false,
+      orientation = "horizontal",
+      as: Component = component || "div",
+      style,
+      ...props
+    },
+    ref
+  ) => {
+    const validGapVariants = React.useMemo(() => [
+      ...VALID_GAP_VALUES,
+      "small", "middle", "large",
+      "6-lg-8", "2-md-4", "2-lg-6", "4-lg-6", "4-lg-8", "responsive"
+    ], [])
+
+    const computedDirection = React.useMemo(
+      () => computeDirection(direction, vertical, orientation),
+      [direction, vertical, orientation]
+    )
+
+    const { gapVariant, gapStyle } = React.useMemo(
+      () => processGap(gap, validGapVariants),
+      [gap, validGapVariants]
+    )
+
+    const { flexVariant, flexStyle: processedFlexStyle } = React.useMemo(
+      () => processFlex(flexProp, style || {}),
+      [flexProp, style]
+    )
+
+    const wrapVariant = React.useMemo(() => processWrap(wrap), [wrap])
+
+    // Process all spacing props
+    const spacingVariants = React.useMemo(() => ({
+      paddingX: processSpacing(paddingX),
+      paddingY: processSpacing(paddingY),
+      paddingTop: processSpacing(paddingTop),
+      paddingBottom: processSpacing(paddingBottom),
+      marginX: processSpacing(marginX),
+      marginY: processSpacing(marginY),
+      marginTop: processSpacing(marginTop),
+      marginBottom: processSpacing(marginBottom),
+      marginLeft: processSpacing(marginLeft),
+      marginRight: processSpacing(marginRight),
+    }), [paddingX, paddingY, paddingTop, paddingBottom, marginX, marginY, marginTop, marginBottom, marginLeft, marginRight])
+
+    const mergedStyle = React.useMemo(() => {
+      const styles: React.CSSProperties = { ...processedFlexStyle }
+      if (gapStyle) styles.gap = gapStyle
+      return Object.keys(styles).length > 0 ? styles : undefined
+    }, [processedFlexStyle, gapStyle])
+
     return (
       <Component
         ref={ref}
-        className={cn(flexVariants({ 
-          direction: computedDirection, 
-          align, 
-          justify, 
-          gap: gapVariant, 
-          gapX, 
-          gapY, 
-          wrap: wrap === true ? "wrap" : wrap === false ? "nowrap" : wrap, 
-          fullWidth, 
-          container, 
-          padding, 
-          paddingX, 
-          paddingY, 
-          paddingTop, 
-          paddingBottom, 
-          margin, 
-          marginX, 
-          marginY, 
-          marginTop, 
-          marginBottom, 
-          marginLeft, 
-          marginRight, 
-          position, 
-          border, 
-          height, 
-          maxHeight, 
-          shrink, 
-          overflow, 
-          minWidth, 
-          maxWidth, 
-          rounded, 
-          bg, 
-          hover, 
-          opacity, 
-          width, 
-          cursor, 
-          textAlign, 
-          flex: flexVariant, 
-          grow, 
-          truncate, 
-          lineClamp, 
-          display, 
-          objectFit, 
-          imageStyle, 
-          blur, 
-          animate 
-        }), className)}
-        style={Object.keys(flexStyle).length > 0 ? flexStyle : undefined}
+        className={cn(
+          flexVariants({
+            direction: computedDirection,
+            align,
+            justify,
+            gap: gapVariant,
+            gapX,
+            gapY,
+            wrap: wrapVariant,
+            fullWidth,
+            container,
+            padding,
+            paddingX: spacingVariants.paddingX,
+            paddingY: spacingVariants.paddingY,
+            paddingTop: spacingVariants.paddingTop,
+            paddingBottom: spacingVariants.paddingBottom,
+            margin,
+            marginX: spacingVariants.marginX,
+            marginY: spacingVariants.marginY,
+            marginTop: spacingVariants.marginTop,
+            marginBottom: spacingVariants.marginBottom,
+            marginLeft: spacingVariants.marginLeft,
+            marginRight: spacingVariants.marginRight,
+            position,
+            border,
+            height,
+            maxHeight,
+            shrink,
+            overflow,
+            minWidth,
+            maxWidth,
+            rounded,
+            bg,
+            hover,
+            opacity,
+            width,
+            cursor,
+            textAlign,
+            flex: flexVariant,
+            grow,
+            truncate,
+            lineClamp,
+            display,
+            objectFit,
+            imageStyle,
+            blur,
+            animate,
+          }),
+          className
+        )}
+        style={mergedStyle}
         {...props}
       />
     )
@@ -727,4 +551,3 @@ export const Flex = React.forwardRef<HTMLDivElement, FlexProps>(
 )
 
 Flex.displayName = "Flex"
-

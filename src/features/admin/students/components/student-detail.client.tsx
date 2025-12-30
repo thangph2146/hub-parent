@@ -70,32 +70,19 @@ export const StudentDetailClient = ({ studentId, student, backUrl = "/admin/stud
   const isDeleted = detailData.deletedAt !== null && detailData.deletedAt !== undefined
 
   return (
-    <Flex direction="col" fullWidth gap="responsive">
-      <ResourceForm<StudentFormData>
-        data={detailData as StudentFormData}
-        fields={fields}
-        sections={sections}
-        title={detailData.name || detailData.studentCode || "Thông tin sinh viên"}
-        description={`Thông tin chính về sinh viên ${detailData.name || detailData.studentCode || ""}`}
-        backUrl={backUrl}
-        onBack={() => navigateBack(backUrl)}
-        readOnly={true}
-        showCard={false}
-        onSubmit={async () => ({ success: false, error: "Read-only mode" })}
-        resourceName="students"
-        resourceId={studentId}
-        action="update"
-      />
-      {!isDeleted && canUpdate && (
-        <Flex
-          align="center"
-          justify="end"
-          gap={2}
-          fullWidth
-          paddingY={2}
-          border="top"
-          className="sticky bottom-0 bg-background/95 backdrop-blur-sm z-10"
-        >
+    <ResourceForm<StudentFormData>
+      data={detailData as StudentFormData}
+      fields={fields}
+      sections={sections}
+      title={detailData.name || detailData.studentCode || "Thông tin sinh viên"}
+      description={`Thông tin chính về sinh viên ${detailData.name || detailData.studentCode || ""}`}
+      backUrl={backUrl}
+      onBack={() => navigateBack(backUrl)}
+      readOnly={true}
+      showCard={false}
+      onSubmit={async () => ({ success: false, error: "Read-only mode" })}
+      footerButtons={
+        !isDeleted && canUpdate ? (
           <Button
             variant="outline"
             onClick={() => router.push(`/admin/students/${studentId}/edit`)}
@@ -107,15 +94,20 @@ export const StudentDetailClient = ({ studentId, student, backUrl = "/admin/stud
               Chỉnh sửa
             </Flex>
           </Button>
-        </Flex>
-      )}
-      
-      {/* Student Scores Section - chỉ hiển thị khi student isActive */}
-      <StudentScoresSection
-        studentId={studentId}
-        isActive={detailData.isActive}
-        studentName={detailData.name}
-      />
-    </Flex>
+        ) : null
+      }
+      suffixContent={
+        detailData.isActive ? (
+          <StudentScoresSection
+            studentId={studentId}
+            isActive={detailData.isActive}
+            studentName={detailData.name}
+          />
+        ) : null
+      }
+      resourceName="students"
+      resourceId={studentId}
+      action="update"
+    />
   )
 }

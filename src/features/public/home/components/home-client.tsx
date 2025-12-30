@@ -37,7 +37,7 @@ export interface HomeClientProps {
 
 export const HomeClient = ({ featuredPosts = [] }: HomeClientProps) => {
   return (
-    <Flex direction="col" gap={8} position="relative" fullWidth bg="background" className="isolate">
+    <Flex direction="col" position="relative" fullWidth bg="background" className="isolate">
       {/* Hero Section */}
       <HeroSection
         title="Hệ thống Kết nối Phụ huynh"
@@ -100,6 +100,7 @@ export const HomeClient = ({ featuredPosts = [] }: HomeClientProps) => {
 
       {/* Guide & Register Section */}
       <Section padding="responsive-lg" background="background">
+        <Flex direction="col" gap={16}>
         {/* Top Row - Guide Section */}
         <SectionWithImage
           title="Hướng dẫn cho Phụ huynh"
@@ -130,8 +131,9 @@ export const HomeClient = ({ featuredPosts = [] }: HomeClientProps) => {
             variant: "outline",
             size: "sm",
           }}
-          reverse
-        />
+            reverse
+          />
+        </Flex>
       </Section>
 
       {/* Featured Posts Section */}

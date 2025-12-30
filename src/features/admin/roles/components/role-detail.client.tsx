@@ -65,33 +65,20 @@ export const RoleDetailClient = ({ roleId, role, backUrl = "/admin/roles" }: Rol
   const isDeleted = detailData.deletedAt !== null && detailData.deletedAt !== undefined
 
   return (
-    <>
-      <ResourceForm<RoleFormData>
-        data={detailData as RoleFormData}
-        fields={fields}
-        sections={sections}
-        title={detailData.displayName}
-        description={`Chi tiết vai trò ${detailData.name}`}
-        backUrl={backUrl}
-        backLabel="Quay lại danh sách"
-        onBack={() => navigateBack(backUrl)}
-        readOnly={true}
-        showCard={false}
-        onSubmit={async () => ({ success: false, error: "Read-only mode" })}
-        resourceName="roles"
-        resourceId={roleId}
-        action="update"
-      />
-      {!isDeleted && canUpdate && (
-        <Flex
-          align="center"
-          justify="end"
-          gap={2}
-          fullWidth
-          paddingY={2}
-          border="top"
-          className="sticky bottom-0 bg-background/95 backdrop-blur-sm z-10"
-        >
+    <ResourceForm<RoleFormData>
+      data={detailData as RoleFormData}
+      fields={fields}
+      sections={sections}
+      title={detailData.displayName}
+      description={`Chi tiết vai trò ${detailData.name}`}
+      backUrl={backUrl}
+      backLabel="Quay lại danh sách"
+      onBack={() => navigateBack(backUrl)}
+      readOnly={true}
+      showCard={false}
+      onSubmit={async () => ({ success: false, error: "Read-only mode" })}
+      footerButtons={
+        !isDeleted && canUpdate ? (
           <Button
             variant="outline"
             onClick={() => router.push(`/admin/roles/${roleId}/edit`)}
@@ -103,9 +90,12 @@ export const RoleDetailClient = ({ roleId, role, backUrl = "/admin/roles" }: Rol
               Chỉnh sửa
             </Flex>
           </Button>
-        </Flex>
-      )}
-    </>
+        ) : null
+      }
+      resourceName="roles"
+      resourceId={roleId}
+      action="update"
+    />
   )
 }
 

@@ -221,11 +221,11 @@ export function NotificationBell() {
             <Bell />
           </IconSize>
           {data && data.unreadCount > 0 && (
-            <Badge variant="destructive" className="absolute -top-1 -right-1 h-5 w-5 p-0">
+            <Badge variant="destructive" className="absolute -top-1 -right-1 h-6 w-6 min-w-6 p-0 flex items-center justify-center">
               <Flex align="center" justify="center" height="full" width="full">
-                <TypographySpanSmall>
+                <span className="text-xs font-semibold leading-none">
                   {data.unreadCount > 99 ? "99+" : data.unreadCount}
-                </TypographySpanSmall>
+                </span>
               </Flex>
             </Badge>
           )}
