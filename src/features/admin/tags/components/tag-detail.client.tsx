@@ -73,7 +73,7 @@ export const TagDetailClient = ({ tagId, tag, backUrl = "/admin/tags" }: TagDeta
       footerButtons={
         !isDeleted && canUpdate ? (
           <Button
-            variant="outline"
+            variant="default"
             onClick={() => router.push(`/admin/tags/${tagId}/edit`)}
           >
             <Flex align="center" gap={2}>

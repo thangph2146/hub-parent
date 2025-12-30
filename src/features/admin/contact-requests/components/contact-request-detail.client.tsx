@@ -203,7 +203,7 @@ export const ContactRequestDetailClient = ({ contactRequestId, contactRequest, b
       footerButtons={
         !isDeleted && canUpdate ? (
           <Button
-            variant="outline"
+            variant="default"
             onClick={() => router.push(`/admin/contact-requests/${contactRequestId}/edit`)}
           >
             <Flex align="center" gap={2}>

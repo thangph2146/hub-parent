@@ -105,7 +105,7 @@ export const AccountProfileClient = ({
         footerButtons={
           canUpdate ? (
               <Button
-                variant="outline"
+                variant="default"
                 onClick={() => setIsEditing(true)}
               >
                 <Flex align="center" gap={2}>

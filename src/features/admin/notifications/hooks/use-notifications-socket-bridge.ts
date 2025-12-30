@@ -14,6 +14,7 @@ import {
   removeRowFromPage,
 } from "@/features/admin/resources/utils/socket-helpers"
 import { convertSocketPayloadToRow } from "../utils/socket-helpers"
+import { deduplicateById } from "@/lib/utils"
 
 const calculateTotalPages = (total: number, limit: number): number => {
   return total === 0 ? 0 : Math.ceil(total / limit)
@@ -232,9 +233,24 @@ export const useNotificationsSocketBridge = () => {
         queryClient,
         queryKeys.notifications.admin() as unknown[],
         ({ data }) => {
-          const rows = payloads
+          if (!data || !Array.isArray(data.rows)) {
+            logger.debug("Skipping sync - invalid data structure", {
+              hasData: !!data,
+              hasRows: !!data?.rows,
+              isArray: Array.isArray(data?.rows),
+            })
+            return null
+          }
+
+          // Convert payloads to rows and remove duplicates
+          const allRows = payloads
             .map((p) => convertSocketPayloadToRow(p, p.userEmail, p.userName))
-            .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+          
+          // Remove duplicates by ID before sorting
+          const uniqueRows = deduplicateById(allRows)
+          
+          // Sort by createdAt descending
+          const rows = uniqueRows.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
 
           if (rows.length === 0 && data.rows.length === 0) {
             return null
@@ -244,13 +260,13 @@ export const useNotificationsSocketBridge = () => {
           const total = rows.length
 
           logger.debug("Synced notifications in cache", {
-            rowsCount: limitedRows.length,
+            rowsCount: limitedRows?.length ?? 0,
             total,
           })
 
           return {
             ...data,
-            rows: limitedRows,
+            rows: limitedRows ?? [],
             total,
             totalPages: calculateTotalPages(total, data.limit),
           }

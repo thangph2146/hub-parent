@@ -527,7 +527,7 @@ export const ResourceForm = <T extends Record<string, unknown>>({
         orientation={isCheckbox ? undefined : "vertical"}
         data-invalid={hasError}
         className={cn(
-          "py-1.5",
+          "py-1.5 h-full",
           readOnly && "!opacity-100",
           field.className
         )}
@@ -536,6 +536,7 @@ export const ResourceForm = <T extends Record<string, unknown>>({
           <FieldLabel
             htmlFor={fieldName}
             className={cn(
+              "min-h-[1.5rem]",
               hasError && "text-destructive/90",
               !hasError && "group-hover/field:text-foreground",
               readOnly && "!opacity-100"
@@ -546,9 +547,9 @@ export const ResourceForm = <T extends Record<string, unknown>>({
                 {field.icon}
               </span>
             )}
-            <span className="font-medium">{field.label}</span>
-            {field.required && (
-              <TypographySpanDestructive>
+            <span className="font-medium whitespace-nowrap">{field.label}</span>
+            {field.required && !readOnly && (
+              <TypographySpanDestructive className="shrink-0">
                 *
               </TypographySpanDestructive>
             )}
@@ -597,6 +598,7 @@ export const ResourceForm = <T extends Record<string, unknown>>({
           cols={gridCols}
           fullWidth
           gap="2-md-4"
+          align="stretch"
           className={cn(
             "transition-all duration-300",
             readOnly && "!opacity-100"
@@ -653,6 +655,7 @@ export const ResourceForm = <T extends Record<string, unknown>>({
               cols="responsive-2" 
               fullWidth 
               gap="2-md-4"
+              align="stretch"
               className={cn(readOnly && "!opacity-100")}
             >
               {ungrouped.map(renderField)}
