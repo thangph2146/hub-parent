@@ -21,7 +21,9 @@ function FieldSet({ className, ...props }: React.ComponentProps<"fieldset">) {
         "border-2 border-solid border-border rounded-[calc(var(--radius)-2px)]",
         "mb-4 sm:mb-5 md:mb-6 lg:mb-6 xl:mb-8 2xl:mb-8",
         "bg-background transition-all duration-300",
-        "relative overflow-x-hidden overflow-y-visible",
+        // Remove overflow-x-hidden to allow sticky positioning to work
+        // Overflow will be handled by child elements that need it
+        "relative overflow-y-visible",
         "hover:border-ring/50 hover:shadow-[0_2px_8px_hsl(var(--ring)/0.1)]",
         "dark:bg-card dark:border-border dark:hover:border-ring/60 dark:hover:shadow-[0_2px_8px_hsl(var(--ring)/0.15)]",
         // Gradient accent line on hover
