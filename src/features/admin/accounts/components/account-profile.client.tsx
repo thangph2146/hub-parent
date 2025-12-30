@@ -1,6 +1,6 @@
 "use client";
 
-import { TypographyH1, TypographyDescription, IconSize } from "@/components/ui/typography";
+import { IconSize } from "@/components/ui/typography";
 import { Flex } from "@/components/ui/flex";
 
 import * as React from "react";
