@@ -29,12 +29,18 @@ import {
   Info,
   Mail,
 } from "lucide-react";
-import { Logo } from "../../../../public/svg/Logo"
+import { Logo } from "../../../../public/svg/Logo";
 import { appFeatures } from "@/lib/config/app-features";
 import { getResourceMainRoute } from "@/lib/permissions/route-helpers";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
-import { TypographyPSmall, TypographyP, TypographyPSmallMuted, IconSize } from "@/components/ui/typography";
+import {
+  TypographyPSmall,
+  TypographyP,
+  TypographyPSmallMuted,
+  IconSize,
+  TypographyH6,
+} from "@/components/ui/typography";
 import { Flex } from "@/components/ui/flex";
 import { Grid } from "@/components/ui/grid";
 import { useRouter } from "next/navigation";
@@ -177,7 +183,14 @@ export function PublicHeader() {
           scrolled,
       })}
     >
-      <Flex as="nav" container fullWidth align="center" justify="between" height="full">
+      <Flex
+        as="nav"
+        container
+        fullWidth
+        align="center"
+        justify="between"
+        height="full"
+      >
         <Flex align="center" gap={4}>
           <Link
             href={PUBLIC_ROUTES.home}
@@ -188,13 +201,15 @@ export function PublicHeader() {
               <Logo className="h-8 w-8 sm:h-10 sm:w-10 text-blue-100" />
             </Flex>
           </Link>
-          {/* <Flex direction="col">
-            <TypographyH6>
-              Trường Đại học Ngân hàng
-            </TypographyH6>
+          <Flex direction="col" className="hidden md:flex">
+            <TypographyH6>Trường Đại học Ngân hàng</TypographyH6>
             <TypographyPSmall>Thành Phố Hồ Chí Minh</TypographyPSmall>
-          </Flex> */}
-          <Separator orientation="vertical" className={`h-6 w-px bg-border`} />
+            
+          </Flex>
+          <Separator
+              orientation="vertical"
+              className={`h-6 w-px bg-border hidden md:block`}
+            />
           {mounted ? (
             <NavigationMenu className="hidden md:flex">
               <NavigationMenuList>
@@ -213,7 +228,9 @@ export function PublicHeader() {
                           >
                             {link.href === PUBLIC_ROUTES.home && (
                               <Flex align="center" gap={2}>
-                                <IconSize size="sm"><link.icon /></IconSize>
+                                <IconSize size="sm">
+                                  <link.icon />
+                                </IconSize>
                                 {link.title}
                               </Flex>
                             )}
@@ -231,25 +248,25 @@ export function PublicHeader() {
                     link.href !== PUBLIC_ROUTES.home &&
                     link.href !== PUBLIC_ROUTES.blog
                 ).length > 0 && (
-                    <NavigationMenuItem>
-                      <NavigationMenuTrigger className="bg-transparent">
-                        Hỗ trợ
-                      </NavigationMenuTrigger>
-                      <NavigationMenuContent className="bg-background p-1 pr-1.5 pb-1.5">
-                        <Grid cols={2} gap={2} className="bg-popover w-lg">
-                          {publicLinks
-                            .filter(
-                              (link) =>
-                                link.href !== PUBLIC_ROUTES.home &&
-                                link.href !== PUBLIC_ROUTES.blog
-                            )
-                            .map((item, i) => (
-                              <ListItem key={i} {...item} />
-                            ))}
-                        </Grid>
-                      </NavigationMenuContent>
-                    </NavigationMenuItem>
-                  )}
+                  <NavigationMenuItem>
+                    <NavigationMenuTrigger className="bg-transparent">
+                      Hỗ trợ
+                    </NavigationMenuTrigger>
+                    <NavigationMenuContent className="bg-background p-1 pr-1.5 pb-1.5">
+                      <Grid cols={2} gap={2} className="bg-popover w-lg">
+                        {publicLinks
+                          .filter(
+                            (link) =>
+                              link.href !== PUBLIC_ROUTES.home &&
+                              link.href !== PUBLIC_ROUTES.blog
+                          )
+                          .map((item, i) => (
+                            <ListItem key={i} {...item} />
+                          ))}
+                      </Grid>
+                    </NavigationMenuContent>
+                  </NavigationMenuItem>
+                )}
               </NavigationMenuList>
             </NavigationMenu>
           ) : (
@@ -310,11 +327,23 @@ export function PublicHeader() {
           <Flex direction="col" height="full">
             {/* User Section - Top */}
             {isAuthenticated ? (
-              <Flex direction="col" border="bottom" padding="lg-y" className="mb-4" fullWidth>
+              <Flex
+                direction="col"
+                border="bottom"
+                padding="lg-y"
+                className="mb-4"
+                fullWidth
+              >
                 <NavUser className="w-full" />
               </Flex>
             ) : (
-              <Flex direction="col" gap={2} border="bottom" padding="lg-y" margin="b-4">
+              <Flex
+                direction="col"
+                gap={2}
+                border="bottom"
+                padding="lg-y"
+                margin="b-4"
+              >
                 <Button
                   variant="default"
                   className="w-full h-auto py-3 flex flex-row items-center justify-start"
@@ -324,17 +353,27 @@ export function PublicHeader() {
                     router.push("/auth/sign-in");
                   }}
                 >
-                    <Flex align="center" justify="start" gap={3}>
-                      <Flex align="center" justify="center" bg="primary-10" height="12" width="12" rounded="md" className="aspect-square">
-                        <IconSize size="md"><LogIn /></IconSize>
-                      </Flex>
-                      <Flex direction="col" align="start">
-                        <TypographyP>Đăng nhập</TypographyP>
-                        <TypographyPSmall>
-                          Đăng nhập vào tài khoản của bạn
-                        </TypographyPSmall>
-                      </Flex>
+                  <Flex align="center" justify="start" gap={3}>
+                    <Flex
+                      align="center"
+                      justify="center"
+                      bg="primary-10"
+                      height="12"
+                      width="12"
+                      rounded="md"
+                      className="aspect-square"
+                    >
+                      <IconSize size="md">
+                        <LogIn />
+                      </IconSize>
                     </Flex>
+                    <Flex direction="col" align="start">
+                      <TypographyP>Đăng nhập</TypographyP>
+                      <TypographyPSmall>
+                        Đăng nhập vào tài khoản của bạn
+                      </TypographyPSmall>
+                    </Flex>
+                  </Flex>
                 </Button>
                 <Button
                   variant="outline"
@@ -345,17 +384,27 @@ export function PublicHeader() {
                     router.push("/auth/sign-up");
                   }}
                 >
-                    <Flex align="center" justify="start" gap={3}>
-                      <Flex align="center" justify="center" bg="muted" height="12" width="12" rounded="md" className="aspect-square">
-                        <IconSize size="md"><UserPlus /></IconSize>
-                      </Flex>
-                      <Flex direction="col" align="start">
-                        <TypographyP>Đăng ký</TypographyP>
-                        <TypographyPSmallMuted>
-                          Tạo tài khoản mới
-                        </TypographyPSmallMuted>
-                      </Flex>
+                  <Flex align="center" justify="start" gap={3}>
+                    <Flex
+                      align="center"
+                      justify="center"
+                      bg="muted"
+                      height="12"
+                      width="12"
+                      rounded="md"
+                      className="aspect-square"
+                    >
+                      <IconSize size="md">
+                        <UserPlus />
+                      </IconSize>
                     </Flex>
+                    <Flex direction="col" align="start">
+                      <TypographyP>Đăng ký</TypographyP>
+                      <TypographyPSmallMuted>
+                        Tạo tài khoản mới
+                      </TypographyPSmallMuted>
+                    </Flex>
+                  </Flex>
                 </Button>
               </Flex>
             )}
@@ -376,10 +425,21 @@ export function PublicHeader() {
                       onClick={() => setOpen(false)}
                     >
                       <Flex align="center" gap={3} className="flex-row">
-                        <Flex align="center" justify="center" className="bg-background/40 aspect-square size-11 rounded-lg border shadow-sm shrink-0 group-hover:bg-background/60 transition-colors">
-                          <IconSize size="md"><link.icon /></IconSize>
+                        <Flex
+                          align="center"
+                          justify="center"
+                          className="bg-background/40 aspect-square size-11 rounded-lg border shadow-sm shrink-0 group-hover:bg-background/60 transition-colors"
+                        >
+                          <IconSize size="md">
+                            <link.icon />
+                          </IconSize>
                         </Flex>
-                        <Flex direction="col" align="start" justify="center" className="min-w-0 flex-1">
+                        <Flex
+                          direction="col"
+                          align="start"
+                          justify="center"
+                          className="min-w-0 flex-1"
+                        >
                           <TypographyP className="group-hover:text-accent-foreground group-focus-visible:text-accent-foreground transition-colors">
                             {link.title}
                           </TypographyP>
@@ -401,42 +461,53 @@ export function PublicHeader() {
                   link.href !== PUBLIC_ROUTES.home &&
                   link.href !== PUBLIC_ROUTES.blog
               ).length > 0 && (
-                  <>
-                    <TypographyPSmallMuted className="px-2 py-2 uppercase tracking-wider">
-                      Hỗ trợ
-                    </TypographyPSmallMuted>
-                    {publicLinks
-                      .filter(
-                        (link) =>
-                          link.href !== PUBLIC_ROUTES.home &&
-                          link.href !== PUBLIC_ROUTES.blog
-                      )
-                      .map((link) => (
-                        <Link
-                          key={link.href}
-                          href={link.href}
-                          className="group w-full hover:bg-accent hover:text-accent-foreground focus-visible:bg-accent focus-visible:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-lg p-3 transition-colors active:bg-accent/80"
-                          onClick={() => setOpen(false)}
-                        >
-                          <Flex align="center" gap={3} className="flex-row">
-                            <Flex align="center" justify="center" className="bg-background/40 aspect-square size-11 rounded-lg border shadow-sm shrink-0 group-hover:bg-background/60 transition-colors">
-                              <IconSize size="md"><link.icon /></IconSize>
-                            </Flex>
-                            <Flex direction="col" align="start" justify="center" className="min-w-0 flex-1">
-                              <TypographyP className="group-hover:text-accent-foreground group-focus-visible:text-accent-foreground transition-colors">
-                                {link.title}
-                              </TypographyP>
-                              {link.description && (
-                                <TypographyPSmall className="group-hover:text-accent-foreground/80 group-focus-visible:text-accent-foreground transition-colors">
-                                  {link.description}
-                                </TypographyPSmall>
-                              )}
-                            </Flex>
+                <>
+                  <TypographyPSmallMuted className="px-2 py-2 uppercase tracking-wider">
+                    Hỗ trợ
+                  </TypographyPSmallMuted>
+                  {publicLinks
+                    .filter(
+                      (link) =>
+                        link.href !== PUBLIC_ROUTES.home &&
+                        link.href !== PUBLIC_ROUTES.blog
+                    )
+                    .map((link) => (
+                      <Link
+                        key={link.href}
+                        href={link.href}
+                        className="group w-full hover:bg-accent hover:text-accent-foreground focus-visible:bg-accent focus-visible:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-lg p-3 transition-colors active:bg-accent/80"
+                        onClick={() => setOpen(false)}
+                      >
+                        <Flex align="center" gap={3} className="flex-row">
+                          <Flex
+                            align="center"
+                            justify="center"
+                            className="bg-background/40 aspect-square size-11 rounded-lg border shadow-sm shrink-0 group-hover:bg-background/60 transition-colors"
+                          >
+                            <IconSize size="md">
+                              <link.icon />
+                            </IconSize>
                           </Flex>
-                        </Link>
-                      ))}
-                  </>
-                )}
+                          <Flex
+                            direction="col"
+                            align="start"
+                            justify="center"
+                            className="min-w-0 flex-1"
+                          >
+                            <TypographyP className="group-hover:text-accent-foreground group-focus-visible:text-accent-foreground transition-colors">
+                              {link.title}
+                            </TypographyP>
+                            {link.description && (
+                              <TypographyPSmall className="group-hover:text-accent-foreground/80 group-focus-visible:text-accent-foreground transition-colors">
+                                {link.description}
+                              </TypographyPSmall>
+                            )}
+                          </Flex>
+                        </Flex>
+                      </Link>
+                    ))}
+                </>
+              )}
             </Flex>
           </Flex>
         </MobileMenu>
@@ -508,8 +579,14 @@ function ListItem({
     >
       <Link href={href}>
         <Flex align="center" gap={2} className="flex-row">
-          <Flex align="center" justify="center" className="bg-background/40 aspect-square size-12 rounded-md border shadow-sm">
-            <IconSize size="md"><Icon /></IconSize>
+          <Flex
+            align="center"
+            justify="center"
+            className="bg-background/40 aspect-square size-12 rounded-md border shadow-sm"
+          >
+            <IconSize size="md">
+              <Icon />
+            </IconSize>
           </Flex>
           <Flex direction="col" align="start" justify="center">
             <TypographyP>{title}</TypographyP>
