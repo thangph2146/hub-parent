@@ -5,6 +5,7 @@
  * Pattern: Server Component (data fetching) → Client Component (UI/interactions)
  */
 
+import { Flex } from "@/components/ui/flex"
 import { getPostBySlug, getRelatedPosts } from "../server/queries"
 import { PostDetailClient } from "./post-detail.client"
 import { RelatedPosts } from "./related-posts"
@@ -32,9 +33,11 @@ export async function PostDetail({ slug }: PostDetailProps) {
   const firstTag = post.tags[0]
 
   return (
-    <div className="container mx-auto px-4 max-w-5xl pb-12">
-      {/* Breadcrumb */}
-      <div className="container mx-auto px-8 max-w-5xl mt-6">
+    <>
+      
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-12 max-w-5xl pb-12">
+        {/* Breadcrumb */}
+      <div className="pb-6">
         <PostBreadcrumb
           postTitle={post.title}
           categoryName={firstCategory?.name}
@@ -43,11 +46,11 @@ export async function PostDetail({ slug }: PostDetailProps) {
           tagSlug={firstTag?.slug}
           isListPage={false}
         />
+        </div>
+        <PostDetailClient post={post} />
+        <RelatedPosts posts={relatedPosts} />
       </div>
-
-      <PostDetailClient post={post} />
-      <RelatedPosts posts={relatedPosts} />
-    </div>
+    </>
   )
 }
 

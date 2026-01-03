@@ -31,7 +31,7 @@ export const PostDetailClient = ({ post }: PostDetailClientProps) => {
   }
 
   return (
-    <Flex direction="col" padding="responsive-lg">
+    <Flex direction="col">
       <Flex direction="col" gap={8}>
         {/* Header */}
         <Flex direction="col" gap={6}>
