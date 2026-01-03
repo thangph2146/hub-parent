@@ -32,7 +32,7 @@ import { useRoleFeedback } from "@/features/admin/roles/hooks/use-role-feedback"
 import { useRoleDeleteConfirm } from "@/features/admin/roles/hooks/use-role-delete-confirm"
 import { useRoleColumns } from "@/features/admin/roles/utils/columns"
 import { useRoleRowActions } from "@/features/admin/roles/utils/row-actions"
-import { resourceLogger } from "@/lib/config"
+import { resourceLogger } from "@/lib/config/resource-logger"
 
 import type { AdminRolesListParams } from "@/lib/query-keys"
 import type { RoleRow, RolesResponse, RolesTableClientProps } from "../types"

@@ -61,6 +61,14 @@ export {
 // Generate script - Lưu files tự động
 export { generateFeatureFiles } from "./generate-feature";
 
+// Sync helpers - Tự động generate code snippets để sync query keys và API routes
+export {
+  generateQueryKeysSnippet,
+  generateApiRoutesSnippet,
+  generateSyncInstructions,
+  generateAllSyncSnippets,
+} from "./sync-helpers";
+
 // Field extractor utilities
 export {
   extractFieldNames,
@@ -76,3 +84,15 @@ export {
   generateCreateDataMapping,
   generateUpdateDataMapping,
 } from "./field-extractor";
+
+// Query config utilities
+export {
+  ADMIN_QUERY_DEFAULTS,
+  ADMIN_MUTATION_DEFAULTS,
+  createAdminQueryOptions,
+  createAdminMutationOptions,
+  createAdminFetchOptions,
+} from "./query-config";
+
+// Common utilities (re-export from utils)
+export * from "./utils";

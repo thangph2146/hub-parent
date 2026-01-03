@@ -7,7 +7,7 @@ import { useResourceActions, useResourceBulkProcessing } from "@/features/admin/
 import type { CommentRow } from "../types"
 import type { FeedbackVariant } from "@/components/dialogs"
 import { COMMENT_MESSAGES } from "../constants/messages"
-import { resourceLogger } from "@/lib/config"
+import { resourceLogger } from "@/lib/config/resource-logger"
 import type { BulkActionResult } from "@/features/admin/resources/types"
 
 interface UseCommentActionsOptions {

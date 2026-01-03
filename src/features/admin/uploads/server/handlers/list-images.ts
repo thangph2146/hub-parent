@@ -9,7 +9,7 @@ import { getUserId } from "@/lib/api/api-route-helpers"
 import { STORAGE_DIR, initializeStorageDirectories } from "@/lib/utils/file-utils"
 import { promises as fs } from "fs"
 import path from "path"
-import { logger } from "@/lib/config"
+import { logger } from "@/lib/config/logger"
 import { scanDirectoryForImages } from "../utils/image-scanning"
 import { buildFolderTreeFromImages } from "../utils/folder-tree-builder"
 

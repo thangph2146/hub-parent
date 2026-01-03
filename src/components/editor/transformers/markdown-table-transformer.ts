@@ -22,11 +22,8 @@ import {
 } from "@lexical/table"
 import { $isParagraphNode, $isTextNode, LexicalNode } from "lexical"
 
-// import { EMOJI } from "@/registry/new-york-v4/editor/transformers/markdown-emoji-transformer"
 import { HR } from "@/components/editor/transformers/markdown-hr-transformer"
 import { IMAGE } from "@/components/editor/transformers/markdown-image-transformer"
-
-// import { TWEET } from "@/registry/new-york-v4/editor/transformers/markdown-tweet-transformer"
 
 // Very primitive table setup
 const TABLE_ROW_REG_EXP = /^(?:\|)(.+)(?:\|)\s?$/

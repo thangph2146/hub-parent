@@ -306,7 +306,7 @@ import { prisma } from "@/lib/prisma"
 import { getSocketServer } from "@/lib/socket/state"
 import { map${ResourceName}Record, serialize${ResourceName}ForTable } from "./helpers"
 import type { ${ResourceRow} } from "../types"
-import { resourceLogger } from "@/lib/config"
+import { resourceLogger } from "@/lib/config/resource-logger"
 
 ${includeConstant}export type ${ResourceName}Status = "active" | "deleted"
 

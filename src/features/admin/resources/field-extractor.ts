@@ -50,10 +50,12 @@ export const extractSearchFields = <
   for (const field of fields) {
     const fieldName =
       typeof field.name === "string" ? field.name : String(field.name);
+    const fieldType = field.type;
     if (
       !systemFields.has(fieldName) &&
-      searchableTypes.has(field.type) &&
-      field.type !== "editor" // Bỏ qua editor vì quá lớn
+      fieldType &&
+      searchableTypes.has(fieldType) &&
+      fieldType !== "editor" // Bỏ qua editor vì quá lớn
     ) {
       searchFields.push(fieldName);
     }

@@ -1,5 +1,5 @@
 import type { DataTableResult } from "@/components/tables"
-import { logger } from "@/lib/config"
+import { logger } from "@/lib/config/logger"
 import { serializeDate } from "@/features/admin/resources/server"
 import type { ListNotificationsResult, ListedNotification } from "./queries"
 import type { NotificationRow } from "../types"

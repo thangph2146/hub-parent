@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma"
 import { getSocketServer } from "@/lib/socket/state"
 import { mapSessionRecord, serializeSessionForTable } from "./helpers"
 import type { SessionRow } from "../types"
+import { resourceLogger } from "@/lib/config/resource-logger"
 
 const SUPER_ADMIN_ROOM = "role:super_admin"
 
@@ -59,6 +60,14 @@ export const emitSessionUpsert = async (
     previousStatus,
     newStatus,
   })
+  
+  resourceLogger.socket({
+    resource: "sessions",
+    action: previousStatus === null ? "create" : previousStatus !== newStatus ? "update" : "update",
+    event: "session:upsert",
+    resourceId: sessionId,
+    payload: { sessionId, previousStatus, newStatus },
+  })
 }
 
 export const emitSessionRemove = (sessionId: string, previousStatus: SessionStatus): void => {
@@ -68,6 +77,14 @@ export const emitSessionRemove = (sessionId: string, previousStatus: SessionStat
   io.to(SUPER_ADMIN_ROOM).emit("session:remove", {
     id: sessionId,
     previousStatus,
+  })
+  
+  resourceLogger.socket({
+    resource: "sessions",
+    action: "hard-delete",
+    event: "session:remove",
+    resourceId: sessionId,
+    payload: { sessionId, previousStatus },
   })
 }
 
@@ -111,6 +128,13 @@ export const emitSessionBatchUpsert = async (
       previousStatus,
       newStatus: resolveStatusFromRow(row),
     })),
+  })
+  
+  resourceLogger.actionFlow({
+    resource: "sessions",
+    action: "socket-update",
+    step: "success",
+    metadata: { count: rows.length, type: "batch" },
   })
 }
 

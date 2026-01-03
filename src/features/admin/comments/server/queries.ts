@@ -1,6 +1,6 @@
 import type { Prisma } from "@prisma/client"
 import { prisma } from "@/lib/prisma"
-import { resourceLogger } from "@/lib/config"
+import { resourceLogger } from "@/lib/config/resource-logger"
 import { validatePagination, buildPagination } from "@/features/admin/resources/server"
 import { mapCommentRecord, buildWhereClause } from "./helpers"
 import type { ListCommentsInput, CommentDetail, ListCommentsResult } from "../types"

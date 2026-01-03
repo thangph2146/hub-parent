@@ -17,5 +17,5 @@ export {
   type ColumnFilterSelectOption,
 } from "./data-table"
 
-export { ColumnFilterControl } from "./filter-controls"
+export { ColumnFilterControl } from "./filter-controls/column-filter-control"
 

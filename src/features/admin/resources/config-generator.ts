@@ -237,14 +237,25 @@ export const generateHooksFile = <
   }Row`;
   const resourceUpper = plural.toUpperCase();
 
+  const adminQueryKeyName =
+    "admin" + plural.charAt(0).toUpperCase() + plural.slice(1);
+
   let content = `import { createResourceHooks${
     config.hasToggleStatus ? ", useToggleStatus" : ""
   } } from "@/features/admin/resources/hooks"
 import { useResourceFormSubmit } from "@/features/admin/resources/hooks"
-import { apiRoutes } from "@/lib/api/routes"
-import { queryKeys } from "@/lib/query-keys"
+import { createAdminResourceKeys } from "@/lib/query-keys"
 import type { ${ResourceRow} } from "../types"
 import { ${resourceUpper}_MESSAGES } from "../constants/messages"
+
+const ${resourceUpper}_QUERY_KEYS = createAdminResourceKeys("${adminQueryKeyName}")
+
+const ${resourceUpper}_ACTION_ROUTES = {
+  delete: ${config.apiEndpoints.delete.toString()},
+  restore: ${config.apiEndpoints.restore.toString()},
+  hardDelete: ${config.apiEndpoints.hardDelete.toString()},
+  bulk: "${config.apiEndpoints.bulk}",
+}
 
 const { useActions, useFeedback, useDeleteConfirm } = createResourceHooks<${ResourceRow}>({
   resourceName: "${plural}",
@@ -258,6 +269,11 @@ const { useActions, useFeedback, useDeleteConfirm } = createResourceHooks<${Reso
     .toString()
     .replace(/\(row\) => /, "")},
   }),
+  customApiRoutes: ${resourceUpper}_ACTION_ROUTES,
+  customQueryKeys: {
+    all: () => ${resourceUpper}_QUERY_KEYS.all(),
+    detail: (id) => ${resourceUpper}_QUERY_KEYS.detail(id),
+  },
 })
 
 export const use${
@@ -304,12 +320,8 @@ export const use${
     resourceName: "${plural}",
     updateRoute: ${config.toggleStatusConfig.updateRoute.toString()},
     queryKeys: {
-      all: () => queryKeys.admin${
-        plural.charAt(0).toUpperCase() + plural.slice(1)
-      }.all(),
-      detail: (id) => queryKeys.admin${
-        plural.charAt(0).toUpperCase() + plural.slice(1)
-      }.detail(id),
+      all: () => ${resourceUpper}_QUERY_KEYS.all(),
+      detail: (id) => ${resourceUpper}_QUERY_KEYS.detail(id),
     },
     messages: ${resourceUpper}_MESSAGES,
     getRecordName: (row) => ${config.getRecordName

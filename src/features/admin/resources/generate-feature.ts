@@ -17,8 +17,10 @@
 
 import { writeFileSync, mkdirSync, existsSync } from "fs";
 import { join } from "path";
+import { logger } from "@/lib/config/logger";
 import type { AdminFeatureConfig, ServerConfig } from "./index";
-import { createFeature, createFeatureConfig } from "./index";
+import { createFeature, createFeatureConfig, generateAllSyncSnippets } from "./index";
+import type { AdminFeatureConfig as BaseAdminFeatureConfig } from "./config-generator";
 
 /**
  * Generate và lưu tất cả files cho một feature mới
@@ -83,20 +85,28 @@ export async function generateFeatureFiles<
   );
   writeFileSync(join(apiBaseDir, "bulk/route.ts"), files.apiRoutes.bulk);
 
-  console.log(`✅ Generated all files for ${resourceName} feature`);
-  console.log(`📁 Client files: ${baseDir}`);
-  console.log(`📁 API routes: ${apiBaseDir}`);
-  console.log(`\n✨ All files generated automatically and synchronized from form fields!`);
-  console.log(`\n📊 Synchronization:`);
-  console.log(`   ✓ Types ← formFields`);
-  console.log(`   ✓ Helpers ← formFields`);
-  console.log(`   ✓ Schemas ← formFields`);
-  console.log(`   ✓ Mutations ← formFields`);
-  console.log(`   ✓ Events & Queries ← Helpers (already generated)`);
-  console.log(`\n⚠️  Optional adjustments (only if needed):`);
-  console.log(`   1. Add unique checks in server/mutations.ts`);
-  console.log(`   2. Adjust validation in server/schemas.ts (for complex cases)`);
-  console.log(`   3. Custom mapRecord in server/helpers.ts (for complex relations)`);
+  logger.success(`Generated all files for ${resourceName} feature`, { baseDir, apiBaseDir });
+  logger.info("Files synchronized from form fields", {
+    types: "formFields",
+    helpers: "formFields",
+    schemas: "formFields",
+    mutations: "formFields",
+    queries: "helpers",
+    events: "helpers",
+  });
+  
+  // Generate sync instructions
+  const syncSnippets = generateAllSyncSnippets(featureConfig as BaseAdminFeatureConfig<{ id: string }>);
+  logger.info("Sync instructions", { instructions: syncSnippets.instructions });
+  
+  logger.warn("Optional adjustments", {
+    note: "Only if needed",
+    items: [
+      "Add unique checks in server/mutations.ts",
+      "Adjust validation in server/schemas.ts (for complex cases)",
+      "Custom mapRecord in server/helpers.ts (for complex relations)",
+    ],
+  });
 }
 
 // CLI support
@@ -104,22 +114,15 @@ if (require.main === module) {
   const resourceName = process.argv[2];
 
   if (!resourceName) {
-    console.error("Usage: npx tsx generate-feature.ts <resource-name>");
-    console.error("Example: npx tsx generate-feature.ts article");
+    logger.error("Usage: npx tsx generate-feature.ts <resource-name>");
+    logger.error("Example: npx tsx generate-feature.ts article");
     process.exit(1);
   }
 
-  console.error(
-    "⚠️  CLI mode requires config file. Please use the function directly:"
-  );
-  console.error(
-    `   import { generateFeatureFiles } from "@/features/admin/resources/generate-feature"`
-  );
-  console.error(
-    `   import { ${resourceName}FeatureConfig, ${resourceName}ServerConfig } from "./${resourceName}-config"`
-  );
-  console.error(
-    `   await generateFeatureFiles("${resourceName}", ${resourceName}FeatureConfig, ${resourceName}ServerConfig)`
-  );
+  logger.warn("CLI mode requires config file. Please use the function directly:", {
+    import1: `import { generateFeatureFiles } from "@/features/admin/resources/generate-feature"`,
+    import2: `import { ${resourceName}FeatureConfig, ${resourceName}ServerConfig } from "./${resourceName}-config"`,
+    usage: `await generateFeatureFiles("${resourceName}", ${resourceName}FeatureConfig, ${resourceName}ServerConfig)`,
+  });
   process.exit(1);
 }

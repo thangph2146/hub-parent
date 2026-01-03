@@ -5,8 +5,21 @@
 
 import { useResourceActions } from "./use-resource-actions"
 import { apiRoutes } from "@/lib/api/routes"
-import { queryKeys } from "@/lib/query-keys"
+import { queryKeys, createAdminResourceKeys } from "@/lib/query-keys"
+import { generateResourceApiRoutes } from "@/lib/permissions/api-route-generators"
 import type { FeedbackVariant } from "@/components/dialogs"
+
+type ResourceActionApiRoutes = {
+  delete: (id: string) => string
+  restore: (id: string) => string
+  hardDelete: (id: string) => string
+  bulk: string
+}
+
+type ResourceActionQueryKeys = {
+  all: () => readonly unknown[]
+  detail?: (id: string) => readonly unknown[]
+}
 
 export interface CreateResourceActionsHookConfig<TRow extends { id: string }> {
   resourceName: string
@@ -27,6 +40,8 @@ export interface CreateResourceActionsHookConfig<TRow extends { id: string }> {
   }
   getRecordName: (row: TRow) => string
   getLogMetadata?: (row: TRow) => Record<string, unknown>
+  customApiRoutes?: ResourceActionApiRoutes
+  customQueryKeys?: ResourceActionQueryKeys
 }
 
 export interface UseResourceActionsHookOptions {
@@ -55,41 +70,25 @@ export const createResourceActionsHook = <TRow extends { id: string }>(
 ) => {
   return function useActions(options: UseResourceActionsHookOptions) {
     const resourceName = config.resourceName
-    const queryKeyName = `admin${resourceName.charAt(0).toUpperCase() + resourceName.slice(1)}` as keyof typeof queryKeys
+    const queryKeyName = `admin${capitalize(resourceName)}` as keyof typeof queryKeys
     const apiRouteName = resourceName as keyof typeof apiRoutes
 
-    const adminQueryKeys = queryKeys[queryKeyName]
-    const adminApiRoutes = apiRoutes[apiRouteName]
-
-    // Type guard để kiểm tra query keys
-    if (!adminQueryKeys || typeof (adminQueryKeys as { all?: () => unknown }).all !== "function") {
-      throw new Error(`Query keys not found for resource: ${resourceName}`)
-    }
-
-    // Type guard để kiểm tra API routes
-    if (!adminApiRoutes || typeof (adminApiRoutes as { delete?: (id: string) => string }).delete !== "function") {
-      throw new Error(`API routes not found for resource: ${resourceName}`)
-    }
-
-    const typedQueryKeys = adminQueryKeys as { all: () => readonly unknown[]; detail?: (id: string) => readonly unknown[] }
-    const typedApiRoutes = adminApiRoutes as {
-      delete: (id: string) => string
-      restore: (id: string) => string
-      hardDelete: (id: string) => string
-      bulk: string
-    }
+    const resolvedQueryKeys = resolveQueryKeys(config.customQueryKeys, queryKeys[queryKeyName], queryKeyName)
+    const resolvedApiRoutes = resolveApiRoutes(config.customApiRoutes, apiRoutes[apiRouteName], resourceName)
 
     return useResourceActions<TRow>({
       resourceName,
       queryKeys: {
-        all: () => typedQueryKeys.all(),
-        detail: (id) => typedQueryKeys.detail?.(id) || [],
+        all: () => resolvedQueryKeys.all(),
+        detail: resolvedQueryKeys.detail
+          ? (id: string) => resolvedQueryKeys.detail!(id)
+          : undefined,
       },
       apiRoutes: {
-        delete: (id) => typedApiRoutes.delete(id),
-        restore: (id) => typedApiRoutes.restore(id),
-        hardDelete: (id) => typedApiRoutes.hardDelete(id),
-        bulk: typedApiRoutes.bulk,
+        delete: (id) => resolvedApiRoutes.delete(id),
+        restore: (id) => resolvedApiRoutes.restore(id),
+        hardDelete: (id) => resolvedApiRoutes.hardDelete(id),
+        bulk: resolvedApiRoutes.bulk,
       },
       messages: config.messages,
       getRecordName: config.getRecordName,
@@ -105,3 +104,91 @@ export const createResourceActionsHook = <TRow extends { id: string }>(
   }
 }
 
+const capitalize = (value: string): string => value.charAt(0).toUpperCase() + value.slice(1)
+
+const isResourceRoutes = (routes: unknown): routes is ResourceActionApiRoutes => {
+  if (!routes || typeof routes !== "object") return false
+  const candidate = routes as Record<string, unknown>
+  return (
+    typeof candidate.delete === "function" &&
+    typeof candidate.restore === "function" &&
+    typeof candidate.hardDelete === "function" &&
+    typeof candidate.bulk === "string"
+  )
+}
+
+const isQueryKeysConfig = (keys: unknown): keys is ResourceActionQueryKeys => {
+  if (!keys || typeof keys !== "object") return false
+  const candidate = keys as Record<string, unknown>
+  return typeof candidate.all === "function"
+}
+
+const resolveApiRoutes = (
+  override: ResourceActionApiRoutes | undefined,
+  preset: unknown,
+  resourceName: string
+): ResourceActionApiRoutes => {
+  if (override) {
+    return override
+  }
+
+  if (isResourceRoutes(preset)) {
+    return preset
+  }
+
+  return generateResourceApiRoutes(resourceName)
+}
+
+const resolveQueryKeys = (
+  override: ResourceActionQueryKeys | undefined,
+  preset: unknown,
+  queryKeyName: string
+): ResourceActionQueryKeys => {
+  if (override) {
+    return override
+  }
+
+  if (isQueryKeysConfig(preset)) {
+    return preset
+  }
+
+  return createAdminResourceKeys(queryKeyName)
+}
+
+/**
+ * Helper để tạo API routes config từ resource name
+ * Fallback tự động nếu không tìm thấy trong apiRoutes
+ */
+export const createApiRoutesConfig = (resourceName: string): ResourceActionApiRoutes => {
+  const routes = apiRoutes[resourceName as keyof typeof apiRoutes]
+
+  if (isResourceRoutes(routes)) {
+    return routes
+  }
+
+  // Fallback: tự động generate từ resource name
+  return generateResourceApiRoutes(resourceName)
+}
+
+const isQueryKeysWithAll = (keys: unknown): keys is { all: () => readonly unknown[] } => {
+  if (!keys || typeof keys !== "object") return false
+  const candidate = keys as Record<string, unknown>
+  return typeof candidate.all === "function"
+}
+
+/**
+ * Helper để tạo query keys config từ resource name
+ * Fallback tự động nếu không tìm thấy trong queryKeys
+ */
+export const createQueryKeysConfig = (resourceName: string): () => readonly unknown[] => {
+  const keyName = `admin${capitalize(resourceName)}` as keyof typeof queryKeys
+  const keys = queryKeys[keyName]
+
+  if (isQueryKeysWithAll(keys)) {
+    return () => keys.all()
+  }
+
+  // Fallback: tự động tạo từ resource name
+  const fallbackKeys = createAdminResourceKeys(keyName)
+  return () => fallbackKeys.all()
+}

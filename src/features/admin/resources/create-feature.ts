@@ -24,6 +24,7 @@
  * ```
  */
 
+import { logger } from "@/lib/config/logger";
 import type { AdminFeatureConfig } from "./config-generator";
 import type { ServerConfig } from "./server-generator";
 import type { ResourceFormField, ResourceFormSection } from "./components";
@@ -84,7 +85,7 @@ export interface GeneratedFiles {
 /**
  * Tạo tất cả files cần thiết cho một feature admin mới
  *
- * Xem FEATURE_CONFIG_EXAMPLE.ts và TEMPLATE.md để xem ví dụ sử dụng
+ * Xem README.md để xem ví dụ sử dụng
  */
 export const createFeature = <
   TRow extends { id: string },
@@ -153,16 +154,15 @@ export const createFeatureConfig = <
 ): CompleteFeatureConfig<TRow, TFormData> => {
   // Validate: Đảm bảo resourceName khớp nhau
   if (feature.resourceName.singular !== server.resourceName.singular) {
-    console.warn(
-      `⚠️  Resource name mismatch: feature="${feature.resourceName.singular}" vs server="${server.resourceName.singular}"`
-    );
+    logger.warn("Resource name mismatch", {
+      feature: feature.resourceName.singular,
+      server: server.resourceName.singular,
+    });
   }
 
   // Validate: Đảm bảo formFields có fields
   if (!feature.formFields?.fields || feature.formFields.fields.length === 0) {
-    console.warn(
-      `⚠️  No form fields defined. Types, Helpers, Schemas, and Mutations will be generated with TODO comments.`
-    );
+    logger.warn("No form fields defined. Types, Helpers, Schemas, and Mutations will be generated with TODO comments.");
   }
 
   return { feature, server };

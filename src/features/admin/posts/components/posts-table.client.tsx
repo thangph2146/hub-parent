@@ -32,7 +32,7 @@ import { usePostRowActions } from "../utils/row-actions"
 
 import type { PostRow, PostsResponse, PostsTableClientProps } from "../types"
 import { POST_CONFIRM_MESSAGES, POST_LABELS } from "../constants/messages"
-import { resourceLogger } from "@/lib/config"
+import { resourceLogger } from "@/lib/config/resource-logger"
 import { sanitizeSearchQuery } from "@/lib/api/validation"
 import { IconSize } from "@/components/ui/typography"
 

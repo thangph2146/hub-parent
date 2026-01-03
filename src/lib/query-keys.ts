@@ -66,7 +66,7 @@ const normalizeListParams = <T extends BaseListParams>(params: T): T => ({
 /**
  * Factory to create admin resource query keys
  */
-const createAdminResourceKeys = (resource: string) => ({
+export const createAdminResourceKeys = (resource: string) => ({
   all: (): readonly unknown[] => [resource],
   list: (params: BaseListParams): readonly unknown[] => [resource, normalizeListParams(params)],
   detail: (id: string): readonly unknown[] => [resource, "detail", id],

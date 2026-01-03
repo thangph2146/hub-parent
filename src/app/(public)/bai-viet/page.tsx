@@ -8,6 +8,7 @@ import { PostSort } from "@/features/public/post/components/post-sort"
 import { getPosts, getCategories, getTags } from "@/features/public/post/server/queries"
 import { appConfig, getOpenGraphConfig, getTwitterConfig } from "@/lib/config"
 import { CollapsibleSection } from "@/features/public/post/components/collapsible-section"
+import { PostBreadcrumb } from "@/components/public/post/post-breadcrumb"
 
 const openGraphConfig = getOpenGraphConfig();
 const twitterConfig = getTwitterConfig();
@@ -74,8 +75,29 @@ export default async function PostPage({ searchParams }: PostPageProps) {
     getTags(),
   ])
 
+  // Get category and tag names for breadcrumb
+  const firstCategorySlug = categoriesParam[0]
+  const firstTagSlug = tagsParam[0]
+  const category = firstCategorySlug 
+    ? categories.find(cat => cat.slug === firstCategorySlug)
+    : null
+  const tag = firstTagSlug
+    ? tags.find(t => t.slug === firstTagSlug)
+    : null
+
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-12">
+      {/* Breadcrumb */}
+      <div className="mb-6">
+        <PostBreadcrumb
+          categoryName={category?.name}
+          categorySlug={category?.slug}
+          tagName={tag?.name}
+          tagSlug={tag?.slug}
+          isListPage={true}
+        />
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] xl:grid-cols-[300px_1fr] gap-6 sm:gap-8 lg:gap-12">
         {/* Sidebar - Category Navigation & Tags */}
         <aside className="lg:sticky lg:top-20 lg:h-fit lg:max-h-[calc(100vh-5rem)] lg:overflow-y-auto">

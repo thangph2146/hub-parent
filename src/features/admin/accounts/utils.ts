@@ -1,16 +1,3 @@
-import { getUserInitials, validatePassword, validateName } from "@/features/admin/resources/utils"
-
-// Re-export common utilities from resources
-export { getUserInitials, validatePassword, validateName }
-
-type StructuredAddress = {
-  address?: string
-  ward?: string
-  district?: string
-  city?: string
-  postalCode?: string
-}
-
 type ParsedAddress = {
   addressStreet?: string | null
   addressWard?: string | null
@@ -44,35 +31,6 @@ export const parseAddressToFormFields = (address: string | null): ParsedAddress 
     // Legacy support: keep as simple string
   }
   return {}
-}
-
-export const parseAddressToStructured = (address: string | null): StructuredAddress | null => {
-  if (!address) return null
-  try {
-    const parsed = typeof address === "string" ? JSON.parse(address) : address
-    if (parsed && typeof parsed === "object" && parsed !== null) {
-      return parsed as StructuredAddress
-    }
-  } catch {
-    // If not JSON, return null
-  }
-  return null
-}
-
-export const formatAddressForDisplay = (address: string | null): string => {
-  if (!address) return ""
-  const structured = parseAddressToStructured(address)
-  if (structured) {
-    const parts = [
-      structured.address,
-      structured.ward,
-      structured.district,
-      structured.city,
-      structured.postalCode,
-    ].filter(Boolean)
-    return parts.join(", ")
-  }
-  return address
 }
 
 export const transformAddressFieldsForSubmit = (

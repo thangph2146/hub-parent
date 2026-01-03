@@ -1,4 +1,4 @@
-import { resourceLogger } from "@/lib/config";
+import { resourceLogger } from "@/lib/config/resource-logger";
 import {
   createNotificationForAllAdmins,
   emitNotificationToAllAdminsAfterCreate,

@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma"
 import { getSocketServer } from "@/lib/socket/state"
-import { logger } from "@/lib/config"
+import { logger } from "@/lib/config/logger"
 
 export const emitGroupDeleted = async (groupId: string): Promise<void> => {
   const io = getSocketServer()

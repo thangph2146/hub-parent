@@ -42,6 +42,16 @@ export interface CreateResourceHooksConfig<TRow extends { id: string }> {
   }
   getRecordName: (row: TRow) => string
   getLogMetadata?: (row: TRow) => Record<string, unknown>
+  customApiRoutes?: {
+    delete: (id: string) => string
+    restore: (id: string) => string
+    hardDelete: (id: string) => string
+    bulk: string
+  }
+  customQueryKeys?: {
+    all: () => readonly unknown[]
+    detail?: (id: string) => readonly unknown[]
+  }
 }
 
 /**
@@ -64,7 +74,14 @@ export interface CreateResourceHooksConfig<TRow extends { id: string }> {
 export const createResourceHooks = <TRow extends { id: string }>(
   config: CreateResourceHooksConfig<TRow>
 ) => {
-  const useActions = createResourceActionsHook<TRow>(config)
+  const useActions = createResourceActionsHook<TRow>({
+    resourceName: config.resourceName,
+    messages: config.messages,
+    getRecordName: config.getRecordName,
+    getLogMetadata: config.getLogMetadata,
+    customApiRoutes: config.customApiRoutes,
+    customQueryKeys: config.customQueryKeys,
+  })
   const useFeedback = createFeedbackHook()
   const useDeleteConfirm = createDeleteConfirmHook<TRow>()
 

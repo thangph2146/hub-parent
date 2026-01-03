@@ -3,7 +3,7 @@ import { useToast } from "@/hooks/use-toast"
 import { extractAxiosErrorMessage } from "@/lib/utils/api-utils"
 import { apiClient } from "@/lib/api/axios"
 import { stripApiBase } from "@/lib/config/api-paths"
-import { logger } from "@/lib/config"
+import { logger } from "@/lib/config/logger"
 import type { AxiosResponse } from "axios"
 
 export interface UseResourceFormSubmitOptions {

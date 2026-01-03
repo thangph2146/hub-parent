@@ -1,7 +1,7 @@
 import { randomBytes } from "crypto"
 import { prisma } from "@/lib/prisma"
 import { emitSessionUpsert } from "./events"
-import { logger } from "@/lib/config"
+import { logger } from "@/lib/config/logger"
 
 interface CreateLoginSessionParams {
   userId: string

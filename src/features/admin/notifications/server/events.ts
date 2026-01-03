@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma"
 import { getSocketServer, storeNotificationInCache, mapNotificationToPayload } from "@/lib/socket/state"
-import { logger } from "@/lib/config"
+import { logger } from "@/lib/config/logger"
+import { resourceLogger } from "@/lib/config/resource-logger"
 import type { Notification } from "@prisma/client"
 
 export const emitNotificationNew = async (notification: Notification): Promise<void> => {
@@ -11,9 +12,12 @@ export const emitNotificationNew = async (notification: Notification): Promise<v
     const socketNotification = mapNotificationToPayload(notification)
     storeNotificationInCache(notification.userId, socketNotification)
     io.to(`user:${notification.userId}`).emit("notification:new", socketNotification)
-    logger.debug("Socket notification emitted for user", {
-      notificationId: notification.id,
-      userId: notification.userId,
+    resourceLogger.socket({
+      resource: "notifications",
+      action: "create",
+      event: "notification:new",
+      resourceId: notification.id,
+      payload: { notificationId: notification.id, userId: notification.userId },
     })
   } catch (error) {
     logger.error("Failed to emit socket notification", error instanceof Error ? error : new Error(String(error)))
@@ -48,8 +52,11 @@ export const emitNotificationNewForSuperAdmins = async (
       io.to("role:super_admin").emit("notification:new", roleNotification)
     }
 
-    logger.debug("Socket notifications emitted for super admins", {
-      count: notifications.length,
+    resourceLogger.actionFlow({
+      resource: "notifications",
+      action: "socket-update",
+      step: "success",
+      metadata: { count: notifications.length, target: "super_admins", type: "batch" },
     })
   } catch (error) {
     logger.error("Failed to emit socket notifications for super admins", error instanceof Error ? error : new Error(String(error)))
@@ -85,8 +92,11 @@ export const emitNotificationNewForAllAdmins = async (
       io.to("role:admin").emit("notification:new", roleNotification)
     }
 
-    logger.debug("Socket notifications emitted for all admins", {
-      count: notifications.length,
+    resourceLogger.actionFlow({
+      resource: "notifications",
+      action: "socket-update",
+      step: "success",
+      metadata: { count: notifications.length, target: "all_admins", type: "batch" },
     })
   } catch (error) {
     logger.error("Failed to emit socket notifications for all admins", error instanceof Error ? error : new Error(String(error)))
@@ -100,9 +110,12 @@ export const emitNotificationUpdated = (notification: Notification): void => {
   try {
     const payload = mapNotificationToPayload(notification)
     io.to(`user:${notification.userId}`).emit("notification:updated", payload)
-    logger.debug("Socket notification update emitted", {
-      notificationId: notification.id,
-      userId: notification.userId,
+    resourceLogger.socket({
+      resource: "notifications",
+      action: "update",
+      event: "notification:updated",
+      resourceId: notification.id,
+      payload: { notificationId: notification.id, userId: notification.userId },
     })
   } catch (error) {
     logger.error("Failed to emit socket notification update", error instanceof Error ? error : new Error(String(error)))
@@ -115,7 +128,13 @@ export const emitNotificationDeleted = (notificationId: string, userId: string):
 
   try {
     io.to(`user:${userId}`).emit("notification:deleted", { id: notificationId })
-    logger.debug("Socket notification deletion emitted", { notificationId, userId })
+    resourceLogger.socket({
+      resource: "notifications",
+      action: "delete",
+      event: "notification:deleted",
+      resourceId: notificationId,
+      payload: { notificationId, userId },
+    })
   } catch (error) {
     logger.error("Failed to emit socket notification deletion", error instanceof Error ? error : new Error(String(error)))
   }
@@ -141,7 +160,12 @@ export const emitNotificationsSync = async (
     })
 
     io.to(`user:${userId}`).emit("notifications:sync", payloads)
-    logger.debug("Socket notifications sync emitted", { userId, count: payloads.length })
+    resourceLogger.actionFlow({
+      resource: "notifications",
+      action: "socket-update",
+      step: "success",
+      metadata: { userId, count: payloads.length, type: "sync" },
+    })
   } catch (error) {
     logger.error("Failed to emit socket notifications sync", error instanceof Error ? error : new Error(String(error)))
   }
@@ -153,7 +177,12 @@ export const emitNotificationsDeleted = (notificationIds: string[], userId: stri
 
   try {
     io.to(`user:${userId}`).emit("notifications:deleted", { ids: notificationIds })
-    logger.debug("Socket notifications deletion emitted", { userId, count: notificationIds.length })
+    resourceLogger.actionFlow({
+      resource: "notifications",
+      action: "bulk-delete",
+      step: "success",
+      metadata: { userId, count: notificationIds.length },
+    })
   } catch (error) {
     logger.error("Failed to emit socket notifications deletion", error instanceof Error ? error : new Error(String(error)))
   }

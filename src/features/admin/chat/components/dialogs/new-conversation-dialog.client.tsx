@@ -29,7 +29,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { Loader2, User } from "lucide-react"
-import { logger } from "@/lib/config"
+import { logger } from "@/lib/config/logger"
 import { requestJson } from "@/lib/api/client"
 import { withApiBase } from "@/lib/config/api-paths"
 import { TypographyP, TypographyPSmall, TypographyPMuted, IconSize } from "@/components/ui/typography"

@@ -42,7 +42,6 @@ import {
 import { $getRoot } from "lexical"
 import type { LexicalNode } from "lexical"
 
-// import brokenImage from '@/registry/new-york-v4/editor/images/image-broken.svg';
 import { ContentEditable } from "@/components/editor/editor-ui/content-editable"
 import { ImageResizer } from "@/components/editor/editor-ui/image-resizer"
 import {

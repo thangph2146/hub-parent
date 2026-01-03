@@ -1,7 +1,7 @@
 "use client"
 
 import { ChatTemplate } from "./chat-template.client"
-import { logger } from "@/lib/config"
+import { logger } from "@/lib/config/logger"
 import type { ChatFilterType, Contact, Message } from "@/components/chat/types"
 import { requestJson } from "@/lib/api/client"
 import { withApiBase } from "@/lib/config/api-paths"

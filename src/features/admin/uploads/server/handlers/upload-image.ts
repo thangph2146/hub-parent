@@ -17,7 +17,7 @@ import {
 } from "@/lib/utils/file-utils"
 import { promises as fs } from "fs"
 import path from "path"
-import { logger } from "@/lib/config"
+import { logger } from "@/lib/config/logger"
 
 export const uploadImageHandler = async (
   req: NextRequest,

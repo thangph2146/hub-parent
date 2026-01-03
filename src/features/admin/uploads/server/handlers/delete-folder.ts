@@ -8,7 +8,7 @@ import type { ApiRouteContext } from "@/lib/api/types"
 import { getUserId } from "@/lib/api/api-route-helpers"
 import { deleteDirectory } from "@/lib/utils/file-utils"
 import { promises as fs } from "fs"
-import { logger } from "@/lib/config"
+import { logger } from "@/lib/config/logger"
 import { resolveAndValidateFolderPath } from "../utils/path-validation"
 
 export const deleteFolderHandler = async (req: NextRequest, context: ApiRouteContext) => {

@@ -7,7 +7,7 @@ import { NextRequest, NextResponse } from "next/server"
 import type { ApiRouteContext } from "@/lib/api/types"
 import { getUserId } from "@/lib/api/api-route-helpers"
 import { initializeStorageDirectories } from "@/lib/utils/file-utils"
-import { logger } from "@/lib/config"
+import { logger } from "@/lib/config/logger"
 import { scanStorageDirectoryForFolders } from "../utils/folder-scanning"
 
 export const listFoldersHandler = async (_req: NextRequest, context: ApiRouteContext) => {

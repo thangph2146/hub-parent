@@ -33,7 +33,8 @@ import {
 import { TypographySpanSmallMuted, TypographyPMuted, IconSize } from "@/components/ui/typography"
 import { Flex } from "@/components/ui/flex"
 import { useDebouncedCallback } from "@/hooks/use-debounced-callback"
-import { ColumnFilterControl, type ColumnFilterConfig } from "./filter-controls"
+import { ColumnFilterControl } from "./filter-controls/column-filter-control"
+import type { ColumnFilterConfig } from "./filter-controls/types"
 
 type UnknownRecord = Record<string, unknown>
 
@@ -47,7 +48,7 @@ export interface DataTableColumn<T extends object> {
 }
 
 // Re-export filter types for convenience
-export type { ColumnFilterConfig, ColumnFilterSelectOption } from "./filter-controls"
+export type { ColumnFilterConfig, ColumnFilterSelectOption } from "./filter-controls/types"
 
 export interface DataTableQueryState {
     page: number

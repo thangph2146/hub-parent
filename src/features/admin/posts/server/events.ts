@@ -2,7 +2,7 @@ import { prisma } from "@/lib/prisma"
 import { getSocketServer } from "@/lib/socket/state"
 import { mapPostRecord, serializePostForTable } from "./helpers"
 import type { PostRow } from "../types"
-import { resourceLogger } from "@/lib/config"
+import { resourceLogger } from "@/lib/config/resource-logger"
 
 const SUPER_ADMIN_ROOM = "role:super_admin"
 
@@ -76,6 +76,14 @@ export const emitPostUpsert = async (
     previousStatus,
     newStatus,
   })
+  
+  resourceLogger.socket({
+    resource: "posts",
+    action: previousStatus === null ? "create" : previousStatus !== newStatus ? "update" : "update",
+    event: "post:upsert",
+    resourceId: postId,
+    payload: { postId, previousStatus, newStatus },
+  })
 }
 
 export const emitBatchPostUpsert = async (
@@ -127,6 +135,14 @@ export const emitPostRemove = (postId: string, previousStatus: PostStatus): void
   io.to(SUPER_ADMIN_ROOM).emit("post:remove", {
     id: postId,
     previousStatus,
+  })
+  
+  resourceLogger.socket({
+    resource: "posts",
+    action: "hard-delete",
+    event: "post:remove",
+    resourceId: postId,
+    payload: { postId, previousStatus },
   })
 }
 

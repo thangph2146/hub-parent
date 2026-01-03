@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma"
 import { getSocketServer } from "@/lib/socket/state"
 import { mapCommentRecord, serializeCommentForTable } from "./helpers"
 import type { CommentRow } from "../types"
+import { resourceLogger } from "@/lib/config/resource-logger"
 
 const SUPER_ADMIN_ROOM = "role:super_admin"
 
@@ -61,6 +62,14 @@ export const emitCommentUpsert = async (
     previousStatus,
     newStatus,
   })
+  
+  resourceLogger.socket({
+    resource: "comments",
+    action: previousStatus === null ? "create" : previousStatus !== newStatus ? "update" : "update",
+    event: "comment:upsert",
+    resourceId: commentId,
+    payload: { commentId, previousStatus, newStatus },
+  })
 }
 
 export const emitCommentRemove = (commentId: string, previousStatus: CommentStatus): void => {
@@ -70,6 +79,14 @@ export const emitCommentRemove = (commentId: string, previousStatus: CommentStat
   io.to(SUPER_ADMIN_ROOM).emit("comment:remove", {
     id: commentId,
     previousStatus,
+  })
+  
+  resourceLogger.socket({
+    resource: "comments",
+    action: "hard-delete",
+    event: "comment:remove",
+    resourceId: commentId,
+    payload: { commentId, previousStatus },
   })
 }
 
@@ -114,5 +131,12 @@ export const emitCommentBatchUpsert = async (
   io.to(SUPER_ADMIN_ROOM).emit("comment:batch-upsert", {
     comments: rows,
     previousStatus,
+  })
+  
+  resourceLogger.actionFlow({
+    resource: "comments",
+    action: "socket-update",
+    step: "success",
+    metadata: { count: rows.length, type: "batch" },
   })
 }

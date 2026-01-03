@@ -4,6 +4,7 @@
  */
 
 import { ConfirmDialog } from "@/components/dialogs/confirm-dialog"
+import { logger } from "@/lib/config/logger"
 import type {
   BulkDeleteConfirmState,
   SingleDeleteConfirmState,
@@ -44,7 +45,7 @@ export const DeleteDialogs = ({
   onCloseSingleDelete,
   onCloseFolderDelete,
 }: DeleteDialogsProps) => {
-  console.log("DeleteDialogs render", {
+  logger.debug("DeleteDialogs render", {
     bulkDeleteConfirm,
     hasBulkDeleteConfirm: !!bulkDeleteConfirm,
     bulkDeleteConfirmOpen: bulkDeleteConfirm?.open,

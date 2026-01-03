@@ -4,7 +4,7 @@ import { useResourceActions, useToggleStatus } from "@/features/admin/resources/
 import type { StudentRow } from "../types"
 import type { FeedbackVariant } from "@/components/dialogs"
 import { STUDENT_MESSAGES } from "../constants/messages"
-import { resourceLogger } from "@/lib/config"
+import { resourceLogger } from "@/lib/config/resource-logger"
 
 interface UseStudentActionsOptions {
   canDelete: boolean

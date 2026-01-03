@@ -1,7 +1,5 @@
 "use server"
 
-"use server"
-
 import bcrypt from "bcryptjs"
 import type { Prisma } from "@prisma/client"
 import { prisma } from "@/lib/prisma"

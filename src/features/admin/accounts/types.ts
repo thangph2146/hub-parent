@@ -17,6 +17,3 @@ export interface AccountProfile {
   [key: string]: unknown
 }
 
-// Re-export UpdateAccountInput from schemas to ensure consistency
-export type { UpdateAccountInput } from "./server/schemas"
-

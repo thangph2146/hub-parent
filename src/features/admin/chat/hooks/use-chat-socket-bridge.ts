@@ -11,7 +11,7 @@ import {
 import { isMessageUnreadByUser } from "@/components/chat/utils/message-helpers"
 import { MAX_MESSAGES_IN_STATE } from "@/components/chat/constants"
 import { calculateUnreadCount } from "./use-chat-helpers"
-import { logger } from "@/lib/config"
+import { logger } from "@/lib/config/logger"
 
 interface UseChatSocketBridgeProps {
   currentUserId: string

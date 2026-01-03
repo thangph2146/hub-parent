@@ -38,6 +38,7 @@ import { createGetRoute, createPostRoute } from "@/lib/api/api-route-wrapper"
 import type { ApiRouteContext } from "@/lib/api/types"
 import { validatePagination, sanitizeSearchQuery } from "@/lib/api/validation"
 import { createSuccessResponse, createErrorResponse } from "@/lib/config"
+import { logger } from "@/lib/config/logger"
 import type { ${ResourceName}sResponse } from "@/features/admin/${resourcePlural}/types"
 
 async function get${ResourceName}sHandler(req: NextRequest, _context: ApiRouteContext) {
@@ -116,7 +117,7 @@ async function post${ResourceName}sHandler(req: NextRequest, context: ApiRouteCo
     if (error instanceof NotFoundError) {
       return createErrorResponse(error.message || "Không tìm thấy", { status: 404 })
     }
-    console.error("Error creating ${resourceSingular}:", error)
+    logger.error("Error creating ${resourceSingular}", error instanceof Error ? error : new Error(String(error)))
     return createErrorResponse("Đã xảy ra lỗi khi tạo ${resourceName.displayName.toLowerCase()}", { status: 500 })
   }
 }
@@ -159,6 +160,7 @@ import { Update${ResourceName}Schema } from "@/features/admin/${resourcePlural}/
 import { createGetRoute, createPutRoute, createDeleteRoute } from "@/lib/api/api-route-wrapper"
 import type { ApiRouteContext } from "@/lib/api/types"
 import { createSuccessResponse, createErrorResponse } from "@/lib/config"
+import { logger } from "@/lib/config/logger"
 
 async function get${ResourceName}Handler(_req: NextRequest, _context: ApiRouteContext, ...args: unknown[]) {
   const { params } = args[0] as { params: Promise<{ id: string }> }
@@ -175,7 +177,7 @@ async function get${ResourceName}Handler(_req: NextRequest, _context: ApiRouteCo
     }
     return createSuccessResponse(serialize${ResourceName}Detail(${resourceSingular}))
   } catch (error) {
-    console.error("Error getting ${resourceSingular}:", error)
+    logger.error("Error getting ${resourceSingular}", error instanceof Error ? error : new Error(String(error)))
     return createErrorResponse("Đã xảy ra lỗi khi lấy ${resourceName.displayName.toLowerCase()}", { status: 500 })
   }
 }
@@ -218,7 +220,7 @@ async function put${ResourceName}Handler(req: NextRequest, context: ApiRouteCont
     if (error instanceof NotFoundError) {
       return createErrorResponse(error.message || "Không tìm thấy", { status: 404 })
     }
-    console.error("Error updating ${resourceSingular}:", error)
+    logger.error("Error updating ${resourceSingular}", error instanceof Error ? error : new Error(String(error)))
     return createErrorResponse("Đã xảy ra lỗi khi cập nhật ${resourceName.displayName.toLowerCase()}", { status: 500 })
   }
 }
@@ -247,7 +249,7 @@ async function delete${ResourceName}Handler(_req: NextRequest, context: ApiRoute
     if (error instanceof NotFoundError) {
       return createErrorResponse(error.message || "Không tìm thấy", { status: 404 })
     }
-    console.error("Error deleting ${resourceSingular}:", error)
+    logger.error("Error deleting ${resourceSingular}", error instanceof Error ? error : new Error(String(error)))
     return createErrorResponse("Đã xảy ra lỗi khi xóa ${resourceName.displayName.toLowerCase()}", { status: 500 })
   }
 }
@@ -284,6 +286,7 @@ import {
 import { createPostRoute } from "@/lib/api/api-route-wrapper"
 import type { ApiRouteContext } from "@/lib/api/types"
 import { createSuccessResponse, createErrorResponse } from "@/lib/config"
+import { logger } from "@/lib/config/logger"
 
 async function restore${ResourceName}Handler(_req: NextRequest, context: ApiRouteContext, ...args: unknown[]) {
   const { params } = args[0] as { params: Promise<{ id: string }> }
@@ -309,7 +312,7 @@ async function restore${ResourceName}Handler(_req: NextRequest, context: ApiRout
     if (error instanceof NotFoundError) {
       return createErrorResponse(error.message || "Không tìm thấy", { status: 404 })
     }
-    console.error("Error restoring ${resourceSingular}:", error)
+    logger.error("Error restoring ${resourceSingular}", error instanceof Error ? error : new Error(String(error)))
     return createErrorResponse("Đã xảy ra lỗi khi khôi phục ${resourceName.displayName.toLowerCase()}", { status: 500 })
   }
 }
@@ -344,6 +347,7 @@ import {
 import { createDeleteRoute } from "@/lib/api/api-route-wrapper"
 import type { ApiRouteContext } from "@/lib/api/types"
 import { createSuccessResponse, createErrorResponse } from "@/lib/config"
+import { logger } from "@/lib/config/logger"
 
 async function hardDelete${ResourceName}Handler(_req: NextRequest, context: ApiRouteContext, ...args: unknown[]) {
   const { params } = args[0] as { params: Promise<{ id: string }> }
@@ -369,7 +373,7 @@ async function hardDelete${ResourceName}Handler(_req: NextRequest, context: ApiR
     if (error instanceof NotFoundError) {
       return createErrorResponse(error.message || "Không tìm thấy", { status: 404 })
     }
-    console.error("Error hard deleting ${resourceSingular}:", error)
+    logger.error("Error hard deleting ${resourceSingular}", error instanceof Error ? error : new Error(String(error)))
     return createErrorResponse("Đã xảy ra lỗi khi xóa vĩnh viễn ${resourceName.displayName.toLowerCase()}", { status: 500 })
   }
 }
@@ -406,6 +410,7 @@ import { Bulk${ResourceName}ActionSchema } from "@/features/admin/${resourcePlur
 import { createPostRoute } from "@/lib/api/api-route-wrapper"
 import type { ApiRouteContext } from "@/lib/api/types"
 import { createSuccessResponse, createErrorResponse } from "@/lib/config"
+import { logger } from "@/lib/config/logger"
 
 async function bulk${ResourceName}sHandler(req: NextRequest, context: ApiRouteContext) {
   let body: Record<string, unknown>
@@ -444,7 +449,7 @@ async function bulk${ResourceName}sHandler(req: NextRequest, context: ApiRouteCo
     if (error instanceof ApplicationError) {
       return createErrorResponse(error.message || "Không thể thực hiện thao tác hàng loạt", { status: error.status || 400 })
     }
-    console.error("Error in bulk ${resourcePlural} operation:", error)
+    logger.error("Error in bulk ${resourcePlural} operation", error instanceof Error ? error : new Error(String(error)))
     return createErrorResponse("Đã xảy ra lỗi khi thực hiện thao tác hàng loạt", { status: 500 })
   }
 }

@@ -25,7 +25,7 @@ import { useGroupActions } from "../hooks/use-group-actions"
 import { filterContacts } from "@/components/chat/utils/contact-helpers"
 import { mapGroupListItemToContact, type GroupListItemLike, type MessageDetailLike } from "../utils/contact-transformers"
 import type { ChatWindowProps } from "@/components/chat/components/chat-window"
-import { logger } from "@/lib/config"
+import { logger } from "@/lib/config/logger"
 import { useElementSize } from "@/hooks/use-element-size"
 
 export const ChatTemplate = ({
