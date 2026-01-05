@@ -12,13 +12,14 @@ Hệ thống quản trị nội dung (CMS) được xây dựng với [Next.js 1
 ## 📋 Mục lục
 
 1. [Tổng quan](#tổng-quan)
-2. [Cấu trúc dự án](#cấu-trúc-dự-án)
-3. [Cài đặt và Setup](#cài-đặt-và-setup)
-4. [Hướng dẫn sử dụng](#hướng-dẫn-sử-dụng)
-5. [Bố cục triển khai](#bố-cục-triển-khai)
-6. [Flow của hệ thống](#flow-của-hệ-thống)
-7. [Best Practices](#best-practices)
-8. [Tài liệu tham khảo](#tài-liệu-tham-khảo)
+2. [Phiên bản thư viện](#phiên-bản-thư-viện)
+3. [Cấu trúc dự án](#cấu-trúc-dự-án)
+4. [Cài đặt và Setup](#cài-đặt-và-setup)
+5. [Hướng dẫn sử dụng](#hướng-dẫn-sử-dụng)
+6. [Bố cục triển khai](#bố-cục-triển-khai)
+7. [Flow của hệ thống](#flow-của-hệ-thống)
+8. [Best Practices](#best-practices)
+9. [Tài liệu tham khảo](#tài-liệu-tham-khảo)
 
 ---
 
@@ -80,6 +81,185 @@ Hệ thống được xây dựng theo **Feature-based Architecture** với Next
 │  - Migrations và seeding                                │
 └─────────────────────────────────────────────────────────┘
 ```
+
+---
+
+## Phiên bản thư viện
+
+Dự án sử dụng các thư viện và phiên bản như sau:
+
+### Core Framework
+
+| Thư viện | Phiên bản | Mô tả |
+|----------|-----------|-------|
+| **next** | `16.0.10` | Next.js framework với App Router |
+| **react** | `19.2.1` | React library |
+| **react-dom** | `19.2.1` | React DOM renderer |
+| **typescript** | `^5` | TypeScript compiler |
+
+### Authentication & Authorization
+
+| Thư viện | Phiên bản | Mô tả |
+|----------|-----------|-------|
+| **next-auth** | `5.0.0-beta.30` | NextAuth.js v5 cho authentication |
+| **@auth/prisma-adapter** | `^2.11.1` | Prisma adapter cho NextAuth |
+| **bcryptjs** | `^3.0.2` | Password hashing |
+| **jsonwebtoken** | `^9.0.2` | JWT token handling |
+
+### Database & ORM
+
+| Thư viện | Phiên bản | Mô tả |
+|----------|-----------|-------|
+| **prisma** | `^6.18.0` | Prisma ORM CLI |
+| **@prisma/client** | `6.18.0` | Prisma Client |
+
+### UI Components & Styling
+
+| Thư viện | Phiên bản | Mô tả |
+|----------|-----------|-------|
+| **tailwindcss** | `^4` | Tailwind CSS framework |
+| **@tailwindcss/postcss** | `^4` | PostCSS plugin cho Tailwind |
+| **@radix-ui/react-avatar** | `^1.1.10` | Avatar component |
+| **@radix-ui/react-checkbox** | `^1.3.3` | Checkbox component |
+| **@radix-ui/react-collapsible** | `^1.1.12` | Collapsible component |
+| **@radix-ui/react-dialog** | `^1.1.15` | Dialog component |
+| **@radix-ui/react-dropdown-menu** | `^2.1.16` | Dropdown menu component |
+| **@radix-ui/react-icons** | `^1.3.2` | Icon library |
+| **@radix-ui/react-label** | `^2.1.7` | Label component |
+| **@radix-ui/react-navigation-menu** | `^1.2.14` | Navigation menu component |
+| **@radix-ui/react-popover** | `^1.1.15` | Popover component |
+| **@radix-ui/react-progress** | `^1.1.8` | Progress bar component |
+| **@radix-ui/react-radio-group** | `^1.3.8` | Radio group component |
+| **@radix-ui/react-scroll-area** | `^1.2.10` | Scroll area component |
+| **@radix-ui/react-select** | `^2.2.6` | Select component |
+| **@radix-ui/react-separator** | `^1.1.7` | Separator component |
+| **@radix-ui/react-slider** | `^1.3.6` | Slider component |
+| **@radix-ui/react-slot** | `^1.2.3` | Slot component |
+| **@radix-ui/react-switch** | `^1.2.6` | Switch component |
+| **@radix-ui/react-tabs** | `^1.1.13` | Tabs component |
+| **@radix-ui/react-toast** | `^1.2.2` | Toast notification component |
+| **@radix-ui/react-toggle** | `^1.1.10` | Toggle component |
+| **@radix-ui/react-toggle-group** | `^1.1.11` | Toggle group component |
+| **@radix-ui/react-tooltip** | `^1.2.8` | Tooltip component |
+| **lucide-react** | `^0.552.0` | Icon library |
+| **@tabler/icons-react** | `^3.36.0` | Tabler icons |
+| **framer-motion** | `^12.23.24` | Animation library |
+| **next-themes** | `^0.4.6` | Dark mode support |
+| **class-variance-authority** | `^0.7.1` | Component variants utility |
+| **clsx** | `^2.1.1` | Conditional className utility |
+| **tailwind-merge** | `^3.3.1` | Merge Tailwind classes utility |
+
+### Form Handling & Validation
+
+| Thư viện | Phiên bản | Mô tả |
+|----------|-----------|-------|
+| **react-hook-form** | `^7.68.0` | Form state management |
+| **@hookform/resolvers** | `^5.2.2` | Form validation resolvers |
+| **zod** | `^4.1.12` | Schema validation library |
+
+### Data Fetching & State Management
+
+| Thư viện | Phiên bản | Mô tả |
+|----------|-----------|-------|
+| **@tanstack/react-query** | `^5.90.6` | Data fetching và caching |
+| **@tanstack/react-query-devtools** | `^5.90.2` | React Query DevTools |
+| **@tanstack/react-table** | `^8.21.3` | Table component với sorting, filtering |
+| **zustand** | `^5.0.9` | Lightweight state management |
+| **axios** | `^1.13.1` | HTTP client |
+
+### Real-time Communication
+
+| Thư viện | Phiên bản | Mô tả |
+|----------|-----------|-------|
+| **socket.io** | `^4.8.1` | Socket.IO server |
+| **socket.io-client** | `^4.8.1` | Socket.IO client |
+
+### Rich Text Editor
+
+| Thư viện | Phiên bản | Mô tả |
+|----------|-----------|-------|
+| **lexical** | `^0.38.2` | Core Lexical editor framework |
+| **@lexical/react** | `^0.38.2` | React bindings cho Lexical |
+| **@lexical/rich-text** | `^0.38.2` | Rich text formatting |
+| **@lexical/list** | `^0.38.2` | List support (ordered/unordered) |
+| **@lexical/link** | `^0.38.2` | Link support |
+| **@lexical/code** | `^0.38.2` | Code block support |
+| **@lexical/markdown** | `^0.38.2` | Markdown import/export |
+| **@lexical/table** | `^0.38.2` | Table support |
+| **@lexical/file** | `^0.38.2` | File handling |
+| **@lexical/hashtag** | `^0.38.2` | Hashtag support |
+| **@lexical/overflow** | `^0.38.2` | Overflow handling |
+| **@lexical/selection** | `^0.38.2` | Selection utilities |
+| **@lexical/text** | `^0.38.2` | Text node utilities |
+| **@lexical/utils** | `^0.38.2` | Lexical utilities |
+
+### Charts & Visualization
+
+| Thư viện | Phiên bản | Mô tả |
+|----------|-----------|-------|
+| **recharts** | `^3.3.0` | React charting library |
+| **highcharts** | `^12.4.0` | Highcharts library |
+| **highcharts-react-official** | `^3.2.3` | React wrapper cho Highcharts |
+
+### Date & Time
+
+| Thư viện | Phiên bản | Mô tả |
+|----------|-----------|-------|
+| **date-fns** | `^4.1.0` | Date utility library |
+| **react-day-picker** | `^9.11.1` | Date picker component |
+
+### Utilities
+
+| Thư viện | Phiên bản | Mô tả |
+|----------|-----------|-------|
+| **lodash** | `^4.17.21` | JavaScript utility library |
+| **cmdk** | `^1.1.1` | Command menu component |
+| **sonner** | `^2.0.7` | Toast notification library |
+| **react-error-boundary** | `^6.0.0` | Error boundary component |
+| **react-resizable-panels** | `^3.0.6` | Resizable panel component |
+| **tw-animate-css** | `^1.4.0` | Tailwind animation utilities |
+
+### Development Tools
+
+| Thư viện | Phiên bản | Mô tả |
+|----------|-----------|-------|
+| **eslint** | `^9` | ESLint linter |
+| **eslint-config-next** | `16.0.10` | Next.js ESLint config |
+| **tsx** | `^4.20.6` | TypeScript execution |
+| **@types/node** | `^20` | Node.js type definitions |
+| **@types/react** | `^19` | React type definitions |
+| **@types/react-dom** | `^19` | React DOM type definitions |
+| **@types/lodash** | `^4.17.20` | Lodash type definitions |
+| **@types/bcryptjs** | `^3.0.0` | bcryptjs type definitions |
+| **@types/jsonwebtoken** | `^9.0.10` | jsonwebtoken type definitions |
+
+### Lưu ý về phiên bản
+
+- **Next.js 16.0.10**: Sử dụng App Router với Server Components
+- **React 19.2.1**: Phiên bản mới nhất của React với các tính năng mới
+- **NextAuth v5 (beta)**: Đang sử dụng phiên bản beta, có thể có breaking changes
+- **Prisma 6.18.0**: ORM chính cho database operations
+- **Lexical 0.38.2**: Rich text editor framework từ Meta
+- **TanStack Query v5**: Data fetching và caching với React Query
+- **Socket.IO 4.8.1**: Real-time communication cho notifications và chat
+- **Zod 4.1.12**: Schema validation cho type-safe forms và API
+
+### Cập nhật dependencies
+
+Để cập nhật các dependencies, sử dụng:
+
+```bash
+# Kiểm tra các package có thể cập nhật
+pnpm outdated
+
+# Cập nhật tất cả dependencies (cẩn thận với breaking changes)
+pnpm update
+
+# Cập nhật một package cụ thể
+pnpm add package-name@latest
+```
+
+⚠️ **Lưu ý**: Khi cập nhật dependencies, đặc biệt là các package chính như Next.js, React, hoặc NextAuth, hãy kiểm tra changelog để xem có breaking changes không.
 
 ---
 
