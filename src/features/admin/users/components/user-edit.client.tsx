@@ -15,6 +15,7 @@ import { normalizeRoleIds, type Role } from "../utils"
 import { getBaseUserFields, getPasswordEditField, getUserFormSections } from "../form-fields"
 import { PROTECTED_SUPER_ADMIN_EMAIL } from "../constants"
 import type { UserRow } from "../types"
+import { transformAddressFieldsForSubmit, parseAddressToFormFields } from "@/features/admin/accounts/utils"
 
 interface UserEditData extends UserRow {
   avatar?: string | null
@@ -71,9 +72,16 @@ export const UserEditClient = ({
       return {
         ...userDataTyped,
         roleIds: userDataTyped.roles && userDataTyped.roles.length > 0 ? userDataTyped.roles[0].id : "",
+        ...parseAddressToFormFields(userDataTyped.address ?? null),
       }
     }
-    return initialUser || null
+    if (initialUser) {
+      return {
+        ...initialUser,
+        ...parseAddressToFormFields(initialUser.address ?? null),
+      }
+    }
+    return null
   }, [userData, initialUser])
 
   const { handleSubmit } = useResourceFormSubmit({
@@ -99,6 +107,15 @@ export const UserEditClient = ({
       if (!submitData.password || submitData.password === "") {
         delete submitData.password
       }
+      
+      // Convert structured address fields to JSON string
+      const addressFields: readonly string[] = ["addressStreet", "addressWard", "addressDistrict", "addressCity", "addressPostalCode"]
+      addressFields.forEach((field: string) => {
+        delete submitData[field]
+      })
+      const transformedAddress = transformAddressFieldsForSubmit(data)
+      submitData.address = transformedAddress
+      
       if (user?.email === PROTECTED_SUPER_ADMIN_EMAIL && submitData.isActive === false) {
         submitData.isActive = true
       }
