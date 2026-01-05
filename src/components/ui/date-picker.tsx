@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/select"
 import { useClientOnly } from "@/hooks/use-client-only"
 import { responsiveTextSizes, fontWeights, lineHeights, iconSizes, textSizes } from "@/lib/typography"
+import { FieldTitle } from "@/components/ui/field"
 
 const datePickerBodySmall = `${responsiveTextSizes.small} ${fontWeights.normal} ${lineHeights.relaxed}`
 const datePickerBodyMedium = `${responsiveTextSizes.medium} ${fontWeights.normal} ${lineHeights.relaxed}`
@@ -40,6 +41,8 @@ interface DatePickerProps {
   selectedTime?: string | null
   enableTime?: boolean
   showSeconds?: boolean
+  autoClose?: boolean // If true, close popover immediately when date is selected (default: true when enableTime is false)
+  datesWithItems?: string[] // Array of date strings in format "yyyy-MM-dd" to highlight
 }
 
 export function DatePicker({
@@ -55,13 +58,21 @@ export function DatePicker({
   selectedTime,
   enableTime = false,
   showSeconds = false,
+  autoClose,
+  datesWithItems,
 }: DatePickerProps) {
+  // Default autoClose: true when enableTime is false, false when enableTime is true
+  const shouldAutoClose = autoClose !== undefined ? autoClose : !enableTime
   const today = React.useMemo(() => new Date(), [])
   const mounted = useClientOnly()
   const datePickerId = React.useId()
   const [internalDate, setInternalDate] = useState<Date | undefined>(date)
   const [internalTime, setInternalTime] = useState<string | null>(selectedTime ?? null)
   const [open, setOpen] = useState(false)
+  // Pending date for confirmation (only used when enableTime is true)
+  const [pendingDate, setPendingDate] = useState<Date | undefined>(date)
+  // Track previous date prop to detect external changes
+  const prevDateRef = React.useRef<Date | undefined>(date)
 
   // Parse time từ date nếu có
   const getTimeFromDate = (dateValue: Date | undefined) => {
@@ -75,13 +86,23 @@ export function DatePicker({
 
   const [timeInputs, setTimeInputs] = useState(getTimeFromDate(date))
 
-  // Sync internal state with external prop
+  // Sync internal state with external prop only when popover is closed
+  // This prevents losing user selection when they're still interacting
   React.useEffect(() => {
-    setInternalDate(date)
-    if (date && enableTime) {
-      setTimeInputs(getTimeFromDate(date))
+    // Only sync when popover is closed (user finished interaction)
+    // This allows user to change selection without losing it
+    if (!open) {
+      const dateChanged = prevDateRef.current?.getTime() !== date?.getTime()
+      if (dateChanged) {
+        setInternalDate(date)
+        setPendingDate(date)
+        if (date && enableTime) {
+          setTimeInputs(getTimeFromDate(date))
+        }
+        prevDateRef.current = date
+      }
     }
-  }, [date, enableTime])
+  }, [date, enableTime, open])
 
   const currentDate = date !== undefined ? date : internalDate
 
@@ -97,10 +118,17 @@ export function DatePicker({
     setInternalDate(selectedDate)
     
     if (enableTime) {
+      // When time is enabled, store pending date and update pending date
       const combined = combineDateAndTime(selectedDate, timeInputs.hour, timeInputs.minute, timeInputs.second)
-      onDateChange(combined)
+      setPendingDate(combined)
+      // Don't call onDateChange immediately, wait for confirmation
     } else {
+      // When time is disabled, apply immediately
       onDateChange(selectedDate)
+      // Only auto-close if shouldAutoClose is true
+      if (shouldAutoClose) {
+        setOpen(false)
+      }
     }
     
     if (showTimeSlots && onTimeChange) {
@@ -125,9 +153,21 @@ export function DatePicker({
         newTimeInputs.second
       )
       if (combined) {
-        onDateChange(combined)
+        // Update pending date but don't call onDateChange yet
+        setPendingDate(combined)
       }
     }
+  }
+
+  const handleConfirm = () => {
+    if (enableTime) {
+      // Apply pending date when time is enabled
+      onDateChange(pendingDate)
+    } else {
+      // Apply current date when time is disabled
+      onDateChange(currentDate)
+    }
+    setOpen(false)
   }
 
   const handleTimeSelect = (timeSlot: string) => {
@@ -291,6 +331,19 @@ export function DatePicker({
               month_caption: "hidden", // Hide default caption vì chúng ta sẽ dùng custom dropdown
               nav: "hidden", // Hide default navigation buttons vì chúng ta đã thêm vào Custom Month/Year Selector
             }}
+            modifiers={
+              datesWithItems && datesWithItems.length > 0
+                ? {
+                    hasItems: datesWithItems.map((dateStr: string) => {
+                      const [year, month, day] = dateStr.split("-").map(Number)
+                      return new Date(year, month - 1, day)
+                    }),
+                  }
+                : undefined
+            }
+            modifiersClassNames={{
+              hasItems: "*:after:pointer-events-none *:after:absolute *:after:bottom-1 *:after:start-1/2 *:after:z-10 *:after:size-[3px] *:after:-translate-x-1/2 *:after:rounded-full *:after:bg-primary *:after:transition-colors",
+            }}
           />
           <div className="relative w-full max-sm:h-48 sm:w-40">
             <div className="absolute inset-0 border-border py-4 max-sm:border-t sm:border-s">
@@ -332,7 +385,7 @@ export function DatePicker({
       <Button
         variant="outline"
         className={cn(
-          `h-8 w-full justify-start text-left ${datePickerBodySmall} font-normal`,
+          `h-8 w-fit min-w-[200px] justify-start text-left ${datePickerBodySmall} font-normal`,
           !hasValue && "text-muted-foreground",
           className,
         )}
@@ -350,15 +403,15 @@ export function DatePicker({
         <Button
           variant="outline"
           className={cn(
-            `h-8 w-full justify-start text-left font-normal ${datePickerBodySmall}`,
+            `h-8 w-fit min-w-[200px] justify-start text-left font-normal ${datePickerBodySmall}`,
             !hasValue && "text-muted-foreground",
             className,
           )}
           disabled={disabled}
           aria-controls={datePickerId}
         >
-          <CalendarIcon className={`mr-2 ${datePickerIconSizeXs}`} />
-          {displayDate}
+          <CalendarIcon className={`mr-2 shrink-0 ${datePickerIconSizeXs}`} />
+          <span className="truncate min-w-0 flex-1">{displayDate}</span>
         </Button>
       </PopoverTrigger>
       <PopoverContent
@@ -440,11 +493,24 @@ export function DatePicker({
               month_caption: "hidden", // Hide default caption vì chúng ta sẽ dùng custom dropdown
               nav: "hidden", // Hide default navigation buttons vì chúng ta đã thêm vào Custom Month/Year Selector
             }}
+            modifiers={
+              datesWithItems && datesWithItems.length > 0
+                ? {
+                    hasItems: datesWithItems.map((dateStr: string) => {
+                      const [year, month, day] = dateStr.split("-").map(Number)
+                      return new Date(year, month - 1, day)
+                    }),
+                  }
+                : undefined
+            }
+            modifiersClassNames={{
+              hasItems: "*:after:pointer-events-none *:after:absolute *:after:bottom-1 *:after:start-1/2 *:after:z-10 *:after:size-[3px] *:after:-translate-x-1/2 *:after:rounded-full *:after:bg-primary *:after:transition-colors",
+            }}
           />
           {enableTime && (
             <div className="border-t bg-muted/30">
               <div className="px-4 py-3 space-y-2.5">
-                <label className={`${datePickerBodySmall} font-medium text-foreground block`}>Thời gian</label>
+                <FieldTitle>Thời gian</FieldTitle>
                 <div className="flex items-end gap-2 justify-center">
                   <div className="flex flex-col items-center gap-1.5">
                     <label htmlFor="time-hour" className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
@@ -525,14 +591,15 @@ export function DatePicker({
               </div>
             </div>
           )}
-          {hasValue && (
-            <div className="border-t p-2">
+          <div className="border-t p-2 flex gap-2">
+            {hasValue && (
               <Button
                 variant="ghost"
                 size="sm"
-                className={`h-8 w-full ${datePickerBodySmall}`}
+                className={`h-8 flex-1 ${datePickerBodySmall}`}
                 onClick={() => {
                   setInternalDate(undefined)
+                  setPendingDate(undefined)
                   setTimeInputs({ hour: 0, minute: 0, second: 0 })
                   onDateChange(undefined)
                   setOpen(false)
@@ -540,10 +607,20 @@ export function DatePicker({
               >
                 Xóa
               </Button>
-            </div>
-          )}
+            )}
+            <Button
+              variant="default"
+              size="sm"
+              className={`h-8 flex-1 ${datePickerBodySmall}`}
+              onClick={handleConfirm}
+              disabled={!currentDate}
+            >
+              Xong
+            </Button>
+          </div>
         </div>
       </PopoverContent>
     </Popover>
   )
 }
+

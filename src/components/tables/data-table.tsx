@@ -576,12 +576,12 @@ export function DataTable<T extends object>({
                             ) : null}
                         </TableRow>
                         {columns.some((col) => col.filter) && showFilters && (
-                            <TableRow className="border-t border-border bg-muted/40">
-                                {selectionEnabled ? <TableHead className="w-10 max-w-10 min-w-10 bg-muted/40 px-1 sm:px-3" /> : null}
+                            <TableRow className="border-t border-border bg-muted/80">
+                                {selectionEnabled ? <TableHead className="w-10 max-w-10 min-w-10 bg-muted/80 px-1 sm:px-3 sticky left-0 z-10 border-r border-border" /> : null}
                                 {columns.map((column) => (
                                     <TableHead
                                         key={`filter-${column.accessorKey}`}
-                                        className={cn("min-w-[100px] align-middle bg-muted/40 whitespace-nowrap px-2 sm:px-3", column.headerClassName)}
+                                        className={cn("min-w-[100px] align-middle bg-muted/80 whitespace-nowrap px-2 sm:px-3", column.headerClassName)}
                                     >
                                         <ColumnFilterControl
                                             column={column}
@@ -591,7 +591,7 @@ export function DataTable<T extends object>({
                                         />
                                     </TableHead>
                                 ))}
-                                {actions ? <TableHead className="min-w-[100px] text-center px-2 sm:px-3 sticky right-0 z-10 border-l border-border" /> : null}
+                                {actions ? <TableHead className="min-w-[100px] bg-muted/80 text-center px-2 sm:px-3 sticky right-0 z-10 border-l border-border" /> : null}
                             </TableRow>
                         )}
                     </TableHeader>

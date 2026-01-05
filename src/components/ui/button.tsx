@@ -26,7 +26,7 @@ const buttonVariants = cva(
         default: "h-9 min-h-[44px] px-4 py-2", // 44px minimum for mobile touch targets
         sm: `h-8 min-h-[44px] rounded-lg px-3 ${buttonBodySmall}`, // Ensure mobile-friendly
         lg: "h-10 min-h-[44px] rounded-lg px-8",
-        icon: `${iconSizes["3xl"]} min-h-[44px] min-w-[44px]`, // 44x44px minimum for icon buttons
+        icon: `${iconSizes["3xl"]}`, // 44x44px minimum for icon buttons
         "icon-absolute": "absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent",
       },
       fullWidth: {

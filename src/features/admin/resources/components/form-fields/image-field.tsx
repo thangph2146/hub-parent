@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button"
 import Image from "next/image"
 import { cn } from "@/lib/utils"
 import { TypographySpanMuted, TypographySpanSmallMuted, IconSize } from "@/components/ui/typography"
-import { Flex } from "@/components/ui/flex"
+import { Flex } from "antd"
 
 export interface ImageFieldProps {
   value: unknown
@@ -42,8 +42,8 @@ export const ImageField = ({
 
   return (
     <FieldContent>
-      <Flex direction="col" gap={4}>
-        <Flex align="center" gap={2} fullWidth>
+      <Flex vertical gap="middle">
+        <Flex align="center" gap={8} className="w-full">
           <Input
             id={fieldId}
             type="text"
@@ -54,7 +54,7 @@ export const ImageField = ({
             }}
             placeholder={placeholder}
             className={cn(
-              "flex-1 min-w-0",
+              "flex-1 min-w-0 h-9",
               error && "border-destructive",
               isReadOnly && "!opacity-100 disabled:!opacity-100 [&:read-only]:!opacity-100 cursor-default bg-muted/50 border-muted-foreground/20",
               isDisabled && !isReadOnly && "!opacity-100"
@@ -67,13 +67,13 @@ export const ImageField = ({
           {hasImage && !isReadOnly && (
             <Button
               type="button"
-              variant="outline"
+              variant="destructive"
               size="icon"
               onClick={() => {
                 onChange("")
                 setImageError(false)
               }}
-              className="shrink-0 disabled:!opacity-100"
+              className="shrink-0 h-9 w-9 disabled:!opacity-100"
               disabled={isDisabled}
               aria-label="Xóa hình ảnh"
             >
@@ -86,7 +86,7 @@ export const ImageField = ({
 
         {/* Image preview */}
         {hasImage && !imageError && (
-          <Flex align="center" justify="center" fullWidth position="relative" className="aspect-video">
+          <Flex align="center" justify="center" className="w-full relative aspect-video">
             <Image
               src={imageUrl}
               alt="Preview"
@@ -101,7 +101,7 @@ export const ImageField = ({
 
         {/* Error state */}
         {hasImage && imageError && (
-          <Flex direction="col" align="center" gap={2} fullWidth position="relative" rounded="lg" border="all" overflow="hidden" bg="destructive-text" className="border-destructive/50 aspect-video text-destructive" padding="md">
+          <Flex vertical align="center" gap={8} className="w-full relative rounded-lg border overflow-hidden bg-destructive/10 text-destructive border-destructive/50 aspect-video p-4">
             <IconSize size="2xl">
               <ImageIcon />
             </IconSize>
@@ -112,7 +112,7 @@ export const ImageField = ({
 
         {/* Placeholder when no image */}
         {!hasImage && (
-          <Flex direction="col" align="center" justify="center" gap={2} fullWidth position="relative" rounded="lg" border="all" overflow="hidden" bg="muted-50" className="border-dashed aspect-video text-muted-foreground">
+          <Flex vertical align="center" justify="center" gap={8} className="w-full relative rounded-lg border overflow-hidden bg-muted/50 border-dashed aspect-video text-muted-foreground">
             <IconSize size="4xl">
               <ImageIcon />
             </IconSize>

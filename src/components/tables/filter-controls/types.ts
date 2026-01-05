@@ -38,6 +38,15 @@ export type ColumnFilterConfig =
           enableTime?: boolean
           showSeconds?: boolean
       }
+    | {
+          type: "date-range"
+          placeholder?: string
+          fromLabel?: string
+          toLabel?: string
+          applyLabel?: string
+          clearLabel?: string
+          datesApiRoute?: string // API route to fetch dates with items (e.g., "/admin/posts/dates-with-posts")
+      }
 
 
 export interface ColumnFilterControlProps<T extends object = object> {

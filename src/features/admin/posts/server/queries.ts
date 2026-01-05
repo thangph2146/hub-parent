@@ -183,6 +183,43 @@ export const getPostColumnOptions = async (
   
 }
 
+/**
+ * Get list of dates that have published posts
+ * Returns array of date strings in format "yyyy-MM-dd"
+ */
+export const getDatesWithPosts = async (authorId?: string): Promise<string[]> => {
+  const where: Prisma.PostWhereInput = {
+    published: true,
+    publishedAt: { not: null },
+    deletedAt: null,
+  }
+
+  // Apply authorId filter if provided (for users with POSTS_VIEW_OWN permission)
+  if (authorId) {
+    where.authorId = authorId
+  }
+
+  const posts = await prisma.post.findMany({
+    where,
+    select: {
+      publishedAt: true,
+    },
+    distinct: ["publishedAt"],
+  })
+
+  // Extract unique dates (format: yyyy-MM-dd)
+  const dates = new Set<string>()
+  posts.forEach((post) => {
+    if (post.publishedAt) {
+      const date = new Date(post.publishedAt)
+      const dateStr = date.toISOString().split("T")[0] // Format: yyyy-MM-dd
+      dates.add(dateStr)
+    }
+  })
+
+  return Array.from(dates).sort()
+}
+
 export const getPostById = async (id: string): Promise<PostDetail | null> => {
   const post = await prisma.post.findUnique({
     where: { id },

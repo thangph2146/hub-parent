@@ -51,8 +51,8 @@ export const usePostColumns = ({
           onSearchChange: titleFilter.onSearchChange,
           isLoading: titleFilter.isLoading,
         },
-        className: "min-w-[200px]",
-        headerClassName: "min-w-[200px]",
+        className: "min-w-[250px]",
+        headerClassName: "min-w-[250px]",
         cell: (row) => (
           <Flex direction="col" gap={1.5}>
             <TypographyP>{row.title}</TypographyP>
@@ -112,8 +112,8 @@ export const usePostColumns = ({
           onSearchChange: slugFilter.onSearchChange,
           isLoading: slugFilter.isLoading,
         },
-        className: "min-w-[150px]",
-        headerClassName: "min-w-[150px]",
+        className: "min-w-[250px]",
+        headerClassName: "min-w-[250px]",
         cell: (row) => (
           <TypographySpanSmallMuted className="font-mono">{row.slug}</TypographySpanSmallMuted>
         ),
@@ -175,12 +175,16 @@ export const usePostColumns = ({
         accessorKey: "publishedAt",
         header: "Ngày xuất bản",
         filter: {
-          type: "date",
-          placeholder: "Chọn ngày",
-          dateFormat: "dd/MM/yyyy",
+          type: "date-range",
+          placeholder: "Chọn khoảng thời gian",
+          fromLabel: "Từ ngày",
+          toLabel: "Đến ngày",
+          applyLabel: "Áp dụng",
+          clearLabel: "Xóa",
+          datesApiRoute: "/admin/posts/dates-with-posts",
         },
-        className: "min-w-[140px] max-w-[180px]",
-        headerClassName: "min-w-[140px] max-w-[180px]",
+        className: "min-w-[240px] max-w-[240px]",
+        headerClassName: "min-w-[240px] max-w-[240px]",
         cell: (row) => {
           if (!row.publishedAt) return "-"
           try {
@@ -198,8 +202,8 @@ export const usePostColumns = ({
           placeholder: "Chọn ngày",
           dateFormat: "dd/MM/yyyy",
         },
-        className: "min-w-[140px] max-w-[180px]",
-        headerClassName: "min-w-[140px] max-w-[180px]",
+        className: "min-w-[240px] max-w-[240px]",
+        headerClassName: "min-w-[240px] max-w-[240px]",
         cell: (row) => {
           try {
             return dateFormatter.format(new Date(row.createdAt))

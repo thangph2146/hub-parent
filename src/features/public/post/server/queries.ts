@@ -19,6 +19,8 @@ export interface GetPostsParams {
   categories?: string[]
   tags?: string[]
   sort?: "newest" | "oldest"
+  dateFrom?: string
+  dateTo?: string
 }
 
 export interface PostsResult {
@@ -44,6 +46,8 @@ export const getPosts = async (params: GetPostsParams = {}): Promise<PostsResult
     search: params.search,
     categories: params.categories,
     tags: params.tags,
+    dateFrom: params.dateFrom,
+    dateTo: params.dateTo,
   })
 
   // Build orderBy using helper

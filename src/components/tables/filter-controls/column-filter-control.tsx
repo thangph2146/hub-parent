@@ -8,6 +8,7 @@ import { TextFilter } from "./text-filter"
 import { SelectFilter } from "./select-filter"
 import { MultiSelectFilter } from "./multi-select-filter"
 import { DateFilter } from "./date-filter"
+import { DateRangeFilter } from "./date-range-filter"
 import type { ColumnFilterControlProps } from "./types"
 
 export function ColumnFilterControl<T extends object = object>({
@@ -26,6 +27,8 @@ export function ColumnFilterControl<T extends object = object>({
             return <MultiSelectFilter column={column} value={value} disabled={disabled} onChange={onChange} />
         case "date":
             return <DateFilter column={column} value={value} disabled={disabled} onChange={onChange} />
+        case "date-range":
+            return <DateRangeFilter column={column} value={value} disabled={disabled} onChange={onChange} />
         case "text":
         default:
             return <TextFilter column={column} value={value} disabled={disabled} onChange={onChange} />

@@ -5,6 +5,7 @@ import { PostList } from "@/features/public/post/components/post-list"
 import { PostCategoryNav } from "@/features/public/post/components/post-category-nav"
 import { PostTagNav } from "@/features/public/post/components/post-tag-nav"
 import { PostSort } from "@/features/public/post/components/post-sort"
+import { PostDateRange } from "@/features/public/post/components/post-date-range"
 import { getPosts, getCategories, getTags } from "@/features/public/post/server/queries"
 import { appConfig, getOpenGraphConfig, getTwitterConfig } from "@/lib/config"
 import { CollapsibleSection } from "@/features/public/post/components/collapsible-section"
@@ -42,6 +43,8 @@ interface PostPageProps {
     category?: string | string[]
     tag?: string | string[]
     sort?: string
+    dateFrom?: string
+    dateTo?: string
   }>
 }
 
@@ -70,6 +73,8 @@ export default async function PostPage({ searchParams }: PostPageProps) {
       categories: categoriesParam,
       tags: tagsParam,
       sort: (params.sort as "newest" | "oldest") || "newest",
+      dateFrom: params.dateFrom,
+      dateTo: params.dateTo,
     }),
     getCategories(),
     getTags(),
@@ -105,7 +110,7 @@ export default async function PostPage({ searchParams }: PostPageProps) {
             {/* Category Navigation */}
             <CollapsibleSection
               title="Danh mục:"
-              icon={<Filter className="h-4 w-4 text-muted-foreground flex-shrink-0" />}
+              icon={<Filter className="h-4 w-4" />}
               defaultOpen={true}
             >
               <PostCategoryNav categories={categories} />
@@ -114,7 +119,7 @@ export default async function PostPage({ searchParams }: PostPageProps) {
             {/* Tag Navigation */}
             <CollapsibleSection
               title="Thẻ tag:"
-              icon={<Tags className="h-4 w-4 text-muted-foreground flex-shrink-0" />}
+              icon={<Tags className="h-4 w-4" />}
               defaultOpen={true}
             >
               <PostTagNav tags={tags} />
@@ -124,7 +129,7 @@ export default async function PostPage({ searchParams }: PostPageProps) {
 
         {/* Main Content */}
         <div className="min-w-0">
-          {/* Header with Sort */}
+          {/* Header with Sort and Date Range */}
           <div className="sticky top-14.5 z-10 w-full flex items-center justify-between gap-4 mb-8 border-b bg-background supports-[backdrop-filter]:bg-background/70 border-border backdrop-blur-lg">
             <div>
               <TypographyH2>Tất cả bài viết</TypographyH2>
@@ -132,7 +137,8 @@ export default async function PostPage({ searchParams }: PostPageProps) {
                 {result.pagination.total} bài viết
               </TypographyPMuted>
             </div>
-            <div className="flex-shrink-0">
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <PostDateRange />
               <PostSort />
             </div>
           </div>

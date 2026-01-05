@@ -83,6 +83,8 @@ export const buildPublicPostWhereClause = (params: {
   search?: string
   categories?: string[]
   tags?: string[]
+  dateFrom?: string
+  dateTo?: string
 }): Prisma.PostWhereInput => {
   const where: Prisma.PostWhereInput = {
     published: true,
@@ -90,6 +92,28 @@ export const buildPublicPostWhereClause = (params: {
     publishedAt: {
       lte: new Date(),
     },
+  }
+
+  // Date range filter
+  if (params.dateFrom || params.dateTo) {
+    const publishedAtFilter: Prisma.DateTimeFilter = {}
+    
+    if (params.dateFrom) {
+      const dateFrom = new Date(params.dateFrom)
+      dateFrom.setHours(0, 0, 0, 0)
+      publishedAtFilter.gte = dateFrom
+    }
+    
+    if (params.dateTo) {
+      const dateTo = new Date(params.dateTo)
+      dateTo.setHours(23, 59, 59, 999)
+      publishedAtFilter.lte = dateTo
+    }
+    
+    where.publishedAt = {
+      ...where.publishedAt as Prisma.DateTimeFilter,
+      ...publishedAtFilter,
+    }
   }
 
   // Search filter

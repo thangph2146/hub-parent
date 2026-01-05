@@ -153,19 +153,75 @@ export const applyDateFilter = <T extends Record<string, unknown>>(
   if (!dateValue) return
 
   try {
-    const filterDate = new Date(dateValue)
-    if (isNaN(filterDate.getTime())) return
+    let startOfDay: Date
+    let endOfDay: Date
 
-    const startOfDay = new Date(filterDate)
-    startOfDay.setHours(0, 0, 0, 0)
-    const endOfDay = new Date(filterDate)
-    endOfDay.setHours(23, 59, 59, 999)
+    // If dateValue is in format "yyyy-MM-dd", create UTC dates
+    // Otherwise, parse as-is (for ISO strings)
+    if (/^\d{4}-\d{2}-\d{2}$/.test(dateValue)) {
+      // Format: "2026-01-01" -> UTC dates
+      startOfDay = new Date(`${dateValue}T00:00:00.000Z`)
+      endOfDay = new Date(`${dateValue}T23:59:59.999Z`)
+    } else {
+      // ISO string or other format, parse and use local timezone
+      const filterDate = new Date(dateValue)
+      if (isNaN(filterDate.getTime())) return
+
+      startOfDay = new Date(filterDate)
+      startOfDay.setHours(0, 0, 0, 0)
+      endOfDay = new Date(filterDate)
+      endOfDay.setHours(23, 59, 59, 999)
+    }
+
+    if (isNaN(startOfDay.getTime()) || isNaN(endOfDay.getTime())) return
 
     where[dateField] = {
       gte: startOfDay,
       lte: endOfDay,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Prisma where clause requires dynamic typing
     } as any
+  } catch {
+    // Invalid date format, skip filter
+  }
+}
+
+export const applyDateRangeFilter = <T extends Record<string, unknown>>(
+  where: T,
+  dateField: keyof T,
+  dateRangeValue: string | undefined
+): void => {
+  if (!dateRangeValue) return
+
+  try {
+    // Format: "fromDate|toDate" or "fromDate|" or "|toDate"
+    const parts = dateRangeValue.split("|")
+    const fromStr = parts[0]?.trim()
+    const toStr = parts[1]?.trim()
+
+    const dateRange: { gte?: Date; lte?: Date } = {}
+
+    if (fromStr) {
+      // Parse date string (yyyy-MM-dd) and create UTC date for start of day
+      // Format: "2026-01-01" -> "2026-01-01T00:00:00.000Z"
+      const fromDate = new Date(`${fromStr}T00:00:00.000Z`)
+      if (!isNaN(fromDate.getTime())) {
+        dateRange.gte = fromDate
+      }
+    }
+
+    if (toStr) {
+      // Parse date string (yyyy-MM-dd) and create UTC date for end of day
+      // Format: "2026-01-08" -> "2026-01-08T23:59:59.999Z"
+      const toDate = new Date(`${toStr}T23:59:59.999Z`)
+      if (!isNaN(toDate.getTime())) {
+        dateRange.lte = toDate
+      }
+    }
+
+    if (dateRange.gte || dateRange.lte) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Prisma where clause requires dynamic typing
+      where[dateField] = dateRange as any
+    }
   } catch {
     // Invalid date format, skip filter
   }

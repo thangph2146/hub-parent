@@ -242,6 +242,7 @@ export const ROUTE_CONFIG: RoutePermissionConfig[] = [
       { path: "/api/admin/posts", method: "GET", permissions: [PERMISSIONS.POSTS_VIEW_ALL, PERMISSIONS.POSTS_VIEW_OWN] },
       { path: "/api/admin/posts/[id]", method: "GET", permissions: [PERMISSIONS.POSTS_VIEW_ALL, PERMISSIONS.POSTS_VIEW_OWN] },
       { path: "/api/admin/posts/options", method: "GET", permissions: [PERMISSIONS.POSTS_VIEW_ALL, PERMISSIONS.POSTS_VIEW_OWN] },
+      { path: "/api/admin/posts/dates-with-posts", method: "GET", permissions: [PERMISSIONS.POSTS_VIEW_ALL, PERMISSIONS.POSTS_VIEW_OWN] },
       { path: "/api/posts", method: "GET", permissions: [PERMISSIONS.POSTS_VIEW_ALL, PERMISSIONS.POSTS_VIEW_OWN] },
     ],
     adminApi: true, // Enable standard admin API routes including /bulk
