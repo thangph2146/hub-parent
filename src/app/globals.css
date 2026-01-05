@@ -464,6 +464,23 @@
     color: var(--accent-foreground) !important;
   }
   
+  /* Đảm bảo text trong button đổi màu khi hover */
+  /* Áp dụng cho tất cả text elements bên trong button khi button có hover:bg-accent */
+  button:hover span,
+  button:hover div,
+  button:hover p,
+  button:hover .ant-flex,
+  button:hover .ant-flex span,
+  button:hover .ant-flex div {
+    color: inherit;
+  }
+  
+  /* Đảm bảo button với hover:text-accent-foreground có text đổi màu đúng */
+  button[class*="hover:text-accent-foreground"]:hover,
+  button[class*="hover:text-accent-foreground"]:hover * {
+    color: var(--accent-foreground) !important;
+  }
+  
   /* Ant Design components - Background colors (transparent để không override custom styles) */
   .ant-flex:not([style*="background"]),
   .ant-row:not([style*="background"]),
