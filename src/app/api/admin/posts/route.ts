@@ -7,11 +7,19 @@ import { listPosts } from "@/features/admin/posts/server/queries"
 import { createGetRoute, createPostRoute } from "@/lib/api/api-route-wrapper"
 import type { ApiRouteContext } from "@/lib/api/types"
 import { validatePagination, sanitizeSearchQuery } from "@/lib/api/validation"
-import { isSuperAdmin } from "@/lib/permissions"
+import { PERMISSIONS, hasPermission } from "@/lib/permissions"
 import { createPost, type AuthContext, ApplicationError } from "@/features/admin/posts/server/mutations"
 import { createPostSchema } from "@/features/admin/posts/server/validation"
+import { logger } from "@/lib/config/logger"
 
 async function getPostsHandler(req: NextRequest, context: ApiRouteContext) {
+  logger.info("[Posts API] getPostsHandler called", {
+    url: req.url,
+    method: req.method,
+    userId: context.session?.user?.id,
+    email: context.session?.user?.email,
+  })
+  
   const searchParams = req.nextUrl.searchParams
 
   const paginationValidation = validatePagination({
@@ -38,16 +46,48 @@ async function getPostsHandler(req: NextRequest, context: ApiRouteContext) {
     }
   })
 
-  // Chỉ super admin mới thấy tất cả bài viết, user khác chỉ thấy bài viết của chính mình
-  const roles = context.session?.roles ?? []
-  const isSuperAdminUser = isSuperAdmin(roles)
+  // Kiểm tra permission: nếu có POSTS_VIEW_ALL thì xem tất cả, nếu chỉ có POSTS_VIEW_OWN thì chỉ xem của mình
+  const hasViewAllPermission = hasPermission(context.permissions, PERMISSIONS.POSTS_VIEW_ALL)
+  const hasViewOwnPermission = hasPermission(context.permissions, PERMISSIONS.POSTS_VIEW_OWN)
   
-  // Nếu không phải super admin, filter theo authorId của user đang đăng nhập
-  if (!isSuperAdminUser && context.session?.user?.id) {
+  logger.debug("[Posts API] Permission check", {
+    userId: context.session?.user?.id,
+    email: context.session?.user?.email,
+    hasViewAllPermission,
+    hasViewOwnPermission,
+    permissions: context.permissions.filter((p) => p.includes("posts:view")),
+    existingFilters: Object.keys(columnFilters),
+  })
+  
+  // Nếu chỉ có POSTS_VIEW_OWN (không có POSTS_VIEW_ALL), filter theo authorId của user đang đăng nhập
+  // Nếu có POSTS_VIEW_ALL thì không cần filter (xem tất cả)
+  if (!hasViewAllPermission && hasViewOwnPermission && context.session?.user?.id) {
+    // Chỉ filter nếu user chỉ có POSTS_VIEW_OWN, không có POSTS_VIEW_ALL
+    // Nếu user không có cả hai permissions thì cũng không filter (sẽ bị chặn ở route permission check)
     columnFilters.authorId = context.session.user.id
+    logger.info("[Posts API] Applied authorId filter", {
+      userId: context.session.user.id,
+      reason: "User has POSTS_VIEW_OWN but not POSTS_VIEW_ALL",
+    })
+  } else if (hasViewAllPermission) {
+    logger.debug("[Posts API] No filter applied", {
+      reason: "User has POSTS_VIEW_ALL permission",
+    })
+  } else {
+    logger.warn("[Posts API] No filter applied", {
+      reason: "User has neither POSTS_VIEW_ALL nor POSTS_VIEW_OWN",
+      hasViewAllPermission,
+      hasViewOwnPermission,
+      userId: context.session?.user?.id,
+    })
   }
 
   const activeFilters = Object.keys(columnFilters).length > 0 ? columnFilters : undefined
+  
+  logger.debug("[Posts API] Final filters", {
+    activeFilters,
+    filterCount: Object.keys(columnFilters).length,
+  })
   // Sử dụng listPosts (non-cached) để đảm bảo data luôn fresh
   // API routes cần fresh data, không nên sử dụng cache để tránh trả về dữ liệu cũ
   const result = await listPosts({
@@ -75,10 +115,9 @@ async function postPostsHandler(req: NextRequest, context: ApiRouteContext) {
     roles: context.roles,
   }
 
-  // Nếu không phải super admin, tự động set authorId = actorId
-  const roles = context.session?.roles ?? []
-  const isSuperAdminUser = isSuperAdmin(roles)
-  if (!isSuperAdminUser && context.session?.user?.id) {
+  // Kiểm tra permission: nếu không có POSTS_VIEW_ALL thì chỉ có thể tạo bài viết cho chính mình
+  const hasViewAllPermission = hasPermission(context.permissions, PERMISSIONS.POSTS_VIEW_ALL)
+  if (!hasViewAllPermission && context.session?.user?.id) {
     payload.authorId = context.session.user.id
   }
 

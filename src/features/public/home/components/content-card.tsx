@@ -58,7 +58,7 @@ export const ContentCard = ({
   titleClassName,
   descriptionClassName,
   contentClassName,
-  titleDefaultClasses = "text-card-foreground",
+  titleDefaultClasses = "text-card-foreground dark:text-foreground",
   descriptionDefaultClasses = "text-muted-foreground",
   children,
 }: ContentCardProps) => {

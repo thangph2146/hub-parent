@@ -11,6 +11,7 @@ import {
 } from "@/features/admin/resources/server"
 import type { ListPostsInput, ListedPost, PostDetail } from "./queries"
 import type { PostRow } from "../types"
+import { logger } from "@/lib/config/logger"
 
 type PostWithAuthor = Prisma.PostGetPayload<{
   include: {
@@ -80,6 +81,11 @@ export const buildWhereClause = (params: ListPostsInput): Prisma.PostWhereInput 
   // Apply custom filters
   if (params.filters) {
     const activeFilters = Object.entries(params.filters).filter(([, value]) => Boolean(value))
+    logger.debug("[Posts Query] Building where clause", {
+      filters: params.filters,
+      activeFiltersCount: activeFilters.length,
+    })
+    
     for (const [key, rawValue] of activeFilters) {
       const value = rawValue?.trim()
       if (!value) continue
@@ -94,6 +100,9 @@ export const buildWhereClause = (params: ListPostsInput): Prisma.PostWhereInput 
           break
         case "authorId":
           where.authorId = value
+          logger.info("[Posts Query] Applied authorId filter in where clause", {
+            authorId: value,
+          })
           break
         case "status":
           applyStatusFilterFromFilters(where, value)
@@ -106,6 +115,11 @@ export const buildWhereClause = (params: ListPostsInput): Prisma.PostWhereInput 
       }
     }
   }
+
+  logger.debug("[Posts Query] Final where clause", {
+    where: JSON.stringify(where, null, 2),
+    hasAuthorIdFilter: !!where.authorId,
+  })
 
   return where
 }

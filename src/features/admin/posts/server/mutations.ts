@@ -1,8 +1,7 @@
 "use server";
 
 import type { Prisma } from "@prisma/client";
-import { PERMISSIONS } from "@/lib/permissions";
-import { isSuperAdmin } from "@/lib/permissions";
+import { PERMISSIONS, hasPermission } from "@/lib/permissions";
 import { prisma } from "@/lib/prisma";
 import { mapPostRecord, type PostWithAuthor } from "./helpers";
 import {
@@ -45,9 +44,9 @@ export const createPost = async (ctx: AuthContext, input: CreatePostSchema) => {
 
   const validated = createPostSchema.parse(input);
 
-  // Chỉ super admin mới được chọn tác giả khác, user khác chỉ được set là chính mình
-  const isSuperAdminUser = isSuperAdmin(ctx.roles);
-  if (!isSuperAdminUser && validated.authorId !== ctx.actorId) {
+  // Kiểm tra permission: nếu có POSTS_VIEW_ALL thì có thể chọn tác giả khác, nếu chỉ có POSTS_VIEW_OWN thì chỉ được set là chính mình
+  const hasViewAllPermission = hasPermission(ctx.permissions, PERMISSIONS.POSTS_VIEW_ALL);
+  if (!hasViewAllPermission && validated.authorId !== ctx.actorId) {
     throw new ForbiddenError("Bạn không có quyền tạo bài viết cho người khác");
   }
 
@@ -180,13 +179,18 @@ export const updatePost = async (
     changes.published = { old: existing.published, new: validated.published };
   }
 
-  // Chỉ super admin mới được thay đổi tác giả, user khác không được phép
-  const isSuperAdminUser = isSuperAdmin(ctx.roles);
+  // Kiểm tra permission: nếu có POSTS_VIEW_ALL thì có thể sửa tất cả bài viết, nếu chỉ có POSTS_VIEW_OWN thì chỉ sửa của mình
+  const hasViewAllPermission = hasPermission(ctx.permissions, PERMISSIONS.POSTS_VIEW_ALL);
+  if (!hasViewAllPermission && existing.authorId !== ctx.actorId) {
+    throw new ForbiddenError("Bạn không có quyền sửa bài viết này");
+  }
+
+  // Chỉ user có POSTS_VIEW_ALL mới được thay đổi tác giả, user khác không được phép
   if (validated.authorId !== undefined) {
-    if (!isSuperAdminUser) {
+    if (!hasViewAllPermission) {
       throw new ForbiddenError("Bạn không có quyền thay đổi tác giả bài viết");
     }
-    // Super admin có thể thay đổi tác giả
+    // User có POSTS_VIEW_ALL có thể thay đổi tác giả
   }
 
   // Check if slug is being changed and if new slug already exists
@@ -229,7 +233,7 @@ export const updatePost = async (
     // Only update publishedAt if published is not being changed
     updateData.publishedAt = publishedAt;
   }
-  if (validated.authorId !== undefined && isSuperAdminUser) {
+  if (validated.authorId !== undefined && hasViewAllPermission) {
     // Update author relation using connect
     updateData.author = {
       connect: { id: validated.authorId },
@@ -386,6 +390,12 @@ export const deletePost = async (ctx: AuthContext, postId: string) => {
     throw new NotFoundError("Bài viết không tồn tại");
   }
 
+  // Kiểm tra permission: nếu có POSTS_VIEW_ALL thì có thể xóa tất cả bài viết, nếu chỉ có POSTS_VIEW_OWN thì chỉ xóa của mình
+  const hasViewAllPermission = hasPermission(ctx.permissions, PERMISSIONS.POSTS_VIEW_ALL);
+  if (!hasViewAllPermission && existing.authorId !== ctx.actorId) {
+    throw new ForbiddenError("Bạn không có quyền xóa bài viết này");
+  }
+
   await prisma.post.update({
     where: { id: postId },
     data: { deletedAt: new Date() },
@@ -430,6 +440,12 @@ export const restorePost = async (ctx: AuthContext, postId: string) => {
       error: "Post not found",
     });
     throw new NotFoundError("Bài viết không tồn tại");
+  }
+
+  // Kiểm tra permission: nếu có POSTS_VIEW_ALL thì có thể khôi phục tất cả bài viết, nếu chỉ có POSTS_VIEW_OWN thì chỉ khôi phục của mình
+  const hasViewAllPermission = hasPermission(ctx.permissions, PERMISSIONS.POSTS_VIEW_ALL);
+  if (!hasViewAllPermission && existing.authorId !== ctx.actorId) {
+    throw new ForbiddenError("Bạn không có quyền khôi phục bài viết này");
   }
 
   await prisma.post.update({
@@ -479,6 +495,12 @@ export const hardDeletePost = async (ctx: AuthContext, postId: string) => {
       error: "Post not found",
     });
     throw new NotFoundError("Bài viết không tồn tại");
+  }
+
+  // Kiểm tra permission: nếu có POSTS_VIEW_ALL thì có thể xóa vĩnh viễn tất cả bài viết, nếu chỉ có POSTS_VIEW_OWN thì chỉ xóa vĩnh viễn của mình
+  const hasViewAllPermission = hasPermission(ctx.permissions, PERMISSIONS.POSTS_VIEW_ALL);
+  if (!hasViewAllPermission && existing.authorId !== ctx.actorId) {
+    throw new ForbiddenError("Bạn không có quyền xóa vĩnh viễn bài viết này");
   }
 
   const previousStatus: "active" | "deleted" = existing.deletedAt
@@ -539,6 +561,17 @@ export const bulkPostsAction = async (
     throw new ApplicationError("Không có bài viết nào được chọn", 400);
   }
 
+  // Kiểm tra permission: nếu có POSTS_VIEW_ALL thì có thể xử lý tất cả bài viết, nếu chỉ có POSTS_VIEW_OWN thì chỉ xử lý của mình
+  const hasViewAllPermission = hasPermission(ctx.permissions, PERMISSIONS.POSTS_VIEW_ALL);
+  const whereClause: Prisma.PostWhereInput = {
+    id: { in: postIds },
+  };
+
+  // Nếu không có quyền xem tất cả, chỉ lấy bài viết của chính mình
+  if (!hasViewAllPermission) {
+    whereClause.authorId = ctx.actorId;
+  }
+
   let count = 0;
   let posts: Array<{
     id: string;
@@ -547,13 +580,14 @@ export const bulkPostsAction = async (
     published: boolean;
     publishedAt: Date | null;
     title?: string;
+    authorId?: string;
   }> = [];
 
   if (action === "delete") {
     // Lấy thông tin posts trước khi delete để emit socket events và revalidate cache
     posts = await prisma.post.findMany({
       where: {
-        id: { in: postIds },
+        ...whereClause,
         deletedAt: null,
       },
       select: {
@@ -563,6 +597,7 @@ export const bulkPostsAction = async (
         published: true,
         publishedAt: true,
         title: true,
+        authorId: true,
       },
     });
 
@@ -644,7 +679,7 @@ export const bulkPostsAction = async (
     // Lấy thông tin posts trước khi restore để tạo notifications
     posts = await prisma.post.findMany({
       where: {
-        id: { in: postIds },
+        ...whereClause,
         deletedAt: { not: null },
       },
       select: {
@@ -654,6 +689,7 @@ export const bulkPostsAction = async (
         published: true,
         publishedAt: true,
         title: true,
+        authorId: true,
       },
     });
 
@@ -754,9 +790,7 @@ export const bulkPostsAction = async (
   } else if (action === "hard-delete") {
     // Lấy thông tin posts trước khi delete để emit socket events và revalidate cache
     posts = await prisma.post.findMany({
-      where: {
-        id: { in: postIds },
-      },
+      where: whereClause,
       select: {
         id: true,
         deletedAt: true,
@@ -764,6 +798,7 @@ export const bulkPostsAction = async (
         published: true,
         publishedAt: true,
         title: true,
+        authorId: true,
       },
     });
 

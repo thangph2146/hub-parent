@@ -817,7 +817,7 @@ export const DashboardStatsClient = ({ stats }: DashboardStatsClientProps) => {
   const canViewUsers =
     isSuperAdminUser || hasPermission(PERMISSIONS.USERS_VIEW);
   const canViewPosts =
-    isSuperAdminUser || hasPermission(PERMISSIONS.POSTS_VIEW);
+    isSuperAdminUser || hasPermission(PERMISSIONS.POSTS_VIEW_ALL) || hasPermission(PERMISSIONS.POSTS_VIEW_OWN);
   const canViewComments =
     isSuperAdminUser || hasPermission(PERMISSIONS.COMMENTS_VIEW);
   const canViewCategories =
