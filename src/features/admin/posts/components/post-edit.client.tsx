@@ -140,10 +140,19 @@ export const PostEditClient = ({
             const submitData: Record<string, unknown> = {
                 ...data,
             }
-            if (data.published === true && !data.publishedAt && !post?.publishedAt) {
-                submitData.publishedAt = new Date().toISOString()
-            } else if (data.published === false) {
+            // Handle publishedAt
+            if (data.published === false) {
+                // Nếu không xuất bản, set publishedAt = null
                 submitData.publishedAt = null
+            } else if (data.published === true) {
+                // Nếu xuất bản, sử dụng publishedAt từ form hoặc giữ nguyên giá trị cũ hoặc tự động set
+                if (data.publishedAt && typeof data.publishedAt === "string") {
+                    submitData.publishedAt = data.publishedAt
+                } else if (post?.publishedAt) {
+                    submitData.publishedAt = post.publishedAt
+                } else {
+                    submitData.publishedAt = new Date().toISOString()
+                }
             }
             if (!isSuperAdminUser && "authorId" in submitData) {
                 delete submitData.authorId
@@ -181,12 +190,8 @@ export const PostEditClient = ({
         ...(isSuperAdminUser && users.length > 0
             ? [getPostAuthorField<PostEditData>(users)]
             : []),
-        ...(categories.length > 0
-            ? [getPostCategoriesField<PostEditData>(categories)]
-            : []),
-        ...(tags.length > 0
-            ? [getPostTagsField<PostEditData>(tags)]
-            : []),
+        getPostCategoriesField<PostEditData>(categories),
+        getPostTagsField<PostEditData>(tags),
         getPostContentField<PostEditData>(),
     ]
 

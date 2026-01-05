@@ -1,6 +1,6 @@
 import type { ResourceFormField, ResourceFormSection } from "@/features/admin/resources/components"
 import React from "react"
-import { Hash, FileText, Image as ImageIcon, Eye, User, Tag, Tags } from "lucide-react"
+import { Hash, FileText, Image as ImageIcon, Eye, User, Tag, Tags, Calendar } from "lucide-react"
 
 export interface PostFormData {
   title: string
@@ -16,6 +16,11 @@ export const getPostFormSections = (): ResourceFormSection[] => [
     id: "basic",
     title: "Thông tin cơ bản",
     description: "Tiêu đề, slug, tóm tắt, hình ảnh và trạng thái xuất bản",
+  },
+  {
+    id: "categories",
+    title: "Danh mục và Thẻ",
+    description: "Chọn danh mục và thẻ tag cho bài viết",
   },
   {
     id: "content",
@@ -72,6 +77,14 @@ export const getBasePostFields = (): ResourceFormField<PostFormData>[] => [
     icon: React.createElement(Eye, { className: "h-4 w-4" }),
     section: "basic",
   },
+  {
+    name: "publishedAt",
+    label: "Ngày xuất bản",
+    type: "date",
+    description: "Chọn ngày và giờ xuất bản bài viết (để trống để tự động đặt khi bật trạng thái xuất bản)",
+    icon: React.createElement(Calendar, { className: "h-4 w-4" }),
+    section: "basic",
+  },
 ]
 
 export const getPostContentField = <T extends Record<string, unknown>>(): ResourceFormField<T> => ({
@@ -96,25 +109,31 @@ export const getPostAuthorField = <T extends Record<string, unknown>>(
 })
 
 export const getPostCategoriesField = <T extends Record<string, unknown>>(
-  categories: Array<{ label: string; value: string }>
+  categories: Array<{ label: string; value: string }> = []
 ): ResourceFormField<T> => ({
   name: "categoryIds",
   label: "Danh mục",
   type: "multiple-select",
   options: categories,
-  description: "Chọn danh mục cho bài viết (có thể chọn nhiều)",
+  disabled: categories.length === 0,
+  description: categories.length > 0 
+    ? "Chọn danh mục cho bài viết (có thể chọn nhiều)" 
+    : "Chưa có danh mục nào. Vui lòng tạo danh mục trước.",
   icon: React.createElement(Tag, { className: "h-4 w-4" }),
-  section: "basic",
+  section: "categories",
 })
 
 export const getPostTagsField = <T extends Record<string, unknown>>(
-  tags: Array<{ label: string; value: string }>
+  tags: Array<{ label: string; value: string }> = []
 ): ResourceFormField<T> => ({
   name: "tagIds",
   label: "Thẻ tag",
   type: "multiple-select",
   options: tags,
-  description: "Chọn thẻ tag cho bài viết (có thể chọn nhiều)",
+  disabled: tags.length === 0,
+  description: tags.length > 0 
+    ? "Chọn thẻ tag cho bài viết (có thể chọn nhiều)" 
+    : "Chưa có thẻ tag nào. Vui lòng tạo thẻ tag trước.",
   icon: React.createElement(Tags, { className: "h-4 w-4" }),
-  section: "basic",
+  section: "categories",
 })

@@ -75,10 +75,16 @@ export const PostCreateClient = ({
         ...data,
       }
       // Handle publishedAt
-      if (data.published === true && !data.publishedAt) {
-        submitData.publishedAt = new Date().toISOString()
-      } else if (data.published === false) {
+      if (data.published === false) {
+        // Nếu không xuất bản, set publishedAt = null
         submitData.publishedAt = null
+      } else if (data.published === true) {
+        // Nếu xuất bản, sử dụng publishedAt từ form hoặc tự động set
+        if (data.publishedAt && typeof data.publishedAt === "string") {
+          submitData.publishedAt = data.publishedAt
+        } else {
+          submitData.publishedAt = new Date().toISOString()
+        }
       }
       if (!isSuperAdminUser && currentUserId) {
         submitData.authorId = currentUserId
@@ -95,12 +101,8 @@ export const PostCreateClient = ({
     ...(isSuperAdminUser && users.length > 0
       ? [getPostAuthorField<PostCreateData>(users)]
       : []),
-    ...(categories.length > 0
-      ? [getPostCategoriesField<PostCreateData>(categories)]
-      : []),
-    ...(tags.length > 0
-      ? [getPostTagsField<PostCreateData>(tags)]
-      : []),
+    getPostCategoriesField<PostCreateData>(categories),
+    getPostTagsField<PostCreateData>(tags),
     getPostContentField<PostCreateData>(),
   ]
 
