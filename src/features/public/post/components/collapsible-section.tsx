@@ -23,20 +23,27 @@ export const CollapsibleSection = ({ title, icon, children, defaultOpen = true }
       <CollapsibleTrigger asChild>
         <Button
           variant="ghost"
-          className="w-full p-0 h-auto hover:bg-transparent"
+          className="w-full h-auto group transition-colors"
         >
-          <Flex align="center" justify="between" className="w-full">
-            <Flex align="center" gap={2}>
-              {icon}
-              <TypographySpanMuted>{title}</TypographySpanMuted>
+          <Flex align="center" justify="between" className="w-full py-1.5 px-1">
+            <Flex align="center" gap={2} className="flex-1 min-w-0">
+              
+                {icon}
+              <TypographySpanMuted className="font-medium">{title}</TypographySpanMuted>
             </Flex>
-            <IconSize size="sm" className={cn("transition-transform duration-200", isOpen && "rotate-180")}>
+            <IconSize 
+              size="sm" 
+              className={cn(
+                "flex-shrink-0 transition-all duration-200",
+                isOpen && "rotate-180"
+              )}
+            >
               <ChevronDown />
             </IconSize>
           </Flex>
         </Button>
       </CollapsibleTrigger>
-      <CollapsibleContent>
+      <CollapsibleContent className="pt-2 pb-1">
         {children}
       </CollapsibleContent>
     </Collapsible>

@@ -164,7 +164,7 @@ export const HomeClient = ({ featuredPosts = [] }: HomeClientProps) => {
 
             {/* Posts Grid */}
             <Grid cols={3} gap={8}>
-              {featuredPosts.map((post, index) => (
+              {featuredPosts.slice(0, 3).map((post, index) => (
                 <PostCard
                   key={post.id}
                   post={post}

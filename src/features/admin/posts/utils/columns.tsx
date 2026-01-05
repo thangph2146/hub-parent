@@ -202,8 +202,8 @@ export const usePostColumns = ({
           placeholder: "Chọn ngày",
           dateFormat: "dd/MM/yyyy",
         },
-        className: "min-w-[140px] max-w-[180px]",
-        headerClassName: "min-w-[140px] max-w-[180px]",
+        className: "min-w-[240px] max-w-[240px]",
+        headerClassName: "min-w-[240px] max-w-[240px]",
         cell: (row) => {
           try {
             return dateFormatter.format(new Date(row.createdAt))

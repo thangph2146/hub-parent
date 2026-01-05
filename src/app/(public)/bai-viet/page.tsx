@@ -110,7 +110,7 @@ export default async function PostPage({ searchParams }: PostPageProps) {
             {/* Category Navigation */}
             <CollapsibleSection
               title="Danh mục:"
-              icon={<Filter className="h-4 w-4 text-muted-foreground flex-shrink-0" />}
+              icon={<Filter className="h-4 w-4" />}
               defaultOpen={true}
             >
               <PostCategoryNav categories={categories} />
@@ -119,7 +119,7 @@ export default async function PostPage({ searchParams }: PostPageProps) {
             {/* Tag Navigation */}
             <CollapsibleSection
               title="Thẻ tag:"
-              icon={<Tags className="h-4 w-4 text-muted-foreground flex-shrink-0" />}
+              icon={<Tags className="h-4 w-4" />}
               defaultOpen={true}
             >
               <PostTagNav tags={tags} />
