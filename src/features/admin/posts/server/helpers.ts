@@ -4,6 +4,7 @@ import {
   applyStatusFilter,
   applySearchFilter,
   applyDateFilter,
+  applyDateRangeFilter,
   applyStringFilter,
   applyBooleanFilter,
   applyStatusFilterFromFilters,
@@ -108,9 +109,16 @@ export const buildWhereClause = (params: ListPostsInput): Prisma.PostWhereInput 
           applyStatusFilterFromFilters(where, value)
           break
         case "createdAt":
-        case "publishedAt":
         case "deletedAt":
           applyDateFilter(where, key, value)
+          break
+        case "publishedAt":
+          // Check if value contains "|" to determine if it's a date range
+          if (value.includes("|")) {
+            applyDateRangeFilter(where, key, value)
+          } else {
+            applyDateFilter(where, key, value)
+          }
           break
       }
     }

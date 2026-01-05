@@ -71,14 +71,14 @@ export function PostCard({ post, className, priority = false }: PostCardProps) {
               )}
 
               {/* Title */}
-              <TypographyH4 className="line-clamp-2 group-hover:text-primary transition-colors">
+              <TypographyH4 className="line-clamp-2 text-foreground group-hover:text-primary transition-colors">
                 {post.title}
               </TypographyH4>
 
               {/* Date */}
               {post.publishedAt && (
-                <Flex align="center" gap={2}>
-                  <IconSize size="sm">
+                <Flex align="center" gap={2} className="text-muted-foreground">
+                  <IconSize size="sm" className="text-muted-foreground">
                     <Calendar />
                   </IconSize>
                   <time dateTime={getPublishedAtISO()}>

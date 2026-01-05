@@ -24,8 +24,8 @@ import {
   TypographySpanDestructive,
   IconSize,
 } from "@/components/ui/typography";
-import { Flex } from "@/components/ui/flex";
-import { Grid } from "@/components/ui/grid";
+import { Flex } from "antd";
+import { Row, Col } from "antd";
 
 export interface ResourceFormField<T = unknown> {
   name: keyof T | string;
@@ -594,18 +594,19 @@ export const ResourceForm = <T extends Record<string, unknown>>({
         )}
       >
         {renderSectionHeader(sectionInfo?.title, sectionInfo?.description)}
-        <Grid
-          cols={gridCols}
-          fullWidth
-          gap="2-md-4"
-          align="stretch"
+        <Row
+          gutter={[8, 16]}
           className={cn(
-            "transition-all duration-300",
+            "w-full transition-all duration-300",
             readOnly && "!opacity-100"
           )}
         >
-          {sectionFields.map(renderField)}
-        </Grid>
+          {sectionFields.map((field) => (
+            <Col key={String(field.name)} xs={24} sm={gridCols === "responsive-2" ? 12 : 24} className="flex items-stretch">
+              {renderField(field)}
+            </Col>
+          ))}
+        </Row>
       </FieldSet>
     );
   };
@@ -619,20 +620,14 @@ export const ResourceForm = <T extends Record<string, unknown>>({
       onSubmit={handleSubmit}
       className={formClassName}
     >
-      <Flex direction="col" fullWidth gap="responsive">
+      <Flex vertical gap="middle" className="w-full">
         {submitError && (
           <Flex
             align="center"
-            gap={2}
-            fullWidth
-            rounded="lg"
-            bg="destructive-text"
-            border="all"
-            padding="md"
+            gap={8}
             className={cn(
-              "border-destructive/20",
-              "transition-all duration-300",
-              "shadow-sm"
+              "w-full rounded-lg border border-destructive/20 bg-destructive/10 text-destructive p-4",
+              "transition-all duration-300 shadow-sm"
             )}
           >
             <TypographySpanMuted className="font-medium">
@@ -641,30 +636,31 @@ export const ResourceForm = <T extends Record<string, unknown>>({
           </Flex>
         )}
         {/* prefix content */}
-        <Flex direction="col" gap="responsive" fullWidth className={prefixClassName}>
+        <Flex vertical gap="middle" className={cn("w-full", prefixClassName)}>
           {prefixContent}
         </Flex>
 
         {/* Content */}
-        <Flex direction="col" gap="responsive" fullWidth className={contentClassName}>
+        <Flex vertical gap="middle" className={cn("w-full", contentClassName)}>
           {Object.entries(grouped).map(([sectionId, sectionFields]) =>
             renderSection(sectionId, sectionFields)
           )}
           {ungrouped.length > 0 && (
-            <Grid 
-              cols="responsive-2" 
-              fullWidth 
-              gap="2-md-4"
-              align="stretch"
-              className={cn(readOnly && "!opacity-100")}
+            <Row 
+              gutter={[8, 16]}
+              className={cn("w-full", readOnly && "!opacity-100")}
             >
-              {ungrouped.map(renderField)}
-            </Grid>
+              {ungrouped.map((field) => (
+                <Col key={String(field.name)} xs={24} sm={12} className="flex items-stretch">
+                  {renderField(field)}
+                </Col>
+              ))}
+            </Row>
           )}
         </Flex>
 
         {/* suffix content */}
-        <Flex direction="col" gap="responsive" fullWidth className={suffixClassName}>
+        <Flex vertical gap="middle" className={cn("w-full", suffixClassName)}>
           {suffixContent}
         </Flex>
       </Flex>
@@ -680,7 +676,7 @@ export const ResourceForm = <T extends Record<string, unknown>>({
         disabled={isPending}
         className="h-9 disabled:!opacity-100"
       >
-        <Flex align="center" gap={2}>
+        <Flex align="center" gap={8}>
           <IconSize size="sm">
             {variant === "page" && resolvedBackUrl ? <ArrowLeft /> : <X />}
           </IconSize>
@@ -693,7 +689,7 @@ export const ResourceForm = <T extends Record<string, unknown>>({
         disabled={isPending}
         className="h-9 disabled:!opacity-100"
       >
-        <Flex align="center" gap={2}>
+        <Flex align="center" gap={8}>
           {isPending ? (
             <>
               <IconSize size="sm">
@@ -718,21 +714,18 @@ export const ResourceForm = <T extends Record<string, unknown>>({
     <>
       {(title || resolvedBackUrl) && !showCard && (
         <Flex
-          direction="col-sm-row"
-          fullWidth
-          align="start"
-          justify="between"
-          gap={4}
-          border="b-border"
-          className={cn("pb-6 sm:items-center", _className)}
+          vertical
+          className={cn(
+            "w-full pb-6 border-b border-border",
+            "sm:flex-row sm:items-center sm:justify-between",
+            "gap-4 sm:gap-4",
+            _className
+          )}
         >
           <Flex
-            direction="col"
-            gap={3}
-            fullWidth
-            flex="1"
-            minWidth="0"
-            className="w-full lg:w-1/3 xl:w-2/5"
+            vertical
+            gap={12}
+            className="w-full lg:w-1/3 xl:w-2/5 flex-1 min-w-0"
           >
             {resolvedBackUrl && (
               <Button
@@ -741,7 +734,7 @@ export const ResourceForm = <T extends Record<string, unknown>>({
                 onClick={handleBack}
                 className="h-8"
               >
-                <Flex align="center" gap={2}>
+                <Flex align="center" gap={8}>
                   <IconSize size="sm">
                     <ArrowLeft />
                   </IconSize>
@@ -749,7 +742,7 @@ export const ResourceForm = <T extends Record<string, unknown>>({
                 </Flex>
               </Button>
             )}
-            <Flex direction="col" gap={2} minWidth="0">
+            <Flex vertical gap={8} className="min-w-0">
               {title && (
                 <TypographyH1 className="truncate">{title}</TypographyH1>
               )}
@@ -768,12 +761,13 @@ export const ResourceForm = <T extends Record<string, unknown>>({
       {(customFooterButtons || (!readOnly && footerButtons)) && (
         <Flex
           align="center"
-          justify="end"
-          gap={2}
-          fullWidth
-          border="top"
-          padding="sm-y"
-          className={cn("sticky bottom-0 bg-background/95 backdrop-blur-sm z-10", _className)}
+          justify="flex-end"
+          gap={8}
+          style={{ paddingTop: "0.5rem", paddingBottom: "0.5rem" }}
+          className={cn(
+            "w-full border-t sticky bottom-0 bg-background/95 backdrop-blur-sm z-10",
+            _className
+          )}
         >
           {customFooterButtons || footerButtons}
         </Flex>

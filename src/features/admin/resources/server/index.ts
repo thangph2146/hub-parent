@@ -9,6 +9,7 @@ export {
   applyStatusFilter,
   applySearchFilter,
   applyDateFilter,
+  applyDateRangeFilter,
   applyBooleanFilter,
   applyStringFilter,
   applyRelationFilter,

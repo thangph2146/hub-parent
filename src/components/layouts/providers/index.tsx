@@ -21,6 +21,8 @@
  * @see https://nextjs.org/docs/app/building-your-application/routing/loading-ui-and-streaming
  */
 
+"use client"
+
 import type { ReactNode } from "react"
 import type { Session } from "next-auth"
 import { ThemeProvider } from "./theme-provider"

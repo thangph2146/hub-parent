@@ -141,6 +141,12 @@ export const generateResourceApiRoutes = (resourceName: string) => {
    */
   const replaceId = (route: string, id: string): string => route.replace("[id]", id)
 
+  // Check for custom dates-with-posts route
+  const datesWithPostsRoute = findAndStripRoute(
+    getResourceAdminApiRoutes(resourceName),
+    (r) => r.method === "GET" && r.path.includes("/dates-with-posts")
+  )
+
   return {
     list: (params?: { page?: number; limit?: number; search?: string; status?: string }) => {
       const route = listRoute || basePath
@@ -158,6 +164,7 @@ export const generateResourceApiRoutes = (resourceName: string) => {
       const queryString = params ? buildQueryString(params) : ""
       return `${optionsRoute}${queryString ? `?${queryString}` : ""}`
     },
+    datesWithPosts: datesWithPostsRoute || `${basePath}/dates-with-posts`,
   }
 }
 

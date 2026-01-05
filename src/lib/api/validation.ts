@@ -306,6 +306,27 @@ export const containsSQLInjection = (input: string): boolean => {
 }
 
 /**
+ * Validate date range filter format (fromDate|toDate)
+ */
+const isValidDateRangeFormat = (value: string): boolean => {
+  // Format: "fromDate|toDate" or "fromDate|" or "|toDate"
+  const parts = value.split("|")
+  if (parts.length !== 2) return false
+  
+  // Validate date format (yyyy-MM-dd)
+  const dateRegex = /^\d{4}-\d{2}-\d{2}$/
+  const fromStr = parts[0]?.trim()
+  const toStr = parts[1]?.trim()
+  
+  // At least one part must be present and valid
+  if (fromStr && !dateRegex.test(fromStr)) return false
+  if (toStr && !dateRegex.test(toStr)) return false
+  if (!fromStr && !toStr) return false
+  
+  return true
+}
+
+/**
  * Validate và sanitize search query
  */
 export const sanitizeSearchQuery = (query: string, maxLength = 100): { valid: boolean; error?: string; value?: string } => {
@@ -317,6 +338,16 @@ export const sanitizeSearchQuery = (query: string, maxLength = 100): { valid: bo
     return {
       valid: false,
       error: `Truy vấn tìm kiếm không được vượt quá ${maxLength} ký tự`,
+    }
+  }
+
+  // Skip SQL injection check for date range format (contains |)
+  if (query.includes("|")) {
+    if (isValidDateRangeFormat(query)) {
+      // Date range format is safe, return as-is
+      return { valid: true, value: query }
+    } else {
+      return { valid: false, error: "Định dạng khoảng thời gian không hợp lệ" }
     }
   }
 
