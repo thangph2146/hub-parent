@@ -25,6 +25,7 @@ import { useStudentsSocketBridge } from "../hooks/use-students-socket-bridge"
 import { useStudentActions } from "../hooks/use-student-actions"
 import { useStudentFeedback } from "../hooks/use-student-feedback"
 import { useStudentDeleteConfirm } from "../hooks/use-student-delete-confirm"
+import { useStudentToggleConfirm } from "../hooks/use-student-toggle-confirm"
 import { useStudentColumns } from "../utils/columns"
 import { useStudentRowActions } from "../utils/row-actions"
 import { useResourceRouter } from "@/hooks/use-resource-segment"
@@ -49,6 +50,7 @@ export const StudentsTableClient = ({
   const { isSocketConnected, cacheVersion } = useStudentsSocketBridge()
   const { feedback, showFeedback, handleFeedbackOpenChange } = useStudentFeedback()
   const { deleteConfirm, setDeleteConfirm, handleDeleteConfirm } = useStudentDeleteConfirm()
+  const { toggleConfirm, bulkToggleConfirm, openToggleConfirm, closeToggleConfirm, openBulkToggleConfirm, closeBulkToggleConfirm } = useStudentToggleConfirm()
 
   const {
     handleToggleStatus,
@@ -114,10 +116,44 @@ export const StudentsTableClient = ({
 
   const handleToggleStatusWithRefresh = useCallback(
     (row: StudentRow, checked: boolean) => {
-      handleToggleStatus(row, checked, refreshTable)
+      openToggleConfirm(
+        row,
+        checked,
+        async () => {
+          await handleToggleStatus(row, checked, refreshTable)
+        }
+      )
     },
-    [handleToggleStatus, refreshTable],
+    [handleToggleStatus, refreshTable, openToggleConfirm],
   )
+
+  const handleToggleConfirm = useCallback(async () => {
+    if (!toggleConfirm) return
+    try {
+      await toggleConfirm.onConfirm()
+      // Đóng dialog confirm ngay sau khi thực hiện thành công
+      // Feedback dialog sẽ được hiển thị bởi handleToggleStatus
+      closeToggleConfirm()
+    } catch {
+      // Error already handled in onConfirm, nhưng vẫn đóng dialog
+      closeToggleConfirm()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [toggleConfirm])
+
+  const handleBulkToggleConfirm = useCallback(async () => {
+    if (!bulkToggleConfirm) return
+    try {
+      await bulkToggleConfirm.onConfirm()
+      // Đóng dialog confirm ngay sau khi thực hiện thành công
+      // Feedback dialog sẽ được hiển thị bởi executeBulkAction
+      closeBulkToggleConfirm()
+    } catch {
+      // Error already handled in onConfirm, nhưng vẫn đóng dialog
+      closeBulkToggleConfirm()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bulkToggleConfirm])
 
   const { baseColumns, deletedColumns } = useStudentColumns({
     togglingStudents,
@@ -292,11 +328,19 @@ export const StudentsTableClient = ({
           },
         })
       } else {
-        // "active" action không cần confirm dialog, thực hiện trực tiếp
-        executeBulkAction(action, ids, refresh, clearSelection)
+        // "active" và "unactive" cần confirm dialog
+        const newStatus = action === "active"
+        openBulkToggleConfirm(
+          ids,
+          ids.length,
+          newStatus,
+          async () => {
+            await executeBulkAction(action, ids, refresh, clearSelection)
+          }
+        )
       }
     },
-    [executeBulkAction, setDeleteConfirm],
+    [executeBulkAction, setDeleteConfirm, openBulkToggleConfirm],
   )
 
   const createActiveSelectionActions = useCallback(
@@ -645,6 +689,43 @@ export const StudentsTableClient = ({
                 : deletingStudents.has(deleteConfirm.row.id)
               : false)
           }
+        />
+      )}
+
+      {/* Toggle Status Confirmation Dialog */}
+      {toggleConfirm && (
+        <ConfirmDialog
+          open={toggleConfirm.open}
+          onOpenChange={(open) => {
+            if (!open) closeToggleConfirm()
+          }}
+          title={STUDENT_CONFIRM_MESSAGES.TOGGLE_TITLE(toggleConfirm.row.studentCode, toggleConfirm.newStatus)}
+          description={STUDENT_CONFIRM_MESSAGES.TOGGLE_DESCRIPTION(toggleConfirm.row.studentCode, toggleConfirm.newStatus)}
+          variant="default"
+          confirmLabel={STUDENT_CONFIRM_MESSAGES.TOGGLE_CONFIRM_LABEL(toggleConfirm.newStatus)}
+          cancelLabel={STUDENT_CONFIRM_MESSAGES.CANCEL_LABEL}
+          onConfirm={handleToggleConfirm}
+          isLoading={
+            bulkState.isProcessing ||
+            (toggleConfirm ? togglingStudents.has(toggleConfirm.row.id) : false)
+          }
+        />
+      )}
+
+      {/* Bulk Toggle Status Confirmation Dialog */}
+      {bulkToggleConfirm && (
+        <ConfirmDialog
+          open={bulkToggleConfirm.open}
+          onOpenChange={(open) => {
+            if (!open) closeBulkToggleConfirm()
+          }}
+          title={STUDENT_CONFIRM_MESSAGES.BULK_TOGGLE_TITLE(bulkToggleConfirm.count, bulkToggleConfirm.newStatus)}
+          description={STUDENT_CONFIRM_MESSAGES.BULK_TOGGLE_DESCRIPTION(bulkToggleConfirm.count, bulkToggleConfirm.newStatus)}
+          variant="default"
+          confirmLabel={STUDENT_CONFIRM_MESSAGES.BULK_TOGGLE_CONFIRM_LABEL(bulkToggleConfirm.newStatus)}
+          cancelLabel={STUDENT_CONFIRM_MESSAGES.CANCEL_LABEL}
+          onConfirm={handleBulkToggleConfirm}
+          isLoading={bulkState.isProcessing}
         />
       )}
 

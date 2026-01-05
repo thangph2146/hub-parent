@@ -151,20 +151,17 @@ export const useStudentColumns = ({ togglingStudents, canToggleStatus, onToggleS
       columns.push({
         accessorKey: "id" as keyof StudentRow, // Sử dụng id làm accessorKey vì pendingApproval không có trong StudentRow
         header: "Thông báo",
-        className: "w-full min-w-[300px] max-w-[500px]",
-        headerClassName: "w-full min-w-[300px] max-w-[500px]",
+        className: "min-w-[300px] max-w-[500px]",
+        headerClassName: "min-w-[300px] max-w-[500px]",
         cell: (row) => {
           // Hiển thị thông báo đã được duyệt nếu student đã active và chưa bị xóa
           if (row.isActive && !row.deletedAt) {
             return (
-              <Alert variant="default" className="w-full border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-900/20">
-                <IconSize size="sm" className="text-green-600 dark:text-green-400">
-                  <CheckCircle2 />
-                </IconSize>
-                <AlertTitle className="text-green-800 dark:text-green-200">
+              <Alert variant="default" fullWidth={false} className="w-full max-w-full border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-900/20">
+                <AlertTitle className="text-green-800 dark:text-green-200 line-clamp-1">
                   {STUDENT_LABELS.APPROVED_TITLE}
                 </AlertTitle>
-                <AlertDescription className="text-green-700 dark:text-green-300 mt-1">
+                <AlertDescription className="text-green-700 dark:text-green-300 mt-1 line-clamp-3">
                   {STUDENT_LABELS.APPROVED_MESSAGE}
                 </AlertDescription>
               </Alert>
@@ -173,14 +170,11 @@ export const useStudentColumns = ({ togglingStudents, canToggleStatus, onToggleS
           // Hiển thị thông báo chờ xét duyệt nếu student chưa active và chưa bị xóa
           if (!row.isActive && !row.deletedAt) {
             return (
-              <Alert variant="default" className="border-yellow-200 bg-yellow-50 dark:border-yellow-800 dark:bg-yellow-900/20">
-                <IconSize size="sm" className="text-yellow-600 dark:text-yellow-400">
-                  <AlertCircle />
-                </IconSize>
-                <AlertTitle className="text-yellow-800 dark:text-yellow-200">
+              <Alert variant="default" fullWidth={false} className="w-full max-w-full border-yellow-200 bg-yellow-50 dark:border-yellow-800 dark:bg-yellow-900/20">
+                <AlertTitle className="text-yellow-800 dark:text-yellow-200 line-clamp-1">
                   {STUDENT_LABELS.PENDING_APPROVAL_TITLE}
                 </AlertTitle>
-                <AlertDescription className="text-yellow-700 dark:text-yellow-300 mt-1">
+                <AlertDescription className="text-yellow-700 dark:text-yellow-300 mt-1 line-clamp-3">
                   {STUDENT_LABELS.PENDING_APPROVAL_MESSAGE}
                 </AlertDescription>
               </Alert>
