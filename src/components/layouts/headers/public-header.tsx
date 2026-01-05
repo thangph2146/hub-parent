@@ -187,13 +187,13 @@ export function PublicHeader() {
         component="nav"
         style={{
           width: "100%",
-          maxWidth: "1280px",
           marginLeft: "auto",
           marginRight: "auto",
           height: "100%",
         }}
         align="center"
         justify="space-between"
+        className="container mx-auto"
       >
         <Flex align="center" gap={16}>
           <Link
