@@ -165,12 +165,8 @@ export const PostDetailClient = ({
       ...(isSuperAdminUser && authorOptions.length > 0
         ? [getPostAuthorField<PostFormData>(authorOptions)]
         : []),
-      ...(categoryOptions.length > 0
-        ? [getPostCategoriesField<PostFormData>(categoryOptions)]
-        : []),
-      ...(tagOptions.length > 0
-        ? [getPostTagsField<PostFormData>(tagOptions)]
-        : []),
+      getPostCategoriesField<PostFormData>(categoryOptions),
+      getPostTagsField<PostFormData>(tagOptions),
       getPostContentField<PostFormData>(),
     ],
     [isSuperAdminUser, authorOptions, categoryOptions, tagOptions]
