@@ -2,7 +2,7 @@ import { prisma } from "@/lib/prisma"
 import { getSocketServer } from "@/lib/socket/state"
 import { mapTagRecord, serializeTagForTable } from "./helpers"
 import type { TagRow } from "../types"
-import { resourceLogger } from "@/lib/config"
+import { resourceLogger } from "@/lib/config/resource-logger"
 
 const SUPER_ADMIN_ROOM = "role:super_admin"
 

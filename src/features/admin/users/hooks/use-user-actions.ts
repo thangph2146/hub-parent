@@ -1,10 +1,7 @@
-import { useCallback, useState } from "react"
-import { useQueryClient } from "@tanstack/react-query"
-import { apiClient } from "@/lib/api/axios"
+import { useCallback } from "react"
 import { apiRoutes } from "@/lib/api/routes"
 import { queryKeys } from "@/lib/query-keys"
-import { useResourceActions } from "@/features/admin/resources/hooks"
-import { getErrorMessage, invalidateAndRefetchQueries } from "@/lib/utils"
+import { useResourceActions, useToggleStatus } from "@/features/admin/resources/hooks"
 import type { ResourceRefreshHandler } from "@/features/admin/resources/types"
 import type { UserRow } from "../types"
 import type { FeedbackVariant } from "@/components/dialogs"
@@ -23,9 +20,6 @@ export const useUserActions = ({
   canManage,
   showFeedback,
 }: UseUserActionsOptions) => {
-  const queryClient = useQueryClient()
-  const [togglingUsers, setTogglingUsers] = useState<Set<string>>(new Set())
-
   const {
     executeSingleAction: baseExecuteSingleAction,
     executeBulkAction: baseExecuteBulkAction,
@@ -47,29 +41,36 @@ export const useUserActions = ({
     },
     messages: USER_MESSAGES,
     getRecordName: (row) => row.email,
-    permissions: {
-      canDelete,
-      canRestore,
-      canManage,
-    },
+    permissions: { canDelete, canRestore, canManage },
     showFeedback,
-    getLogMetadata: (row) => ({
-      userId: row.id,
-      userEmail: row.email,
-    }),
+    getLogMetadata: (row) => ({ userId: row.id, userEmail: row.email }),
+  })
+
+  const { handleToggleStatus: executeToggleActive, togglingIds: togglingUsers } = useToggleStatus<UserRow>({
+    resourceName: "users",
+    updateRoute: (id) => apiRoutes.users.update(id),
+    queryKeys: {
+      all: () => queryKeys.adminUsers.all(),
+      detail: (id) => queryKeys.adminUsers.detail(id),
+    },
+    messages: USER_MESSAGES,
+    getRecordName: (row) => row.email,
+    canManage,
+    showFeedback,
+    validateToggle: (row, newStatus) => {
+      if (row.email === PROTECTED_SUPER_ADMIN_EMAIL && newStatus === false) {
+        return { valid: false, error: USER_MESSAGES.CANNOT_DEACTIVATE_SUPER_ADMIN }
+      }
+      return { valid: true }
+    },
   })
 
   const executeSingleAction = useCallback(
-    async (
-      action: "delete" | "restore" | "hard-delete",
-      row: UserRow,
-      _refresh: ResourceRefreshHandler
-    ): Promise<void> => {
+    async (action: "delete" | "restore" | "hard-delete", row: UserRow, _refresh: ResourceRefreshHandler): Promise<void> => {
       if ((action === "delete" || action === "hard-delete") && row.email === PROTECTED_SUPER_ADMIN_EMAIL) {
         showFeedback("error", USER_MESSAGES.CANNOT_DELETE_SUPER_ADMIN, USER_MESSAGES.CANNOT_DELETE_SUPER_ADMIN)
         return
       }
-
       return baseExecuteSingleAction(action, row, _refresh)
     },
     [baseExecuteSingleAction, showFeedback]
@@ -95,58 +96,6 @@ export const useUserActions = ({
       return baseExecuteBulkAction(action, deletableIds, _refresh, clearSelection)
     },
     [baseExecuteBulkAction, showFeedback]
-  )
-
-  const executeToggleActive = useCallback(
-    async (row: UserRow, newStatus: boolean, _refresh: ResourceRefreshHandler): Promise<void> => {
-      if (!canManage) {
-        showFeedback("error", USER_MESSAGES.NO_PERMISSION, USER_MESSAGES.NO_MANAGE_PERMISSION)
-        return
-      }
-
-      if (row.email === PROTECTED_SUPER_ADMIN_EMAIL && newStatus === false) {
-        showFeedback("error", USER_MESSAGES.CANNOT_DEACTIVATE_SUPER_ADMIN, USER_MESSAGES.CANNOT_DEACTIVATE_SUPER_ADMIN)
-        return
-      }
-
-      setTogglingUsers((prev) => new Set(prev).add(row.id))
-
-      try {
-        await apiClient.put(apiRoutes.users.update(row.id), {
-          isActive: newStatus,
-        })
-
-        showFeedback(
-          "success",
-          USER_MESSAGES.TOGGLE_ACTIVE_SUCCESS,
-          `Đã ${newStatus ? "kích hoạt" : "vô hiệu hóa"} người dùng ${row.email}`
-        )
-        
-        // Invalidate và refetch list queries - sử dụng "all" để đảm bảo refetch tất cả queries
-        await invalidateAndRefetchQueries(queryClient, queryKeys.adminUsers.all())
-        
-        // Invalidate và refetch detail query
-        await invalidateAndRefetchQueries(queryClient, queryKeys.adminUsers.detail(row.id))
-        
-        // Gọi refresh callback để cập nhật UI ngay lập tức
-        await _refresh()
-      } catch (error: unknown) {
-        const errorMessage = getErrorMessage(error) || USER_MESSAGES.UNKNOWN_ERROR
-        showFeedback(
-          "error",
-          USER_MESSAGES.TOGGLE_ACTIVE_ERROR,
-          `Không thể ${newStatus ? "kích hoạt" : "vô hiệu hóa"} người dùng. Vui lòng thử lại.`,
-          errorMessage
-        )
-      } finally {
-        setTogglingUsers((prev) => {
-          const next = new Set(prev)
-          next.delete(row.id)
-          return next
-        })
-      }
-    },
-    [canManage, showFeedback, queryClient],
   )
 
   return {

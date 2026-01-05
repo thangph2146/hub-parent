@@ -8,19 +8,6 @@ import { useState, useMemo, useEffect, useRef, useCallback, useLayoutEffect } fr
 import { motion, AnimatePresence } from "framer-motion";
 import { useSession } from "next-auth/react";
 import { Calendar, BarChart3, PieChart, LineChart } from "lucide-react";
-// Recharts components not currently used but may be needed for future charts
-// import {
-//   Line,
-//   Bar,
-//   XAxis,
-//   YAxis,
-//   CartesianGrid,
-//   Tooltip,
-//   Legend,
-//   ResponsiveContainer,
-//   ComposedChart,
-//   BarChart,
-// } from "recharts";
 import dynamic from "next/dynamic";
 
 // Dynamic import Highcharts để tránh lỗi SSR

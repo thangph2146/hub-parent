@@ -1,4 +1,4 @@
-import { resourceLogger } from "@/lib/config"
+import { resourceLogger } from "@/lib/config/resource-logger"
 import type { StudentRow } from "../types"
 import type { AdminStudentsListParams } from "@/lib/query-keys"
 import {

@@ -33,14 +33,7 @@ import {
   notifySuperAdminsOfBulkPostAction,
 } from "./notifications";
 
-// Re-export for backward compatibility with API routes
-export {
-  ApplicationError,
-  ForbiddenError,
-  NotFoundError,
-  type AuthContext,
-  type BulkActionResult,
-};
+export { ApplicationError, ForbiddenError, NotFoundError, type AuthContext, type BulkActionResult }
 
 const sanitizePost = (post: PostWithAuthor) => mapPostRecord(post);
 

@@ -15,14 +15,16 @@ import {
 } from "@/features/admin/categories/server/mutations"
 import { createGetRoute, createPutRoute, createDeleteRoute } from "@/lib/api/api-route-wrapper"
 import type { ApiRouteContext } from "@/lib/api/types"
-import { createErrorResponse, createSuccessResponse } from "@/lib/config"
+import { createErrorResponse, createSuccessResponse, logger } from "@/lib/config"
+import { validateID } from "@/lib/api/validation"
 
 async function getCategoryHandler(_req: NextRequest, _context: ApiRouteContext, ...args: unknown[]) {
   const { params } = args[0] as { params: Promise<{ id: string }> }
   const { id: categoryId } = await params
 
-  if (!categoryId) {
-    return createErrorResponse("Category ID is required", { status: 400 })
+  const idValidation = validateID(categoryId)
+  if (!idValidation.valid) {
+    return createErrorResponse(idValidation.error || "Category ID không hợp lệ", { status: 400 })
   }
 
   // Sử dụng getCategoryById (non-cached) để đảm bảo data luôn fresh
@@ -40,8 +42,9 @@ async function putCategoryHandler(req: NextRequest, context: ApiRouteContext, ..
   const { params } = args[0] as { params: Promise<{ id: string }> }
   const { id: categoryId } = await params
 
-  if (!categoryId) {
-    return createErrorResponse("Category ID is required", { status: 400 })
+  const idValidation = validateID(categoryId)
+  if (!idValidation.valid) {
+    return createErrorResponse(idValidation.error || "Category ID không hợp lệ", { status: 400 })
   }
 
   let body: Record<string, unknown>
@@ -76,7 +79,10 @@ async function putCategoryHandler(req: NextRequest, context: ApiRouteContext, ..
     if (error instanceof NotFoundError) {
       return createErrorResponse(error.message || "Không tìm thấy", { status: 404 })
     }
-    console.error("Error updating category:", error)
+    logger.error("Error updating category", {
+      categoryId,
+      error: error instanceof Error ? error : new Error(String(error)),
+    })
     return createErrorResponse("Đã xảy ra lỗi khi cập nhật danh mục", { status: 500 })
   }
 }
@@ -85,8 +91,9 @@ async function deleteCategoryHandler(_req: NextRequest, context: ApiRouteContext
   const { params } = args[0] as { params: Promise<{ id: string }> }
   const { id: categoryId } = await params
 
-  if (!categoryId) {
-    return createErrorResponse("Category ID is required", { status: 400 })
+  const idValidation = validateID(categoryId)
+  if (!idValidation.valid) {
+    return createErrorResponse(idValidation.error || "Category ID không hợp lệ", { status: 400 })
   }
 
   const ctx: AuthContext = {
@@ -105,7 +112,10 @@ async function deleteCategoryHandler(_req: NextRequest, context: ApiRouteContext
     if (error instanceof NotFoundError) {
       return createErrorResponse(error.message || "Không tìm thấy", { status: 404 })
     }
-    console.error("Error deleting category:", error)
+    logger.error("Error deleting category", {
+      categoryId,
+      error: error instanceof Error ? error : new Error(String(error)),
+    })
     return createErrorResponse("Đã xảy ra lỗi khi xóa danh mục", { status: 500 })
   }
 }

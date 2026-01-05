@@ -31,7 +31,7 @@ import { useUserFeedback } from "@/features/admin/users/hooks/use-user-feedback"
 import { useUserDeleteConfirm } from "@/features/admin/users/hooks/use-user-delete-confirm"
 import { useUserColumns } from "@/features/admin/users/utils/columns"
 import { useUserRowActions } from "@/features/admin/users/utils/row-actions"
-import { resourceLogger } from "@/lib/config"
+import { resourceLogger } from "@/lib/config/resource-logger"
 import { TypographySpanSmall, TypographySpanSmallMuted, IconSize } from "@/components/ui/typography"
 
 import type { AdminUsersListParams } from "@/lib/query-keys"

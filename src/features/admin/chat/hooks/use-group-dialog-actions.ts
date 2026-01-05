@@ -7,7 +7,7 @@ import { getErrorMessage } from "@/lib/utils"
 import type { Group } from "@/components/chat/types"
 import type { FeedbackVariant } from "@/components/dialogs"
 import { GROUP_MESSAGES } from "../constants/messages"
-import { logger } from "@/lib/config"
+import { logger } from "@/lib/config/logger"
 
 interface UseGroupActionsOptions {
   canDelete: boolean

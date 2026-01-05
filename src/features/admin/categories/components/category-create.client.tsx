@@ -4,7 +4,7 @@ import { ResourceForm, type ResourceFormField } from "@/features/admin/resources
 import { useResourceFormSubmit } from "@/features/admin/resources/hooks"
 import { apiRoutes } from "@/lib/api/routes"
 import { queryKeys } from "@/lib/query-keys"
-import { resourceLogger } from "@/lib/config"
+import { resourceLogger } from "@/lib/config/resource-logger"
 import { getBaseCategoryFields, getCategoryFormSections, type CategoryFormData } from "../form-fields"
 import { useQueryClient } from "@tanstack/react-query"
 

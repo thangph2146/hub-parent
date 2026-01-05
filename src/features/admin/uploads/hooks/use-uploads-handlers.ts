@@ -5,7 +5,7 @@
 
 import * as React from "react"
 import { useQueryClient } from "@tanstack/react-query"
-import { logger } from "@/lib/config"
+import { logger } from "@/lib/config/logger"
 import { useUploadsStore } from "../uploads-store"
 import {
   useDeleteFolder,

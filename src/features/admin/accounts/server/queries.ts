@@ -1,22 +1,5 @@
 import { prisma } from "@/lib/prisma"
 import type { AccountProfile } from "../types"
-import type { Prisma } from "@prisma/client"
-
-type _UserWithRoles = Prisma.UserGetPayload<{
-  include: {
-    userRoles: {
-      include: {
-        role: {
-          select: {
-            id: true
-            name: true
-            displayName: true
-          }
-        }
-      }
-    }
-  }
-}>
 
 export const getCurrentUserProfile = async (userId: string): Promise<AccountProfile | null> => {
   const user = await prisma.user.findUnique({

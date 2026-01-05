@@ -6,7 +6,7 @@
 import { promises as fs } from "fs"
 import path from "path"
 import { STORAGE_DIR } from "@/lib/utils/file-utils"
-import { logger } from "@/lib/config"
+import { logger } from "@/lib/config/logger"
 
 export interface ScannedFolder {
   path: string

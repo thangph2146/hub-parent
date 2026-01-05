@@ -15,6 +15,7 @@ import { TypographyH4, TypographyPMuted, IconSize } from "@/components/ui/typogr
 import { Flex } from "@/components/ui/flex"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { getUserInitials } from "@/features/admin/resources/utils"
+import { logger } from "@/lib/config/logger"
 
 export interface AvatarFieldProps {
   value: unknown
@@ -51,7 +52,7 @@ export const AvatarField = ({
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
     } catch (err) {
-      console.error("Failed to copy URL:", err)
+      logger.error("Failed to copy URL", err instanceof Error ? err : new Error(String(err)))
     }
   }
 

@@ -6,7 +6,7 @@ import {
   type AuthContext,
 } from "@/features/admin/resources/server"
 import { getSocketServer } from "@/lib/socket/state"
-import { logger } from "@/lib/config"
+import { logger } from "@/lib/config/logger"
 import { emitGroupDeleted, emitGroupHardDeleted, emitGroupRestored } from "./events"
 
 export interface CreateMessageInput {

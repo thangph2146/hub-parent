@@ -4,6 +4,7 @@
  */
 
 import { useState, useCallback } from "react"
+import { logger } from "@/lib/config/logger"
 import type { ImageItem } from "../types"
 
 export interface BulkDeleteConfirmState {
@@ -28,9 +29,9 @@ export const useDialogs = () => {
   const [folderDeleteConfirm, setFolderDeleteConfirm] = useState<FolderDeleteConfirmState | null>(null)
 
   const openBulkDelete = useCallback((count: number) => {
-    console.log("openBulkDelete called", { count })
+    logger.debug("openBulkDelete called", { count })
     setBulkDeleteConfirm({ open: true, count })
-    console.log("bulkDeleteConfirm state set to:", { open: true, count })
+    logger.debug("bulkDeleteConfirm state set", { open: true, count })
   }, [])
 
   const closeBulkDelete = useCallback(() => {

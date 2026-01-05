@@ -1,5 +1,5 @@
 import type { DataTableResult } from "@/components/tables"
-import { logger } from "@/lib/config"
+import { logger } from "@/lib/config/logger"
 import type { ResourcePagination, ResourceResponse } from "../types"
 import { validateCUID } from "@/lib/api/validation"
 

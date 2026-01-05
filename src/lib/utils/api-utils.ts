@@ -44,6 +44,7 @@ const STATUS_MESSAGES: Record<number, string> = {
 
 /**
  * Extracts error message from axios error object
+ * Returns a user-friendly error message, combining all validation errors if available
  */
 export const extractAxiosErrorMessage = (
   error: unknown,
@@ -75,18 +76,41 @@ export const extractAxiosErrorMessage = (
     
     // Nếu có validation errors (array format)
     if (Array.isArray(responseData?.errors) && responseData.errors.length > 0) {
-      const firstError = responseData.errors[0]
-      if (firstError?.message) {
-        return firstError.message
+      const errorMessages = responseData.errors
+        .map((err) => {
+          if (err?.message) {
+            return err.path ? `${err.path}: ${err.message}` : err.message
+          }
+          return null
+        })
+        .filter((msg): msg is string => msg !== null)
+      
+      if (errorMessages.length > 0) {
+        // Nếu có nhiều lỗi, hiển thị tất cả
+        if (errorMessages.length > 1) {
+          return `Có ${errorMessages.length} lỗi: ${errorMessages.join("; ")}`
+        }
+        return errorMessages[0]
       }
     }
     
     // Nếu có validation errors (object format - Zod style)
     if (responseData?.errors && typeof responseData.errors === "object" && !Array.isArray(responseData.errors)) {
       const errors = responseData.errors as Record<string, string[]>
-      const firstKey = Object.keys(errors)[0]
-      if (firstKey && Array.isArray(errors[firstKey]) && errors[firstKey].length > 0) {
-        return `${firstKey}: ${errors[firstKey][0]}`
+      const errorMessages: string[] = []
+      
+      for (const [key, messages] of Object.entries(errors)) {
+        if (Array.isArray(messages) && messages.length > 0) {
+          errorMessages.push(`${key}: ${messages[0]}`)
+        }
+      }
+      
+      if (errorMessages.length > 0) {
+        // Nếu có nhiều lỗi, hiển thị tất cả
+        if (errorMessages.length > 1) {
+          return `Có ${errorMessages.length} lỗi: ${errorMessages.join("; ")}`
+        }
+        return errorMessages[0]
       }
     }
     

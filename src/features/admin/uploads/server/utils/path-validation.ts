@@ -5,7 +5,7 @@
 
 import path from "path"
 import { STORAGE_DIR } from "@/lib/utils/file-utils"
-import { logger } from "@/lib/config"
+import { logger } from "@/lib/config/logger"
 
 export const validateFolderPath = (folderPath: string): { valid: boolean; error?: string } => {
   if (folderPath.includes("..") || folderPath.includes("\\")) {

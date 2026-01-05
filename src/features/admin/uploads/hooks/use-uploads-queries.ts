@@ -6,7 +6,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { apiClient } from "@/lib/api/axios"
 import { apiRoutes } from "@/lib/api/routes"
-import { logger } from "@/lib/config"
+import { logger } from "@/lib/config/logger"
 import { useToast } from "@/hooks/use-toast"
 import { queryKeys } from "../config/query-keys"
 import { useUploadsStore } from "../uploads-store"

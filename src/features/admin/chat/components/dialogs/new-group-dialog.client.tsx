@@ -36,7 +36,7 @@ import type { Group, GroupMember } from "@/components/chat/types"
 import { useToast } from "@/hooks/use-toast"
 import { requestJson, toJsonBody } from "@/lib/api/client"
 import { withApiBase } from "@/lib/config/api-paths"
-import { logger } from "@/lib/config"
+import { logger } from "@/lib/config/logger"
 import { TypographyP, TypographyPSmall, TypographyPMuted, IconSize } from "@/components/ui/typography"
 import { Flex } from "@/components/ui/flex"
 

@@ -1,6 +1,6 @@
 import type { Permission } from "@/lib/permissions"
 import { canPerformAction } from "@/lib/permissions"
-import { resourceLogger, type ResourceAction } from "@/lib/config"
+import { resourceLogger, type ResourceAction } from "@/lib/config/resource-logger"
 import { ForbiddenError } from "./errors"
 
 export interface AuthContext {

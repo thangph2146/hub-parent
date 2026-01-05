@@ -3,7 +3,7 @@
 import { useEffect } from "react"
 import { useSession } from "next-auth/react"
 import { useQueryClient } from "@tanstack/react-query"
-import { resourceLogger } from "@/lib/config"
+import { resourceLogger } from "@/lib/config/resource-logger"
 import type { ContactRequestRow } from "../types"
 import { queryKeys, type AdminContactRequestsListParams, invalidateQueries } from "@/lib/query-keys"
 import type { ContactRequestDetailData } from "../components/contact-request-detail.client"

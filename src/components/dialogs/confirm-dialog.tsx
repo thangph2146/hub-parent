@@ -44,7 +44,7 @@ export function ConfirmDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="max-w-[90vw] sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle asChild>
             <Flex align="center" gap={2}>

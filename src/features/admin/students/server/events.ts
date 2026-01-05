@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma"
 import { getSocketServer } from "@/lib/socket/state"
 import { mapStudentRecord, serializeStudentForTable } from "./helpers"
 import type { StudentRow } from "../types"
+import { resourceLogger } from "@/lib/config/resource-logger"
 
 const SUPER_ADMIN_ROOM = "role:super_admin"
 
@@ -55,6 +56,14 @@ export const emitStudentUpsert = async (
     previousStatus,
     newStatus,
   })
+  
+  resourceLogger.socket({
+    resource: "students",
+    action: previousStatus === null ? "create" : previousStatus !== newStatus ? "update" : "update",
+    event: "student:upsert",
+    resourceId: studentId,
+    payload: { studentId, previousStatus, newStatus },
+  })
 }
 
 export const emitStudentRemove = (studentId: string, previousStatus: StudentStatus): void => {
@@ -64,6 +73,14 @@ export const emitStudentRemove = (studentId: string, previousStatus: StudentStat
   io.to(SUPER_ADMIN_ROOM).emit("student:remove", {
     id: studentId,
     previousStatus,
+  })
+  
+  resourceLogger.socket({
+    resource: "students",
+    action: "hard-delete",
+    event: "student:remove",
+    resourceId: studentId,
+    payload: { studentId, previousStatus },
   })
 }
 
@@ -105,6 +122,13 @@ export const emitStudentBatchUpsert = async (
       previousStatus,
       newStatus: resolveStatusFromRow(row),
     })),
+  })
+  
+  resourceLogger.actionFlow({
+    resource: "students",
+    action: "socket-update",
+    step: "success",
+    metadata: { count: rows.length, type: "batch" },
   })
 }
 

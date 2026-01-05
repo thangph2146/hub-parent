@@ -21,7 +21,7 @@ import {
 } from "@/features/admin/resources/hooks"
 import { normalizeSearch, sanitizeFilters } from "@/features/admin/resources/utils"
 import { apiClient } from "@/lib/api/axios"
-import { logger } from "@/lib/config"
+import { logger } from "@/lib/config/logger"
 import type { NotificationRow } from "../types"
 import { useNotificationActions } from "../hooks/use-notification-actions"
 import { useNotificationFeedback } from "../hooks/use-notification-feedback"

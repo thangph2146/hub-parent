@@ -1,4 +1,4 @@
-import { logger } from "@/lib/config"
+import { logger } from "@/lib/config/logger"
 import type { ResourceRefreshHandler } from "../types"
 
 interface RunResourceRefreshOptions {

@@ -35,8 +35,7 @@ import {
 } from "./validation";
 import { PROTECTED_SUPER_ADMIN_EMAIL } from "../constants";
 
-export { ApplicationError, ForbiddenError, NotFoundError, type AuthContext };
-export type { BulkActionResult };
+export { ApplicationError, ForbiddenError, NotFoundError, type AuthContext, type BulkActionResult }
 
 const sanitizeUser = (user: UserWithRoles): ListedUser => mapUserRecord(user);
 

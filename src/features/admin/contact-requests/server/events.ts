@@ -3,6 +3,7 @@ import { getSocketServer } from "@/lib/socket/state"
 import { mapContactRequestRecord, serializeContactRequestForTable } from "./helpers"
 import type { ContactRequestRow } from "../types"
 import type { ListedContactRequest } from "../types"
+import { resourceLogger } from "@/lib/config/resource-logger"
 
 const SUPER_ADMIN_ROOM = "role:super_admin"
 
@@ -60,6 +61,14 @@ export const emitContactRequestUpsert = async (
   // Emit to role room (tất cả super admins đều ở trong role room)
   // Không cần emit đến từng user room để tránh duplicate events
   io.to(SUPER_ADMIN_ROOM).emit("contact-request:upsert", upsertPayload)
+  
+  resourceLogger.socket({
+    resource: "contact-requests",
+    action: previousStatus === null ? "create" : previousStatus !== newStatus ? "update" : "update",
+    event: "contact-request:upsert",
+    resourceId: contactRequestId,
+    payload: { contactRequestId, previousStatus, newStatus },
+  })
 }
 
 export const emitContactRequestRemove = (contactRequestId: string, previousStatus: ContactRequestStatus): void => {
@@ -69,6 +78,14 @@ export const emitContactRequestRemove = (contactRequestId: string, previousStatu
   io.to(SUPER_ADMIN_ROOM).emit("contact-request:remove", {
     id: contactRequestId,
     previousStatus,
+  })
+  
+  resourceLogger.socket({
+    resource: "contact-requests",
+    action: "hard-delete",
+    event: "contact-request:remove",
+    resourceId: contactRequestId,
+    payload: { contactRequestId, previousStatus },
   })
 }
 
@@ -117,6 +134,14 @@ export const emitContactRequestNew = async (contactRequest: ListedContactRequest
   // Emit to role room (tất cả super admins đều ở trong role room)
   // Không cần emit đến từng user room để tránh duplicate events
   io.to(SUPER_ADMIN_ROOM).emit("contact-request:new", payload)
+  
+  resourceLogger.socket({
+    resource: "contact-requests",
+    action: "create",
+    event: "contact-request:new",
+    resourceId: row.id,
+    payload: { contactRequestId: row.id },
+  })
 }
 
 export const emitContactRequestBatchUpsert = async (
@@ -156,6 +181,13 @@ export const emitContactRequestBatchUpsert = async (
   io.to(SUPER_ADMIN_ROOM).emit("contact-request:batch-upsert", {
     contactRequests: rows,
     previousStatus,
+  })
+  
+  resourceLogger.actionFlow({
+    resource: "contact-requests",
+    action: "socket-update",
+    step: "success",
+    metadata: { count: rows.length, type: "batch" },
   })
 }
 

@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/field"
 import { Loader2 } from "lucide-react"
 import { IconSize } from "@/components/ui/typography"
-import { logger } from "@/lib/config"
+import { logger } from "@/lib/config/logger"
 import type { Group } from "@/components/chat/types"
 import { apiRoutes } from "@/lib/api/routes"
 import { useToast } from "@/hooks/use-toast"

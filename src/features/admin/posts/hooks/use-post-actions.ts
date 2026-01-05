@@ -1,46 +1,11 @@
-import { useResourceActions } from "@/features/admin/resources/hooks"
-import { apiRoutes } from "@/lib/api/routes"
-import { queryKeys } from "@/lib/query-keys"
+import { createResourceActionsHook } from "@/features/admin/resources/hooks"
 import type { PostRow } from "../types"
-import type { FeedbackVariant } from "@/components/dialogs"
 import { POST_MESSAGES } from "../constants/messages"
 
-interface UsePostActionsOptions {
-  canDelete: boolean
-  canRestore: boolean
-  canManage: boolean
-  showFeedback: (variant: FeedbackVariant, title: string, description?: string, details?: string) => void
-}
-
-export const usePostActions = ({
-  canDelete,
-  canRestore,
-  canManage,
-  showFeedback,
-}: UsePostActionsOptions) =>
-  useResourceActions<PostRow>({
-    resourceName: "posts",
-    queryKeys: {
-      all: () => queryKeys.adminPosts.all(),
-      detail: (id) => queryKeys.adminPosts.detail(id),
-    },
-    apiRoutes: {
-      delete: (id) => apiRoutes.posts.delete(id),
-      restore: (id) => apiRoutes.posts.restore(id),
-      hardDelete: (id) => apiRoutes.posts.hardDelete(id),
-      bulk: apiRoutes.posts.bulk,
-    },
-    messages: POST_MESSAGES,
-    getRecordName: (row) => row.title,
-    permissions: {
-      canDelete,
-      canRestore,
-      canManage,
-    },
-    showFeedback,
-    getLogMetadata: (row) => ({
-      postId: row.id,
-      postTitle: row.title,
-    }),
-  })
+export const usePostActions = createResourceActionsHook<PostRow>({
+  resourceName: "posts",
+  messages: POST_MESSAGES,
+  getRecordName: (row) => row.title,
+  getLogMetadata: (row) => ({ postId: row.id, postTitle: row.title }),
+})
 

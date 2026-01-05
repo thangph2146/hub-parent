@@ -32,7 +32,7 @@ import { useResourceRouter } from "@/hooks/use-resource-segment"
 import type { AdminStudentsListParams } from "@/lib/query-keys"
 import type { StudentRow, StudentsResponse, StudentsTableClientProps } from "../types"
 import { STUDENT_CONFIRM_MESSAGES, STUDENT_LABELS } from "../constants/messages"
-import { resourceLogger } from "@/lib/config"
+import { resourceLogger } from "@/lib/config/resource-logger"
 
 export const StudentsTableClient = ({
   canDelete = false,

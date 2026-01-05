@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma"
 import { NotificationKind, Prisma } from "@prisma/client"
 import { DEFAULT_ROLES } from "@/lib/permissions"
-import { logger } from "@/lib/config"
+import { logger } from "@/lib/config/logger"
 import {
   emitNotificationNew,
   emitNotificationNewForSuperAdmins,
