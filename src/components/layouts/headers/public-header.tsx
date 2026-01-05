@@ -205,16 +205,20 @@ export function PublicHeader() {
               <Logo className="h-8 w-8 sm:h-10 sm:w-10" />
             </Flex>
           </Link>
-          <Flex vertical align="flex-start" justify="center" className="hidden md:flex">
-            <TypographyH6>Trường Đại học Ngân hàng</TypographyH6>
-            <TypographyPSmall>Thành Phố Hồ Chí Minh</TypographyPSmall>
-          </Flex>
+            <Flex 
+              vertical 
+              align="flex-start" 
+              justify="center"
+            >
+              <TypographyH6>Trường Đại học Ngân hàng</TypographyH6>
+              <TypographyPSmall>Thành Phố Hồ Chí Minh</TypographyPSmall>
+            </Flex>
           <Separator
               orientation="vertical"
-              className={`h-6 w-px bg-border hidden md:block`}
+              className={`h-6 w-px bg-border hidden lg:block`}
             />
           {mounted ? (
-            <NavigationMenu className="hidden md:flex">
+            <NavigationMenu className="hidden lg:flex">
               <NavigationMenuList>
                 {publicLinks.map((link) => {
                   // Hiển thị "Trang chủ" và "Bài viết" trực tiếp
@@ -275,7 +279,7 @@ export function PublicHeader() {
               </NavigationMenuList>
             </NavigationMenu>
           ) : (
-            <nav className="relative z-10 max-w-max flex-1 items-center justify-center hidden md:flex">
+            <nav className="relative z-10 max-w-max flex-1 items-center justify-center hidden lg:flex">
               <div>
                 <ul className="group flex flex-1 list-none items-center justify-center space-x-1">
                   {/* Skeleton cho "Trang chủ" và "Bài viết" - match với NavigationMenuItem */}
@@ -315,18 +319,18 @@ export function PublicHeader() {
           )}
         </Flex>
         {mounted ? (
-          <Flex align="center" justify="flex-end" gap={8} style={{ width: "400px" }}>
+          <Flex align="center" justify="flex-end" gap={8}>
             <ModeToggle />
             {isAuthenticated ? (
-              <Flex>
+              <div className="hidden lg:block">
                 <NavUser />
-              </Flex>
+              </div>
             ) : (
               <>
-                <Button variant="outline" asChild className="hidden md:flex">
+                <Button variant="outline" asChild className="hidden lg:flex">
                   <Link href={PUBLIC_ROUTES.auth.signIn}>Đăng nhập</Link>
                 </Button>
-                <Button asChild className="hidden md:flex">
+                <Button asChild className="hidden lg:flex">
                   <Link href={PUBLIC_ROUTES.auth.signUp}>Đăng ký</Link>
                 </Button>
               </>
@@ -335,7 +339,7 @@ export function PublicHeader() {
               size="icon"
               variant="outline"
               onClick={() => setOpen(!open)}
-              className="md:hidden"
+              className="lg:hidden"
               aria-expanded={open}
               aria-controls="mobile-menu"
               aria-label="Toggle menu"
@@ -357,22 +361,11 @@ export function PublicHeader() {
           <Flex vertical style={{ height: "100%" }}>
             {/* User Section - Top */}
             {isAuthenticated ? (
-              <Flex
-                vertical
-                style={{
-                  borderBottom: "1px solid hsl(var(--border))",
-                  paddingTop: "1.5rem",
-                  paddingBottom: "1.5rem",
-                  width: "100%",
-                }}
-                className="mb-4"
-              >
                 <NavUser className="w-full" />
-              </Flex>
             ) : (
               <Flex
-                vertical
                 gap={8}
+                className="flex-col sm:flex-row"
                 style={{
                   borderBottom: "1px solid hsl(var(--border))",
                   paddingTop: "1.5rem",
@@ -383,7 +376,6 @@ export function PublicHeader() {
                 <Button
                   variant="default"
                   className="w-full h-auto py-3 flex flex-row items-center justify-start"
-                  asChild
                   onClick={() => {
                     setOpen(false);
                     router.push("/auth/sign-in");
@@ -416,7 +408,6 @@ export function PublicHeader() {
                 <Button
                   variant="outline"
                   className="w-full h-auto py-3 flex flex-row items-center justify-start"
-                  asChild
                   onClick={() => {
                     setOpen(false);
                     router.push("/auth/sign-up");
@@ -461,7 +452,7 @@ export function PublicHeader() {
                     <Link
                       key={link.href}
                       href={link.href}
-                      className="group w-full hover:bg-accent hover:text-accent-foreground focus-visible:bg-accent focus-visible:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-lg p-3 transition-colors active:bg-accent/80"
+                      className="group w-full hover:bg-accent hover:text-foreground focus-visible:bg-accent focus-visible:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-lg p-3 transition-colors active:bg-accent/80"
                       onClick={() => setOpen(false)}
                     >
                       <Flex align="center" gap={12} className="flex-row">
@@ -480,11 +471,11 @@ export function PublicHeader() {
                           justify="center"
                           className="min-w-0 flex-1"
                         >
-                          <TypographyP className="group-hover:text-accent-foreground group-focus-visible:text-accent-foreground transition-colors">
+                          <TypographyP className="group-hover:text-foreground group-focus-visible:text-foreground transition-colors">
                             {link.title}
                           </TypographyP>
                           {link.description && (
-                            <TypographyPSmall className="group-hover:text-accent-foreground/80 group-focus-visible:text-accent-foreground transition-colors">
+                            <TypographyPSmall className="group-hover:text-foreground/80 group-focus-visible:text-foreground transition-colors">
                               {link.description}
                             </TypographyPSmall>
                           )}
@@ -515,7 +506,7 @@ export function PublicHeader() {
                       <Link
                         key={link.href}
                         href={link.href}
-                        className="group w-full hover:bg-accent hover:text-accent-foreground focus-visible:bg-accent focus-visible:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-lg p-3 transition-colors active:bg-accent/80"
+                        className="group w-full hover:bg-accent hover:text-foreground focus-visible:bg-accent focus-visible:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-lg p-3 transition-colors active:bg-accent/80"
                         onClick={() => setOpen(false)}
                       >
                         <Flex align="center" gap={12} className="flex-row">
@@ -534,11 +525,11 @@ export function PublicHeader() {
                             justify="center"
                             className="min-w-0 flex-1"
                           >
-                            <TypographyP className="group-hover:text-accent-foreground group-focus-visible:text-accent-foreground transition-colors">
+                            <TypographyP className="group-hover:text-foreground group-focus-visible:text-foreground transition-colors">
                               {link.title}
                             </TypographyP>
                             {link.description && (
-                              <TypographyPSmall className="group-hover:text-accent-foreground/80 group-focus-visible:text-accent-foreground transition-colors">
+                              <TypographyPSmall className="group-hover:text-foreground/80 group-focus-visible:text-foreground transition-colors">
                                 {link.description}
                               </TypographyPSmall>
                             )}
@@ -574,8 +565,8 @@ function MobileMenu({
     <div
       id="mobile-menu"
       className={cn(
-        "bg-background/95 supports-[backdrop-filter]:bg-background/50 backdrop-blur-lg",
-        "fixed top-14 right-0 bottom-0 left-0 z-40 flex flex-col overflow-hidden border-y md:hidden"
+        "bg-background",
+        "fixed top-14 right-0 bottom-0 left-0 z-40 flex flex-col overflow-hidden border-y lg:hidden"
       )}
       onClick={(e) => {
         // Close menu when clicking on backdrop
@@ -588,7 +579,7 @@ function MobileMenu({
         data-slot={open ? "open" : "closed"}
         className={cn(
           "data-[slot=open]:animate-in data-[slot=open]:zoom-in-97 ease-out",
-          "size-full p-4",
+          "size-full p-4 container mx-auto",
           className
         )}
         {...props}

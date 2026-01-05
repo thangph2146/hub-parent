@@ -561,7 +561,7 @@ export function NavUser({ className }: { className?: string }) {
         <DropdownMenuTrigger asChild>
           <Button
             variant="ghost"
-            className={cn("px-2 group", className)}
+            className={cn("px-2 group border border-border", className)}
             suppressHydrationWarning
           >
             <Flex align="center" gap={2}>

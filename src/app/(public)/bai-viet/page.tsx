@@ -130,14 +130,14 @@ export default async function PostPage({ searchParams }: PostPageProps) {
         {/* Main Content */}
         <div className="min-w-0">
           {/* Header with Sort and Date Range */}
-          <div className="sticky top-14.5 z-10 w-full flex items-center justify-between gap-4 mb-8 border-b bg-background supports-[backdrop-filter]:bg-background/70 border-border backdrop-blur-lg">
-            <div>
-              <TypographyH2>Tất cả bài viết</TypographyH2>
-              <TypographyPMuted className="mt-1">
+          <div className="sticky top-14.5 z-10 w-full flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-4 mb-6 sm:mb-8 px-4 sm:px-0 -mx-4 sm:mx-0 py-4 sm:py-0 border-b bg-background supports-[backdrop-filter]:bg-background/70 border-border backdrop-blur-lg">
+            <div className="flex-shrink-0">
+              <TypographyH2 className="text-xl sm:text-2xl">Tất cả bài viết</TypographyH2>
+              <TypographyPMuted className="mt-1 text-sm sm:text-base">
                 {result.pagination.total} bài viết
               </TypographyPMuted>
             </div>
-            <div className="flex items-center gap-2 flex-shrink-0">
+            <div className="flex items-center gap-2 flex-shrink-0 flex-wrap">
               <PostDateRange />
               <PostSort />
             </div>
