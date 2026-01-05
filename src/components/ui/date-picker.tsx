@@ -12,6 +12,13 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { useClientOnly } from "@/hooks/use-client-only"
 import { responsiveTextSizes, fontWeights, lineHeights, iconSizes, textSizes } from "@/lib/typography"
 
@@ -151,17 +158,22 @@ export function DatePicker({
   // State để quản lý month/year được hiển thị (cho navigation)
   const [displayMonth, setDisplayMonth] = useState<Date>(() => currentDate || today)
 
-  // Sync displayMonth với currentDate khi currentDate thay đổi
+  // Sync displayMonth với currentDate khi currentDate thay đổi (chỉ khi currentDate thay đổi từ bên ngoài)
   React.useEffect(() => {
     if (currentDate) {
       // So sánh để tránh update không cần thiết
       const currentMonthYear = currentDate.getFullYear() * 12 + currentDate.getMonth()
       const displayMonthYear = displayMonth.getFullYear() * 12 + displayMonth.getMonth()
       if (currentMonthYear !== displayMonthYear) {
-        setDisplayMonth(currentDate)
+        setDisplayMonth(new Date(currentDate))
       }
+    } else if (!currentDate) {
+      // Nếu currentDate là undefined, reset về tháng hiện tại
+      const todayDate = new Date()
+      setDisplayMonth(todayDate)
     }
-  }, [currentDate, displayMonth])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentDate]) // Chỉ sync khi currentDate thay đổi từ bên ngoài, không sync khi displayMonth thay đổi từ user interaction
 
   // Generate years list (từ năm hiện tại - 10 đến năm hiện tại + 10)
   const currentYearValue = new Date().getFullYear()
@@ -176,15 +188,15 @@ export function DatePicker({
   const currentYear = displayMonth.getFullYear()
   const currentMonthIndex = displayMonth.getMonth()
 
-  const handleYearChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newYear = parseInt(e.target.value)
+  const handleYearChange = (value: string) => {
+    const newYear = parseInt(value)
     const newDate = new Date(displayMonth)
     newDate.setFullYear(newYear)
     setDisplayMonth(newDate)
   }
 
-  const handleMonthChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newMonth = parseInt(e.target.value)
+  const handleMonthChange = (value: string) => {
+    const newMonth = parseInt(value)
     const newDate = new Date(displayMonth)
     newDate.setMonth(newMonth)
     setDisplayMonth(newDate)
@@ -211,47 +223,55 @@ export function DatePicker({
             <Button
               variant="ghost"
               size="icon"
-              className={`${datePickerIconSize2xl} text-muted-foreground hover:text-foreground`}
+              className={`${datePickerIconSize2xl} text-muted-foreground hover:text-accent-foreground`}
               onClick={handlePreviousMonth}
               aria-label="Tháng trước"
             >
-              <ChevronLeft size={20} strokeWidth={2.5} />
+              <ChevronLeft size={20} strokeWidth={2.5} className="text-current" />
             </Button>
             <div className="flex items-center justify-center gap-2 flex-1">
-              <select
-                value={currentMonthIndex}
-                onChange={handleMonthChange}
-                className={`h-8 rounded-md border border-input bg-background px-2 font-medium outline-none focus-visible:ring-1 focus-visible:ring-ring cursor-pointer ${datePickerBodySmall}`}
-                aria-label="Chọn tháng"
+              <Select
+                key={`month-${currentMonthIndex}`}
+                value={currentMonthIndex.toString()}
+                onValueChange={handleMonthChange}
               >
-                {monthNames.map((monthName, index) => (
-                  <option key={index} value={index}>
-                    {monthName}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger size="sm" className="h-8 justify-between" aria-label="Chọn tháng">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {monthNames.map((monthName, index) => (
+                    <SelectItem key={index} value={index.toString()}>
+                      {monthName}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <span className={`${datePickerBodySmall} font-medium text-muted-foreground`}>/</span>
-              <select
-                value={currentYear}
-                onChange={handleYearChange}
-                className={`h-8 rounded-md border border-input bg-background px-2 font-medium outline-none focus-visible:ring-1 focus-visible:ring-ring cursor-pointer ${datePickerBodySmall}`}
-                aria-label="Chọn năm"
+              <Select
+                key={`year-${currentYear}`}
+                value={currentYear.toString()}
+                onValueChange={handleYearChange}
               >
-                {years.map((year) => (
-                  <option key={year} value={year}>
-                    {year}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger size="sm" className="h-8 justify-between" aria-label="Chọn năm">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {years.map((year) => (
+                    <SelectItem key={year} value={year.toString()}>
+                      {year}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <Button
               variant="ghost"
               size="icon"
-              className={`${datePickerIconSize2xl} text-muted-foreground hover:text-foreground`}
+              className={`${datePickerIconSize2xl} text-muted-foreground hover:text-accent-foreground`}
               onClick={handleNextMonth}
               aria-label="Tháng sau"
             >
-              <ChevronRight size={20} strokeWidth={2.5} />
+              <ChevronRight size={20} strokeWidth={2.5} className="text-current" />
             </Button>
           </div>
           <div className="flex max-sm:flex-col">
@@ -356,47 +376,53 @@ export function DatePicker({
             <Button
               variant="ghost"
               size="icon"
-              className={`${datePickerIconSize2xl} text-muted-foreground hover:text-foreground`}
+              className={`${datePickerIconSize2xl} text-muted-foreground hover:text-accent-foreground`}
               onClick={handlePreviousMonth}
               aria-label="Tháng trước"
             >
-              <ChevronLeft size={20} strokeWidth={2.5} />
+              <ChevronLeft size={20} strokeWidth={2.5} className="text-current" />
             </Button>
             <div className="flex items-center justify-center gap-2 flex-1">
-              <select
-                value={currentMonthIndex}
-                onChange={handleMonthChange}
-                className={`h-8 rounded-md border border-input bg-background px-2 font-medium outline-none focus-visible:ring-1 focus-visible:ring-ring cursor-pointer ${datePickerBodySmall}`}
-                aria-label="Chọn tháng"
+              <Select
+                value={currentMonthIndex.toString()}
+                onValueChange={handleMonthChange}
               >
-                {monthNames.map((monthName, index) => (
-                  <option key={index} value={index}>
-                    {monthName}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger size="sm" className="h-8 w-fit justify-between" aria-label="Chọn tháng">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {monthNames.map((monthName, index) => (
+                    <SelectItem key={index} value={index.toString()}>
+                      {monthName}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <span className={`${datePickerBodySmall} font-medium text-muted-foreground`}>/</span>
-              <select
-                value={currentYear}
-                onChange={handleYearChange}
-                className={`h-8 rounded-md border border-input bg-background px-2 font-medium outline-none focus-visible:ring-1 focus-visible:ring-ring cursor-pointer ${datePickerBodySmall}`}
-                aria-label="Chọn năm"
+              <Select
+                value={currentYear.toString()}
+                onValueChange={handleYearChange}
               >
-                {years.map((year) => (
-                  <option key={year} value={year}>
-                    {year}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger size="sm" className="h-8 w-fit" aria-label="Chọn năm">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {years.map((year) => (
+                    <SelectItem key={year} value={year.toString()}>
+                      {year}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <Button
               variant="ghost"
               size="icon"
-              className={`${datePickerIconSize2xl} text-muted-foreground hover:text-foreground`}
+              className={`${datePickerIconSize2xl} text-muted-foreground hover:text-accent-foreground`}
               onClick={handleNextMonth}
               aria-label="Tháng sau"
             >
-              <ChevronRight size={20} strokeWidth={2.5} />
+              <ChevronRight size={20} strokeWidth={2.5} className="text-current" />
             </Button>
           </div>
           <Calendar
