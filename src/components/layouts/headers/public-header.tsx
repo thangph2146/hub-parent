@@ -201,10 +201,9 @@ export function PublicHeader() {
               <Logo className="h-8 w-8 sm:h-10 sm:w-10 text-blue-100" />
             </Flex>
           </Link>
-          <Flex direction="col" className="hidden md:flex">
+          <Flex direction="col" align="start" justify="center" className="hidden md:flex">
             <TypographyH6>Trường Đại học Ngân hàng</TypographyH6>
             <TypographyPSmall>Thành Phố Hồ Chí Minh</TypographyPSmall>
-            
           </Flex>
           <Separator
               orientation="vertical"
