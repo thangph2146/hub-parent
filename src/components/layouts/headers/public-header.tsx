@@ -41,8 +41,7 @@ import {
   IconSize,
   TypographyH6,
 } from "@/components/ui/typography";
-import { Flex } from "@/components/ui/flex";
-import { Grid } from "@/components/ui/grid";
+import { Flex, Row, Col } from "antd";
 import { useRouter } from "next/navigation";
 
 /**
@@ -151,7 +150,6 @@ const publicLinks: LinkItem[] = getPublicLinks();
 export function PublicHeader() {
   const [open, setOpen] = React.useState(false);
   const [mounted, setMounted] = React.useState(false);
-  const scrolled = useScroll(10);
   const { data: session } = useSession();
   const isAuthenticated = !!session;
   const router = useRouter();
@@ -172,36 +170,44 @@ export function PublicHeader() {
 
   return (
     <Flex
-      as="header"
-      position="sticky"
-      fullWidth
-      height="14"
-      border="bottom"
-      padding="md-x"
-      className={cn("top-0 z-50 border-transparent", {
-        "bg-background/95 supports-[backdrop-filter]:bg-background/70 border-border backdrop-blur-lg":
-          scrolled,
-      })}
+      component="header"
+      style={{
+        position: "sticky",
+        width: "100%",
+        height: "3.5rem",
+        borderBottom: "1px solid var(--border)",
+        paddingLeft: "1rem",
+        paddingRight: "1rem",
+        backgroundColor: "var(--background) !important",
+        backdropFilter: "blur(20px)",
+        top: 0,
+        zIndex: 50,
+      }}
+      className="top-0 z-50 border-border"
     >
       <Flex
-        as="nav"
-        container
-        fullWidth
+        component="nav"
+        style={{
+          width: "100%",
+          maxWidth: "1280px",
+          marginLeft: "auto",
+          marginRight: "auto",
+          height: "100%",
+        }}
         align="center"
-        justify="between"
-        height="full"
+        justify="space-between"
       >
-        <Flex align="center" gap={4}>
+        <Flex align="center" gap={16}>
           <Link
             href={PUBLIC_ROUTES.home}
             className="dark:bg-foreground rounded-md p-1"
             aria-label="Trang chủ - Trường Đại học Ngân hàng TP.HCM"
           >
-            <Flex align="center" gap={2}>
-              <Logo className="h-8 w-8 sm:h-10 sm:w-10 text-blue-100" />
+            <Flex align="center" gap={8}>
+              <Logo className="h-8 w-8 sm:h-10 sm:w-10" />
             </Flex>
           </Link>
-          <Flex direction="col" align="start" justify="center" className="hidden md:flex">
+          <Flex vertical align="flex-start" justify="center" className="hidden md:flex">
             <TypographyH6>Trường Đại học Ngân hàng</TypographyH6>
             <TypographyPSmall>Thành Phố Hồ Chí Minh</TypographyPSmall>
           </Flex>
@@ -226,7 +232,7 @@ export function PublicHeader() {
                             className="group inline-flex h-10 w-max items-center justify-center rounded-md bg-transparent px-4 py-2 transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50"
                           >
                             {link.href === PUBLIC_ROUTES.home && (
-                              <Flex align="center" gap={2}>
+                              <Flex align="center" gap={8}>
                                 <IconSize size="sm">
                                   <link.icon />
                                 </IconSize>
@@ -252,7 +258,7 @@ export function PublicHeader() {
                       Hỗ trợ
                     </NavigationMenuTrigger>
                     <NavigationMenuContent className="bg-background p-1 pr-1.5 pb-1.5">
-                      <Grid cols={2} gap={2} className="bg-popover w-lg">
+                      <Row gutter={[8, 8]} className="bg-popover text-popover-foreground w-lg">
                         {publicLinks
                           .filter(
                             (link) =>
@@ -260,31 +266,58 @@ export function PublicHeader() {
                               link.href !== PUBLIC_ROUTES.blog
                           )
                           .map((item, i) => (
-                            <ListItem key={i} {...item} />
+                            <Col key={i} span={12}>
+                              <ListItem {...item} />
+                            </Col>
                           ))}
-                      </Grid>
+                      </Row>
                     </NavigationMenuContent>
                   </NavigationMenuItem>
                 )}
               </NavigationMenuList>
             </NavigationMenu>
           ) : (
-            <Flex align="center" gap={4} display="hidden-md-flex">
-              {publicLinks.slice(0, 2).map((link) => (
-                <Button
-                  key={link.href}
-                  variant="ghost"
-                  className="bg-transparent"
-                  asChild
-                >
-                  <Link href={link.href}>{link.title}</Link>
-                </Button>
-              ))}
-            </Flex>
+            <nav className="relative z-10 max-w-max flex-1 items-center justify-center hidden md:flex">
+              <div>
+                <ul className="group flex flex-1 list-none items-center justify-center space-x-1">
+                  {/* Skeleton cho "Trang chủ" và "Bài viết" - match với NavigationMenuItem */}
+                  {/* Sử dụng cùng logic map như phần thực tế để đảm bảo thứ tự giống nhau */}
+                  {publicLinks.map((link) => {
+                    // Hiển thị skeleton cho "Trang chủ" và "Bài viết"
+                    if (
+                      link.href === PUBLIC_ROUTES.home ||
+                      link.href === PUBLIC_ROUTES.blog
+                    ) {
+                      return (
+                        <li key={link.href}>
+                          <Skeleton
+                            className={cn(
+                              "inline-flex h-10 w-max items-center justify-center rounded-md px-4 py-2",
+                              link.href === PUBLIC_ROUTES.home ? "w-[125px]" : "w-[88px]"
+                            )}
+                          />
+                        </li>
+                      );
+                    }
+                    return null;
+                  })}
+                  {/* Skeleton cho "Hỗ trợ" button nếu có links còn lại - match với NavigationMenuTrigger */}
+                  {publicLinks.filter(
+                    (link) =>
+                      link.href !== PUBLIC_ROUTES.home &&
+                      link.href !== PUBLIC_ROUTES.blog
+                  ).length > 0 && (
+                    <li>
+                      <Skeleton className="inline-flex h-9 w-max items-center justify-center rounded-md px-4 py-2 w-[88px]" />
+                    </li>
+                  )}
+                </ul>
+              </div>
+            </nav>
           )}
         </Flex>
         {mounted ? (
-          <Flex align="end" justify="end" gap={2} width="400">
+          <Flex align="center" justify="flex-end" gap={8} style={{ width: "400px" }}>
             <ModeToggle />
             {isAuthenticated ? (
               <Flex>
@@ -315,7 +348,7 @@ export function PublicHeader() {
             </Button>
           </Flex>
         ) : (
-          <Flex align="center" gap={2}>
+          <Flex align="center" gap={8}>
             <Skeleton className="w-10 h-10 rounded-md" />
             <Skeleton className="w-10 h-10 rounded-md" />
           </Flex>
@@ -323,25 +356,31 @@ export function PublicHeader() {
       </Flex>
       {mounted && (
         <MobileMenu open={open} onClose={() => setOpen(false)}>
-          <Flex direction="col" height="full">
+          <Flex vertical style={{ height: "100%" }}>
             {/* User Section - Top */}
             {isAuthenticated ? (
               <Flex
-                direction="col"
-                border="bottom"
-                padding="lg-y"
+                vertical
+                style={{
+                  borderBottom: "1px solid hsl(var(--border))",
+                  paddingTop: "1.5rem",
+                  paddingBottom: "1.5rem",
+                  width: "100%",
+                }}
                 className="mb-4"
-                fullWidth
               >
                 <NavUser className="w-full" />
               </Flex>
             ) : (
               <Flex
-                direction="col"
-                gap={2}
-                border="bottom"
-                padding="lg-y"
-                margin="b-4"
+                vertical
+                gap={8}
+                style={{
+                  borderBottom: "1px solid hsl(var(--border))",
+                  paddingTop: "1.5rem",
+                  paddingBottom: "1.5rem",
+                  marginBottom: "1rem",
+                }}
               >
                 <Button
                   variant="default"
@@ -352,21 +391,23 @@ export function PublicHeader() {
                     router.push("/auth/sign-in");
                   }}
                 >
-                  <Flex align="center" justify="start" gap={3}>
+                  <Flex align="center" justify="flex-start" gap={12}>
                     <Flex
                       align="center"
                       justify="center"
-                      bg="primary-10"
-                      height="12"
-                      width="12"
-                      rounded="md"
+                      style={{
+                        backgroundColor: "hsl(var(--primary) / 0.1)",
+                        height: "3rem",
+                        width: "3rem",
+                        borderRadius: "0.375rem",
+                      }}
                       className="aspect-square"
                     >
                       <IconSize size="md">
                         <LogIn />
                       </IconSize>
                     </Flex>
-                    <Flex direction="col" align="start">
+                    <Flex vertical align="flex-start">
                       <TypographyP>Đăng nhập</TypographyP>
                       <TypographyPSmall>
                         Đăng nhập vào tài khoản của bạn
@@ -383,21 +424,23 @@ export function PublicHeader() {
                     router.push("/auth/sign-up");
                   }}
                 >
-                  <Flex align="center" justify="start" gap={3}>
+                  <Flex align="center" justify="flex-start" gap={12}>
                     <Flex
                       align="center"
                       justify="center"
-                      bg="muted"
-                      height="12"
-                      width="12"
-                      rounded="md"
+                      style={{
+                        backgroundColor: "hsl(var(--muted))",
+                        height: "3rem",
+                        width: "3rem",
+                        borderRadius: "0.375rem",
+                      }}
                       className="aspect-square"
                     >
                       <IconSize size="md">
                         <UserPlus />
                       </IconSize>
                     </Flex>
-                    <Flex direction="col" align="start">
+                    <Flex vertical align="flex-start">
                       <TypographyP>Đăng ký</TypographyP>
                       <TypographyPSmallMuted>
                         Tạo tài khoản mới
@@ -409,7 +452,7 @@ export function PublicHeader() {
             )}
 
             {/* Navigation Links - Scrollable */}
-            <Flex direction="col" gap={1} flex="1" overflow="auto" fullWidth>
+            <Flex vertical gap={4} style={{ flex: 1, overflow: "auto", width: "100%" }}>
               {publicLinks.map((link) => {
                 // Hiển thị "Trang chủ" và "Bài viết" trực tiếp
                 if (
@@ -423,7 +466,7 @@ export function PublicHeader() {
                       className="group w-full hover:bg-accent hover:text-accent-foreground focus-visible:bg-accent focus-visible:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-lg p-3 transition-colors active:bg-accent/80"
                       onClick={() => setOpen(false)}
                     >
-                      <Flex align="center" gap={3} className="flex-row">
+                      <Flex align="center" gap={12} className="flex-row">
                         <Flex
                           align="center"
                           justify="center"
@@ -434,8 +477,8 @@ export function PublicHeader() {
                           </IconSize>
                         </Flex>
                         <Flex
-                          direction="col"
-                          align="start"
+                          vertical
+                          align="flex-start"
                           justify="center"
                           className="min-w-0 flex-1"
                         >
@@ -477,7 +520,7 @@ export function PublicHeader() {
                         className="group w-full hover:bg-accent hover:text-accent-foreground focus-visible:bg-accent focus-visible:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-lg p-3 transition-colors active:bg-accent/80"
                         onClick={() => setOpen(false)}
                       >
-                        <Flex align="center" gap={3} className="flex-row">
+                        <Flex align="center" gap={12} className="flex-row">
                           <Flex
                             align="center"
                             justify="center"
@@ -488,8 +531,8 @@ export function PublicHeader() {
                             </IconSize>
                           </Flex>
                           <Flex
-                            direction="col"
-                            align="start"
+                            vertical
+                            align="flex-start"
                             justify="center"
                             className="min-w-0 flex-1"
                           >
@@ -577,7 +620,7 @@ function ListItem({
       asChild
     >
       <Link href={href}>
-        <Flex align="center" gap={2} className="flex-row">
+        <Flex align="center" gap={8} className="flex-row">
           <Flex
             align="center"
             justify="center"
@@ -587,9 +630,9 @@ function ListItem({
               <Icon />
             </IconSize>
           </Flex>
-          <Flex direction="col" align="start" justify="center">
-            <TypographyP>{title}</TypographyP>
-            {description && <TypographyPSmall>{description}</TypographyPSmall>}
+          <Flex vertical align="flex-start" justify="center">
+            <TypographyP className="text-popover-foreground">{title}</TypographyP>
+            {description && <TypographyPSmall className="text-popover-foreground/80">{description}</TypographyPSmall>}
           </Flex>
         </Flex>
       </Link>

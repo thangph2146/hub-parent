@@ -37,6 +37,7 @@ export type ColumnFilterConfig =
           dateFormat?: string
           enableTime?: boolean
           showSeconds?: boolean
+          datesApiRoute?: string // API route to fetch dates with items (e.g., "/admin/posts/dates-with-posts")
       }
     | {
           type: "date-range"
