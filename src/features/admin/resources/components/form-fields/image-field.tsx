@@ -7,12 +7,13 @@
 import { useState } from "react"
 import { Input } from "@/components/ui/input"
 import { FieldContent, FieldError } from "@/components/ui/field"
-import { ImageIcon, X } from "lucide-react"
+import { ImageIcon, X, Copy, Check } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Image from "next/image"
 import { cn } from "@/lib/utils"
 import { TypographySpanMuted, TypographySpanSmallMuted, IconSize } from "@/components/ui/typography"
 import { Flex } from "antd"
+import { useToast } from "@/hooks/use-toast"
 
 export interface ImageFieldProps {
   value: unknown
@@ -36,9 +37,31 @@ export const ImageField = ({
   const imageUrl = typeof value === "string" ? value : ""
   const hasImage = imageUrl && imageUrl.trim() !== ""
   const [imageError, setImageError] = useState(false)
+  const [copied, setCopied] = useState(false)
+  const { toast } = useToast()
   const errorId = error ? `${fieldId}-error` : undefined
   const isDisabled = disabled
   const isReadOnly = readOnly && !isDisabled
+
+  const handleCopyUrl = async () => {
+    if (!imageUrl) return
+    try {
+      await navigator.clipboard.writeText(imageUrl)
+      setCopied(true)
+      toast({
+        title: "Đã copy",
+        description: "URL hình ảnh đã được copy vào clipboard",
+        variant: "success",
+      })
+      setTimeout(() => setCopied(false), 2000)
+    } catch {
+      toast({
+        title: "Lỗi",
+        description: "Không thể copy vào clipboard",
+        variant: "destructive",
+      })
+    }
+  }
 
   return (
     <FieldContent>
@@ -64,7 +87,7 @@ export const ImageField = ({
             aria-invalid={error ? "true" : "false"}
             aria-describedby={errorId}
           />
-          {hasImage && !isReadOnly && (
+          {hasImage && !readOnly && (
             <Button
               type="button"
               variant="destructive"
@@ -79,6 +102,20 @@ export const ImageField = ({
             >
               <IconSize size="sm">
                 <X />
+              </IconSize>
+            </Button>
+          )}
+          {hasImage && readOnly && (
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              onClick={handleCopyUrl}
+              className="shrink-0 h-9 w-9"
+              aria-label="Copy URL hình ảnh"
+            >
+              <IconSize size="sm">
+                {copied ? <Check /> : <Copy />}
               </IconSize>
             </Button>
           )}

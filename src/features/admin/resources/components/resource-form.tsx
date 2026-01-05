@@ -532,7 +532,7 @@ export const ResourceForm = <T extends Record<string, unknown>>({
           field.className
         )}
       >
-        {(!isCheckbox || field.icon) && (
+        {(!isCheckbox || field.icon) && (field.label || field.icon) && (
           <FieldLabel
             htmlFor={fieldName}
             className={cn(
@@ -547,7 +547,9 @@ export const ResourceForm = <T extends Record<string, unknown>>({
                 {field.icon}
               </span>
             )}
-            <span className="font-medium whitespace-nowrap">{field.label}</span>
+            {field.label && (
+              <span className="font-medium whitespace-nowrap">{field.label}</span>
+            )}
             {field.required && !readOnly && (
               <TypographySpanDestructive className="shrink-0">
                 *
@@ -699,10 +701,10 @@ export const ResourceForm = <T extends Record<string, unknown>>({
             </>
           ) : (
             <>
-              <IconSize size="sm">
+              <IconSize size="sm" className="text-primary-foreground">
                 <Save />
               </IconSize>
-              <span>{submitLabel || "Lưu"}</span>
+              <span className="text-primary-foreground">{submitLabel || "Lưu"}</span>
             </>
           )}
         </Flex>
@@ -716,42 +718,37 @@ export const ResourceForm = <T extends Record<string, unknown>>({
         <Flex
           vertical
           className={cn(
-            "w-full pb-6 border-b border-border",
-            "sm:flex-row sm:items-center sm:justify-between",
-            "gap-4 sm:gap-4",
+            "w-full pb-8 border-b border-border",
+            "gap-6",
             _className
           )}
         >
-          <Flex
-            vertical
-            gap={12}
-            className="w-full lg:w-1/3 xl:w-2/5 flex-1 min-w-0"
-          >
-            {resolvedBackUrl && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleBack}
-                className="h-8"
-              >
-                <Flex align="center" gap={8}>
-                  <IconSize size="sm">
-                    <ArrowLeft />
-                  </IconSize>
-                  {backLabel}
-                </Flex>
-              </Button>
+          {resolvedBackUrl && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleBack}
+              className="w-fit h-9"
+            >
+              <Flex align="center" gap={2}>
+                <IconSize size="sm">
+                  <ArrowLeft />
+                </IconSize>
+                {backLabel}
+              </Flex>
+            </Button>
+          )}
+          <Flex vertical gap={3} className="min-w-0">
+            {title && (
+              <TypographyH1 className="text-2xl sm:text-3xl font-semibold leading-tight tracking-tight">
+                {title}
+              </TypographyH1>
             )}
-            <Flex vertical gap={8} className="min-w-0">
-              {title && (
-                <TypographyH1 className="truncate">{title}</TypographyH1>
-              )}
-              {description && (
-                <TypographyPMuted className="line-clamp-2">
-                  {description}
-                </TypographyPMuted>
-              )}
-            </Flex>
+            {description && (
+              <TypographyPMuted className="text-sm sm:text-base text-muted-foreground line-clamp-2">
+                {description}
+              </TypographyPMuted>
+            )}
           </Flex>
         </Flex>
       )}
@@ -763,9 +760,14 @@ export const ResourceForm = <T extends Record<string, unknown>>({
           align="center"
           justify="flex-end"
           gap={8}
-          style={{ paddingTop: "0.5rem", paddingBottom: "0.5rem" }}
+          style={{
+            paddingTop: "0.5rem",
+            paddingBottom: "0.5rem",
+            backgroundColor: "var(--background) !important",
+            backdropFilter: "blur(8px)",
+          }}
           className={cn(
-            "w-full border-t sticky bottom-0 bg-background/95 backdrop-blur-sm z-10",
+            "w-full border-t sticky bottom-0 z-10",
             _className
           )}
         >

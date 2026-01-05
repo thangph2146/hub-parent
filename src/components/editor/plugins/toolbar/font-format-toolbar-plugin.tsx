@@ -63,7 +63,7 @@ export function FontFormatToolbarPlugin() {
       value={activeFormats}
       onValueChange={setActiveFormats}
       variant="outline"
-      size="sm"
+      size="default"
     >
       {FORMATS.map(({ format, icon: Icon, label }) => (
         <ToggleGroupItem

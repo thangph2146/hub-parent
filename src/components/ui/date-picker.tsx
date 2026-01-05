@@ -342,7 +342,7 @@ export function DatePicker({
                 : undefined
             }
             modifiersClassNames={{
-              hasItems: "*:after:pointer-events-none *:after:absolute *:after:bottom-1 *:after:start-1/2 *:after:z-10 *:after:size-[3px] *:after:-translate-x-1/2 *:after:rounded-full *:after:bg-primary *:after:transition-colors",
+              hasItems: "*:after:pointer-events-none *:after:absolute *:after:bottom-1 *:after:start-1/2 *:after:z-10 *:after:size-[3px] *:after:-translate-x-1/2 *:after:rounded-full *:after:bg-secondary *:after:transition-colors [&[data-selected]:not(.range-middle)>*]:after:bg-secondary-foreground",
             }}
           />
           <div className="relative w-full max-sm:h-48 sm:w-40">
@@ -504,7 +504,7 @@ export function DatePicker({
                 : undefined
             }
             modifiersClassNames={{
-              hasItems: "*:after:pointer-events-none *:after:absolute *:after:bottom-1 *:after:start-1/2 *:after:z-10 *:after:size-[3px] *:after:-translate-x-1/2 *:after:rounded-full *:after:bg-primary *:after:transition-colors",
+              hasItems: "*:after:pointer-events-none *:after:absolute *:after:bottom-1 *:after:start-1/2 *:after:z-10 *:after:size-[3px] *:after:-translate-x-1/2 *:after:rounded-full *:after:bg-secondary *:after:transition-colors [&[data-selected]:not(.range-middle)>*]:after:bg-secondary-foreground",
             }}
           />
           {enableTime && (

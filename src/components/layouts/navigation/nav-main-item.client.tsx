@@ -184,7 +184,7 @@ export function NavMainItem({
                 <span className="sr-only">Toggle</span>
               </SidebarMenuAction>
             </CollapsibleTrigger>
-            <CollapsibleContent>
+            <CollapsibleContent className="mt-1">
               <SidebarMenuSub>
                 {items.map((subItem) => (
                   <SidebarMenuSubItem key={subItem.url}>
