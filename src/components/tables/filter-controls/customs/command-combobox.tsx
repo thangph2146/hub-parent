@@ -65,10 +65,10 @@ export function CommandCombobox<T extends object = object>({
             <Button
                 variant="outline"
                 role="combobox"
-                className={cn("h-7 sm:h-8 w-full justify-between", !value && "text-muted-foreground")}
+                className={cn("h-7 sm:h-8 w-full justify-between overflow-hidden", !value && "text-muted-foreground")}
                 disabled={true}
             >
-                <span className="truncate">
+                <span className="truncate min-w-0 flex-1 text-left max-w-[300px]">
                     {selectedOption ? selectedOption.label : column.filter.placeholder ?? "Chọn..."}
                 </span>
                 <IconSize size="xs" className="ml-1 sm:ml-2 shrink-0 opacity-50">
@@ -86,10 +86,10 @@ export function CommandCombobox<T extends object = object>({
                     role="combobox"
                     aria-expanded={open}
                     aria-controls={filterId}
-                    className={cn("h-7 sm:h-8 w-full justify-between", !value && "text-muted-foreground")}
+                    className={cn("h-7 sm:h-8 w-full justify-between overflow-hidden", !value && "text-muted-foreground")}
                     disabled={disabled}
                 >
-                    <span className="truncate">
+                    <span className="truncate min-w-0 flex-1 text-left max-w-[300px]">
                         {selectedOption ? selectedOption.label : column.filter.placeholder ?? "Chọn..."}
                     </span>
                     <IconSize size="xs" className="ml-1 sm:ml-2 shrink-0 opacity-50">

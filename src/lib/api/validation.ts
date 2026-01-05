@@ -328,13 +328,15 @@ const isValidDateRangeFormat = (value: string): boolean => {
 
 /**
  * Validate và sanitize search query
+ * @param maxLength - Giới hạn độ dài (mặc định 1000, truyền Infinity để không giới hạn)
  */
-export const sanitizeSearchQuery = (query: string, maxLength = 100): { valid: boolean; error?: string; value?: string } => {
+export const sanitizeSearchQuery = (query: string, maxLength: number | undefined = 1000): { valid: boolean; error?: string; value?: string } => {
   if (typeof query !== "string") {
     return { valid: false, error: "Truy vấn tìm kiếm phải là chuỗi" }
   }
 
-  if (query.length > maxLength) {
+  // Nếu maxLength là Infinity hoặc undefined, không giới hạn
+  if (maxLength !== undefined && maxLength !== Infinity && query.length > maxLength) {
     return {
       valid: false,
       error: `Truy vấn tìm kiếm không được vượt quá ${maxLength} ký tự`,
@@ -360,13 +362,15 @@ export const sanitizeSearchQuery = (query: string, maxLength = 100): { valid: bo
 
 /**
  * Parse column filters from URL search params
+ * @param maxLength - Giới hạn độ dài (mặc định 1000, truyền Infinity để không giới hạn)
  */
-export const parseColumnFilters = (searchParams: URLSearchParams, maxLength = 100): Record<string, string> => {
+export const parseColumnFilters = (searchParams: URLSearchParams, maxLength: number | undefined = 1000): Record<string, string> => {
   const filters: Record<string, string> = {}
   searchParams.forEach((value, key) => {
     if (key.startsWith("filter[")) {
       const k = key.replace("filter[", "").replace("]", "")
-      const v = sanitizeSearchQuery(value, maxLength)
+      // Sử dụng Infinity để không giới hạn độ dài
+      const v = sanitizeSearchQuery(value, maxLength === 1000 ? Infinity : maxLength)
       if (v.valid && v.value) filters[k] = v.value
     }
   })

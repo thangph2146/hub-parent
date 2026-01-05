@@ -234,7 +234,7 @@ export const PostsTableClient = ({
       const safeLimit = Number.isFinite(limit) && limit > 0 ? limit : 10
       const trimmedSearch = typeof search === "string" ? search.trim() : ""
       const searchValidation =
-        trimmedSearch.length > 0 ? sanitizeSearchQuery(trimmedSearch, 200) : { valid: true, value: "" }
+        trimmedSearch.length > 0 ? sanitizeSearchQuery(trimmedSearch, Infinity) : { valid: true, value: "" }
       if (!searchValidation.valid) {
         throw new Error(searchValidation.error || "Từ khóa tìm kiếm không hợp lệ. Vui lòng thử lại.")
       }
@@ -252,7 +252,7 @@ export const PostsTableClient = ({
         if (value !== undefined && value !== null) {
           const normalized = `${value}`.trim()
           if (normalized) {
-            const filterValidation = sanitizeSearchQuery(normalized, 100)
+            const filterValidation = sanitizeSearchQuery(normalized, Infinity)
             if (filterValidation.valid && filterValidation.value) {
               requestParams[`filter[${key}]`] = filterValidation.value
             } else if (!filterValidation.valid) {
