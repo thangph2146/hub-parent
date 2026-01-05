@@ -9,7 +9,7 @@ const alertIconSize = iconSizes.sm
 const alertTitleSmall = `${headingSizes.h5} font-semibold`
 
 const alertVariants = cva(
-  `relative w-full rounded-lg border px-4 py-3 grid has-[>svg]:grid-cols-[calc(var(--spacing)*4)_1fr] grid-cols-[0_1fr] has-[>svg]:gap-x-3 gap-y-0.5 items-start [&>svg]:translate-y-0.5 [&>svg]:text-current ${alertBodySmall} [&>svg]:${alertIconSize}`,
+  `relative rounded-lg border px-4 py-3 grid has-[>svg]:grid-cols-[calc(var(--spacing)*4)_1fr] grid-cols-[0_1fr] has-[>svg]:gap-x-3 gap-y-0.5 items-start [&>svg]:translate-y-0.5 [&>svg]:text-current ${alertBodySmall} [&>svg]:${alertIconSize}`,
   {
     variants: {
       variant: {
@@ -17,9 +17,14 @@ const alertVariants = cva(
         destructive:
           "text-destructive bg-card [&>svg]:text-current *:data-[slot=alert-description]:text-destructive/90",
       },
+      fullWidth: {
+        true: "w-full",
+        false: "",
+      },
     },
     defaultVariants: {
       variant: "default",
+      fullWidth: true,
     },
   }
 )
@@ -27,13 +32,14 @@ const alertVariants = cva(
 function Alert({
   className,
   variant,
+  fullWidth,
   ...props
 }: React.ComponentProps<"div"> & VariantProps<typeof alertVariants>) {
   return (
     <div
       data-slot="alert"
       role="alert"
-      className={cn(alertVariants({ variant }), className)}
+      className={cn(alertVariants({ variant, fullWidth }), className)}
       {...props}
     />
   )

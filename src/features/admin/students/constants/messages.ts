@@ -121,4 +121,26 @@ export const STUDENT_CONFIRM_MESSAGES = {
   RESTORE_LABEL: "Khôi phục",
   HARD_DELETE_LABEL: "Xóa vĩnh viễn",
   CANCEL_LABEL: "Hủy",
+  
+  TOGGLE_TITLE: (studentCode?: string, newStatus?: boolean) =>
+    newStatus
+      ? `Kích hoạt sinh viên ${studentCode}?`
+      : `Vô hiệu hóa sinh viên ${studentCode}?`,
+  TOGGLE_DESCRIPTION: (studentCode?: string, newStatus?: boolean) =>
+    newStatus
+      ? `Bạn có chắc chắn muốn kích hoạt sinh viên "${studentCode || ""}"? Sinh viên sẽ có thể sử dụng đầy đủ các tính năng của hệ thống.`
+      : `Bạn có chắc chắn muốn vô hiệu hóa sinh viên "${studentCode || ""}"? Sinh viên sẽ không thể sử dụng các tính năng của hệ thống.`,
+  TOGGLE_CONFIRM_LABEL: (newStatus?: boolean) =>
+    newStatus ? "Kích hoạt" : "Vô hiệu hóa",
+  
+  BULK_TOGGLE_TITLE: (count?: number, newStatus?: boolean) =>
+    newStatus
+      ? `Kích hoạt ${count} sinh viên?`
+      : `Vô hiệu hóa ${count} sinh viên?`,
+  BULK_TOGGLE_DESCRIPTION: (count?: number, newStatus?: boolean) =>
+    newStatus
+      ? `Bạn có chắc chắn muốn kích hoạt ${count} sinh viên đã chọn? Các sinh viên sẽ có thể sử dụng đầy đủ các tính năng của hệ thống.`
+      : `Bạn có chắc chắn muốn vô hiệu hóa ${count} sinh viên đã chọn? Các sinh viên sẽ không thể sử dụng các tính năng của hệ thống.`,
+  BULK_TOGGLE_CONFIRM_LABEL: (newStatus?: boolean) =>
+    newStatus ? "Kích hoạt" : "Vô hiệu hóa",
 } as const
