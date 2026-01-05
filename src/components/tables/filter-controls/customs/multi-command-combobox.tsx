@@ -97,12 +97,12 @@ export function MultiCommandCombobox<T extends object = object>({
                 variant="outline"
                 role="combobox"
                 className={cn(
-                    "h-7 sm:h-8 w-full justify-between font-normal",
+                    "h-7 sm:h-8 w-full justify-between font-normal overflow-hidden",
                     selectedValues.length === 0 && "text-muted-foreground",
                 )}
                 disabled={true}
             >
-                <span className="truncate">{displayText}</span>
+                <span className="truncate min-w-0 flex-1 text-left max-w-[300px]">{displayText}</span>
                 <IconSize size="xs" className="ml-1 sm:ml-2 shrink-0 opacity-50">
                   <ChevronsUpDown />
                 </IconSize>
@@ -119,7 +119,7 @@ export function MultiCommandCombobox<T extends object = object>({
                     aria-expanded={open}
                     aria-controls={filterId}
                     className={cn(
-                        "h-auto min-h-7 sm:min-h-8 w-full justify-between font-normal px-2 py-1",
+                        "h-auto min-h-7 sm:min-h-8 w-full justify-between font-normal px-2 py-1 overflow-hidden",
                         selectedValues.length === 0 && "text-muted-foreground",
                     )}
                     disabled={disabled}
@@ -132,7 +132,7 @@ export function MultiCommandCombobox<T extends object = object>({
                                 </Badge>
                             ))
                         ) : (
-                            <span className="truncate">{displayText}</span>
+                            <span className="truncate min-w-0 flex-1 text-left max-w-[300px]">{displayText}</span>
                         )}
                     </div>
                     <div className="flex items-center gap-1 flex-shrink-0">

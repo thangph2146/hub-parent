@@ -38,7 +38,7 @@ async function getCategoriesHandler(req: NextRequest, _context: ApiRouteContext)
   searchParams.forEach((value, key) => {
     if (key.startsWith("filter[")) {
       const columnKey = key.replace("filter[", "").replace("]", "")
-      const sanitizedValue = sanitizeSearchQuery(value, 100)
+      const sanitizedValue = sanitizeSearchQuery(value, Infinity)
       if (sanitizedValue.valid && sanitizedValue.value) {
         columnFilters[columnKey] = sanitizedValue.value
       }

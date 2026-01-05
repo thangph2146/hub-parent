@@ -137,8 +137,8 @@ export const createOptionsHandler = async (
     )
   }
 
-  // Validate and sanitize search query
-  const searchValidation = sanitizeSearchQuery(search, 100)
+  // Validate and sanitize search query (không giới hạn độ dài)
+  const searchValidation = sanitizeSearchQuery(search, Infinity)
   const searchValue = searchValidation.valid ? searchValidation.value : undefined
 
   // Validate limit

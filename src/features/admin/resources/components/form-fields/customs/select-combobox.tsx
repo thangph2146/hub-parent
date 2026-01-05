@@ -94,7 +94,7 @@ export const SelectCombobox = <T,>({
           aria-invalid={error ? "true" : "false"}
           aria-describedby={errorId || field.description ? `${fieldId || field.name as string}-description` : undefined}
           className={cn(
-            "w-full justify-between h-10",
+            "w-full justify-between h-10 overflow-hidden",
             !fieldValue && "text-muted-foreground",
             error && "border-destructive",
             isDisabled && "!opacity-100"
@@ -102,7 +102,7 @@ export const SelectCombobox = <T,>({
           disabled={isDisabled}
         >
           <Flex align="center" justify="between" gap={2} fullWidth>
-            <TypographySpanSmall className="truncate">
+            <TypographySpanSmall className="truncate min-w-0 flex-1 text-left max-w-[300px]">
               {selectedOption ? selectedOption.label : field.placeholder || "-- Chọn --"}
             </TypographySpanSmall>
             {!isDisabled && (
