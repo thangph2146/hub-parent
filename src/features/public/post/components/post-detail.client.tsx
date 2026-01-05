@@ -89,11 +89,13 @@ export const PostDetailClient = ({ post }: PostDetailClientProps) => {
 
         {/* Tags */}
         {post.tags.length > 0 && (
-          <Flex align="center" gap={3} wrap className="pt-8 border-t">
-            <IconSize size="md">
-              <Tag />
-            </IconSize>
-            <Flex gap={2} wrap>
+          <Flex align="center" justify="start" gap={3} wrap className="py-8 border-t">
+            <Flex align="center" justify="center" className="shrink-0">
+              <IconSize size="md">
+                <Tag />
+              </IconSize>
+            </Flex>
+            <Flex align="center" gap={2} wrap>
               {post.tags.map((tag) => (
                 <Badge key={tag.id} variant="outline">
                   {tag.name}
