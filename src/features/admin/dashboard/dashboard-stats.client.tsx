@@ -974,12 +974,8 @@ export const DashboardStatsClient = ({ stats }: DashboardStatsClientProps) => {
       [...selectedResourcesState].filter((key) => availableKeys.has(key))
     );
     
-    // Auto-select tất cả khi lần đầu load và chưa có gì được chọn
-    if (filtered.size === 0 && availableKeys.size > 0 && selectedResourcesState.size === 0) {
-      // Sử dụng useEffect để set state thay vì setTimeout trong useMemo
-      return availableKeys;
-    }
-    
+    // Không tự động select lại khi đã có user interaction
+    // Chỉ trả về filtered set, không auto-select
     return filtered;
   }, [selectedResourcesState, availableResources]);
 
@@ -1027,6 +1023,7 @@ export const DashboardStatsClient = ({ stats }: DashboardStatsClientProps) => {
 
   const deselectAll = useCallback(() => {
     setSelectedResources(new Set());
+    hasAutoSelectedRef.current = true; // Đánh dấu đã có user interaction để không auto-select nữa
   }, []);
 
   if (!isMounted) {
