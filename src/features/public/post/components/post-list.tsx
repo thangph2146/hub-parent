@@ -1,3 +1,5 @@
+"use client"
+
 import { PostCard } from "@/components/public/post/post-card"
 import { PostPagination } from "@/components/public/post/post-pagination"
 import { PostEmptyState } from "./post-empty-state"
@@ -21,7 +23,7 @@ export const PostList = ({ posts, currentPage, totalPages }: PostListProps) => {
     <>
       <Row gutter={[32, 32]}>
         {posts.map((post, index) => (
-          <Col key={post.id} xs={24} sm={12} lg={12}>
+          <Col key={post.id} xs={24} sm={12} xxl={8}>
             <PostCard 
               post={post} 
               priority={index < 3}
@@ -43,7 +45,7 @@ export const PostListSkeleton = () => {
   return (
     <Row gutter={[32, 32]}>
       {Array.from({ length: 6 }).map((_, i) => (
-        <Col key={i} xs={24} sm={12} lg={12}>
+        <Col key={i} xs={24} sm={12} lg={8}>
           <Flex direction="col" gap={4}>
             <Skeleton className="aspect-video w-full rounded-lg" />
             <Skeleton className="h-4 w-20" />
