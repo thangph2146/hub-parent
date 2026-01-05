@@ -322,3 +322,200 @@
 .scrollbar-hide::-webkit-scrollbar {
   display: none; /* Chrome, Safari and Opera */
 }
+
+/* Ant Design CSS Override - Đảm bảo globals.css có priority cao hơn */
+/* Đồng bộ tất cả Ant Design components với theme colors từ globals.css */
+@layer base {
+  /* NavigationMenu links - Đảm bảo styles từ globals.css không bị override bởi Ant Design */
+  a[data-radix-collection-item] {
+    color: inherit !important;
+    text-decoration: none !important;
+    font-family: inherit !important;
+    font-size: inherit !important;
+    line-height: inherit !important;
+  }
+  
+  /* Ant Design Flex - Đảm bảo không override custom styles */
+  .ant-flex {
+    box-sizing: border-box;
+    background-color: transparent !important;
+  }
+  
+  /* Ant Design Row/Col - Transparent background */
+  .ant-row,
+  .ant-col {
+    background-color: transparent !important;
+  }
+  
+  /* Ant Design components trong custom components - giữ nguyên styles */
+  .ant-flex a,
+  .ant-flex button,
+  .ant-row a,
+  .ant-row button,
+  .ant-col a,
+  .ant-col button {
+    color: inherit;
+    font-family: inherit;
+  }
+  
+  /* Đảm bảo NavigationMenu links và buttons giữ đúng text color từ theme */
+  /* Không override hover/focus/active states - để NavigationMenu tự quản lý */
+  nav a[data-radix-collection-item],
+  nav button[data-radix-collection-item] {
+    color: var(--foreground);
+  }
+  
+  /* Đảm bảo NavigationMenu links và buttons hover/focus/active states hoạt động đúng */
+  /* Sử dụng var(--accent) trực tiếp vì đã được định nghĩa là màu hex */
+  /* Chỉ apply khi element có class chứa hover:bg-accent để không override Tailwind classes */
+  nav a[data-radix-collection-item].group:hover,
+  nav a[data-radix-collection-item]:hover,
+  nav button[data-radix-collection-item].group:hover,
+  nav button[data-radix-collection-item]:hover {
+    background-color: var(--accent) !important;
+    color: var(--accent-foreground) !important;
+  }
+  
+  nav a[data-radix-collection-item].group:focus,
+  nav a[data-radix-collection-item]:focus,
+  nav button[data-radix-collection-item].group:focus,
+  nav button[data-radix-collection-item]:focus {
+    background-color: var(--accent) !important;
+    color: var(--accent-foreground) !important;
+  }
+  
+  nav a[data-radix-collection-item][data-active="true"],
+  nav a[data-radix-collection-item][data-state="open"],
+  nav button[data-radix-collection-item][data-active="true"],
+  nav button[data-radix-collection-item][data-state="open"] {
+    background-color: var(--accent);
+    background-color: color-mix(in srgb, var(--accent) 50%, transparent);
+    color: var(--accent-foreground) !important;
+  }
+  
+  /* Đảm bảo text và icon trong NavigationMenuContent links đổi màu khi hover/active */
+  /* Áp dụng cho Ant Design Flex components và các elements con */
+  nav a[data-radix-collection-item].group:hover .ant-flex,
+  nav a[data-radix-collection-item]:hover .ant-flex,
+  nav a[data-radix-collection-item].group:focus .ant-flex,
+  nav a[data-radix-collection-item]:focus .ant-flex,
+  nav a[data-radix-collection-item][data-active="true"] .ant-flex,
+  nav a[data-radix-collection-item][data-state="open"] .ant-flex {
+    color: var(--accent-foreground) !important;
+  }
+  
+  /* Đảm bảo Typography components bên trong NavigationMenu links cũng đổi màu */
+  nav a[data-radix-collection-item].group:hover [class*="typography"],
+  nav a[data-radix-collection-item]:hover [class*="typography"],
+  nav a[data-radix-collection-item].group:focus [class*="typography"],
+  nav a[data-radix-collection-item]:focus [class*="typography"],
+  nav a[data-radix-collection-item][data-active="true"] [class*="typography"],
+  nav a[data-radix-collection-item][data-state="open"] [class*="typography"] {
+    color: var(--accent-foreground) !important;
+  }
+  
+  /* Đảm bảo SVG icons bên trong NavigationMenu links cũng đổi màu */
+  nav a[data-radix-collection-item].group:hover svg,
+  nav a[data-radix-collection-item]:hover svg,
+  nav a[data-radix-collection-item].group:focus svg,
+  nav a[data-radix-collection-item]:focus svg,
+  nav a[data-radix-collection-item][data-active="true"] svg,
+  nav a[data-radix-collection-item][data-state="open"] svg {
+    color: var(--accent-foreground) !important;
+    stroke: var(--accent-foreground) !important;
+  }
+  
+  /* Đảm bảo tất cả text nodes và inline elements đổi màu */
+  nav a[data-radix-collection-item].group:hover,
+  nav a[data-radix-collection-item]:hover,
+  nav a[data-radix-collection-item].group:focus,
+  nav a[data-radix-collection-item]:focus,
+  nav a[data-radix-collection-item][data-active="true"],
+  nav a[data-radix-collection-item][data-state="open"] {
+    --tw-text-opacity: 1;
+  }
+  
+  /* Override màu text cho các elements con khi parent hover/active */
+  nav a[data-radix-collection-item].group:hover p,
+  nav a[data-radix-collection-item]:hover p,
+  nav a[data-radix-collection-item].group:hover span,
+  nav a[data-radix-collection-item]:hover span,
+  nav a[data-radix-collection-item].group:hover div,
+  nav a[data-radix-collection-item]:hover div,
+  nav a[data-radix-collection-item].group:focus p,
+  nav a[data-radix-collection-item]:focus p,
+  nav a[data-radix-collection-item].group:focus span,
+  nav a[data-radix-collection-item]:focus span,
+  nav a[data-radix-collection-item].group:focus div,
+  nav a[data-radix-collection-item]:focus div,
+  nav a[data-radix-collection-item][data-active="true"] p,
+  nav a[data-radix-collection-item][data-active="true"] span,
+  nav a[data-radix-collection-item][data-active="true"] div,
+  nav a[data-radix-collection-item][data-state="open"] p,
+  nav a[data-radix-collection-item][data-state="open"] span,
+  nav a[data-radix-collection-item][data-state="open"] div {
+    color: var(--accent-foreground) !important;
+  }
+  
+  /* Đảm bảo avatar fallback text color đổi đúng khi button hover */
+  /* Áp dụng cho button ghost variant trong header */
+  button.group:hover [data-slot="avatar-fallback"],
+  button:hover [data-slot="avatar-fallback"] {
+    color: var(--accent-foreground) !important;
+  }
+  
+  /* Ant Design components - Background colors (transparent để không override custom styles) */
+  .ant-flex:not([style*="background"]),
+  .ant-row:not([style*="background"]),
+  .ant-col:not([style*="background"]) {
+    background: transparent;
+  }
+  
+  /* Ant Design components - Text colors (chỉ khi không có custom color) */
+  .ant-flex:not([class*="text-"]):not([style*="color"]),
+  .ant-row:not([class*="text-"]):not([style*="color"]),
+  .ant-col:not([class*="text-"]):not([style*="color"]) {
+    color: var(--foreground);
+  }
+  
+  /* Ant Design components - Hover states cho links và buttons */
+  /* Loại trừ NavigationMenu links và buttons để không override styles của chúng */
+  .ant-flex a:hover:not([class*="text-"]):not([data-radix-collection-item]),
+  .ant-flex button:hover:not([class*="text-"]):not([data-radix-collection-item]),
+  .ant-row a:hover:not([class*="text-"]):not([data-radix-collection-item]),
+  .ant-row button:hover:not([class*="text-"]):not([data-radix-collection-item]),
+  .ant-col a:hover:not([class*="text-"]):not([data-radix-collection-item]),
+  .ant-col button:hover:not([class*="text-"]):not([data-radix-collection-item]) {
+    color: var(--accent-foreground);
+  }
+  
+  /* Ant Design components - Focus states cho links và buttons */
+  /* Loại trừ NavigationMenu links và buttons để không override styles của chúng */
+  .ant-flex a:focus:not([class*="text-"]):not([data-radix-collection-item]),
+  .ant-flex button:focus:not([class*="text-"]):not([data-radix-collection-item]),
+  .ant-row a:focus:not([class*="text-"]):not([data-radix-collection-item]),
+  .ant-row button:focus:not([class*="text-"]):not([data-radix-collection-item]),
+  .ant-col a:focus:not([class*="text-"]):not([data-radix-collection-item]),
+  .ant-col button:focus:not([class*="text-"]):not([data-radix-collection-item]) {
+    color: var(--accent-foreground);
+    outline-color: var(--ring);
+  }
+  
+  /* Ant Design components - Active states cho links và buttons */
+  /* Loại trừ NavigationMenu links và buttons để không override styles của chúng */
+  .ant-flex a:active:not([class*="text-"]):not([data-radix-collection-item]),
+  .ant-flex button:active:not([class*="text-"]):not([data-radix-collection-item]),
+  .ant-row a:active:not([class*="text-"]):not([data-radix-collection-item]),
+  .ant-row button:active:not([class*="text-"]):not([data-radix-collection-item]),
+  .ant-col a:active:not([class*="text-"]):not([data-radix-collection-item]),
+  .ant-col button:active:not([class*="text-"]):not([data-radix-collection-item]) {
+    color: var(--accent-foreground);
+  }
+  
+  /* Ant Design components - Border colors (chỉ khi không có custom border) */
+  .ant-flex:not([class*="border-"]):not([style*="border"]),
+  .ant-row:not([class*="border-"]):not([style*="border"]),
+  .ant-col:not([class*="border-"]):not([style*="border"]) {
+    border-color: hsl(var(--border));
+  }
+}

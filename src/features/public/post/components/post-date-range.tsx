@@ -1,18 +1,46 @@
 "use client"
 
-import { useMemo } from "react"
+import { useMemo, useEffect, useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { DateRangePicker } from "@/components/ui/date-range-picker"
 import { logger } from "@/lib/config/logger"
 import { format } from "date-fns"
 import { vi } from "date-fns/locale"
+import { apiClient } from "@/lib/api/axios"
 
 export const PostDateRange = () => {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const [datesWithItems, setDatesWithItems] = useState<string[]>([])
   
   const dateFromParam = searchParams?.get("dateFrom")
   const dateToParam = searchParams?.get("dateTo")
+
+  // Fetch dates with posts when component mounts
+  useEffect(() => {
+    const fetchDatesWithItems = async () => {
+      try {
+        const response = await apiClient.get<{ dates: string[] }>(
+          "/post/dates-with-posts"
+        )
+        if (response.data?.dates) {
+          setDatesWithItems(response.data.dates)
+          logger.debug("PostDateRange: Fetched dates with posts", {
+            action: "fetch_dates_with_posts",
+            datesCount: response.data.dates.length,
+          })
+        }
+      } catch (error) {
+        // Silently fail - dates highlighting is optional
+        logger.debug("PostDateRange: Failed to fetch dates with posts", {
+          action: "fetch_dates_error",
+          error: error instanceof Error ? error.message : "Unknown error",
+        })
+      }
+    }
+
+    fetchDatesWithItems()
+  }, [])
   
   // Derive dates from URL params using useMemo
   const dateFrom = useMemo(() => {
@@ -98,6 +126,7 @@ export const PostDateRange = () => {
       onClear={handleClear}
       placeholder="Chọn khoảng thời gian"
       align="end"
+      datesWithItems={datesWithItems}
     />
   )
 }

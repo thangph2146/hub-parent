@@ -543,7 +543,7 @@ export const appFeatures: FeatureDefinition[] = [
   {
     key: "help",
     title: "Trợ giúp",
-    description: "Hướng dẫn sử dụng hệ thống",
+    description: "Hướng dẫn sử dụng",
     permissions: [], // Public access
     icon: createIcon(HelpCircle),
     navigation: {

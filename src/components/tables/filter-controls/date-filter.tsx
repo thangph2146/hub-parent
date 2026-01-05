@@ -4,8 +4,10 @@
 "use client"
 
 import { format } from "date-fns"
+import { useEffect, useState } from "react"
 import { DatePicker } from "@/components/ui/date-picker"
 import type { ColumnFilterControlProps } from "./types"
+import { apiClient } from "@/lib/api/axios"
 
 export function DateFilter<T extends object = object>({
     column,
@@ -13,6 +15,30 @@ export function DateFilter<T extends object = object>({
     disabled,
     onChange,
 }: ColumnFilterControlProps<T>) {
+    const [datesWithItems, setDatesWithItems] = useState<string[]>([])
+
+    // Fetch dates with items when component mounts
+    useEffect(() => {
+        const fetchDatesWithItems = async () => {
+            try {
+                // Only fetch if datesApiRoute is configured
+                if (column.filter?.type === "date" && column.filter.datesApiRoute) {
+                    const response = await apiClient.get<{ dates: string[] }>(
+                        column.filter.datesApiRoute
+                    )
+                    if (response.data?.dates) {
+                        setDatesWithItems(response.data.dates)
+                    }
+                }
+            } catch (error) {
+                // Silently fail - dates highlighting is optional
+                console.debug("[DateFilter] Failed to fetch dates with items", error)
+            }
+        }
+
+        fetchDatesWithItems()
+    }, [column.filter])
+
     if (column.filter?.type !== "date") return null
 
     let dateValue: Date | undefined
@@ -59,6 +85,7 @@ export function DateFilter<T extends object = object>({
             disabled={disabled}
             enableTime={enableTime}
             showSeconds={showSeconds}
+            datesWithItems={datesWithItems}
         />
     )
 }
