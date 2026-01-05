@@ -142,7 +142,7 @@ export function Plugins({
           {({ blockType }) => (
             <div className="flex w-full items-center gap-2 overflow-x-auto p-1">
               <HistoryToolbarPlugin />
-              <Separator orientation="vertical" className="!h-7" />
+              <Separator orientation="vertical" className="!h-11" />
               <BlockFormatDropDown>
                 <FormatParagraph />
                 <FormatHeading levels={["h1", "h2", "h3"]} />

@@ -85,7 +85,7 @@ export function FontBackgroundToolbarPlugin() {
       }}
     >
       <ColorPickerTrigger asChild>
-        <Button variant={"outline"} size={"icon"}>
+        <Button variant={"outline"} size={"icon"} className="!h-11 !w-11">
           <IconSize size="sm">
             <PaintBucketIcon />
           </IconSize>

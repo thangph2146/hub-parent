@@ -20,7 +20,7 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
-import { TypographyP, TypographyPSmallMuted } from "@/components/ui/typography"
+import { TypographyP, TypographyPSmall } from "@/components/ui/typography"
 import type { Permission } from "@/lib/permissions"
 import type { ReactNode } from "react"
 import { useResourceSegment } from "@/hooks/use-resource-segment"
@@ -119,7 +119,7 @@ export function AppSidebar({ navMainSlot, ...props }: AppSidebarProps) {
               <TooltipContent side="right" sideOffset={8}>
                 <div className="space-y-1">
                   <TypographyP>{brandingName}</TypographyP>
-                  <TypographyPSmallMuted className="opacity-90">{brandingDescription}</TypographyPSmallMuted>
+                  <TypographyPSmall className="opacity-90">{brandingDescription}</TypographyPSmall>
                 </div>
               </TooltipContent>
             </Tooltip>

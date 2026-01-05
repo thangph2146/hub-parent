@@ -22,8 +22,6 @@ import {
   LucideIcon,
   LogIn,
   UserPlus,
-  LifeBuoy,
-  Command,
   Home,
   FileText,
   Info,
@@ -638,58 +636,4 @@ function ListItem({
       </Link>
     </NavigationMenuLink>
   );
-}
-
-/**
- * Convert appFeatures thành LinkItem[] cho support section
- * Lấy các features thuộc group "secondary"
- */
-function getSupportLinks(): LinkItem[] {
-  // Map icon components từ appFeatures
-  const iconMap: Record<string, LucideIcon> = {
-    support: LifeBuoy,
-    feedback: Command,
-  };
-
-  const supportFeatures = appFeatures.filter(
-    (feature) => feature.navigation?.group === "secondary"
-  );
-
-  return supportFeatures.map((feature) => {
-    const nav = feature.navigation!;
-    const href = nav.href || "#";
-
-    // Lấy icon từ map dựa trên feature key
-    const icon = iconMap[feature.key] || HelpCircle;
-
-    return {
-      title: feature.title,
-      href,
-      description: feature.description,
-      icon,
-    };
-  });
-}
-
-// Generate links từ appFeatures
-const _supportLinks: LinkItem[] = getSupportLinks();
-
-function useScroll(threshold: number) {
-  const [scrolled, setScrolled] = React.useState(false);
-
-  const onScroll = React.useCallback(() => {
-    setScrolled(window.scrollY > threshold);
-  }, [threshold]);
-
-  React.useEffect(() => {
-    window.addEventListener("scroll", onScroll);
-    return () => window.removeEventListener("scroll", onScroll);
-  }, [onScroll]);
-
-  // also check on first load
-  React.useEffect(() => {
-    onScroll();
-  }, [onScroll]);
-
-  return scrolled;
 }
