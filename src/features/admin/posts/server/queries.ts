@@ -2,6 +2,7 @@ import type { Prisma } from "@prisma/client"
 import { prisma } from "@/lib/prisma"
 import { validatePagination, buildPagination, type ResourcePagination } from "@/features/admin/resources/server"
 import { mapPostRecord, buildWhereClause } from "./helpers"
+import { logger } from "@/lib/config/logger"
 
 export interface ListPostsInput {
   page?: number
@@ -88,6 +89,13 @@ export const listPosts = async (params: ListPostsInput = {}): Promise<ListPostsR
   const { page, limit } = validatePagination(params.page, params.limit, 100)
   const where = buildWhereClause(params)
 
+  logger.debug("[Posts Query] Executing listPosts", {
+    page,
+    limit,
+    hasFilters: !!params.filters,
+    filters: params.filters,
+  })
+
   const [posts, total] = await Promise.all([
     prisma.post.findMany({
       where,
@@ -99,10 +107,20 @@ export const listPosts = async (params: ListPostsInput = {}): Promise<ListPostsR
     prisma.post.count({ where }),
   ])
 
-  return {
+  const result = {
     data: posts.map(mapPostRecord),
     pagination: buildPagination(page, limit, total),
   }
+
+  logger.info("[Posts Query] listPosts result", {
+    postsCount: result.data.length,
+    total,
+    authorIds: result.data.map((p) => p.author.id),
+    uniqueAuthors: [...new Set(result.data.map((p) => p.author.id))],
+    hasAuthorIdFilter: !!where.authorId,
+  })
+
+  return result
 };
 
 export const getPostColumnOptions = async (

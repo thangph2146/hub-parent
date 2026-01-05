@@ -24,6 +24,8 @@ export type {
 // Permission helper functions
 export {
   isSuperAdmin,
+  isAdmin,
+  isAdminOrSuperAdmin,
   canPerformAction,
   canPerformAnyAction,
 } from "./permissions-helpers"

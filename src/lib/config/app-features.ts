@@ -192,7 +192,7 @@ export const appFeatures: FeatureDefinition[] = [
         {
           title: "Tất cả bài viết",
           url: "/admin/posts",
-          permissions: [PERMISSIONS.POSTS_VIEW],
+          permissions: [PERMISSIONS.POSTS_VIEW_ALL, PERMISSIONS.POSTS_VIEW_OWN],
         },
         {
           title: "Viết bài mới",

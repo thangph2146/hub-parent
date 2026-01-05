@@ -6,8 +6,9 @@ import { updatePostSchema } from "@/features/admin/posts/server/validation"
 import { createGetRoute, createPutRoute, createDeleteRoute } from "@/lib/api/api-route-wrapper"
 import type { ApiRouteContext } from "@/lib/api/types"
 import { validateID } from "@/lib/api/validation"
+import { PERMISSIONS, hasPermission } from "@/lib/permissions"
 
-async function getPostHandler(_req: NextRequest, _context: ApiRouteContext, ...args: unknown[]) {
+async function getPostHandler(_req: NextRequest, context: ApiRouteContext, ...args: unknown[]) {
   const { params } = args[0] as { params: Promise<{ id: string }> }
   const { id } = await params
 
@@ -22,6 +23,14 @@ async function getPostHandler(_req: NextRequest, _context: ApiRouteContext, ...a
 
   if (!post) {
     return NextResponse.json({ error: "Không tìm thấy bài viết" }, { status: 404 })
+  }
+
+  // Kiểm tra permission: nếu có POSTS_VIEW_ALL thì xem tất cả, nếu chỉ có POSTS_VIEW_OWN thì chỉ xem của mình
+  const hasViewAllPermission = hasPermission(context.permissions, PERMISSIONS.POSTS_VIEW_ALL)
+  const currentUserId = context.session?.user?.id
+
+  if (!hasViewAllPermission && currentUserId && post.author?.id !== currentUserId) {
+    return NextResponse.json({ error: "Bạn không có quyền xem bài viết này" }, { status: 403 })
   }
 
   return NextResponse.json({ data: serializePostDetail(post) })

@@ -134,7 +134,7 @@ export const DashboardWelcome = () => {
 
   // Permission checks for all resources
   const canViewUsers = isSuperAdminUser || hasPermission(PERMISSIONS.USERS_VIEW)
-  const canViewPosts = isSuperAdminUser || hasPermission(PERMISSIONS.POSTS_VIEW)
+  const canViewPosts = isSuperAdminUser || hasPermission(PERMISSIONS.POSTS_VIEW_ALL) || hasPermission(PERMISSIONS.POSTS_VIEW_OWN)
   const canViewComments = isSuperAdminUser || hasPermission(PERMISSIONS.COMMENTS_VIEW)
   const canViewCategories = isSuperAdminUser || hasPermission(PERMISSIONS.CATEGORIES_VIEW)
   const canViewTags = isSuperAdminUser || hasPermission(PERMISSIONS.TAGS_VIEW)

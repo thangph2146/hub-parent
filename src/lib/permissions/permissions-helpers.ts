@@ -11,6 +11,18 @@ export const isSuperAdmin = (roles: Array<{ name: string }>): boolean =>
   roles.some((role) => role.name === DEFAULT_ROLES.SUPER_ADMIN.name)
 
 /**
+ * Check if user is admin based on roles
+ */
+export const isAdmin = (roles: Array<{ name: string }>): boolean =>
+  roles.some((role) => role.name === DEFAULT_ROLES.ADMIN.name)
+
+/**
+ * Check if user is super admin or admin
+ */
+export const isAdminOrSuperAdmin = (roles: Array<{ name: string }>): boolean =>
+  isSuperAdmin(roles) || isAdmin(roles)
+
+/**
  * Check if user can perform action (super admin has all permissions)
  */
 export const canPerformAction = (

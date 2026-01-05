@@ -62,36 +62,71 @@ const generateResourceRoutes = (config: ResourceConfig): RoutePermissionConfig[]
   const { name, permissions, customPages = [], customApi = [], adminApi = false } = config
   const routes: RoutePermissionConfig[] = []
 
-  // Page routes
-  routes.push(
-    { path: `/admin/${name}`, permissions: [permissions.view], type: "page" },
-    { path: `/admin/${name}/new`, permissions: [permissions.create], type: "page" },
-    { path: `/admin/${name}/[id]`, permissions: [permissions.view], type: "page" },
-    { path: `/admin/${name}/[id]/edit`, permissions: [permissions.update], type: "page" },
-    ...customPages.map((p) => ({ ...p, type: "page" as const }))
-  )
+  // Get custom page paths to avoid duplicates
+  const customPagePaths = new Set(customPages.map((p) => p.path))
+  const hasCustomListPage = customPagePaths.has(`/admin/${name}`)
+  const hasCustomDetailPage = customPagePaths.has(`/admin/${name}/[id]`)
 
-  // API routes
+  // Add custom pages first (they take priority)
+  routes.push(...customPages.map((p) => ({ ...p, type: "page" as const })))
+
+  // Page routes (skip if custom page exists)
+  if (!hasCustomListPage) {
+    routes.push({ path: `/admin/${name}`, permissions: [permissions.view], type: "page" })
+  }
+  routes.push({ path: `/admin/${name}/new`, permissions: [permissions.create], type: "page" })
+  if (!hasCustomDetailPage) {
+    routes.push({ path: `/admin/${name}/[id]`, permissions: [permissions.view], type: "page" })
+  }
+  routes.push({ path: `/admin/${name}/[id]/edit`, permissions: [permissions.update], type: "page" })
+
+  // Get custom API paths to avoid duplicates
+  const customApiKeys = new Set(
+    customApi.map((api) => `${api.path}:${api.method || "GET"}`)
+  )
+  const hasCustomListApi = customApiKeys.has(`/api/admin/${name}:GET`) || customApiKeys.has(`/api/${name}:GET`)
+  const hasCustomDetailApi = customApiKeys.has(`/api/admin/${name}/[id]:GET`) || customApiKeys.has(`/api/${name}/[id]:GET`)
+
+  // Add custom API routes first (they take priority)
+  routes.push(...customApi.map((api) => ({ ...api, type: "api" as const })))
+
+  // API routes (skip if custom API exists)
+  if (!hasCustomListApi) {
+    routes.push({ path: `/api/${name}`, method: "GET", permissions: [permissions.view], type: "api" })
+  }
+  routes.push({ path: `/api/${name}`, method: "POST", permissions: [permissions.create], type: "api" })
+  if (!hasCustomDetailApi) {
+    routes.push({ path: `/api/${name}/[id]`, method: "GET", permissions: [permissions.view], type: "api" })
+  }
   routes.push(
-    { path: `/api/${name}`, method: "GET", permissions: [permissions.view], type: "api" },
-    { path: `/api/${name}`, method: "POST", permissions: [permissions.create], type: "api" },
-    { path: `/api/${name}/[id]`, method: "GET", permissions: [permissions.view], type: "api" },
     { path: `/api/${name}/[id]`, method: "PUT", permissions: [permissions.update], type: "api" },
-    { path: `/api/${name}/[id]`, method: "DELETE", permissions: [permissions.delete], type: "api" },
-    ...customApi.map((api) => ({ ...api, type: "api" as const }))
+    { path: `/api/${name}/[id]`, method: "DELETE", permissions: [permissions.delete], type: "api" }
   )
 
   // Admin API routes
   if (adminApi === true) {
-    // Generate standard admin API routes
-    routes.push(
-      ...generateStandardAdminApiRoutes(name, permissions).map((api) => ({
-        path: `/api/admin/${name}${api.path}`,
+    // Generate standard admin API routes, but use custom permissions if available
+    const standardRoutes = generateStandardAdminApiRoutes(name, permissions)
+    for (const api of standardRoutes) {
+      const fullPath = `/api/admin/${name}${api.path}`
+      
+      // Check if custom API exists for this route
+      const customApiRoute = customApi.find(
+        (ca) => ca.path === fullPath && (ca.method || "GET") === api.method
+      )
+      
+      if (customApiRoute) {
+        // Use custom API route (already added above)
+        continue
+      }
+      
+      routes.push({
+        path: fullPath,
         method: api.method,
         permissions: api.permissions,
         type: "api" as const,
-      }))
-    )
+      })
+    }
   } else if (Array.isArray(adminApi)) {
     // Generate custom admin API routes
     routes.push(
@@ -104,13 +139,16 @@ const generateResourceRoutes = (config: ResourceConfig): RoutePermissionConfig[]
     )
   }
 
-  // Generate options API route for filter options
-  routes.push({
-    path: `/api/admin/${name}/options`,
-    method: "GET",
-    permissions: [permissions.view],
-    type: "api",
-  })
+  // Generate options API route for filter options (skip if custom API exists)
+  const hasCustomOptionsApi = customApiKeys.has(`/api/admin/${name}/options:GET`)
+  if (!hasCustomOptionsApi) {
+    routes.push({
+      path: `/api/admin/${name}/options`,
+      method: "GET",
+      permissions: [permissions.view],
+      type: "api",
+    })
+  }
 
   return routes
 }
@@ -188,15 +226,23 @@ export const ROUTE_CONFIG: RoutePermissionConfig[] = [
   ...generateResourceRoutes({
     name: "posts",
     permissions: {
-      view: PERMISSIONS.POSTS_VIEW,
+      view: PERMISSIONS.POSTS_VIEW_ALL, // Base permission, will be overridden below
       create: PERMISSIONS.POSTS_CREATE,
       update: PERMISSIONS.POSTS_UPDATE,
       delete: PERMISSIONS.POSTS_DELETE,
       manage: PERMISSIONS.POSTS_MANAGE,
     },
     customPages: [
-      { path: "/admin/posts/my-posts", permissions: [PERMISSIONS.POSTS_VIEW] },
+      { path: "/admin/posts", permissions: [PERMISSIONS.POSTS_VIEW_ALL, PERMISSIONS.POSTS_VIEW_OWN] }, // Override to accept both
+      { path: "/admin/posts/[id]", permissions: [PERMISSIONS.POSTS_VIEW_ALL, PERMISSIONS.POSTS_VIEW_OWN] }, // Override to accept both
+      { path: "/admin/posts/my-posts", permissions: [PERMISSIONS.POSTS_VIEW_OWN] },
       { path: "/admin/posts/published", permissions: [PERMISSIONS.POSTS_PUBLISH] },
+    ],
+    customApi: [
+      { path: "/api/admin/posts", method: "GET", permissions: [PERMISSIONS.POSTS_VIEW_ALL, PERMISSIONS.POSTS_VIEW_OWN] },
+      { path: "/api/admin/posts/[id]", method: "GET", permissions: [PERMISSIONS.POSTS_VIEW_ALL, PERMISSIONS.POSTS_VIEW_OWN] },
+      { path: "/api/admin/posts/options", method: "GET", permissions: [PERMISSIONS.POSTS_VIEW_ALL, PERMISSIONS.POSTS_VIEW_OWN] },
+      { path: "/api/posts", method: "GET", permissions: [PERMISSIONS.POSTS_VIEW_ALL, PERMISSIONS.POSTS_VIEW_OWN] },
     ],
     adminApi: true, // Enable standard admin API routes including /bulk
   }),

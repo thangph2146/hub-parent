@@ -35,7 +35,7 @@ const cardVariants = cva(
       },
       overlay: {
         none: "",
-        "white-90": "bg-white/90 backdrop-blur-md shadow-xl border border-white/20",
+        "white-90": "bg-white/90 dark:bg-card/90 backdrop-blur-md shadow-xl border border-white/20 dark:border-border",
       },
       overflow: {
         none: "",
