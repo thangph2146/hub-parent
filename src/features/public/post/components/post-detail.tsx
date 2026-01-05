@@ -5,7 +5,6 @@
  * Pattern: Server Component (data fetching) → Client Component (UI/interactions)
  */
 
-import { Flex } from "@/components/ui/flex"
 import { getPostBySlug, getRelatedPosts } from "../server/queries"
 import { PostDetailClient } from "./post-detail.client"
 import { RelatedPosts } from "./related-posts"
