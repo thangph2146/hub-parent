@@ -93,6 +93,7 @@ export const ContactRequestsTableClient = ({
     queryClient,
     buildQueryKey: (params) => queryKeys.adminContactRequests.list({
       ...params,
+      status: params.status === "inactive" ? "active" : params.status,
       search: undefined,
       filters: undefined,
     }),
@@ -229,12 +230,16 @@ export const ContactRequestsTableClient = ({
         throw new Error("Không thể tải danh sách liên hệ")
       }
 
+      // payload.data là object { data: [...], pagination: {...} }
+      const contactRequestsData = payload.data.data || []
+      const pagination = payload.data.pagination
+
       return {
-        rows: payload.data,
-        page: payload.pagination?.page ?? page,
-        limit: payload.pagination?.limit ?? limit,
-        total: payload.pagination?.total ?? 0,
-        totalPages: payload.pagination?.totalPages ?? 0,
+        rows: contactRequestsData,
+        page: pagination?.page ?? page,
+        limit: pagination?.limit ?? limit,
+        total: pagination?.total ?? 0,
+        totalPages: pagination?.totalPages ?? 0,
       }
     },
     [],

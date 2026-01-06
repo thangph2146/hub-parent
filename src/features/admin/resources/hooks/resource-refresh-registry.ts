@@ -15,6 +15,8 @@ interface RefreshRegistration {
 
 class ResourceRefreshRegistry {
   private registrations = new Map<string, RefreshRegistration[]>()
+  private lastTriggerTime = new Map<string, number>()
+  private readonly DEBOUNCE_MS = 300 // Debounce 300ms để tránh trigger nhiều lần
 
   /**
    * Đăng ký refresh callback cho một query key
@@ -68,6 +70,22 @@ class ResourceRefreshRegistry {
       logger.warn("Invalid query key for refresh trigger", { invalidateKey })
       return
     }
+
+    // Debounce để tránh trigger nhiều lần trong thời gian ngắn
+    const keyString = this.getKeyString(invalidateKey)
+    const now = Date.now()
+    const lastTrigger = this.lastTriggerTime.get(keyString) || 0
+    
+    if (now - lastTrigger < this.DEBOUNCE_MS) {
+      logger.debug("Skipping refresh trigger (debounced)", {
+        invalidateKey: invalidateKey.slice(0, 3),
+        timeSinceLastTrigger: now - lastTrigger,
+        debounceMs: this.DEBOUNCE_MS,
+      })
+      return
+    }
+    
+    this.lastTriggerTime.set(keyString, now)
 
     // Tìm tất cả registrations có query key match với invalidate key
     const matchingRegistrations: RefreshRegistration[] = []

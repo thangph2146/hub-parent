@@ -78,6 +78,7 @@ export const SessionsTableClient = ({
     queryClient,
     buildQueryKey: (params) => queryKeys.adminSessions.list({
       ...params,
+      status: params.status === "inactive" ? "active" : params.status,
       search: undefined,
       filters: undefined,
     }),
@@ -197,12 +198,20 @@ export const SessionsTableClient = ({
       const response = await apiClient.get<SessionsResponse>(url)
       const payload = response.data
 
+      if (!payload || !payload.data) {
+        throw new Error("Không thể tải danh sách session")
+      }
+
+      // payload.data là object { data: [...], pagination: {...} }
+      const sessionsData = payload.data.data || []
+      const pagination = payload.data.pagination
+
       return {
-        rows: payload.data,
-        page: payload.pagination.page,
-        limit: payload.pagination.limit,
-        total: payload.pagination.total,
-        totalPages: payload.pagination.totalPages,
+        rows: sessionsData,
+        page: pagination?.page ?? params.page,
+        limit: pagination?.limit ?? params.limit,
+        total: pagination?.total ?? 0,
+        totalPages: pagination?.totalPages ?? 0,
       }
     },
     [],

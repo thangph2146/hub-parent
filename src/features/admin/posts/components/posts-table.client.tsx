@@ -271,12 +271,16 @@ export const PostsTableClient = ({
         throw new Error("Không thể tải danh sách bài viết")
       }
 
+      // payload.data là object { data: [...], pagination: {...} }
+      const postsData = payload.data.data || []
+      const pagination = payload.data.pagination
+
       return {
-        rows: payload.data || [],
-        page: payload.pagination?.page ?? page,
-        limit: payload.pagination?.limit ?? limit,
-        total: payload.pagination?.total ?? 0,
-        totalPages: payload.pagination?.totalPages ?? 0,
+        rows: postsData,
+        page: pagination?.page ?? page,
+        limit: pagination?.limit ?? limit,
+        total: pagination?.total ?? 0,
+        totalPages: pagination?.totalPages ?? 0,
       }
     },
     [],
@@ -365,6 +369,7 @@ export const PostsTableClient = ({
     queryClient,
     buildQueryKey: (params) => queryKeys.adminPosts.list({
       ...params,
+      status: params.status === "inactive" ? "active" : params.status,
       search: undefined,
       filters: undefined,
     }),

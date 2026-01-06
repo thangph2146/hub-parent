@@ -1,7 +1,7 @@
 /**
  * API Route: POST /api/admin/students/bulk - Bulk operations
  */
-import { NextRequest, NextResponse } from "next/server"
+import { NextRequest } from "next/server"
 import {
   bulkSoftDeleteStudents,
   bulkRestoreStudents,
@@ -14,6 +14,7 @@ import {
 import { BulkStudentActionSchema } from "@/features/admin/students/server/schemas"
 import { createPostRoute } from "@/lib/api/api-route-wrapper"
 import type { ApiRouteContext } from "@/lib/api/types"
+import { createErrorResponse, createSuccessResponse } from "@/lib/config"
 import { logger } from "@/lib/config/logger"
 
 async function bulkStudentsHandler(req: NextRequest, context: ApiRouteContext) {
@@ -21,14 +22,14 @@ async function bulkStudentsHandler(req: NextRequest, context: ApiRouteContext) {
   try {
     body = await req.json()
   } catch {
-    return NextResponse.json({ error: "Dữ liệu không hợp lệ. Vui lòng kiểm tra lại." }, { status: 400 })
+    return createErrorResponse("Dữ liệu không hợp lệ. Vui lòng kiểm tra lại.", { status: 400 })
   }
 
   // Validate với zod
   const validationResult = BulkStudentActionSchema.safeParse(body)
   if (!validationResult.success) {
     const firstError = validationResult.error.issues[0]
-    return NextResponse.json({ error: firstError?.message || "Dữ liệu không hợp lệ" }, { status: 400 })
+    return createErrorResponse(firstError?.message || "Dữ liệu không hợp lệ", { status: 400 })
   }
 
   const validatedBody = validationResult.data
@@ -52,16 +53,16 @@ async function bulkStudentsHandler(req: NextRequest, context: ApiRouteContext) {
     } else if (validatedBody.action === "unactive") {
       result = await bulkUnactiveStudents(ctx, validatedBody.ids)
     } else {
-      return NextResponse.json({ error: "Action không hợp lệ" }, { status: 400 })
+      return createErrorResponse("Action không hợp lệ", { status: 400 })
     }
 
-    return NextResponse.json({ data: result })
+    return createSuccessResponse(result)
   } catch (error) {
     if (error instanceof ApplicationError) {
-      return NextResponse.json({ error: error.message || "Không thể thực hiện thao tác hàng loạt" }, { status: error.status || 400 })
+      return createErrorResponse(error.message || "Không thể thực hiện thao tác hàng loạt", { status: error.status || 400 })
     }
     logger.error("Error in bulk students operation", { error, action: validatedBody.action, ids: validatedBody.ids })
-    return NextResponse.json({ error: "Đã xảy ra lỗi khi thực hiện thao tác hàng loạt" }, { status: 500 })
+    return createErrorResponse("Đã xảy ra lỗi khi thực hiện thao tác hàng loạt", { status: 500 })
   }
 }
 

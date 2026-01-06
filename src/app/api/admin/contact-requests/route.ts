@@ -1,12 +1,13 @@
 /**
  * API Route: GET /api/admin/contact-requests - List contact requests
  */
-import { NextRequest, NextResponse } from "next/server"
+import { NextRequest } from "next/server"
 import { listContactRequests } from "@/features/admin/contact-requests/server/queries"
 import { serializeContactRequestsList } from "@/features/admin/contact-requests/server/helpers"
 import { createGetRoute } from "@/lib/api/api-route-wrapper"
 import type { ApiRouteContext } from "@/lib/api/types"
 import { validatePagination, sanitizeSearchQuery, parseColumnFilters, filtersOrUndefined } from "@/lib/api/validation"
+import { createSuccessResponse, createErrorResponse } from "@/lib/config"
 
 async function getContactRequestsHandler(req: NextRequest, _context: ApiRouteContext) {
   const searchParams = req.nextUrl.searchParams
@@ -17,7 +18,7 @@ async function getContactRequestsHandler(req: NextRequest, _context: ApiRouteCon
   })
 
   if (!paginationValidation.valid) {
-    return NextResponse.json({ error: paginationValidation.error }, { status: 400 })
+    return createErrorResponse(paginationValidation.error || "Invalid pagination parameters", { status: 400 })
   }
 
   const searchValidation = sanitizeSearchQuery(searchParams.get("search") || "", 200)
@@ -38,7 +39,7 @@ async function getContactRequestsHandler(req: NextRequest, _context: ApiRouteCon
 
   // Serialize result to match ContactRequestsResponse format
   const serialized = serializeContactRequestsList(result)
-  return NextResponse.json({
+  return createSuccessResponse({
     data: serialized.rows,
     pagination: {
       page: serialized.page,

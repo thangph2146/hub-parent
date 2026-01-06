@@ -79,7 +79,7 @@ export const ResourceTableClient = <T extends object>({
   // Update refreshKey ngay lập tức để trigger re-render của DataTable
   // Sử dụng counter + timestamp + random để đảm bảo refreshKey luôn thay đổi và unique
   // Điều này đảm bảo DataTable sẽ luôn detect được sự thay đổi và trigger refetch
-  // Sử dụng flushSync để đảm bảo state update được apply ngay lập tức, không bị React batching
+  // Sử dụng queueMicrotask để defer flushSync ra khỏi lifecycle method, tránh React warning
   const handleRefresh = useCallback(() => {
     refreshCounterRef.current += 1
     
@@ -91,24 +91,27 @@ export const ResourceTableClient = <T extends object>({
     const currentCounter = refreshCounterRef.current
     const newRefreshKey = `${timestamp}-${performanceTime}-${currentCounter}-${random}`
     
-    // Sử dụng flushSync để đảm bảo state update được apply ngay lập tức
-    // Điều này đảm bảo DataTable detect được refreshKey thay đổi ngay lập tức
-    flushSync(() => {
-      setRefreshKey((prev) => {
-        // Luôn return giá trị mới để đảm bảo React detect được thay đổi
-        // Nếu prev === newRefreshKey (rất hiếm), thêm random để đảm bảo luôn khác
-        const finalKey = prev === newRefreshKey ? `${newRefreshKey}-${Math.random()}` : newRefreshKey
-        
-        logger.debug("ResourceTable refreshKey updated", {
-          previousKey: prev,
-          newKey: finalKey,
-          counter: currentCounter,
-          timestamp,
-          performanceTime,
-          random,
+    // Sử dụng queueMicrotask để defer flushSync ra khỏi lifecycle method
+    // Điều này tránh React warning về việc gọi flushSync trong lifecycle method
+    // queueMicrotask đảm bảo code chạy sau khi current execution context hoàn thành
+    queueMicrotask(() => {
+      flushSync(() => {
+        setRefreshKey((prev) => {
+          // Luôn return giá trị mới để đảm bảo React detect được thay đổi
+          // Nếu prev === newRefreshKey (rất hiếm), thêm random để đảm bảo luôn khác
+          const finalKey = prev === newRefreshKey ? `${newRefreshKey}-${Math.random()}` : newRefreshKey
+          
+          logger.debug("ResourceTable refreshKey updated", {
+            previousKey: prev,
+            newKey: finalKey,
+            counter: currentCounter,
+            timestamp,
+            performanceTime,
+            random,
+          })
+          
+          return finalKey
         })
-        
-        return finalKey
       })
     })
   }, [])
@@ -197,10 +200,12 @@ export const ResourceTableClient = <T extends object>({
         } satisfies ResourceRowActionContext<T>)
     : undefined
 
+  // Không clear initialData khi chuyển view để tránh mất data
+  // DataTable sẽ tự động fetch data mới khi refreshKey thay đổi hoặc query thay đổi
+  // Giữ lại initialData của view hiện tại nếu có, hoặc undefined nếu không có
   const initialData = useMemo(() => {
-    if (hasViewChanged) return undefined
     return initialDataByView?.[activeView.id]
-  }, [hasViewChanged, initialDataByView, activeView.id])
+  }, [initialDataByView, activeView.id])
 
   const viewModeButtons = useMemo(() => {
     const hasViewModes = viewModes.length > 1

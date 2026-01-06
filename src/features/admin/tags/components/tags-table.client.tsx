@@ -58,6 +58,7 @@ export const TagsTableClient = ({
     queryClient,
     buildQueryKey: (params) => queryKeys.adminTags.list({
       ...params,
+      status: params.status === "inactive" ? "active" : params.status,
       search: undefined,
       filters: undefined,
     }),

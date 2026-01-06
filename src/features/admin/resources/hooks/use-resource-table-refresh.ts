@@ -69,16 +69,24 @@ export const useResourceTableRefresh = ({
       })
 
       // Lưu refreshFn vào ref để có thể gọi từ bất kỳ đâu
-      softRefreshRef.current = refreshFn
+      // Wrap refreshFn để update lastInvalidationRefreshRef khi được gọi từ registry
+      // Điều này đảm bảo polling biết không cần check lại trong một khoảng thời gian
+      const wrappedRefreshFn = () => {
+        // Update lastInvalidationRefreshRef để polling biết không cần check lại
+        lastInvalidationRefreshRef.current = Date.now()
+        refreshFn()
+      }
+      
+      softRefreshRef.current = wrappedRefreshFn
       refreshRef.current = async () => {
         // Gọi refreshFn ngay lập tức để update refreshKey
         // refreshFn sẽ update refreshKey, và DataTable sẽ detect change và gọi loader
         // Loader sẽ fetch fresh data từ server (staleTime: 0, gcTime: 0)
         // Lưu ý: Queries đã được invalidate và refetch trong mutation onSuccess
         // Ở đây chỉ cần trigger UI refresh để DataTable re-fetch fresh data
-        if (refreshFn) {
+        if (wrappedRefreshFn) {
           logger.debug("Calling refreshFn to update refreshKey")
-          refreshFn()
+          wrappedRefreshFn()
         } else {
           logger.warn("RefreshFn is not available")
         }
@@ -88,11 +96,12 @@ export const useResourceTableRefresh = ({
       if (pendingRealtimeRefreshRef.current) {
         pendingRealtimeRefreshRef.current = false
         logger.debug("Executing pending realtime refresh")
-        refreshFn()
+        wrappedRefreshFn()
       }
 
       // Đăng ký refresh callback vào global registry
       // Cho phép trigger refresh từ bất kỳ đâu (ví dụ: sau khi form submit)
+      // Sử dụng wrappedRefreshFn để đảm bảo lastInvalidationRefreshRef được update
       const invalidateKey = getInvalidateQueryKey?.()
       if (invalidateKey) {
         // Unregister callback cũ nếu có
@@ -102,9 +111,10 @@ export const useResourceTableRefresh = ({
         }
 
         // Đăng ký callback mới với cả exact key và prefix key để đảm bảo luôn tìm thấy
+        // Sử dụng wrappedRefreshFn để update lastInvalidationRefreshRef khi registry trigger
         unregisterRef.current = resourceRefreshRegistry.register(
           invalidateKey,
-          refreshFn,
+          wrappedRefreshFn,
           "resource-table",
         )
         
@@ -170,59 +180,7 @@ export const useResourceTableRefresh = ({
 
     const refreshTimeout: NodeJS.Timeout | null = null
 
-    // Không cần initialize lastDataUpdatedAt nữa vì không trigger refresh từ dataUpdatedAt changes
-    // Chỉ trigger refresh từ registry (mutation onSuccess) hoặc khi query invalidated (fallback)
-
-    // Subscribe to query cache events to detect when queries are invalidated
-    // Also poll query state periodically to catch invalidations that might not fire events
-    let checkInterval: NodeJS.Timeout | null = null
-    
-    const checkAndRefresh = () => {
-      if (!softRefreshRef.current) return
-      
-      // Get all queries matching our invalidate key
-      const queries = queryClient.getQueryCache().findAll({ queryKey: invalidateKey })
-      
-      if (queries.length === 0) return
-      
-      // CHỈ trigger refresh khi queries được invalidate (từ mutation)
-      // KHÔNG trigger khi dataUpdatedAt thay đổi để tránh infinite loop
-      // Refresh chính được trigger từ registry (được gọi từ mutation onSuccess)
-      // Listener/polling chỉ là fallback nếu registry không hoạt động
-      let shouldRefresh = false
-      
-      for (const query of queries) {
-        // Chỉ check invalidation, không check dataUpdatedAt để tránh infinite loop
-        if (query.state.isInvalidated) {
-          shouldRefresh = true
-          break
-        }
-      }
-      
-      if (shouldRefresh) {
-        const now = Date.now()
-        // Debounce 50ms để tránh trigger quá nhiều lần
-        if (now - lastInvalidationRefreshRef.current < 50) {
-          return
-        }
-        lastInvalidationRefreshRef.current = now
-
-        // Trigger refresh immediately - no delay to ensure instant UI update
-        if (softRefreshRef.current) {
-          logger.debug("Query invalidated (detected via polling), triggering soft refresh immediately", { 
-            queryKey: invalidateKey.slice(0, 3),
-            invalidatedCount: queries.filter(q => q.state.isInvalidated).length,
-          })
-          try {
-            softRefreshRef.current()
-            logger.debug("Soft refresh executed successfully (via polling)")
-          } catch (error) {
-            logger.error("Failed to execute soft refresh (via polling)", error as Error)
-          }
-        }
-      }
-    }
-
+   
     // Subscribe to query cache events
     const unsubscribe = queryClient.getQueryCache().subscribe((event) => {
       if (!event?.query) return
@@ -255,39 +213,51 @@ export const useResourceTableRefresh = ({
 
       if (shouldRefresh) {
         // Trigger refresh với debounce để tránh trigger quá nhiều lần
+        // Registry đã trigger refresh ngay sau khi mutation thành công
+        // Query cache subscription chỉ là fallback nếu registry không hoạt động
+        // Debounce 2000ms (2 giây) để đảm bảo registry đã trigger trước
         const now = Date.now()
-        // Debounce 50ms để tránh trigger quá nhiều lần
-        if (now - lastInvalidationRefreshRef.current < 50) {
+        const timeSinceLastRefresh = now - lastInvalidationRefreshRef.current
+        
+        if (timeSinceLastRefresh < 2000) {
+          logger.debug("Skipping query cache refresh (debounced, registry may have already triggered)", {
+            timeSinceLastRefresh,
+            debounceMs: 2000,
+          })
           return
         }
+        
         lastInvalidationRefreshRef.current = now
         
         if (softRefreshRef.current) {
-          logger.debug("Query invalidated (detected via event), triggering soft refresh immediately", { 
+          logger.debug("Query invalidated (detected via cache subscription), triggering soft refresh", { 
             type: event.type,
             queryKey: queryKey.slice(0, 3),
             isInvalidated: event.query.state.isInvalidated,
+            timeSinceLastRefresh,
           })
           try {
             softRefreshRef.current()
-            logger.debug("Soft refresh executed successfully (via event)")
+            logger.debug("Soft refresh executed successfully (via cache subscription)")
           } catch (error) {
-            logger.error("Failed to execute soft refresh (via event)", error as Error)
+            logger.error("Failed to execute soft refresh (via cache subscription)", error as Error)
           }
         }
       }
     })
 
-    // Poll query state every 200ms to catch invalidations that might not fire events
-    // This is a fallback mechanism - primary refresh is triggered from registry (mutation onSuccess)
-    // 200ms is fast enough to catch invalidations but not so fast as to cause performance issues
-    checkInterval = setInterval(checkAndRefresh, 200)
+    // TẮT POLLING HOÀN TOÀN
+    // Registry đã trigger refresh ngay sau khi mutation thành công và hoạt động tốt
+    // Polling chỉ tạo ra refresh không cần thiết và làm tăng số lần fetch
+    // Nếu registry không hoạt động, có thể bật lại polling nhưng với interval cao hơn (10 giây)
+    // checkInterval = setInterval(checkAndRefresh, 2000)
 
     return () => {
       unsubscribe()
-      if (checkInterval) {
-        clearInterval(checkInterval)
-      }
+      // Không cần clearInterval vì đã tắt polling
+      // if (checkInterval) {
+      //   clearInterval(checkInterval)
+      // }
       if (refreshTimeout) {
         clearTimeout(refreshTimeout)
       }

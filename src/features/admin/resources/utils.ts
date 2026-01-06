@@ -2,6 +2,7 @@ import type { AdminBreadcrumbItem } from "@/components/layouts/headers/admin-hea
 import { applyResourceSegmentToPath, DEFAULT_RESOURCE_SEGMENT } from "@/lib/permissions"
 import { logActionFlow } from "./server/mutation-helpers"
 import { resourceRefreshRegistry } from "./hooks/resource-refresh-registry"
+import { resourceLogger } from "@/lib/config/resource-logger"
 
 export const formatDateVi = (date: string | Date | null | undefined): string => {
   if (!date) return "—"
@@ -261,28 +262,113 @@ export const invalidateAndRefreshResource = async ({
   allQueryKey,
   detailQueryKey,
   resourceId,
+  skipDetailRefetch = false,
 }: {
   queryClient: ReturnType<typeof import("@tanstack/react-query").useQueryClient>
   allQueryKey: readonly unknown[]
   detailQueryKey?: (id: string) => readonly unknown[]
   resourceId?: string
+  skipDetailRefetch?: boolean
 }): Promise<void> => {
-  // Invalidate và refetch queries để đảm bảo data được cập nhật ngay lập tức
-  // Sử dụng refetchType: "all" để đảm bảo refetch tất cả queries, không chỉ active
+  const resourceName = String(allQueryKey[0] || "unknown")
+  
+  // QUAN TRỌNG: Remove detail query TRƯỚC khi invalidate all queries
+  // Vì invalidateQueries với allQueryKey sẽ invalidate tất cả queries matching prefix,
+  // bao gồm cả detail queries, khiến các component đang mount tự động refetch
+  if (resourceId && detailQueryKey && skipDetailRefetch) {
+    const detailKey = detailQueryKey(resourceId)
+    resourceLogger.actionFlow({
+      resource: resourceName,
+      action: "hard-delete",
+      step: "init",
+      metadata: {
+        resourceId,
+        operation: "remove_detail_query",
+        queryKey: detailKey,
+        reason: "hard_delete_remove_before_invalidate",
+      },
+    })
+    
+    // Hard delete: Remove query khỏi cache hoàn toàn TRƯỚC khi invalidate all queries
+    // Điều này ngăn invalidateQueries trigger refetch cho detail query đã bị xóa
+    await queryClient.removeQueries({ queryKey: detailKey })
+    
+    resourceLogger.actionFlow({
+      resource: resourceName,
+      action: "hard-delete",
+      step: "init",
+      metadata: {
+        resourceId,
+        operation: "remove_detail_query",
+        queryKey: detailKey,
+        status: "removed",
+      },
+    })
+  }
+  
+  // Invalidate queries để đánh dấu chúng là stale
+  // Trigger registry refresh TRƯỚC khi refetch để đảm bảo UI được update ngay lập tức
+  resourceLogger.cache({
+    resource: resourceName,
+    action: skipDetailRefetch ? "hard-delete" : "update",
+    resourceId,
+    operation: "invalidate",
+    tags: ["all-queries"],
+  })
+  
   await queryClient.invalidateQueries({ queryKey: allQueryKey, refetchType: "all" })
+  
+  // Trigger UI refresh TRƯỚC khi refetch để đảm bảo callback được gọi đúng lúc
+  // Registry sẽ gọi handleRefresh để update refreshKey, trigger DataTable re-render
+  resourceLogger.cache({
+    resource: resourceName,
+    action: skipDetailRefetch ? "hard-delete" : "update",
+    resourceId,
+    operation: "refresh",
+    tags: ["registry"],
+  })
+  
+  resourceRefreshRegistry.triggerRefresh(allQueryKey)
+  
+  // Sau đó mới refetch queries để đảm bảo data được cập nhật
+  resourceLogger.cache({
+    resource: resourceName,
+    action: skipDetailRefetch ? "hard-delete" : "update",
+    resourceId,
+    operation: "refresh",
+    tags: ["all-queries"],
+  })
+  
   await queryClient.refetchQueries({ queryKey: allQueryKey, type: "all" })
   
-  // Invalidate và refetch detail query nếu có
-  if (resourceId && detailQueryKey) {
-    await queryClient.invalidateQueries({ queryKey: detailQueryKey(resourceId), refetchType: "all" })
-    await queryClient.refetchQueries({ queryKey: detailQueryKey(resourceId), type: "all" })
+  // Invalidate detail query nếu có (chỉ khi không skip)
+  // Lưu ý: Nếu đã remove ở trên, block này sẽ không chạy vì skipDetailRefetch = true
+  if (resourceId && detailQueryKey && !skipDetailRefetch) {
+    const detailKey = detailQueryKey(resourceId)
+    resourceLogger.cache({
+      resource: resourceName,
+      action: "update",
+      resourceId,
+      operation: "invalidate",
+      tags: ["detail-query"],
+    })
+    
+    // Normal actions: Invalidate và refetch
+    await queryClient.invalidateQueries({ queryKey: detailKey, refetchType: "all" })
+    
+    resourceLogger.cache({
+      resource: resourceName,
+      action: "update",
+      resourceId,
+      operation: "refresh",
+      tags: ["detail-query"],
+    })
+    
+    await queryClient.refetchQueries({ queryKey: detailKey, type: "all" })
   }
 
-  // Trigger UI refresh ngay lập tức thông qua registry
-  // Registry sẽ gọi handleRefresh để update refreshKey, trigger DataTable re-render và fetch fresh data
-  // Gọi trực tiếp ngay lập tức - queries đã được refetch xong và cache đã được cập nhật
-  // handleRefresh sử dụng flushSync để đảm bảo state update ngay lập tức, không cần queueMicrotask
-  resourceRefreshRegistry.triggerRefresh(allQueryKey)
+  // Registry refresh đã được trigger ở trên (trước khi refetch)
+  // Không cần trigger lại ở đây
 }
 
 export const createResourceEditOnSuccess = ({

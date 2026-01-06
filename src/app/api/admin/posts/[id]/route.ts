@@ -1,21 +1,21 @@
-import { NextRequest, NextResponse } from "next/server"
+import { NextRequest } from "next/server"
 import { getPostById } from "@/features/admin/posts/server/queries"
 import { serializePostDetail } from "@/features/admin/posts/server/helpers"
-import { updatePost, deletePost, type AuthContext, ApplicationError, NotFoundError } from "@/features/admin/posts/server/mutations"
+import { updatePost, deletePost, type AuthContext } from "@/features/admin/posts/server/mutations"
 import { updatePostSchema } from "@/features/admin/posts/server/validation"
 import { createGetRoute, createPutRoute, createDeleteRoute } from "@/lib/api/api-route-wrapper"
 import type { ApiRouteContext } from "@/lib/api/types"
 import { validateID } from "@/lib/api/validation"
 import { PERMISSIONS, hasPermission } from "@/lib/permissions"
-import { logger } from "@/lib/config/logger"
+import { extractParams, parseRequestBody, createAuthContext, handleApiError } from "@/lib/api/api-route-helpers"
+import { createSuccessResponse, createErrorResponse } from "@/lib/config"
 
 async function getPostHandler(_req: NextRequest, context: ApiRouteContext, ...args: unknown[]) {
-  const { params } = args[0] as { params: Promise<{ id: string }> }
-  const { id } = await params
+  const { id } = await extractParams<{ id: string }>(args)
 
   const idValidation = validateID(id)
   if (!idValidation.valid) {
-    return NextResponse.json({ error: idValidation.error || "ID không hợp lệ" }, { status: 400 })
+    return createErrorResponse(idValidation.error || "ID không hợp lệ", { status: 400 })
   }
 
   // Sử dụng getPostById (non-cached) để đảm bảo data luôn fresh
@@ -23,7 +23,7 @@ async function getPostHandler(_req: NextRequest, context: ApiRouteContext, ...ar
   const post = await getPostById(id)
 
   if (!post) {
-    return NextResponse.json({ error: "Không tìm thấy bài viết" }, { status: 404 })
+    return createErrorResponse("Không tìm thấy bài viết", { status: 404 })
   }
 
   // Kiểm tra permission: nếu có POSTS_VIEW_ALL thì xem tất cả, nếu chỉ có POSTS_VIEW_OWN thì chỉ xem của mình
@@ -31,93 +31,56 @@ async function getPostHandler(_req: NextRequest, context: ApiRouteContext, ...ar
   const currentUserId = context.session?.user?.id
 
   if (!hasViewAllPermission && currentUserId && post.author?.id !== currentUserId) {
-    return NextResponse.json({ error: "Bạn không có quyền xem bài viết này" }, { status: 403 })
+    return createErrorResponse("Bạn không có quyền xem bài viết này", { status: 403 })
   }
 
-  return NextResponse.json({ data: serializePostDetail(post) })
+  return createSuccessResponse(serializePostDetail(post))
 }
 
 async function putPostHandler(req: NextRequest, context: ApiRouteContext, ...args: unknown[]) {
-  const { params } = args[0] as { params: Promise<{ id: string }> }
-  const { id } = await params
-
-  const idValidation = validateID(id)
-  if (!idValidation.valid) {
-    return NextResponse.json({ error: idValidation.error || "ID không hợp lệ" }, { status: 400 })
-  }
-
-  let payload: Record<string, unknown>
   try {
-    payload = await req.json()
-  } catch {
-    return NextResponse.json({ error: "Dữ liệu không hợp lệ. Vui lòng kiểm tra lại." }, { status: 400 })
-  }
+    const { id } = await extractParams<{ id: string }>(args)
 
-  // Validate body với Zod schema
-  const validationResult = updatePostSchema.safeParse(payload)
-  if (!validationResult.success) {
-    const firstError = validationResult.error.issues[0]
-    return NextResponse.json({ error: firstError?.message || "Dữ liệu không hợp lệ" }, { status: 400 })
-  }
+    const idValidation = validateID(id)
+    if (!idValidation.valid) {
+      return createErrorResponse(idValidation.error || "ID không hợp lệ", { status: 400 })
+    }
 
-  const ctx: AuthContext = {
-    actorId: context.session.user?.id ?? "unknown",
-    permissions: context.permissions,
-    roles: context.roles,
-  }
+    const payload = await parseRequestBody(req)
 
-  try {
+    // Validate body với Zod schema
+    const validationResult = updatePostSchema.safeParse(payload)
+    if (!validationResult.success) {
+      const firstError = validationResult.error.issues[0]
+      return createErrorResponse(firstError?.message || "Dữ liệu không hợp lệ", { status: 400 })
+    }
+
+    const userId = context.session.user?.id ?? "unknown"
+    const ctx = createAuthContext(context, userId) as AuthContext
+
     const updated = await updatePost(ctx, id, validationResult.data)
-    return NextResponse.json({ data: updated })
+    return createSuccessResponse(updated)
   } catch (error) {
-    if (error instanceof NotFoundError) {
-      return NextResponse.json({ error: error.message || "Không tìm thấy bài viết" }, { status: 404 })
-    }
-    if (error instanceof ApplicationError) {
-      return NextResponse.json({ error: error.message || "Không thể cập nhật bài viết" }, { status: error.status || 400 })
-    }
-    // Log lỗi chi tiết để debug
-    const errorMessage = error instanceof Error ? error.message : String(error)
-    logger.error("Error updating post", {
-      postId: id,
-      error: errorMessage,
-      stack: error instanceof Error ? error.stack : undefined,
-      payload: validationResult.data,
-    })
-    return NextResponse.json({ 
-      error: errorMessage || "Đã xảy ra lỗi khi cập nhật bài viết",
-      details: process.env.NODE_ENV === "development" ? errorMessage : undefined,
-    }, { status: 500 })
+    return handleApiError(error, "Đã xảy ra lỗi khi cập nhật bài viết", 500)
   }
 }
 
 async function deletePostHandler(_req: NextRequest, context: ApiRouteContext, ...args: unknown[]) {
-  const { params } = args[0] as { params: Promise<{ id: string }> }
-  const { id } = await params
-
-  const idValidation = validateID(id)
-  if (!idValidation.valid) {
-    return NextResponse.json({ error: idValidation.error }, { status: 400 })
-  }
-
-  const ctx: AuthContext = {
-    actorId: context.session.user?.id ?? "unknown",
-    permissions: context.permissions,
-    roles: context.roles,
-  }
-
   try {
+    const { id } = await extractParams<{ id: string }>(args)
+
+    const idValidation = validateID(id)
+    if (!idValidation.valid) {
+      return createErrorResponse(idValidation.error || "ID không hợp lệ", { status: 400 })
+    }
+
+    const userId = context.session.user?.id ?? "unknown"
+    const ctx = createAuthContext(context, userId) as AuthContext
+
     await deletePost(ctx, id)
-    return NextResponse.json({ success: true })
+    return createSuccessResponse({ message: "Bài viết đã được xóa thành công" })
   } catch (error) {
-    if (error instanceof NotFoundError) {
-      return NextResponse.json({ error: error.message || "Không tìm thấy bài viết" }, { status: 404 })
-    }
-    if (error instanceof ApplicationError) {
-      return NextResponse.json({ error: error.message || "Không thể xóa bài viết" }, { status: error.status || 400 })
-    }
-    logger.error("Error deleting post", { error, postId: id })
-    return NextResponse.json({ error: "Đã xảy ra lỗi khi xóa bài viết" }, { status: 500 })
+    return handleApiError(error, "Đã xảy ra lỗi khi xóa bài viết", 500)
   }
 }
 

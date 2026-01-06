@@ -1,5 +1,6 @@
 import type { Role } from "./utils"
 import type { ResourceResponse, BaseResourceTableClientProps } from "@/features/admin/resources/types"
+import type { ApiResponsePayload } from "@/lib/config/api-response"
 
 export type UserRole = Role
 
@@ -17,5 +18,6 @@ export interface UsersTableClientProps extends BaseResourceTableClientProps<User
   initialRolesOptions?: Array<{ label: string; value: string }>
 }
 
-export type UsersResponse = ResourceResponse<UserRow>
+// API response structure: { success: true, data: { data: UserRow[], pagination: {...} } }
+export type UsersResponse = ApiResponsePayload<ResourceResponse<UserRow>>
 

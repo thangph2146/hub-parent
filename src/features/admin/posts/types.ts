@@ -1,4 +1,5 @@
 import type { ResourceResponse, BaseResourceTableClientProps } from "@/features/admin/resources/types"
+import type { ApiResponsePayload } from "@/lib/config/api-response"
 
 export interface PostRow {
   id: string
@@ -28,5 +29,6 @@ export interface PostRow {
 
 export type PostsTableClientProps = BaseResourceTableClientProps<PostRow>
 
-export type PostsResponse = ResourceResponse<PostRow>
+// API response structure: { success: true, data: { data: PostRow[], pagination: {...} } }
+export type PostsResponse = ApiResponsePayload<ResourceResponse<PostRow>>
 

@@ -15,7 +15,6 @@ import type { ApiRouteContext } from "@/lib/api/types"
 import { validatePagination, sanitizeSearchQuery, parseColumnFilters, filtersOrUndefined } from "@/lib/api/validation"
 import { parseRequestBody, createAuthContext, handleApiError } from "@/lib/api/api-route-helpers"
 import { createSuccessResponse, createErrorResponse } from "@/lib/config"
-import { CategoriesResponse } from "@/features/admin/categories/types"
 
 async function getCategoriesHandler(req: NextRequest, _context: ApiRouteContext) {
   const searchParams = req.nextUrl.searchParams
@@ -51,7 +50,7 @@ async function getCategoriesHandler(req: NextRequest, _context: ApiRouteContext)
       total: serialized.total,
       totalPages: serialized.totalPages,
     },
-  } as CategoriesResponse)
+  })
 }
 
 async function postCategoriesHandler(req: NextRequest, context: ApiRouteContext) {

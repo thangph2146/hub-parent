@@ -10,7 +10,7 @@ interface UseResourceTableLoggerOptions<T extends object> {
   initialDataByView?: Record<string, DataTableResult<T>>
   currentViewId?: string
   queryClient: QueryClient
-  buildQueryKey: (params: { status: "active" | "deleted" | "all"; page: number; limit: number; search?: string; filters?: Record<string, string> }) => QueryKey
+  buildQueryKey: (params: { status: "active" | "inactive" | "deleted" | "all"; page: number; limit: number; search?: string; filters?: Record<string, string> }) => QueryKey
   columns: string[]
   getRowData: (row: T) => Record<string, unknown>
   cacheVersion?: number
@@ -34,6 +34,7 @@ export const useResourceTableLogger = <T extends object>({
   // Xác định view hiện tại và status tương ứng
   const currentViewStatus = useMemo(() => {
     if (currentViewId === "deleted") return "deleted"
+    if (currentViewId === "inactive") return "inactive"
     if (currentViewId === "all") return "all"
     return "active"
   }, [currentViewId])
@@ -84,6 +85,14 @@ export const useResourceTableLogger = <T extends object>({
           if (!allActive) {
             return false
           }
+        } else if (viewStatus === "inactive") {
+          const allInactive = dataToLog.rows.every((r) => {
+            const row = r as Record<string, unknown>
+            return (row.deletedAt === null || row.deletedAt === undefined) && row.isActive === false
+          })
+          if (!allInactive) {
+            return false
+          }
         }
       }
 
@@ -102,15 +111,32 @@ export const useResourceTableLogger = <T extends object>({
       lastLoggedKeyRef.current = dataKey
       lastViewIdRef.current = viewId
 
-      resourceLogger.tableAction({
+      const allRows = dataToLog.rows.map((row) => getRowData(row as T))
+
+      // Log danh sách chi tiết cho tất cả các resource
+      // Tạo tên field động dựa trên resource name (ví dụ: usersList, postsList, studentsList)
+      const itemsList = allRows.length > 0
+        ? allRows.map((row) => {
+            // Log tất cả các field từ row để linh hoạt với mọi resource
+            return row
+          })
+        : undefined
+
+      // Tạo object với dynamic key dựa trên resource name
+      const logData: Record<string, unknown> = {
         resource: resourceName,
         action: "load-table",
         view: viewStatus,
         total: dataToLog.total,
         page: dataToLog.page,
-      })
+      }
+      
+      // Thêm danh sách với tên field động (ví dụ: usersList, postsList, studentsList)
+      if (itemsList) {
+        logData[`${resourceName}List`] = itemsList
+      }
 
-      const allRows = dataToLog.rows.map((row) => getRowData(row as T))
+      resourceLogger.tableAction(logData as Parameters<typeof resourceLogger.tableAction>[0])
 
       resourceLogger.dataStructure({
         resource: resourceName,
@@ -133,17 +159,18 @@ export const useResourceTableLogger = <T extends object>({
     [resourceName, columns, getRowData]
   )
 
-  const isQueryKeyEqual = useCallback((key1: QueryKey, key2: QueryKey): boolean => {
-    if (key1 === key2) return true
-    if (key1.length !== key2.length) return false
-    return key1.every((item, index) => {
-      const item2 = key2[index]
-      if (typeof item === "object" && typeof item2 === "object" && item !== null && item2 !== null) {
-        return JSON.stringify(item) === JSON.stringify(item2)
-      }
-      return item === item2
-    })
-  }, [])
+  // TẮT HOÀN TOÀN logger subscription
+  // Logger chỉ log từ:
+  // 1. useEffect đầu tiên (initial data và cached data)
+  // 2. Khi refreshKey thay đổi (từ mutation thành công) - được handle trong data-table.tsx
+  // KHÔNG log từ query cache subscription để tránh log khi:
+  // - Chỉ mở dialog (không có mutation)
+  // - Đang chờ API response (query invalidated nhưng chưa có data mới)
+  // - Polling update (không có invalidation)
+
+  // Track xem đã log chưa cho từng view+queryKey để tránh log lại khi component re-render
+  const loggedKeysRef = useRef<Set<string>>(new Set())
+  const lastQueryKeyStringRef = useRef<string | null>(null)
 
   useEffect(() => {
     if (retryTimeoutRef.current) {
@@ -151,25 +178,55 @@ export const useResourceTableLogger = <T extends object>({
       retryTimeoutRef.current = null
     }
 
-    const viewChanged = lastViewIdRef.current !== currentViewId
+    const viewId = currentViewId || "active"
+    const viewChanged = lastViewIdRef.current !== viewId
     const isFirstMount = lastViewIdRef.current === undefined
+    const queryKeyString = JSON.stringify(currentQueryKey)
+    const queryKeyChanged = lastQueryKeyStringRef.current !== queryKeyString
+    
+    // Tạo unique key cho view+queryKey để track đã log chưa
+    const logKey = `${viewId}:${queryKeyString}`
+    const hasLogged = loggedKeysRef.current.has(logKey)
+
+    // CHỈ log khi:
+    // 1. Lần đầu mount (isFirstMount) VÀ chưa log cho key này
+    // 2. View thay đổi (viewChanged) VÀ chưa log cho view mới
+    // 3. Query key thay đổi cho cùng một view VÀ chưa log cho query key mới
+    // KHÔNG log khi component re-render do state change khác (ví dụ: dialog mở)
+    const shouldLog = !hasLogged && (isFirstMount || viewChanged || queryKeyChanged)
+
+    if (!shouldLog) {
+      // Update refs để track changes
+      lastViewIdRef.current = viewId
+      if (queryKeyChanged) {
+        lastQueryKeyStringRef.current = queryKeyString
+      }
+      return
+    }
 
     const cachedData = queryClient.getQueryData<DataTableResult<T>>(currentQueryKey)
     const dataToLog = cachedData || currentInitialData
 
     if (dataToLog) {
-      logData(dataToLog, currentViewId || "active", currentViewStatus)
+      const logged = logData(dataToLog, viewId, currentViewStatus)
+      if (logged) {
+        loggedKeysRef.current.add(logKey)
+        lastViewIdRef.current = viewId
+        lastQueryKeyStringRef.current = queryKeyString
+      }
     } else if (viewChanged || isFirstMount) {
       let retryCount = 0
-      const maxRetries = 20 // Tăng số lần retry
-      const retryInterval = 50 // Giảm interval xuống 50ms để nhanh hơn
+      const maxRetries = 20
+      const retryInterval = 50
 
       const retryLog = () => {
         const retryCachedData = queryClient.getQueryData<DataTableResult<T>>(currentQueryKey)
         if (retryCachedData) {
-          const logged = logData(retryCachedData, currentViewId || "active", currentViewStatus)
+          const logged = logData(retryCachedData, viewId, currentViewStatus)
           if (logged) {
-            // Đã log thành công, dừng retry
+            loggedKeysRef.current.add(logKey)
+            lastViewIdRef.current = viewId
+            lastQueryKeyStringRef.current = queryKeyString
             retryTimeoutRef.current = null
             return
           }
@@ -183,8 +240,12 @@ export const useResourceTableLogger = <T extends object>({
         }
       }
 
-      // Bắt đầu retry ngay lập tức
       retryTimeoutRef.current = setTimeout(retryLog, retryInterval)
+    } else {
+      lastViewIdRef.current = viewId
+      if (queryKeyChanged) {
+        lastQueryKeyStringRef.current = queryKeyString
+      }
     }
 
     return () => {
@@ -195,19 +256,18 @@ export const useResourceTableLogger = <T extends object>({
     }
   }, [currentQueryKey, queryClient, currentInitialData, currentViewId, currentViewStatus, logData])
 
-  useEffect(() => {
-    const unsubscribe = queryClient.getQueryCache().subscribe((event) => {
-      if (event?.query?.queryKey && (event.type === "updated" || event.type === "added")) {
-        if (isQueryKeyEqual(event.query.queryKey, currentQueryKey)) {
-          const data = event.query.state.data as DataTableResult<T> | undefined
-          if (data && event.query.state.status === "success") {
-            logData(data, currentViewId || "active", currentViewStatus)
-          }
-        }
-      }
-    })
-
-    return unsubscribe
-  }, [currentQueryKey, queryClient, currentViewId, currentViewStatus, logData, isQueryKeyEqual])
+  // TẮT HOÀN TOÀN logger subscription
+  // Logger chỉ log từ:
+  // 1. useEffect đầu tiên (initial data và cached data)
+  // 2. Khi refreshKey thay đổi (từ mutation thành công) - được handle trong data-table.tsx
+  // KHÔNG log từ query cache subscription để tránh log khi:
+  // - Chỉ mở dialog (không có mutation)
+  // - Đang chờ API response (query invalidated nhưng chưa có data mới)
+  // - Polling update (không có invalidation)
+  //
+  // useEffect(() => {
+  //   // TẮT subscription để tránh log không cần thiết
+  //   // Logger chỉ log từ initial data và sau khi mutation thành công (refreshKey change)
+  // }, [])
 }
 

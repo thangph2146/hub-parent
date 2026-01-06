@@ -55,6 +55,7 @@ export const CommentsTableClient = ({
     queryClient,
     buildQueryKey: (params) => queryKeys.adminComments.list({
       ...params,
+      status: params.status === "inactive" ? "active" : params.status,
       search: undefined,
       filters: undefined,
     }),
