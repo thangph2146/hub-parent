@@ -15,7 +15,6 @@ import type { ApiRouteContext } from "@/lib/api/types"
 import { validatePagination, sanitizeSearchQuery, parseColumnFilters, filtersOrUndefined } from "@/lib/api/validation"
 import { parseRequestBody, createAuthContext, handleApiError } from "@/lib/api/api-route-helpers"
 import { createSuccessResponse, createErrorResponse } from "@/lib/config"
-import type { UsersResponse } from "@/features/admin/users/types"
 
 async function getUsersHandler(req: NextRequest, _context: ApiRouteContext) {
   const searchParams = req.nextUrl.searchParams
