@@ -81,9 +81,9 @@ export const useResourceTableRefresh = ({
       refreshRef.current = async () => {
         // Gọi refreshFn ngay lập tức để update refreshKey
         // refreshFn sẽ update refreshKey, và DataTable sẽ detect change và gọi loader
-        // Loader sẽ fetch fresh data từ server (staleTime: 0, gcTime: 0)
+        // Loader sẽ fetch data với cache (staleTime: 30s) để giảm số lần refetch không cần thiết
         // Lưu ý: Queries đã được invalidate và refetch trong mutation onSuccess
-        // Ở đây chỉ cần trigger UI refresh để DataTable re-fetch fresh data
+        // Ở đây chỉ cần trigger UI refresh để DataTable re-fetch fresh data khi cần
         if (wrappedRefreshFn) {
           logger.debug("Calling refreshFn to update refreshKey")
           wrappedRefreshFn()

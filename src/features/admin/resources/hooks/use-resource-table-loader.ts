@@ -2,6 +2,7 @@ import { useCallback } from "react"
 import type { QueryClient, QueryKey } from "@tanstack/react-query"
 import type { DataTableQueryState, DataTableResult } from "@/components/tables"
 import type { ResourceTableLoader, ResourceViewMode } from "../types"
+import { ADMIN_QUERY_DEFAULTS } from "../query-config"
 
 interface UseResourceTableLoaderOptions<T extends object, P> {
   queryClient: QueryClient
@@ -21,17 +22,13 @@ export const useResourceTableLoader = <T extends object, P>({
       const params = buildParams({ query, view })
       const queryKey = buildQueryKey(params)
 
-      // Remove query khỏi cache để đảm bảo luôn fetch fresh data từ server
-      // Điều này đảm bảo data luôn được cập nhật sau khi actions thành công
-      queryClient.removeQueries({ queryKey })
-      
-      // Luôn fetch fresh data từ server, không sử dụng cache
-      // Sử dụng fetchQuery với staleTime: 0 và gcTime: 0 để đảm bảo luôn fetch fresh
+      // Sử dụng fetchQuery với cache configuration từ ADMIN_QUERY_DEFAULTS
+      // Điều này giúp giảm số lần refetch không cần thiết
+      // Data sẽ được cache trong 30 giây và chỉ refetch khi thực sự stale
       return queryClient.fetchQuery<DataTableResult<T>>({
         queryKey,
         queryFn: () => fetcher(params),
-        staleTime: 0, // Không cache - luôn fetch fresh data
-        gcTime: 0, // Không giữ cache
+        ...ADMIN_QUERY_DEFAULTS,
       })
     },
     [queryClient, fetcher, buildParams, buildQueryKey],

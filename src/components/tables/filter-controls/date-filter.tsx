@@ -4,7 +4,8 @@
 "use client"
 
 import { format } from "date-fns"
-import { useEffect, useState } from "react"
+import { useMemo } from "react"
+import { useQuery } from "@tanstack/react-query"
 import { DatePicker } from "@/components/ui/date-picker"
 import type { ColumnFilterControlProps } from "./types"
 import { apiClient } from "@/lib/api/axios"
@@ -15,28 +16,32 @@ export function DateFilter<T extends object = object>({
     disabled,
     onChange,
 }: ColumnFilterControlProps<T>) {
-    const [datesWithItems, setDatesWithItems] = useState<string[]>([])
-
-    // Fetch dates with items when component mounts
-    useEffect(() => {
-        const fetchDatesWithItems = async () => {
-            try {
-                // Only fetch if datesApiRoute is configured
-                if (column.filter?.type === "date" && column.filter.datesApiRoute) {
-                    const response = await apiClient.get<{ dates: string[] }>(
-                        column.filter.datesApiRoute
-                    )
-                    if (response.data?.dates) {
-                        setDatesWithItems(response.data.dates)
-                    }
-                }
-            } catch {
-                // Silently fail - dates highlighting is optional
-            }
+    // Extract datesApiRoute để tránh dependency trên toàn bộ column.filter object
+    const datesApiRoute = useMemo(() => {
+        if (column.filter?.type === "date") {
+            return column.filter.datesApiRoute
         }
-
-        fetchDatesWithItems()
+        return undefined
     }, [column.filter])
+
+    // Sử dụng React Query để cache dates với items
+    // Cache trong 5 phút để giảm số lần refetch không cần thiết
+    const { data: datesData } = useQuery<{ dates: string[] }>({
+        queryKey: ["dates-with-items", datesApiRoute],
+        queryFn: async () => {
+            if (!datesApiRoute) return { dates: [] }
+            const response = await apiClient.get<{ dates: string[] }>(datesApiRoute)
+            return response.data || { dates: [] }
+        },
+        enabled: !!datesApiRoute,
+        staleTime: 5 * 60 * 1000, // 5 phút - dates không thay đổi thường xuyên
+        gcTime: 10 * 60 * 1000, // 10 phút
+        refetchOnMount: false,
+        refetchOnWindowFocus: false,
+        refetchOnReconnect: false,
+    })
+
+    const datesWithItems = datesData?.dates || []
 
     if (column.filter?.type !== "date") return null
 
