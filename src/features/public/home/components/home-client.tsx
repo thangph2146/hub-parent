@@ -87,12 +87,19 @@ export const HomeClient = ({ featuredPosts = [] }: HomeClientProps) => {
       <Section padding="responsive-lg" background="background">
         <SectionText
           title="Giới thiệu"
+          titleContainerFlipWords={["Giới thiệu", "Hệ thống", "Kết nối", "Đồng hành"]}
+          useContainerTextFlip={true}
+          usePointerHighlight={true}
+          animateContent={true}
+          useEncryptedText={true}
+          encryptedRevealDelayMs={4}
+          encryptedFlipDelayMs={6}
           paragraphs={[
             "Hệ thống kết nối Phụ huynh và Nhà trường được xây dựng để kiến tạo cầu nối, gắn kết giữa phụ huynh, gia đình và nhà trường trong suốt hành trình học tập của sinh viên tại trường Đại học Ngân hàng Tp. Hồ Chí Minh. Chúng tôi hiểu rằng sự tham gia tích cực của gia đình đóng vai trò quan trọng trong thành tích, tiến độ học tập của sinh viên và góp phần vào thành công của các em sau khi rời khỏi giảng đường đại học.",
             "Thông qua nền tảng này, phụ huynh có thể theo dõi tiến độ học tập, điểm số, lịch học và lịch thi của sinh viên. Đồng thời, phụ huynh có thể trao đổi thông tin trực tiếp với giảng viên, cố vấn học tập và nhận thông báo quan trọng từ nhà trường.",
             {
               text: "Chúng tôi mong muốn được quý phụ huynh đồng hành trong hành trình học tập, sáng tạo và trưởng thành của các em.",
-              className: "text-secondary",
+              className: "text-secondary font-semibold bg-primary/10 dark:bg-primary/20 border-l-4 border-primary pl-4 py-3 pr-2 rounded-r-lg shadow-sm",
             },
           ]}
         />
