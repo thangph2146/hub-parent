@@ -1,4 +1,5 @@
 import { useState, useCallback } from "react"
+import { resourceLogger } from "@/lib/config/resource-logger"
 import type { StudentRow } from "../types"
 
 export interface ToggleConfirmState {
@@ -22,6 +23,20 @@ export const useStudentToggleConfirm = () => {
 
   const openToggleConfirm = useCallback(
     (row: StudentRow, newStatus: boolean, onConfirm: () => Promise<void>) => {
+      resourceLogger.actionFlow({
+        resource: "students",
+        action: "toggle-status",
+        step: "init",
+        metadata: {
+          operation: "open_confirm_dialog",
+          resourceId: row.id,
+          recordName: row.studentCode,
+          newStatus,
+          currentStatus: row.isActive,
+          userAction: "user_clicked_toggle",
+        },
+      })
+      
       setToggleConfirm({
         open: true,
         row,
@@ -33,6 +48,16 @@ export const useStudentToggleConfirm = () => {
   )
 
   const closeToggleConfirm = useCallback(() => {
+    resourceLogger.actionFlow({
+      resource: "students",
+      action: "toggle-status",
+      step: "init",
+      metadata: {
+        operation: "close_confirm_dialog",
+        userAction: "user_cancelled_or_closed_dialog",
+      },
+    })
+    
     setToggleConfirm(null)
   }, [])
 

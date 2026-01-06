@@ -60,6 +60,7 @@ export const RolesTableClient = ({
     queryClient,
     buildQueryKey: (params) => queryKeys.adminRoles.list({
       ...params,
+      status: params.status === "inactive" ? "active" : params.status,
       search: undefined,
       filters: undefined,
     }),

@@ -5,6 +5,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import type { DataTableColumn } from "@/components/tables"
 import { Flex } from "@/components/ui/flex"
 import { useDynamicFilterOptions } from "@/features/admin/resources/hooks/use-dynamic-filter-options"
+import { resourceLogger } from "@/lib/config/resource-logger"
 import { apiRoutes } from "@/lib/api/routes"
 import type { StudentRow } from "../types"
 import { STUDENT_LABELS } from "../constants/messages"
@@ -115,7 +116,22 @@ export const useStudentColumns = ({ togglingStudents, canToggleStatus, onToggleS
               <Switch
                 checked={row.isActive}
                 disabled={togglingStudents.has(row.id) || !canToggleStatus}
-                onCheckedChange={(checked) => onToggleStatus(row, checked)}
+                onCheckedChange={(checked) => {
+                  resourceLogger.actionFlow({
+                    resource: "students",
+                    action: "toggle-status",
+                    step: "init",
+                    metadata: {
+                      operation: "switch_clicked",
+                      resourceId: row.id,
+                      recordName: row.studentCode,
+                      newStatus: checked,
+                      currentStatus: row.isActive,
+                      userAction: "user_clicked_switch",
+                    },
+                  })
+                  onToggleStatus(row, checked)
+                }}
                 aria-label={row.isActive ? "Vô hiệu hóa sinh viên" : "Kích hoạt sinh viên"}
               />
               <TypographySpanSmallMuted>

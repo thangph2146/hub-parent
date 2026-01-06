@@ -14,8 +14,7 @@ import {
 import { BulkCommentActionSchema } from "@/features/admin/comments/server/schemas"
 import { createPostRoute } from "@/lib/api/api-route-wrapper"
 import type { ApiRouteContext } from "@/lib/api/types"
-import { createErrorResponse, createSuccessResponse } from "@/lib/config"
-import { resourceLogger } from "@/lib/config"
+import { createErrorResponse, createSuccessResponse, resourceLogger } from "@/lib/config"
 
 async function bulkCommentsHandler(req: NextRequest, context: ApiRouteContext) {
   let body: unknown

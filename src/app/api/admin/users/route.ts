@@ -51,7 +51,7 @@ async function getUsersHandler(req: NextRequest, _context: ApiRouteContext) {
       total: serialized.total,
       totalPages: serialized.totalPages,
     },
-  } as UsersResponse)
+  })
 }
 
 async function postUsersHandler(req: NextRequest, context: ApiRouteContext) {

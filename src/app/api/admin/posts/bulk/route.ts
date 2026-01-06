@@ -5,7 +5,8 @@ import { NextRequest } from "next/server"
 import { bulkPostsAction, type AuthContext, ApplicationError } from "@/features/admin/posts/server/mutations"
 import { createPostRoute } from "@/lib/api/api-route-wrapper"
 import type { ApiRouteContext } from "@/lib/api/types"
-import { createErrorResponse, createSuccessResponse, logger } from "@/lib/config"
+import { createErrorResponse, createSuccessResponse } from "@/lib/config"
+import { logger } from "@/lib/config/logger"
 import { z } from "zod"
 
 const BulkPostActionSchema = z.object({

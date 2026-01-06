@@ -3,26 +3,26 @@
  * PUT /api/admin/tags/[id] - Update tag
  * DELETE /api/admin/tags/[id] - Soft delete tag
  */
-import { NextRequest, NextResponse } from "next/server"
+import { NextRequest } from "next/server"
 import { getTagById } from "@/features/admin/tags/server/queries"
 import { serializeTagDetail } from "@/features/admin/tags/server/helpers"
 import {
   updateTag,
   softDeleteTag,
   type AuthContext,
-  ApplicationError,
-  NotFoundError,
 } from "@/features/admin/tags/server/mutations"
 import { createGetRoute, createPutRoute, createDeleteRoute } from "@/lib/api/api-route-wrapper"
 import type { ApiRouteContext } from "@/lib/api/types"
-import { logger } from "@/lib/config/logger"
+import { validateID } from "@/lib/api/validation"
+import { extractParams, parseRequestBody, createAuthContext, handleApiError } from "@/lib/api/api-route-helpers"
+import { createSuccessResponse, createErrorResponse } from "@/lib/config"
 
 async function getTagHandler(_req: NextRequest, _context: ApiRouteContext, ...args: unknown[]) {
-  const { params } = args[0] as { params: Promise<{ id: string }> }
-  const { id: tagId } = await params
+  const { id: tagId } = await extractParams<{ id: string }>(args)
 
-  if (!tagId) {
-    return NextResponse.json({ error: "Tag ID is required" }, { status: 400 })
+  const idValidation = validateID(tagId)
+  if (!idValidation.valid) {
+    return createErrorResponse(idValidation.error || "Tag ID không hợp lệ", { status: 400 })
   }
 
   // Sử dụng getTagById (non-cached) thay vì getTagDetailById để đảm bảo data luôn fresh
@@ -30,34 +30,26 @@ async function getTagHandler(_req: NextRequest, _context: ApiRouteContext, ...ar
   const tag = await getTagById(tagId)
 
   if (!tag) {
-    return NextResponse.json({ error: "Tag not found" }, { status: 404 })
+    return createErrorResponse("Tag not found", { status: 404 })
   }
 
-  return NextResponse.json({ data: serializeTagDetail(tag) })
+  return createSuccessResponse(serializeTagDetail(tag))
 }
 
 async function putTagHandler(req: NextRequest, context: ApiRouteContext, ...args: unknown[]) {
-  const { params } = args[0] as { params: Promise<{ id: string }> }
-  const { id: tagId } = await params
-
-  if (!tagId) {
-    return NextResponse.json({ error: "Tag ID is required" }, { status: 400 })
-  }
-
-  let body: Record<string, unknown>
   try {
-    body = await req.json()
-  } catch {
-    return NextResponse.json({ error: "Dữ liệu không hợp lệ. Vui lòng kiểm tra lại." }, { status: 400 })
-  }
+    const { id: tagId } = await extractParams<{ id: string }>(args)
 
-  const ctx: AuthContext = {
-    actorId: context.session.user?.id ?? "unknown",
-    permissions: context.permissions,
-    roles: context.roles,
-  }
+    const idValidation = validateID(tagId)
+    if (!idValidation.valid) {
+      return createErrorResponse(idValidation.error || "Tag ID không hợp lệ", { status: 400 })
+    }
 
-  try {
+    const body = await parseRequestBody(req)
+
+    const userId = context.session.user?.id ?? "unknown"
+    const ctx = createAuthContext(context, userId) as AuthContext
+
     const tag = await updateTag(ctx, tagId, body)
     // Serialize tag to client format (dates to strings)
     const serialized = {
@@ -67,45 +59,28 @@ async function putTagHandler(req: NextRequest, context: ApiRouteContext, ...args
       createdAt: tag.createdAt.toISOString(),
       deletedAt: tag.deletedAt ? tag.deletedAt.toISOString() : null,
     }
-    return NextResponse.json({ data: serialized })
+    return createSuccessResponse(serialized)
   } catch (error) {
-    if (error instanceof ApplicationError) {
-      return NextResponse.json({ error: error.message || "Không thể cập nhật thẻ tag" }, { status: error.status || 400 })
-    }
-    if (error instanceof NotFoundError) {
-      return NextResponse.json({ error: error.message || "Không tìm thấy" }, { status: 404 })
-    }
-    logger.error("Error updating tag", { error, tagId })
-    return NextResponse.json({ error: "Đã xảy ra lỗi khi cập nhật thẻ tag" }, { status: 500 })
+    return handleApiError(error, "Đã xảy ra lỗi khi cập nhật thẻ tag", 500)
   }
 }
 
 async function deleteTagHandler(_req: NextRequest, context: ApiRouteContext, ...args: unknown[]) {
-  const { params } = args[0] as { params: Promise<{ id: string }> }
-  const { id: tagId } = await params
-
-  if (!tagId) {
-    return NextResponse.json({ error: "Tag ID is required" }, { status: 400 })
-  }
-
-  const ctx: AuthContext = {
-    actorId: context.session.user?.id ?? "unknown",
-    permissions: context.permissions,
-    roles: context.roles,
-  }
-
   try {
+    const { id: tagId } = await extractParams<{ id: string }>(args)
+
+    const idValidation = validateID(tagId)
+    if (!idValidation.valid) {
+      return createErrorResponse(idValidation.error || "Tag ID không hợp lệ", { status: 400 })
+    }
+
+    const userId = context.session.user?.id ?? "unknown"
+    const ctx = createAuthContext(context, userId) as AuthContext
+
     await softDeleteTag(ctx, tagId)
-    return NextResponse.json({ message: "Tag deleted successfully" })
+    return createSuccessResponse({ message: "Tag deleted successfully" })
   } catch (error) {
-    if (error instanceof ApplicationError) {
-      return NextResponse.json({ error: error.message || "Không thể xóa thẻ tag" }, { status: error.status || 400 })
-    }
-    if (error instanceof NotFoundError) {
-      return NextResponse.json({ error: error.message || "Không tìm thấy" }, { status: 404 })
-    }
-    logger.error("Error deleting tag", { error, tagId })
-    return NextResponse.json({ error: "Đã xảy ra lỗi khi xóa thẻ tag" }, { status: 500 })
+    return handleApiError(error, "Đã xảy ra lỗi khi xóa thẻ tag", 500)
   }
 }
 

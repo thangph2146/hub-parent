@@ -106,24 +106,90 @@ export const useResourceActions = <T extends { id: string }>(
         
         const method = action === "delete" || action === "hard-delete" ? "delete" : "post"
         
-        if (method === "delete") {
-          return apiClient.delete(endpoint)
-        } else {
-          return apiClient.post(endpoint)
+        resourceLogger.actionFlow({
+          resource: config.resourceName,
+          action: getActionType(action, false),
+          step: "init",
+          metadata: {
+            resourceId: row.id,
+            recordName: config.getRecordName(row),
+            endpoint,
+            method,
+            ...(config.getLogMetadata ? config.getLogMetadata(row) : {}),
+          },
+        })
+        
+        const startTime = Date.now()
+        let response
+        
+        try {
+          if (method === "delete") {
+            response = await apiClient.delete(endpoint)
+          } else {
+            response = await apiClient.post(endpoint)
+          }
+          
+          const duration = Date.now() - startTime
+          resourceLogger.actionFlow({
+            resource: config.resourceName,
+            action: getActionType(action, false),
+            step: "init",
+            metadata: {
+              resourceId: row.id,
+              recordName: config.getRecordName(row),
+              apiCallDuration: `${duration}ms`,
+              apiResponseStatus: response?.status,
+              ...(config.getLogMetadata ? config.getLogMetadata(row) : {}),
+            },
+          })
+          
+          return response
+        } catch (error) {
+          const duration = Date.now() - startTime
+          resourceLogger.actionFlow({
+            resource: config.resourceName,
+            action: getActionType(action, false),
+            step: "error",
+            metadata: {
+              resourceId: row.id,
+              recordName: config.getRecordName(row),
+              apiCallDuration: `${duration}ms`,
+              apiError: error instanceof Error ? error.message : String(error),
+              ...(config.getLogMetadata ? config.getLogMetadata(row) : {}),
+            },
+          })
+          throw error
         }
       },
-      onSuccess: async (_, variables) => {
+      onSuccess: async (response, variables) => {
+        const actionType = getActionType(variables.action, false)
+        const isHardDelete = variables.action === "hard-delete"
+        
+        resourceLogger.actionFlow({
+          resource: config.resourceName,
+          action: actionType,
+          step: "init",
+          metadata: {
+            resourceId: variables.row.id,
+            recordName: config.getRecordName(variables.row),
+            step: "before_cache_operations",
+            isHardDelete,
+            skipDetailRefetch: isHardDelete,
+            ...(config.getLogMetadata ? config.getLogMetadata(variables.row) : {}),
+          },
+        })
+        
         // Sử dụng utility function chung để invalidate, refetch và trigger registry refresh
         // Đảm bảo UI tự động cập nhật ngay sau khi mutation thành công
+        // Lưu ý: Hard delete không refetch detail query vì resource đã bị xóa vĩnh viễn
         await invalidateAndRefreshResource({
           queryClient,
           allQueryKey: config.queryKeys.all(),
           detailQueryKey: config.queryKeys.detail,
-          resourceId: variables.row.id,
+          resourceId: variables.row.id, // Vẫn truyền resourceId để remove query khỏi cache
+          skipDetailRefetch: isHardDelete,
         })
 
-        const actionType = getActionType(variables.action, false)
-        
         resourceLogger.actionFlow({
           resource: config.resourceName,
           action: actionType,
@@ -131,6 +197,8 @@ export const useResourceActions = <T extends { id: string }>(
           metadata: {
             resourceId: variables.row.id,
             recordName: config.getRecordName(variables.row),
+            step: "after_cache_operations",
+            apiResponseStatus: response?.status,
             ...(config.getLogMetadata ? config.getLogMetadata(variables.row) : {}),
           },
         })
@@ -147,6 +215,8 @@ export const useResourceActions = <T extends { id: string }>(
             resourceId: variables.row.id,
             recordName: config.getRecordName(variables.row),
             error: errorMessage,
+            errorType: error instanceof Error ? error.constructor.name : typeof error,
+            errorStack: error instanceof Error ? error.stack : undefined,
             ...(config.getLogMetadata ? config.getLogMetadata(variables.row) : {}),
           },
         })
@@ -157,32 +227,135 @@ export const useResourceActions = <T extends { id: string }>(
   const bulkActionMutation = useMutation({
     ...createAdminMutationOptions({
       mutationFn: async ({ action, ids }: { action: "delete" | "restore" | "hard-delete" | "active" | "unactive"; ids: string[] }) => {
-        return apiClient.post(config.apiRoutes.bulk, { action, ids })
+        const actionType = getActionType(action, true)
+        
+        resourceLogger.actionFlow({
+          resource: config.resourceName,
+          action: actionType,
+          step: "init",
+          metadata: {
+            requestedCount: ids.length,
+            requestedIds: ids,
+            endpoint: config.apiRoutes.bulk,
+            method: "POST",
+          },
+        })
+        
+        const startTime = Date.now()
+        try {
+          const response = await apiClient.post(config.apiRoutes.bulk, { action, ids })
+          const duration = Date.now() - startTime
+          
+          resourceLogger.actionFlow({
+            resource: config.resourceName,
+            action: actionType,
+            step: "init",
+            metadata: {
+              requestedCount: ids.length,
+              requestedIds: ids,
+              apiCallDuration: `${duration}ms`,
+              apiResponseStatus: response?.status,
+            },
+          })
+          
+          return response
+        } catch (error) {
+          const duration = Date.now() - startTime
+          resourceLogger.actionFlow({
+            resource: config.resourceName,
+            action: actionType,
+            step: "error",
+            metadata: {
+              requestedCount: ids.length,
+              requestedIds: ids,
+              apiCallDuration: `${duration}ms`,
+              apiError: error instanceof Error ? error.message : String(error),
+            },
+          })
+          throw error
+        }
       },
       onSuccess: async (response, variables) => {
         const result = response.data?.data
         const affected = result?.affected ?? 0
+        const actionType = getActionType(variables.action, true)
+        const isHardDelete = variables.action === "hard-delete"
+        
+        resourceLogger.actionFlow({
+          resource: config.resourceName,
+          action: actionType,
+          step: "init",
+          metadata: {
+            requestedCount: variables.ids.length,
+            affectedCount: affected,
+            requestedIds: variables.ids,
+            step: "before_cache_operations",
+            isHardDelete,
+            skipDetailRefetch: isHardDelete,
+          },
+        })
         
         // Sử dụng utility function chung để invalidate, refetch và trigger registry refresh
         // Đảm bảo UI tự động cập nhật ngay sau khi mutation thành công
+        // Lưu ý: Hard delete không refetch detail queries vì resources đã bị xóa vĩnh viễn
         await invalidateAndRefreshResource({
           queryClient,
           allQueryKey: config.queryKeys.all(),
           detailQueryKey: config.queryKeys.detail,
+          skipDetailRefetch: isHardDelete,
           // Bulk actions không cần invalidate từng detail query riêng lẻ
           // Chỉ cần invalidate all query và registry sẽ trigger refresh cho table
         })
         
         // Invalidate detail queries cho tất cả affected IDs (nếu có)
         // Điều này đảm bảo detail pages cũng được cập nhật
+        // Lưu ý: Hard delete remove queries khỏi cache hoàn toàn để tránh refetch tự động
         const detailKey = config.queryKeys.detail
-        if (detailKey) {
+        if (detailKey && !isHardDelete) {
+          resourceLogger.actionFlow({
+            resource: config.resourceName,
+            action: actionType,
+            step: "init",
+            metadata: {
+              operation: "invalidate_detail_queries",
+              idsCount: variables.ids.length,
+              ids: variables.ids,
+            },
+          })
+          
           await Promise.all(
             variables.ids.map((id) => invalidateAndRefetchQueries(queryClient, detailKey(id)))
           )
+        } else if (detailKey && isHardDelete) {
+          resourceLogger.actionFlow({
+            resource: config.resourceName,
+            action: actionType,
+            step: "init",
+            metadata: {
+              operation: "remove_detail_queries",
+              idsCount: variables.ids.length,
+              ids: variables.ids,
+            },
+          })
+          
+          // Hard delete: Remove queries khỏi cache hoàn toàn để tránh refetch tự động
+          await Promise.all(
+            variables.ids.map((id) => queryClient.removeQueries({ queryKey: detailKey(id) }))
+          )
         }
         
-        const actionType = getActionType(variables.action, true)
+        resourceLogger.actionFlow({
+          resource: config.resourceName,
+          action: actionType,
+          step: "success",
+          metadata: {
+            requestedCount: variables.ids.length,
+            affectedCount: affected,
+            requestedIds: variables.ids,
+            step: "after_cache_operations",
+            apiResponseStatus: response?.status,
+          },
+        })
         
         resourceLogger.actionFlow({
           resource: config.resourceName,
@@ -206,8 +379,10 @@ export const useResourceActions = <T extends { id: string }>(
           step: "error",
           metadata: {
             requestedCount: variables.ids.length,
-            error: errorMessage,
             requestedIds: variables.ids,
+            error: errorMessage,
+            errorType: error instanceof Error ? error.constructor.name : typeof error,
+            errorStack: error instanceof Error ? error.stack : undefined,
           },
         })
       },
@@ -254,15 +429,24 @@ export const useResourceActions = <T extends { id: string }>(
         return
       }
       
+      // Log chi tiết khi user chọn action và confirm
+      const recordName = config.getRecordName(row)
       resourceLogger.actionFlow({
         resource: config.resourceName,
-        action,
+        action: getActionType(action, false),
         step: "start",
         metadata: {
+          action: action,
+          actionType: getActionType(action, false),
           resourceId: row.id,
-          recordName: config.getRecordName(row),
+          recordName: recordName,
+          itemInfo: {
+            id: row.id,
+            name: recordName,
+            ...(config.getLogMetadata ? config.getLogMetadata(row) : {}),
+          },
           socketConnected: config.isSocketConnected,
-          ...(config.getLogMetadata ? config.getLogMetadata(row) : {}),
+          userAction: "user_confirmed_action",
         },
       })
       
@@ -340,14 +524,23 @@ export const useResourceActions = <T extends { id: string }>(
         return
       }
       
+      // Log chi tiết khi user chọn bulk action và confirm
+      const actionType = getActionType(action, true)
       resourceLogger.actionFlow({
         resource: config.resourceName,
-        action: getActionType(action, true),
+        action: actionType,
         step: "start",
         metadata: {
-          count: ids.length,
-          resourceIds: ids,
+          action: action,
+          actionType: actionType,
+          selectedCount: ids.length,
+          selectedIds: ids,
+          userAction: "user_confirmed_bulk_action",
           socketConnected: config.isSocketConnected,
+          itemsInfo: {
+            count: ids.length,
+            ids: ids,
+          },
         },
       })
       

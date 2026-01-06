@@ -1,7 +1,7 @@
 /**
  * API Route: POST /api/admin/students/[id]/restore - Restore student
  */
-import { NextRequest, NextResponse } from "next/server"
+import { NextRequest } from "next/server"
 import {
   restoreStudent,
   type AuthContext,
@@ -10,6 +10,7 @@ import {
 } from "@/features/admin/students/server/mutations"
 import { createPostRoute } from "@/lib/api/api-route-wrapper"
 import type { ApiRouteContext } from "@/lib/api/types"
+import { createErrorResponse, createSuccessResponse } from "@/lib/config"
 import { logger } from "@/lib/config/logger"
 
 async function restoreStudentHandler(_req: NextRequest, context: ApiRouteContext, ...args: unknown[]) {
@@ -17,7 +18,7 @@ async function restoreStudentHandler(_req: NextRequest, context: ApiRouteContext
   const { id: studentId } = await params
 
   if (!studentId) {
-    return NextResponse.json({ error: "Student ID is required" }, { status: 400 })
+    return createErrorResponse("Student ID is required", { status: 400 })
   }
 
   const ctx: AuthContext = {
@@ -28,16 +29,16 @@ async function restoreStudentHandler(_req: NextRequest, context: ApiRouteContext
 
   try {
     await restoreStudent(ctx, studentId)
-    return NextResponse.json({ message: "Student restored successfully" })
+    return createSuccessResponse({ message: "Student restored successfully" })
   } catch (error) {
     if (error instanceof ApplicationError) {
-      return NextResponse.json({ error: error.message || "Không thể khôi phục sinh viên" }, { status: error.status || 400 })
+      return createErrorResponse(error.message || "Không thể khôi phục sinh viên", { status: error.status || 400 })
     }
     if (error instanceof NotFoundError) {
-      return NextResponse.json({ error: error.message || "Không tìm thấy" }, { status: 404 })
+      return createErrorResponse(error.message || "Không tìm thấy", { status: 404 })
     }
     logger.error("Error restoring student", { error, studentId })
-    return NextResponse.json({ error: "Đã xảy ra lỗi khi khôi phục sinh viên" }, { status: 500 })
+    return createErrorResponse("Đã xảy ra lỗi khi khôi phục sinh viên", { status: 500 })
   }
 }
 

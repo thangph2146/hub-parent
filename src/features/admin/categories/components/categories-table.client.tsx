@@ -60,6 +60,7 @@ export const CategoriesTableClient = ({
     queryClient,
     buildQueryKey: (params) => queryKeys.adminCategories.list({
       ...params,
+      status: params.status === "inactive" ? "active" : params.status,
       search: undefined,
       filters: undefined,
     }),

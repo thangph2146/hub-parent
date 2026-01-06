@@ -2,33 +2,42 @@
  * API Route: POST /api/admin/users/bulk
  * Body: { action: "delete" | "restore" | "hard-delete", ids: string[] }
  */
-import { NextRequest, NextResponse } from "next/server"
+import { NextRequest } from "next/server"
 import {
   type AuthContext,
   bulkSoftDeleteUsers,
   bulkRestoreUsers,
   bulkHardDeleteUsers,
+  ApplicationError,
 } from "@/features/admin/users/server/mutations"
 import { PERMISSIONS } from "@/lib/permissions"
 import { createPostRoute } from "@/lib/api/api-route-wrapper"
 import type { ApiRouteContext } from "@/lib/api/types"
+import { createErrorResponse, createSuccessResponse } from "@/lib/config"
+import { logger } from "@/lib/config/logger"
 import { validateArray, validateEnum, validateID } from "@/lib/api/validation"
 
 type BulkAction = "delete" | "restore" | "hard-delete"
 
 async function bulkUsersHandler(req: NextRequest, context: ApiRouteContext) {
-  const body = await req.json()
+  let body: unknown
+  try {
+    body = await req.json()
+  } catch {
+    return createErrorResponse("Dữ liệu không hợp lệ. Vui lòng kiểm tra lại.", { status: 400 })
+  }
+
   const { action, ids } = body as { action?: BulkAction; ids?: unknown }
 
   const actionValidation = validateEnum(action, ["delete", "restore", "hard-delete"] as const, "Action")
   if (!actionValidation.valid) {
-    return NextResponse.json({ error: actionValidation.error }, { status: 400 })
+    return createErrorResponse(actionValidation.error, { status: 400 })
   }
 
   const idsValidation = validateArray<string>(ids, 1, 100, "Danh sách người dùng")
   if (!idsValidation.valid || !idsValidation.value) {
-    return NextResponse.json(
-      { error: idsValidation.error || "Danh sách người dùng phải có ít nhất 1 phần tử và tối đa 100 phần tử" },
+    return createErrorResponse(
+      idsValidation.error || "Danh sách người dùng phải có ít nhất 1 phần tử và tối đa 100 phần tử",
       { status: 400 }
     )
   }
@@ -36,7 +45,7 @@ async function bulkUsersHandler(req: NextRequest, context: ApiRouteContext) {
   for (const id of idsValidation.value) {
     const idValidation = validateID(id)
     if (!idValidation.valid) {
-      return NextResponse.json({ error: `ID không hợp lệ: ${id}` }, { status: 400 })
+      return createErrorResponse(`ID không hợp lệ: ${id}`, { status: 400 })
     }
   }
 
@@ -54,34 +63,16 @@ async function bulkUsersHandler(req: NextRequest, context: ApiRouteContext) {
 
   try {
     const result = await actions[actionValidation.value!](ctx, idsValidation.value!)
-    return NextResponse.json({ 
-      success: result.success, 
-      data: {
-        affected: result.affected,
-        message: result.message,
-      }
+    return createSuccessResponse({
+      affected: result.affected,
+      message: result.message,
     })
   } catch (error) {
-    // Xử lý error với message rõ ràng hơn
-    if (error instanceof Error) {
-      const status = "status" in error && typeof error.status === "number" ? error.status : 500
-      return NextResponse.json(
-        {
-          success: false,
-          message: error.message,
-          error: error.constructor.name,
-        },
-        { status }
-      )
+    if (error instanceof ApplicationError) {
+      return createErrorResponse(error.message || "Không thể thực hiện thao tác hàng loạt", { status: error.status || 400 })
     }
-    return NextResponse.json(
-      {
-        success: false,
-        message: "Đã xảy ra lỗi không xác định",
-        error: "UnknownError",
-      },
-      { status: 500 }
-    )
+    logger.error("Error in bulk users operation", { error, action: actionValidation.value, ids: idsValidation.value })
+    return createErrorResponse("Đã xảy ra lỗi khi thực hiện thao tác hàng loạt", { status: 500 })
   }
 }
 

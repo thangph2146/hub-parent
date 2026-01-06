@@ -90,7 +90,7 @@ export const StudentsTableClient = ({
     currentViewId,
     queryClient,
     buildQueryKey: (params) => queryKeys.adminStudents.list({
-      ...params,
+      ...params,  status: params.status as AdminStudentsListParams["status"],
       search: undefined,
       filters: undefined,
     }),
@@ -116,6 +116,21 @@ export const StudentsTableClient = ({
 
   const handleToggleStatusWithRefresh = useCallback(
     (row: StudentRow, checked: boolean) => {
+      resourceLogger.actionFlow({
+        resource: "students",
+        action: "toggle-status",
+        step: "init",
+        metadata: {
+          operation: "user_clicked_toggle_switch",
+          resourceId: row.id,
+          recordName: row.studentCode,
+          newStatus: checked,
+          currentStatus: row.isActive,
+          currentViewId,
+          userAction: "user_clicked_toggle_switch",
+        },
+      })
+      
       openToggleConfirm(
         row,
         checked,
@@ -124,22 +139,58 @@ export const StudentsTableClient = ({
         }
       )
     },
-    [handleToggleStatus, refreshTable, openToggleConfirm],
+    [handleToggleStatus, refreshTable, openToggleConfirm, currentViewId],
   )
 
   const handleToggleConfirm = useCallback(async () => {
     if (!toggleConfirm) return
+    
+    resourceLogger.actionFlow({
+      resource: "students",
+      action: "toggle-status",
+      step: "init",
+      metadata: {
+        operation: "user_confirmed_toggle",
+        resourceId: toggleConfirm.row.id,
+        recordName: toggleConfirm.row.studentCode,
+        newStatus: toggleConfirm.newStatus,
+        currentStatus: toggleConfirm.row.isActive,
+        currentViewId,
+        userAction: "user_confirmed_toggle_in_dialog",
+      },
+    })
+    
     try {
       await toggleConfirm.onConfirm()
       // Đóng dialog confirm ngay sau khi thực hiện thành công
       // Feedback dialog sẽ được hiển thị bởi handleToggleStatus
+      resourceLogger.actionFlow({
+        resource: "students",
+        action: "toggle-status",
+        step: "init",
+        metadata: {
+          operation: "close_confirm_dialog_after_success",
+          resourceId: toggleConfirm.row.id,
+          recordName: toggleConfirm.row.studentCode,
+        },
+      })
       closeToggleConfirm()
     } catch {
       // Error already handled in onConfirm, nhưng vẫn đóng dialog
+      resourceLogger.actionFlow({
+        resource: "students",
+        action: "toggle-status",
+        step: "error",
+        metadata: {
+          operation: "close_confirm_dialog_after_error",
+          resourceId: toggleConfirm.row.id,
+          recordName: toggleConfirm.row.studentCode,
+        },
+      })
       closeToggleConfirm()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [toggleConfirm])
+  }, [toggleConfirm, currentViewId])
 
   const handleBulkToggleConfirm = useCallback(async () => {
     if (!bulkToggleConfirm) return
@@ -697,6 +748,20 @@ export const StudentsTableClient = ({
         <ConfirmDialog
           open={toggleConfirm.open}
           onOpenChange={(open) => {
+            resourceLogger.actionFlow({
+              resource: "students",
+              action: "toggle-status",
+              step: "init",
+              metadata: {
+                operation: open ? "dialog_opened" : "dialog_closed",
+                resourceId: toggleConfirm.row.id,
+                recordName: toggleConfirm.row.studentCode,
+                newStatus: toggleConfirm.newStatus,
+                currentStatus: toggleConfirm.row.isActive,
+                currentViewId,
+                userAction: open ? "dialog_opened_by_user" : "dialog_closed_by_user",
+              },
+            })
             if (!open) closeToggleConfirm()
           }}
           title={STUDENT_CONFIRM_MESSAGES.TOGGLE_TITLE(toggleConfirm.row.studentCode, toggleConfirm.newStatus)}

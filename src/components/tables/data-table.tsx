@@ -237,29 +237,94 @@ export function DataTable<T extends object>({
     const prevQueryRef = useRef<DataTableQueryState>(query)
     // Khởi tạo prevRefreshKeyRef với giá trị undefined để đảm bảo lần đầu tiên refreshKey được set sẽ được detect
     const prevRefreshKeyRef = useRef<string | number | undefined>(undefined)
+    const prevLoaderRef = useRef<DataTableLoader<T> | undefined>(undefined)
+    const prevInitialDataRef = useRef<DataTableResult<T> | undefined>(initialData)
     const isFirstMountRef = useRef(true)
+    const isFetchingRef = useRef(false) // Guard để tránh fetch nhiều lần cùng lúc
 
     useEffect(() => {
+        // Guard: Nếu đang fetch, không fetch lại
+        if (isFetchingRef.current) {
+            return
+        }
         // Kiểm tra refreshKey thay đổi - so sánh với giá trị trước đó
         const refreshKeyChanged = prevRefreshKeyRef.current !== refreshKey
+        // Kiểm tra loader thay đổi - quan trọng khi chuyển view (active/deleted)
+        const loaderChanged = prevLoaderRef.current !== loader
+        // Kiểm tra initialData thay đổi - khi chuyển view, initialData có thể thay đổi
+        const initialDataChanged = prevInitialDataRef.current !== initialData
         
-        // Lần đầu mount - initialize prevRefreshKeyRef với refreshKey hiện tại và return sớm
+        // Lần đầu mount - initialize refs và return sớm
         // Không trigger fetch ở đây vì đã có initialData hoặc đã fetch trong useState
         if (isFirstMountRef.current) {
             isFirstMountRef.current = false
             prevRefreshKeyRef.current = refreshKey
             prevQueryRef.current = query
+            prevLoaderRef.current = loader
+            prevInitialDataRef.current = initialData
             return
         }
         
-        // Update prevRefreshKeyRef nếu refreshKey thay đổi
+        // Update refs nếu có thay đổi
         if (refreshKeyChanged) {
             prevRefreshKeyRef.current = refreshKey
+        }
+        if (loaderChanged) {
+            prevLoaderRef.current = loader
+        }
+        if (initialDataChanged) {
+            prevInitialDataRef.current = initialData
         }
 
         const queryChanged = !areQueriesEqual(query, prevQueryRef.current)
         
-        // Nếu không có thay đổi nào, return sớm
+        // Ưu tiên xử lý initialData thay đổi trước (khi chuyển view)
+        // Điều này đảm bảo khi có initialData mới, nó được sử dụng ngay
+        if (initialDataChanged && initialData) {
+            prevQueryRef.current = query
+            // Có initialData mới, sử dụng ngay để tránh flash empty state
+            // Tạo promise mới với data được clone để đảm bảo React detect được sự thay đổi
+            // Sử dụng queueMicrotask để đảm bảo promise được tạo mới và React có thể detect
+            const clonedData: DataTableResult<T> = {
+                ...initialData,
+                rows: [...initialData.rows],
+            }
+            const newPromise = new Promise<DataTableResult<T>>((resolve) => {
+                queueMicrotask(() => resolve(clonedData))
+            })
+            setDataPromise(newPromise)
+            // Nếu loader cũng thay đổi, vẫn ưu tiên initialData
+            // Loader sẽ được update trong ref để lần sau sử dụng đúng
+            return
+        }
+        
+        // Khi loader thay đổi (chuyển view) nhưng không có initialData mới
+        if (loaderChanged) {
+            prevQueryRef.current = query
+            // Không có initialData, fetch mới ngay
+            isFetchingRef.current = true
+            const promise = safeLoad(loader, query)
+            promise.finally(() => {
+                isFetchingRef.current = false
+            })
+            setDataPromise(promise)
+            return
+        }
+        
+        // Khi initialData thay đổi thành undefined (chuyển từ active sang deleted)
+        if (initialDataChanged && !initialData && !loaderChanged) {
+            prevQueryRef.current = query
+            // initialData bị clear, fetch mới
+            isFetchingRef.current = true
+            const promise = safeLoad(loader, query)
+            promise.finally(() => {
+                isFetchingRef.current = false
+            })
+            setDataPromise(promise)
+            return
+        }
+        
+        // Nếu không có thay đổi nào khác, return sớm
         if (!queryChanged && !refreshKeyChanged) {
             prevQueryRef.current = query
             return
@@ -267,19 +332,28 @@ export function DataTable<T extends object>({
 
         prevQueryRef.current = query
 
-        // Khi refreshKey thay đổi (từ mutation), cần fetch ngay lập tức không delay
-        // Khi query thay đổi (từ user action), có thể dùng startTransition để tránh blocking UI
+        // Khi refreshKey thay đổi (từ mutation) - fetch ngay lập tức
+        // Nhưng chỉ khi không có initialData mới (đã được xử lý ở trên)
         if (refreshKeyChanged) {
             // Refresh từ mutation - fetch ngay lập tức để đảm bảo UI cập nhật ngay
-            // Không dùng startTransition để tránh delay
-            setDataPromise(safeLoad(loader, query))
+            isFetchingRef.current = true
+            const promise = safeLoad(loader, query)
+            promise.finally(() => {
+                isFetchingRef.current = false
+            })
+            setDataPromise(promise)
         } else if (queryChanged) {
             // Query change từ user action - có thể dùng startTransition
+            isFetchingRef.current = true
+            const promise = safeLoad(loader, query)
+            promise.finally(() => {
+                isFetchingRef.current = false
+            })
             startTransition(() => {
-                setDataPromise(safeLoad(loader, query))
+                setDataPromise(promise)
             })
         }
-    }, [loader, query, refreshKey])
+    }, [loader, query, refreshKey, initialData])
 
     const hasAppliedFilters =
         query.search.trim().length > 0 ||

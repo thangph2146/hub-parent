@@ -2,12 +2,14 @@
  * API Route: GET /api/admin/posts - List posts
  * POST /api/admin/posts - Create post
  */
-import { NextRequest, NextResponse } from "next/server"
+import { NextRequest } from "next/server"
 import { listPosts } from "@/features/admin/posts/server/queries"
+import { serializePostsList } from "@/features/admin/posts/server/helpers"
 import { createGetRoute, createPostRoute } from "@/lib/api/api-route-wrapper"
 import type { ApiRouteContext } from "@/lib/api/types"
 import { validatePagination, sanitizeSearchQuery, parseColumnFilters, filtersOrUndefined } from "@/lib/api/validation"
 import { parseRequestBody, createAuthContext, handleApiError } from "@/lib/api/api-route-helpers"
+import { createSuccessResponse, createErrorResponse } from "@/lib/config"
 import { PERMISSIONS, hasPermission } from "@/lib/permissions"
 import { createPost, type AuthContext } from "@/features/admin/posts/server/mutations"
 import { createPostSchema } from "@/features/admin/posts/server/validation"
@@ -21,7 +23,7 @@ async function getPostsHandler(req: NextRequest, context: ApiRouteContext) {
   })
 
   if (!paginationValidation.valid) {
-    return NextResponse.json({ error: paginationValidation.error }, { status: 400 })
+    return createErrorResponse(paginationValidation.error || "Invalid pagination parameters", { status: 400 })
   }
 
   const searchValidation = sanitizeSearchQuery(searchParams.get("search") || "", 200)
@@ -49,7 +51,16 @@ async function getPostsHandler(req: NextRequest, context: ApiRouteContext) {
     status,
   })
 
-  return NextResponse.json(result)
+  const serialized = serializePostsList(result)
+  return createSuccessResponse({
+    data: serialized.rows,
+    pagination: {
+      page: serialized.page,
+      limit: serialized.limit,
+      total: serialized.total,
+      totalPages: serialized.totalPages,
+    },
+  })
 }
 
 async function postPostsHandler(req: NextRequest, context: ApiRouteContext) {
@@ -68,11 +79,11 @@ async function postPostsHandler(req: NextRequest, context: ApiRouteContext) {
     const validationResult = createPostSchema.safeParse(payload)
     if (!validationResult.success) {
       const firstError = validationResult.error.issues[0]
-      return NextResponse.json({ error: firstError?.message || "Dữ liệu không hợp lệ" }, { status: 400 })
+      return createErrorResponse(firstError?.message || "Dữ liệu không hợp lệ", { status: 400 })
     }
 
     const created = await createPost(ctx, validationResult.data)
-    return NextResponse.json({ data: created })
+    return createSuccessResponse(created, { status: 201 })
   } catch (error) {
     return handleApiError(error, "Đã xảy ra lỗi khi tạo bài viết", 500)
   }

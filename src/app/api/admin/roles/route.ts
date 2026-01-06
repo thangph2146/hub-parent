@@ -8,15 +8,13 @@ import { serializeRolesList } from "@/features/admin/roles/server/helpers"
 import {
   createRole,
   type AuthContext,
-  ApplicationError,
-  NotFoundError,
 } from "@/features/admin/roles/server/mutations"
 import { CreateRoleSchema } from "@/features/admin/roles/server/schemas"
 import { createGetRoute, createPostRoute } from "@/lib/api/api-route-wrapper"
 import type { ApiRouteContext } from "@/lib/api/types"
 import { validatePagination, sanitizeSearchQuery, parseColumnFilters, filtersOrUndefined } from "@/lib/api/validation"
+import { parseRequestBody, createAuthContext, handleApiError } from "@/lib/api/api-route-helpers"
 import { createSuccessResponse, createErrorResponse } from "@/lib/config"
-import { logger } from "@/lib/config/logger"
 
 async function getRolesHandler(req: NextRequest, _context: ApiRouteContext) {
   const searchParams = req.nextUrl.searchParams
@@ -60,27 +58,19 @@ async function getRolesHandler(req: NextRequest, _context: ApiRouteContext) {
 }
 
 async function postRolesHandler(req: NextRequest, context: ApiRouteContext) {
-  let body: Record<string, unknown>
   try {
-    body = await req.json()
-  } catch {
-    return createErrorResponse("Dữ liệu không hợp lệ. Vui lòng kiểm tra lại.", { status: 400 })
-  }
+    const body = await parseRequestBody(req)
 
-  // Validate body với Zod schema
-  const validationResult = CreateRoleSchema.safeParse(body)
-  if (!validationResult.success) {
-    const firstError = validationResult.error.issues[0]
-    return createErrorResponse(firstError?.message || "Dữ liệu không hợp lệ", { status: 400 })
-  }
+    // Validate body với Zod schema
+    const validationResult = CreateRoleSchema.safeParse(body)
+    if (!validationResult.success) {
+      const firstError = validationResult.error.issues[0]
+      return createErrorResponse(firstError?.message || "Dữ liệu không hợp lệ", { status: 400 })
+    }
 
-  const ctx: AuthContext = {
-    actorId: context.session.user?.id ?? "unknown",
-    permissions: context.permissions,
-    roles: context.roles,
-  }
+    const userId = context.session.user?.id ?? "unknown"
+    const ctx = createAuthContext(context, userId) as AuthContext
 
-  try {
     const role = await createRole(ctx, validationResult.data)
     // Serialize role to client format (dates to strings)
     const serialized = {
@@ -95,14 +85,7 @@ async function postRolesHandler(req: NextRequest, context: ApiRouteContext) {
     }
     return createSuccessResponse(serialized, { status: 201 })
   } catch (error) {
-    if (error instanceof ApplicationError) {
-      return createErrorResponse(error.message || "Không thể tạo vai trò", { status: error.status || 400 })
-    }
-    if (error instanceof NotFoundError) {
-      return createErrorResponse(error.message || "Không tìm thấy", { status: 404 })
-    }
-    logger.error("Error creating role", { error })
-    return createErrorResponse("Đã xảy ra lỗi khi tạo vai trò", { status: 500 })
+    return handleApiError(error, "Đã xảy ra lỗi khi tạo vai trò", 500)
   }
 }
 

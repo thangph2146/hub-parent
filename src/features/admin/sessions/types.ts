@@ -1,4 +1,5 @@
 import type { ResourceResponse, BaseResourceTableClientProps } from "@/features/admin/resources/types"
+import type { ApiResponsePayload } from "@/lib/config/api-response"
 
 export interface SessionRow {
   id: string
@@ -20,7 +21,8 @@ export interface SessionsTableClientProps extends BaseResourceTableClientProps<S
   initialUsersOptions?: Array<{ label: string; value: string }>
 }
 
-export type SessionsResponse = ResourceResponse<SessionRow>
+// API response structure: { success: true, data: { data: SessionRow[], pagination: {...} } }
+export type SessionsResponse = ApiResponsePayload<ResourceResponse<SessionRow>>
 
 export interface ListSessionsInput {
   page?: number

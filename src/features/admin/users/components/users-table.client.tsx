@@ -131,12 +131,16 @@ export const UsersTableClient = ({
         throw new Error("Không thể tải danh sách người dùng")
       }
 
+      // payload.data là object { data: [...], pagination: {...} }
+      const usersData = payload.data.data || []
+      const pagination = payload.data.pagination
+
       return {
-        rows: payload.data || [],
-        page: payload.pagination?.page ?? page,
-        limit: payload.pagination?.limit ?? limit,
-        total: payload.pagination?.total ?? 0,
-        totalPages: payload.pagination?.totalPages ?? 0,
+        rows: usersData,
+        page: pagination?.page ?? page,
+        limit: pagination?.limit ?? limit,
+        total: pagination?.total ?? 0,
+        totalPages: pagination?.totalPages ?? 0,
       }
     },
     [],
@@ -477,6 +481,7 @@ export const UsersTableClient = ({
     queryClient,
     buildQueryKey: (params) => queryKeys.adminUsers.list({
       ...params,
+      status: params.status === "inactive" ? "active" : params.status,
       search: undefined,
       filters: undefined,
     }),

@@ -1,4 +1,5 @@
 import type { ResourceResponse, BaseResourceTableClientProps, ResourcePagination, BulkActionResult } from "@/features/admin/resources/types"
+import type { ApiResponsePayload } from "@/lib/config/api-response"
 
 export type ContactStatus = "NEW" | "IN_PROGRESS" | "RESOLVED" | "CLOSED"
 export type ContactPriority = "LOW" | "MEDIUM" | "HIGH" | "URGENT"
@@ -24,7 +25,8 @@ export interface ContactRequestsTableClientProps extends BaseResourceTableClient
   initialUsersOptions?: Array<{ label: string; value: string }>
 }
 
-export type ContactRequestsResponse = ResourceResponse<ContactRequestRow>
+// API response structure: { success: true, data: { data: ContactRequestRow[], pagination: {...} } }
+export type ContactRequestsResponse = ApiResponsePayload<ResourceResponse<ContactRequestRow>>
 
 export interface ListContactRequestsInput {
   page?: number

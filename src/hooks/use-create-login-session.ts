@@ -94,25 +94,30 @@ export const cleanupSessionCreatedFlag = (userId?: string): void => {
 export const useCreateLoginSession = () => {
   const { data: session, status } = useSession()
   const isCreatingRef = useRef(false)
-  const hasCheckedRef = useRef(false)
+  const processedUserIdRef = useRef<string | null>(null) // Track userId đã được xử lý
 
   useEffect(() => {
     // Chỉ chạy khi đã authenticated và có userId
     if (status !== "authenticated" || !session?.user?.id) {
-      hasCheckedRef.current = false
+      // Reset processedUserIdRef khi logout hoặc chưa authenticated
+      if (status !== "authenticated") {
+        processedUserIdRef.current = null
+      }
       return
     }
 
     const userId = session.user.id
 
-    // Chỉ check một lần cho mỗi session
-    if (hasCheckedRef.current) {
+    // Nếu đã xử lý userId này rồi, không làm gì nữa
+    // Điều này đảm bảo chỉ gọi một lần cho mỗi userId, ngay cả khi component re-mount
+    if (processedUserIdRef.current === userId) {
       return
     }
 
     // Kiểm tra xem đã tạo session cho user này chưa (từ localStorage)
     if (hasSessionBeenCreated(userId) || isCreatingRef.current) {
-      hasCheckedRef.current = true
+      // Đánh dấu đã xử lý userId này
+      processedUserIdRef.current = userId
       return
     }
 
@@ -120,7 +125,8 @@ export const useCreateLoginSession = () => {
     const createSession = async () => {
       // Đánh dấu đang tạo để tránh duplicate calls
       isCreatingRef.current = true
-      hasCheckedRef.current = true
+      // Đánh dấu đã xử lý userId này ngay lập tức để tránh duplicate calls
+      processedUserIdRef.current = userId
 
       try {
         logger.debug("Creating login session via hook", { userId })
@@ -137,8 +143,13 @@ export const useCreateLoginSession = () => {
           userId,
           error: extractAxiosErrorMessage(error),
         })
-        // Reset hasCheckedRef để có thể retry
-        hasCheckedRef.current = false
+        // Reset processedUserIdRef để có thể retry nếu cần
+        // Nhưng chỉ reset sau một delay để tránh retry ngay lập tức
+        setTimeout(() => {
+          if (processedUserIdRef.current === userId) {
+            processedUserIdRef.current = null
+          }
+        }, 5000) // Retry sau 5 giây nếu có lỗi
       } finally {
         isCreatingRef.current = false
       }

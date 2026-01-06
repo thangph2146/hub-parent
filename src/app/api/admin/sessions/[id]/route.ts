@@ -3,27 +3,27 @@
  * PUT /api/admin/sessions/[id] - Update session
  * DELETE /api/admin/sessions/[id] - Soft delete session
  */
-import { NextRequest, NextResponse } from "next/server"
+import { NextRequest } from "next/server"
 import { getSessionById } from "@/features/admin/sessions/server/queries"
 import { serializeSessionDetail } from "@/features/admin/sessions/server/helpers"
 import {
   updateSession,
   softDeleteSession,
   type AuthContext,
-  ApplicationError,
-  NotFoundError,
 } from "@/features/admin/sessions/server/mutations"
 import { UpdateSessionSchema } from "@/features/admin/sessions/server/schemas"
 import { createGetRoute, createPutRoute, createDeleteRoute } from "@/lib/api/api-route-wrapper"
 import type { ApiRouteContext } from "@/lib/api/types"
-import { logger } from "@/lib/config/logger"
+import { validateID } from "@/lib/api/validation"
+import { extractParams, parseRequestBody, createAuthContext, handleApiError } from "@/lib/api/api-route-helpers"
+import { createSuccessResponse, createErrorResponse } from "@/lib/config"
 
 async function getSessionHandler(_req: NextRequest, _context: ApiRouteContext, ...args: unknown[]) {
-  const { params } = args[0] as { params: Promise<{ id: string }> }
-  const { id: sessionId } = await params
+  const { id: sessionId } = await extractParams<{ id: string }>(args)
 
-  if (!sessionId) {
-    return NextResponse.json({ error: "Session ID is required" }, { status: 400 })
+  const idValidation = validateID(sessionId)
+  if (!idValidation.valid) {
+    return createErrorResponse(idValidation.error || "Session ID không hợp lệ", { status: 400 })
   }
 
   // Sử dụng getSessionById (non-cached) để đảm bảo data luôn fresh
@@ -31,41 +31,33 @@ async function getSessionHandler(_req: NextRequest, _context: ApiRouteContext, .
   const session = await getSessionById(sessionId)
 
   if (!session) {
-    return NextResponse.json({ error: "Session not found" }, { status: 404 })
+    return createErrorResponse("Session not found", { status: 404 })
   }
 
-  return NextResponse.json({ data: serializeSessionDetail(session) })
+  return createSuccessResponse(serializeSessionDetail(session))
 }
 
 async function putSessionHandler(req: NextRequest, context: ApiRouteContext, ...args: unknown[]) {
-  const { params } = args[0] as { params: Promise<{ id: string }> }
-  const { id: sessionId } = await params
-
-  if (!sessionId) {
-    return NextResponse.json({ error: "Session ID is required" }, { status: 400 })
-  }
-
-  let body: Record<string, unknown>
   try {
-    body = await req.json()
-  } catch {
-    return NextResponse.json({ error: "Dữ liệu không hợp lệ. Vui lòng kiểm tra lại." }, { status: 400 })
-  }
+    const { id: sessionId } = await extractParams<{ id: string }>(args)
 
-  // Validate body với Zod schema
-  const validationResult = UpdateSessionSchema.safeParse(body)
-  if (!validationResult.success) {
-    const firstError = validationResult.error.issues[0]
-    return NextResponse.json({ error: firstError?.message || "Dữ liệu không hợp lệ" }, { status: 400 })
-  }
+    const idValidation = validateID(sessionId)
+    if (!idValidation.valid) {
+      return createErrorResponse(idValidation.error || "Session ID không hợp lệ", { status: 400 })
+    }
 
-  const ctx: AuthContext = {
-    actorId: context.session.user?.id ?? "unknown",
-    permissions: context.permissions,
-    roles: context.roles,
-  }
+    const body = await parseRequestBody(req)
 
-  try {
+    // Validate body với Zod schema
+    const validationResult = UpdateSessionSchema.safeParse(body)
+    if (!validationResult.success) {
+      const firstError = validationResult.error.issues[0]
+      return createErrorResponse(firstError?.message || "Dữ liệu không hợp lệ", { status: 400 })
+    }
+
+    const userId = context.session.user?.id ?? "unknown"
+    const ctx = createAuthContext(context, userId) as AuthContext
+
     const session = await updateSession(ctx, sessionId, validationResult.data)
     // Serialize session to client format (dates to strings)
     const serialized = {
@@ -81,45 +73,28 @@ async function putSessionHandler(req: NextRequest, context: ApiRouteContext, ...
       createdAt: session.createdAt,
       deletedAt: session.deletedAt,
     }
-    return NextResponse.json({ data: serialized })
+    return createSuccessResponse(serialized)
   } catch (error) {
-    if (error instanceof ApplicationError) {
-      return NextResponse.json({ error: error.message || "Không thể cập nhật session" }, { status: error.status || 400 })
-    }
-    if (error instanceof NotFoundError) {
-      return NextResponse.json({ error: error.message || "Không tìm thấy" }, { status: 404 })
-    }
-    logger.error("Error updating session", { error, sessionId })
-    return NextResponse.json({ error: "Đã xảy ra lỗi khi cập nhật session" }, { status: 500 })
+    return handleApiError(error, "Đã xảy ra lỗi khi cập nhật session", 500)
   }
 }
 
 async function deleteSessionHandler(_req: NextRequest, context: ApiRouteContext, ...args: unknown[]) {
-  const { params } = args[0] as { params: Promise<{ id: string }> }
-  const { id: sessionId } = await params
-
-  if (!sessionId) {
-    return NextResponse.json({ error: "Session ID is required" }, { status: 400 })
-  }
-
-  const ctx: AuthContext = {
-    actorId: context.session.user?.id ?? "unknown",
-    permissions: context.permissions,
-    roles: context.roles,
-  }
-
   try {
+    const { id: sessionId } = await extractParams<{ id: string }>(args)
+
+    const idValidation = validateID(sessionId)
+    if (!idValidation.valid) {
+      return createErrorResponse(idValidation.error || "Session ID không hợp lệ", { status: 400 })
+    }
+
+    const userId = context.session.user?.id ?? "unknown"
+    const ctx = createAuthContext(context, userId) as AuthContext
+
     await softDeleteSession(ctx, sessionId)
-    return NextResponse.json({ message: "Session deleted successfully" })
+    return createSuccessResponse({ message: "Session deleted successfully" })
   } catch (error) {
-    if (error instanceof ApplicationError) {
-      return NextResponse.json({ error: error.message || "Không thể xóa session" }, { status: error.status || 400 })
-    }
-    if (error instanceof NotFoundError) {
-      return NextResponse.json({ error: error.message || "Không tìm thấy" }, { status: 404 })
-    }
-    logger.error("Error deleting session", { error, sessionId })
-    return NextResponse.json({ error: "Đã xảy ra lỗi khi xóa session" }, { status: 500 })
+    return handleApiError(error, "Đã xảy ra lỗi khi xóa session", 500)
   }
 }
 
