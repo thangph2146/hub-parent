@@ -249,10 +249,6 @@ export function DataTable<T extends object>({
             isFirstMountRef.current = false
             prevRefreshKeyRef.current = refreshKey
             prevQueryRef.current = query
-            console.debug("[DataTable] First mount - initialized prevRefreshKeyRef", {
-                refreshKey,
-                query: { page: query.page, limit: query.limit },
-            })
             return
         }
         
@@ -276,11 +272,6 @@ export function DataTable<T extends object>({
         if (refreshKeyChanged) {
             // Refresh từ mutation - fetch ngay lập tức để đảm bảo UI cập nhật ngay
             // Không dùng startTransition để tránh delay
-            console.debug("[DataTable] refreshKey changed, triggering immediate fetch", {
-                previousKey: prevRefreshKeyRef.current,
-                newKey: refreshKey,
-                query: { page: query.page, limit: query.limit },
-            })
             setDataPromise(safeLoad(loader, query))
         } else if (queryChanged) {
             // Query change từ user action - có thể dùng startTransition
@@ -698,20 +689,7 @@ function TableBodyContent<T extends object>({
     
     // Ensure result and result.rows are valid
     const rows = useMemo(() => {
-        if (!result) {
-            console.warn("[TableBodyContent] result is null/undefined")
-            return []
-        }
-        if (!result.rows) {
-            console.warn("[TableBodyContent] result.rows is null/undefined", { result })
-            return []
-        }
-        if (!Array.isArray(result.rows)) {
-            console.warn("[TableBodyContent] result.rows is not an array", { 
-                type: typeof result.rows, 
-                value: result.rows,
-                result 
-            })
+        if (!result?.rows || !Array.isArray(result.rows)) {
             return []
         }
         return result.rows

@@ -14,10 +14,11 @@ import {
 import { CreateStudentSchema } from "@/features/admin/students/server/schemas"
 import { createGetRoute, createPostRoute } from "@/lib/api/api-route-wrapper"
 import type { ApiRouteContext } from "@/lib/api/types"
-import { validatePagination, sanitizeSearchQuery } from "@/lib/api/validation"
+import { validatePagination, sanitizeSearchQuery, parseColumnFilters, filtersOrUndefined } from "@/lib/api/validation"
 import { createSuccessResponse, createErrorResponse } from "@/lib/config"
 import { isSuperAdmin } from "@/lib/permissions"
 import { StudentsResponse } from "@/features/admin/students/types"
+import { logger } from "@/lib/config/logger"
 
 async function getStudentsHandler(req: NextRequest, context: ApiRouteContext) {
   const searchParams = req.nextUrl.searchParams
@@ -35,16 +36,7 @@ async function getStudentsHandler(req: NextRequest, context: ApiRouteContext) {
   const statusParam = searchParams.get("status") || "active"
   const status = statusParam === "deleted" || statusParam === "all" || statusParam === "inactive" ? statusParam : "active"
 
-  const columnFilters: Record<string, string> = {}
-  searchParams.forEach((value, key) => {
-    if (key.startsWith("filter[")) {
-      const columnKey = key.replace("filter[", "").replace("]", "")
-      const sanitizedValue = sanitizeSearchQuery(value, Infinity)
-      if (sanitizedValue.valid && sanitizedValue.value) {
-        columnFilters[columnKey] = sanitizedValue.value
-      }
-    }
-  })
+  const columnFilters = parseColumnFilters(searchParams, Infinity)
 
   // Check if user is super admin
   const actorId = context.session.user?.id
@@ -56,7 +48,7 @@ async function getStudentsHandler(req: NextRequest, context: ApiRouteContext) {
     page: paginationValidation.page,
     limit: paginationValidation.limit,
     search: searchValidation.value || undefined,
-    filters: Object.keys(columnFilters).length > 0 ? columnFilters : undefined,
+    filters: filtersOrUndefined(columnFilters),
     status,
     actorId,
     isSuperAdmin: isSuperAdminUser,
@@ -117,7 +109,7 @@ async function postStudentsHandler(req: NextRequest, context: ApiRouteContext) {
     if (error instanceof NotFoundError) {
       return createErrorResponse(error.message || "Không tìm thấy", { status: 404 })
     }
-    console.error("Error creating student:", error)
+    logger.error("Error creating student", { error })
     return createErrorResponse("Đã xảy ra lỗi khi tạo sinh viên", { status: 500 })
   }
 }

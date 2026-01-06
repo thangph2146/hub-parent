@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef } from "react"
+import { logger } from "@/lib/config/logger"
 
 const getElement = (): HTMLElement => {
   let element = document.getElementById("report-container")
@@ -42,7 +43,7 @@ export function useReport(): (arg0: string) => ReturnType<typeof setTimeout> {
 
   return useCallback(
     (content) => {
-      console.log(content)
+      logger.debug("Report content", { content })
       const element = getElement()
       if (timer.current !== null) {
         clearTimeout(timer.current)

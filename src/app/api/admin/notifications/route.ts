@@ -14,7 +14,7 @@ import { auth } from "@/lib/auth/auth"
 import { isSuperAdmin } from "@/lib/permissions"
 import { listNotifications } from "@/features/admin/notifications/server/queries"
 import { createErrorResponse, createSuccessResponse } from "@/lib/config"
-import { sanitizeSearchQuery } from "@/lib/api/validation"
+import { validatePagination, sanitizeSearchQuery, parseColumnFilters, filtersOrUndefined } from "@/lib/api/validation"
 import { logger } from "@/lib/config/logger"
 
 async function getAdminNotificationsHandler(req: NextRequest) {
@@ -33,59 +33,31 @@ async function getAdminNotificationsHandler(req: NextRequest) {
 
   const searchParams = req.nextUrl.searchParams
   
-  // Parse pagination params
-  const pageParam = searchParams.get("page")
-  const limitParam = searchParams.get("limit")
-  const searchParam = searchParams.get("search")
+  const paginationValidation = validatePagination({
+    page: searchParams.get("page"),
+    limit: searchParams.get("limit"),
+  })
 
-  // Validate and parse page
-  const page = pageParam ? parseInt(pageParam, 10) : 1
-  if (isNaN(page) || page < 1) {
-    return createErrorResponse("Page must be a positive number", { status: 400 })
+  if (!paginationValidation.valid) {
+    return createErrorResponse(paginationValidation.error || "Invalid pagination parameters", { status: 400 })
   }
 
-  // Validate and parse limit
-  const limit = limitParam ? parseInt(limitParam, 10) : 10
-  if (isNaN(limit) || limit < 1 || limit > 100) {
-    return createErrorResponse("Limit must be a number between 1 and 100", { status: 400 })
-  }
-
-  // Parse and sanitize search
-  const searchValidation = sanitizeSearchQuery(searchParam || "", 200)
+  const searchValidation = sanitizeSearchQuery(searchParams.get("search") || "", 200)
   if (!searchValidation.valid) {
     return createErrorResponse(searchValidation.error || "Invalid search query", { status: 400 })
   }
 
-  // Parse column filters
-  const columnFilters: Record<string, string> = {}
-  searchParams.forEach((value, key) => {
-    if (key.startsWith("filter[")) {
-      const columnKey = key.replace("filter[", "").replace("]", "")
-      const sanitizedValue = sanitizeSearchQuery(value, Infinity)
-      if (sanitizedValue.valid && sanitizedValue.value) {
-        columnFilters[columnKey] = sanitizedValue.value
-      }
-    }
-  })
+  const columnFilters = parseColumnFilters(searchParams, Infinity)
 
   try {
     // Sử dụng non-cached query function để fetch notifications (theo chuẩn admin - không cache)
     // Nếu userId được truyền, chỉ fetch notifications của user đó
     // Nếu không (super admin), fetch tất cả notifications
-    logger.debug("Fetching admin notifications", {
-      page,
-      limit,
-      search: searchValidation.value || undefined,
-      filters: Object.keys(columnFilters).length > 0 ? columnFilters : undefined,
-      userId,
-      isSuperAdmin: isSuperAdminUser,
-    })
-
     const result = await listNotifications({
-      page,
-      limit,
+      page: paginationValidation.page!,
+      limit: paginationValidation.limit!,
       search: searchValidation.value || undefined,
-      filters: Object.keys(columnFilters).length > 0 ? columnFilters : undefined,
+      filters: filtersOrUndefined(columnFilters),
       userId,
       isSuperAdmin: isSuperAdminUser,
     })
@@ -135,7 +107,7 @@ export async function GET(req: NextRequest) {
   try {
     return await getAdminNotificationsHandler(req)
   } catch (error) {
-    console.error("Error in admin notifications route:", error)
+    logger.error("Error in admin notifications route", { error })
     return createErrorResponse("Internal server error", { status: 500 })
   }
 }

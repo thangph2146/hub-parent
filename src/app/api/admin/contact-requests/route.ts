@@ -6,7 +6,7 @@ import { listContactRequests } from "@/features/admin/contact-requests/server/qu
 import { serializeContactRequestsList } from "@/features/admin/contact-requests/server/helpers"
 import { createGetRoute } from "@/lib/api/api-route-wrapper"
 import type { ApiRouteContext } from "@/lib/api/types"
-import { validatePagination, sanitizeSearchQuery } from "@/lib/api/validation"
+import { validatePagination, sanitizeSearchQuery, parseColumnFilters, filtersOrUndefined } from "@/lib/api/validation"
 
 async function getContactRequestsHandler(req: NextRequest, _context: ApiRouteContext) {
   const searchParams = req.nextUrl.searchParams
@@ -24,16 +24,7 @@ async function getContactRequestsHandler(req: NextRequest, _context: ApiRouteCon
   const statusParam = searchParams.get("status") || "active"
   const status = statusParam === "deleted" || statusParam === "all" || statusParam === "NEW" || statusParam === "IN_PROGRESS" || statusParam === "RESOLVED" || statusParam === "CLOSED" ? statusParam : "active"
 
-  const columnFilters: Record<string, string> = {}
-  searchParams.forEach((value, key) => {
-    if (key.startsWith("filter[")) {
-      const columnKey = key.replace("filter[", "").replace("]", "")
-      const sanitizedValue = sanitizeSearchQuery(value, Infinity)
-      if (sanitizedValue.valid && sanitizedValue.value) {
-        columnFilters[columnKey] = sanitizedValue.value
-      }
-    }
-  })
+  const columnFilters = parseColumnFilters(searchParams, Infinity)
 
   // Sử dụng listContactRequests (non-cached) để đảm bảo data luôn fresh
   // API routes cần fresh data, không nên sử dụng cache để tránh trả về dữ liệu cũ
@@ -41,7 +32,7 @@ async function getContactRequestsHandler(req: NextRequest, _context: ApiRouteCon
     page: paginationValidation.page,
     limit: paginationValidation.limit,
     search: searchValidation.value || undefined,
-    filters: Object.keys(columnFilters).length > 0 ? columnFilters : undefined,
+    filters: filtersOrUndefined(columnFilters),
     status,
   })
 

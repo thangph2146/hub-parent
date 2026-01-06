@@ -19,9 +19,8 @@ interface ApiError {
   }
 }
 
-const getErrorMessage = (error: unknown, defaultMessage: string): string => {
-  return (error as ApiError)?.response?.data?.message || defaultMessage
-}
+const getErrorMessage = (error: unknown, defaultMessage: string): string => 
+  (error as ApiError)?.response?.data?.message || defaultMessage
 
 interface UseNotificationActionsOptions {
   showFeedback: (variant: FeedbackVariant, title: string, description?: string, details?: string) => void

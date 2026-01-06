@@ -13,6 +13,7 @@ import {
 import { createGetRoute, createPutRoute } from "@/lib/api/api-route-wrapper"
 import type { ApiRouteContext } from "@/lib/api/types"
 import type { UpdateAccountInput } from "@/features/admin/accounts/server/schemas"
+import { logger } from "@/lib/config/logger"
 
 async function getAccountHandler(_req: NextRequest, context: ApiRouteContext) {
   const userId = context.session.user?.id
@@ -72,7 +73,7 @@ async function putAccountHandler(req: NextRequest, context: ApiRouteContext) {
     if (error instanceof ApplicationError) {
       return NextResponse.json({ error: error.message || "Không thể cập nhật tài khoản" }, { status: error.status || 400 })
     }
-    console.error("Error updating account:", error)
+    logger.error("Error updating account", { error, userId })
     return NextResponse.json({ error: "Đã xảy ra lỗi khi cập nhật tài khoản" }, { status: 500 })
   }
 }

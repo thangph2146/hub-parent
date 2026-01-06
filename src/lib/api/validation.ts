@@ -401,3 +401,9 @@ export const buildFilters = <T extends Record<string, unknown>>(
   return filters
 }
 
+/**
+ * Helper function to convert filters object to undefined if empty
+ */
+export const filtersOrUndefined = <T extends Record<string, unknown>>(
+  filters: T
+): T | undefined => (Object.keys(filters).length > 0 ? filters : undefined)

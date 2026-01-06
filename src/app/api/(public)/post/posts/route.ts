@@ -18,6 +18,7 @@ import { getPosts } from "@/features/public/post/server/queries"
 import { POST_PAGINATION, POST_SEARCH } from "@/features/public/post/utils/constants"
 import type { Post } from "@/features/public/post/types"
 import type { ResourcePagination } from "@/features/admin/resources/server"
+import { logger } from "@/lib/config/logger"
 
 export interface PostsResponse {
   data: Post[]
@@ -75,7 +76,7 @@ export async function GET(req: NextRequest) {
       pagination: result.pagination,
     } satisfies PostsResponse)
   } catch (error) {
-    console.error("[GET /api/(public)/post/posts] Error:", error)
+    logger.error("[GET /api/(public)/post/posts] Error", { error })
     
     // Determine error status
     const isValidationError = error instanceof Error && 

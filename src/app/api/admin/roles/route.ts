@@ -14,8 +14,9 @@ import {
 import { CreateRoleSchema } from "@/features/admin/roles/server/schemas"
 import { createGetRoute, createPostRoute } from "@/lib/api/api-route-wrapper"
 import type { ApiRouteContext } from "@/lib/api/types"
-import { validatePagination, sanitizeSearchQuery } from "@/lib/api/validation"
+import { validatePagination, sanitizeSearchQuery, parseColumnFilters, filtersOrUndefined } from "@/lib/api/validation"
 import { createSuccessResponse, createErrorResponse } from "@/lib/config"
+import { logger } from "@/lib/config/logger"
 
 async function getRolesHandler(req: NextRequest, _context: ApiRouteContext) {
   const searchParams = req.nextUrl.searchParams
@@ -33,16 +34,7 @@ async function getRolesHandler(req: NextRequest, _context: ApiRouteContext) {
   const statusParam = searchParams.get("status") || "active"
   const status = statusParam === "deleted" || statusParam === "all" ? statusParam : "active"
 
-  const columnFilters: Record<string, string> = {}
-  searchParams.forEach((value, key) => {
-    if (key.startsWith("filter[")) {
-      const columnKey = key.replace("filter[", "").replace("]", "")
-      const sanitizedValue = sanitizeSearchQuery(value, Infinity)
-      if (sanitizedValue.valid && sanitizedValue.value) {
-        columnFilters[columnKey] = sanitizedValue.value
-      }
-    }
-  })
+  const columnFilters = parseColumnFilters(searchParams, Infinity)
 
   // Sử dụng listRoles (non-cached) để đảm bảo data luôn fresh
   // API routes cần fresh data, không nên sử dụng cache để tránh trả về dữ liệu cũ
@@ -50,7 +42,7 @@ async function getRolesHandler(req: NextRequest, _context: ApiRouteContext) {
     page: paginationValidation.page,
     limit: paginationValidation.limit,
     search: searchValidation.value || undefined,
-    filters: Object.keys(columnFilters).length > 0 ? columnFilters : undefined,
+    filters: filtersOrUndefined(columnFilters),
     status,
   })
 
@@ -109,7 +101,7 @@ async function postRolesHandler(req: NextRequest, context: ApiRouteContext) {
     if (error instanceof NotFoundError) {
       return createErrorResponse(error.message || "Không tìm thấy", { status: 404 })
     }
-    console.error("Error creating role:", error)
+    logger.error("Error creating role", { error })
     return createErrorResponse("Đã xảy ra lỗi khi tạo vai trò", { status: 500 })
   }
 }

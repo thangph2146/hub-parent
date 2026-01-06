@@ -87,7 +87,7 @@ async function patchNotificationHandler(req: NextRequest, { params }: { params: 
       const payload = mapNotificationToPayload(updated)
       io.to(`user:${updated.userId}`).emit("notification:updated", payload)
     } catch (error) {
-      console.warn("Failed to emit socket event for notification update", error)
+      logger.warn("Failed to emit socket event for notification update", { error, userId: updated.userId })
     }
   }
 
@@ -133,7 +133,7 @@ async function deleteNotificationHandler(req: NextRequest, { params }: { params:
       return createErrorResponse("Không tìm thấy thông báo", { status: 404 })
     }
     
-    console.error("Error deleting notification:", error)
+    logger.error("Error deleting notification", { error, notificationId: id, userId: session.user.id })
     return createErrorResponse("Internal server error", { status: 500 })
   }
 }
@@ -142,7 +142,7 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ id: s
   try {
     return await patchNotificationHandler(req, context)
   } catch (error) {
-    console.error("Error updating notification:", error)
+    logger.error("Error updating notification", { error })
     return createErrorResponse("Internal server error", { status: 500 })
   }
 }
@@ -151,7 +151,7 @@ export async function DELETE(req: NextRequest, context: { params: Promise<{ id: 
   try {
     return await deleteNotificationHandler(req, context)
   } catch (error) {
-    console.error("Error deleting notification:", error)
+    logger.error("Error deleting notification", { error })
     return createErrorResponse("Internal server error", { status: 500 })
   }
 }

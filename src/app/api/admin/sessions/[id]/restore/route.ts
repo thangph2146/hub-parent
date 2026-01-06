@@ -10,6 +10,7 @@ import {
 } from "@/features/admin/sessions/server/mutations"
 import { createPostRoute } from "@/lib/api/api-route-wrapper"
 import type { ApiRouteContext } from "@/lib/api/types"
+import { logger } from "@/lib/config/logger"
 
 async function restoreSessionHandler(_req: NextRequest, context: ApiRouteContext, ...args: unknown[]) {
   const { params } = args[0] as { params: Promise<{ id: string }> }
@@ -35,7 +36,7 @@ async function restoreSessionHandler(_req: NextRequest, context: ApiRouteContext
     if (error instanceof NotFoundError) {
       return NextResponse.json({ error: error.message || "Không tìm thấy" }, { status: 404 })
     }
-    console.error("Error restoring session:", error)
+    logger.error("Error restoring session", { error, sessionId })
     return NextResponse.json({ error: "Đã xảy ra lỗi khi khôi phục session" }, { status: 500 })
   }
 }

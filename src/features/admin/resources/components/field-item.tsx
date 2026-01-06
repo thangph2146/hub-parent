@@ -20,11 +20,10 @@ export const FieldItem = ({
 }: FieldItemProps) => {
   const isBgClass = iconColor.startsWith("bg-")
   const bgProp = isBgClass ? undefined : (iconColor as "muted" | "primary" | "destructive" | undefined)
-  const bgClassName = isBgClass ? iconColor : undefined
   
   return (
     <Flex align="start" gap={3} fullWidth className={className}>
-      <Flex align="center" justify="center" shrink rounded="lg" bg={bgProp} className={cn("h-10 w-10", bgClassName)}>
+      <Flex align="center" justify="center" shrink rounded="lg" bg={bgProp} className={cn("h-10 w-10", isBgClass && iconColor)}>
         <IconSize size="sm"><Icon /></IconSize>
       </Flex>
       <Flex direction="col" gap={1} fullWidth flex="1" minWidth="0">

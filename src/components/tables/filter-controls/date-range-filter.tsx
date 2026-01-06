@@ -30,9 +30,8 @@ export function DateRangeFilter<T extends object = object>({
                         setDatesWithItems(response.data.dates)
                     }
                 }
-            } catch (error) {
+            } catch {
                 // Silently fail - dates highlighting is optional
-                console.debug("[DateRangeFilter] Failed to fetch dates with items", error)
             }
         }
 
@@ -85,13 +84,7 @@ export function DateRangeFilter<T extends object = object>({
         const fromStr = from ? format(from, "yyyy-MM-dd") : ""
         const toStr = to ? format(to, "yyyy-MM-dd") : ""
         // Format: "fromDate|toDate" or "fromDate|" or "|toDate" or ""
-        const newValue = fromStr && toStr 
-            ? `${fromStr}|${toStr}` 
-            : fromStr 
-                ? `${fromStr}|` 
-                : toStr 
-                    ? `|${toStr}` 
-                    : ""
+        const newValue = fromStr || toStr ? `${fromStr}|${toStr}` : ""
         onChange(newValue, true)
     }
 

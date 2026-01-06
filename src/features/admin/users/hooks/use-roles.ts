@@ -28,12 +28,8 @@ export const useRoles = (options: UseRolesOptions = {}) => {
       initialData: initialRolesProvided ? { data: initialRoles } : undefined,
     })
   )
-  const roles = useMemo(() => {
-    if (data?.data) {
-      return data.data
-    }
-    return initialRoles
-  }, [data, initialRoles])
+
+  const roles = useMemo(() => data?.data ?? initialRoles, [data?.data, initialRoles])
 
   return {
     roles,

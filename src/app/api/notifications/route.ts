@@ -208,7 +208,7 @@ async function deleteNotificationsHandler(req: NextRequest) {
       return createErrorResponse("Bạn chỉ có thể xóa thông báo của chính mình", { status: 403 })
     }
     
-    console.error("Error deleting notifications:", error)
+    logger.error("Error deleting notifications", { error })
     return createErrorResponse("Internal server error", { status: 500 })
   }
 }
@@ -217,7 +217,7 @@ export async function GET(req: NextRequest) {
   try {
     return await getUserNotificationsHandler(req)
   } catch (error) {
-    console.error("Error fetching notifications:", error)
+    logger.error("Error fetching notifications", { error })
     return createErrorResponse("Internal server error", { status: 500 })
   }
 }
@@ -226,7 +226,7 @@ export async function DELETE(req: NextRequest) {
   try {
     return await deleteNotificationsHandler(req)
   } catch (error) {
-    console.error("Error deleting notifications:", error)
+    logger.error("Error deleting notifications", { error })
     return createErrorResponse("Internal server error", { status: 500 })
   }
 }

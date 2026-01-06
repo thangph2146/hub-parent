@@ -14,7 +14,8 @@ import {
 import { CreateSessionSchema } from "@/features/admin/sessions/server/schemas"
 import { createGetRoute, createPostRoute } from "@/lib/api/api-route-wrapper"
 import type { ApiRouteContext } from "@/lib/api/types"
-import { validatePagination, sanitizeSearchQuery } from "@/lib/api/validation"
+import { validatePagination, sanitizeSearchQuery, parseColumnFilters, filtersOrUndefined } from "@/lib/api/validation"
+import { logger } from "@/lib/config/logger"
 
 async function getSessionsHandler(req: NextRequest, _context: ApiRouteContext) {
   const searchParams = req.nextUrl.searchParams
@@ -32,16 +33,7 @@ async function getSessionsHandler(req: NextRequest, _context: ApiRouteContext) {
   const statusParam = searchParams.get("status") || "active"
   const status = statusParam === "deleted" || statusParam === "all" ? statusParam : "active"
 
-  const columnFilters: Record<string, string> = {}
-  searchParams.forEach((value, key) => {
-    if (key.startsWith("filter[")) {
-      const columnKey = key.replace("filter[", "").replace("]", "")
-      const sanitizedValue = sanitizeSearchQuery(value, Infinity)
-      if (sanitizedValue.valid && sanitizedValue.value) {
-        columnFilters[columnKey] = sanitizedValue.value
-      }
-    }
-  })
+  const columnFilters = parseColumnFilters(searchParams, Infinity)
 
   // Sử dụng listSessions (non-cached) để đảm bảo data luôn fresh
   // API routes cần fresh data, không nên sử dụng cache để tránh trả về dữ liệu cũ
@@ -49,7 +41,7 @@ async function getSessionsHandler(req: NextRequest, _context: ApiRouteContext) {
     page: paginationValidation.page,
     limit: paginationValidation.limit,
     search: searchValidation.value || undefined,
-    filters: Object.keys(columnFilters).length > 0 ? columnFilters : undefined,
+    filters: filtersOrUndefined(columnFilters),
     status,
   })
 
@@ -111,7 +103,7 @@ async function postSessionsHandler(req: NextRequest, context: ApiRouteContext) {
     if (error instanceof NotFoundError) {
       return NextResponse.json({ error: error.message || "Không tìm thấy" }, { status: 404 })
     }
-    console.error("Error creating session:", error)
+    logger.error("Error creating session", { error })
     return NextResponse.json({ error: "Đã xảy ra lỗi khi tạo session" }, { status: 500 })
   }
 }

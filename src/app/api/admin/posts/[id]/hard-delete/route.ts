@@ -11,6 +11,7 @@ import {
 import { createDeleteRoute } from "@/lib/api/api-route-wrapper"
 import type { ApiRouteContext } from "@/lib/api/types"
 import { createErrorResponse, createSuccessResponse } from "@/lib/config"
+import { logger } from "@/lib/config/logger"
 
 async function hardDeletePostHandler(_req: NextRequest, context: ApiRouteContext, ...args: unknown[]) {
   const { params } = args[0] as { params: Promise<{ id: string }> }
@@ -36,7 +37,7 @@ async function hardDeletePostHandler(_req: NextRequest, context: ApiRouteContext
     if (error instanceof NotFoundError) {
       return createErrorResponse(error.message || "Không tìm thấy", { status: 404 })
     }
-    console.error("Error hard deleting post:", error)
+    logger.error("Error hard deleting post", { error, postId })
     return createErrorResponse("Đã xảy ra lỗi khi xóa vĩnh viễn bài viết", { status: 500 })
   }
 }
