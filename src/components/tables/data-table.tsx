@@ -181,6 +181,15 @@ export function DataTable<T extends object>({
         () => ({ ...defaultFilters }),
     )
     const [showFilters, setShowFilters] = useState<boolean>(true)
+    const prevPageRef = useRef<number | null>(null)
+
+    // Scroll to top when page changes (but not on initial mount)
+    useEffect(() => {
+        if (prevPageRef.current !== null && prevPageRef.current !== query.page) {
+            window.scrollTo({ top: 0, behavior: "smooth" })
+        }
+        prevPageRef.current = query.page
+    }, [query.page])
 
     const [dataPromise, setDataPromise] = useState<Promise<DataTableResult<T>>>(() => {
         // Nếu có initialData, sử dụng nó thay vì gọi loader để tránh loading không cần thiết

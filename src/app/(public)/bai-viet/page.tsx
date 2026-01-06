@@ -1,15 +1,12 @@
 import type { Metadata } from "next"
 import { TypographyH2, TypographyPMuted } from "@/components/ui/typography"
-import { Filter, Tags } from "lucide-react"
-import { PostList } from "@/features/public/post/components/post-list"
-import { PostCategoryNav } from "@/features/public/post/components/post-category-nav"
-import { PostTagNav } from "@/features/public/post/components/post-tag-nav"
+import { PostPageClient } from "@/features/public/post/components/post-page-client"
 import { PostSort } from "@/features/public/post/components/post-sort"
 import { PostDateRange } from "@/features/public/post/components/post-date-range"
 import { getPosts, getCategories, getTags } from "@/features/public/post/server/queries"
 import { appConfig, getOpenGraphConfig, getTwitterConfig } from "@/lib/config"
-import { CollapsibleSection } from "@/features/public/post/components/collapsible-section"
 import { PostBreadcrumb } from "@/components/public/post/post-breadcrumb"
+import { PostSidebarSheet } from "@/features/public/post/components/post-sidebar-sheet"
 
 const openGraphConfig = getOpenGraphConfig();
 const twitterConfig = getTwitterConfig();
@@ -91,9 +88,9 @@ export default async function PostPage({ searchParams }: PostPageProps) {
     : null
 
   return (
-    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-12">
+    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 xl:py-12">
       {/* Breadcrumb */}
-      <div className="mb-6">
+      <div className="mb-4 sm:mb-6">
         <PostBreadcrumb
           categoryName={category?.name}
           categorySlug={category?.slug}
@@ -103,53 +100,33 @@ export default async function PostPage({ searchParams }: PostPageProps) {
         />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] xl:grid-cols-[300px_1fr] gap-6 sm:gap-8 lg:gap-12">
-        {/* Sidebar - Category Navigation & Tags */}
-        <aside className="lg:sticky lg:top-20 lg:h-fit lg:max-h-[calc(100vh-5rem)] lg:overflow-y-auto">
-          <div className="space-y-6 mb-6 lg:mb-0">
-            {/* Category Navigation */}
-            <CollapsibleSection
-              title="Danh mục:"
-              icon={<Filter className="h-4 w-4" />}
-              defaultOpen={true}
-            >
-              <PostCategoryNav categories={categories} />
-            </CollapsibleSection>
-
-            {/* Tag Navigation */}
-            <CollapsibleSection
-              title="Thẻ tag:"
-              icon={<Tags className="h-4 w-4" />}
-              defaultOpen={true}
-            >
-              <PostTagNav tags={tags} />
-            </CollapsibleSection>
-          </div>
-        </aside>
-
-        {/* Main Content */}
-        <div className="min-w-0">
+      {/* Main Content */}
+      <div className="min-w-0">
           {/* Header with Sort and Date Range */}
-          <div className="sticky top-14.5 z-10 w-full flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-4 mb-6 sm:mb-8 px-4 sm:px-0 -mx-4 sm:mx-0 py-4 sm:py-0 border-b bg-background supports-[backdrop-filter]:bg-background/70 border-border backdrop-blur-lg">
-            <div className="flex-shrink-0">
-              <TypographyH2 className="text-xl sm:text-2xl">Tất cả bài viết</TypographyH2>
-              <TypographyPMuted className="mt-1 text-sm sm:text-base">
-                {result.pagination.total} bài viết
-              </TypographyPMuted>
+          <div className="sticky top-14 z-10 w-full flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-4 sm:mb-6 lg:mb-8 px-4 sm:px-0 -mx-4 sm:mx-0 py-3 sm:py-0 border-b bg-background/95 supports-[backdrop-filter]:bg-background/80 border-border backdrop-blur-lg">
+            <div className="flex items-center justify-between sm:justify-start gap-3 flex-shrink-0">
+              <div>
+                <TypographyH2 className="text-lg sm:text-xl lg:text-2xl">Tất cả bài viết</TypographyH2>
+                <TypographyPMuted className="mt-0.5 sm:mt-1 text-xs sm:text-sm lg:text-base">
+                  {result.pagination.total} bài viết
+                </TypographyPMuted>
+              </div>
+              
             </div>
             <div className="flex items-center gap-2 flex-shrink-0 flex-wrap">
               <PostDateRange />
               <PostSort />
+              {/* Mobile Filter Button */}
+              <PostSidebarSheet categories={categories} tags={tags} />
             </div>
           </div>
 
-          {/* Post List */}
-          <PostList
-            posts={result.data}
-            currentPage={result.pagination.page}
-            totalPages={result.pagination.totalPages}
-          />
-        </div>
+        {/* Post List */}
+        <PostPageClient
+          posts={result.data}
+          currentPage={result.pagination.page}
+          totalPages={result.pagination.totalPages}
+        />
       </div>
     </div>
   )

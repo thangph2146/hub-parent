@@ -6,7 +6,6 @@ import {
   TEXT_FORMAT_TRANSFORMERS,
   TEXT_MATCH_TRANSFORMERS,
 } from "@lexical/markdown"
-import { AutoFocusPlugin } from "@lexical/react/LexicalAutoFocusPlugin"
 import { CheckListPlugin } from "@lexical/react/LexicalCheckListPlugin"
 import { ClearEditorPlugin } from "@lexical/react/LexicalClearEditorPlugin"
 import { ClickableLinkPlugin } from "@lexical/react/LexicalClickableLinkPlugin"
@@ -186,7 +185,7 @@ export function Plugins({
       )}
     
         <div className="relative w-full" style={constrainedWidthStyle}>
-          {!readOnly && <AutoFocusPlugin />}
+          {/* AutoFocusPlugin removed to prevent auto-scroll on page load */}
           <RichTextPlugin
             contentEditable={
               <div className="">

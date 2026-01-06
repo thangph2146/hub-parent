@@ -50,7 +50,7 @@ export function DashboardWelcomeSkeleton() {
             </Flex>
           </CardHeader>
           <CardContent className="relative z-10">
-            <Grid cols="2-md" gap={2} fullWidth>
+            <Grid cols="responsive-3" gap={2} fullWidth>
               {Array.from({ length: 8 }).map((_, index) => (
                 <Flex key={index} align="center" gap={2} fullWidth padding="xs" rounded="md" border="all">
                   <Skeleton className="h-4 w-4 rounded-full" />

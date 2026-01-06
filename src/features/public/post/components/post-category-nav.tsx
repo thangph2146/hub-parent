@@ -112,55 +112,76 @@ export const PostCategoryNav = ({ categories }: PostCategoryNavProps) => {
           })}
         </Flex>
 
-      {/* Desktop: Vertical scroll */}
+      {/* Desktop: Vertical scroll - Tree style */}
       <Flex className="hidden lg:block">
         <ScrollArea className="w-full max-h-[calc(100vh-12rem)]">
-          <Flex direction="col" align="stretch" gap={2} className="pr-4">
+          <Flex direction="col" align="stretch" gap={1} className="pr-4">
             <Link
               href={clearAllCategories()}
               className={cn(
-                "group px-4 py-2 rounded-md whitespace-nowrap transition-all border w-full",
+                "group relative px-3 py-2 rounded-md transition-all w-full",
+                "hover:bg-accent/50 active:bg-accent",
                 selectedCategories.size === 0
-                  ? "bg-primary/10 text-primary border-primary/20 shadow-sm"
-                  : "hover:bg-accent/10 text-muted-foreground border-transparent hover:border-border"
+                  ? "bg-primary/10 text-primary font-medium"
+                  : "text-foreground/70 hover:text-foreground"
               )}
             >
-              <Flex align="center" gap={2} justify="between">
-                <Flex align="center" gap={2}>
-                  <IconSize size="sm" className={cn("transition-transform", selectedCategories.size === 0 && "scale-110")}>
-                    <FolderOpen />
-                  </IconSize>
-                  <TypographySpanSmall>Tất cả</TypographySpanSmall>
-                </Flex>
+              <Flex align="center" gap={2.5}>
+                <IconSize size="sm" className={cn(
+                  "transition-all flex-shrink-0",
+                  selectedCategories.size === 0 && "text-primary"
+                )}>
+                  <FolderOpen />
+                </IconSize>
+                <TypographySpanSmall className={cn(
+                  "flex-1",
+                  selectedCategories.size === 0 && "font-medium"
+                )}>
+                  Tất cả
+                </TypographySpanSmall>
                 {selectedCategories.size > 0 && (
-                  <IconSize size="xs" className="opacity-50 group-hover:opacity-100">
+                  <IconSize size="xs" className="opacity-50 group-hover:opacity-100 flex-shrink-0">
                     <X />
                   </IconSize>
                 )}
               </Flex>
             </Link>
-            {categories.map((category) => {
+            {categories.map((category, index) => {
               const isActive = selectedCategories.has(category.slug)
+              const isLast = index === categories.length - 1
               return (
                 <Link
                   key={category.id}
                   href={toggleCategory(category.slug)}
                   className={cn(
-                    "group px-4 py-2 rounded-md whitespace-nowrap transition-all border w-full",
+                    "group relative px-3 py-2 rounded-md transition-all w-full",
+                    "hover:bg-accent/50 active:bg-accent",
                     isActive
-                      ? "bg-primary/10 text-primary border-primary/20 shadow-sm"
-                      : "hover:bg-accent/10 text-muted-foreground border-transparent hover:border-border"
+                      ? "bg-primary/10 text-primary font-medium"
+                      : "text-foreground/70 hover:text-foreground"
                   )}
                 >
-                  <Flex align="center" gap={2} justify="between">
-                    <Flex align="center" gap={2}>
-                      <IconSize size="sm" className={cn("transition-transform", isActive && "scale-110")}>
-                        <FolderOpen />
-                      </IconSize>
-                      <TypographySpanSmall>{category.name}</TypographySpanSmall>
-                    </Flex>
+                  <Flex align="center" gap={2.5}>
+                    {/* Tree line */}
+                    <div className="absolute left-0 top-0 bottom-0 w-px bg-border/50" />
+                    <div className={cn(
+                      "absolute left-0 top-0 w-3 h-px bg-border/50",
+                      isLast && "hidden"
+                    )} />
+                    <IconSize size="sm" className={cn(
+                      "transition-all flex-shrink-0 ml-1",
+                      isActive && "text-primary"
+                    )}>
+                      <FolderOpen />
+                    </IconSize>
+                    <TypographySpanSmall className={cn(
+                      "flex-1",
+                      isActive && "font-medium"
+                    )}>
+                      {category.name}
+                    </TypographySpanSmall>
                     {isActive && (
-                      <IconSize size="xs" className="opacity-50 group-hover:opacity-100">
+                      <IconSize size="xs" className="opacity-50 group-hover:opacity-100 flex-shrink-0">
                         <X />
                       </IconSize>
                     )}

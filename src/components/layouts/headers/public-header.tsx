@@ -471,8 +471,8 @@ export function PublicHeader() {
                         className={cn(
                           "w-auto",
                           supportLinks.length <= 2 
-                            ? "min-w-[280px] max-w-sm" 
-                            : "min-w-[320px] max-w-lg"
+                            ? "min-w-[400px] max-w-sm" 
+                            : "min-w-[500px] max-w-lg"
                         )}
                       >
                         {supportLinks.map((item, i) => (

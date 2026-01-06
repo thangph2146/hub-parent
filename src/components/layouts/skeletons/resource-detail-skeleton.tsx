@@ -53,7 +53,7 @@ export function ResourceDetailSkeleton({
             <div className="mx-0 mb-3 px-2 border-b-0 w-auto text-xs sm:text-sm md:text-base font-normal text-muted-foreground">
               <Skeleton className="h-4 w-64 inline-block" />
             </div>
-            <Grid cols={fieldCount > 2 ? "2-lg" : 1} fullWidth gap={6}>
+            <Grid cols={fieldCount > 2 ? "responsive-3" : 1} fullWidth gap={6}>
               {Array.from({ length: Math.max(2, fieldCount) }).map((_, fieldIndex) => (
                 <Flex key={fieldIndex} direction="col" gap={2} fullWidth className="py-2.5">
                   <Skeleton className="h-4 w-32" />

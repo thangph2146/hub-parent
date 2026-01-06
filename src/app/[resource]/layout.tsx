@@ -10,6 +10,7 @@ import { PermissionGate } from "@/components/layouts/shared"
 import type { Permission } from "@/lib/permissions"
 import { DEFAULT_RESOURCE_SEGMENT } from "@/lib/permissions"
 import { ResourceSegmentProvider } from "@/hooks/use-resource-segment"
+import { ScrollToTop } from "@/components/layouts/scroll-to-top"
 
 /**
  * Admin Layout Metadata
@@ -103,6 +104,7 @@ export default async function AdminLayout({
           style={{ overflowX: 'clip' }}
           suppressHydrationWarning
         >
+          <ScrollToTop />
           <PermissionGate>
             {children}
           </PermissionGate>
