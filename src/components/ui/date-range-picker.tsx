@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { DatePicker } from "@/components/ui/date-picker"
 import { cn } from "@/lib/utils"
 import { IconSize } from "@/components/ui/typography"
-import { Flex } from "antd"
+import { Flex } from "@/components/ui/flex"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { format } from "date-fns"
 import { vi } from "date-fns/locale"
@@ -221,7 +221,7 @@ export const DateRangePicker = ({
             className
           )}
         >
-          <Flex align="center" gap={8}>
+          <Flex align="center" gap={2}>
             <IconSize size="sm">
               <Calendar />
             </IconSize>
@@ -234,20 +234,16 @@ export const DateRangePicker = ({
         align={align}
       >
         <Flex 
-          vertical
-          gap="middle" 
-          style={{ 
-            padding: "1rem",
-            width: "100%"
-          }}
+          direction="col"
+          gap={4}
+          padding="md"
+          width="full"
         >
           {/* Date Pickers Section */}
           <Flex 
-            gap="middle"
-            style={{ 
-              width: "100%"
-            }}
-            vertical={isSmallScreen ? false : true}
+            gap={4}
+            width="full"
+            direction={isSmallScreen ? "row" : "col"}
           >
             <Field
               orientation="vertical"
@@ -300,13 +296,10 @@ export const DateRangePicker = ({
           {/* Action Buttons Section */}
           <Flex 
             align="end" 
-            justify="flex-end"
-            gap={8} 
-            style={{ 
-              width: "100%",
-              paddingTop: "0.75rem",
-              borderTop: "1px solid hsl(var(--border))"
-            }}
+            justify="end"
+            gap={2}
+            width="full"
+            border="top"
           >
             {hasActiveFilter && (
               <Button
@@ -314,7 +307,7 @@ export const DateRangePicker = ({
                 onClick={handleClear}
                 className="flex-1 sm:flex-initial sm:min-w-[80px]"
               >
-                <Flex align="center" gap={8}>
+                <Flex align="center" gap={2}>
                   <IconSize size="sm">
                     <X />
                   </IconSize>

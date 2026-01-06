@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { useMemo } from "react";
+import { useMemo, useCallback } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
@@ -12,7 +12,6 @@ import {
   ChevronsUpDown,
   LogOut,
   LayoutDashboard,
-  BadgeHelp,
   Bell,
   FileText,
   FolderTree,
@@ -26,10 +25,10 @@ import {
   Users,
   UserCircle,
   Upload,
+  BadgeHelp,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
-// Icon mapping để tạo lại icon trong client component
 const iconMap: Record<string, LucideIcon> = {
   dashboard: LayoutDashboard,
   users: Users,
@@ -72,10 +71,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { getMenuData } from "@/lib/config/menu-data";
 import type { Permission } from "@/lib/permissions";
-import {
-  canPerformAnyAction,
-  getResourceSegmentForRoles,
-} from "@/lib/permissions";
+import { canPerformAnyAction, getResourceSegmentForRoles } from "@/lib/permissions";
 import { cn } from "@/lib/utils";
 import { TypographySpanSmallMuted, TypographySpanMuted, IconSize } from "@/components/ui/typography";
 import { Flex } from "@/components/ui/flex";
@@ -89,57 +85,130 @@ import { queryKeys } from "@/lib/query-keys";
 import { logger } from "@/lib/config";
 import { Grid } from "@/components/ui/grid";
 
+// Helper functions
+const getInitials = (name?: string | null) => {
+  if (!name) return "U";
+  const parts = name.trim().split(" ");
+  return parts.length >= 2
+    ? `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase()
+    : name.substring(0, 2).toUpperCase();
+};
+
+const formatBadgeCount = (count: number) => (count > 99 ? "99+" : count);
+
+// Components
+function UserAvatar({
+  user,
+  className,
+  size = "h-8 w-8",
+  rounded = false,
+  suppressHydrationWarning,
+}: {
+  user: { image?: string | null; name?: string | null };
+  className?: string;
+  size?: string;
+  rounded?: boolean;
+  suppressHydrationWarning?: boolean;
+}) {
+  return (
+    <Avatar className={cn(size, rounded && "rounded-lg", className)} suppressHydrationWarning={suppressHydrationWarning}>
+      <AvatarImage src={user.image || "/avatars/default.jpg"} alt={user.name || ""} />
+      <AvatarFallback className={rounded ? "rounded-lg" : ""}>
+        {getInitials(user.name)}
+      </AvatarFallback>
+    </Avatar>
+  );
+}
+
+function AdminMenuItem({
+  item,
+  isInSidebar,
+}: {
+  item: {
+    url: string;
+    title: string;
+    icon: React.ReactNode;
+    badgeCount?: number;
+    isActive?: boolean;
+  };
+  isInSidebar: boolean;
+}) {
+  const showBadge = (item.badgeCount ?? 0) > 0;
+  const isActive = item.isActive ?? false;
+  const isValidIcon = React.isValidElement(item.icon);
+
+  if (!isValidIcon) {
+    logger.warn(`Icon is not a valid React element for "${item.title}"`);
+  }
+
+  return (
+    <DropdownMenuItem key={item.url} asChild>
+      <Link
+        href={item.url}
+        className={cn(
+          "w-full data-[highlighted]:bg-accent/10",
+          isActive && "bg-accent/20"
+        )}
+      >
+        <Flex align="center" justify="between" className="w-full">
+          <Flex align="center" gap={2}>
+            {isValidIcon ? (
+              item.icon
+            ) : (
+              <IconSize size="md" className={cn(!isInSidebar && "mr-2")}>
+                <LayoutDashboard />
+              </IconSize>
+            )}
+            <span>{item.title}</span>
+          </Flex>
+          {showBadge && (
+            <Badge
+              variant="destructive"
+              className={cn(
+                "ml-auto shrink-0",
+                !isValidIcon && "text-xs font-semibold min-w-[1.5rem] h-6 px-2 flex items-center justify-center"
+              )}
+            >
+              {formatBadgeCount(item.badgeCount ?? 0)}
+            </Badge>
+          )}
+        </Flex>
+      </Link>
+    </DropdownMenuItem>
+  );
+}
+
 export function NavUser({ className }: { className?: string }) {
   const { data: session, status } = useSession();
   const pathname = usePathname();
   const userId = session?.user?.id;
   const primaryRoleName = session?.roles?.[0]?.name ?? null;
-
   const queryClient = useQueryClient();
-
-  // Chỉ render DropdownMenu sau khi component đã mount trên client để tránh hydration mismatch
-  // Radix UI generate ID random khác nhau giữa server và client
   const isMounted = useClientOnly();
-
-  // Auto-detect sidebar context
   const sidebar = useSidebarOptional();
   const isInSidebar = sidebar !== null;
   const isMobile = sidebar?.isMobile ?? false;
-
   const user = session?.user;
   const primaryRole = session?.roles?.[0];
 
-  // Setup socket bridge cho notifications
+  // Setup socket bridges
   useNotificationsSocketBridge();
-
-  // Setup socket bridge cho contact requests
   useContactRequestsSocketBridge();
 
-  // Setup socket cho messages để invalidate unread counts
-  const { socket } = useSocket({
-    userId,
-    role: primaryRoleName,
-  });
-
-  // Track socket connection status để tắt polling khi socket connected
+  const { socket } = useSocket({ userId, role: primaryRoleName });
   const [isSocketConnected, setIsSocketConnected] = React.useState(false);
-  // Connection state tracking (có thể sử dụng trong tương lai cho UI indicators)
-  const [_connectionState, setConnectionState] = React.useState<"connected" | "disconnected" | "connecting">("disconnected");
 
+  // Socket connection management
   React.useEffect(() => {
     if (!socket) {
       setIsSocketConnected(false);
-      setConnectionState("disconnected");
       return;
     }
 
-    // Check initial connection status
     setIsSocketConnected(socket.connected);
-    setConnectionState(socket.connected ? "connected" : "disconnected");
 
     const handleConnect = () => {
       setIsSocketConnected(true);
-      setConnectionState("connected");
       if (userId) {
         queryClient.invalidateQueries({
           queryKey: queryKeys.unreadCounts.user(userId),
@@ -149,80 +218,53 @@ export function NavUser({ className }: { className?: string }) {
 
     const handleDisconnect = (reason: string) => {
       setIsSocketConnected(false);
-      setConnectionState("disconnected");
-      // Log disconnect reason for debugging (chỉ log khi không phải manual disconnect)
-      if (reason !== "io client disconnect") {
-        logger.debug("NavUser: Socket disconnected", { 
-          reason, 
-          userId,
-          willReconnect: reason !== "io server disconnect",
+      if (reason !== "io client disconnect" && reason !== "io server disconnect") {
+        logger.debug("NavUser: Socket disconnected", { reason, userId });
+      }
+    };
+
+    const invalidateUnreadCounts = () => {
+      if (userId) {
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.unreadCounts.user(userId),
         });
       }
     };
 
-    const handleConnecting = () => {
-      setConnectionState("connecting");
-    };
-
     socket.on("connect", handleConnect);
     socket.on("disconnect", handleDisconnect);
-    socket.on("reconnect_attempt", handleConnecting);
     socket.on("reconnect", handleConnect);
-
-    return () => {
-      socket.off("connect", handleConnect);
-      socket.off("disconnect", handleDisconnect);
-      socket.off("reconnect_attempt", handleConnecting);
-      socket.off("reconnect", handleConnect);
-    };
-  }, [socket, queryClient, userId]);
-
-  React.useEffect(() => {
-    if (!socket || !userId) return;
-
-    const invalidateUnreadCounts = () => {
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.unreadCounts.user(userId),
-      });
-    };
-
     socket.on("message:new", invalidateUnreadCounts);
     socket.on("message:updated", invalidateUnreadCounts);
 
     return () => {
+      socket.off("connect", handleConnect);
+      socket.off("disconnect", handleDisconnect);
+      socket.off("reconnect", handleConnect);
       socket.off("message:new", invalidateUnreadCounts);
       socket.off("message:updated", invalidateUnreadCounts);
     };
   }, [socket, userId, queryClient]);
 
-  // Get unread counts với realtime updates
-  // Tắt polling khi có socket connection (socket sẽ handle real-time updates)
   const { data: unreadCounts } = useUnreadCounts({
-    refetchInterval: 60000, // 60 seconds (fallback khi không có socket)
+    refetchInterval: 60000,
     enabled: !!userId,
-    disablePolling: isSocketConnected, // Tắt polling nếu có socket connection
+    disablePolling: isSocketConnected,
   });
-
-  // Socket bridge đã handle unread counts updates, không cần invalidate ở đây nữa
 
   const unreadMessagesCount = unreadCounts?.unreadMessages || 0;
   const unreadNotificationsCount = unreadCounts?.unreadNotifications || 0;
   const contactRequestsCount = unreadCounts?.contactRequests || 0;
 
-  // Helper function để check nếu pathname match với menu item URL
-  const isItemActive = React.useCallback(
+  const isItemActive = useCallback(
     (item: { url: string; items?: Array<{ url: string }> }): boolean => {
       if (!pathname) return false;
-
-      // Normalize paths để so sánh
       const normalizedPathname = pathname.toLowerCase();
       const normalizedItemUrl = item.url.toLowerCase();
 
-      // Exact match
       if (normalizedPathname === normalizedItemUrl) return true;
 
-      // Check sub-items trước (quan trọng cho messages có sub-items)
-      if (item.items && item.items.length > 0) {
+      if (item.items?.length) {
         const hasActiveSubItem = item.items.some((subItem) => {
           const normalizedSubUrl = subItem.url.toLowerCase();
           return (
@@ -233,14 +275,8 @@ export function NavUser({ className }: { className?: string }) {
         if (hasActiveSubItem) return true;
       }
 
-      // Check nếu pathname bắt đầu với item.url (cho nested routes)
-      // Nhưng cần cẩn thận để không match quá rộng
       if (normalizedPathname.startsWith(normalizedItemUrl + "/")) {
-        // Chỉ active nếu không có sub-items hoặc sub-items không match
-        if (item.items && item.items.length > 0) {
-          return false; // Đã check sub-items ở trên
-        }
-        return true;
+        return !item.items?.length;
       }
 
       return false;
@@ -248,37 +284,23 @@ export function NavUser({ className }: { className?: string }) {
     [pathname]
   );
 
-  const getInitials = (name?: string | null) => {
-    if (!name) return "U";
-    const parts = name.trim().split(" ");
-    return parts.length >= 2
-      ? `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase()
-      : name.substring(0, 2).toUpperCase();
-  };
-
   const adminMenuItems = useMemo(() => {
     const permissions = (session?.permissions || []) as Permission[];
     const roles = (session?.roles || []) as Array<{ name: string }>;
-
     if (!permissions.length) return [];
 
-    // Tính resource segment dựa trên roles của user, không phụ thuộc vào URL hiện tại
     const resourceSegment = getResourceSegmentForRoles(roles);
-
-    const menuItems = getMenuData(
-      permissions,
-      roles,
-      resourceSegment
-    ).navMain.filter((item) =>
+    const menuItems = getMenuData(permissions, roles, resourceSegment).navMain.filter((item) =>
       canPerformAnyAction(permissions, roles, [...item.permissions])
     );
 
-    // Map unread counts và active state vào menu items dựa trên key
-    // Tạo lại icon trong client component vì React elements không thể serialize qua server/client boundary
-    return menuItems.map((item) => {
-      const isActive = isItemActive(item);
+    const badgeMap: Record<string, number> = {
+      messages: unreadMessagesCount,
+      notifications: unreadNotificationsCount,
+      contactRequests: contactRequestsCount,
+    };
 
-      // Tạo lại icon dựa trên feature key
+    return menuItems.map((item) => {
       const iconKey = item.key || "";
       const IconComponent = iconMap[iconKey];
       const icon = IconComponent ? (
@@ -287,47 +309,28 @@ export function NavUser({ className }: { className?: string }) {
         </IconSize>
       ) : item.icon;
 
-      let updatedItem = {
+      return {
         ...item,
         icon,
-        isActive,
+        isActive: isItemActive(item),
+        badgeCount: badgeMap[iconKey],
       };
-
-      if (item.key === "messages") {
-        updatedItem = {
-          ...updatedItem,
-          badgeCount: unreadMessagesCount,
-        };
-      }
-      if (item.key === "notifications") {
-        updatedItem = {
-          ...updatedItem,
-          badgeCount: unreadNotificationsCount,
-        };
-      }
-      if (item.key === "contactRequests") {
-        updatedItem = {
-          ...updatedItem,
-          badgeCount: contactRequestsCount,
-        };
-      }
-
-      return updatedItem;
     });
-  }, [
-    session,
-    unreadMessagesCount,
-    unreadNotificationsCount,
-    contactRequestsCount,
-    isItemActive,
-  ]);
+  }, [session, unreadMessagesCount, unreadNotificationsCount, contactRequestsCount, isItemActive]);
 
-  // Tính route cho accounts dựa trên resource segment
   const accountsRoute = useMemo(() => {
     const roles = (session?.roles || []) as Array<{ name: string }>;
     const resourceSegment = getResourceSegmentForRoles(roles);
     return `/${resourceSegment}/accounts`;
   }, [session?.roles]);
+
+  const handleSignOut = () => {
+    if (session?.user?.id) {
+      cleanupSessionCreatedFlag(session.user.id);
+    }
+    disconnectSocket();
+    signOut({ callbackUrl: "/auth/sign-in" });
+  };
 
   // Loading state
   if (status === "loading" || !user) {
@@ -344,9 +347,7 @@ export function NavUser({ className }: { className?: string }) {
       <SidebarMenu>
         <SidebarMenuItem>
           <SidebarMenuButton size="lg" disabled>
-            <Avatar className="h-8 w-8 rounded-lg">
-              <AvatarFallback className="rounded-lg">...</AvatarFallback>
-            </Avatar>
+            <UserAvatar user={{}} rounded />
             <Flex direction="col" flex="1" textAlign="left" suppressHydrationWarning>
               <TypographySpanMuted className="truncate">Đang tải...</TypographySpanMuted>
               <TypographySpanSmallMuted className="truncate">Vui lòng chờ</TypographySpanSmallMuted>
@@ -359,50 +360,29 @@ export function NavUser({ className }: { className?: string }) {
 
   const dropdownMenuContent = (
     <DropdownMenuContent
-      className={"w-[300px] rounded-lg"}
+      className="w-[300px] rounded-lg"
       side={!isInSidebar ? "bottom" : isMobile ? "bottom" : "right"}
       align="end"
       sideOffset={5}
     >
       <DropdownMenuLabel className="p-0">
         <Flex align="center" gap={2} className="px-1 py-1.5 text-left min-w-0">
-          <Avatar className="h-8 w-8 rounded-lg shrink-0">
-            <AvatarImage
-              src={user.image || "/avatars/default.jpg"}
-              alt={user.name || ""}
-            />
-            <AvatarFallback className="rounded-lg">
-              {getInitials(user.name)}
-            </AvatarFallback>
-          </Avatar>
+          <UserAvatar user={user} rounded size="h-8 w-8" className="shrink-0" />
           <Flex direction="col" flex="1" minWidth="0" textAlign="left">
-            <TypographySpanMuted className="truncate">
-              {user.name || user.email}
-            </TypographySpanMuted>
-            <Flex align="center" gap={1} className="min-w-0">
-              <TypographySpanSmallMuted className="truncate">
-                {user.email}
-              </TypographySpanSmallMuted>
-            </Flex>
+            <TypographySpanMuted className="truncate">{user.name || user.email}</TypographySpanMuted>
+            <TypographySpanSmallMuted className="truncate">{user.email}</TypographySpanSmallMuted>
           </Flex>
         </Flex>
       </DropdownMenuLabel>
       <DropdownMenuSeparator />
       <DropdownMenuGroup>
         <DropdownMenuItem asChild>
-          <Link
-            href={accountsRoute}
-            className={cn(
-              "w-full data-[highlighted]:bg-accent/20"
-            )}
-          >
-            <Flex align="center" justify="between" className="w-full">
-              <Flex align="center" gap={2}>
-                <IconSize size="md" className={cn(!isInSidebar && "mr-2")}>
-                  <BadgeCheck />
-                </IconSize>
-                <span>Tài khoản</span>
-              </Flex>
+          <Link href={accountsRoute} className="w-full data-[highlighted]:bg-accent/20">
+            <Flex align="center" gap={2}>
+              <IconSize size="md" className={cn(!isInSidebar && "mr-2")}>
+                <BadgeCheck />
+              </IconSize>
+              <span>Tài khoản</span>
             </Flex>
           </Link>
         </DropdownMenuItem>
@@ -413,92 +393,16 @@ export function NavUser({ className }: { className?: string }) {
           <DropdownMenuGroup>
             <DropdownMenuLabel>Admin</DropdownMenuLabel>
             <ScrollArea className="max-h-[200px] overflow-y-auto">
-              {adminMenuItems.map((item) => {
-                const showBadge = (item.badgeCount ?? 0) > 0;
-                const isActive = item.isActive ?? false;
-
-                if (!React.isValidElement(item.icon)) {
-                  logger.warn(
-                    `Icon is not a valid React element for "${item.title}"`
-                  );
-                  return (
-                    <DropdownMenuItem key={item.url} asChild>
-                      <Link
-                        href={item.url}
-                        className={cn(
-                          "w-full data-[highlighted]:bg-accent/20",
-                          isActive && "bg-accent/20"
-                        )}
-                      >
-                        <Flex align="center" justify="between" className="w-full">
-                          <Flex align="center" gap={2}>
-                            <IconSize size="md" className={cn(!isInSidebar && "mr-2")}>
-                              <LayoutDashboard />
-                            </IconSize>
-                            <span>{item.title}</span>
-                          </Flex>
-                          {showBadge && (
-                            <Badge
-                              variant="destructive"
-                              className="ml-auto shrink-0 text-xs font-semibold min-w-[1.5rem] h-6 px-2 flex items-center justify-center"
-                            >
-                              {(item.badgeCount ?? 0) > 99
-                                ? "99+"
-                                : item.badgeCount}
-                            </Badge>
-                          )}
-                        </Flex>
-                      </Link>
-                    </DropdownMenuItem>
-                  );
-                }
-
-                return (
-                  <DropdownMenuItem key={item.url} asChild>
-                    <Link
-                      href={item.url}
-                      className={cn(
-                        "w-full data-[highlighted]:bg-accent/10",
-                        isActive && "bg-accent/20"
-                      )}
-                    >
-                      <Flex align="center" justify="between" className="w-full">
-                        <Flex align="center" gap={2}>
-                          {item.icon}
-                          <span>{item.title}</span>
-                        </Flex>
-                        {showBadge && (
-                          <Badge
-                            variant="destructive"
-                            className="ml-auto shrink-0"
-                          >
-                            {(item.badgeCount ?? 0) > 99
-                              ? "99+"
-                              : item.badgeCount}
-                          </Badge>
-                        )}
-                      </Flex>
-                    </Link>
-                  </DropdownMenuItem>
-                );
-              })}
+              {adminMenuItems.map((item) => (
+                <AdminMenuItem key={item.url} item={item} isInSidebar={isInSidebar} />
+              ))}
             </ScrollArea>
           </DropdownMenuGroup>
         </>
       )}
       <DropdownMenuSeparator />
       <DropdownMenuItem
-        onClick={() => {
-          // Cleanup session created flag trước khi đăng xuất
-          if (session?.user?.id) {
-            cleanupSessionCreatedFlag(session.user.id);
-          }
-          // Disconnect socket trước khi đăng xuất
-          disconnectSocket();
-          signOut({
-            callbackUrl: "/auth/sign-in",
-          });
-        }}
+        onClick={handleSignOut}
         className="w-full text-destructive focus:text-destructive data-[highlighted]:text-destructive data-[highlighted]:bg-destructive/10 disabled:opacity-50"
       >
         <IconSize size="md" className={cn("text-destructive", !isInSidebar && "mr-2")}>
@@ -509,18 +413,12 @@ export function NavUser({ className }: { className?: string }) {
     </DropdownMenuContent>
   );
 
-  // Render placeholder trên server để tránh hydration mismatch
+  // Server-side placeholder
   if (!isMounted) {
     if (!isInSidebar) {
       return (
         <Flex align="center" gap={2} suppressHydrationWarning>
-          <Avatar className="h-8 w-8" suppressHydrationWarning>
-            <AvatarImage
-              src={user.image || "/avatars/default.jpg"}
-              alt={user.name || ""}
-            />
-            <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
-          </Avatar>
+          <UserAvatar user={user} suppressHydrationWarning />
           <TypographySpanMuted className="inline-block truncate max-w-[120px]" suppressHydrationWarning>
             {user.name || user.email}
           </TypographySpanMuted>
@@ -531,15 +429,7 @@ export function NavUser({ className }: { className?: string }) {
       <SidebarMenu>
         <SidebarMenuItem>
           <SidebarMenuButton size="lg" disabled>
-            <Avatar className="h-8 w-8 rounded-lg" suppressHydrationWarning>
-              <AvatarImage
-                src={user.image || "/avatars/default.jpg"}
-                alt={user.name || ""}
-              />
-              <AvatarFallback className="rounded-lg">
-                {getInitials(user.name)}
-              </AvatarFallback>
-            </Avatar>
+            <UserAvatar user={user} rounded suppressHydrationWarning />
             <Grid cols={1} align="start" justify="start" suppressHydrationWarning>
               <TypographySpanMuted className="truncate" suppressHydrationWarning>
                 {user.name || user.email}
@@ -554,7 +444,7 @@ export function NavUser({ className }: { className?: string }) {
     );
   }
 
-  // Auto-detect: render header style if not in sidebar, otherwise render sidebar style
+  // Header style (not in sidebar)
   if (!isInSidebar) {
     return (
       <DropdownMenu>
@@ -565,17 +455,14 @@ export function NavUser({ className }: { className?: string }) {
             suppressHydrationWarning
           >
             <Flex align="center" gap={2}>
-              <Avatar className="h-8 w-8" suppressHydrationWarning>
-                <AvatarImage
-                  src={user.image || "/avatars/default.jpg"}
-                  alt={user.name || ""}
-                />
-                <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
-              </Avatar>
+              <UserAvatar user={user} suppressHydrationWarning />
               <TypographySpanMuted className="inline-block truncate max-w-[120px]" suppressHydrationWarning>
                 {user.name || user.email}
               </TypographySpanMuted>
-              <IconSize size="md" className="opacity-50 group-hover:text-primary-foreground group-hover:opacity-100 transition-colors duration-200">
+              <IconSize
+                size="md"
+                className="opacity-50 group-hover:text-primary-foreground group-hover:opacity-100 transition-colors duration-200"
+              >
                 <ChevronsUpDown />
               </IconSize>
             </Flex>
@@ -586,7 +473,7 @@ export function NavUser({ className }: { className?: string }) {
     );
   }
 
-  // Sidebar style (when in sidebar context)
+  // Sidebar style
   return (
     <SidebarMenu>
       <SidebarMenuItem>
@@ -596,19 +483,9 @@ export function NavUser({ className }: { className?: string }) {
               size="lg"
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
-              <Avatar className="h-8 w-8 rounded-lg">
-                <AvatarImage
-                  src={user.image || "/avatars/default.jpg"}
-                  alt={user.name || ""}
-                />
-                <AvatarFallback className="rounded-lg">
-                  {getInitials(user.name)}
-                </AvatarFallback>
-              </Avatar>
+              <UserAvatar user={user} rounded />
               <SidebarMenuButtonContent>
-                <SidebarMenuButtonTitle>
-                  {user.name || user.email}
-                </SidebarMenuButtonTitle>
+                <SidebarMenuButtonTitle>{user.name || user.email}</SidebarMenuButtonTitle>
                 <SidebarMenuButtonDescription>
                   {primaryRole?.displayName || primaryRole?.name || user.email}
                 </SidebarMenuButtonDescription>

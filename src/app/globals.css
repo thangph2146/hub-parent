@@ -287,6 +287,38 @@
     -webkit-overflow-scrolling: touch;
     scroll-behavior: smooth;
   }
+  
+  /* Safe area for mobile devices */
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+  
+  .pt-safe {
+    padding-top: env(safe-area-inset-top, 0);
+  }
+  
+  .pl-safe {
+    padding-left: env(safe-area-inset-left, 0);
+  }
+  
+  .pr-safe {
+    padding-right: env(safe-area-inset-right, 0);
+  }
+  
+  /* Touch action utilities */
+  .touch-action-pan-y {
+    touch-action: pan-y;
+  }
+  
+  .touch-action-manipulation {
+    touch-action: manipulation;
+  }
+  
+  /* Tap highlight color transparent */
+  [class*="-webkit-tap-highlight-color-transparent"],
+  .tap-highlight-transparent {
+    -webkit-tap-highlight-color: transparent;
+  }
 }
 
 @layer utilities {
@@ -321,140 +353,4 @@
 
 .scrollbar-hide::-webkit-scrollbar {
   display: none; /* Chrome, Safari and Opera */
-}
-
-/* Ant Design CSS Override - Đảm bảo globals.css có priority cao hơn */
-/* Đồng bộ tất cả Ant Design components với theme colors từ globals.css */
-@layer base {
-  /* NavigationMenu links - Đảm bảo styles từ globals.css không bị override bởi Ant Design */
-  a[data-radix-collection-item] {
-    color: inherit !important;
-    text-decoration: none !important;
-    font-family: inherit !important;
-    font-size: inherit !important;
-    line-height: inherit !important;
-  }
-  
-  /* Ant Design Flex - Đảm bảo không override custom styles */
-  .ant-flex {
-    box-sizing: border-box;
-    background-color: transparent !important;
-  }
-  
-  /* Ant Design Row/Col - Transparent background */
-  .ant-row,
-  .ant-col {
-    background-color: transparent !important;
-  }
-  
-  /* Ant Design components trong custom components - giữ nguyên styles */
-  .ant-flex a,
-  .ant-flex button,
-  .ant-row a,
-  .ant-row button,
-  .ant-col a,
-  .ant-col button {
-    color: inherit;
-    font-family: inherit;
-  }
-  
-  /* Đảm bảo NavigationMenu links và buttons giữ đúng text color từ theme */
-  /* Không override hover/focus/active states - để NavigationMenu tự quản lý */
-  nav a[data-radix-collection-item],
-  nav button[data-radix-collection-item] {
-    color: var(--foreground);
-  }
-  
-  /* Đảm bảo NavigationMenu links và buttons hover/focus/active states hoạt động đúng */
-  /* Sử dụng var(--accent) trực tiếp vì đã được định nghĩa là màu hex */
-  /* Chỉ apply khi element có class chứa hover:bg-accent để không override Tailwind classes */
-  nav a[data-radix-collection-item].group:hover,
-  nav a[data-radix-collection-item]:hover,
-  nav button[data-radix-collection-item].group:hover,
-  nav button[data-radix-collection-item]:hover {
-    background-color: var(--accent) !important;
-    color: var(--accent-foreground) !important;
-  }
-  
-  nav a[data-radix-collection-item].group:focus,
-  nav a[data-radix-collection-item]:focus,
-  nav button[data-radix-collection-item].group:focus,
-  nav button[data-radix-collection-item]:focus {
-    background-color: var(--accent) !important;
-    color: var(--accent-foreground) !important;
-  }
-  
-  nav a[data-radix-collection-item][data-active="true"],
-  nav a[data-radix-collection-item][data-state="open"],
-  nav button[data-radix-collection-item][data-active="true"],
-  nav button[data-radix-collection-item][data-state="open"] {
-    background-color: var(--accent);
-    background-color: color-mix(in srgb, var(--accent) 50%, transparent);
-    color: var(--accent-foreground) !important;
-  }
-  
-  /* Đảm bảo text và icon trong NavigationMenuContent links đổi màu khi hover/active */
-  /* Áp dụng cho Ant Design Flex components và các elements con */
-  nav a[data-radix-collection-item].group:hover .ant-flex,
-  nav a[data-radix-collection-item]:hover .ant-flex,
-  nav a[data-radix-collection-item].group:focus .ant-flex,
-  nav a[data-radix-collection-item]:focus .ant-flex,
-  nav a[data-radix-collection-item][data-active="true"] .ant-flex,
-  nav a[data-radix-collection-item][data-state="open"] .ant-flex {
-    color: var(--accent-foreground) !important;
-  }
-  
-  /* Đảm bảo Typography components bên trong NavigationMenu links cũng đổi màu */
-  nav a[data-radix-collection-item].group:hover [class*="typography"],
-  nav a[data-radix-collection-item]:hover [class*="typography"],
-  nav a[data-radix-collection-item].group:focus [class*="typography"],
-  nav a[data-radix-collection-item]:focus [class*="typography"],
-  nav a[data-radix-collection-item][data-active="true"] [class*="typography"],
-  nav a[data-radix-collection-item][data-state="open"] [class*="typography"] {
-    color: var(--accent-foreground) !important;
-  }
-  
-  /* Đảm bảo SVG icons bên trong NavigationMenu links cũng đổi màu */
-  nav a[data-radix-collection-item].group:hover svg,
-  nav a[data-radix-collection-item]:hover svg,
-  nav a[data-radix-collection-item].group:focus svg,
-  nav a[data-radix-collection-item]:focus svg,
-  nav a[data-radix-collection-item][data-active="true"] svg,
-  nav a[data-radix-collection-item][data-state="open"] svg {
-    color: var(--accent-foreground) !important;
-    stroke: var(--accent-foreground) !important;
-  }
-  
-  /* Đảm bảo tất cả text nodes và inline elements đổi màu */
-  nav a[data-radix-collection-item].group:hover,
-  nav a[data-radix-collection-item]:hover,
-  nav a[data-radix-collection-item].group:focus,
-  nav a[data-radix-collection-item]:focus,
-  nav a[data-radix-collection-item][data-active="true"],
-  nav a[data-radix-collection-item][data-state="open"] {
-    --tw-text-opacity: 1;
-  }
-  
-  /* Override màu text cho các elements con khi parent hover/active */
-  nav a[data-radix-collection-item].group:hover p,
-  nav a[data-radix-collection-item]:hover p,
-  nav a[data-radix-collection-item].group:hover span,
-  nav a[data-radix-collection-item]:hover span,
-  nav a[data-radix-collection-item].group:hover div,
-  nav a[data-radix-collection-item]:hover div,
-  nav a[data-radix-collection-item].group:focus p,
-  nav a[data-radix-collection-item]:focus p,
-  nav a[data-radix-collection-item].group:focus span,
-  nav a[data-radix-collection-item]:focus span,
-  nav a[data-radix-collection-item].group:focus div,
-  nav a[data-radix-collection-item]:focus div,
-  nav a[data-radix-collection-item][data-active="true"] p,
-  nav a[data-radix-collection-item][data-active="true"] span,
-  nav a[data-radix-collection-item][data-active="true"] div,
-  nav a[data-radix-collection-item][data-state="open"] p,
-  nav a[data-radix-collection-item][data-state="open"] span,
-  nav a[data-radix-collection-item][data-state="open"] div {
-    color: var(--accent-foreground) !important;
-  }
- 
 }

@@ -24,8 +24,8 @@ import {
   TypographySpanDestructive,
   IconSize,
 } from "@/components/ui/typography";
-import { Flex } from "antd";
-import { Row, Col } from "antd";
+import { Flex } from "@/components/ui/flex";
+import { Grid } from "@/components/ui/grid";
 
 export interface ResourceFormField<T = unknown> {
   name: keyof T | string;
@@ -584,8 +584,6 @@ export const ResourceForm = <T extends Record<string, unknown>>({
     sectionFields: ResourceFormField<T>[]
   ) => {
     const sectionInfo = sections?.find((s) => s.id === sectionId);
-    const gridCols =
-      sectionFields.length >= 2 ? ("responsive-2" as const) : (1 as const);
 
     return (
       <FieldSet
@@ -596,19 +594,44 @@ export const ResourceForm = <T extends Record<string, unknown>>({
         )}
       >
         {renderSectionHeader(sectionInfo?.title, sectionInfo?.description)}
-        <Row
-          gutter={[8, 16]}
+        <Grid
+          cols="responsive-3"
+          gap={2}
+          gapY={4}
           className={cn(
             "w-full transition-all duration-300",
             readOnly && "!opacity-100"
           )}
         >
-          {sectionFields.map((field) => (
-            <Col key={String(field.name)} xs={24} sm={gridCols === "responsive-2" ? 12 : 24} className="flex items-stretch">
-              {renderField(field)}
-            </Col>
-          ))}
-        </Row>
+          {sectionFields.map((field) => {
+            // Avatar field: 1 col (xs), 2 col (sm), 3 col (lg)
+            const isAvatar = field.name === "avatar" || field.type === "avatar";
+            // Editor fields or fields with max-w should span full width
+            const isEditor = field.type === "editor";
+            const hasMaxWidth = field.className?.includes("max-w");
+            const isFullSpan = field.className?.includes("col-span-full") || isEditor || hasMaxWidth;
+            
+            // Determine column span classes
+            let colSpanClass = "";
+            if (isFullSpan) {
+              colSpanClass = "col-span-1 sm:col-span-2 lg:col-span-3";
+            } else if (isAvatar) {
+              colSpanClass = "col-span-1 sm:col-span-1 lg:col-span-1";
+            }
+            
+            return (
+              <div
+                key={String(field.name)}
+                className={cn(
+                  "flex items-stretch min-w-0",
+                  colSpanClass
+                )}
+              >
+                {renderField(field)}
+              </div>
+            );
+          })}
+        </Grid>
       </FieldSet>
     );
   };
@@ -622,14 +645,18 @@ export const ResourceForm = <T extends Record<string, unknown>>({
       onSubmit={handleSubmit}
       className={formClassName}
     >
-      <Flex vertical gap="middle" className="w-full">
+      <Flex direction="col" gap={4} width="full">
         {submitError && (
           <Flex
             align="center"
-            gap={8}
+            gap={2}
+            width="full"
+            rounded="lg"
+            border="all"
+            bg="destructive-text"
+            padding="md"
             className={cn(
-              "w-full rounded-lg border border-destructive/20 bg-destructive/10 text-destructive p-4",
-              "transition-all duration-300 shadow-sm"
+              "border-destructive/20 transition-all duration-300 shadow-sm"
             )}
           >
             <TypographySpanMuted className="font-medium">
@@ -638,31 +665,53 @@ export const ResourceForm = <T extends Record<string, unknown>>({
           </Flex>
         )}
         {/* prefix content */}
-        <Flex vertical gap="middle" className={cn("w-full", prefixClassName)}>
+        <Flex direction="col" gap={4} className={cn("w-full", prefixClassName)}>
           {prefixContent}
         </Flex>
 
         {/* Content */}
-        <Flex vertical gap="middle" className={cn("w-full", contentClassName)}>
+        <Flex direction="col" gap={4} className={cn("w-full", contentClassName)}>
           {Object.entries(grouped).map(([sectionId, sectionFields]) =>
             renderSection(sectionId, sectionFields)
           )}
           {ungrouped.length > 0 && (
-            <Row 
-              gutter={[8, 16]}
+            <Grid
+              cols="responsive-3"
+              gap={2}
+              gapY={4}
               className={cn("w-full", readOnly && "!opacity-100")}
             >
-              {ungrouped.map((field) => (
-                <Col key={String(field.name)} xs={24} sm={12} className="flex items-stretch">
-                  {renderField(field)}
-                </Col>
-              ))}
-            </Row>
+              {ungrouped.map((field) => {
+                const isAvatar = field.name === "avatar" || field.type === "avatar";
+                const isEditor = field.type === "editor";
+                const hasMaxWidth = field.className?.includes("max-w");
+                const isFullSpan = field.className?.includes("col-span-full") || isEditor || hasMaxWidth;
+                
+                let colSpanClass = "";
+                if (isFullSpan) {
+                  colSpanClass = "col-span-1 sm:col-span-2 lg:col-span-3";
+                } else if (isAvatar) {
+                  colSpanClass = "col-span-1 sm:col-span-1 lg:col-span-1";
+                }
+                
+                return (
+                  <div
+                    key={String(field.name)}
+                    className={cn(
+                      "flex items-stretch min-w-0",
+                      colSpanClass
+                    )}
+                  >
+                    {renderField(field)}
+                  </div>
+                );
+              })}
+            </Grid>
           )}
         </Flex>
 
         {/* suffix content */}
-        <Flex vertical gap="middle" className={cn("w-full", suffixClassName)}>
+        <Flex direction="col" gap={4} className={cn("w-full", suffixClassName)}>
           {suffixContent}
         </Flex>
       </Flex>
@@ -678,7 +727,7 @@ export const ResourceForm = <T extends Record<string, unknown>>({
         disabled={isPending}
         className="h-9 disabled:!opacity-100"
       >
-        <Flex align="center" gap={8}>
+        <Flex align="center" gap={2}>
           <IconSize size="sm">
             {variant === "page" && resolvedBackUrl ? <ArrowLeft /> : <X />}
           </IconSize>
@@ -691,7 +740,7 @@ export const ResourceForm = <T extends Record<string, unknown>>({
         disabled={isPending}
         className="h-9 disabled:!opacity-100"
       >
-        <Flex align="center" gap={8}>
+        <Flex align="center" gap={2}>
           {isPending ? (
             <>
               <IconSize size="sm">
@@ -716,12 +765,10 @@ export const ResourceForm = <T extends Record<string, unknown>>({
     <>
       {(title || resolvedBackUrl) && !showCard && (
         <Flex
-          vertical
-          className={cn(
-            "w-full pb-8 border-b border-border",
-            "gap-6",
-            _className
-          )}
+          direction="col"
+          width="full"
+          border="bottom"
+          gap={6}
         >
           {resolvedBackUrl && (
             <Button
@@ -730,7 +777,7 @@ export const ResourceForm = <T extends Record<string, unknown>>({
               onClick={handleBack}
               className="w-fit h-9"
             >
-              <Flex align="center" gap={2}>
+              <Flex align="center" gap={0.5}>
                 <IconSize size="sm">
                   <ArrowLeft />
                 </IconSize>
@@ -738,7 +785,7 @@ export const ResourceForm = <T extends Record<string, unknown>>({
               </Flex>
             </Button>
           )}
-          <Flex vertical gap={3} className="min-w-0">
+          <Flex direction="col" gap={3} className="min-w-0">
             {title && (
               <TypographyH1 className="text-2xl sm:text-3xl font-semibold leading-tight tracking-tight">
                 {title}
@@ -758,18 +805,19 @@ export const ResourceForm = <T extends Record<string, unknown>>({
       {(customFooterButtons || (!readOnly && footerButtons)) && (
         <Flex
           align="center"
-          justify="flex-end"
-          gap={8}
+          justify="end"
+          gap={2}
+          width="full"
+          border="top"
+          position="sticky"
+          paddingY="2"
+          bg="background"
           style={{
-            paddingTop: "0.5rem",
-            paddingBottom: "0.5rem",
-            backgroundColor: "var(--background) !important",
             backdropFilter: "blur(8px)",
+            bottom: 0,
+            zIndex: 10,
           }}
-          className={cn(
-            "w-full border-t sticky bottom-0 z-10",
-            _className
-          )}
+          className={_className}
         >
           {customFooterButtons || footerButtons}
         </Flex>

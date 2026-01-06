@@ -3,13 +3,11 @@
  *
  * Tổng hợp tất cả providers cần thiết cho ứng dụng:
  * 1. ThemeProvider - Dark mode support (ngoài cùng để wrap toàn bộ app)
- * 2. AntdProvider - Ant Design registry cho Next.js App Router
- * 3. SessionProvider - NextAuth.js authentication
- * 4. QueryProvider - TanStack Query data fetching
+ * 2. SessionProvider - NextAuth.js authentication
+ * 3. QueryProvider - TanStack Query data fetching
  *
  * Thứ tự providers quan trọng:
  * - ThemeProvider ngoài cùng (cần có sẵn cho tất cả components)
- * - AntdProvider ngay sau ThemeProvider (cần cho Ant Design components)
  * - SessionProvider và QueryProvider theo thứ tự logic
  *
  * Lưu ý: Đây là Client Component, không cần Suspense ở đây.
@@ -17,7 +15,6 @@
  * cho các async Server Components.
  *
  * @see https://ui.shadcn.com/docs/dark-mode/next
- * @see https://ant.design/docs/react/use-with-next
  * @see https://nextjs.org/docs/app/building-your-application/routing/loading-ui-and-streaming
  */
 
@@ -26,7 +23,6 @@
 import type { ReactNode } from "react"
 import type { Session } from "next-auth"
 import { ThemeProvider } from "./theme-provider"
-import { AntdProvider } from "./antd-provider"
 import { SessionProvider } from "./session-provider"
 import { QueryProvider } from "./query-provider"
 import { ScrollToTop } from "./scroll-to-top"
@@ -47,15 +43,13 @@ export interface ProvidersProps {
 export function Providers({ children, initialSession }: ProvidersProps) {
   return (
     <ThemeProvider>
-      <AntdProvider>
-        <SessionProvider session={initialSession}>
-          <QueryProvider>
-            <ResourceHints />
-            {children}
-            <ScrollToTop />
-          </QueryProvider>
-        </SessionProvider>
-      </AntdProvider>
+      <SessionProvider session={initialSession}>
+        <QueryProvider>
+          <ResourceHints />
+          {children}
+          <ScrollToTop />
+        </QueryProvider>
+      </SessionProvider>
     </ThemeProvider>
   )
 }

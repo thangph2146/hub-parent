@@ -385,7 +385,7 @@ export function DatePicker({
       <Button
         variant="outline"
         className={cn(
-          `h-8 w-fit min-w-[200px] justify-start text-left ${datePickerBodySmall} font-normal`,
+          `h-8 w-full justify-start text-left ${datePickerBodySmall} font-normal`,
           !hasValue && "text-muted-foreground",
           className,
         )}
@@ -403,7 +403,7 @@ export function DatePicker({
         <Button
           variant="outline"
           className={cn(
-            `h-8 w-fit min-w-[200px] justify-start text-left font-normal ${datePickerBodySmall}`,
+            `h-8 w-full justify-start text-left font-normal ${datePickerBodySmall}`,
             !hasValue && "text-muted-foreground",
             className,
           )}

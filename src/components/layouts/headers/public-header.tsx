@@ -35,48 +35,35 @@ import { Skeleton } from "@/components/ui/skeleton";
 import {
   TypographyPSmall,
   TypographyP,
-  TypographyPSmallMuted,
   IconSize,
   TypographyH6,
 } from "@/components/ui/typography";
-import { Flex, Row, Col } from "antd";
+import { Flex } from "@/components/ui/flex";
+import { Grid } from "@/components/ui/grid";
 import { useRouter } from "next/navigation";
 
-/**
- * Helper functions để lấy routes từ appFeatures
- */
+// Types
+type LinkItem = {
+  title: string;
+  href: string;
+  icon: LucideIcon;
+  description?: string;
+};
+
+// Helper functions
 function getRouteFromFeature(key: string): string | null {
   const feature = appFeatures.find((f) => f.key === key);
   if (!feature?.navigation) return null;
-
   const nav = feature.navigation;
   if (nav.href) return nav.href;
-
   if (nav.resourceName) {
     const route = getResourceMainRoute(nav.resourceName);
     return route?.path || null;
   }
-
   return null;
 }
 
-/**
- * Lấy tất cả public features từ appFeatures
- * Sắp xếp theo order
- */
-function getPublicFeatures() {
-  return appFeatures
-    .filter((feature) => feature.navigation?.group === "public")
-    .sort((a, b) => (a.navigation?.order || 0) - (b.navigation?.order || 0));
-}
-
-/**
- * Convert public features thành LinkItem[]
- */
 function getPublicLinks(): LinkItem[] {
-  const publicFeatures = getPublicFeatures();
-
-  // Map icon names từ app-features.ts
   const iconMap: Record<string, LucideIcon> = {
     Home,
     FileText,
@@ -85,39 +72,33 @@ function getPublicLinks(): LinkItem[] {
     HelpCircle,
   };
 
-  return publicFeatures.map((feature) => {
-    const nav = feature.navigation!;
-    const href = nav.href || getRouteFromFeature(feature.key) || "#";
-
-    // Extract icon từ React element
-    const iconElement = feature.icon;
-    let IconComponent: LucideIcon = Home; // Default icon
-
-    // Lấy icon component từ React element
-    if (
-      iconElement &&
-      typeof iconElement === "object" &&
-      "type" in iconElement
-    ) {
-      const iconType = iconElement.type;
-      // Nếu là function component, lấy tên và map
-      if (typeof iconType === "function" && iconType.name) {
-        IconComponent = iconMap[iconType.name] || Home;
-      } else {
-        IconComponent = iconType as LucideIcon;
+  return appFeatures
+    .filter((f) => f.navigation?.group === "public")
+    .sort((a, b) => (a.navigation?.order || 0) - (b.navigation?.order || 0))
+    .map((feature) => {
+      const nav = feature.navigation!;
+      const href = nav.href || getRouteFromFeature(feature.key) || "#";
+      
+      let IconComponent: LucideIcon = Home;
+      const iconElement = feature.icon;
+      if (iconElement && typeof iconElement === "object" && "type" in iconElement) {
+        const iconType = iconElement.type;
+        if (typeof iconType === "function" && iconType.name) {
+          IconComponent = iconMap[iconType.name] || Home;
+        } else {
+          IconComponent = iconType as LucideIcon;
+        }
       }
-    }
 
-    return {
-      title: feature.title,
-      href,
-      description: feature.description,
-      icon: IconComponent,
-    };
-  });
+      return {
+        title: feature.title,
+        href,
+        description: feature.description,
+        icon: IconComponent,
+      };
+    });
 }
 
-// Public routes constants - Lấy từ appFeatures
 const PUBLIC_ROUTES = {
   home: getRouteFromFeature("home") || "/",
   blog: getRouteFromFeature("blog") || "/bai-viet",
@@ -131,36 +112,282 @@ const PUBLIC_ROUTES = {
   },
 } as const;
 
-type LinkItem = {
-  title: string;
-  href: string;
-  icon: LucideIcon;
-  description?: string;
-};
-
-// Generate public navigation links từ appFeatures
 const publicLinks: LinkItem[] = getPublicLinks();
+const mainLinks = publicLinks.filter(
+  (link) => link.href === PUBLIC_ROUTES.home || link.href === PUBLIC_ROUTES.blog
+);
+const supportLinks = publicLinks.filter(
+  (link) => link.href !== PUBLIC_ROUTES.home && link.href !== PUBLIC_ROUTES.blog
+);
 
-/**
- * Public Header Component
- * Header cho public pages và auth pages
- */
-export function PublicHeader() {
-  const [open, setOpen] = React.useState(false);
-  const [mounted, setMounted] = React.useState(false);
-  const { data: session } = useSession();
-  const isAuthenticated = !!session;
+// Components
+function AuthButton({
+  icon: Icon,
+  title,
+  description,
+  href,
+  variant = "default",
+  iconBg,
+  onClose,
+}: {
+  icon: LucideIcon;
+  title: string;
+  description: string;
+  href: string;
+  variant?: "default" | "outline";
+  iconBg?: string;
+  onClose?: () => void;
+}) {
   const router = useRouter();
+  return (
+    <Button
+      variant={variant}
+      className={cn(
+        "w-full sm:w-1/2 h-auto",
+        "py-3 px-3 sm:py-3.5 sm:px-4",
+        "flex flex-row items-center justify-start rounded-lg max-w-full",
+        "touch-action-manipulation tap-highlight-transparent",
+        "active:scale-[0.98] transition-transform"
+      )}
+      onClick={() => {
+        onClose?.();
+        router.push(href);
+      }}
+    >
+      <Flex align="center" justify="start" gap={2.5} className="w-full min-w-0 sm:gap-3">
+        <Flex
+          align="center"
+          justify="center"
+          className={cn(
+            iconBg || "bg-primary/10 dark:bg-primary/20",
+            "aspect-square size-10 sm:size-12 rounded-lg shrink-0",
+            variant === "outline" && "border border-border"
+          )}
+        >
+          <IconSize size="sm" className="sm:w-5 sm:h-5">
+            <Icon />
+          </IconSize>
+        </Flex>
+        <Flex direction="col" align="start" className="min-w-0 flex-1">
+          <TypographyP className="font-medium text-sm sm:text-base">{title}</TypographyP>
+          <TypographyPSmall className="text-xs sm:text-sm">{description}</TypographyPSmall>
+        </Flex>
+      </Flex>
+    </Button>
+  );
+}
+
+function MobileNavLink({
+  link,
+  onClose,
+  iconBg = "bg-accent/10 dark:bg-accent/20",
+}: {
+  link: LinkItem;
+  onClose: () => void;
+  iconBg?: string;
+}) {
+  return (
+    <Link
+      href={link.href}
+      className={cn(
+        "group w-full rounded-lg p-3.5 transition-all duration-200",
+        "hover:bg-accent hover:text-accent-foreground",
+        "focus-visible:bg-accent focus-visible:text-accent-foreground",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+        "active:bg-accent/80 active:scale-[0.98]",
+        "touch-action-manipulation -webkit-tap-highlight-color-transparent"
+      )}
+      onClick={onClose}
+    >
+      <Flex align="center" gap={3} className="flex-row">
+        <Flex
+          align="center"
+          justify="center"
+          className={cn(
+            iconBg,
+            "aspect-square size-12 rounded-lg border border-border shrink-0",
+            "group-hover:bg-background/80 group-hover:border-border group-hover:shadow-sm",
+            "transition-colors duration-200"
+          )}
+        >
+          <IconSize size="md">
+            <link.icon />
+          </IconSize>
+        </Flex>
+        <Flex direction="col" align="start" justify="center" className="min-w-0 flex-1">
+          <TypographyP
+            className={cn(
+              "font-medium transition-colors duration-200",
+              "group-hover:text-accent-foreground group-focus-visible:text-accent-foreground"
+            )}
+          >
+            {link.title}
+          </TypographyP>
+          {link.description && (
+            <TypographyPSmall
+              className={cn(
+                "mt-0.5 opacity-80 transition-colors duration-200",
+                "group-hover:text-accent-foreground/80 group-focus-visible:text-accent-foreground/80"
+              )}
+            >
+              {link.description}
+            </TypographyPSmall>
+          )}
+        </Flex>
+      </Flex>
+    </Link>
+  );
+}
+
+function MobileMenu({
+  open,
+  onClose,
+  children,
+  className,
+  ...props
+}: React.ComponentProps<"div"> & {
+  open: boolean;
+  onClose?: () => void;
+}) {
+  const [mounted, setMounted] = React.useState(false);
+
   React.useEffect(() => {
     setMounted(true);
   }, []);
 
   React.useEffect(() => {
     if (open) {
+      const scrollY = window.scrollY;
+      document.body.style.position = "fixed";
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.width = "100%";
       document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
+      return () => {
+        document.body.style.position = "";
+        document.body.style.top = "";
+        document.body.style.width = "";
+        document.body.style.overflow = "";
+        window.scrollTo(0, scrollY);
+      };
     }
+  }, [open]);
+
+  if (!open || !mounted || typeof window === "undefined") return null;
+
+  return createPortal(
+    <>
+      <div
+        data-slot={open ? "open" : "closed"}
+        className={cn(
+          "fixed inset-0 z-40 bg-black/50 backdrop-blur-sm lg:hidden",
+          "data-[slot=open]:animate-in data-[slot=open]:fade-in-0",
+          "data-[slot=closed]:animate-out data-[slot=closed]:fade-out-0",
+          "duration-200 ease-out"
+        )}
+        onClick={onClose}
+        aria-hidden="true"
+      />
+      <div
+        id="mobile-menu"
+        data-slot={open ? "open" : "closed"}
+        className={cn(
+          "bg-background fixed top-14 right-0 bottom-0 left-0 z-50",
+          "flex flex-col overflow-hidden border-t border-border",
+          "data-[slot=open]:animate-in data-[slot=open]:slide-in-from-top-2 data-[slot=open]:fade-in-0",
+          "data-[slot=closed]:animate-out data-[slot=closed]:slide-out-to-top-2 data-[slot=closed]:fade-out-0",
+          "duration-300 ease-out lg:hidden pb-safe overflow-y-auto scrollbar-hide"
+        )}
+        style={{ touchAction: "pan-y" }}
+        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Menu điều hướng"
+      >
+        <div
+          className={cn("size-full p-4 sm:p-6 container mx-auto max-w-full", className)}
+          {...props}
+        >
+          {children}
+        </div>
+      </div>
+    </>,
+    document.body
+  );
+}
+
+function ListItem({
+  title,
+  description,
+  icon: Icon,
+  className,
+  href,
+  ...props
+}: React.ComponentProps<typeof NavigationMenuLink> & LinkItem) {
+  return (
+    <NavigationMenuLink
+      className={cn(
+        "group w-full flex flex-row gap-x-2 rounded-sm p-2 transition-colors",
+        "data-[active=true]:focus:bg-accent data-[active=true]:hover:bg-accent",
+        "data-[active=true]:bg-accent/50 data-[active=true]:text-accent-foreground",
+        "hover:bg-accent hover:text-accent-foreground",
+        "focus:bg-accent focus:text-accent-foreground focus:outline-none",
+        className
+      )}
+      {...props}
+      asChild
+    >
+      <Link href={href} className="w-full">
+        <Flex align="center" gap={2} direction="row" className="w-full">
+          <Flex
+            align="center"
+            justify="center"
+            className={cn(
+              "bg-background/40 aspect-square size-12 rounded-md border shadow-sm",
+              "group-hover:bg-background/60 group-hover:border-accent/50",
+              "transition-colors duration-200"
+            )}
+          >
+            <IconSize size="md">
+              <Icon />
+            </IconSize>
+          </Flex>
+          <Flex direction="col" align="start" justify="center">
+            <TypographyP className={cn(
+              "text-popover-foreground transition-colors",
+              "group-hover:text-accent-foreground group-focus:text-accent-foreground",
+              "data-[active=true]:text-accent-foreground"
+            )}>
+              {title}
+            </TypographyP>
+            {description && (
+              <TypographyPSmall className={cn(
+                "text-popover-foreground/80 transition-colors",
+                "group-hover:text-accent-foreground/90 group-focus:text-accent-foreground/90",
+                "data-[active=true]:text-accent-foreground/90"
+              )}>
+                {description}
+              </TypographyPSmall>
+            )}
+          </Flex>
+        </Flex>
+      </Link>
+    </NavigationMenuLink>
+  );
+}
+
+// Main Component
+export function PublicHeader() {
+  const [open, setOpen] = React.useState(false);
+  const [mounted, setMounted] = React.useState(false);
+  const { data: session } = useSession();
+  const isAuthenticated = !!session;
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  React.useEffect(() => {
+    document.body.style.overflow = open ? "hidden" : "";
     return () => {
       document.body.style.overflow = "";
     };
@@ -168,111 +395,92 @@ export function PublicHeader() {
 
   return (
     <Flex
-      component="header"
-      style={{
-        position: "sticky",
-        width: "100%",
-        height: "3.5rem",
-        borderBottom: "1px solid var(--border)",
-        paddingLeft: "1rem",
-        paddingRight: "1rem",
-        backgroundColor: "var(--background) !important",
-        backdropFilter: "blur(20px)",
-        top: 0,
-        zIndex: 50,
-      }}
+      as="header"
+      position="sticky"
+      width="full"
+      height="14"
+      border="bottom"
+      paddingX="4"
+      bg="background"
+      style={{ backdropFilter: "blur(20px)", top: 0, zIndex: 50 }}
       className="top-0 z-50 border-border"
     >
-      <Flex
-        component="nav"
-        style={{
-          width: "100%",
-          marginLeft: "auto",
-          marginRight: "auto",
-          height: "100%",
-        }}
-        align="center"
-        justify="space-between"
-        className="container mx-auto"
-      >
-        <Flex align="center" gap={16}>
+      <Flex as="nav" width="full" height="full" align="center" justify="between" container>
+        <Flex align="center" gap={4}>
           <Link
             href={PUBLIC_ROUTES.home}
             className="dark:bg-foreground rounded-md p-1"
             aria-label="Trang chủ - Trường Đại học Ngân hàng TP.HCM"
           >
-            <Flex align="center" gap={8}>
-              <Logo className="h-8 w-8 sm:h-10 sm:w-10" />
-            </Flex>
+            <Logo className="h-8 w-8 sm:h-10 sm:w-10" />
           </Link>
-            <Flex 
-              vertical 
-              align="flex-start" 
-              justify="center"
-            >
-              <TypographyH6>Trường Đại học Ngân hàng</TypographyH6>
-              <TypographyPSmall>Thành Phố Hồ Chí Minh</TypographyPSmall>
-            </Flex>
+          <Flex direction="col" align="start" justify="center">
+            <TypographyH6>Trường Đại học Ngân hàng</TypographyH6>
+            <TypographyPSmall>Thành Phố Hồ Chí Minh</TypographyPSmall>
+          </Flex>
           <Separator
-              orientation="vertical"
-              className={`h-6 w-px bg-border hidden lg:block`}
-            />
+            orientation="vertical"
+            className="h-6 w-px bg-border hidden lg:block"
+          />
           {mounted ? (
             <NavigationMenu className="hidden lg:flex">
               <NavigationMenuList>
-                {publicLinks.map((link) => {
-                  // Hiển thị "Trang chủ" và "Bài viết" trực tiếp
-                  if (
-                    link.href === PUBLIC_ROUTES.home ||
-                    link.href === PUBLIC_ROUTES.blog
-                  ) {
-                    return (
-                      <NavigationMenuItem key={link.href}>
-                        <NavigationMenuLink asChild>
-                          <Link
-                            href={link.href}
-                            className="group inline-flex h-10 w-max items-center justify-center rounded-md bg-transparent px-4 py-2 transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50"
-                          >
-                            {link.href === PUBLIC_ROUTES.home && (
-                              <Flex align="center" gap={8}>
-                                <IconSize size="sm">
-                                  <link.icon />
-                                </IconSize>
-                                {link.title}
-                              </Flex>
-                            )}
-                            {link.href !== PUBLIC_ROUTES.home && link.title}
-                          </Link>
-                        </NavigationMenuLink>
-                      </NavigationMenuItem>
-                    );
-                  }
-                  return null;
-                })}
-                {/* Support menu với các links còn lại */}
-                {publicLinks.filter(
-                  (link) =>
-                    link.href !== PUBLIC_ROUTES.home &&
-                    link.href !== PUBLIC_ROUTES.blog
-                ).length > 0 && (
+                {mainLinks.map((link) => (
+                  <NavigationMenuItem key={link.href}>
+                    <NavigationMenuLink asChild>
+                      <Link
+                        href={link.href}
+                        className={cn(
+                          "group inline-flex h-10 w-max items-center justify-center rounded-md",
+                          "bg-transparent px-4 py-2 transition-colors",
+                          "hover:bg-accent hover:text-accent-foreground",
+                          "focus:bg-accent focus:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+                          "disabled:pointer-events-none disabled:opacity-50",
+                          "data-[active]:bg-accent/50 data-[active]:text-accent-foreground",
+                          "data-[state=open]:bg-accent/50 data-[state=open]:text-accent-foreground"
+                        )}
+                      >
+                        {link.href === PUBLIC_ROUTES.home ? (
+                          <Flex align="center" gap={2}>
+                            <IconSize size="sm">
+                              <link.icon />
+                            </IconSize>
+                            {link.title}
+                          </Flex>
+                        ) : (
+                          link.title
+                        )}
+                      </Link>
+                    </NavigationMenuLink>
+                  </NavigationMenuItem>
+                ))}
+                {supportLinks.length > 0 && (
                   <NavigationMenuItem>
-                    <NavigationMenuTrigger className="bg-transparent">
+                    <NavigationMenuTrigger className={cn(
+                      "bg-transparent transition-colors",
+                      "hover:bg-accent hover:text-accent-foreground",
+                      "focus:bg-accent focus:text-accent-foreground",
+                      "data-[state=open]:bg-accent data-[state=open]:text-accent-foreground"
+                    )}>
                       Hỗ trợ
                     </NavigationMenuTrigger>
-                    <NavigationMenuContent className="bg-background p-1 pr-1.5 pb-1.5">
-                      <Row gutter={[8, 8]} className="bg-popover text-popover-foreground w-lg">
-                        {publicLinks
-                          .filter(
-                            (link) =>
-                              link.href !== PUBLIC_ROUTES.home &&
-                              link.href !== PUBLIC_ROUTES.blog
-                          )
-                          .map((item, i) => (
-                            <Col key={i} span={12}>
-                              <ListItem {...item} />
-                            </Col>
-                          ))}
-                      </Row>
+                    <NavigationMenuContent className="bg-popover text-popover-foreground p-1 pr-1.5 pb-1.5 border border-border shadow-lg">
+                      <Grid
+                        cols={supportLinks.length <= 2 ? 1 : 2}
+                        gap={2}
+                        className={cn(
+                          "w-auto",
+                          supportLinks.length <= 2 
+                            ? "min-w-[280px] max-w-sm" 
+                            : "min-w-[320px] max-w-lg"
+                        )}
+                      >
+                        {supportLinks.map((item, i) => (
+                          <div key={i} className="w-full">
+                            <ListItem {...item} />
+                          </div>
+                        ))}
+                      </Grid>
                     </NavigationMenuContent>
                   </NavigationMenuItem>
                 )}
@@ -280,46 +488,28 @@ export function PublicHeader() {
             </NavigationMenu>
           ) : (
             <nav className="relative z-10 max-w-max flex-1 items-center justify-center hidden lg:flex">
-              <div>
-                <ul className="group flex flex-1 list-none items-center justify-center space-x-1">
-                  {/* Skeleton cho "Trang chủ" và "Bài viết" - match với NavigationMenuItem */}
-                  {/* Sử dụng cùng logic map như phần thực tế để đảm bảo thứ tự giống nhau */}
-                  {publicLinks.map((link) => {
-                    // Hiển thị skeleton cho "Trang chủ" và "Bài viết"
-                    if (
-                      link.href === PUBLIC_ROUTES.home ||
-                      link.href === PUBLIC_ROUTES.blog
-                    ) {
-                      return (
-                        <li key={link.href}>
-                          <Skeleton
-                            className={cn(
-                              "inline-flex h-10 w-max items-center justify-center rounded-md px-4 py-2",
-                              link.href === PUBLIC_ROUTES.home ? "w-[125px]" : "w-[88px]"
-                            )}
-                          />
-                        </li>
-                      );
-                    }
-                    return null;
-                  })}
-                  {/* Skeleton cho "Hỗ trợ" button nếu có links còn lại - match với NavigationMenuTrigger */}
-                  {publicLinks.filter(
-                    (link) =>
-                      link.href !== PUBLIC_ROUTES.home &&
-                      link.href !== PUBLIC_ROUTES.blog
-                  ).length > 0 && (
-                    <li>
-                      <Skeleton className="inline-flex h-9 w-max items-center justify-center rounded-md px-4 py-2 w-[88px]" />
-                    </li>
-                  )}
-                </ul>
-              </div>
+              <ul className="group flex flex-1 list-none items-center justify-center space-x-1">
+                {mainLinks.map((link) => (
+                  <li key={link.href}>
+                    <Skeleton
+                      className={cn(
+                        "inline-flex h-10 w-max items-center justify-center rounded-md px-4 py-2",
+                        link.href === PUBLIC_ROUTES.home ? "w-[125px]" : "w-[88px]"
+                      )}
+                    />
+                  </li>
+                ))}
+                {supportLinks.length > 0 && (
+                  <li>
+                    <Skeleton className="inline-flex h-9 w-max items-center justify-center rounded-md px-4 py-2 w-[88px]" />
+                  </li>
+                )}
+              </ul>
             </nav>
           )}
         </Flex>
         {mounted ? (
-          <Flex align="center" justify="flex-end" gap={8}>
+          <Flex align="center" justify="end" gap={2}>
             <ModeToggle />
             {isAuthenticated ? (
               <div className="hidden lg:block">
@@ -350,7 +540,7 @@ export function PublicHeader() {
             </Button>
           </Flex>
         ) : (
-          <Flex align="center" gap={8}>
+          <Flex align="center" gap={2}>
             <Skeleton className="w-10 h-10 rounded-md" />
             <Skeleton className="w-10 h-10 rounded-md" />
           </Flex>
@@ -358,185 +548,65 @@ export function PublicHeader() {
       </Flex>
       {mounted && (
         <MobileMenu open={open} onClose={() => setOpen(false)}>
-          <Flex vertical style={{ height: "100%" }}>
-            {/* User Section - Top */}
+          <Flex direction="col" height="full" gap={0}>
             {isAuthenticated ? (
+              <div className="w-full pb-4 border-b border-border">
                 <NavUser className="w-full" />
+              </div>
             ) : (
               <Flex
-                gap={8}
-                className="flex-col sm:flex-row"
-                style={{
-                  borderBottom: "1px solid hsl(var(--border))",
-                  paddingTop: "1.5rem",
-                  paddingBottom: "1.5rem",
-                  marginBottom: "1rem",
-                }}
+                direction="col-sm-row"
+                gap={2}
+                border="bottom"
+                paddingY="4"
+                paddingX="0"
+                className="pb-4 w-full"
               >
-                <Button
+                <AuthButton
+                  icon={LogIn}
+                  title="Đăng nhập"
+                  description="Đăng nhập vào tài khoản của bạn"
+                  href={PUBLIC_ROUTES.auth.signIn}
                   variant="default"
-                  className="w-full h-auto py-3 flex flex-row items-center justify-start"
-                  onClick={() => {
-                    setOpen(false);
-                    router.push("/auth/sign-in");
-                  }}
-                >
-                  <Flex align="center" justify="flex-start" gap={12}>
-                    <Flex
-                      align="center"
-                      justify="center"
-                      style={{
-                        backgroundColor: "hsl(var(--primary) / 0.1)",
-                        height: "3rem",
-                        width: "3rem",
-                        borderRadius: "0.375rem",
-                      }}
-                      className="aspect-square"
-                    >
-                      <IconSize size="md">
-                        <LogIn />
-                      </IconSize>
-                    </Flex>
-                    <Flex vertical align="flex-start">
-                      <TypographyP>Đăng nhập</TypographyP>
-                      <TypographyPSmall>
-                        Đăng nhập vào tài khoản của bạn
-                      </TypographyPSmall>
-                    </Flex>
-                  </Flex>
-                </Button>
-                <Button
+                  onClose={() => setOpen(false)}
+                />
+                <AuthButton
+                  icon={UserPlus}
+                  title="Đăng ký"
+                  description="Tạo tài khoản mới"
+                  href={PUBLIC_ROUTES.auth.signUp}
                   variant="outline"
-                  className="w-full h-auto py-3 flex flex-row items-center justify-start"
-                  onClick={() => {
-                    setOpen(false);
-                    router.push("/auth/sign-up");
-                  }}
-                >
-                  <Flex align="center" justify="flex-start" gap={12}>
-                    <Flex
-                      align="center"
-                      justify="center"
-                      style={{
-                        backgroundColor: "hsl(var(--muted))",
-                        height: "3rem",
-                        width: "3rem",
-                        borderRadius: "0.375rem",
-                      }}
-                      className="aspect-square"
-                    >
-                      <IconSize size="md">
-                        <UserPlus />
-                      </IconSize>
-                    </Flex>
-                    <Flex vertical align="flex-start">
-                      <TypographyP>Đăng ký</TypographyP>
-                      <TypographyPSmallMuted>
-                        Tạo tài khoản mới
-                      </TypographyPSmallMuted>
-                    </Flex>
-                  </Flex>
-                </Button>
+                  iconBg="bg-accent/10 dark:bg-accent/20"
+                  onClose={() => setOpen(false)}
+                />
               </Flex>
             )}
-
-            {/* Navigation Links - Scrollable */}
-            <Flex vertical gap={4} style={{ flex: 1, overflow: "auto", width: "100%" }}>
-              {publicLinks.map((link) => {
-                // Hiển thị "Trang chủ" và "Bài viết" trực tiếp
-                if (
-                  link.href === PUBLIC_ROUTES.home ||
-                  link.href === PUBLIC_ROUTES.blog
-                ) {
-                  return (
-                    <Link
-                      key={link.href}
-                      href={link.href}
-                      className="group w-full hover:bg-accent hover:text-foreground focus-visible:bg-accent focus-visible:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-lg p-3 transition-colors active:bg-accent/80"
-                      onClick={() => setOpen(false)}
-                    >
-                      <Flex align="center" gap={12} className="flex-row">
-                        <Flex
-                          align="center"
-                          justify="center"
-                          className="bg-background/40 aspect-square size-11 rounded-lg border shadow-sm shrink-0 group-hover:bg-background/60 transition-colors"
-                        >
-                          <IconSize size="md">
-                            <link.icon />
-                          </IconSize>
-                        </Flex>
-                        <Flex
-                          vertical
-                          align="flex-start"
-                          justify="center"
-                          className="min-w-0 flex-1"
-                        >
-                          <TypographyP className="group-hover:text-foreground group-focus-visible:text-foreground transition-colors">
-                            {link.title}
-                          </TypographyP>
-                          {link.description && (
-                            <TypographyPSmall className="group-hover:text-foreground/80 group-focus-visible:text-foreground transition-colors">
-                              {link.description}
-                            </TypographyPSmall>
-                          )}
-                        </Flex>
-                      </Flex>
-                    </Link>
-                  );
-                }
-                return null;
-              })}
-              {/* Hiển thị các links còn lại dưới label "Hỗ trợ" */}
-              {publicLinks.filter(
-                (link) =>
-                  link.href !== PUBLIC_ROUTES.home &&
-                  link.href !== PUBLIC_ROUTES.blog
-              ).length > 0 && (
+            <Flex
+              direction="col"
+              gap={1.5}
+              flex="1"
+              overflow="auto"
+              width="full"
+              className="mt-4 -mx-4 px-4"
+            >
+              {mainLinks.map((link) => (
+                <MobileNavLink key={link.href} link={link} onClose={() => setOpen(false)} />
+              ))}
+              {supportLinks.length > 0 && (
                 <>
-                  <TypographyPSmallMuted className="px-2 py-2 uppercase tracking-wider">
-                    Hỗ trợ
-                  </TypographyPSmallMuted>
-                  {publicLinks
-                    .filter(
-                      (link) =>
-                        link.href !== PUBLIC_ROUTES.home &&
-                        link.href !== PUBLIC_ROUTES.blog
-                    )
-                    .map((link) => (
-                      <Link
-                        key={link.href}
-                        href={link.href}
-                        className="group w-full hover:bg-accent hover:text-foreground focus-visible:bg-accent focus-visible:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-lg p-3 transition-colors active:bg-accent/80"
-                        onClick={() => setOpen(false)}
-                      >
-                        <Flex align="center" gap={12} className="flex-row">
-                          <Flex
-                            align="center"
-                            justify="center"
-                            className="bg-background/40 aspect-square size-11 rounded-lg border shadow-sm shrink-0 group-hover:bg-background/60 transition-colors"
-                          >
-                            <IconSize size="md">
-                              <link.icon />
-                            </IconSize>
-                          </Flex>
-                          <Flex
-                            vertical
-                            align="flex-start"
-                            justify="center"
-                            className="min-w-0 flex-1"
-                          >
-                            <TypographyP className="group-hover:text-foreground group-focus-visible:text-foreground transition-colors">
-                              {link.title}
-                            </TypographyP>
-                            {link.description && (
-                              <TypographyPSmall className="group-hover:text-foreground/80 group-focus-visible:text-foreground transition-colors">
-                                {link.description}
-                              </TypographyPSmall>
-                            )}
-                          </Flex>
-                        </Flex>
-                      </Link>
-                    ))}
+                  <div className="pt-2 pb-1.5">
+                    <TypographyPSmall className="px-2 uppercase tracking-wider font-semibold opacity-70">
+                      Hỗ trợ
+                    </TypographyPSmall>
+                  </div>
+                  {supportLinks.map((link) => (
+                    <MobileNavLink
+                      key={link.href}
+                      link={link}
+                      onClose={() => setOpen(false)}
+                      iconBg="bg-muted/50 dark:bg-muted/30"
+                    />
+                  ))}
                 </>
               )}
             </Flex>
@@ -544,87 +614,5 @@ export function PublicHeader() {
         </MobileMenu>
       )}
     </Flex>
-  );
-}
-
-type MobileMenuProps = React.ComponentProps<"div"> & {
-  open: boolean;
-  onClose?: () => void;
-};
-
-function MobileMenu({
-  open,
-  children,
-  className,
-  onClose,
-  ...props
-}: MobileMenuProps) {
-  if (!open || typeof window === "undefined") return null;
-
-  return createPortal(
-    <div
-      id="mobile-menu"
-      className={cn(
-        "bg-background",
-        "fixed top-14 right-0 bottom-0 left-0 z-40 flex flex-col overflow-hidden border-y lg:hidden"
-      )}
-      onClick={(e) => {
-        // Close menu when clicking on backdrop
-        if (e.target === e.currentTarget && onClose) {
-          onClose();
-        }
-      }}
-    >
-      <div
-        data-slot={open ? "open" : "closed"}
-        className={cn(
-          "data-[slot=open]:animate-in data-[slot=open]:zoom-in-97 ease-out",
-          "size-full p-4 container mx-auto",
-          className
-        )}
-        {...props}
-      >
-        {children}
-      </div>
-    </div>,
-    document.body
-  );
-}
-
-function ListItem({
-  title,
-  description,
-  icon: Icon,
-  className,
-  href,
-  ...props
-}: React.ComponentProps<typeof NavigationMenuLink> & LinkItem) {
-  return (
-    <NavigationMenuLink
-      className={cn(
-        "group w-full flex flex-row gap-x-2 data-[active=true]:focus:bg-accent data-[active=true]:hover:bg-accent data-[active=true]:bg-accent/50 data-[active=true]:text-accent-foreground hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground rounded-sm p-2",
-        className
-      )}
-      {...props}
-      asChild
-    >
-      <Link href={href}>
-        <Flex align="center" gap={8} className="flex-row">
-          <Flex
-            align="center"
-            justify="center"
-            className="bg-background/40 aspect-square size-12 rounded-md border shadow-sm"
-          >
-            <IconSize size="md">
-              <Icon />
-            </IconSize>
-          </Flex>
-          <Flex vertical align="flex-start" justify="center">
-            <TypographyP className="text-popover-foreground">{title}</TypographyP>
-            {description && <TypographyPSmall className="text-popover-foreground/80">{description}</TypographyPSmall>}
-          </Flex>
-        </Flex>
-      </Link>
-    </NavigationMenuLink>
   );
 }

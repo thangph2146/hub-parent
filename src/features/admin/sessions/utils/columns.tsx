@@ -80,8 +80,8 @@ export const useSessionColumns = ({
           onSearchChange: userAgentFilter.onSearchChange,
           isLoading: userAgentFilter.isLoading,
         },
-        className: "min-w-[200px] max-w-[400px]",
-        headerClassName: "min-w-[200px] max-w-[400px]",
+        className: "min-w-[300px] max-w-[400px]",
+        headerClassName: "min-w-[300px] max-w-[400px]",
         cell: (row) => (
           <TypographyP className="break-words max-w-[400px]" title={row.userAgent || undefined}>
             {row.userAgent ?? <span className="text-muted-foreground">-</span>}
