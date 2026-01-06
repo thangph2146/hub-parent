@@ -44,6 +44,7 @@ export const SectionWithImage = ({
       direction="col"
       align="center"
       fullWidth
+      gap={6}
       className={cn(
         "lg:flex-row lg:gap-8",
         reverse && "lg:flex-row-reverse",

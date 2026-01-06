@@ -67,6 +67,7 @@ export const getBaseAccountFields = (): ResourceFormField<AccountFormData>[] => 
       description: "URL của ảnh đại diện",
       icon: React.createElement(UserCircle, { className: "h-4 w-4" }),
       section: "avatar",
+      className: "col-span-full",
     },
     {
       name: "name",

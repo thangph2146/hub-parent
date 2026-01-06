@@ -15,7 +15,12 @@ export const getPostFormSections = (): ResourceFormSection[] => [
   {
     id: "basic",
     title: "Thông tin cơ bản",
-    description: "Tiêu đề, slug, tóm tắt, hình ảnh và trạng thái xuất bản",
+    description: "Tiêu đề, slug, tóm tắt và hình ảnh",
+  },
+  {
+    id: "publishing",
+    title: "Xuất bản",
+    description: "Trạng thái và ngày xuất bản",
   },
   {
     id: "categories",
@@ -75,7 +80,7 @@ export const getBasePostFields = (): ResourceFormField<PostFormData>[] => [
     type: "switch",
     description: "Trạng thái xuất bản của bài viết",
     icon: React.createElement(Eye, { className: "h-4 w-4" }),
-    section: "basic",
+    section: "publishing",
   },
   {
     name: "publishedAt",
@@ -83,7 +88,7 @@ export const getBasePostFields = (): ResourceFormField<PostFormData>[] => [
     type: "date",
     description: "Chọn ngày và giờ xuất bản bài viết (để trống để tự động đặt khi bật trạng thái xuất bản)",
     icon: React.createElement(Calendar, { className: "h-4 w-4" }),
-    section: "basic",
+    section: "publishing",
   },
 ]
 

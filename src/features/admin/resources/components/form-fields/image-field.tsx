@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button"
 import Image from "next/image"
 import { cn } from "@/lib/utils"
 import { TypographySpanMuted, TypographySpanSmallMuted, IconSize } from "@/components/ui/typography"
-import { Flex } from "antd"
+import { Flex } from "@/components/ui/flex"
 import { useToast } from "@/hooks/use-toast"
 
 export interface ImageFieldProps {
@@ -65,8 +65,8 @@ export const ImageField = ({
 
   return (
     <FieldContent>
-      <Flex vertical gap="middle">
-        <Flex align="center" gap={8} className="w-full">
+      <Flex direction="col" gap={4}>
+        <Flex align="center" gap={2} width="full">
           <Input
             id={fieldId}
             type="text"
@@ -123,7 +123,7 @@ export const ImageField = ({
 
         {/* Image preview */}
         {hasImage && !imageError && (
-          <Flex align="center" justify="center" className="w-full relative aspect-video">
+          <Flex align="center" justify="center" width="full" position="relative" className="aspect-video">
             <Image
               src={imageUrl}
               alt="Preview"
@@ -138,7 +138,7 @@ export const ImageField = ({
 
         {/* Error state */}
         {hasImage && imageError && (
-          <Flex vertical align="center" gap={8} className="w-full relative rounded-lg border overflow-hidden bg-destructive/10 text-destructive border-destructive/50 aspect-video p-4">
+          <Flex direction="col" align="center" gap={2} width="full" position="relative" rounded="lg" border="all" overflow="hidden" bg="destructive-text" padding="md" className="text-destructive border-destructive/50 aspect-video">
             <IconSize size="2xl">
               <ImageIcon />
             </IconSize>
@@ -149,7 +149,7 @@ export const ImageField = ({
 
         {/* Placeholder when no image */}
         {!hasImage && (
-          <Flex vertical align="center" justify="center" gap={8} className="w-full relative rounded-lg border overflow-hidden bg-muted/50 border-dashed aspect-video text-muted-foreground">
+          <Flex direction="col" align="center" justify="center" gap={2} width="full" position="relative" rounded="lg" border="all" overflow="hidden" bg="muted-50" padding="md" className="border-dashed aspect-video text-muted-foreground">
             <IconSize size="4xl">
               <ImageIcon />
             </IconSize>

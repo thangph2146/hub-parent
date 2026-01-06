@@ -4,7 +4,7 @@ import { PostCard } from "@/components/public/post/post-card"
 import { PostPagination } from "@/components/public/post/post-pagination"
 import { PostEmptyState } from "./post-empty-state"
 import { Flex } from "@/components/ui/flex"
-import { Row, Col } from "antd"
+import { Grid } from "@/components/ui/grid"
 import type { Post } from "@/features/public/post/types"
 import { Skeleton } from "@/components/ui/skeleton"
 
@@ -21,16 +21,16 @@ export const PostList = ({ posts, currentPage, totalPages }: PostListProps) => {
 
   return (
     <>
-      <Row gutter={[32, 32]}>
+      <Grid cols="responsive-3" gap={8}>
         {posts.map((post, index) => (
-          <Col key={post.id} xs={24} sm={12} xxl={8}>
+          <div key={post.id}>
             <PostCard 
               post={post} 
               priority={index < 3}
             />
-          </Col>
+          </div>
         ))}
-      </Row>
+      </Grid>
       
       {totalPages > 1 && (
         <Flex justify="center" padding="responsive-y" className="pt-12">
@@ -43,9 +43,9 @@ export const PostList = ({ posts, currentPage, totalPages }: PostListProps) => {
 
 export const PostListSkeleton = () => {
   return (
-    <Row gutter={[32, 32]}>
+    <Grid cols="responsive-3" gap={8}>
       {Array.from({ length: 6 }).map((_, i) => (
-        <Col key={i} xs={24} sm={12} lg={8}>
+        <div key={i}>
           <Flex direction="col" gap={4}>
             <Skeleton className="aspect-video w-full rounded-lg" />
             <Skeleton className="h-4 w-20" />
@@ -54,9 +54,9 @@ export const PostListSkeleton = () => {
             <Skeleton className="h-6 w-3/4" />
             <Skeleton className="h-4 w-24" />
           </Flex>
-        </Col>
+        </div>
       ))}
-    </Row>
+    </Grid>
   )
 }
 

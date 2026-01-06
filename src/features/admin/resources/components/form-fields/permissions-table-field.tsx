@@ -152,6 +152,18 @@ export const PermissionsTableField = <T,>({
     });
   };
 
+  const toggleResource = (resourceKey: string) => {
+    setOpenResources((prev) => {
+      const next = new Set(prev);
+      if (next.has(resourceKey)) {
+        next.delete(resourceKey);
+      } else {
+        next.add(resourceKey);
+      }
+      return next;
+    });
+  };
+
 
   // Check if all groups and resources are open
   const allExpanded = useMemo(() => {
@@ -285,7 +297,7 @@ export const PermissionsTableField = <T,>({
   }
 
   return (
-    <FieldContent className="items-start justify-start w-full gap-3 min-w-0">
+    <FieldContent className="items-start justify-start w-full gap-3 min-w-0 flex-1 min-h-0">
       {/* Action Buttons - Only show in edit mode */}
       {!readOnly && (
         <Flex align="center" justify="between" fullWidth paddingX={1} gap={2}>
@@ -349,11 +361,11 @@ export const PermissionsTableField = <T,>({
       <div
         ref={tableRef}
         className={cn(
-          "rounded-lg border border-border bg-background w-full shadow-sm",
+          "rounded-lg border border-border bg-background w-full shadow-sm flex-1",
           error && "border-destructive"
         )}
       >
-        <div className="overflow-x-auto overflow-y-visible -mx-1 px-1">
+        <div className="overflow-x-auto overflow-y-visible -mx-1 px-1 w-full">
           <Table className="table-fixed w-full">
             <TableHeader>
               <TableRow className="bg-muted/50 hover:bg-muted/50 border-b border-border">
@@ -454,6 +466,30 @@ export const PermissionsTableField = <T,>({
 
                         return (
                           <React.Fragment key={resourceData.resource}>
+                            {/* Resource Header Row */}
+                            <TableRow
+                              className="bg-muted/30 hover:bg-muted/50 border-b border-border/40"
+                              data-display-name={`Resource-${resourceData.resource}`}
+                            >
+                              <TableCell colSpan={6} className="p-0">
+                                <button
+                                  type="button"
+                                  onClick={() => toggleResource(resourceKey)}
+                                  className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-muted/80 transition-colors cursor-pointer h-12 pl-8"
+                                >
+                                  <ChevronDown
+                                    className={cn(
+                                      "h-5 w-5 transition-transform shrink-0 text-muted-foreground",
+                                      isResourceOpen &&
+                                        "transform rotate-180 text-foreground"
+                                    )}
+                                  />
+                                  <span className="font-medium text-sm text-foreground flex-1 text-left">
+                                    {resourceData.resource}
+                                  </span>
+                                </button>
+                              </TableCell>
+                            </TableRow>
                             {/* Permission Rows - Child Nodes */}
                             {isResourceOpen &&
                               Array.from(permissionsByDisplay.entries()).map(
