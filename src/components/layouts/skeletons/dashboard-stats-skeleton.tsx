@@ -37,7 +37,7 @@ export function DashboardStatsSkeleton() {
         </Flex>
 
         {/* Charts Row */}
-        <Grid cols="2-lg" gap={6} fullWidth>
+        <Grid cols="responsive-3" gap={6} fullWidth>
           {/* Line Chart Skeleton */}
           <Card className="relative overflow-hidden">
             <CardHeader>
@@ -73,7 +73,7 @@ export function DashboardStatsSkeleton() {
                 <Flex align="center" justify="center" fullWidth>
                   <Skeleton className="h-80 w-80 rounded-full" />
                 </Flex>
-                <Grid cols="2-lg" gap={4} fullWidth>
+                <Grid cols="responsive-3" gap={4} fullWidth>
                   {Array.from({ length: 4 }).map((_, index) => (
                     <Flex key={index} align="center" gap={3} fullWidth padding="xs" rounded="lg" border="all">
                       <Skeleton className="h-4 w-4 rounded" />

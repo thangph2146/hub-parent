@@ -1,7 +1,7 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { usePathname } from "next/navigation"
+import { useEffect, useState, useRef } from "react"
+import { usePathname, useSearchParams } from "next/navigation"
 
 /**
  * Helper to scroll element to top
@@ -32,21 +32,36 @@ const scrollAllToTop = (behavior: ScrollBehavior = "instant") => {
 }
 
 /**
- * Hook để tự động scroll về đầu trang khi pathname thay đổi
- * Sử dụng trong layout hoặc root component để đảm bảo mỗi khi chuyển page,
+ * Hook để tự động scroll về đầu trang khi pathname hoặc searchParams thay đổi
+ * Sử dụng trong layout hoặc root component để đảm bảo mỗi khi chuyển page hoặc thay đổi filter,
  * màn hình sẽ tự động scroll về đầu trang
  */
 export const useScrollToTop = () => {
   const pathname = usePathname()
+  const searchParams = useSearchParams()
+  const prevPathnameRef = useRef<string | null>(null)
+  const prevSearchParamsRef = useRef<string | null>(null)
 
   useEffect(() => {
-    // Double RAF để đảm bảo DOM đã render hoàn toàn
-    requestAnimationFrame(() => {
+    const currentPathname = pathname
+    const currentSearchParams = searchParams?.toString() || null
+    
+    // Only scroll if pathname or searchParams actually changed (not on initial mount)
+    const pathnameChanged = prevPathnameRef.current !== null && prevPathnameRef.current !== currentPathname
+    const searchParamsChanged = prevSearchParamsRef.current !== null && prevSearchParamsRef.current !== currentSearchParams
+    
+    if (pathnameChanged || searchParamsChanged) {
+      // Double RAF để đảm bảo DOM đã render hoàn toàn
       requestAnimationFrame(() => {
-        scrollAllToTop("instant")
+        requestAnimationFrame(() => {
+          scrollAllToTop("smooth")
+        })
       })
-    })
-  }, [pathname])
+    }
+    
+    prevPathnameRef.current = currentPathname
+    prevSearchParamsRef.current = currentSearchParams
+  }, [pathname, searchParams])
 }
 
 /**

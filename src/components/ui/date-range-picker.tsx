@@ -230,98 +230,98 @@ export const DateRangePicker = ({
         </Button>
       </PopoverTrigger>
       <PopoverContent 
-        className="w-auto p-0 min-w-[210px]" 
+        className="w-auto p-0 min-w-[280px] sm:min-w-[320px]" 
         align={align}
       >
         <Flex 
           direction="col"
-          gap={4}
-          padding="md"
+          gap={0}
           width="full"
         >
           {/* Date Pickers Section */}
-          <Flex 
-            gap={4}
-            width="full"
-            direction={isSmallScreen ? "row" : "col"}
-          >
-            <Field
-              orientation="vertical"
-              style={{ 
-                flex: 1, 
-                minWidth: 0,
-                width: isSmallScreen ? "auto" : "100%",
-                maxWidth: isSmallScreen ? "50%" : "100%"
-              }}
+          <div className="p-4 sm:p-5">
+            <Flex 
+              gap={3}
+              width="full"
+              direction={isSmallScreen ? "row" : "col"}
             >
-              <FieldLabel>
-                {fromLabel}
-              </FieldLabel>
-              <FieldContent>
-                <DatePicker
-                  date={dateFrom}
-                  onDateChange={handleDateFromChange}
-                  placeholder="Chọn ngày bắt đầu"
-                  className="w-full"
-                  autoClose={false}
-                  datesWithItems={datesWithItems}
-                />
-              </FieldContent>
-            </Field>
-            <Field
-              orientation="vertical"
-              style={{ 
-                flex: 1, 
-                minWidth: 0,
-                width: isSmallScreen ? "auto" : "100%",
-                maxWidth: isSmallScreen ? "50%" : "100%"
-              }}
-            >
-              <FieldLabel>
-                {toLabel}
-              </FieldLabel>
-              <FieldContent>
-              <DatePicker
-                date={dateTo}
-                onDateChange={handleDateToChange}
-                placeholder="Chọn ngày kết thúc"
-                className="w-full"
-                autoClose={false}
-                datesWithItems={datesWithItems}
-              />
-              </FieldContent>
-            </Field>
-          </Flex>
+              <Field
+                orientation="vertical"
+                className="flex-1 min-w-0"
+                style={{ 
+                  width: isSmallScreen ? "auto" : "100%",
+                }}
+              >
+                <FieldLabel className="text-sm font-medium mb-2">
+                  {fromLabel}
+                </FieldLabel>
+                <FieldContent>
+                  <DatePicker
+                    date={dateFrom}
+                    onDateChange={handleDateFromChange}
+                    placeholder="Chọn ngày bắt đầu"
+                    className="w-full"
+                    autoClose={false}
+                    datesWithItems={datesWithItems}
+                  />
+                </FieldContent>
+              </Field>
+              <Field
+                orientation="vertical"
+                className="flex-1 min-w-0"
+                style={{ 
+                  width: isSmallScreen ? "auto" : "100%",
+                }}
+              >
+                <FieldLabel className="text-sm font-medium mb-2">
+                  {toLabel}
+                </FieldLabel>
+                <FieldContent>
+                  <DatePicker
+                    date={dateTo}
+                    onDateChange={handleDateToChange}
+                    placeholder="Chọn ngày kết thúc"
+                    className="w-full"
+                    autoClose={false}
+                    datesWithItems={datesWithItems}
+                  />
+                </FieldContent>
+              </Field>
+            </Flex>
+          </div>
           
           {/* Action Buttons Section */}
-          <Flex 
-            align="end" 
-            justify="end"
-            gap={2}
-            width="full"
-            border="top"
-          >
-            {hasActiveFilter && (
-              <Button
-                variant="outline"
-                onClick={handleClear}
-                className="flex-1 sm:flex-initial sm:min-w-[80px]"
-              >
-                <Flex align="center" gap={2}>
-                  <IconSize size="sm">
-                    <X />
-                  </IconSize>
-                  {clearLabel}
-                </Flex>
-              </Button>
-            )}
-            <Button
-              onClick={handleApply}
-              className="flex-1 sm:flex-initial sm:min-w-[80px]"
+          <div className="px-4 sm:px-5 py-3 border-t bg-muted/30">
+            <Flex 
+              align="center" 
+              justify="end"
+              gap={2}
+              width="full"
             >
-              {applyLabel}
-            </Button>
-          </Flex>
+              {hasActiveFilter && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleClear}
+                  className="flex-1 sm:flex-initial sm:min-w-[90px]"
+                >
+                  <Flex align="center" gap={1.5}>
+                    <IconSize size="sm">
+                      <X />
+                    </IconSize>
+                    <span>{clearLabel}</span>
+                  </Flex>
+                </Button>
+              )}
+              <Button
+                size="sm"
+                onClick={handleApply}
+                className="flex-1 sm:flex-initial sm:min-w-[90px]"
+              >
+                {applyLabel}
+              </Button>
+            </Flex>
+          </div>
         </Flex>
       </PopoverContent>
     </Popover>

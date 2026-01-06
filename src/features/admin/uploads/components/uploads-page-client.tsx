@@ -82,6 +82,11 @@ export const UploadsPageClient = () => {
   const folderTree = imagesData?.folderTree || null
   const pagination = imagesData?.pagination || null
 
+  // Scroll to top when page changes
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" })
+  }, [currentPage])
+
   // Preserve selected folder when folders list changes
   useEffect(() => {
     if (selectedFolder && availableFolders.length > 0) {

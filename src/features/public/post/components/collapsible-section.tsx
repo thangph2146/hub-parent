@@ -43,8 +43,10 @@ export const CollapsibleSection = ({ title, icon, children, defaultOpen = true }
           </Flex>
         </Button>
       </CollapsibleTrigger>
-      <CollapsibleContent className="pt-2 pb-1">
-        {children}
+      <CollapsibleContent className="pt-3 pb-2">
+        <div className="pl-1">
+          {children}
+        </div>
       </CollapsibleContent>
     </Collapsible>
   )

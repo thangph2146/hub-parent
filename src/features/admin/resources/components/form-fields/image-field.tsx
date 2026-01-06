@@ -123,7 +123,7 @@ export const ImageField = ({
 
         {/* Image preview */}
         {hasImage && !imageError && (
-          <Flex align="center" justify="center" width="full" position="relative" className="aspect-video">
+          <Flex align="center" justify="center" width="full" position="relative" rounded="lg" border="all" overflow="hidden" className="aspect-video border-border">
             <Image
               src={imageUrl}
               alt="Preview"

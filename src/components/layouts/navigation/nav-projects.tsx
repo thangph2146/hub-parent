@@ -2,7 +2,7 @@
 
 import {
   Folder,
-  MoreHorizontal,
+  ChevronRight,
   Share,
   Trash2,
 } from "lucide-react"
@@ -98,7 +98,7 @@ export function NavProjects({
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <SidebarMenuAction showOnHover>
-                    <MoreHorizontal />
+                    <ChevronRight />
                     <span className="sr-only">More</span>
                   </SidebarMenuAction>
                 </DropdownMenuTrigger>

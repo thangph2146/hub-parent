@@ -57,7 +57,7 @@ export function ResourceFormSkeleton({
           <div className="mx-0 mb-3 px-2 border-b-0 w-auto text-xs sm:text-sm md:text-base font-normal text-muted-foreground">
             <Skeleton className="h-4 w-64 inline-block" />
           </div>
-          <Grid cols="2-lg" fullWidth gap={6}>
+          <Grid cols="responsive-3" fullWidth gap={6}>
             {Array.from({ length: fieldsPerSection }).map((_, fieldIndex) => (
               <Flex key={fieldIndex} direction="col" gap={2} fullWidth>
                 <Skeleton className="h-4 w-24" />
@@ -69,7 +69,7 @@ export function ResourceFormSkeleton({
       ))}
     </Flex>
   ) : (
-    <Grid cols="2-lg" fullWidth gap={6}>
+    <Grid cols="responsive-3" fullWidth gap={6}>
       {Array.from({ length: fieldCount }).map((_, index) => (
         <Flex key={index} direction="col" gap={2} fullWidth>
           <Skeleton className="h-4 w-24" />
