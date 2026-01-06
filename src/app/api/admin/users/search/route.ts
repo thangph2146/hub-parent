@@ -7,14 +7,15 @@
  * - Support query param: q (search query)
  */
 
-import { NextRequest, NextResponse } from "next/server"
+import { NextRequest } from "next/server"
 import { createApiRoute } from "@/lib/api/api-route-wrapper"
 import { prisma } from "@/lib/prisma"
 import type { ApiRouteContext } from "@/lib/api/types"
+import { createSuccessResponse, createErrorResponse } from "@/lib/config"
 
 async function searchUsersHandler(req: NextRequest, context: ApiRouteContext) {
   if (!context.session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    return createErrorResponse("Unauthorized", { status: 401 })
   }
 
   const searchParams = req.nextUrl.searchParams
@@ -38,7 +39,7 @@ async function searchUsersHandler(req: NextRequest, context: ApiRouteContext) {
       take: 20,
       orderBy: { name: "asc" },
     })
-    return NextResponse.json(defaultUsers)
+    return createSuccessResponse(defaultUsers)
   }
 
   // Nếu có query, tìm kiếm theo query
@@ -61,7 +62,7 @@ async function searchUsersHandler(req: NextRequest, context: ApiRouteContext) {
     orderBy: { name: "asc" },
   })
 
-  return NextResponse.json(users)
+  return createSuccessResponse(users)
 }
 
 export const GET = createApiRoute(searchUsersHandler)

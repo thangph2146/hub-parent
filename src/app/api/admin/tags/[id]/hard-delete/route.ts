@@ -1,43 +1,33 @@
 /**
  * API Route: DELETE /api/admin/tags/[id]/hard-delete - Hard delete tag
  */
-import { NextRequest, NextResponse } from "next/server"
+import { NextRequest } from "next/server"
 import {
   hardDeleteTag,
   type AuthContext,
-  ApplicationError,
-  NotFoundError,
 } from "@/features/admin/tags/server/mutations"
 import { createDeleteRoute } from "@/lib/api/api-route-wrapper"
 import type { ApiRouteContext } from "@/lib/api/types"
-import { logger } from "@/lib/config/logger"
+import { validateID } from "@/lib/api/validation"
+import { extractParams, createAuthContext, handleApiError } from "@/lib/api/api-route-helpers"
+import { createSuccessResponse, createErrorResponse } from "@/lib/config"
 
 async function hardDeleteTagHandler(_req: NextRequest, context: ApiRouteContext, ...args: unknown[]) {
-  const { params } = args[0] as { params: Promise<{ id: string }> }
-  const { id: tagId } = await params
-
-  if (!tagId) {
-    return NextResponse.json({ error: "Tag ID is required" }, { status: 400 })
-  }
-
-  const ctx: AuthContext = {
-    actorId: context.session.user?.id ?? "unknown",
-    permissions: context.permissions,
-    roles: context.roles,
-  }
-
   try {
+    const { id: tagId } = await extractParams<{ id: string }>(args)
+
+    const idValidation = validateID(tagId)
+    if (!idValidation.valid) {
+      return createErrorResponse(idValidation.error || "Tag ID không hợp lệ", { status: 400 })
+    }
+
+    const userId = context.session.user?.id ?? "unknown"
+    const ctx = createAuthContext(context, userId) as AuthContext
+
     await hardDeleteTag(ctx, tagId)
-    return NextResponse.json({ message: "Tag permanently deleted" })
+    return createSuccessResponse({ message: "Tag permanently deleted" })
   } catch (error) {
-    if (error instanceof ApplicationError) {
-      return NextResponse.json({ error: error.message || "Không thể xóa vĩnh viễn thẻ tag" }, { status: error.status || 400 })
-    }
-    if (error instanceof NotFoundError) {
-      return NextResponse.json({ error: error.message || "Không tìm thấy" }, { status: 404 })
-    }
-    logger.error("Error hard deleting tag", { error, tagId })
-    return NextResponse.json({ error: "Đã xảy ra lỗi khi xóa vĩnh viễn thẻ tag" }, { status: 500 })
+    return handleApiError(error, "Đã xảy ra lỗi khi xóa vĩnh viễn thẻ tag", 500)
   }
 }
 

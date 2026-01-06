@@ -9,63 +9,39 @@ import {
   bulkApproveComments,
   bulkUnapproveComments,
   type AuthContext,
-  ApplicationError,
 } from "@/features/admin/comments/server/mutations"
 import { BulkCommentActionSchema } from "@/features/admin/comments/server/schemas"
 import { createPostRoute } from "@/lib/api/api-route-wrapper"
 import type { ApiRouteContext } from "@/lib/api/types"
 import { createErrorResponse, createSuccessResponse, resourceLogger } from "@/lib/config"
+import { parseRequestBody, createAuthContext, handleApiError } from "@/lib/api/api-route-helpers"
 
 async function bulkCommentsHandler(req: NextRequest, context: ApiRouteContext) {
-  let body: unknown
   try {
-    body = await req.json()
-  } catch (error) {
-    resourceLogger.actionFlow({
-      resource: "comments",
-      action: "error",
-      step: "error",
-      metadata: { error: "Invalid JSON body", errorMessage: error instanceof Error ? error.message : String(error) },
-    })
-    return createErrorResponse("Dữ liệu không hợp lệ. Vui lòng kiểm tra lại.", { status: 400 })
-  }
+    const body = await parseRequestBody(req)
 
-  // Validate với zod
-  const validationResult = BulkCommentActionSchema.safeParse(body)
-  if (!validationResult.success) {
-    const firstError = validationResult.error.issues[0]
-    resourceLogger.actionFlow({
-      resource: "comments",
-      action: "error",
-      step: "error",
-      metadata: { 
-        error: "Validation failed", 
-        validationError: firstError?.message,
-        body,
-      },
-    })
-    return createErrorResponse(firstError?.message || "Dữ liệu không hợp lệ", { status: 400 })
-  }
+    // Validate với zod
+    const validationResult = BulkCommentActionSchema.safeParse(body)
+    if (!validationResult.success) {
+      const firstError = validationResult.error.issues[0]
+      resourceLogger.actionFlow({
+        resource: "comments",
+        action: "error",
+        step: "error",
+        metadata: { 
+          error: "Validation failed", 
+          validationError: firstError?.message,
+          body,
+        },
+      })
+      return createErrorResponse(firstError?.message || "Dữ liệu không hợp lệ", { status: 400 })
+    }
 
-  const validatedBody = validationResult.data
+    const validatedBody = validationResult.data
 
-  // Map action to ResourceAction type
-  const actionMap: Record<string, "bulk-delete" | "bulk-restore" | "bulk-hard-delete" | "bulk-approve" | "bulk-unapprove"> = {
-    delete: "bulk-delete",
-    restore: "bulk-restore",
-    "hard-delete": "bulk-hard-delete",
-    approve: "bulk-approve",
-    unapprove: "bulk-unapprove",
-  }
-  const logAction = actionMap[validatedBody.action] || "error"
+    const userId = context.session.user?.id ?? "unknown"
+    const ctx = createAuthContext(context, userId) as AuthContext
 
-  const ctx: AuthContext = {
-    actorId: context.session.user?.id ?? "unknown",
-    permissions: context.permissions,
-    roles: context.roles,
-  }
-
-  try {
     let result
     if (validatedBody.action === "delete") {
       result = await bulkSoftDeleteComments(ctx, validatedBody.ids)
@@ -89,30 +65,16 @@ async function bulkCommentsHandler(req: NextRequest, context: ApiRouteContext) {
 
     return createSuccessResponse(result)
   } catch (error) {
-    if (error instanceof ApplicationError) {
-      resourceLogger.actionFlow({
-        resource: "comments",
-        action: logAction,
-        step: "error",
-        metadata: { 
-          error: error.message,
-          action: validatedBody.action,
-          status: error.status || 400,
-        },
-      })
-      return createErrorResponse(error.message || "Không thể thực hiện thao tác hàng loạt", { status: error.status || 400 })
-    }
     resourceLogger.actionFlow({
       resource: "comments",
-      action: logAction,
+      action: "error",
       step: "error",
       metadata: { 
         error: "Unknown error",
         errorMessage: error instanceof Error ? error.message : String(error),
-        action: validatedBody.action,
       },
     })
-    return createErrorResponse("Đã xảy ra lỗi khi thực hiện thao tác hàng loạt", { status: 500 })
+    return handleApiError(error, "Đã xảy ra lỗi khi thực hiện thao tác hàng loạt", 500)
   }
 }
 

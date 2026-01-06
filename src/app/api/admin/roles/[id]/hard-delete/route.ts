@@ -1,29 +1,31 @@
 /**
  * API Route: DELETE /api/admin/roles/[id]/hard-delete - Hard delete role (xóa vĩnh viễn)
  */
-import { NextRequest, NextResponse } from "next/server"
+import { NextRequest } from "next/server"
 import { type AuthContext, hardDeleteRole } from "@/features/admin/roles/server/mutations"
 import { createDeleteRoute } from "@/lib/api/api-route-wrapper"
 import type { ApiRouteContext } from "@/lib/api/types"
 import { validateID } from "@/lib/api/validation"
+import { extractParams, createAuthContext, handleApiError } from "@/lib/api/api-route-helpers"
+import { createSuccessResponse, createErrorResponse } from "@/lib/config"
 
 async function hardDeleteRoleHandler(_req: NextRequest, context: ApiRouteContext, ...args: unknown[]) {
-  const { params } = args[0] as { params: Promise<{ id: string }> }
-  const { id } = await params
+  try {
+    const { id } = await extractParams<{ id: string }>(args)
 
-  const idValidation = validateID(id)
-  if (!idValidation.valid) {
-    return NextResponse.json({ error: idValidation.error }, { status: 400 })
+    const idValidation = validateID(id)
+    if (!idValidation.valid) {
+      return createErrorResponse(idValidation.error || "Role ID không hợp lệ", { status: 400 })
+    }
+
+    const userId = context.session.user?.id ?? "unknown"
+    const ctx = createAuthContext(context, userId) as AuthContext
+
+    await hardDeleteRole(ctx, id)
+    return createSuccessResponse({ message: "Role permanently deleted" })
+  } catch (error) {
+    return handleApiError(error, "Đã xảy ra lỗi khi xóa vĩnh viễn vai trò", 500)
   }
-
-  const ctx: AuthContext = {
-    actorId: context.session.user?.id ?? "unknown",
-    permissions: context.permissions,
-    roles: context.roles,
-  }
-
-  await hardDeleteRole(ctx, id)
-  return NextResponse.json({ success: true })
 }
 
 export const DELETE = createDeleteRoute(hardDeleteRoleHandler)
