@@ -11,6 +11,7 @@ import {
 import { createPostRoute } from "@/lib/api/api-route-wrapper"
 import type { ApiRouteContext } from "@/lib/api/types"
 import { createErrorResponse, createSuccessResponse } from "@/lib/config"
+import { logger } from "@/lib/config/logger"
 
 async function restoreCommentHandler(_req: NextRequest, context: ApiRouteContext, ...args: unknown[]) {
   const { params } = args[0] as { params: Promise<{ id: string }> }
@@ -36,7 +37,7 @@ async function restoreCommentHandler(_req: NextRequest, context: ApiRouteContext
     if (error instanceof NotFoundError) {
       return createErrorResponse(error.message || "Không tìm thấy", { status: 404 })
     }
-    console.error("Error restoring comment:", error)
+    logger.error("Error restoring comment", { error, commentId })
     return createErrorResponse("Đã xảy ra lỗi khi khôi phục bình luận", { status: 500 })
   }
 }

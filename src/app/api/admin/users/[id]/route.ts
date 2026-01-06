@@ -13,6 +13,7 @@ import {
 import { createGetRoute, createPutRoute, createDeleteRoute } from "@/lib/api/api-route-wrapper"
 import type { ApiRouteContext } from "@/lib/api/types"
 import { validateID } from "@/lib/api/validation"
+import { logger } from "@/lib/config/logger"
 
 async function getUserHandler(_req: NextRequest, _context: ApiRouteContext, ...args: unknown[]) {
   const { params } = args[0] as { params: Promise<{ id: string }> }
@@ -88,7 +89,7 @@ async function putUserHandler(req: NextRequest, context: ApiRouteContext, ...arg
     if (error instanceof ApplicationError) {
       return NextResponse.json({ error: error.message || "Không thể cập nhật người dùng" }, { status: error.status || 400 })
     }
-    console.error("Error updating user:", error)
+    logger.error("Error updating user", { error, userId: id })
     return NextResponse.json({ error: "Đã xảy ra lỗi khi cập nhật người dùng" }, { status: 500 })
   }
 }

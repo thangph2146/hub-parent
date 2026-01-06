@@ -15,6 +15,7 @@ import {
 } from "@/features/admin/tags/server/mutations"
 import { createGetRoute, createPutRoute, createDeleteRoute } from "@/lib/api/api-route-wrapper"
 import type { ApiRouteContext } from "@/lib/api/types"
+import { logger } from "@/lib/config/logger"
 
 async function getTagHandler(_req: NextRequest, _context: ApiRouteContext, ...args: unknown[]) {
   const { params } = args[0] as { params: Promise<{ id: string }> }
@@ -74,7 +75,7 @@ async function putTagHandler(req: NextRequest, context: ApiRouteContext, ...args
     if (error instanceof NotFoundError) {
       return NextResponse.json({ error: error.message || "Không tìm thấy" }, { status: 404 })
     }
-    console.error("Error updating tag:", error)
+    logger.error("Error updating tag", { error, tagId })
     return NextResponse.json({ error: "Đã xảy ra lỗi khi cập nhật thẻ tag" }, { status: 500 })
   }
 }
@@ -103,7 +104,7 @@ async function deleteTagHandler(_req: NextRequest, context: ApiRouteContext, ...
     if (error instanceof NotFoundError) {
       return NextResponse.json({ error: error.message || "Không tìm thấy" }, { status: 404 })
     }
-    console.error("Error deleting tag:", error)
+    logger.error("Error deleting tag", { error, tagId })
     return NextResponse.json({ error: "Đã xảy ra lỗi khi xóa thẻ tag" }, { status: 500 })
   }
 }

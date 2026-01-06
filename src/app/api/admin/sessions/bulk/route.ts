@@ -12,13 +12,14 @@ import {
 import { BulkSessionActionSchema } from "@/features/admin/sessions/server/schemas"
 import { createPostRoute } from "@/lib/api/api-route-wrapper"
 import type { ApiRouteContext } from "@/lib/api/types"
+import { logger } from "@/lib/config/logger"
 
 async function bulkSessionsHandler(req: NextRequest, context: ApiRouteContext) {
   let body: unknown
   try {
     body = await req.json()
   } catch (error) {
-    console.error("Error parsing request body:", error)
+    logger.error("Error parsing request body", { error })
     return NextResponse.json({ error: "Dữ liệu không hợp lệ. Vui lòng kiểm tra lại." }, { status: 400 })
   }
 
@@ -30,7 +31,7 @@ async function bulkSessionsHandler(req: NextRequest, context: ApiRouteContext) {
       path: issue.path.join("."),
       message: issue.message,
     }))
-    console.error("Validation error:", { body, errors: allErrors })
+    logger.error("Validation error", { body, errors: allErrors })
     return NextResponse.json({ 
       error: firstError?.message || "Dữ liệu không hợp lệ",
       details: allErrors.length > 1 ? allErrors : undefined
@@ -62,7 +63,7 @@ async function bulkSessionsHandler(req: NextRequest, context: ApiRouteContext) {
     if (error instanceof ApplicationError) {
       return NextResponse.json({ error: error.message || "Không thể thực hiện thao tác hàng loạt" }, { status: error.status || 400 })
     }
-    console.error("Error in bulk sessions operation:", error)
+    logger.error("Error in bulk sessions operation", { error, action: validatedBody.action, ids: validatedBody.ids })
     return NextResponse.json({ error: "Đã xảy ra lỗi khi thực hiện thao tác hàng loạt" }, { status: 500 })
   }
 }

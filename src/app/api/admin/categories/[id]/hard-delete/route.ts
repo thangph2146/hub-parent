@@ -11,6 +11,7 @@ import {
 import { createDeleteRoute } from "@/lib/api/api-route-wrapper"
 import type { ApiRouteContext } from "@/lib/api/types"
 import { createErrorResponse, createSuccessResponse } from "@/lib/config"
+import { logger } from "@/lib/config/logger"
 
 async function hardDeleteCategoryHandler(_req: NextRequest, context: ApiRouteContext, ...args: unknown[]) {
   const { params } = args[0] as { params: Promise<{ id: string }> }
@@ -36,7 +37,7 @@ async function hardDeleteCategoryHandler(_req: NextRequest, context: ApiRouteCon
     if (error instanceof NotFoundError) {
       return createErrorResponse(error.message || "Không tìm thấy", { status: 404 })
     }
-    console.error("Error hard deleting category:", error)
+    logger.error("Error hard deleting category", { error, categoryId })
     return createErrorResponse("Đã xảy ra lỗi khi xóa vĩnh viễn danh mục", { status: 500 })
   }
 }

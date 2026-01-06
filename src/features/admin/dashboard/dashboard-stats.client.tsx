@@ -213,17 +213,12 @@ const getComputedColor = (cssVar: string): string => {
   }
   
   // Xử lý CSS variable
-  let varName = cssVar;
-  if (cssVar.startsWith("var(")) {
-    varName = cssVar.replace("var(", "").replace(")", "").trim();
-  }
+  const varName = cssVar.startsWith("var(") 
+    ? cssVar.replace("var(", "").replace(")", "").trim()
+    : cssVar;
   
-  const root = document.documentElement;
-  const value = getComputedStyle(root).getPropertyValue(varName).trim();
-  
-  if (value) {
-    return value;
-  }
+  const value = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+  if (value) return value;
   
   // Fallback colors nếu không lấy được từ CSS variable
   const fallbackColors: Record<string, string> = {

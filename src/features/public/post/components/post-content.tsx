@@ -27,15 +27,10 @@ interface PostContentProps {
 
 export const PostContent = ({ content }: PostContentProps) => {
   // Parse content as SerializedEditorState
-  let editorState: SerializedEditorState | null = null
-  
-  try {
-    if (content && typeof content === "object") {
-      editorState = content as unknown as SerializedEditorState
-    }
-  } catch (error) {
-    console.error("[PostContent] Failed to parse editor state:", error)
-  }
+  const editorState: SerializedEditorState | null = 
+    content && typeof content === "object" 
+      ? (content as unknown as SerializedEditorState)
+      : null
 
   if (!editorState) {
     return (

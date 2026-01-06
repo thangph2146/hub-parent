@@ -21,14 +21,12 @@ export const metadata: Metadata = {
     url: `${appConfig.url}/bai-viet`,
     title: `Bài viết - ${appConfig.name}`,
     description: `Đọc các bài viết mới nhất về tin tức, hoạt động và thông tin của ${appConfig.namePublic || appConfig.name}`,
-    // Giữ lại images từ appConfig
     images: openGraphConfig.images,
   },
   twitter: {
     ...twitterConfig,
     title: `Bài viết - ${appConfig.name}`,
     description: `Đọc các bài viết mới nhất về tin tức, hoạt động và thông tin của ${appConfig.namePublic || appConfig.name}`,
-    // Giữ lại images từ appConfig
     images: twitterConfig.images,
   },
 }
@@ -103,7 +101,7 @@ export default async function PostPage({ searchParams }: PostPageProps) {
       {/* Main Content */}
       <div className="min-w-0">
           {/* Header with Sort and Date Range */}
-          <div className="sticky top-14 z-10 w-full flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-4 sm:mb-6 lg:mb-8 px-4 sm:px-0 -mx-4 sm:mx-0 py-3 sm:py-0 border-b bg-background/95 supports-[backdrop-filter]:bg-background/80 border-border backdrop-blur-lg">
+          <div className="sticky top-14 z-10 w-full mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-4 sm:mb-6 lg:mb-8 px-4 sm:px-0 -mx-4 sm:mx-0 py-3 sm:py-0 border-b bg-background/95 supports-[backdrop-filter]:bg-background/80 border-border backdrop-blur-lg">
             <div className="flex items-center justify-between sm:justify-start gap-3 flex-shrink-0">
               <div>
                 <TypographyH2 className="text-lg sm:text-xl lg:text-2xl">Tất cả bài viết</TypographyH2>

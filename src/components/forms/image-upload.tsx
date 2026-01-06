@@ -13,6 +13,7 @@ import { Flex } from "@/components/ui/flex"
 import { cn } from "@/lib/utils"
 import { apiClient } from "@/lib/api/axios"
 import { apiRoutes } from "@/lib/api/routes"
+import { logger } from "@/lib/config/logger"
 import { TypographyP, TypographyPSmallMuted, TypographyPMuted, IconSize } from "@/components/ui/typography"
 import type { UploadResponse, UploadError } from "@/features/admin/uploads/types"
 import { useToast } from "@/hooks/use-toast"
@@ -176,7 +177,7 @@ export function ImageUpload({
         try {
           fileToUpload = await resizeImage(file, maxDimension)
         } catch (resizeError) {
-          console.warn("Không thể resize hình ảnh, upload bản gốc:", resizeError)
+          logger.warn("Không thể resize hình ảnh, upload bản gốc", { error: resizeError })
           // Nếu resize thất bại, vẫn upload file gốc
         }
       }

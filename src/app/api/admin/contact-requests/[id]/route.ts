@@ -16,6 +16,7 @@ import {
 import { UpdateContactRequestSchema } from "@/features/admin/contact-requests/server/schemas"
 import { createGetRoute, createPutRoute, createDeleteRoute } from "@/lib/api/api-route-wrapper"
 import type { ApiRouteContext } from "@/lib/api/types"
+import { logger } from "@/lib/config/logger"
 
 async function getContactRequestHandler(_req: NextRequest, _context: ApiRouteContext, ...args: unknown[]) {
   const { params } = args[0] as { params: Promise<{ id: string }> }
@@ -92,7 +93,7 @@ async function putContactRequestHandler(req: NextRequest, context: ApiRouteConte
     if (error instanceof NotFoundError) {
       return NextResponse.json({ error: error.message || "Không tìm thấy" }, { status: 404 })
     }
-    console.error("Error updating contact request:", error)
+    logger.error("Error updating contact request", { error, contactRequestId })
     return NextResponse.json({ error: "Đã xảy ra lỗi khi cập nhật yêu cầu liên hệ" }, { status: 500 })
   }
 }
@@ -121,7 +122,7 @@ async function deleteContactRequestHandler(_req: NextRequest, context: ApiRouteC
     if (error instanceof NotFoundError) {
       return NextResponse.json({ error: error.message || "Không tìm thấy" }, { status: 404 })
     }
-    console.error("Error deleting contact request:", error)
+    logger.error("Error deleting contact request", { error, contactRequestId })
     return NextResponse.json({ error: "Đã xảy ra lỗi khi xóa yêu cầu liên hệ" }, { status: 500 })
   }
 }

@@ -82,10 +82,7 @@ export function NavProjects({
             ? React.cloneElement(item.icon, { key: `icon-${item.name}` })
             : null
 
-          if (!iconElement) {
-            console.warn(`Icon is not a valid React element for project "${item.name}"`)
-            return null
-          }
+          if (!iconElement) return null
           
           return (
             <SidebarMenuItem key={item.name}>

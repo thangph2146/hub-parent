@@ -7,6 +7,7 @@ import { createGetRoute, createPutRoute, createDeleteRoute } from "@/lib/api/api
 import type { ApiRouteContext } from "@/lib/api/types"
 import { validateID } from "@/lib/api/validation"
 import { PERMISSIONS, hasPermission } from "@/lib/permissions"
+import { logger } from "@/lib/config/logger"
 
 async function getPostHandler(_req: NextRequest, context: ApiRouteContext, ...args: unknown[]) {
   const { params } = args[0] as { params: Promise<{ id: string }> }
@@ -77,11 +78,10 @@ async function putPostHandler(req: NextRequest, context: ApiRouteContext, ...arg
     }
     // Log lỗi chi tiết để debug
     const errorMessage = error instanceof Error ? error.message : String(error)
-    const errorStack = error instanceof Error ? error.stack : undefined
-    console.error("Error updating post:", {
+    logger.error("Error updating post", {
       postId: id,
       error: errorMessage,
-      stack: errorStack,
+      stack: error instanceof Error ? error.stack : undefined,
       payload: validationResult.data,
     })
     return NextResponse.json({ 
@@ -116,7 +116,7 @@ async function deletePostHandler(_req: NextRequest, context: ApiRouteContext, ..
     if (error instanceof ApplicationError) {
       return NextResponse.json({ error: error.message || "Không thể xóa bài viết" }, { status: error.status || 400 })
     }
-    console.error("Error deleting post:", error)
+    logger.error("Error deleting post", { error, postId: id })
     return NextResponse.json({ error: "Đã xảy ra lỗi khi xóa bài viết" }, { status: 500 })
   }
 }

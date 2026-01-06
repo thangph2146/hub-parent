@@ -13,6 +13,7 @@ import { BulkCategoryActionSchema } from "@/features/admin/categories/server/sch
 import { createPostRoute } from "@/lib/api/api-route-wrapper"
 import type { ApiRouteContext } from "@/lib/api/types"
 import { createErrorResponse, createSuccessResponse } from "@/lib/config"
+import { logger } from "@/lib/config/logger"
 
 async function bulkCategoriesHandler(req: NextRequest, context: ApiRouteContext) {
   let body: unknown
@@ -54,7 +55,7 @@ async function bulkCategoriesHandler(req: NextRequest, context: ApiRouteContext)
     if (error instanceof ApplicationError) {
       return createErrorResponse(error.message || "Không thể thực hiện thao tác hàng loạt", { status: error.status || 400 })
     }
-    console.error("Error in bulk categories operation:", error)
+    logger.error("Error in bulk categories operation", { error, action: validatedBody.action, ids: validatedBody.ids })
     return createErrorResponse("Đã xảy ra lỗi khi thực hiện thao tác hàng loạt", { status: 500 })
   }
 }

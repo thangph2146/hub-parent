@@ -7,6 +7,7 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { PipetteIcon } from "lucide-react"
 
 import { cn } from "@/lib/utils"
+import { logger } from "@/lib/config/logger"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -1351,7 +1352,7 @@ function ColorPickerEyeDropper(props: ColorPickerEyeDropperProps) {
         store.setHsv(newHsv)
       }
     } catch (error) {
-      console.warn("EyeDropper error:", error)
+      logger.warn("EyeDropper error", { error })
     }
   }, [color, store])
 

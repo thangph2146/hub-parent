@@ -10,6 +10,7 @@ import {
 } from "@/features/admin/tags/server/mutations"
 import { createPostRoute } from "@/lib/api/api-route-wrapper"
 import type { ApiRouteContext } from "@/lib/api/types"
+import { logger } from "@/lib/config/logger"
 
 async function restoreTagHandler(_req: NextRequest, context: ApiRouteContext, ...args: unknown[]) {
   const { params } = args[0] as { params: Promise<{ id: string }> }
@@ -35,7 +36,7 @@ async function restoreTagHandler(_req: NextRequest, context: ApiRouteContext, ..
     if (error instanceof NotFoundError) {
       return NextResponse.json({ error: error.message || "Không tìm thấy" }, { status: 404 })
     }
-    console.error("Error restoring tag:", error)
+    logger.error("Error restoring tag", { error, tagId })
     return NextResponse.json({ error: "Đã xảy ra lỗi khi khôi phục thẻ tag" }, { status: 500 })
   }
 }

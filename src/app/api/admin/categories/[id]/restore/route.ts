@@ -11,6 +11,7 @@ import {
 import { createPostRoute } from "@/lib/api/api-route-wrapper"
 import type { ApiRouteContext } from "@/lib/api/types"
 import { createErrorResponse, createSuccessResponse } from "@/lib/config"
+import { logger } from "@/lib/config/logger"
 
 async function restoreCategoryHandler(_req: NextRequest, context: ApiRouteContext, ...args: unknown[]) {
   const { params } = args[0] as { params: Promise<{ id: string }> }
@@ -36,7 +37,7 @@ async function restoreCategoryHandler(_req: NextRequest, context: ApiRouteContex
     if (error instanceof NotFoundError) {
       return createErrorResponse(error.message || "Không tìm thấy", { status: 404 })
     }
-    console.error("Error restoring category:", error)
+    logger.error("Error restoring category", { error, categoryId })
     return createErrorResponse("Đã xảy ra lỗi khi khôi phục danh mục", { status: 500 })
   }
 }

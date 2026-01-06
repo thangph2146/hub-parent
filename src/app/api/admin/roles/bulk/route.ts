@@ -15,6 +15,7 @@ import { PERMISSIONS } from "@/lib/permissions"
 import { createPostRoute } from "@/lib/api/api-route-wrapper"
 import type { ApiRouteContext } from "@/lib/api/types"
 import { createSuccessResponse, createErrorResponse } from "@/lib/config"
+import { logger } from "@/lib/config/logger"
 
 async function bulkRolesHandler(req: NextRequest, context: ApiRouteContext) {
   let body: unknown
@@ -56,7 +57,7 @@ async function bulkRolesHandler(req: NextRequest, context: ApiRouteContext) {
     if (error instanceof ApplicationError) {
       return createErrorResponse(error.message || "Không thể thực hiện thao tác hàng loạt", { status: error.status || 400 })
     }
-    console.error("Error in bulk roles operation:", error)
+    logger.error("Error in bulk roles operation", { error, action: validatedBody.action, ids: validatedBody.ids })
     return createErrorResponse("Đã xảy ra lỗi khi thực hiện thao tác hàng loạt", { status: 500 })
   }
 }

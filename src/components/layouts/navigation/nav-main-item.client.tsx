@@ -75,10 +75,7 @@ export function NavMainItem({
     ? React.cloneElement(icon, { ...(icon.props as React.PropsWithChildren<React.SVGProps<SVGSVGElement>>) })
     : null
 
-  if (!iconElement) {
-    console.warn(`Icon is not a valid React element for "${title}"`)
-    return null
-  }
+  if (!iconElement) return null
 
   const showBadge = badgeCount > 0 && isMounted // Chỉ hiển thị badge sau khi mount trên client
 

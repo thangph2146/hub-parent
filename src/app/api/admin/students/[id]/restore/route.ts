@@ -10,6 +10,7 @@ import {
 } from "@/features/admin/students/server/mutations"
 import { createPostRoute } from "@/lib/api/api-route-wrapper"
 import type { ApiRouteContext } from "@/lib/api/types"
+import { logger } from "@/lib/config/logger"
 
 async function restoreStudentHandler(_req: NextRequest, context: ApiRouteContext, ...args: unknown[]) {
   const { params } = args[0] as { params: Promise<{ id: string }> }
@@ -35,7 +36,7 @@ async function restoreStudentHandler(_req: NextRequest, context: ApiRouteContext
     if (error instanceof NotFoundError) {
       return NextResponse.json({ error: error.message || "Không tìm thấy" }, { status: 404 })
     }
-    console.error("Error restoring student:", error)
+    logger.error("Error restoring student", { error, studentId })
     return NextResponse.json({ error: "Đã xảy ra lỗi khi khôi phục sinh viên" }, { status: 500 })
   }
 }

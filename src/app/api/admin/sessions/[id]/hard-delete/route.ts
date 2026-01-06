@@ -10,6 +10,7 @@ import {
 } from "@/features/admin/sessions/server/mutations"
 import { createDeleteRoute } from "@/lib/api/api-route-wrapper"
 import type { ApiRouteContext } from "@/lib/api/types"
+import { logger } from "@/lib/config/logger"
 
 async function hardDeleteSessionHandler(_req: NextRequest, context: ApiRouteContext, ...args: unknown[]) {
   const { params } = args[0] as { params: Promise<{ id: string }> }
@@ -35,7 +36,7 @@ async function hardDeleteSessionHandler(_req: NextRequest, context: ApiRouteCont
     if (error instanceof NotFoundError) {
       return NextResponse.json({ error: error.message || "Không tìm thấy" }, { status: 404 })
     }
-    console.error("Error hard deleting session:", error)
+    logger.error("Error hard deleting session", { error, sessionId })
     return NextResponse.json({ error: "Đã xảy ra lỗi khi xóa vĩnh viễn session" }, { status: 500 })
   }
 }

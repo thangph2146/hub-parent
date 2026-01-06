@@ -11,6 +11,7 @@ import {
 import { AssignContactRequestSchema } from "@/features/admin/contact-requests/server/schemas"
 import { createPostRoute } from "@/lib/api/api-route-wrapper"
 import type { ApiRouteContext } from "@/lib/api/types"
+import { logger } from "@/lib/config/logger"
 
 async function assignContactRequestHandler(req: NextRequest, context: ApiRouteContext, ...args: unknown[]) {
   const { params } = args[0] as { params: Promise<{ id: string }> }
@@ -68,7 +69,7 @@ async function assignContactRequestHandler(req: NextRequest, context: ApiRouteCo
     if (error instanceof NotFoundError) {
       return NextResponse.json({ error: error.message || "Không tìm thấy" }, { status: 404 })
     }
-    console.error("Error assigning contact request:", error)
+    logger.error("Error assigning contact request", { error, contactRequestId })
     return NextResponse.json({ error: "Đã xảy ra lỗi khi giao yêu cầu liên hệ" }, { status: 500 })
   }
 }

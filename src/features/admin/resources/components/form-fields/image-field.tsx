@@ -35,13 +35,12 @@ export const ImageField = ({
   fieldId = "image",
 }: ImageFieldProps) => {
   const imageUrl = typeof value === "string" ? value : ""
-  const hasImage = imageUrl && imageUrl.trim() !== ""
+  const hasImage = Boolean(imageUrl?.trim())
   const [imageError, setImageError] = useState(false)
   const [copied, setCopied] = useState(false)
   const { toast } = useToast()
   const errorId = error ? `${fieldId}-error` : undefined
-  const isDisabled = disabled
-  const isReadOnly = readOnly && !isDisabled
+  const isReadOnly = readOnly && !disabled
 
   const handleCopyUrl = async () => {
     if (!imageUrl) return
@@ -80,9 +79,9 @@ export const ImageField = ({
               "flex-1 min-w-0 h-9",
               error && "border-destructive",
               isReadOnly && "!opacity-100 disabled:!opacity-100 [&:read-only]:!opacity-100 cursor-default bg-muted/50 border-muted-foreground/20",
-              isDisabled && !isReadOnly && "!opacity-100"
+              disabled && !isReadOnly && "!opacity-100"
             )}
-            disabled={isDisabled && !isReadOnly}
+            disabled={disabled && !isReadOnly}
             readOnly={isReadOnly}
             aria-invalid={error ? "true" : "false"}
             aria-describedby={errorId}
@@ -97,7 +96,7 @@ export const ImageField = ({
                 setImageError(false)
               }}
               className="shrink-0 h-9 w-9 disabled:!opacity-100"
-              disabled={isDisabled}
+              disabled={disabled}
               aria-label="Xóa hình ảnh"
             >
               <IconSize size="sm">

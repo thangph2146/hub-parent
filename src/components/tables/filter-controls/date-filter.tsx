@@ -30,9 +30,8 @@ export function DateFilter<T extends object = object>({
                         setDatesWithItems(response.data.dates)
                     }
                 }
-            } catch (error) {
+            } catch {
                 // Silently fail - dates highlighting is optional
-                console.debug("[DateFilter] Failed to fetch dates with items", error)
             }
         }
 

@@ -17,6 +17,7 @@ import { UpdateStudentSchema } from "@/features/admin/students/server/schemas"
 import { createGetRoute, createPutRoute, createDeleteRoute } from "@/lib/api/api-route-wrapper"
 import type { ApiRouteContext } from "@/lib/api/types"
 import { isSuperAdmin } from "@/lib/permissions"
+import { logger } from "@/lib/config/logger"
 
 async function getStudentHandler(_req: NextRequest, context: ApiRouteContext, ...args: unknown[]) {
   const { params } = args[0] as { params: Promise<{ id: string }> }
@@ -80,7 +81,7 @@ async function putStudentHandler(req: NextRequest, context: ApiRouteContext, ...
     if (error instanceof NotFoundError) {
       return NextResponse.json({ error: error.message || "Không tìm thấy" }, { status: 404 })
     }
-    console.error("Error updating student:", error)
+    logger.error("Error updating student", { error, studentId })
     return NextResponse.json({ error: "Đã xảy ra lỗi khi cập nhật sinh viên" }, { status: 500 })
   }
 }
@@ -109,7 +110,7 @@ async function deleteStudentHandler(_req: NextRequest, context: ApiRouteContext,
     if (error instanceof NotFoundError) {
       return NextResponse.json({ error: error.message || "Không tìm thấy" }, { status: 404 })
     }
-    console.error("Error deleting student:", error)
+    logger.error("Error deleting student", { error, studentId })
     return NextResponse.json({ error: "Đã xảy ra lỗi khi xóa sinh viên" }, { status: 500 })
   }
 }

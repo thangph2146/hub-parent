@@ -15,6 +15,7 @@ import {
 import { BulkContactRequestActionSchema } from "@/features/admin/contact-requests/server/schemas"
 import { createPostRoute } from "@/lib/api/api-route-wrapper"
 import type { ApiRouteContext } from "@/lib/api/types"
+import { logger } from "@/lib/config/logger"
 
 async function bulkContactRequestsHandler(req: NextRequest, context: ApiRouteContext) {
   let body: unknown
@@ -62,7 +63,7 @@ async function bulkContactRequestsHandler(req: NextRequest, context: ApiRouteCon
     if (error instanceof ApplicationError) {
       return NextResponse.json({ error: error.message || "Không thể thực hiện thao tác hàng loạt" }, { status: error.status || 400 })
     }
-    console.error("Error in bulk contact requests operation:", error)
+    logger.error("Error in bulk contact requests operation", { error, action: validatedBody.action, ids: validatedBody.ids })
     return NextResponse.json({ error: "Đã xảy ra lỗi khi thực hiện thao tác hàng loạt" }, { status: 500 })
   }
 }

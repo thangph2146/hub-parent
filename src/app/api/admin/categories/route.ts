@@ -8,13 +8,12 @@ import { serializeCategoriesList } from "@/features/admin/categories/server/help
 import {
   createCategory,
   type AuthContext,
-  ApplicationError,
-  NotFoundError,
 } from "@/features/admin/categories/server/mutations"
 import { CreateCategorySchema } from "@/features/admin/categories/server/schemas"
 import { createGetRoute, createPostRoute } from "@/lib/api/api-route-wrapper"
 import type { ApiRouteContext } from "@/lib/api/types"
-import { validatePagination, sanitizeSearchQuery } from "@/lib/api/validation"
+import { validatePagination, sanitizeSearchQuery, parseColumnFilters, filtersOrUndefined } from "@/lib/api/validation"
+import { parseRequestBody, createAuthContext, handleApiError } from "@/lib/api/api-route-helpers"
 import { createSuccessResponse, createErrorResponse } from "@/lib/config"
 import { CategoriesResponse } from "@/features/admin/categories/types"
 
@@ -34,28 +33,15 @@ async function getCategoriesHandler(req: NextRequest, _context: ApiRouteContext)
   const statusParam = searchParams.get("status") || "active"
   const status = statusParam === "deleted" || statusParam === "all" ? statusParam : "active"
 
-  const columnFilters: Record<string, string> = {}
-  searchParams.forEach((value, key) => {
-    if (key.startsWith("filter[")) {
-      const columnKey = key.replace("filter[", "").replace("]", "")
-      const sanitizedValue = sanitizeSearchQuery(value, Infinity)
-      if (sanitizedValue.valid && sanitizedValue.value) {
-        columnFilters[columnKey] = sanitizedValue.value
-      }
-    }
-  })
-
-  // Sử dụng listCategories (non-cached) thay vì listCategoriesCached để đảm bảo data luôn fresh
-  // API routes cần fresh data, không nên sử dụng cache để tránh trả về dữ liệu cũ
+  const columnFilters = parseColumnFilters(searchParams, Infinity)
   const result = await listCategories({
     page: paginationValidation.page,
     limit: paginationValidation.limit,
     search: searchValidation.value || undefined,
-    filters: Object.keys(columnFilters).length > 0 ? columnFilters : undefined,
+    filters: filtersOrUndefined(columnFilters),
     status,
   })
 
-  // Serialize result to match CategoriesResponse format
   const serialized = serializeCategoriesList(result)
   return createSuccessResponse({
     data: serialized.rows,
@@ -69,29 +55,18 @@ async function getCategoriesHandler(req: NextRequest, _context: ApiRouteContext)
 }
 
 async function postCategoriesHandler(req: NextRequest, context: ApiRouteContext) {
-  let body: Record<string, unknown>
   try {
-    body = await req.json()
-  } catch {
-    return createErrorResponse("Dữ liệu không hợp lệ. Vui lòng kiểm tra lại.", { status: 400 })
-  }
+    const body = await parseRequestBody(req)
+    const userId = context.session.user?.id ?? "unknown"
+    const ctx = createAuthContext(context, userId) as AuthContext
 
-  // Validate body với Zod schema
-  const validationResult = CreateCategorySchema.safeParse(body)
-  if (!validationResult.success) {
-    const firstError = validationResult.error.issues[0]
-    return createErrorResponse(firstError?.message || "Dữ liệu không hợp lệ", { status: 400 })
-  }
+    const validationResult = CreateCategorySchema.safeParse(body)
+    if (!validationResult.success) {
+      const firstError = validationResult.error.issues[0]
+      return createErrorResponse(firstError?.message || "Dữ liệu không hợp lệ", { status: 400 })
+    }
 
-  const ctx: AuthContext = {
-    actorId: context.session.user?.id ?? "unknown",
-    permissions: context.permissions,
-    roles: context.roles,
-  }
-
-  try {
     const category = await createCategory(ctx, validationResult.data)
-    // Serialize category to client format (dates to strings)
     const serialized = {
       id: category.id,
       name: category.name,
@@ -102,14 +77,7 @@ async function postCategoriesHandler(req: NextRequest, context: ApiRouteContext)
     }
     return createSuccessResponse(serialized, { status: 201 })
   } catch (error) {
-    if (error instanceof ApplicationError) {
-      return createErrorResponse(error.message || "Không thể tạo danh mục", { status: error.status || 400 })
-    }
-    if (error instanceof NotFoundError) {
-      return createErrorResponse(error.message || "Không tìm thấy", { status: 404 })
-    }
-    console.error("Error creating category:", error)
-    return createErrorResponse("Đã xảy ra lỗi khi tạo danh mục", { status: 500 })
+    return handleApiError(error, "Đã xảy ra lỗi khi tạo danh mục", 500)
   }
 }
 

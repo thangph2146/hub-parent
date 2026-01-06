@@ -16,6 +16,7 @@ import {
 import { UpdateSessionSchema } from "@/features/admin/sessions/server/schemas"
 import { createGetRoute, createPutRoute, createDeleteRoute } from "@/lib/api/api-route-wrapper"
 import type { ApiRouteContext } from "@/lib/api/types"
+import { logger } from "@/lib/config/logger"
 
 async function getSessionHandler(_req: NextRequest, _context: ApiRouteContext, ...args: unknown[]) {
   const { params } = args[0] as { params: Promise<{ id: string }> }
@@ -88,7 +89,7 @@ async function putSessionHandler(req: NextRequest, context: ApiRouteContext, ...
     if (error instanceof NotFoundError) {
       return NextResponse.json({ error: error.message || "Không tìm thấy" }, { status: 404 })
     }
-    console.error("Error updating session:", error)
+    logger.error("Error updating session", { error, sessionId })
     return NextResponse.json({ error: "Đã xảy ra lỗi khi cập nhật session" }, { status: 500 })
   }
 }
@@ -117,7 +118,7 @@ async function deleteSessionHandler(_req: NextRequest, context: ApiRouteContext,
     if (error instanceof NotFoundError) {
       return NextResponse.json({ error: error.message || "Không tìm thấy" }, { status: 404 })
     }
-    console.error("Error deleting session:", error)
+    logger.error("Error deleting session", { error, sessionId })
     return NextResponse.json({ error: "Đã xảy ra lỗi khi xóa session" }, { status: 500 })
   }
 }

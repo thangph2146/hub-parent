@@ -14,6 +14,7 @@ import {
 import { createGetRoute, createPutRoute, createDeleteRoute } from "@/lib/api/api-route-wrapper"
 import type { ApiRouteContext } from "@/lib/api/types"
 import { validateID } from "@/lib/api/validation"
+import { logger } from "@/lib/config/logger"
 
 async function getRoleHandler(_req: NextRequest, _context: ApiRouteContext, ...args: unknown[]) {
   const { params } = args[0] as { params: Promise<{ id: string }> }
@@ -66,7 +67,7 @@ async function putRoleHandler(req: NextRequest, context: ApiRouteContext, ...arg
     if (error instanceof ApplicationError) {
       return NextResponse.json({ error: error.message || "Không thể cập nhật vai trò" }, { status: error.status || 400 })
     }
-    console.error("Error updating role:", error)
+    logger.error("Error updating role", { error, roleId: id })
     return NextResponse.json({ error: "Đã xảy ra lỗi khi cập nhật vai trò" }, { status: 500 })
   }
 }
@@ -96,7 +97,7 @@ async function deleteRoleHandler(_req: NextRequest, context: ApiRouteContext, ..
     if (error instanceof ApplicationError) {
       return NextResponse.json({ error: error.message || "Không thể xóa vai trò" }, { status: error.status || 400 })
     }
-    console.error("Error deleting role:", error)
+    logger.error("Error deleting role", { error, roleId: id })
     return NextResponse.json({ error: "Đã xảy ra lỗi khi xóa vai trò" }, { status: 500 })
   }
 }
