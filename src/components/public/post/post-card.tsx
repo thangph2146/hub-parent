@@ -3,10 +3,11 @@
 import Link from "next/link"
 import Image from "next/image"
 import { Calendar, Tag, ArrowRight, FolderOpen } from "lucide-react"
+import { motion } from "framer-motion"
 import { Badge } from "@/components/ui/badge"
 import { Flex } from "@/components/ui/flex"
 import { cn } from "@/lib/utils"
-import { TypographyH4, TypographySpanSmall, TypographyPMuted, IconSize, TypographyPSmall } from "@/components/ui/typography"
+import { TypographyH4, TypographySpanSmall, TypographyPMuted, IconSize } from "@/components/ui/typography"
 import type { Post } from "@/features/public/post/types"
 import { formatPostDate } from "@/features/public/post/utils/date-formatter"
 
@@ -21,7 +22,6 @@ export function PostCard({ post, className, priority = false }: PostCardProps) {
   const displayTags = post.tags.slice(0, 2)
 
   // Helper function to convert publishedAt to ISO string
-  // Handles both Date objects and string values (from serialization)
   const getPublishedAtISO = (): string => {
     if (!post.publishedAt) return ""
     if (typeof post.publishedAt === "string") {
@@ -30,87 +30,105 @@ export function PostCard({ post, className, priority = false }: PostCardProps) {
     if (post.publishedAt instanceof Date) {
       return post.publishedAt.toISOString()
     }
-    // Fallback: convert to Date and then to ISO string
     const dateValue = post.publishedAt as string | number | Date
     return new Date(dateValue).toISOString()
   }
 
   return (
-    <Flex as="article" direction="col" height="full" bg="card" rounded="lg" border="all" overflow="hidden" className={cn("group transition-all hover:shadow-lg", className)}>
-      <Link href={`/bai-viet/${post.slug}`} className="flex flex-col flex-1">
-            {/* Featured Image */}
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      whileHover={{ y: -5 }}
+      transition={{ duration: 0.4 }}
+      className={cn("h-full", className)}
+    >
+      <Flex as="article" direction="col" height="full" bg="card" rounded="xl" border="all" overflow="hidden" className="group h-full shadow-sm hover:shadow-xl hover:shadow-primary/5 transition-all duration-300 relative">
+        <Link href={`/bai-viet/${post.slug}`} className="flex flex-col flex-1">
+          {/* Featured Image with Zoom Effect */}
+          <div className="relative aspect-video w-full overflow-hidden bg-muted">
             {post.image ? (
-              <Flex className="relative aspect-video w-full overflow-hidden bg-muted">
+              <>
                 <Image
                   src={post.image}
                   alt={post.title}
                   fill
-                  className="object-cover transition-transform duration-500 group-hover:scale-110"
+                  className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                   loading={priority ? "eager" : "lazy"}
                   priority={priority}
-                  quality={75}
+                  quality={85}
                 />
-                <Flex className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              </Flex>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60 transition-opacity duration-300" />
+              </>
             ) : (
-              <Flex align="center" justify="center" className="aspect-video w-full bg-gradient-to-br from-muted to-muted/50">
+              <Flex align="center" justify="center" className="h-full w-full bg-gradient-to-br from-primary/5 to-primary/10">
                 <IconSize size="4xl">
-                  <FolderOpen />
+                  <FolderOpen className="text-primary/20" />
                 </IconSize>
               </Flex>
             )}
-            
-            {/* Content */}
-            <Flex direction="col" gap={3} padding="lg">
-              {/* Category Badge */}
-              {primaryCategory && primaryCategory.name && (
-                <Badge variant="secondary" className="w-fit">
-                  <TypographySpanSmall>{primaryCategory.name}</TypographySpanSmall>
+
+            {/* Floating Category Badge */}
+            {primaryCategory && primaryCategory.name && (
+              <div className="absolute top-4 left-4 z-10">
+                <Badge variant="secondary" className="backdrop-blur-md bg-white/90 dark:bg-black/50 text-foreground border-white/20 shadow-sm hover:bg-white dark:hover:bg-black/70 transition-colors">
+                  <TypographySpanSmall className="font-medium">{primaryCategory.name}</TypographySpanSmall>
                 </Badge>
-              )}
+              </div>
+            )}
+          </div>
 
-              {/* Title */}
-              <TypographyH4 className="line-clamp-2 text-foreground group-hover:text-primary transition-colors">
-                {post.title}
-              </TypographyH4>
-
-              {/* Date */}
-              {post.publishedAt && (
-                <Flex align="center" gap={2} className="text-muted-foreground">
-                  <IconSize size="sm" className="text-muted-foreground">
-                    <Calendar />
-                  </IconSize>
-                  <time dateTime={getPublishedAtISO()}>
-                    <TypographyPMuted>{formatPostDate(post.publishedAt)}</TypographyPMuted>
-                  </time>
-                </Flex>
-              )}
-
-              {/* Read Now Button */}
-              <Flex align="center" gap={2} className="mt-auto text-primary group-hover:gap-3 transition-all">
-                <TypographyPSmall>Đọc ngay</TypographyPSmall>
-                <IconSize size="sm" className="transition-transform group-hover:translate-x-1">
-                  <ArrowRight />
+          {/* Content */}
+          <Flex direction="col" gap={4} padding="lg" className="flex-1 relative">
+            {/* Date */}
+            {post.publishedAt && (
+              <Flex align="center" gap={2} className="text-muted-foreground/80">
+                <IconSize size="xs">
+                  <Calendar className="w-3.5 h-3.5" />
                 </IconSize>
+                <time dateTime={getPublishedAtISO()} className="text-xs font-medium uppercase tracking-wider">
+                  {formatPostDate(post.publishedAt)}
+                </time>
               </Flex>
-            </Flex>
-          </Link>
+            )}
 
-        {/* Tags */}
-        {displayTags.length > 0 && (
-          <Flex align="center" gap={2} wrap={true} padding="md" border="top">
-            <IconSize size="xs">
-              <Tag />
-            </IconSize>
-            {displayTags.map((tag) => (
-              <Badge key={tag.id} variant="outline">
-                <TypographySpanSmall>{tag.name}</TypographySpanSmall>
-              </Badge>
-            ))}
+            {/* Title */}
+            <TypographyH4 className="line-clamp-2 text-xl font-bold text-foreground group-hover:text-primary transition-colors leading-tight">
+              {post.title}
+            </TypographyH4>
+
+            {/* Excerpt (Optional) */}
+            {post.excerpt && (
+              <TypographyPMuted className="line-clamp-2 text-sm text-muted-foreground/90">
+                {post.excerpt}
+              </TypographyPMuted>
+            )}
+
+            {/* Divider */}
+            <div className="h-px w-full bg-border/50 mt-auto" />
+
+            {/* Footer: Read More & Tags */}
+            <Flex align="center" justify="between" className="pt-2">
+              <Flex align="center" gap={1} className="text-primary font-medium group/btn">
+                <span className="text-sm">Đọc ngay</span>
+                <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover/btn:translate-x-1" />
+              </Flex>
+
+              {/* Tags Indicator */}
+              {displayTags.length > 0 && (
+                <div className="flex -space-x-2">
+                  {displayTags.map(tag => (
+                    <div key={tag.id} className="w-6 h-6 rounded-full bg-muted border-2 border-card flex items-center justify-center" title={tag.name}>
+                      <Tag className="w-3 h-3 text-muted-foreground" />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </Flex>
           </Flex>
-        )}
-    </Flex>
+        </Link>
+      </Flex>
+    </motion.div>
   )
 }
 

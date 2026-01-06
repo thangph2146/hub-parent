@@ -30,13 +30,15 @@ export function PointerHighlight({
       }
     });
 
-    if (containerRef.current) {
-      resizeObserver.observe(containerRef.current);
+    const currentContainer = containerRef.current;
+
+    if (currentContainer) {
+      resizeObserver.observe(currentContainer);
     }
 
     return () => {
-      if (containerRef.current) {
-        resizeObserver.unobserve(containerRef.current);
+      if (currentContainer) {
+        resizeObserver.unobserve(currentContainer);
       }
     };
   }, []);
@@ -59,7 +61,7 @@ export function PointerHighlight({
               "absolute border border-neutral-800 dark:border-neutral-200",
               rectangleClassName,
             )}
-            
+
             initial={{
               width: 0,
               height: 0,
@@ -78,7 +80,7 @@ export function PointerHighlight({
             initial={{ opacity: 0 }}
             whileInView={{
               opacity: 1,
-              x: dimensions.width + 16,
+              x: dimensions.width + 20,
               y: dimensions.height + 12,
             }}
             style={{
