@@ -687,7 +687,7 @@ export function DataTable<T extends object>({
                                         />
                                     </TableHead>
                                 ))}
-                                {actions ? <TableHead className="min-w-[100px] bg-secondary text-center px-2 sm:px-3 sticky right-0 z-10 border-l border-border" /> : null}
+                                {actions ? <TableHead className="min-w-[120px] bg-muted text-center px-2 sm:px-3 sticky right-0 z-10 border-l border-border" /> : null}
                             </TableRow>
                         )}
                     </TableHeader>
@@ -842,7 +842,7 @@ function TableBodyContent<T extends object>({
                                 </TableCell>
                             )
                         })}
-                        {actions ? <TableCell className="min-w-[100px] text-center whitespace-nowrap px-2 sm:px-3 sticky right-0 z-10 bg-secondary text-secondary-foreground group-data-[state=selected]:bg-secondary/10 border-l border-border">{actions(row)}</TableCell> : null}
+                        {actions ? <TableCell className="min-w-[100px] text-center whitespace-nowrap px-2 sm:px-3 sticky right-0 z-10 bg-muted text-muted-foreground group-data-[state=selected]:bg-secondary/10 border-l border-border">{actions(row)}</TableCell> : null}
                     </TableRow>
                 )
             })}
