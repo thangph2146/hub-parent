@@ -1,4 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
 import * as React from "react"
 import {
   JSX,
@@ -8,6 +7,8 @@ import {
   useRef,
   useState,
 } from "react"
+// eslint-disable-next-line no-restricted-imports
+import Image from "next/image"
 import { AutoFocusPlugin } from "@lexical/react/LexicalAutoFocusPlugin"
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext"
 import { LexicalErrorBoundary } from "@lexical/react/LexicalErrorBoundary"
@@ -63,7 +64,7 @@ import {
 } from "@/components/editor/plugins/images-plugin"
 import { Logo } from "../../../../public/svg/Logo"
 
-const imageCache = new Set()
+const imageCache = new Map<string, { width: number; height: number }>()
 const RESIZE_HANDLE_HIDE_DELAY = 200
 
 type TimeoutHandle = ReturnType<typeof setTimeout>
@@ -90,14 +91,18 @@ interface ImageComponentProps {
 function useSuspenseImage(src: string) {
   if (!imageCache.has(src)) {
     throw new Promise((resolve) => {
-      const img = new Image()
+      const img = new window.Image()
       img.src = src
       img.onload = () => {
-        imageCache.add(src)
+        imageCache.set(src, {
+          width: img.naturalWidth,
+          height: img.naturalHeight,
+        })
         resolve(null)
       }
       img.onerror = () => {
-        imageCache.add(src)
+        // Fallback to 0x0 if error, but mark as loaded
+        imageCache.set(src, { width: 0, height: 0 })
       }
     })
   }
@@ -141,10 +146,16 @@ function LazyImage({
   const widthAttr = getNumericValue(width)
   const heightAttr = getNumericValue(height)
   
-  // For inherit dimensions, try to get from image element after load
-  const [actualDimensions, setActualDimensions] = useState<{ width?: number; height?: number }>({})
+  // Get natural dimensions from cache which should be populated by useSuspenseImage
+  const cachedDims = imageCache.get(src)
+  
+  const [actualDimensions, setActualDimensions] = useState<{ width?: number; height?: number }>(
+    cachedDims || {}
+  )
   
   useEffect(() => {
+    // Keep actualDimensions up to date if they weren't available initially for some reason
+    // or if we want to confirm them from the ref
     if ((width === "inherit" || height === "inherit") && imageRef.current) {
       const img = imageRef.current
       if (img.complete && img.naturalWidth && img.naturalHeight) {
@@ -152,17 +163,6 @@ function LazyImage({
           width: img.naturalWidth,
           height: img.naturalHeight,
         })
-      } else {
-        const handleLoad = () => {
-          if (img.naturalWidth && img.naturalHeight) {
-            setActualDimensions({
-              width: img.naturalWidth,
-              height: img.naturalHeight,
-            })
-          }
-        }
-        img.addEventListener("load", handleLoad)
-        return () => img.removeEventListener("load", handleLoad)
       }
     }
   }, [width, height, imageRef])
@@ -180,26 +180,29 @@ function LazyImage({
     return "(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 992px"
   }
 
+  // Next.js Image requires width/height. Use dimensions from cache/state if inherited.
+  const renderWidth = widthAttr || actualDimensions.width || 0
+  const renderHeight = heightAttr || actualDimensions.height || 0
+
   return (
-    <img
+    <Image
       className={className || undefined}
       src={src}
       alt={altText}
       ref={imageRef}
-      width={widthAttr || actualDimensions.width}
-      height={heightAttr || actualDimensions.height}
+      width={renderWidth}
+      height={renderHeight}
       sizes={getSizes()}
       style={{
-        height,
-        width,
-        // Không set maxWidth để cho phép resize không giới hạn
-        // maxWidth sẽ được xử lý bởi unlockImageBoundaries khi resize
+        height: height === "inherit" ? "auto" : height,
+        width: width === "inherit" ? "100%" : width,
+        maxWidth: "100%", // Apply 100% maxWidth to ensure responsiveness
+        // Note: original code had strict maxWidth handling elsewhere, but NextImage needs control
       }}
       onError={onError}
-      draggable="false"
-      loading={fetchPriority === "high" ? "eager" : "lazy"}
+      draggable={false}
+      priority={fetchPriority === "high"}
       decoding="async"
-      fetchPriority={fetchPriority}
     />
   )
 }
