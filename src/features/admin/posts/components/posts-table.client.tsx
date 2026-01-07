@@ -35,6 +35,7 @@ import { POST_CONFIRM_MESSAGES, POST_LABELS } from "../constants/messages"
 import { resourceLogger } from "@/lib/config/resource-logger"
 import { sanitizeSearchQuery } from "@/lib/api/validation"
 import { IconSize } from "@/components/ui/typography"
+import { toast } from "@/hooks/use-toast"
 
 export const PostsTableClient = ({
   canDelete = false,
@@ -75,7 +76,11 @@ export const PostsTableClient = ({
   const handleTogglePublished = useCallback(
     async (row: PostRow, newStatus: boolean, _refresh: ResourceRefreshHandler) => {
       if (!canToggleStatus) {
-        showFeedback("error", "Không có quyền", "Bạn không có quyền thay đổi trạng thái xuất bản")
+        toast({
+          variant: "destructive",
+          title: "Không có quyền",
+          description: "Bạn không có quyền thay đổi trạng thái xuất bản",
+        })
         return
       }
 
@@ -92,16 +97,24 @@ export const PostsTableClient = ({
         return next
       })
 
+      // Hiển thị toast loading khi đang thay đổi trạng thái
+      const loadingToast = toast({
+        title: "Đang thay đổi trạng thái...",
+        description: `Đang ${newStatus ? "xuất bản" : "chuyển sang bản nháp"} bài viết "${row.title}"`,
+      })
+
       try {
         await apiClient.put(apiRoutes.posts.update(row.id), {
           published: newStatus,
         })
 
-        showFeedback(
-          "success",
-          "Cập nhật thành công",
-          `Bài viết "${row.title}" đã được ${newStatus ? "xuất bản" : "chuyển sang bản nháp"}.`,
-        )
+        // Dismiss loading toast và hiển thị success toast
+        loadingToast.dismiss()
+        toast({
+          variant: "success",
+          title: "Cập nhật thành công",
+          description: `Bài viết "${row.title}" đã được ${newStatus ? "xuất bản" : "chuyển sang bản nháp"}.`,
+        })
         
         resourceLogger.actionFlow({
           resource: "posts",
@@ -110,14 +123,10 @@ export const PostsTableClient = ({
           metadata: { postId: row.id, postTitle: row.title, newStatus },
         })
 
-        // Invalidate và refetch queries để đảm bảo UI cập nhật ngay lập tức
-        await queryClient.invalidateQueries({ queryKey: queryKeys.adminPosts.all(), refetchType: "all" })
-        await queryClient.refetchQueries({ queryKey: queryKeys.adminPosts.all(), type: "all" })
-        await queryClient.invalidateQueries({ queryKey: queryKeys.adminPosts.detail(row.id), refetchType: "all" })
-        await queryClient.refetchQueries({ queryKey: queryKeys.adminPosts.detail(row.id), type: "all" })
-        
-        // Gọi refresh callback để trigger re-render của table
-        await _refresh()
+        // Chỉ invalidate queries - table sẽ tự động refresh qua query cache events
+        // Không cần gọi refresh callback vì useResourceTableRefresh đã listen query invalidation events
+        await queryClient.invalidateQueries({ queryKey: queryKeys.adminPosts.all(), refetchType: "active" })
+        await queryClient.invalidateQueries({ queryKey: queryKeys.adminPosts.detail(row.id), refetchType: "active" })
       } catch (error: unknown) {
         // Extract error message từ response nếu có
         let errorMessage: string = "Đã xảy ra lỗi không xác định"
@@ -128,12 +137,13 @@ export const PostsTableClient = ({
           errorMessage = error.message
         }
 
-        showFeedback(
-          "error",
-          "Cập nhật thất bại",
-          `Không thể ${newStatus ? "xuất bản" : "chuyển sang bản nháp"} bài viết "${row.title}". Vui lòng thử lại.`,
-          errorMessage
-        )
+        // Dismiss loading toast và hiển thị error toast
+        loadingToast.dismiss()
+        toast({
+          variant: "destructive",
+          title: "Cập nhật thất bại",
+          description: `Không thể ${newStatus ? "xuất bản" : "chuyển sang bản nháp"} bài viết "${row.title}". Vui lòng thử lại.`,
+        })
 
         resourceLogger.actionFlow({
           resource: "posts",
@@ -149,7 +159,7 @@ export const PostsTableClient = ({
         })
       }
     },
-    [canToggleStatus, showFeedback, queryClient],
+    [canToggleStatus, queryClient],
   )
 
   const { baseColumns, deletedColumns } = usePostColumns({

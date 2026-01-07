@@ -277,7 +277,7 @@ export const ResourceTableClient = <T extends object>({
     <Flex direction="col" gap={4} fullWidth>
       {(title || viewModeButtons) && (
         <Flex direction="col" align="start" justify="between" gap={2} fullWidth className="sm:flex-row sm:items-center">
-          {title && <TypographyH4 className="truncate">{title}</TypographyH4>}
+          {title && <TypographyH4 className="truncate text-2xl sm:text-3xl font-bold tracking-tight">{title}</TypographyH4>}
           {viewModeButtons && (
             <Flex align="center" justify="end" gap={2} wrap fullWidth className="sm:w-auto sm:justify-end">
               {viewModeButtons}

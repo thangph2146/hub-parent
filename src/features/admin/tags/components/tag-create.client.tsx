@@ -16,8 +16,8 @@ export const TagCreateClient = ({ backUrl = "/admin/tags" }: TagCreateClientProp
   const queryClient = useQueryClient()
   
   const handleBack = async () => {
-    await queryClient.invalidateQueries({ queryKey: queryKeys.adminTags.all(), refetchType: "all" })
-    await queryClient.refetchQueries({ queryKey: queryKeys.adminTags.all(), type: "all" })
+    // Chỉ invalidate queries - table sẽ tự động refresh qua query cache events
+    await queryClient.invalidateQueries({ queryKey: queryKeys.adminTags.all(), refetchType: "active" })
   }
   
   const { handleSubmit } = useResourceFormSubmit({
@@ -43,9 +43,7 @@ export const TagCreateClient = ({ backUrl = "/admin/tags" }: TagCreateClientProp
           responseStatus: response?.status,
         },
       })
-
-      await queryClient.invalidateQueries({ queryKey: queryKeys.adminTags.all(), refetchType: "all" })
-      await queryClient.refetchQueries({ queryKey: queryKeys.adminTags.all(), type: "all" })
+      // Không cần invalidate/refetch ở đây vì createResourceCreateOnSuccess đã xử lý
     },
   })
 

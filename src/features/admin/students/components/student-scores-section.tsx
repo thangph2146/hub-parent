@@ -979,30 +979,30 @@ export const StudentScoresSection = ({ studentId, isActive }: StudentScoresSecti
         </Alert>
       )}
 
-      {/* Tabs để tổ chức các sections */}
+      {/* Tabs để tổ chức các sections - Enhanced UI */}
       <Tabs defaultValue="year" className="w-full">
         <TabsList asChild>
           <Grid cols={3} className="w-full">
-          <TabsTrigger value="year" className="flex items-center gap-2">
-            <IconSize size="sm">
-              <Calendar />
+          <TabsTrigger value="year" className="flex items-center gap-2.5">
+            <IconSize size="md">
+              <Calendar className="text-primary" />
             </IconSize>
-            <TypographySpanSmall className="hidden sm:inline">Theo năm học</TypographySpanSmall>
-            <TypographySpanSmall className="sm:hidden">Năm học</TypographySpanSmall>
+            <span className="hidden sm:inline">Theo năm học</span>
+            <span className="sm:hidden">Năm học</span>
           </TabsTrigger>
-          <TabsTrigger value="term" className="flex items-center gap-2">
-            <IconSize size="sm">
-              <TrendingUp />
+          <TabsTrigger value="term" className="flex items-center gap-2.5">
+            <IconSize size="md">
+              <TrendingUp className="text-primary" />
             </IconSize>
-            <TypographySpanSmall className="hidden sm:inline">Theo học kỳ</TypographySpanSmall>
-            <TypographySpanSmall className="sm:hidden">Học kỳ</TypographySpanSmall>
+            <span className="hidden sm:inline">Theo học kỳ</span>
+            <span className="sm:hidden">Học kỳ</span>
           </TabsTrigger>
-          <TabsTrigger value="detailed" className="flex items-center gap-2">
-            <IconSize size="sm">
-              <BookOpen />
+          <TabsTrigger value="detailed" className="flex items-center gap-2.5">
+            <IconSize size="md">
+              <BookOpen className="text-primary" />
             </IconSize>
-            <TypographySpanSmall className="hidden sm:inline">Điểm chi tiết</TypographySpanSmall>
-            <TypographySpanSmall className="sm:hidden">Chi tiết</TypographySpanSmall>
+            <span className="hidden sm:inline">Điểm chi tiết</span>
+            <span className="sm:hidden">Chi tiết</span>
           </TabsTrigger>
           </Grid>
         </TabsList>

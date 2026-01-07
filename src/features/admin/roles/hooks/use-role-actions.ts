@@ -60,7 +60,6 @@ export const useRoleActions = ({
     messages: ROLE_MESSAGES,
     getRecordName: (row) => row.displayName,
     canManage,
-    showFeedback,
     validateToggle: (row) => {
       if (row.name === "super_admin") {
         return { valid: false, error: ROLE_MESSAGES.CANNOT_MODIFY_SUPER_ADMIN }

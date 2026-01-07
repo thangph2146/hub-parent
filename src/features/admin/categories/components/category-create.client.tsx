@@ -16,7 +16,10 @@ export const CategoryCreateClient = ({ backUrl = "/admin/categories" }: Category
   const queryClient = useQueryClient()
   const queryKey = queryKeys.adminCategories.all()
 
-  const handleBack = () => queryClient.invalidateQueries({ queryKey, refetchType: "all" })
+  const handleBack = () => {
+    // Chỉ invalidate queries - table sẽ tự động refresh qua query cache events
+    queryClient.invalidateQueries({ queryKey, refetchType: "active" })
+  }
 
   const { handleSubmit } = useResourceFormSubmit({
     apiRoute: apiRoutes.categories.create,
@@ -42,7 +45,7 @@ export const CategoryCreateClient = ({ backUrl = "/admin/categories" }: Category
           responseStatus: response?.status,
         },
       })
-      queryClient.invalidateQueries({ queryKey, refetchType: "all" })
+      // Không cần invalidate ở đây vì createResourceCreateOnSuccess đã xử lý
     },
   })
 

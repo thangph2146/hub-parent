@@ -143,8 +143,8 @@ export const usePostColumns = ({
             { label: "Bản nháp", value: "false" },
           ],
         },
-        className: "min-w-[140px] max-w-[180px]",
-        headerClassName: "min-w-[140px] max-w-[180px]",
+        className: "min-w-[160px] max-w-[160px]",
+        headerClassName: "min-w-[160px] max-w-[160px]",
         cell: (row) => {
           if (row.deletedAt) {
             return (

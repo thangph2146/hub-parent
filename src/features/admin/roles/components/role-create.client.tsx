@@ -16,8 +16,8 @@ export const RoleCreateClient = ({ backUrl = "/admin/roles", permissions: permis
   const queryClient = useQueryClient()
 
   const handleBack = async () => {
-    await queryClient.invalidateQueries({ queryKey: queryKeys.adminRoles.all(), refetchType: "all" })
-    await queryClient.refetchQueries({ queryKey: queryKeys.adminRoles.all(), type: "all" })
+    // Chỉ invalidate queries - table sẽ tự động refresh qua query cache events
+    await queryClient.invalidateQueries({ queryKey: queryKeys.adminRoles.all(), refetchType: "active" })
   }
 
   const { handleSubmit } = useResourceFormSubmit({

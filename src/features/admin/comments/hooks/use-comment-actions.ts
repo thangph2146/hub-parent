@@ -9,6 +9,7 @@ import type { FeedbackVariant } from "@/components/dialogs"
 import { COMMENT_MESSAGES } from "../constants/messages"
 import { resourceLogger } from "@/lib/config/resource-logger"
 import type { BulkActionResult } from "@/features/admin/resources/types"
+import { toast } from "@/hooks/use-toast"
 
 interface UseCommentActionsOptions {
   canApprove: boolean
@@ -82,13 +83,23 @@ export const useCommentActions = ({
   const handleToggleApprove = useCallback(
     async (row: CommentRow, newStatus: boolean) => {
       if (!canApprove) {
-        showFeedback("error", COMMENT_MESSAGES.NO_PERMISSION, COMMENT_MESSAGES.NO_APPROVE_PERMISSION)
+        toast({
+          variant: "destructive",
+          title: COMMENT_MESSAGES.NO_PERMISSION,
+          description: COMMENT_MESSAGES.NO_APPROVE_PERMISSION,
+        })
         return
       }
 
       const setLoadingState = newStatus ? setApprovingComments : setUnapprovingComments
       setTogglingComments((prev) => new Set(prev).add(row.id))
       setLoadingState((prev) => new Set(prev).add(row.id))
+
+      // Hiển thị loading toast
+      const loadingToastId = toast({
+        title: "Đang thay đổi trạng thái...",
+        description: `Đang ${newStatus ? "duyệt" : "hủy duyệt"} bình luận từ ${row.authorName || row.authorEmail}`,
+      })
 
       try {
         resourceLogger.actionFlow({
@@ -103,10 +114,8 @@ export const useCommentActions = ({
 
         if (newStatus) {
           await apiClient.post(apiRoutes.comments.approve(row.id))
-          showFeedback("success", COMMENT_MESSAGES.APPROVE_SUCCESS, `Đã duyệt bình luận từ ${row.authorName || row.authorEmail}`)
         } else {
           await apiClient.post(apiRoutes.comments.unapprove(row.id))
-          showFeedback("success", COMMENT_MESSAGES.UNAPPROVE_SUCCESS, `Đã hủy duyệt bình luận từ ${row.authorName || row.authorEmail}`)
         }
 
         resourceLogger.actionFlow({
@@ -119,16 +128,19 @@ export const useCommentActions = ({
           },
         })
         
-        // Invalidate và refetch list queries - sử dụng "all" để đảm bảo refetch tất cả queries
-        await queryClient.invalidateQueries({ queryKey: queryKeys.adminComments.all(), refetchType: "all" })
-        await queryClient.refetchQueries({ queryKey: queryKeys.adminComments.all(), type: "all" })
+        // Dismiss loading toast và hiển thị success toast
+        loadingToastId.dismiss()
+        toast({
+          variant: "success",
+          title: newStatus ? COMMENT_MESSAGES.APPROVE_SUCCESS : COMMENT_MESSAGES.UNAPPROVE_SUCCESS,
+          description: newStatus 
+            ? `Đã duyệt bình luận từ ${row.authorName || row.authorEmail}`
+            : `Đã hủy duyệt bình luận từ ${row.authorName || row.authorEmail}`,
+        })
         
-        // Invalidate và refetch detail query
-        await queryClient.invalidateQueries({ queryKey: queryKeys.adminComments.detail(row.id), refetchType: "all" })
-        await queryClient.refetchQueries({ queryKey: queryKeys.adminComments.detail(row.id), type: "all" })
-        
-        // Gọi refresh callback để cập nhật UI ngay lập tức
-        await refreshTable?.()
+        // Chỉ invalidate queries - table sẽ tự động refresh qua query cache events
+        await queryClient.invalidateQueries({ queryKey: queryKeys.adminComments.all(), refetchType: "active" })
+        await queryClient.invalidateQueries({ queryKey: queryKeys.adminComments.detail(row.id), refetchType: "active" })
       } catch (error: unknown) {
         let errorMessage: string = COMMENT_MESSAGES.UNKNOWN_ERROR
         if (error && typeof error === "object" && "response" in error) {
@@ -148,7 +160,13 @@ export const useCommentActions = ({
           },
         })
 
-        showFeedback("error", newStatus ? COMMENT_MESSAGES.APPROVE_ERROR : COMMENT_MESSAGES.UNAPPROVE_ERROR, `Không thể ${newStatus ? "duyệt" : "hủy duyệt"} bình luận`, errorMessage)
+        // Dismiss loading toast và hiển thị error toast
+        loadingToastId.dismiss()
+        toast({
+          variant: "destructive",
+          title: newStatus ? COMMENT_MESSAGES.APPROVE_ERROR : COMMENT_MESSAGES.UNAPPROVE_ERROR,
+          description: `Không thể ${newStatus ? "duyệt" : "hủy duyệt"} bình luận. ${errorMessage}`,
+        })
         await refreshTable?.()
       } finally {
         setTogglingComments((prev) => {
@@ -163,7 +181,7 @@ export const useCommentActions = ({
         })
       }
     },
-    [canApprove, showFeedback, queryClient, refreshTable],
+    [canApprove, queryClient, refreshTable],
   )
 
   const { bulkState, startBulkProcessing, stopBulkProcessing } = useResourceBulkProcessing()
@@ -196,13 +214,20 @@ export const useCommentActions = ({
         const title = successTitles[action]
         const description = response.data.data?.message || `Đã thực hiện thao tác cho ${ids.length} bình luận`
         
-        showFeedback("success", title, description)
+        // approve/unapprove: sử dụng toast, các actions khác vẫn dùng showFeedback
+        if (action === "approve" || action === "unapprove") {
+          toast({
+            variant: "success",
+            title,
+            description,
+          })
+        } else {
+          showFeedback("success", title, description)
+        }
         clearSelection()
 
-        // Invalidate và refetch queries - sử dụng "all" để đảm bảo refetch tất cả queries
-        await queryClient.invalidateQueries({ queryKey: queryKeys.adminComments.all(), refetchType: "all" })
-        await queryClient.refetchQueries({ queryKey: queryKeys.adminComments.all(), type: "all" })
-        await refreshTable?.()
+        // Chỉ invalidate queries - table sẽ tự động refresh qua query cache events
+        await queryClient.invalidateQueries({ queryKey: queryKeys.adminComments.all(), refetchType: "active" })
       } catch (error: unknown) {
         await refreshTable?.()
         let errorMessage: string = COMMENT_MESSAGES.UNKNOWN_ERROR
@@ -226,7 +251,17 @@ export const useCommentActions = ({
           count: ids.length,
           error: errorMessage,
         })
-        showFeedback("error", errorTitles[action], `Không thể thực hiện thao tác cho ${ids.length} bình luận`, errorMessage)
+        
+        // approve/unapprove: sử dụng toast, các actions khác vẫn dùng showFeedback
+        if (action === "approve" || action === "unapprove") {
+          toast({
+            variant: "destructive",
+            title: errorTitles[action],
+            description: `Không thể thực hiện thao tác cho ${ids.length} bình luận. ${errorMessage}`,
+          })
+        } else {
+          showFeedback("error", errorTitles[action], `Không thể thực hiện thao tác cho ${ids.length} bình luận`, errorMessage)
+        }
         if (action !== "restore") {
           throw error
         }

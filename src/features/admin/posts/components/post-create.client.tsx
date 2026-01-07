@@ -53,8 +53,8 @@ export const PostCreateClient = ({
   const currentUserId = session?.user?.id
 
   const handleBack = async () => {
-    await queryClient.invalidateQueries({ queryKey: queryKeys.adminPosts.all(), refetchType: "all" })
-    await queryClient.refetchQueries({ queryKey: queryKeys.adminPosts.all(), type: "all" })
+    // Chỉ invalidate queries - table sẽ tự động refresh qua query cache events
+    await queryClient.invalidateQueries({ queryKey: queryKeys.adminPosts.all(), refetchType: "active" })
   }
 
   const { handleSubmit } = useResourceFormSubmit({
