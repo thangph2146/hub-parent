@@ -49,7 +49,7 @@ export const OverviewSection = ({ className }: OverviewSectionProps) => {
           {titleElement}
         </PointerHighlight>
         <div
-          className="w-full relative p-3 sm:p-4 md:p-5 rounded-xl bg-gradient-to-br from-white/5 to-transparent flex align-center items-center justify-center"
+          className="w-full relative px-8 py-4 rounded-xl bg-gradient-to-br from-white/5 to-transparent flex align-center items-center justify-center"
         >
           <div className="absolute top-3 left-0 ">
             <Quote className="fill-primary/20 rotate-180" />
@@ -61,7 +61,7 @@ export const OverviewSection = ({ className }: OverviewSectionProps) => {
             <Quote className="fill-primary/20" />
           </div>
         </div>
-        <ScrollIndicator variant="dark" onScroll={() => scrollToNextSection(sectionRef.current)} />
+        {typeof window !== "undefined" && window.innerWidth > 1280 && window.innerHeight > 630 && <ScrollIndicator variant="dark" onScroll={() => scrollToNextSection(sectionRef.current)} />}
       </Flex>
     </Flex>
   );

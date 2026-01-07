@@ -13,7 +13,7 @@ import { normalizeError } from "./api-utils"
  * Trong development, sử dụng ./data (relative to project root)
  * Trên production (Railway), sử dụng /data (absolute path)
  */
-export const STORAGE_DIR = process.env.STORAGE_DIR || (process.env.NODE_ENV === "production" ? "/data" : "./data")
+export const STORAGE_DIR = process.env.STORAGE_DIR || (process.env.NODE_ENV === "production" ? "/data" : path.resolve(process.cwd(), "data"))
 export const UPLOADS_DIR = path.join(STORAGE_DIR, "uploads")
 export const IMAGES_DIR = path.join(UPLOADS_DIR, "images")
 

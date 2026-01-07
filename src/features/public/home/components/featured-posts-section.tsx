@@ -32,7 +32,7 @@ export const FeaturedPostsSection = ({ featuredPosts = [], className }: Featured
   const sectionRef = useRef<HTMLDivElement>(null);
   const { sectionHeightClassName, sectionHeightStyle } = useSectionHeight({
     minHeight: "fit-content",
-    fullHeight: true,
+    fullHeight: typeof window !== "undefined" ? window.innerHeight > 600 : false,
   });
 
   if (featuredPosts.length === 0) return null;
@@ -46,7 +46,7 @@ export const FeaturedPostsSection = ({ featuredPosts = [], className }: Featured
     direction="col"
     position="relative"
     bg="background"
-    className={cn(sectionHeightClassName, className)}
+    className={cn(typeof window !== "undefined" ? window.innerWidth > 1280 && "py-8" : "", sectionHeightClassName, className)}
     style={sectionHeightStyle}
     >
       <Flex container padding="responsive-lg" className="h-full items-center justify-center px-0 sm:px-0 md:px-0 lg:px-0 py-0 sm:py-0 md:py-0 lg:py-0">

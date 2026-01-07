@@ -131,9 +131,9 @@ export interface GuideRegisterSectionProps {
 
 export const GuideRegisterSection = ({ className }: GuideRegisterSectionProps) => {
   const sectionRef = useRef<HTMLDivElement>(null);
-  const { sectionHeightClassName, sectionHeightStyle, scrollToNextSection } = useSectionHeight({
+  const { sectionHeightClassName, sectionHeightStyle } = useSectionHeight({
     minHeight: "fit-content",
-    fullHeight: typeof window !== "undefined" ? window.innerWidth > 1280 : false,
+    fullHeight: typeof window !== "undefined" && window.innerWidth > 1280,
   });
 
   return (
@@ -155,9 +155,7 @@ export const GuideRegisterSection = ({ className }: GuideRegisterSectionProps) =
             <CardWithImage {...REGISTER_DATA} reverse />
           </div>
         </div>
-       
       </Flex>
-      <ScrollIndicator variant="dark" onScroll={() => scrollToNextSection(sectionRef.current)} className="relative w-full"/>
     </Flex>
   );
 };

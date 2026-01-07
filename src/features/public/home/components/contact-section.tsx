@@ -43,7 +43,7 @@ export const ContactSection = ({ className }: ContactSectionProps) => {
   const isInView = useInView(containerRef, { once: true, margin: "-50px" });
   const { sectionHeightClassName, sectionHeightStyle } = useSectionHeight({
     minHeight: 0,
-    fullHeight: false,
+    fullHeight: true,
   });
 
   return (
@@ -51,11 +51,14 @@ export const ContactSection = ({ className }: ContactSectionProps) => {
       as="section"
       ref={sectionRef}
       fullWidth
+      container
+      direction="col"
       position="relative"
-      className={cn("bg-muted/30", sectionHeightClassName, className)}
+      bg="background"
+      className={cn(sectionHeightClassName, className)}
       style={sectionHeightStyle}
     >
-      <Flex container padding="responsive-lg" className="h-full items-center justify-center py-8 sm:py-12 md:py-16 lg:py-20">
+      <Flex container padding="responsive-lg" className="h-full items-center justify-center px-0 sm:px-0 md:px-0 lg:px-0 py-0 sm:py-0 md:py-0 lg:py-0">
         <div className="w-full max-w-7xl mx-auto px-4 sm:px-6">
           <motion.div
             ref={containerRef}
