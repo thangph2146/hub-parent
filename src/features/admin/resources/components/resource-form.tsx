@@ -792,7 +792,7 @@ export const ResourceForm = <T extends Record<string, unknown>>({
               </TypographyH1>
             )}
             {description && (
-              <TypographyPMuted className="text-sm sm:text-base text-muted-foreground line-clamp-2">
+              <TypographyPMuted className="text-xs sm:text-sm text-muted-foreground/80 italic line-clamp-2">
                 {description}
               </TypographyPMuted>
             )}
