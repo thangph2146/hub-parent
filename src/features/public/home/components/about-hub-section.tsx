@@ -2,12 +2,13 @@
 
 import { useEffect, useRef, useState } from "react";
 import { motion, useInView } from "framer-motion";
-import { Building2, GraduationCap, Users, Award, ArrowRight, ChevronDown, type LucideIcon } from "lucide-react";
+import { Building2, GraduationCap, Users, Award, ArrowRight, type LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { Flex } from "@/components/ui/flex";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useSectionHeight } from "@/hooks/use-section-height";
+import { ScrollIndicator } from "./scroll-indicator";
 
 interface StatisticItem {
   icon: LucideIcon;
@@ -99,13 +100,13 @@ export const AboutHubSection = ({ className }: AboutHubSectionProps) => {
                 transition={{ duration: 0.6 }}
                 className="space-y-6 sm:space-y-8"
               >
-                <div className="space-y-4 sm:space-y-6">
-                  <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl 2xl:text-7xl font-bold text-white leading-[1.1] uppercase tracking-tight break-words">
+                <div className="space-y-3 sm:space-y-4 md:space-y-5 lg:space-y-6">
+                  <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold text-white leading-[1.1] uppercase tracking-tight break-words">
                     <span>H</span><span className="text-brand-yellow">eightening</span>{" "}
                     <span>U</span><span className="text-brand-yellow">nique</span>{" "}
                     <span>B</span><span className="text-brand-yellow">rilliance</span>
                   </h1>
-                  <h2 className="text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl font-semibold text-white/90 leading-relaxed break-words">
+                  <h2 className="text-xs sm:text-sm md:text-base lg:text-lg xl:text-xl font-semibold text-white/90 leading-relaxed break-words">
                     Trường Đại học Ngân hàng Thành phố Hồ Chí Minh
                   </h2>
                 </div>
@@ -130,12 +131,12 @@ export const AboutHubSection = ({ className }: AboutHubSectionProps) => {
                     transition={{ duration: 0.6, delay: index * 0.1 }}
                     className="flex flex-col items-start space-y-2 sm:space-y-3 p-2 sm:p-3 md:p-4 lg:p-5 bg-white rounded-lg sm:rounded-xl shadow-md sm:shadow-lg hover:shadow-xl sm:hover:shadow-2xl transition-all duration-300"
                   >
-                    <stat.icon className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 text-secondary flex-shrink-0" strokeWidth={1.5} />
-                    <h2 className="text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl font-bold text-secondary leading-tight break-words">
+                    <stat.icon className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 lg:w-14 lg:h-14 text-secondary flex-shrink-0" strokeWidth={1.5} />
+                    <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-secondary leading-tight break-words">
                       <CountUp value={stat.count} isInView={isInView} />
-                      {stat.suffix && <span className="text-base sm:text-lg md:text-xl lg:text-3xl xl:text-4xl ml-1 sm:ml-2 text-secondary font-semibold whitespace-nowrap">{stat.suffix}</span>}
+                      {stat.suffix && <span className="text-base sm:text-lg md:text-xl lg:text-2xl ml-1 sm:ml-2 text-secondary font-semibold whitespace-nowrap">{stat.suffix}</span>}
                     </h2>
-                    <p className="text-xs sm:text-sm md:text-base lg:text-lg text-gray-600 leading-relaxed pt-0.5 sm:pt-1 w-full break-words line-clamp-3 sm:line-clamp-none">{stat.caption}</p>
+                    <p className="text-xs sm:text-sm md:text-base text-gray-600 leading-relaxed pt-0.5 sm:pt-1 w-full break-words line-clamp-3 sm:line-clamp-none">{stat.caption}</p>
                   </motion.div>
                 ))}
               </div>
@@ -144,31 +145,7 @@ export const AboutHubSection = ({ className }: AboutHubSectionProps) => {
         </div>
       </Flex>
 
-      <motion.div
-        className="absolute bottom-2 sm:bottom-4 left-1/2 -translate-x-1/2 z-[60] hidden sm:block"
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 1, duration: 0.5 }}
-      >
-        <motion.div
-          animate={{ y: [0, 8, 0] }}
-          transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
-          className="flex flex-col items-center gap-2 text-white/70 hover:text-white transition-colors cursor-pointer group"
-          onClick={() => scrollToNextSection(containerRef.current)}
-        >
-          <div className="relative px-4 sm:px-5 py-2 sm:py-2.5 rounded-full backdrop-blur-xl bg-white/10 border border-white/30 group-hover:bg-white/20 group-hover:border-white/40 transition-all duration-300 shadow-lg group-hover:shadow-xl">
-            <span className="text-[10px] sm:text-xs tracking-[0.15em] sm:tracking-[0.2em] uppercase font-semibold drop-shadow-lg whitespace-nowrap">Cuộn xuống</span>
-          </div>
-          <div className="relative">
-            <motion.div
-              className="absolute inset-0 bg-primary/40 rounded-full blur-lg"
-              animate={{ scale: [1, 1.3, 1], opacity: [0.5, 0.9, 0.5] }}
-              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-            />
-            <ChevronDown className="relative w-6 h-6 sm:w-7 sm:h-7 drop-shadow-lg group-hover:drop-shadow-[0_0_12px_rgba(255,255,255,0.9)] transition-all" />
-          </div>
-        </motion.div>
-      </motion.div>
+      <ScrollIndicator variant="light" onScroll={() => scrollToNextSection(containerRef.current)} />
     </Flex>
   );
 };

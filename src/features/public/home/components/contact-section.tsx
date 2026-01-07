@@ -5,11 +5,12 @@ import { motion, useInView } from "framer-motion";
 import { Flex } from "@/components/ui/flex";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { TypographyH3, TypographyPSmallMuted, TypographySpanSmall, IconSize } from "@/components/ui/typography";
-import { Phone, Mail, GraduationCap, ChevronDown } from "lucide-react";
+import { Phone, Mail, GraduationCap } from "lucide-react";
 import { EncryptedText } from "@/components/ui/encrypted-text";
 import { ContactForm } from "@/components/forms/contact-form";
 import { useSectionHeight } from "@/hooks/use-section-height";
 import { cn } from "@/lib/utils";
+import { ScrollIndicator } from "./scroll-indicator";
 
 export interface ContactInfoItem {
   icon: React.ReactNode;
@@ -77,9 +78,9 @@ export const ContactSection = ({ className }: ContactSectionProps) => {
             <Flex direction="col-lg-row" gap="4-lg-8" fullWidth>
               <Flex direction="col" gap={6} className="lg:w-2/5 lg:min-w-[320px]">
                 <motion.div variants={itemVariants}>
-                  <Flex direction="col" gap={4}>
-                    <TypographyH3>Tại sao chọn chúng tôi?</TypographyH3>
-                    <TypographyPSmallMuted>
+                  <Flex direction="col" gap={3} className="sm:gap-4">
+                    <TypographyH3 className="text-lg sm:text-xl md:text-2xl">Tại sao chọn chúng tôi?</TypographyH3>
+                    <TypographyPSmallMuted className="text-sm sm:text-base">
                       <EncryptedText
                         text="Cam kết chất lượng đào tạo và sự đồng hành chặt chẽ cùng gia đình."
                         className="text-muted-foreground"
@@ -116,7 +117,7 @@ export const ContactSection = ({ className }: ContactSectionProps) => {
                     <Card className="relative overflow-hidden border-0 shadow-lg bg-gradient-to-br from-primary/5 via-background to-background dark:from-primary/10">
                       <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary via-primary/70 to-primary/40" />
                       <CardHeader>
-                        <TypographyH3>{CONTACT_INFO.title}</TypographyH3>
+                        <TypographyH3 className="text-lg sm:text-xl md:text-2xl">{CONTACT_INFO.title}</TypographyH3>
                       </CardHeader>
                       <CardContent>
                         <Flex direction="col" gap={3}>
@@ -143,31 +144,7 @@ export const ContactSection = ({ className }: ContactSectionProps) => {
         </div>
       </Flex>
 
-      <motion.div
-        className="absolute bottom-2 sm:bottom-4 left-1/2 -translate-x-1/2 z-[60] hidden sm:block"
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 1, duration: 0.5 }}
-      >
-        <motion.div
-          animate={{ y: [0, 8, 0] }}
-          transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
-          className="flex flex-col items-center gap-2 text-foreground/70 hover:text-foreground transition-colors cursor-pointer group"
-          onClick={() => scrollToNextSection(sectionRef.current)}
-        >
-          <div className="relative px-4 sm:px-5 py-2 sm:py-2.5 rounded-full backdrop-blur-xl bg-background/80 border border-border/50 group-hover:bg-background group-hover:border-border transition-all duration-300 shadow-lg group-hover:shadow-xl">
-            <span className="text-[10px] sm:text-xs tracking-[0.15em] sm:tracking-[0.2em] uppercase font-semibold whitespace-nowrap">Cuộn xuống</span>
-          </div>
-          <div className="relative">
-            <motion.div
-              className="absolute inset-0 bg-primary/20 rounded-full blur-lg"
-              animate={{ scale: [1, 1.3, 1], opacity: [0.5, 0.9, 0.5] }}
-              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-            />
-            <ChevronDown className="relative w-6 h-6 sm:w-7 sm:h-7 drop-shadow-lg group-hover:drop-shadow-[0_0_12px_rgba(0,0,0,0.3)] transition-all" />
-          </div>
-        </motion.div>
-      </motion.div>
+      <ScrollIndicator variant="dark" onScroll={() => scrollToNextSection(sectionRef.current)} />
     </Flex>
   );
 };

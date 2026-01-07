@@ -8,10 +8,11 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { IconSize, TypographySpanSmall } from "@/components/ui/typography";
-import { ArrowRight, ChevronDown } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { FlipWords } from "@/components/ui/flip-words";
 import { motion } from "framer-motion";
 import { useSectionHeight } from "@/hooks/use-section-height";
+import { ScrollIndicator } from "./scroll-indicator";
 
 export type HeroButton = ContentCardButton;
 
@@ -99,7 +100,7 @@ export const HeroSection = ({
 }: HeroSectionProps) => {
   const sectionRef = useRef<HTMLDivElement>(null);
   const { sectionHeightClassName, sectionHeightStyle, scrollToNextSection } = useSectionHeight({
-    minHeight: 600,
+    minHeight: 0, // Không dùng minHeight để đảm bảo height chính xác là 100dvh - header
     fullHeight: true,
   });
 
@@ -165,18 +166,18 @@ export const HeroSection = ({
         position="absolute"
         container
         padding="responsive"
-        className="inset-0 z-20 h-full"
+        className="inset-0 z-20 h-full overflow-hidden"
       >
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
         >
-          <Flex direction="col" gap={6} className={cn("max-w-3xl relative px-5 py-6 md:px-8 md:py-10 lg:px-10 lg:py-12 rounded-2xl backdrop-blur-xl bg-gradient-to-br from-black/60 via-black/50 to-black/40 border border-white/30 shadow-[0_20px_60px_rgba(0,0,0,0.7),0_0_0_1px_rgba(255,255,255,0.1)_inset] hover:shadow-[0_20px_80px_rgba(0,0,0,0.8),0_0_0_1px_rgba(255,255,255,0.15)_inset] transition-all duration-500 [text-shadow:_0_2px_8px_rgba(0,0,0,0.8),_0_0_20px_rgba(0,0,0,0.5)] before:absolute before:inset-0 before:rounded-2xl before:bg-gradient-to-br before:from-white/10 before:to-transparent before:opacity-0 hover:before:opacity-100 before:transition-opacity before:duration-500", overlayClassName)}>
+          <Flex direction="col" gap={4} className={cn("max-w-3xl relative px-4 py-5 sm:px-5 sm:py-6 md:px-8 md:py-10 lg:px-10 lg:py-12 rounded-2xl backdrop-blur-xl bg-gradient-to-br from-black/60 via-black/50 to-black/40 border border-white/30 shadow-[0_20px_60px_rgba(0,0,0,0.7),0_0_0_1px_rgba(255,255,255,0.1)_inset] hover:shadow-[0_20px_80px_rgba(0,0,0,0.8),0_0_0_1px_rgba(255,255,255,0.15)_inset] transition-all duration-500 [text-shadow:_0_2px_8px_rgba(0,0,0,0.8),_0_0_20px_rgba(0,0,0,0.5)] before:absolute before:inset-0 before:rounded-2xl before:bg-gradient-to-br before:from-white/10 before:to-transparent before:opacity-0 hover:before:opacity-100 before:transition-opacity before:duration-500", overlayClassName)}>
             {/* Title with enhanced glow and depth */}
             <motion.h1
               className={cn(
-                "text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold text-white leading-[1.15] tracking-tight drop-shadow-[0_0_20px_rgba(255,255,255,0.3)]",
+                "text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold text-white leading-[1.15] tracking-tight drop-shadow-[0_0_20px_rgba(255,255,255,0.3)]",
                 titleClassName
               )}
               initial={{ opacity: 0, y: 20 }}
@@ -212,7 +213,7 @@ export const HeroSection = ({
             >
               <p
                 className={cn(
-                  "relative text-base md:text-lg lg:text-xl text-white/95 leading-relaxed tracking-normal font-normal drop-shadow-[0_2px_10px_rgba(0,0,0,0.6)]",
+                  "relative text-sm sm:text-base md:text-lg lg:text-xl text-white/95 leading-relaxed tracking-normal font-normal drop-shadow-[0_2px_10px_rgba(0,0,0,0.6)]",
                   descriptionClassName
                 )}
               >
@@ -294,32 +295,7 @@ export const HeroSection = ({
         </motion.div>
       </Flex>
 
-      {/* Premium Scroll Indicator */}
-      <motion.div
-        className="absolute bottom-2 sm:bottom-4 left-1/2 -translate-x-1/2 z-[60] hidden sm:block"
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 1, duration: 0.5 }}
-      >
-        <motion.div
-          animate={{ y: [0, 8, 0] }}
-          transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
-          className="flex flex-col items-center gap-2 text-white/70 hover:text-white transition-colors cursor-pointer group"
-          onClick={() => scrollToNextSection(sectionRef.current)}
-        >
-          <div className="relative px-5 py-2.5 rounded-full backdrop-blur-xl bg-white/10 border border-white/30 group-hover:bg-white/20 group-hover:border-white/40 transition-all duration-300 shadow-lg group-hover:shadow-xl">
-            <span className="text-xs tracking-[0.2em] uppercase font-semibold drop-shadow-lg">Cuộn xuống</span>
-          </div>
-          <div className="relative">
-            <motion.div
-              className="absolute inset-0 bg-primary/40 rounded-full blur-lg"
-              animate={{ scale: [1, 1.3, 1], opacity: [0.5, 0.9, 0.5] }}
-              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-            />
-            <ChevronDown className="relative w-7 h-7 drop-shadow-lg group-hover:drop-shadow-[0_0_12px_rgba(255,255,255,0.9)] transition-all" />
-          </div>
-        </motion.div>
-      </motion.div>
+      <ScrollIndicator variant="light" onScroll={() => scrollToNextSection(sectionRef.current)} />
     </Flex>
   );
 }

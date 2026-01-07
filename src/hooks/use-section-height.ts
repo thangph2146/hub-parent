@@ -62,10 +62,31 @@ export function useSectionHeight(
       return {};
     }
 
-    return {
-      height: `calc(100dvh - ${headerHeight}px)`,
-      minHeight: `${minHeight}px`,
-    } as React.CSSProperties;
+    // Đảm bảo headerHeight luôn là số dương
+    // Nếu headerHeight = 0 hoặc chưa được đo, thử đo lại
+    let actualHeaderHeight = headerHeight;
+    
+    if (actualHeaderHeight <= 0 && typeof document !== "undefined") {
+      const header = document.querySelector<HTMLElement>('header[data-public-header="true"]') || 
+                     document.querySelector<HTMLElement>("header");
+      if (header) {
+        const rect = header.getBoundingClientRect();
+        actualHeaderHeight = rect.height > 0 ? rect.height : 56; // Fallback to default
+      } else {
+        actualHeaderHeight = 56; // Fallback to default
+      }
+    }
+
+    // Đảm bảo height luôn chính xác là 100dvh - headerHeight
+    const calculatedHeight = `calc(100dvh - ${actualHeaderHeight}px)`;
+    
+    const style: React.CSSProperties = {
+      height: calculatedHeight,
+      maxHeight: calculatedHeight,
+      minHeight: minHeight > 0 ? `${Math.max(minHeight, 0)}px` : calculatedHeight,
+    };
+    
+    return style;
   }, [fullHeight, headerHeight, minHeight]);
 
   // Scroll đến section tiếp theo

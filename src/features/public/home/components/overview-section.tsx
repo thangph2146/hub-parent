@@ -2,13 +2,14 @@
 
 import { useRef } from "react";
 import { motion, useInView } from "framer-motion";
-import { Quote, ChevronDown } from "lucide-react";
+import { Quote } from "lucide-react";
 import { Flex } from "@/components/ui/flex";
 import { TypographyH2, TypographyP } from "@/components/ui/typography";
 import { PointerHighlight } from "@/components/ui/pointer-highlight";
 import { ContainerTextFlip } from "@/components/ui/container-text-flip";
 import { useSectionHeight } from "@/hooks/use-section-height";
 import { cn } from "@/lib/utils";
+import { ScrollIndicator } from "./scroll-indicator";
 
 export interface OverviewSectionProps {
   className?: string;
@@ -38,7 +39,7 @@ export const OverviewSection = ({ className }: OverviewSectionProps) => {
   });
 
   const titleContent = (
-    <div className="text-4xl md:text-5xl font-bold flex items-center gap-2">
+    <div className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold flex items-center gap-2">
       Về <ContainerTextFlip words={["Chúng Tôi", "Tương Lai", "Cam Kết"]} />
     </div>
   );
@@ -79,7 +80,7 @@ export const OverviewSection = ({ className }: OverviewSectionProps) => {
                 const content = typeof item === "string" ? item : item.text;
                 const itemClassName = typeof item === "string" ? undefined : item.className;
                 const isHighlighted = typeof item === "object" && itemClassName?.includes("text-secondary");
-                const combinedClassName = cn("text-base sm:text-lg leading-relaxed tracking-wide text-muted-foreground transition-colors duration-300", itemClassName);
+                const combinedClassName = cn("text-sm sm:text-base md:text-lg leading-relaxed tracking-wide text-muted-foreground transition-colors duration-300", itemClassName);
 
                 const wrapper = isHighlighted ? (
                   <div className="group relative p-5 sm:p-6 rounded-xl bg-gradient-to-br from-white/5 to-transparent border border-primary/10 hover:border-primary/30 shadow-sm hover:shadow-lg hover:shadow-primary/5 transition-all duration-300 hover:-translate-y-1">
@@ -108,31 +109,7 @@ export const OverviewSection = ({ className }: OverviewSectionProps) => {
         </div>
       </Flex>
 
-      <motion.div
-        className="absolute bottom-2 sm:bottom-4 left-1/2 -translate-x-1/2 z-[60] hidden sm:block"
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 1, duration: 0.5 }}
-      >
-        <motion.div
-          animate={{ y: [0, 8, 0] }}
-          transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
-          className="flex flex-col items-center gap-2 text-foreground/70 hover:text-foreground transition-colors cursor-pointer group"
-          onClick={() => scrollToNextSection(sectionRef.current)}
-        >
-          <div className="relative px-4 sm:px-5 py-2 sm:py-2.5 rounded-full backdrop-blur-xl bg-background/80 border border-border/50 group-hover:bg-background group-hover:border-border transition-all duration-300 shadow-lg group-hover:shadow-xl">
-            <span className="text-[10px] sm:text-xs tracking-[0.15em] sm:tracking-[0.2em] uppercase font-semibold whitespace-nowrap">Cuộn xuống</span>
-          </div>
-          <div className="relative">
-            <motion.div
-              className="absolute inset-0 bg-primary/20 rounded-full blur-lg"
-              animate={{ scale: [1, 1.3, 1], opacity: [0.5, 0.9, 0.5] }}
-              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-            />
-            <ChevronDown className="relative w-6 h-6 sm:w-7 sm:h-7 drop-shadow-lg group-hover:drop-shadow-[0_0_12px_rgba(0,0,0,0.3)] transition-all" />
-          </div>
-        </motion.div>
-      </motion.div>
+      <ScrollIndicator variant="dark" onScroll={() => scrollToNextSection(sectionRef.current)} />
     </Flex>
   );
 };

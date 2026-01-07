@@ -3,7 +3,7 @@
 import { useRef } from "react";
 import Image from "next/image";
 import { motion, useInView } from "framer-motion";
-import { ChevronDown, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { Flex } from "@/components/ui/flex";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,7 @@ import { IconSize, TypographySpanSmall } from "@/components/ui/typography";
 import Link from "next/link";
 import { useSectionHeight } from "@/hooks/use-section-height";
 import { cn, getRouteFromFeature } from "@/lib/utils";
+import { ScrollIndicator } from "./scroll-indicator";
 
 const ROUTES = {
   help: getRouteFromFeature("help") || "/help",
@@ -80,8 +81,8 @@ const CardWithImage = ({ title, description, image, button, reverse = false }: C
             <div className="backdrop-blur-sm bg-background/95 dark:bg-background/90 rounded-xl shadow-lg group-hover/card:shadow-xl transition-shadow duration-300">
               <Card className="border-0 shadow-none bg-transparent">
                 <CardHeader>
-                  <CardTitle className="text-card-foreground dark:text-foreground leading-tight">{title}</CardTitle>
-                  <CardDescription className="text-muted-foreground leading-relaxed">{description}</CardDescription>
+                  <CardTitle className="text-lg sm:text-xl md:text-2xl text-card-foreground dark:text-foreground leading-tight">{title}</CardTitle>
+                  <CardDescription className="text-sm sm:text-base md:text-lg text-muted-foreground leading-relaxed">{description}</CardDescription>
                 </CardHeader>
                 {button && (
                   <CardContent>
@@ -156,31 +157,7 @@ export const GuideRegisterSection = ({ className }: GuideRegisterSectionProps) =
         </div>
       </Flex>
 
-      <motion.div
-        className="absolute bottom-2 sm:bottom-4 left-1/2 -translate-x-1/2 z-[60] hidden sm:block"
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 1, duration: 0.5 }}
-      >
-        <motion.div
-          animate={{ y: [0, 8, 0] }}
-          transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
-          className="flex flex-col items-center gap-2 text-foreground/70 hover:text-foreground transition-colors cursor-pointer group"
-          onClick={() => scrollToNextSection(sectionRef.current)}
-        >
-          <div className="relative px-4 sm:px-5 py-2 sm:py-2.5 rounded-full backdrop-blur-xl bg-background/80 border border-border/50 group-hover:bg-background group-hover:border-border transition-all duration-300 shadow-lg group-hover:shadow-xl">
-            <span className="text-[10px] sm:text-xs tracking-[0.15em] sm:tracking-[0.2em] uppercase font-semibold whitespace-nowrap">Cuộn xuống</span>
-          </div>
-          <div className="relative">
-            <motion.div
-              className="absolute inset-0 bg-primary/20 rounded-full blur-lg"
-              animate={{ scale: [1, 1.3, 1], opacity: [0.5, 0.9, 0.5] }}
-              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-            />
-            <ChevronDown className="relative w-6 h-6 sm:w-7 sm:h-7 drop-shadow-lg group-hover:drop-shadow-[0_0_12px_rgba(0,0,0,0.3)] transition-all" />
-          </div>
-        </motion.div>
-      </motion.div>
+      <ScrollIndicator variant="dark" onScroll={() => scrollToNextSection(sectionRef.current)} />
     </Flex>
   );
 };
