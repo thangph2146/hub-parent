@@ -19,6 +19,7 @@ import {
 import { Input } from "@/components/ui/input"
 import Image from "next/image"
 import Link from "next/link"
+import { PointerHighlight } from "../ui/pointer-highlight"
 
 // Map NextAuth error codes thành thông báo tiếng Việt
 const ERROR_MESSAGES: Record<string, string> = {
@@ -164,10 +165,17 @@ export function SignInForm({
     <Flex direction="col" gap={6} className={className} {...props}>
       <Card overflow="hidden" padding="0">
         <CardContent grid="2" padding="none">
-          <form onSubmit={handleSubmit} className="p-6 md:p-8">
+          <form onSubmit={handleSubmit} className="p-6 md:p-8 lg:p-10">
             <FieldGroup>
-              <Flex direction="col" align="center" gap={2} textAlign="center">
-                <TypographyH2>Đăng nhập vào hệ thống</TypographyH2>
+              <Flex direction="col" align="center" gap={3} textAlign="center">
+                <TypographyH2 className="text-2xl md:text-3xl font-bold text-secondary">
+                  Chào mừng quý phụ huynh đến với HUB
+                </TypographyH2>
+                <PointerHighlight>
+                  <TypographyP className="text-xl md:text-2xl font-bold text-primary">
+                    Đăng nhập vào hệ thống
+                  </TypographyP>
+                </PointerHighlight>
               </Flex>
               {error && (
                 <Flex rounded="lg" bg="destructive-text" padding="md">
@@ -177,7 +185,7 @@ export function SignInForm({
                 </Flex>
               )}
               <Field>
-                <FieldLabel htmlFor="email">Email</FieldLabel>
+                <FieldLabel htmlFor="email" className="text-primary font-medium">Email</FieldLabel>
                 <Input
                   id="email"
                   name="email"
@@ -190,9 +198,10 @@ export function SignInForm({
               </Field>
               <Field>
                 <Flex align="center" justify="between" fullWidth>
-                  <FieldLabel htmlFor="password">Mật khẩu</FieldLabel>
+                  <FieldLabel htmlFor="password" className="text-primary font-medium">Mật khẩu</FieldLabel>
                   <Link
                     href="/auth/forgot-password"
+                    className="text-primary hover:text-primary/80 transition-colors text-sm font-medium"
                   >
                     Quên mật khẩu?
                   </Link>
@@ -228,8 +237,8 @@ export function SignInForm({
                 </Flex>
               </Field>
               <Field>
-                <Button type="submit" disabled={isLoading}>
-                  {isLoading ? "Đang đăng nhập..." : "Đăng nhập"}
+                <Button type="submit" variant="destructive" size="lg" disabled={isLoading}>
+                 <span className="text-base font-bold">{isLoading ? "Đang đăng nhập..." : "Đăng nhập"}</span>
                 </Button>
               </Field>
               <FieldSeparator className="*:data-[slot=field-separator-content]:bg-card">
@@ -243,14 +252,18 @@ export function SignInForm({
                     onClick={handleGoogleSignIn}
                     disabled={isLoading}
                     fullWidth
+                    className="border-secondary/30 hover:bg-secondary/10"
                   >
-                  <IconBrandGoogleFilled />
-                  Đăng nhập bằng Google
+                  <IconBrandGoogleFilled className="text-secondary" />
+                  <span className="text-secondary font-bold text-base">Đăng nhập bằng Google</span>
                   </Button>
                 </Flex>
               </Field>
-              <FieldDescription textAlign="center">
-                Chưa có tài khoản? <Link href="/auth/sign-up">Đăng ký</Link>
+              <FieldDescription textAlign="center" className="text-sm md:text-base">
+                Nếu bạn chưa có tài khoản?{" "}
+                <Link href="/auth/sign-up" className="font-bold text-secondary hover:text-secondary/80 transition-colors">
+                  Đăng ký
+                </Link>
               </FieldDescription>
             </FieldGroup>
           </form>
@@ -261,7 +274,7 @@ export function SignInForm({
               width={1000}
               height={1000}
               loading="eager"
-              className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
+              className="absolute inset-0 h-full w-full object-cover dark:brightness-[1]"
             />    
           </Flex>
         </CardContent>

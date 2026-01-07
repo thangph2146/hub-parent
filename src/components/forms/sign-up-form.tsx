@@ -1,61 +1,67 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { signIn } from "next-auth/react"
-import { useRouter } from "next/navigation"
-import { Eye, EyeOff } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Flex } from "@/components/ui/flex"
-import { Card, CardContent } from "@/components/ui/card"
+import { useState } from "react";
+import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { Eye, EyeOff } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Flex } from "@/components/ui/flex";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Field,
   FieldDescription,
   FieldGroup,
   FieldLabel,
   FieldSeparator,
-} from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
-import Image from "next/image"
-import Link from "next/link"
-import { TypographyH2, TypographyP, TypographyPMuted, IconSize } from "@/components/ui/typography"
-import { IconBrandGoogleFilled } from "@tabler/icons-react"
+} from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import Image from "next/image";
+import Link from "next/link";
+import {
+  TypographyH2,
+  TypographyP,
+  IconSize,
+} from "@/components/ui/typography";
+import { IconBrandGoogleFilled } from "@tabler/icons-react";
+import { PointerHighlight } from "../ui/pointer-highlight";
 
 export function SignUpForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
-  const router = useRouter()
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [showPassword, setShowPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    setIsLoading(true)
-    setError(null)
+    e.preventDefault();
+    setIsLoading(true);
+    setError(null);
 
-    const formData = new FormData(e.currentTarget)
-    const name = formData.get("name") as string
-    const email = formData.get("email") as string
-    const password = formData.get("password") as string
-    const confirmPassword = formData.get("confirm-password") as string
+    const formData = new FormData(e.currentTarget);
+    const name = formData.get("name") as string;
+    const email = formData.get("email") as string;
+    const password = formData.get("password") as string;
+    const confirmPassword = formData.get("confirm-password") as string;
 
     if (password !== confirmPassword) {
-      setError("Mật khẩu xác nhận không khớp")
-      setIsLoading(false)
-      return
+      setError("Mật khẩu xác nhận không khớp");
+      setIsLoading(false);
+      return;
     }
 
     try {
       // Tạo user mới - sử dụng apiClient và apiRoutes
-      const { apiClient } = await import("@/lib/api/axios")
-      const { apiRoutes } = await import("@/lib/api/routes")
-      
-      await apiClient.post<{ message: string }>(
-        apiRoutes.auth.signUp,
-        { name, email, password }
-      )
+      const { apiClient } = await import("@/lib/api/axios");
+      const { apiRoutes } = await import("@/lib/api/routes");
+
+      await apiClient.post<{ message: string }>(apiRoutes.auth.signUp, {
+        name,
+        email,
+        password,
+      });
 
       // Axios tự động throw error cho status >= 400, nên nếu đến đây thì đã thành công
 
@@ -64,53 +70,57 @@ export function SignUpForm({
         email,
         password,
         redirect: false,
-      })
+      });
 
       if (result?.error) {
-        setError("Đăng ký thành công nhưng đăng nhập thất bại")
-        setIsLoading(false)
+        setError("Đăng ký thành công nhưng đăng nhập thất bại");
+        setIsLoading(false);
       } else {
-        router.push("/admin/dashboard")
-        router.refresh()
+        router.push("/admin/dashboard");
+        router.refresh();
       }
     } catch {
-      setError("Đã xảy ra lỗi. Vui lòng thử lại.")
-      setIsLoading(false)
+      setError("Đã xảy ra lỗi. Vui lòng thử lại.");
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleGoogleSignIn = async () => {
-    setIsLoading(true)
-    setError(null)
+    setIsLoading(true);
+    setError(null);
     try {
-      await signIn("google", { callbackUrl: "/admin/dashboard" })
+      await signIn("google", { callbackUrl: "/admin/dashboard" });
     } catch {
-      setError("Đã xảy ra lỗi khi đăng nhập bằng Google. Vui lòng thử lại.")
-      setIsLoading(false)
+      setError("Đã xảy ra lỗi khi đăng nhập bằng Google. Vui lòng thử lại.");
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <Flex direction="col" gap={6} className={className} {...props}>
       <Card overflow="hidden" padding="0">
         <CardContent padding="none" grid="2">
-          <form onSubmit={handleSubmit} className="p-6 md:p-8">
+          <form onSubmit={handleSubmit} className="p-6 md:p-8 lg:p-10">
             <FieldGroup>
-              <Flex direction="col" align="center" gap={2} textAlign="center">
-                <TypographyH2>Tạo tài khoản</TypographyH2>
-                <TypographyPMuted>
-                  Đăng ký tài khoản của bạn
-                </TypographyPMuted>
+              <Flex direction="col" align="center" gap={3} textAlign="center">
+                <TypographyH2 className="text-2xl md:text-3xl font-bold text-secondary">
+                  Chào mừng quý phụ huynh đến với HUB
+                </TypographyH2>
+                <PointerHighlight>
+                  <TypographyP className="text-xl md:text-2xl font-bold text-primary">  
+                    Đăng ký tài khoản
+                  </TypographyP>
+                </PointerHighlight>
               </Flex>
               {error && (
                 <Flex rounded="lg" bg="destructive-text" padding="md">
-                  <TypographyP>
-                    {error}
-                  </TypographyP>
+                  <TypographyP>{error}</TypographyP>
                 </Flex>
               )}
               <Field>
-                <FieldLabel htmlFor="name">Tên</FieldLabel>
+                <FieldLabel htmlFor="name" className="text-primary font-medium">
+                  Tên
+                </FieldLabel>
                 <Input
                   id="name"
                   name="name"
@@ -122,7 +132,12 @@ export function SignUpForm({
                 />
               </Field>
               <Field>
-                <FieldLabel htmlFor="email">Email</FieldLabel>
+                <FieldLabel
+                  htmlFor="email"
+                  className="text-primary font-medium"
+                >
+                  Email
+                </FieldLabel>
                 <Input
                   id="email"
                   name="email"
@@ -134,7 +149,12 @@ export function SignUpForm({
                 />
               </Field>
               <Field>
-                <FieldLabel htmlFor="password">Mật khẩu</FieldLabel>
+                <FieldLabel
+                  htmlFor="password"
+                  className="text-primary font-medium"
+                >
+                  Mật khẩu
+                </FieldLabel>
                 <Flex position="relative">
                   <Input
                     id="password"
@@ -145,6 +165,7 @@ export function SignUpForm({
                     required
                     disabled={isLoading}
                     paddingRight="10"
+                    className="border-muted-foreground/20"
                   />
                   <Button
                     type="button"
@@ -155,18 +176,23 @@ export function SignUpForm({
                   >
                     {showPassword ? (
                       <IconSize size="sm">
-                        <EyeOff />
+                        <EyeOff className="text-muted-foreground" />
                       </IconSize>
                     ) : (
                       <IconSize size="sm">
-                        <Eye />
+                        <Eye className="text-muted-foreground" />
                       </IconSize>
                     )}
                   </Button>
                 </Flex>
               </Field>
               <Field>
-                <FieldLabel htmlFor="confirm-password">Xác nhận mật khẩu</FieldLabel>
+                <FieldLabel
+                  htmlFor="confirm-password"
+                  className="text-primary font-medium"
+                >
+                  Xác nhận mật khẩu
+                </FieldLabel>
                 <Flex position="relative">
                   <Input
                     id="confirm-password"
@@ -187,19 +213,24 @@ export function SignUpForm({
                   >
                     {showConfirmPassword ? (
                       <IconSize size="sm">
-                        <EyeOff />
+                        <EyeOff className="text-muted-foreground" />
                       </IconSize>
                     ) : (
                       <IconSize size="sm">
-                        <Eye />
+                        <Eye className="text-muted-foreground" />
                       </IconSize>
                     )}
                   </Button>
                 </Flex>
               </Field>
               <Field>
-                <Button type="submit" disabled={isLoading}>
-                  {isLoading ? "Đang đăng ký..." : "Đăng ký"}
+                <Button
+                  type="submit"
+                  variant="destructive"
+                  size="lg"
+                  disabled={isLoading}
+                >
+                  <span className="text-base font-bold">{isLoading ? "Đang đăng ký..." : "Đăng ký"}</span>
                 </Button>
               </Field>
               <FieldSeparator className="*:data-[slot=field-separator-content]:bg-card">
@@ -213,14 +244,26 @@ export function SignUpForm({
                     onClick={handleGoogleSignIn}
                     disabled={isLoading}
                     fullWidth
+                    className="border-secondary/30 hover:bg-secondary/10 gap-1"
                   >
-                    <IconBrandGoogleFilled />
-                    Đăng ký bằng Google
+                    <IconBrandGoogleFilled className="text-secondary text-base" />
+                    <span className="text-secondary font-bold text-base">
+                      Đăng ký bằng Google
+                    </span>
                   </Button>
                 </Flex>
               </Field>
-              <FieldDescription textAlign="center">
-                Đã có tài khoản? <Link href="/auth/sign-in">Đăng nhập</Link>
+              <FieldDescription
+                textAlign="center"
+                className="text-sm md:text-base"
+              >
+                Đã có tài khoản?{" "}
+                <Link
+                  href="/auth/sign-in"
+                  className="font-bold text-secondary hover:text-secondary/80 transition-colors"
+                >
+                  Đăng nhập
+                </Link>
               </FieldDescription>
             </FieldGroup>
           </form>
@@ -231,12 +274,11 @@ export function SignUpForm({
               width={1000}
               height={1000}
               loading="eager"
-              className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
-            />    
+              className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.85]"
+            />
           </Flex>
         </CardContent>
       </Card>
     </Flex>
-  )
+  );
 }
-

@@ -192,7 +192,7 @@ export function Plugins({
                 <div className="" ref={onRef}>
                   <ContentEditable
                     placeholder={readOnly ? "" : placeholder}
-                    className={`ContentEditable__root relative block ${readOnly ? "min-h-72" : "min-h-72"} px-8 py-4 focus:outline-none ${readOnly ? "cursor-default select-text px-0 py-0" : ""}`}
+                    className={`ContentEditable__root relative block ${readOnly ? "min-h-72" : "min-h-72"} px-8 py-4 focus:outline-none ${readOnly ? "cursor-default select-text px-2 py-2" : ""}`}
                   />
                 </div>
               </div>

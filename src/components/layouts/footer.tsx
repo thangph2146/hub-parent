@@ -171,7 +171,7 @@ export function PublicFooter() {
           <Flex gap={2} className="min-w-0 flex-row sm:flex-col">
             <Flex direction="col" gap={2} className="min-w-0 w-full">
               <Flex align="center" gap={2} className="min-w-0 w-full">
-                  <GraduationCap />
+                <GraduationCap />
                 <TypographyH4 className="break-words">Liên hệ</TypographyH4>
               </Flex>
               <Flex direction="col" gap={3} className="min-w-0 w-full">
@@ -282,7 +282,7 @@ export function PublicFooter() {
                       shrink={false}
                       className="w-10 h-10"
                     >
-                      <IconSize size="md">
+                      <IconSize size="md" className="text-primary-foreground">
                         <Facebook />
                       </IconSize>
                     </Flex>
@@ -305,9 +305,7 @@ export function PublicFooter() {
                       shrink={false}
                       className="w-10 h-10"
                     >
-                      <IconSize size="md">
-                        <Twitter />
-                      </IconSize>
+                      <Twitter />
                     </Flex>
                   </Link>
                 )}
@@ -328,9 +326,7 @@ export function PublicFooter() {
                       shrink={false}
                       className="w-10 h-10"
                     >
-                      <IconSize size="md">
-                        <Linkedin />
-                      </IconSize>
+                      <Linkedin />
                     </Flex>
                   </Link>
                 )}
@@ -350,9 +346,7 @@ export function PublicFooter() {
                     shrink={false}
                     className="w-10 h-10"
                   >
-                    <IconSize size="md">
-                      <Instagram />
-                    </IconSize>
+                    <Instagram />
                   </Flex>
                 </Link>
                 <Link
@@ -371,9 +365,7 @@ export function PublicFooter() {
                     shrink={false}
                     className="w-10 h-10"
                   >
-                    <IconSize size="md">
-                      <Youtube />
-                    </IconSize>
+                    <Youtube />
                   </Flex>
                 </Link>
               </Flex>
