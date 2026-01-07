@@ -81,7 +81,7 @@ export const ContactRequestDetailClient = ({ contactRequestId, contactRequest, b
     canManage,
     canUpdate,
     isSocketConnected: false,
-    showFeedback: showFeedback as (variant: "success" | "error" | "warning" | "info", title: string, description?: string, details?: string) => void,
+    showFeedback,
   })
 
   const [isToggling, setIsToggling] = useState(false)

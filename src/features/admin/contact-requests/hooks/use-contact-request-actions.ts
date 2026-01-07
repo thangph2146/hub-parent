@@ -9,6 +9,7 @@ import type { ResourceRefreshHandler } from "@/features/admin/resources/types"
 import type { ContactRequestRow, BulkActionResult } from "../types"
 import { toast } from "@/hooks/use-toast"
 import { CONTACT_REQUEST_MESSAGES } from "../constants/messages"
+import type { FeedbackVariant } from "@/components/dialogs"
 
 interface UseContactRequestActionsOptions {
   canDelete: boolean
@@ -16,7 +17,7 @@ interface UseContactRequestActionsOptions {
   canManage: boolean
   canUpdate: boolean
   isSocketConnected?: boolean
-  showFeedback: (variant: "success" | "error" | "warning" | "info", title: string, description?: string, details?: string) => void
+  showFeedback: (variant: FeedbackVariant, title: string, description?: string, details?: string) => void
 }
 
 export const useContactRequestActions = ({
