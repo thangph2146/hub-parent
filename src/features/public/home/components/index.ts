@@ -16,4 +16,6 @@ export { ContentCard } from "./content-card"
 export type { ContentCardProps, ContentCardButton } from "./content-card"
 export { ContactSection } from "./contact-section"
 export type { ContactSectionProps, FeatureItem, ContactInfoItem } from "./contact-section"
+export { AboutHubSection } from "./about-hub-section"
+export type { AboutHubSectionProps } from "./about-hub-section"
 

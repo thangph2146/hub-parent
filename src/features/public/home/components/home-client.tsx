@@ -1,6 +1,11 @@
 "use client";
 
-import { IconSize, TypographyDescriptionSmall, TypographyH2, TypographySpan } from "@/components/ui/typography";
+import {
+  IconSize,
+  TypographyDescriptionSmall,
+  TypographyH2,
+  TypographySpan,
+} from "@/components/ui/typography";
 import { Button } from "@/components/ui/button";
 
 import {
@@ -18,6 +23,7 @@ import { SectionWithImage } from "./section-with-image";
 import { SectionText } from "./section-text";
 import { HeroSection } from "./hero-section";
 import { ContactSection } from "./contact-section";
+import { AboutHubSection } from "./about-hub-section";
 import { PostCard } from "@/components/public/post/post-card";
 import Link from "next/link";
 import type { Post } from "@/features/public/post/types";
@@ -39,13 +45,19 @@ export interface HomeClientProps {
 
 export const HomeClient = ({ featuredPosts = [] }: HomeClientProps) => {
   return (
-    <Flex direction="col" position="relative" fullWidth bg="background" className="isolate">
+    <Flex
+      direction="col"
+      position="relative"
+      fullWidth
+      bg="background"
+      className="isolate"
+    >
       {/* Hero Section */}
       <HeroSection
         title="Hệ thống Kết nối Phụ huynh"
         description="Kiến tạo cầu nối vững chắc giữa Gia đình và Nhà trường, đồng hành cùng sinh viên trên con đường tri thức."
         backgroundImage={{
-          src: "/images/hero-section.jpg",
+          src: "https://fileserver2.hub.edu.vn/IMAGES/2025/12/16/20251216103027-101020.png",
           alt: "Trường Đại học Ngân hàng TP.HCM",
           width: 1920,
           height: 1080,
@@ -84,12 +96,18 @@ export const HomeClient = ({ featuredPosts = [] }: HomeClientProps) => {
         ]}
       />
 
+      {/* About HUB Section */}
+      <AboutHubSection />
+
       {/* Overview Section */}
       <Section padding="responsive-lg" background="background">
         <SectionText
           title={
             <div className="text-4xl md:text-5xl font-bold flex items-center gap-2">
-              Về <ContainerTextFlip words={["Chúng Tôi", "Tương Lai", "Cam Kết"]} />
+              Về{" "}
+              <ContainerTextFlip
+                words={["Chúng Tôi", "Tương Lai", "Cam Kết"]}
+              />
             </div>
           }
           // Use custom title component above instead of string
@@ -108,62 +126,6 @@ export const HomeClient = ({ featuredPosts = [] }: HomeClientProps) => {
         />
       </Section>
 
-      {/* Featured Posts Section */}
-      {featuredPosts.length > 0 && (
-        <Section padding="responsive-lg" background="none" className="bg-muted/30">
-          <Flex direction="col" gap={8} container>
-            {/* Header */}
-            <Flex align="center" justify="between" gap={4} fullWidth className="border-b pb-4 mb-4">
-              <Flex direction="col" gap={1}>
-                <TypographyH2 className="text-3xl font-bold tracking-tight text-primary">
-                  Tin tức & Sự kiện
-                </TypographyH2>
-                <TypographyDescriptionSmall className="text-base text-muted-foreground">
-                  Cập nhật những thông tin mới nhất từ nhà trường
-                </TypographyDescriptionSmall>
-              </Flex>
-              <Flex className="hidden md:flex">
-                <Link href="/bai-viet">
-                  <Button variant="ghost" className="group">
-                    <Flex align="center" gap={2}>
-                      <TypographySpan>Xem tất cả</TypographySpan>
-                      <IconSize size="sm" className="transition-transform group-hover:translate-x-1">
-                        <ArrowRight />
-                      </IconSize>
-                    </Flex>
-                  </Button>
-                </Link>
-              </Flex>
-            </Flex>
-
-            {/* Posts Grid */}
-            <Grid cols={3} gap={8} className="md:grid-cols-3 sm:grid-cols-2 grid-cols-1">
-              {featuredPosts.slice(0, 3).map((post, index) => (
-                <PostCard
-                  key={post.id}
-                  post={post}
-                  priority={index < 3}
-                  className="h-full hover:-translate-y-1 transition-transform duration-300"
-                />
-              ))}
-            </Grid>
-
-            {/* Mobile View All Button */}
-            <Flex justify="center" className="md:hidden mt-4">
-              <Button asChild variant="outline" size="default" className="w-full">
-                <Link href="/bai-viet">
-                  <Flex align="center" gap={2}>
-                    <TypographySpan>Xem tất cả tin tức</TypographySpan>
-                    <IconSize size="sm">
-                      <ArrowRight />
-                    </IconSize>
-                  </Flex>
-                </Link>
-              </Button>
-            </Flex>
-          </Flex>
-        </Section>
-      )}
 
       {/* Guide & Register Section - Redesigned to be side-by-side or stacked cleanly */}
       <Section padding="responsive-lg" background="background">
@@ -207,9 +169,91 @@ export const HomeClient = ({ featuredPosts = [] }: HomeClientProps) => {
           </div>
         </Flex>
       </Section>
+      {/* Featured Posts Section */}
+      {featuredPosts.length > 0 && (
+        <Section
+          padding="responsive-lg"
+          background="none"
+          className="bg-muted/30"
+        >
+          <Flex direction="col" gap={8} container>
+            {/* Header */}
+            <Flex
+              align="center"
+              justify="between"
+              gap={4}
+              fullWidth
+              className="border-b pb-4 mb-4"
+            >
+              <Flex direction="col" gap={1}>
+                <TypographyH2 className="text-3xl font-bold tracking-tight text-primary">
+                  Tin tức & Sự kiện
+                </TypographyH2>
+                <TypographyDescriptionSmall className="text-base text-muted-foreground">
+                  Cập nhật những thông tin mới nhất từ nhà trường
+                </TypographyDescriptionSmall>
+              </Flex>
+              <Flex className="hidden md:flex">
+                <Link href="/bai-viet">
+                  <Button variant="ghost" className="group">
+                    <Flex align="center" gap={2}>
+                      <TypographySpan>Xem tất cả</TypographySpan>
+                      <IconSize
+                        size="sm"
+                        className="transition-transform group-hover:translate-x-1"
+                      >
+                        <ArrowRight />
+                      </IconSize>
+                    </Flex>
+                  </Button>
+                </Link>
+              </Flex>
+            </Flex>
+
+            {/* Posts Grid */}
+            <Grid
+              cols={3}
+              gap={8}
+              className="md:grid-cols-3 sm:grid-cols-2 grid-cols-1"
+            >
+              {featuredPosts.slice(0, 3).map((post, index) => (
+                <PostCard
+                  key={post.id}
+                  post={post}
+                  priority={index < 3}
+                  className="h-full hover:-translate-y-1 transition-transform duration-300"
+                />
+              ))}
+            </Grid>
+
+            {/* Mobile View All Button */}
+            <Flex justify="center" className="md:hidden mt-4">
+              <Button
+                asChild
+                variant="outline"
+                size="default"
+                className="w-full"
+              >
+                <Link href="/bai-viet">
+                  <Flex align="center" gap={2}>
+                    <TypographySpan>Xem tất cả tin tức</TypographySpan>
+                    <IconSize size="sm">
+                      <ArrowRight />
+                    </IconSize>
+                  </Flex>
+                </Link>
+              </Button>
+            </Flex>
+          </Flex>
+        </Section>
+      )}
 
       {/* Registration Form / Contact Section */}
-      <Section padding="responsive-lg" background="none" className="bg-muted/30">
+      <Section
+        padding="responsive-lg"
+        background="none"
+        className="bg-muted/30"
+      >
         <ContactSection
           title="Tại sao chọn chúng tôi?"
           description={
@@ -254,5 +298,4 @@ export const HomeClient = ({ featuredPosts = [] }: HomeClientProps) => {
       </Section>
     </Flex>
   );
-}
-
+};
