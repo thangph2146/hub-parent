@@ -627,7 +627,7 @@ export function DataTable<T extends object>({
                     <TableHeader>
                         <TableRow className="bg-primary">
                             {selectionEnabled ? (
-                                <TableHead className="w-10 max-w-10 min-w-10 align-middle px-2 sticky left-0 z-10 bg-secondary text-primary-foreground border-r border-border">
+                                <TableHead className="w-10 max-w-10 min-w-10 align-middle px-2 sticky left-0 z-10 bg-primary text-primary-foreground border-r border-border">
                                     <Tooltip>
                                         <TooltipTrigger asChild>
                                             <div className="cursor-help flex items-center justify-center">
@@ -654,7 +654,7 @@ export function DataTable<T extends object>({
                                 </TableHead>
                             ))}
                             {actions ? (
-                                <TableHead className="min-w-[110px] max-w-[110px] text-center px-2 sm:px-3 sticky right-0 z-10 bg-secondary text-primary-foreground border-l border-border">
+                                <TableHead className="min-w-[120px] max-w-[120px] text-center px-2 sm:px-3 sticky right-0 z-10 bg-secondary text-primary-foreground border-l border-border">
                                     <Tooltip>
                                         <TooltipTrigger asChild>
                                             <Flex align="center" justify="center" gap={1.5} className="cursor-help">
@@ -673,7 +673,7 @@ export function DataTable<T extends object>({
                         </TableRow>
                         {columns.some((col) => col.filter) && showFilters && (
                             <TableRow className="border-t border-border bg-muted/80">
-                                {selectionEnabled ? <TableHead className="w-10 max-w-10 min-w-10 bg-muted/80 px-1 sm:px-3 sticky left-0 z-10 border-r border-border" /> : null}
+                                {selectionEnabled ? <TableHead className="w-10 max-w-10 min-w-10 bg-muted px-1 sm:px-3 sticky left-0 z-10 border-r border-border" /> : null}
                                 {columns.map((column) => (
                                     <TableHead
                                         key={`filter-${column.accessorKey}`}
@@ -687,7 +687,7 @@ export function DataTable<T extends object>({
                                         />
                                     </TableHead>
                                 ))}
-                                {actions ? <TableHead className="min-w-[100px] bg-accent/15 text-center px-2 sm:px-3 sticky right-0 z-10 border-l border-border" /> : null}
+                                {actions ? <TableHead className="min-w-[100px] bg-secondary text-center px-2 sm:px-3 sticky right-0 z-10 border-l border-border" /> : null}
                             </TableRow>
                         )}
                     </TableHeader>
@@ -816,7 +816,7 @@ function TableBodyContent<T extends object>({
                 return (
                     <TableRow key={rowId} className="group">
                         {showSelection ? (
-                            <TableCell className="w-10 max-w-10 min-w-10 align-middle px-2 sticky left-0 z-10 bg-background group-data-[state=selected]:bg-muted border-r border-border">
+                            <TableCell className="w-10 max-w-10 min-w-10 align-middle px-2 sticky left-0 z-10 bg-muted text-secondary-foreground group-data-[state=selected]:bg-secondary/10 border-r border-border">
                                 <SelectionCheckbox
                                     checked={rowSelected}
                                     indeterminate={false}
@@ -842,7 +842,7 @@ function TableBodyContent<T extends object>({
                                 </TableCell>
                             )
                         })}
-                        {actions ? <TableCell className="min-w-[100px] text-center whitespace-nowrap px-2 sm:px-3 sticky right-0 z-10 bg-accent/5 group-data-[state=selected]:bg-accent/10 border-l border-border">{actions(row)}</TableCell> : null}
+                        {actions ? <TableCell className="min-w-[100px] text-center whitespace-nowrap px-2 sm:px-3 sticky right-0 z-10 bg-secondary text-secondary-foreground group-data-[state=selected]:bg-secondary/10 border-l border-border">{actions(row)}</TableCell> : null}
                     </TableRow>
                 )
             })}
