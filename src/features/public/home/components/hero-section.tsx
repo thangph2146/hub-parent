@@ -46,7 +46,7 @@ export const HeroSection = ({
 }: HeroSectionProps) => {
   const sectionRef = useRef<HTMLDivElement>(null);
   const isMounted = useClientOnly();
-  const { sectionHeightClassName, sectionHeightStyle, scrollToNextSection } = useSectionHeight({
+  const { sectionHeightClassName, sectionHeightStyle } = useSectionHeight({
     minHeight: 0,
     fullHeight: true,
   });
@@ -128,8 +128,8 @@ export const HeroSection = ({
         </Flex>
       </Flex>
 
-      {typeof window !== "undefined" && HOME_RESPONSIVE_CONDITIONS.showScrollIndicator(window.innerWidth, window.innerHeight) && (
-        <ScrollIndicator variant="light" onScroll={() => scrollToNextSection(sectionRef.current)} />
+      {isMounted && HOME_RESPONSIVE_CONDITIONS.showScrollIndicator(window.innerWidth, window.innerHeight) && (
+        <ScrollIndicator variant="light" containerRef={sectionRef} />
       )}
     </Flex>
   );

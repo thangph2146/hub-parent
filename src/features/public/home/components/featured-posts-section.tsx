@@ -10,8 +10,10 @@ import { TypographyDescriptionSmall, TypographyH2, TypographySpan } from "@/comp
 import { PostCard } from "@/components/public/post/post-card";
 import type { Post } from "@/features/public/post/types";
 import { useSectionHeight } from "@/hooks/use-section-height";
+import { useClientOnly } from "@/hooks/use-client-only";
 import { cn } from "@/lib/utils";
-import { HOME_ROUTES } from "../constants";
+import { HOME_ROUTES, HOME_RESPONSIVE_CONDITIONS } from "../constants";
+import { ScrollIndicator } from "./scroll-indicator";
 
 export interface FeaturedPostsSectionProps {
   featuredPosts?: Post[];
@@ -31,9 +33,10 @@ const ViewAllButton = ({ mobile = false }: { mobile?: boolean }) => (
 
 export const FeaturedPostsSection = ({ featuredPosts = [], className }: FeaturedPostsSectionProps) => {
   const sectionRef = useRef<HTMLDivElement>(null);
+  const isMounted = useClientOnly();
   const { sectionHeightClassName, sectionHeightStyle } = useSectionHeight({
     minHeight: "fit-content",
-    fullHeight: typeof window !== "undefined" && window.innerHeight > 600,
+    fullHeight: isMounted && window.innerHeight > 600,
   });
 
   if (featuredPosts.length === 0) return null;
@@ -81,6 +84,10 @@ export const FeaturedPostsSection = ({ featuredPosts = [], className }: Featured
           </div>
         </Flex>
       </div>
+
+      {isMounted && HOME_RESPONSIVE_CONDITIONS.showScrollIndicator(window.innerWidth, window.innerHeight) && (
+        <ScrollIndicator variant="dark" containerRef={sectionRef} />
+      )}
     </Flex>
   );
 };

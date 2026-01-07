@@ -7,6 +7,7 @@ import { Flex } from "@/components/ui/flex";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useSectionHeight } from "@/hooks/use-section-height";
+import { useClientOnly } from "@/hooks/use-client-only";
 import { ScrollIndicator } from "./scroll-indicator";
 import { motion, useInView } from "framer-motion";
 import { HOME_ROUTES, HOME_RESPONSIVE_CONDITIONS } from "../constants";
@@ -51,7 +52,8 @@ const CountUp = ({ value, duration = 2000, isInView }: { value: number; duration
 export const AboutHubSection = ({ className }: { className?: string }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const isInView = useInView(containerRef, { once: true, margin: "-100px" });
-  const { sectionHeightClassName, sectionHeightStyle, scrollToNextSection } = useSectionHeight({
+  const isMounted = useClientOnly();
+  const { sectionHeightClassName, sectionHeightStyle} = useSectionHeight({
     minHeight: 0,
     fullHeight: true,
   });
@@ -120,8 +122,8 @@ export const AboutHubSection = ({ className }: { className?: string }) => {
         </div>
       </Flex>
 
-      {typeof window !== "undefined" && HOME_RESPONSIVE_CONDITIONS.showScrollIndicator(window.innerWidth, window.innerHeight) && (
-        <ScrollIndicator variant="light" onScroll={() => scrollToNextSection(containerRef.current)} />
+      {isMounted && HOME_RESPONSIVE_CONDITIONS.showScrollIndicator(window.innerWidth, window.innerHeight) && (
+        <ScrollIndicator variant="light" containerRef={containerRef} />
       )}
     </Flex>
   );

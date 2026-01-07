@@ -10,8 +10,10 @@ import { Button } from "@/components/ui/button";
 import { TypographySpanSmall } from "@/components/ui/typography";
 import Link from "next/link";
 import { useSectionHeight } from "@/hooks/use-section-height";
+import { useClientOnly } from "@/hooks/use-client-only";
 import { cn } from "@/lib/utils";
 import { HOME_ROUTES, HOME_RESPONSIVE_CONDITIONS } from "../constants";
+import { ScrollIndicator } from "./scroll-indicator";
 
 const DEFAULT_IMAGE_HEIGHT = "h-[200px] sm:h-[250px] lg:h-[350px] xl:h-[400px]";
 
@@ -116,9 +118,10 @@ const CardWithImage = ({ title, description, image, button, reverse = false }: C
 
 export const GuideRegisterSection = ({ className }: { className?: string }) => {
   const sectionRef = useRef<HTMLDivElement>(null);
+  const isMounted = useClientOnly();
   const { sectionHeightClassName, sectionHeightStyle } = useSectionHeight({
     minHeight: "fit-content",
-    fullHeight: typeof window !== "undefined" && HOME_RESPONSIVE_CONDITIONS.isDesktop(window.innerWidth),
+    fullHeight: isMounted && HOME_RESPONSIVE_CONDITIONS.isDesktop(window.innerWidth),
   });
 
   return (
@@ -137,7 +140,11 @@ export const GuideRegisterSection = ({ className }: { className?: string }) => {
           <CardWithImage {...GUIDE_DATA} />
           <CardWithImage {...REGISTER_DATA} reverse />
         </div>
+        {isMounted && HOME_RESPONSIVE_CONDITIONS.showScrollIndicator(window.innerWidth, window.innerHeight) && (
+        <ScrollIndicator variant="dark" containerRef={sectionRef} />
+      )}
       </div>
+      
     </Flex>
   );
 };

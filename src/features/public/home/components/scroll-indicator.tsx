@@ -2,18 +2,44 @@
 
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useClientOnly } from "@/hooks/use-client-only";
 
 export interface ScrollIndicatorProps {
-  /** Function để scroll đến section tiếp theo */
-  onScroll: () => void;
+  /** Function để scroll đến section tiếp theo (tùy chọn nếu đã truyền containerRef) */
+  onScroll?: () => void;
+  /** Ref của section hiện tại để tự động scroll đến section tiếp theo */
+  containerRef?: React.RefObject<HTMLElement | null>;
   /** Variant của button (light cho hero section, dark cho các section khác) */
   variant?: "light" | "dark";
   /** Custom className */
   className?: string;
 }
 
-export const ScrollIndicator = ({ onScroll, variant = "dark", className }: ScrollIndicatorProps) => {
+export const ScrollIndicator = ({ onScroll, containerRef, variant = "dark", className }: ScrollIndicatorProps) => {
+  const isMounted = useClientOnly();
   const isLight = variant === "light";
+
+  const handleScroll = () => {
+    if (onScroll) {
+      onScroll();
+      return;
+    }
+
+    if (containerRef?.current) {
+      const currentSection = containerRef.current;
+      const nextSection = currentSection.nextElementSibling as HTMLElement;
+      
+      if (nextSection) {
+        const top = nextSection.offsetTop;
+        window.scrollTo({
+          top,
+          behavior: "smooth",
+        });
+      }
+    }
+  };
+
+  if (!isMounted) return null;
 
   return (
     <div
@@ -27,7 +53,7 @@ export const ScrollIndicator = ({ onScroll, variant = "dark", className }: Scrol
           "flex flex-col items-center gap-1.5 transition-colors cursor-pointer group",
           isLight ? "text-white/70 hover:text-white" : "text-foreground/70 hover:text-foreground"
         )}
-        onClick={onScroll}
+        onClick={handleScroll}
       >
         <div
           className={cn(
@@ -70,4 +96,3 @@ export const ScrollIndicator = ({ onScroll, variant = "dark", className }: Scrol
     </div>
   );
 };
-

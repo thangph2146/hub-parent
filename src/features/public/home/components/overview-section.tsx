@@ -15,7 +15,7 @@ import { HOME_RESPONSIVE_CONDITIONS } from "../constants";
 export const OverviewSection = ({ className }: { className?: string }) => {
   const sectionRef = useRef<HTMLDivElement>(null);
   const isMounted = useClientOnly();
-  const { sectionHeightClassName, sectionHeightStyle, scrollToNextSection } = useSectionHeight({
+  const { sectionHeightClassName, sectionHeightStyle } = useSectionHeight({
     minHeight: 0,
     fullHeight: true,
   });
@@ -51,7 +51,7 @@ export const OverviewSection = ({ className }: { className?: string }) => {
         </div>
 
         {isMounted && HOME_RESPONSIVE_CONDITIONS.showScrollIndicator(window.innerWidth, window.innerHeight) && (
-          <ScrollIndicator variant="dark" onScroll={() => scrollToNextSection(sectionRef.current)} />
+          <ScrollIndicator variant="dark" containerRef={sectionRef} />
         )}
       </Flex>
     </Flex>
