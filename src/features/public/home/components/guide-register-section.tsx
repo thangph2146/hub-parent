@@ -11,7 +11,6 @@ import { TypographySpanSmall } from "@/components/ui/typography";
 import Link from "next/link";
 import { useSectionHeight } from "@/hooks/use-section-height";
 import { cn, getRouteFromFeature } from "@/lib/utils";
-import { ScrollIndicator } from "./scroll-indicator";
 
 const ROUTES = {
   help: getRouteFromFeature("help") || "/help",
