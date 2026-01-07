@@ -1,6 +1,6 @@
 "use client"
 
-import { IconSize, TypographyH3, TypographyPSmallMuted, TypographyTitleLarge, TypographyPSmall, TypographyPMuted } from "@/components/ui/typography"
+import { TypographyH3, TypographyPSmallMuted, TypographyTitleLarge, TypographyPSmall, TypographyPMuted } from "@/components/ui/typography"
 import { Flex } from "@/components/ui/flex"
 
 import { ContactForm } from "@/components/forms/contact-form"
@@ -17,98 +17,102 @@ export type ContactClientProps = Record<string, never>
 
 export const ContactClient = ({ }: ContactClientProps) => {
   return (
-    <Section padding="responsive-lg" background="background">
-      <Flex direction="col" gap={6} className="w-full lg:flex-row lg:gap-8">
-        {/* Left Side - Contact Information - 1/3 */}
-        <Flex direction="col" gap={6} className="w-full lg:w-1/3">
-          <Flex direction="col" gap={4}>
-            <TypographyH3>
-              Tại sao chọn chúng tôi?
-            </TypographyH3>
-            <TypographyPSmallMuted>
-              Chúng tôi cam kết mang đến trải nghiệm tốt nhất cho phụ huynh và sinh viên.
-            </TypographyPSmallMuted>
+    <Section padding="responsive-lg" background="background" className="relative min-h-[calc(100vh-64px)] overflow-hidden">
+      <div className="relative z-10 container mx-auto">
+        <Flex direction="col" gap={6} className="w-full lg:flex-row lg:gap-8 items-stretch">
+          {/* Left Side - Contact Information */}
+          <Flex direction="col" gap={6} className="w-full lg:w-1/3">
+            <Card className="w-full h-full border-0 shadow-lg bg-white/80 dark:bg-card/50 backdrop-blur-md overflow-hidden relative">
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent pointer-events-none" />
+
+              <CardHeader className="pb-6 relative">
+                <CardTitle>
+                  <Flex align="center" gap={3}>
+                    <div className="w-12 h-12 rounded-xl bg-primary text-white flex items-center justify-center shadow-lg shadow-primary/20">
+                      <Phone className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <TypographyTitleLarge className="text-xl">Thông tin liên hệ</TypographyTitleLarge>
+                      <TypographyPSmallMuted className="text-xs font-normal mt-0.5">Kênh hỗ trợ chính thức</TypographyPSmallMuted>
+                    </div>
+                  </Flex>
+                </CardTitle>
+              </CardHeader>
+
+              <CardContent className="relative">
+                <Flex direction="col" gap={6}>
+                  <div className="group flex items-start gap-4 p-3 rounded-xl hover:bg-primary/5 transition-colors duration-300">
+                    <div className="w-10 h-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-300">
+                      <Phone className="w-5 h-5" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <TypographyPSmall className="font-semibold text-foreground/80 mb-0.5">Điện thoại</TypographyPSmall>
+                      <TypographyPMuted className="text-base font-medium text-foreground hover:text-primary transition-colors cursor-pointer">
+                        (028) 38 212 430
+                      </TypographyPMuted>
+                    </div>
+                  </div>
+
+                  <div className="group flex items-start gap-4 p-3 rounded-xl hover:bg-primary/5 transition-colors duration-300">
+                    <div className="w-10 h-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-300">
+                      <Mail className="w-5 h-5" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <TypographyPSmall className="font-semibold text-foreground/80 mb-0.5">Email</TypographyPSmall>
+                      <TypographyPMuted className="text-base font-medium text-foreground hover:text-primary transition-colors cursor-pointer break-words">
+                        dhnhtphcm@hub.edu.vn
+                      </TypographyPMuted>
+                    </div>
+                  </div>
+
+                  <div className="group flex items-start gap-4 p-3 rounded-xl hover:bg-primary/5 transition-colors duration-300">
+                    <div className="w-10 h-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-300">
+                      <MapPin className="w-5 h-5" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <TypographyPSmall className="font-semibold text-foreground/80 mb-0.5">Địa chỉ</TypographyPSmall>
+                      <TypographyPMuted className="text-base font-medium text-foreground">
+                        Trường Đại học Ngân hàng TP.HCM
+                      </TypographyPMuted>
+                    </div>
+                  </div>
+
+                  <div className="group flex items-start gap-4 p-3 rounded-xl hover:bg-primary/5 transition-colors duration-300">
+                    <div className="w-10 h-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-300">
+                      <Clock className="w-5 h-5" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <TypographyPSmall className="font-semibold text-foreground/80 mb-0.5">Giờ làm việc</TypographyPSmall>
+                      <TypographyPMuted className="text-sm font-medium text-foreground leading-relaxed">
+                        Thứ 2 - Thứ 6: 7:30 - 17:00<br />
+                        Thứ 7: 7:30 - 12:00
+                      </TypographyPMuted>
+                    </div>
+                  </div>
+                </Flex>
+              </CardContent>
+            </Card>
           </Flex>
 
-          {/* Contact Info Card */}
-          <Card className="w-full">
-            <CardHeader>
-              <CardTitle>
-                <Flex align="center" gap={3}>
-                  <Flex align="center" justify="center" className="w-10 h-10 rounded-lg bg-primary/10 shrink-0">
-                    <IconSize size="md">
-                      <Phone />
-                    </IconSize>
-                  </Flex>
-                  <TypographyTitleLarge>Thông tin liên hệ</TypographyTitleLarge>
+          {/* Right Side - Contact Form */}
+          <Flex direction="col" className="w-full lg:w-2/3">
+            <Card className="w-full h-full border-0 shadow-lg bg-white/80 dark:bg-card/50 backdrop-blur-md overflow-hidden relative">
+              <div className="absolute inset-0 bg-gradient-to-bl from-blue-500/5 to-transparent pointer-events-none" />
+              <CardContent className="h-full p-6 lg:p-8 relative">
+                <Flex direction="col" gap={6} className="h-full">
+                  <div>
+                    <TypographyH3 className="text-xl font-bold">Gửi tin nhắn</TypographyH3>
+                    <TypographyPMuted>Điền vào biểu mẫu bên dưới, chúng tôi sẽ liên hệ lại với bạn.</TypographyPMuted>
+                  </div>
+                  <div className="flex-1">
+                    <ContactForm className="w-full" />
+                  </div>
                 </Flex>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Flex direction="col" gap={4}>
-                <Flex align="start" gap={4} className="w-full">
-                  <Flex align="center" justify="center" className="w-10 h-10 rounded-lg bg-muted/50 dark:bg-muted flex-shrink-0">
-                    <IconSize size="md">
-                      <Phone />
-                    </IconSize>
-                  </Flex>
-                  <Flex direction="col" gap={1} className="flex-1 min-w-0">
-                    <TypographyPSmall className="font-medium">Điện thoại</TypographyPSmall>
-                    <TypographyPMuted className="break-words">(028) 38 212 430</TypographyPMuted>
-                  </Flex>
-                </Flex>
-
-                <Flex align="start" gap={4} className="w-full">
-                  <Flex align="center" justify="center" className="w-10 h-10 rounded-lg bg-muted/50 dark:bg-muted flex-shrink-0">
-                    <IconSize size="md">
-                      <Mail />
-                    </IconSize>
-                  </Flex>
-                  <Flex direction="col" gap={1} className="flex-1 min-w-0">
-                    <TypographyPSmall className="font-medium">Email</TypographyPSmall>
-                    <TypographyPMuted className="break-words">dhnhtphcm@hub.edu.vn</TypographyPMuted>
-                  </Flex>
-                </Flex>
-
-                <Flex align="start" gap={4} className="w-full">
-                  <Flex align="center" justify="center" className="w-10 h-10 rounded-lg bg-muted/50 dark:bg-muted flex-shrink-0">
-                    <IconSize size="md">
-                      <MapPin />
-                    </IconSize>
-                  </Flex>
-                  <Flex direction="col" gap={1} className="flex-1 min-w-0">
-                    <TypographyPSmall className="font-medium">Địa chỉ</TypographyPSmall>
-                    <TypographyPMuted className="break-words">
-                      Trường Đại học Ngân hàng TP.HCM
-                    </TypographyPMuted>
-                  </Flex>
-                </Flex>
-
-                <Flex align="start" gap={4} className="w-full">
-                  <Flex align="center" justify="center" className="w-10 h-10 rounded-lg bg-muted/50 dark:bg-muted flex-shrink-0">
-                    <IconSize size="md">
-                      <Clock />
-                    </IconSize>
-                  </Flex>
-                  <Flex direction="col" gap={1} className="flex-1 min-w-0">
-                    <TypographyPSmall className="font-medium">Giờ làm việc</TypographyPSmall>
-                    <TypographyPMuted className="break-words">
-                      Thứ 2 - Thứ 6: 7:30 - 17:00
-                      <br />
-                      Thứ 7: 7:30 - 12:00
-                    </TypographyPMuted>
-                  </Flex>
-                </Flex>
-              </Flex>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </Flex>
         </Flex>
-
-        {/* Right Side - Contact Form - 2/3 */}
-        <Flex direction="col" className="w-full lg:w-2/3">
-          <ContactForm className="w-full" />
-        </Flex>
-      </Flex>
+      </div>
     </Section>
   )
 }

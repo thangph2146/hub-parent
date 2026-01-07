@@ -30,7 +30,7 @@ export const PostCategoryNav = ({ categories }: PostCategoryNavProps) => {
     () => (slug: string) => {
       const params = new URLSearchParams(searchParams?.toString() || "")
       const currentCategories = params.getAll("category")
-      
+
       if (currentCategories.includes(slug)) {
         // Remove category
         params.delete("category")
@@ -39,7 +39,7 @@ export const PostCategoryNav = ({ categories }: PostCategoryNavProps) => {
         // Add category
         params.append("category", slug)
       }
-      
+
       params.delete("page") // Reset to page 1 when changing category
       return `/bai-viet${params.toString() ? `?${params.toString()}` : ""}`
     },
@@ -57,60 +57,50 @@ export const PostCategoryNav = ({ categories }: PostCategoryNavProps) => {
   )
 
   return (
-    <nav aria-label="Category navigation">
-      {/* Mobile: Flex wrap */}
-      <Flex wrap={true} align="stretch" gap={2} className="lg:hidden">
-          <Link
-            href={clearAllCategories()}
-            className={cn(
-              "group px-3 sm:px-4 py-2 rounded-md whitespace-nowrap transition-all border",
-              selectedCategories.size === 0
-                ? "bg-accent/10 hover:bg-accent/10 text-primary border-primary/20 shadow-sm"
-                : "hover:bg-accent/10 text-muted-foreground border-transparent hover:border-border"
-            )}
-          >
-            <Flex align="center" gap={2}>
-              <IconSize size="sm" className={cn("transition-transform", selectedCategories.size === 0 && "scale-110")}>
-                <FolderOpen />
-              </IconSize>
-              <TypographySpanSmall>Tất cả</TypographySpanSmall>
-              {selectedCategories.size > 0 && (
-                <IconSize size="xs" className="opacity-50 group-hover:opacity-100">
-                  <X />
-                </IconSize>
+    <nav aria-label="Category navigation" className="w-full">
+      {/* Mobile: Horizontal Scrollable List with Gradient Fade */}
+      <div className="lg:hidden relative group">
+        <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-background to-transparent z-10 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity" />
+        <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-background to-transparent z-10 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity" />
+
+        <ScrollArea className="w-full pb-4">
+          <Flex wrap={false} gap={2} className="px-1">
+            <Link
+              href={clearAllCategories()}
+              className={cn(
+                "relative flex items-center gap-2 px-4 py-2 rounded-full whitespace-nowrap transition-all border text-sm font-medium",
+                selectedCategories.size === 0
+                  ? "bg-primary text-primary-foreground border-primary shadow-md hover:shadow-lg hover:shadow-primary/20"
+                  : "bg-card text-muted-foreground border-border hover:border-primary/50 hover:bg-accent hover:text-foreground"
               )}
-            </Flex>
-          </Link>
-          {categories.map((category) => {
-            const isActive = selectedCategories.has(category.slug)
-            return (
-              <Link
-                key={category.id}
-                href={toggleCategory(category.slug)}
-                className={cn(
-                  "group px-3 sm:px-4 py-2 rounded-md whitespace-nowrap transition-all border",
-                  isActive
-                    ? "bg-accent/10 hover:bg-accent/10 text-primary border-primary/20 shadow-sm"
-                    : "hover:bg-accent/10 text-muted-foreground border-transparent hover:border-border"
-                )}
-              >
-                <Flex align="center" gap={2} justify="between">
-                  <Flex align="center" gap={2}>
-                    <IconSize size="sm" className={cn("transition-transform", isActive && "scale-110")}>
-                      <FolderOpen />
-                    </IconSize>
-                    <TypographySpanSmall>{category.name}</TypographySpanSmall>
-                  </Flex>
-                  {isActive && (
-                    <IconSize size="xs" className="opacity-50 group-hover:opacity-100">
-                      <X />
-                    </IconSize>
+            >
+              <FolderOpen className={cn("w-4 h-4", selectedCategories.size === 0 ? "fill-current" : "")} />
+              <span>Tất cả</span>
+            </Link>
+
+            {categories.map((category) => {
+              const isActive = selectedCategories.has(category.slug)
+              return (
+                <Link
+                  key={category.id}
+                  href={toggleCategory(category.slug)}
+                  className={cn(
+                    "relative flex items-center gap-2 px-4 py-2 rounded-full whitespace-nowrap transition-all border text-sm font-medium",
+                    isActive
+                      ? "bg-primary text-primary-foreground border-primary shadow-md hover:shadow-lg hover:shadow-primary/20"
+                      : "bg-card text-muted-foreground border-border hover:border-primary/50 hover:bg-accent hover:text-foreground"
                   )}
-                </Flex>
-              </Link>
-            )
-          })}
-        </Flex>
+                >
+                  <FolderOpen className={cn("w-4 h-4", isActive ? "fill-current" : "")} />
+                  <span>{category.name}</span>
+                  {isActive && <X className="w-3 h-3 ml-1 opacity-70" />}
+                </Link>
+              )
+            })}
+          </Flex>
+          <ScrollBar orientation="horizontal" className="h-1.5" />
+        </ScrollArea>
+      </div>
 
       {/* Desktop: Vertical scroll - Tree style */}
       <Flex className="hidden lg:block">
