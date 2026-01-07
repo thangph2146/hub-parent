@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import { ReactNode, forwardRef } from "react";
 import { Flex } from "@/components/ui/flex";
 
 export interface SectionProps {
@@ -7,21 +7,25 @@ export interface SectionProps {
   padding?: "none" | "xs" | "sm" | "md" | "lg" | "xl" | "responsive" | "responsive-y" | "responsive-full" | "responsive-lg";
   background?: "card" | "background" | "muted" | "none";
   containerClassName?: string;
+  style?: React.CSSProperties;
 }
 
-export const Section = ({
+export const Section = forwardRef<HTMLDivElement, SectionProps>(({
   children,
   className,
   padding = "responsive-y",
   background = "card",
   containerClassName,
-}: SectionProps) => {
+  style,
+}, ref) => {
   return (
     <Flex
       as="section"
+      ref={ref}
       fullWidth
       bg={background}
       className={className}
+      style={style}
     >
       <Flex
         direction="col"
@@ -34,5 +38,7 @@ export const Section = ({
       </Flex>
     </Flex>
   );
-}
+});
+
+Section.displayName = "Section";
 

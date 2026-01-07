@@ -396,6 +396,7 @@ export function PublicHeader() {
   return (
     <Flex
       as="header"
+      data-public-header="true"
       position="sticky"
       width="full"
       height="14"
