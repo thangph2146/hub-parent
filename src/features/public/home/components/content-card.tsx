@@ -4,7 +4,7 @@ import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Flex } from "@/components/ui/flex";
-import { IconSize, TypographySpanSmall } from "@/components/ui/typography";
+import { TypographySpanSmall } from "@/components/ui/typography";
 import { cn } from "@/lib/utils";
 
 export interface ContentCardButton {
@@ -97,9 +97,7 @@ export const ContentCard = ({
                       )}
                       {btn.rightIcon}
                       {btn.showArrowRight && !btn.rightIcon && (
-                        <IconSize size="sm" className="transition-transform duration-200 group-hover:translate-x-0.5">
-                          <ArrowRight />
-                        </IconSize>
+                        <ArrowRight className="transition-transform duration-200 group-hover:translate-x-0.5" />
                       )}
                     </Flex>
                   </Link>

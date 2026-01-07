@@ -7,7 +7,7 @@ import { Flex } from "@/components/ui/flex";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { IconSize, TypographySpanSmall } from "@/components/ui/typography";
+import { TypographySpanSmall } from "@/components/ui/typography";
 import { ArrowRight } from "lucide-react";
 import { FlipWords } from "@/components/ui/flip-words";
 import { useSectionHeight } from "@/hooks/use-section-height";
@@ -83,7 +83,7 @@ export const HeroSection = ({
         position="absolute"
         container
         padding="responsive"
-        className="inset-0 z-20 h-full overflow-hidden px-0 sm:px-0 md:px-0 lg:px-0 xl:px-0"
+        className="inset-0 z-20 h-full overflow-hidden"
       >
           <Flex direction="col" gap={4} className={cn("relative px-4 py-5 sm:px-5 sm:py-6 md:px-8 md:py-10 lg:px-10 lg:py-12 rounded-2xl backdrop-blur-xl bg-gradient-to-br from-black/60 via-black/50 to-black/40 border border-white/30 shadow-[0_20px_60px_rgba(0,0,0,0.7),0_0_0_1px_rgba(255,255,255,0.1)_inset] hover:shadow-[0_20px_80px_rgba(0,0,0,0.8),0_0_0_1px_rgba(255,255,255,0.15)_inset] transition-all duration-500 [text-shadow:_0_2px_8px_rgba(0,0,0,0.8),_0_0_20px_rgba(0,0,0,0.5)] before:absolute before:inset-0 before:rounded-2xl before:bg-gradient-to-br before:from-white/10 before:to-transparent before:opacity-0 hover:before:opacity-100 before:transition-opacity before:duration-500", overlayClassName)}>
             {/* Title with enhanced glow and depth */}
@@ -108,7 +108,7 @@ export const HeroSection = ({
             </h1>
 
             {/* Description with premium backdrop */}
-            <div className="relative max-w-xl md:max-w-2xl lg:max-w-3xl xl:max-w-4xl animate-in fade-in slide-in-from-bottom-4 duration-[600ms] delay-[400ms]">
+            <div className="relative max-w-xl animate-in fade-in slide-in-from-bottom-4 duration-[600ms] delay-[400ms]">
               <p
                 className={cn(
                   "relative text-sm md:text-base lg:text-lg text-white/95 leading-relaxed tracking-normal font-normal drop-shadow-[0_2px_10px_rgba(0,0,0,0.6)]",
@@ -164,9 +164,7 @@ export const HeroSection = ({
                             )}
                             {btn.rightIcon}
                             {btn.showArrowRight && !btn.rightIcon && (
-                              <IconSize size="sm" className="transition-transform duration-200 group-hover:translate-x-0.5">
-                                <ArrowRight />
-                              </IconSize>
+                              <ArrowRight className="transition-transform duration-200 group-hover:translate-x-0.5" />
                             )}
                           </Flex>
                         </Link>

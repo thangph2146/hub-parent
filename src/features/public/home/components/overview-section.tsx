@@ -3,7 +3,7 @@
 import { useRef } from "react";
 import { Quote } from "lucide-react";
 import { Flex } from "@/components/ui/flex";
-import { TypographyH2, TypographyP, IconSize } from "@/components/ui/typography";
+import { TypographyH2, TypographyP } from "@/components/ui/typography";
 import { PointerHighlight } from "@/components/ui/pointer-highlight";
 import { ContainerTextFlip } from "@/components/ui/container-text-flip";
 import { useSectionHeight } from "@/hooks/use-section-height";
@@ -52,17 +52,13 @@ export const OverviewSection = ({ className }: OverviewSectionProps) => {
           className="w-full relative p-3 sm:p-4 md:p-5 rounded-xl bg-gradient-to-br from-white/5 to-transparent flex align-center items-center justify-center"
         >
           <div className="absolute top-3 left-0 ">
-            <IconSize size="sm">
-              <Quote className="fill-primary/20 rotate-180" />
-            </IconSize>
+            <Quote className="fill-primary/20 rotate-180" />
           </div>
           <TypographyP className="text-justify text-base md:text-lg lg:text-xl xl:text-2xl">
             Hệ thống kết nối Phụ huynh và Nhà trường được xây dựng để kiến tạo cầu nối, gắn kết giữa phụ huynh, gia đình và nhà trường trong suốt hành trình học tập của sinh viên tại trường Đại học Ngân hàng Tp. Hồ Chí Minh. Chúng tôi hiểu rằng sự tham gia tích cực của gia đình đóng vai trò quan trọng trong thành tích, tiến độ học tập của sinh viên.Thông qua nền tảng này, phụ huynh có thể theo dõi tiến độ học tập, điểm số, lịch học và lịch thi của sinh viên. Đồng thời, phụ huynh có thể trao đổi thông tin trực tiếp với giảng viên, cố vấn học tập và nhận thông báo quan trọng từ nhà trường.      Chúng tôi mong muốn được quý phụ huynh đồng hành trong hành trình học tập, sáng tạo và trưởng thành của các em.
           </TypographyP>
           <div className="absolute bottom-3 right-0 flex items-end justify-end">
-            <IconSize size="sm">
-              <Quote className="fill-primary/20" />
-            </IconSize>
+            <Quote className="fill-primary/20" />
           </div>
         </div>
         <ScrollIndicator variant="dark" onScroll={() => scrollToNextSection(sectionRef.current)} />

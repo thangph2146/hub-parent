@@ -6,7 +6,7 @@ import Link from "next/link";
 import { Flex } from "@/components/ui/flex";
 import { Grid } from "@/components/ui/grid";
 import { Button } from "@/components/ui/button";
-import { TypographyDescriptionSmall, TypographyH2, TypographySpan, IconSize } from "@/components/ui/typography";
+import { TypographyDescriptionSmall, TypographyH2, TypographySpan } from "@/components/ui/typography";
 import { PostCard } from "@/components/public/post/post-card";
 import type { Post } from "@/features/public/post/types";
 import { useSectionHeight } from "@/hooks/use-section-height";
@@ -22,9 +22,7 @@ const ViewAllButton = ({ mobile = false }: { mobile?: boolean }) => (
     <Link href="/bai-viet">
       <Flex align="center" gap={2}>
         <TypographySpan>{mobile ? "Xem tất cả tin tức" : "Xem tất cả"}</TypographySpan>
-        <IconSize size="sm" className={!mobile ? "transition-transform group-hover:translate-x-1" : ""}>
-          <ArrowRight />
-        </IconSize>
+        <ArrowRight className={!mobile ? "transition-transform group-hover:translate-x-1" : ""} />
       </Flex>
     </Link>
   </Button>

@@ -7,7 +7,7 @@ import { ArrowRight } from "lucide-react";
 import { Flex } from "@/components/ui/flex";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { IconSize, TypographySpanSmall } from "@/components/ui/typography";
+import { TypographySpanSmall } from "@/components/ui/typography";
 import Link from "next/link";
 import { useSectionHeight } from "@/hooks/use-section-height";
 import { cn, getRouteFromFeature } from "@/lib/utils";
@@ -90,9 +90,7 @@ const CardWithImage = ({ title, description, image, button, reverse = false }: C
                       <Link href={button.href}>
                         <Flex align="center" gap={2}>
                           <TypographySpanSmall>{button.text}</TypographySpanSmall>
-                          <IconSize size="sm" className="transition-transform duration-200 group-hover:translate-x-0.5">
-                            <ArrowRight />
-                          </IconSize>
+                          <ArrowRight className="transition-transform duration-200 group-hover:translate-x-0.5" />
                         </Flex>
                       </Link>
                     </Button>
@@ -135,7 +133,7 @@ export const GuideRegisterSection = ({ className }: GuideRegisterSectionProps) =
   const sectionRef = useRef<HTMLDivElement>(null);
   const { sectionHeightClassName, sectionHeightStyle, scrollToNextSection } = useSectionHeight({
     minHeight: "fit-content",
-    fullHeight: window.innerWidth > 1280,
+    fullHeight: typeof window !== "undefined" ? window.innerWidth > 1280 : false,
   });
 
   return (
