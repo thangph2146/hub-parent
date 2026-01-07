@@ -4,10 +4,6 @@ import * as React from "react"
 import * as TabsPrimitive from "@radix-ui/react-tabs"
 
 import { cn } from "@/lib/utils"
-import { responsiveTextSizes, fontWeights, lineHeights, iconSizes } from "@/lib/typography"
-
-const tabsBodySmall = `${responsiveTextSizes.small} ${fontWeights.normal} ${lineHeights.relaxed}`
-const tabsIconSize = iconSizes.sm
 
 function Tabs({
   className,
@@ -30,7 +26,7 @@ function TabsList({
     <TabsPrimitive.List
       data-slot="tabs-list"
       className={cn(
-        "bg-muted text-muted-foreground inline-flex h-9 w-fit items-center justify-center rounded-lg p-[3px]",
+        "bg-muted/80 dark:bg-muted/60 text-muted-foreground inline-flex h-11 w-fit items-center justify-center rounded-lg p-1 border border-border/50 shadow-sm backdrop-blur-sm",
         className
       )}
       {...props}
@@ -46,7 +42,7 @@ function TabsTrigger({
     <TabsPrimitive.Trigger
       data-slot="tabs-trigger"
       className={cn(
-        `data-[state=active]:bg-background dark:data-[state=active]:text-foreground focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:outline-ring dark:data-[state=active]:border-input dark:data-[state=active]:bg-input/30 text-foreground dark:text-muted-foreground inline-flex h-[calc(100%-1px)] flex-1 items-center justify-center gap-1.5 rounded-md border border-transparent px-2 py-1 font-medium whitespace-nowrap transition-[color,box-shadow] focus-visible:ring-[3px] focus-visible:outline-1 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:shadow-sm [&_svg]:pointer-events-none [&_svg]:shrink-0 ${tabsBodySmall} [&_svg:not([class*='size-'])]:${tabsIconSize} w-full`,
+        `data-[state=active]:bg-background dark:data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:font-semibold focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:outline-ring dark:data-[state=active]:border-primary/30 dark:data-[state=active]:bg-primary/10 text-foreground/70 dark:text-muted-foreground inline-flex h-full flex-1 items-center justify-center gap-2 rounded-md border border-transparent px-4 py-2 font-medium whitespace-nowrap transition-all duration-200 focus-visible:ring-[3px] focus-visible:outline-1 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:shadow-md data-[state=active]:border-primary/20 hover:text-foreground hover:bg-background/50 [&_svg]:pointer-events-none [&_svg]:shrink-0 text-sm sm:text-base [&_svg:not([class*='size-'])]:w-4 [&_svg:not([class*='size-'])]:h-4 w-full`,
         className
       )}
       {...props}

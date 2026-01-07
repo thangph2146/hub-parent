@@ -842,7 +842,7 @@ function TableBodyContent<T extends object>({
                                 </TableCell>
                             )
                         })}
-                        {actions ? <TableCell className="min-w-[100px] text-center whitespace-nowrap px-2 sm:px-3 sticky right-0 z-10 bg-muted text-muted-foreground group-data-[state=selected]:bg-secondary/10 border-l border-border">{actions(row)}</TableCell> : null}
+                        {actions ? <TableCell className="min-w-[100px] text-center whitespace-nowrap px-2 sm:px-3 sticky right-0 z-10 bg-secondary/5 dark:bg-secondary/10 text-foreground/80 group-data-[state=selected]:bg-secondary/20 border-l border-border">{actions(row)}</TableCell> : null}
                     </TableRow>
                 )
             })}
@@ -885,18 +885,18 @@ function TableSummary<T extends object>({
             align="center" 
             justify="between" 
             gap={3} 
-            className="w-full border-t border-border bg-muted/30 px-4 py-3 sm:flex-row sm:items-center sm:px-6 sm:py-4"
+            className="w-full border-t-2 border-border/60 bg-muted/40 dark:bg-muted/30 px-4 py-4 sm:flex-row sm:items-center sm:px-6 sm:py-5"
         >
             <Flex direction="col" align="center" gap={1} className="w-auto flex-shrink-0 sm:items-start">
-                <TypographySpanSmall className="text-center sm:text-left whitespace-nowrap font-semibold text-foreground">
-                    <span className="hidden sm:inline font-normal text-muted-foreground">Hiển thị </span>
-                    <span className="font-bold text-foreground">{startIndex}-{endIndex}</span>
+                <TypographySpanSmall className="text-center sm:text-left whitespace-nowrap text-base font-semibold text-foreground">
+                    <span className="hidden sm:inline font-medium text-muted-foreground">Hiển thị </span>
+                    <span className="font-bold text-foreground text-lg">{startIndex}-{endIndex}</span>
                     {hasResults && (
                         <>
-                            <span className="hidden sm:inline font-normal text-muted-foreground"> trong </span>
-                            <span className="sm:hidden font-normal text-muted-foreground"> / </span>
-                            <span className="font-bold text-foreground">{result.total}</span>
-                            <span className="hidden sm:inline font-normal text-muted-foreground"> kết quả</span>
+                            <span className="hidden sm:inline font-medium text-muted-foreground"> trong </span>
+                            <span className="sm:hidden font-medium text-muted-foreground"> / </span>
+                            <span className="font-bold text-foreground text-lg">{result.total}</span>
+                            <span className="hidden sm:inline font-medium text-muted-foreground"> kết quả</span>
                         </>
                     )}
                 </TypographySpanSmall>
@@ -917,7 +917,7 @@ function TableSummary<T extends object>({
                     <span className="hidden sm:inline ml-2">Trước</span>
                 </Button>
                 <Flex align="center" gap={2} wrap={false}>
-                    <TypographySpanSmall className="hidden sm:inline whitespace-nowrap font-semibold text-foreground">
+                    <TypographySpanSmall className="hidden sm:inline whitespace-nowrap font-semibold text-foreground text-base">
                         Trang
                     </TypographySpanSmall>
                     <Select
@@ -927,7 +927,7 @@ function TableSummary<T extends object>({
                     >
                         <SelectTrigger
                             size="sm"
-                            className="w-16 min-w-[64px] h-8 flex-shrink-0 font-semibold"
+                            className="w-16 min-w-[64px] h-8 flex-shrink-0 font-bold text-base"
                             aria-label="Chọn trang"
                         >
                             <SelectValue />
@@ -940,8 +940,8 @@ function TableSummary<T extends object>({
                             ))}
                         </SelectContent>
                     </Select>
-                    <TypographySpanSmall className="whitespace-nowrap flex-shrink-0 font-semibold text-foreground">
-                        / <span className="font-bold">{Math.max(totalPages, 1)}</span>
+                    <TypographySpanSmall className="whitespace-nowrap flex-shrink-0 font-semibold text-foreground text-base">
+                        / <span className="font-bold text-lg">{Math.max(totalPages, 1)}</span>
                     </TypographySpanSmall>
                 </Flex>
                 <Button
