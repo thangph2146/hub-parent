@@ -11,7 +11,6 @@ import { PostCard } from "@/components/public/post/post-card";
 import type { Post } from "@/features/public/post/types";
 import { useSectionHeight } from "@/hooks/use-section-height";
 import { cn } from "@/lib/utils";
-import { ScrollIndicator } from "./scroll-indicator";
 
 export interface FeaturedPostsSectionProps {
   featuredPosts?: Post[];
@@ -33,8 +32,8 @@ const ViewAllButton = ({ mobile = false }: { mobile?: boolean }) => (
 
 export const FeaturedPostsSection = ({ featuredPosts = [], className }: FeaturedPostsSectionProps) => {
   const sectionRef = useRef<HTMLDivElement>(null);
-  const { sectionHeightClassName, sectionHeightStyle, scrollToNextSection } = useSectionHeight({
-    minHeight: 600,
+  const { sectionHeightClassName, sectionHeightStyle } = useSectionHeight({
+    minHeight: "fit-content",
     fullHeight: true,
   });
 
@@ -42,14 +41,17 @@ export const FeaturedPostsSection = ({ featuredPosts = [], className }: Featured
 
   return (
     <Flex
-      as="section"
-      ref={sectionRef}
-      fullWidth
-      position="relative"
-      className={cn("bg-muted/30", sectionHeightClassName, className)}
-      style={sectionHeightStyle}
+    as="section"
+    ref={sectionRef}
+    fullWidth
+    container
+    direction="col"
+    position="relative"
+    bg="background"
+    className={cn(sectionHeightClassName, className)}
+    style={sectionHeightStyle}
     >
-      <Flex container padding="responsive-lg" className="h-full items-center justify-center py-8 sm:py-12 md:py-16 lg:py-20">
+      <Flex container padding="responsive-lg" className="h-full items-center justify-center px-0 sm:px-0 md:px-0 lg:px-0 py-0 sm:py-0 md:py-0 lg:py-0">
         <div className="w-full max-w-7xl mx-auto px-4 sm:px-6">
           <Flex direction="col" gap={8}>
             <Flex align="center" justify="between" gap={4} fullWidth className="border-b pb-4 mb-4">
@@ -83,9 +85,6 @@ export const FeaturedPostsSection = ({ featuredPosts = [], className }: Featured
           </Flex>
         </div>
       </Flex>
-
-      <ScrollIndicator variant="dark" onScroll={() => scrollToNextSection(sectionRef.current)} />
     </Flex>
   );
 };
-

@@ -134,8 +134,8 @@ export interface GuideRegisterSectionProps {
 export const GuideRegisterSection = ({ className }: GuideRegisterSectionProps) => {
   const sectionRef = useRef<HTMLDivElement>(null);
   const { sectionHeightClassName, sectionHeightStyle, scrollToNextSection } = useSectionHeight({
-    minHeight: 600,
-    fullHeight: true,
+    minHeight: "fit-content",
+    fullHeight: window.innerWidth > 1280,
   });
 
   return (
@@ -143,21 +143,23 @@ export const GuideRegisterSection = ({ className }: GuideRegisterSectionProps) =
       as="section"
       ref={sectionRef}
       fullWidth
+      container
+      direction="col"
       position="relative"
       bg="background"
       className={cn(sectionHeightClassName, className)}
       style={sectionHeightStyle}
     >
-      <Flex container padding="responsive-lg" className="h-full items-center justify-center py-8 sm:py-12 md:py-16 lg:py-20">
-        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="grid md:grid-cols-2 gap-8 items-stretch">
+      <Flex container padding="responsive-lg" gap={4} className="h-full items-center justify-center py-8 sm:py-12 md:py-16 lg:py-20 px-0 sm:px-0 md:px-0 lg:px-0">
+        <div className="w-full mx-auto px-4 sm:px-6">
+          <div className="grid xl:grid-cols-2 gap-8 items-stretch">
             <CardWithImage {...GUIDE_DATA} />
             <CardWithImage {...REGISTER_DATA} reverse />
           </div>
         </div>
+       
       </Flex>
-
-      <ScrollIndicator variant="dark" onScroll={() => scrollToNextSection(sectionRef.current)} />
+      <ScrollIndicator variant="dark" onScroll={() => scrollToNextSection(sectionRef.current)} className="relative w-full"/>
     </Flex>
   );
 };

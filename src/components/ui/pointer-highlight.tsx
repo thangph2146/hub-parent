@@ -1,6 +1,5 @@
 "use client";
 import { cn } from "@/lib/utils/index";
-import { motion } from "framer-motion";
 import { useRef, useEffect, useState } from "react";
 
 export function PointerHighlight({
@@ -16,6 +15,7 @@ export function PointerHighlight({
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+  const [isInView, setIsInView] = useState(false);
 
   useEffect(() => {
     if (containerRef.current) {
@@ -30,18 +30,36 @@ export function PointerHighlight({
       }
     });
 
+    const intersectionObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setIsInView(true);
+          }
+        });
+      },
+      { threshold: 0.1 }
+    );
+
     const currentContainer = containerRef.current;
 
     if (currentContainer) {
       resizeObserver.observe(currentContainer);
+      intersectionObserver.observe(currentContainer);
     }
 
     return () => {
       if (currentContainer) {
         resizeObserver.unobserve(currentContainer);
+        intersectionObserver.unobserve(currentContainer);
       }
     };
   }, []);
+
+  const rectangleWidth = dimensions.width + 24;
+  const rectangleHeight = dimensions.height + 16;
+  const pointerX = dimensions.width + 20;
+  const pointerY = dimensions.height + 12;
 
   return (
     <div
@@ -50,53 +68,39 @@ export function PointerHighlight({
     >
       {children}
       {dimensions.width > 0 && dimensions.height > 0 && (
-        <motion.div
-          className="pointer-events-none absolute inset-0 z-0"
-          initial={{ opacity: 0, scale: 0.95, originX: 0, originY: 0 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5, ease: "easeOut" }}
-        >
-          <motion.div
+        <div className={cn(
+          "pointer-events-none absolute inset-0 z-0",
+          isInView ? "opacity-100 scale-100" : "opacity-0 scale-95",
+          "transition-all duration-500 ease-out origin-top-left"
+        )}>
+          <div
             className={cn(
               "absolute border border-neutral-800 dark:border-neutral-200",
-              rectangleClassName,
+              rectangleClassName
             )}
-
-            initial={{
-              width: 0,
-              height: 0,
-            }}
-            whileInView={{
-              width: dimensions.width + 24,
-              height: dimensions.height + 16,
-            }}
-            transition={{
-              duration: 1,
-              ease: "easeInOut",
+            style={{
+              width: isInView ? `${rectangleWidth}px` : "0px",
+              height: isInView ? `${rectangleHeight}px` : "0px",
+              transition: "width 1s ease-in-out, height 1s ease-in-out",
             }}
           />
-          <motion.div
-            className="pointer-events-none absolute"
-            initial={{ opacity: 0 }}
-            whileInView={{
-              opacity: 1,
-              x: dimensions.width + 20,
-              y: dimensions.height + 12,
-            }}
+          <div
+            className={cn(
+              "pointer-events-none absolute transition-opacity duration-1000 ease-in-out",
+              isInView ? "opacity-100" : "opacity-0"
+            )}
             style={{
-              rotate: -90,
-            }}
-            transition={{
-              opacity: { duration: 0.1, ease: "easeInOut" },
-              duration: 1,
-              ease: "easeInOut",
+              left: `${pointerX}px`,
+              top: `${pointerY}px`,
+              transform: "rotate(-90deg)",
+              transitionDelay: isInView ? "0.1s" : "0s",
             }}
           >
             <Pointer
               className={cn("h-5 w-5 text-blue-500", pointerClassName)}
             />
-          </motion.div>
-        </motion.div>
+          </div>
+        </div>
       )}
     </div>
   );

@@ -1,6 +1,5 @@
 "use client";
 
-import { motion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -17,15 +16,13 @@ export const ScrollIndicator = ({ onScroll, variant = "dark", className }: Scrol
   const isLight = variant === "light";
 
   return (
-    <motion.div
-      className={cn("absolute bottom-2 sm:bottom-4 left-1/2 -translate-x-1/2 z-[60] hidden sm:block", className)}
-      initial={{ opacity: 0, y: -10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 1, duration: 0.5 }}
+    <div
+      className={cn(
+        "absolute bottom-0 sm:bottom-4 left-1/2 -translate-x-1/2 z-[60] hidden sm:block animate-in fade-in slide-in-from-top-2 duration-[500ms] delay-[1000ms]",
+        className
+      )}
     >
-      <motion.div
-        animate={{ y: [0, 6, 0] }}
-        transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
+      <div
         className={cn(
           "flex flex-col items-center gap-1.5 transition-colors cursor-pointer group",
           isLight ? "text-white/70 hover:text-white" : "text-foreground/70 hover:text-foreground"
@@ -42,7 +39,7 @@ export const ScrollIndicator = ({ onScroll, variant = "dark", className }: Scrol
         >
           <span
             className={cn(
-              "text-[10px] tracking-[0.15em] uppercase font-semibold whitespace-nowrap",
+              "text-xs lg:text-base tracking-[0.15em] uppercase font-semibold whitespace-nowrap",
               isLight ? "drop-shadow-md" : ""
             )}
           >
@@ -50,13 +47,15 @@ export const ScrollIndicator = ({ onScroll, variant = "dark", className }: Scrol
           </span>
         </div>
         <div className="relative">
-          <motion.div
+          <div
             className={cn(
-              "absolute inset-0 rounded-full blur-md",
+              "absolute inset-0 rounded-full blur-md animate-pulse",
               isLight ? "bg-primary/30" : "bg-primary/20"
             )}
-            animate={{ scale: [1, 1.2, 1], opacity: [0.4, 0.7, 0.4] }}
-            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+            style={{
+              animationDuration: "2s",
+              animationTimingFunction: "ease-in-out",
+            }}
           />
           <ChevronDown
             className={cn(
@@ -67,8 +66,8 @@ export const ScrollIndicator = ({ onScroll, variant = "dark", className }: Scrol
             )}
           />
         </div>
-      </motion.div>
-    </motion.div>
+      </div>
+    </div>
   );
 };
 

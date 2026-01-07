@@ -3,28 +3,16 @@
 import { useRef } from "react";
 import { motion, useInView } from "framer-motion";
 import { Flex } from "@/components/ui/flex";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { TypographyH3, TypographyPSmallMuted, TypographySpanSmall, IconSize } from "@/components/ui/typography";
-import { Phone, Mail, GraduationCap } from "lucide-react";
+import { TypographyH3, TypographyPSmallMuted } from "@/components/ui/typography";
 import { EncryptedText } from "@/components/ui/encrypted-text";
 import { ContactForm } from "@/components/forms/contact-form";
 import { useSectionHeight } from "@/hooks/use-section-height";
 import { cn } from "@/lib/utils";
-import { ScrollIndicator } from "./scroll-indicator";
 
 export interface ContactInfoItem {
   icon: React.ReactNode;
   text: string;
 }
-
-const CONTACT_INFO: { title: string; items: ContactInfoItem[] } = {
-  title: "Liên hệ hỗ trợ",
-  items: [
-    { icon: <IconSize size="md"><Phone /></IconSize>, text: "(028) 38 212 430" },
-    { icon: <IconSize size="md"><Mail /></IconSize>, text: "dhnhtphcm@hub.edu.vn" },
-    { icon: <IconSize size="md"><GraduationCap /></IconSize>, text: "36 Tôn Thất Đạm, Quận 1, TP.HCM" },
-  ],
-};
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -53,9 +41,9 @@ export const ContactSection = ({ className }: ContactSectionProps) => {
   const sectionRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef(null);
   const isInView = useInView(containerRef, { once: true, margin: "-50px" });
-  const { sectionHeightClassName, sectionHeightStyle, scrollToNextSection } = useSectionHeight({
-    minHeight: 600,
-    fullHeight: true,
+  const { sectionHeightClassName, sectionHeightStyle } = useSectionHeight({
+    minHeight: 0,
+    fullHeight: false,
   });
 
   return (
@@ -111,41 +99,15 @@ export const ContactSection = ({ className }: ContactSectionProps) => {
                     </div>
                   </Flex>
                 </motion.div>
-
-                {CONTACT_INFO && (
-                  <motion.div variants={itemVariants}>
-                    <Card className="relative overflow-hidden border-0 shadow-lg bg-gradient-to-br from-primary/5 via-background to-background dark:from-primary/10">
-                      <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary via-primary/70 to-primary/40" />
-                      <CardHeader>
-                        <TypographyH3 className="text-lg sm:text-xl md:text-2xl">{CONTACT_INFO.title}</TypographyH3>
-                      </CardHeader>
-                      <CardContent>
-                        <Flex direction="col" gap={3}>
-                          {CONTACT_INFO.items.map((item, index) => (
-                            <motion.div key={index} className="group" whileHover={{ x: 4 }} transition={{ duration: 0.2 }}>
-                              <Flex align="center" gap={3} className="p-2 -mx-2 rounded-lg transition-colors duration-200 hover:bg-primary/5 dark:hover:bg-primary/10">
-                                <span className="text-primary transition-transform duration-200 group-hover:scale-110">{item.icon}</span>
-                                <TypographySpanSmall className="transition-colors duration-200 group-hover:text-primary">{item.text}</TypographySpanSmall>
-                              </Flex>
-                            </motion.div>
-                          ))}
-                        </Flex>
-                      </CardContent>
-                    </Card>
-                  </motion.div>
-                )}
               </Flex>
 
               <motion.div variants={itemVariants} className="flex-1 lg:w-3/5">
-                <ContactForm />
+                <ContactForm title="Liên hệ hỗ trợ" />
               </motion.div>
             </Flex>
           </motion.div>
         </div>
       </Flex>
-
-      <ScrollIndicator variant="dark" onScroll={() => scrollToNextSection(sectionRef.current)} />
     </Flex>
   );
 };
-

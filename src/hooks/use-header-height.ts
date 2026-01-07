@@ -78,7 +78,7 @@ export function useHeaderHeight() {
       window.removeEventListener("resize", handleResize)
       headerSize.ref(null)
     }
-  }, [findAndSetHeader, headerSize.ref])
+  }, [findAndSetHeader, headerSize])
 
   useEffect(() => {
     // Cập nhật headerHeight khi headerSize.height thay đổi
@@ -102,4 +102,3 @@ export function useHeaderHeight() {
     headerRef: headerSize.ref,
   }
 }
-

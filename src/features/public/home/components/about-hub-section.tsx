@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { motion, useInView } from "framer-motion";
+import React, { useEffect, useRef, useState } from "react";
 import { Building2, GraduationCap, Users, Award, ArrowRight, type LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { Flex } from "@/components/ui/flex";
@@ -48,6 +47,39 @@ const statistics: StatisticItem[] = [
   },
 ];
 
+// Custom hook để detect khi element vào viewport
+const useInView = (ref: React.RefObject<HTMLElement | null>, options?: { once?: boolean; margin?: string }) => {
+  const [isInView, setIsInView] = useState(false);
+
+  useEffect(() => {
+    if (!ref.current) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsInView(true);
+          if (options?.once) {
+            observer.disconnect();
+          }
+        } else if (!options?.once) {
+          setIsInView(false);
+        }
+      },
+      {
+        rootMargin: options?.margin || "0px",
+      }
+    );
+
+    observer.observe(ref.current);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [ref, options?.once, options?.margin]);
+
+  return isInView;
+};
+
 const CountUp = ({ value, duration = 2000, isInView }: { value: number; duration?: number; isInView: boolean }) => {
   const [count, setCount] = useState(0);
   const countRef = useRef(0);
@@ -77,7 +109,7 @@ export const AboutHubSection = ({ className }: AboutHubSectionProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const isInView = useInView(containerRef, { once: true, margin: "-100px" });
   const { sectionHeightClassName, sectionHeightStyle, scrollToNextSection } = useSectionHeight({
-    minHeight: 600,
+    minHeight: 0,
     fullHeight: true,
   });
 
@@ -90,23 +122,24 @@ export const AboutHubSection = ({ className }: AboutHubSectionProps) => {
       style={sectionHeightStyle}
       ref={containerRef}
     >
-      <Flex container padding="responsive-lg" className="h-full items-center justify-center py-8 sm:py-12 md:py-16 lg:py-20">
-        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="grid lg:grid-cols-12 gap-6 items-center">
-            <div className="w-full lg:col-span-5 xl:col-span-5">
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={isInView ? { opacity: 1, y: 0 } : {}}
-                transition={{ duration: 0.6 }}
-                className="space-y-6 sm:space-y-8"
+      <Flex container padding="responsive-lg" className="h-full items-center justify-center py-6 sm:py-8 md:py-10 lg:py-12 px-0 sm:px-0 md:px-0 lg:px-0">
+        <div className="w-full mx-auto">
+          <div className="grid md:grid-cols-12 gap-4 sm:gap-5 lg:gap-6 items-center">
+          {/* Left column */}
+            <div className="w-full sm:col-span-4 lg:col-span-4 xl:col-span-4">
+              <div
+                className={cn(
+                  "space-y-4 sm:space-y-5 md:space-y-6",
+                  isInView && "animate-in fade-in slide-in-from-bottom-4 duration-[600ms]"
+                )}
               >
-                <div className="space-y-3 sm:space-y-4 md:space-y-5 lg:space-y-6">
-                  <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold text-white leading-[1.1] uppercase tracking-tight break-words">
-                    <span>H</span><span className="text-brand-yellow">eightening</span>{" "}
-                    <span>U</span><span className="text-brand-yellow">nique</span>{" "}
-                    <span>B</span><span className="text-brand-yellow">rilliance</span>
+                <div className="space-y-2 sm:space-y-3 md:space-y-4">
+                  <h1 className="text-lg sm:text-xl md:text-3xl lg:text-4xl xl:text-5xl font-bold text-white leading-[1.1] uppercase tracking-tight break-words">
+                    <span>H</span><span className="text-brand-yellow">eightening</span><br/>
+                    <span>U</span><span className="text-brand-yellow">nique</span><br/>
+                    <span>B</span><span className="text-brand-yellow">rilliance</span><br/>
                   </h1>
-                  <h2 className="text-xs sm:text-sm md:text-base lg:text-lg xl:text-xl font-semibold text-white/90 leading-relaxed break-words">
+                  <h2 className="text-xs sm:text-sm md:text-base lg:text-lg font-semibold text-white/90 leading-relaxed break-words">
                     Trường Đại học Ngân hàng Thành phố Hồ Chí Minh
                   </h2>
                 </div>
@@ -118,26 +151,31 @@ export const AboutHubSection = ({ className }: AboutHubSectionProps) => {
                     </Flex>
                   </Link>
                 </Button>
-              </motion.div>
+              </div>
             </div>
 
-            <div className="w-full lg:col-span-7 xl:col-span-7">
-              <div className="grid grid-cols-2 gap-3 sm:gap-4 md:gap-5 lg:gap-8">
+            {/* Right column */}
+            <div className="w-full sm:col-span-8 lg:col-span-8 xl:col-span-8">
+              <div className="grid grid-cols-2 gap-2 sm:gap-3 md:gap-4 lg:gap-5">
                 {statistics.map((stat, index) => (
-                  <motion.div
+                  <div
                     key={index}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={isInView ? { opacity: 1, y: 0 } : {}}
-                    transition={{ duration: 0.6, delay: index * 0.1 }}
-                    className="flex flex-col items-start space-y-2 sm:space-y-3 p-2 sm:p-3 md:p-4 lg:p-5 bg-white rounded-lg sm:rounded-xl shadow-md sm:shadow-lg hover:shadow-xl sm:hover:shadow-2xl transition-all duration-300"
+                    className={cn(
+                      "flex flex-col items-start space-y-1.5 sm:space-y-2 p-2 sm:p-3 md:p-3.5 lg:p-4 bg-white rounded-lg sm:rounded-xl shadow-md sm:shadow-lg hover:shadow-xl sm:hover:shadow-2xl transition-all duration-300",
+                      isInView && "animate-in fade-in slide-in-from-bottom-4 duration-[600ms]"
+                    )}
+                    style={{
+                      animationDelay: `${index * 100}ms`
+                    }}
                   >
-                    <stat.icon className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 lg:w-14 lg:h-14 text-secondary flex-shrink-0" strokeWidth={1.5} />
-                    <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-secondary leading-tight break-words">
+                    <Flex direction="row" gap={1} align="center">  
+                      <stat.icon className="w-7 h-7 sm:w-8 sm:h-8 md:w-10 md:h-10 text-secondary flex-shrink-0" strokeWidth={1.5} />
+                      <h2 className="text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl font-bold text-secondary leading-tight break-words">
                       <CountUp value={stat.count} isInView={isInView} />
-                      {stat.suffix && <span className="text-base sm:text-lg md:text-xl lg:text-2xl ml-1 sm:ml-2 text-secondary font-semibold whitespace-nowrap">{stat.suffix}</span>}
-                    </h2>
-                    <p className="text-xs sm:text-sm md:text-base text-gray-600 leading-relaxed pt-0.5 sm:pt-1 w-full break-words line-clamp-3 sm:line-clamp-none">{stat.caption}</p>
-                  </motion.div>
+                      {stat.suffix && <span className="text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl ml-1 sm:ml-2 text-secondary font-semibold whitespace-nowrap">{stat.suffix}</span>}
+                    </h2></Flex>
+                    <p className="text-xs sm:text-sm md:text-base lg:text-lg xl:text-xl text-gray-600 leading-relaxed pt-0.5 w-full break-words line-clamp-2 sm:line-clamp-3">{stat.caption}</p>
+                  </div>
                 ))}
               </div>
             </div>

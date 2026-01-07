@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 
 export interface UseSectionHeightOptions {
   /** Min height cho section (px), mặc định 600px */
-  minHeight?: number;
+  minHeight?: number | "fit-content";
   /** Có sử dụng full viewport height không */
   fullHeight?: boolean;
 }
@@ -83,7 +83,7 @@ export function useSectionHeight(
     const style: React.CSSProperties = {
       height: calculatedHeight,
       maxHeight: calculatedHeight,
-      minHeight: minHeight > 0 ? `${Math.max(minHeight, 0)}px` : calculatedHeight,
+      minHeight: typeof minHeight === "number" && minHeight > 0 ? `${Math.max(minHeight, 0)}px` : calculatedHeight,
     };
     
     return style;
