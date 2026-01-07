@@ -20,7 +20,7 @@ import {
 import { ChevronDown } from "lucide-react"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { Flex } from "@/components/ui/flex"
-import { TypographyH4, TypographySpanSmall, IconSize } from "@/components/ui/typography"
+import { TypographyH2, TypographySpanSmall, IconSize } from "@/components/ui/typography"
 import { logger } from "@/lib/config/logger"
 import type {
   ResourceTableLoader,
@@ -277,7 +277,7 @@ export const ResourceTableClient = <T extends object>({
     <Flex direction="col" gap={4} fullWidth>
       {(title || viewModeButtons) && (
         <Flex direction="col" align="start" justify="between" gap={2} fullWidth className="sm:flex-row sm:items-center">
-          {title && <TypographyH4 className="truncate text-2xl sm:text-3xl font-bold tracking-tight">{title}</TypographyH4>}
+          {title && <TypographyH2 className="truncate font-bold tracking-tight">{title}</TypographyH2>}
           {viewModeButtons && (
             <Flex align="center" justify="end" gap={2} wrap fullWidth className="sm:w-auto sm:justify-end">
               {viewModeButtons}
