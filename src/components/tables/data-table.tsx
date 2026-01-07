@@ -11,7 +11,7 @@ import {
     useTransition,
     type ReactNode,
 } from "react"
-import { ChevronLeft, ChevronRight, Eye, EyeOff, Loader2 } from "lucide-react"
+import { ChevronLeft, ChevronRight, Eye, EyeOff, Loader2, Info } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
@@ -30,11 +30,12 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
-import { TypographySpanSmallMuted, TypographyPMuted, IconSize } from "@/components/ui/typography"
+import { TypographySpanSmallMuted, TypographySpanSmall, TypographyPMuted, IconSize } from "@/components/ui/typography"
 import { Flex } from "@/components/ui/flex"
 import { useDebouncedCallback } from "@/hooks/use-debounced-callback"
 import { ColumnFilterControl } from "./filter-controls/column-filter-control"
 import type { ColumnFilterConfig } from "./filter-controls/types"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 
 type UnknownRecord = Record<string, unknown>
 
@@ -626,13 +627,22 @@ export function DataTable<T extends object>({
                     <TableHeader>
                         <TableRow className="bg-primary">
                             {selectionEnabled ? (
-                                <TableHead className="w-10 max-w-10 min-w-10 align-middle px-2 sticky left-0 z-10 bg-primary text-primary-foreground border-r border-border">
-                                    <SelectionCheckbox
-                                        checked={allVisibleSelected}
-                                        indeterminate={someVisibleSelected}
-                                        disabled={selectionDisabled || selectableVisibleIds.length === 0}
-                                        onCheckedChange={(checked) => handleToggleAll(selectableVisibleIds, checked)}
-                                    />
+                                <TableHead className="w-10 max-w-10 min-w-10 align-middle px-2 sticky left-0 z-10 bg-secondary text-primary-foreground border-r border-border">
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <div className="cursor-help flex items-center justify-center">
+                                                <SelectionCheckbox
+                                                    checked={allVisibleSelected}
+                                                    indeterminate={someVisibleSelected}
+                                                    disabled={selectionDisabled || selectableVisibleIds.length === 0}
+                                                    onCheckedChange={(checked) => handleToggleAll(selectableVisibleIds, checked)}
+                                                />
+                                            </div>
+                                        </TooltipTrigger>
+                                        <TooltipContent side="bottom" className="max-w-[250px]">
+                                            <p className="text-sm">Chọn/bỏ chọn tất cả các dòng hiển thị</p>
+                                        </TooltipContent>
+                                    </Tooltip>
                                 </TableHead>
                             ) : null}
                             {columns.map((column) => (
@@ -644,8 +654,20 @@ export function DataTable<T extends object>({
                                 </TableHead>
                             ))}
                             {actions ? (
-                                <TableHead className="min-w-[100px] text-center px-2 sm:px-3 sticky right-0 z-10 bg-primary text-primary-foreground border-l border-border">
-                                    <span>Hành động</span>
+                                <TableHead className="min-w-[110px] max-w-[110px] text-center px-2 sm:px-3 sticky right-0 z-10 bg-secondary text-primary-foreground border-l border-border">
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <Flex align="center" justify="center" gap={1.5} className="cursor-help">
+                                                <span>Hành động</span>
+                                                <IconSize size="sm" className="text-primary-foreground">
+                                                    <Info />
+                                                </IconSize>
+                                            </Flex>
+                                        </TooltipTrigger>
+                                        <TooltipContent side="bottom" className="max-w-[250px]">
+                                            <p className="text-sm">Các thao tác có thể thực hiện với dòng này (xem, sửa, xóa, v.v.)</p>
+                                        </TooltipContent>
+                                    </Tooltip>
                                 </TableHead>
                             ) : null}
                         </TableRow>
@@ -665,7 +687,7 @@ export function DataTable<T extends object>({
                                         />
                                     </TableHead>
                                 ))}
-                                {actions ? <TableHead className="min-w-[100px] bg-muted/80 text-center px-2 sm:px-3 sticky right-0 z-10 border-l border-border" /> : null}
+                                {actions ? <TableHead className="min-w-[100px] bg-accent/15 text-center px-2 sm:px-3 sticky right-0 z-10 border-l border-border" /> : null}
                             </TableRow>
                         )}
                     </TableHeader>
@@ -820,7 +842,7 @@ function TableBodyContent<T extends object>({
                                 </TableCell>
                             )
                         })}
-                        {actions ? <TableCell className="min-w-[100px] text-center whitespace-nowrap px-2 sm:px-3 sticky right-0 z-10 bg-background group-data-[state=selected]:bg-muted border-l border-border">{actions(row)}</TableCell> : null}
+                        {actions ? <TableCell className="min-w-[100px] text-center whitespace-nowrap px-2 sm:px-3 sticky right-0 z-10 bg-accent/5 group-data-[state=selected]:bg-accent/10 border-l border-border">{actions(row)}</TableCell> : null}
                     </TableRow>
                 )
             })}
@@ -863,21 +885,21 @@ function TableSummary<T extends object>({
             align="center" 
             justify="between" 
             gap={3} 
-            className="w-full border-t border-border px-4 py-3 sm:flex-row sm:items-center sm:px-6 sm:py-4"
+            className="w-full border-t border-border bg-muted/30 px-4 py-3 sm:flex-row sm:items-center sm:px-6 sm:py-4"
         >
             <Flex direction="col" align="center" gap={1} className="w-auto flex-shrink-0 sm:items-start">
-                <TypographySpanSmallMuted className="text-center sm:text-left whitespace-nowrap">
-                    <span className="hidden sm:inline">Hiển thị </span>
-                    <span className="font-medium text-foreground">{startIndex}-{endIndex}</span>
+                <TypographySpanSmall className="text-center sm:text-left whitespace-nowrap font-semibold text-foreground">
+                    <span className="hidden sm:inline font-normal text-muted-foreground">Hiển thị </span>
+                    <span className="font-bold text-foreground">{startIndex}-{endIndex}</span>
                     {hasResults && (
                         <>
-                            <span className="hidden sm:inline"> trong </span>
-                            <span className="sm:hidden"> / </span>
-                            <span className="font-medium text-foreground">{result.total}</span>
-                            <span className="hidden sm:inline"> kết quả</span>
+                            <span className="hidden sm:inline font-normal text-muted-foreground"> trong </span>
+                            <span className="sm:hidden font-normal text-muted-foreground"> / </span>
+                            <span className="font-bold text-foreground">{result.total}</span>
+                            <span className="hidden sm:inline font-normal text-muted-foreground"> kết quả</span>
                         </>
                     )}
-                </TypographySpanSmallMuted>
+                </TypographySpanSmall>
             </Flex>
             <Flex align="center" gap={2} wrap={false} className="w-auto flex-shrink-0 justify-center sm:justify-end">
                 <Button
@@ -895,9 +917,9 @@ function TableSummary<T extends object>({
                     <span className="hidden sm:inline ml-2">Trước</span>
                 </Button>
                 <Flex align="center" gap={2} wrap={false}>
-                    <TypographySpanSmallMuted className="hidden sm:inline whitespace-nowrap">
+                    <TypographySpanSmall className="hidden sm:inline whitespace-nowrap font-semibold text-foreground">
                         Trang
-                    </TypographySpanSmallMuted>
+                    </TypographySpanSmall>
                     <Select
                         value={String(result.page)}
                         onValueChange={handlePageSelect}
@@ -905,7 +927,7 @@ function TableSummary<T extends object>({
                     >
                         <SelectTrigger
                             size="sm"
-                            className="w-16 min-w-[64px] h-8 flex-shrink-0"
+                            className="w-16 min-w-[64px] h-8 flex-shrink-0 font-semibold"
                             aria-label="Chọn trang"
                         >
                             <SelectValue />
@@ -918,9 +940,9 @@ function TableSummary<T extends object>({
                             ))}
                         </SelectContent>
                     </Select>
-                    <TypographySpanSmallMuted className="whitespace-nowrap flex-shrink-0">
-                        / {Math.max(totalPages, 1)}
-                    </TypographySpanSmallMuted>
+                    <TypographySpanSmall className="whitespace-nowrap flex-shrink-0 font-semibold text-foreground">
+                        / <span className="font-bold">{Math.max(totalPages, 1)}</span>
+                    </TypographySpanSmall>
                 </Flex>
                 <Button
                     type="button"

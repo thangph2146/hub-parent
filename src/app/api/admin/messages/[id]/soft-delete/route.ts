@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server"
+import { NextRequest } from "next/server"
 import { createDeleteRoute } from "@/lib/api/api-route-wrapper"
 import { softDeleteMessage } from "@/features/admin/chat/server"
 import {
@@ -7,6 +7,7 @@ import {
   createAuthContext,
   handleApiError,
 } from "@/lib/api/api-route-helpers"
+import { createSuccessResponse } from "@/lib/config"
 import type { ApiRouteContext } from "@/lib/api/types"
 
 async function softDeleteMessageHandler(req: NextRequest, context: ApiRouteContext, ...args: unknown[]) {
@@ -15,7 +16,7 @@ async function softDeleteMessageHandler(req: NextRequest, context: ApiRouteConte
 
   try {
     const message = await softDeleteMessage(createAuthContext(context, userId), id)
-    return NextResponse.json({
+    return createSuccessResponse({
       id: message.id,
       deletedAt: message.deletedAt?.toISOString() || null,
     })

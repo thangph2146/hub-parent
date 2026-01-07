@@ -7,7 +7,6 @@ import {
   useRef,
   useState,
 } from "react"
-// eslint-disable-next-line no-restricted-imports
 import Image from "next/image"
 import { AutoFocusPlugin } from "@lexical/react/LexicalAutoFocusPlugin"
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext"
@@ -89,6 +88,12 @@ interface ImageComponentProps {
 }
 
 function useSuspenseImage(src: string) {
+  // Trên server, không thể load image, nên không throw Promise
+  // Điều này đảm bảo hydration không bị mismatch
+  if (typeof window === "undefined") {
+    return
+  }
+  
   if (!imageCache.has(src)) {
     throw new Promise((resolve) => {
       const img = new window.Image()
@@ -103,6 +108,7 @@ function useSuspenseImage(src: string) {
       img.onerror = () => {
         // Fallback to 0x0 if error, but mark as loaded
         imageCache.set(src, { width: 0, height: 0 })
+        resolve(null)
       }
     })
   }
@@ -149,9 +155,31 @@ function LazyImage({
   // Get natural dimensions from cache which should be populated by useSuspenseImage
   const cachedDims = imageCache.get(src)
   
+  // Đảm bảo giá trị mặc định nhất quán giữa server và client
+  const DEFAULT_DIMENSIONS = { width: 800, height: 600 }
   const [actualDimensions, setActualDimensions] = useState<{ width?: number; height?: number }>(
-    cachedDims || {}
+    cachedDims || DEFAULT_DIMENSIONS
   )
+  
+  // Use a wrapper ref to find the actual img element from Next.js Image
+  const wrapperRef = useRef<HTMLDivElement>(null)
+  
+  useEffect(() => {
+    // Next.js Image renders an img element inside, find it and assign to imageRef
+    if (wrapperRef.current) {
+      const imgElement = wrapperRef.current.querySelector("img") as HTMLImageElement | null
+      if (imgElement) {
+        imageRef.current = imgElement
+        // Update dimensions if needed
+        if ((width === "inherit" || height === "inherit") && imgElement.complete && imgElement.naturalWidth && imgElement.naturalHeight) {
+          setActualDimensions({
+            width: imgElement.naturalWidth,
+            height: imgElement.naturalHeight,
+          })
+        }
+      }
+    }
+  }, [width, height, imageRef])
   
   useEffect(() => {
     // Keep actualDimensions up to date if they weren't available initially for some reason
@@ -181,29 +209,48 @@ function LazyImage({
   }
 
   // Next.js Image requires width/height. Use dimensions from cache/state if inherited.
-  const renderWidth = widthAttr || actualDimensions.width || 0
-  const renderHeight = heightAttr || actualDimensions.height || 0
+  // Đảm bảo giá trị mặc định nhất quán giữa server và client để tránh hydration mismatch
+  // Sử dụng giá trị mặc định hợp lý nếu không có dimensions
+  const DEFAULT_WIDTH = 800
+  const DEFAULT_HEIGHT = 600
+  
+  const renderWidth = widthAttr || actualDimensions.width || DEFAULT_WIDTH
+  const renderHeight = heightAttr || actualDimensions.height || DEFAULT_HEIGHT
 
   return (
-    <Image
-      className={className || undefined}
-      src={src}
-      alt={altText}
-      ref={imageRef}
-      width={renderWidth}
-      height={renderHeight}
-      sizes={getSizes()}
-      style={{
-        height: height === "inherit" ? "auto" : height,
-        width: width === "inherit" ? "100%" : width,
-        maxWidth: "100%", // Apply 100% maxWidth to ensure responsiveness
-        // Note: original code had strict maxWidth handling elsewhere, but NextImage needs control
-      }}
-      onError={onError}
-      draggable={false}
-      priority={fetchPriority === "high"}
-      decoding="async"
-    />
+    <div ref={wrapperRef} style={{ display: "inline-block", width: "100%" }}>
+      <Image
+        className={className || undefined}
+        src={src}
+        alt={altText}
+        width={renderWidth}
+        height={renderHeight}
+        sizes={getSizes()}
+        style={{
+          height: height === "inherit" ? "auto" : height,
+          width: width === "inherit" ? "100%" : width,
+          maxWidth: "100%", // Apply 100% maxWidth to ensure responsiveness
+          // Note: original code had strict maxWidth handling elsewhere, but NextImage needs control
+        }}
+        onError={onError}
+        draggable={false}
+        priority={fetchPriority === "high"}
+        decoding="async"
+        onLoad={(e) => {
+          // Update ref and dimensions when image loads
+          const img = e.currentTarget
+          if (img) {
+            imageRef.current = img
+            if (width === "inherit" || height === "inherit") {
+              setActualDimensions({
+                width: img.naturalWidth,
+                height: img.naturalHeight,
+              })
+            }
+          }
+        }}
+      />
+    </div>
   )
 }
 
@@ -704,17 +751,25 @@ function useImageNodeInteractions({
 }
 
 function BrokenImage(): JSX.Element {
+  // Create a 1x1 transparent pixel as data URL for Next.js Image
+  // This is a valid image source that Next.js Image can handle
+  const transparentPixel = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1' height='1'%3E%3C/svg%3E"
+  
   return (
-    <img
-      src={""}
-      alt=""
-      style={{
-        height: 200,
-        opacity: 0.2,
-        width: 200,
-      }}
-      draggable="false"
-    />
+    <div style={{ display: "inline-block", width: 200, height: 200 }}>
+      <Image
+        src={transparentPixel}
+        alt="Broken image"
+        width={200}
+        height={200}
+        style={{
+          opacity: 0.2,
+          objectFit: "contain",
+        }}
+        draggable={false}
+        unoptimized
+      />
+    </div>
   )
 }
 

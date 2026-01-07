@@ -7,7 +7,7 @@
  * - Validate input và return proper error responses
  */
 
-import { NextRequest, NextResponse } from "next/server"
+import { NextRequest } from "next/server"
 import { createPostRoute } from "@/lib/api/api-route-wrapper"
 import { markConversationAsRead } from "@/features/admin/chat/server/mutations"
 import {
@@ -16,6 +16,7 @@ import {
   createAuthContext,
   handleApiError,
 } from "@/lib/api/api-route-helpers"
+import { createSuccessResponse } from "@/lib/config"
 import type { ApiRouteContext } from "@/lib/api/types"
 
 async function markConversationReadHandler(req: NextRequest, context: ApiRouteContext, ...args: unknown[]) {
@@ -24,7 +25,7 @@ async function markConversationReadHandler(req: NextRequest, context: ApiRouteCo
 
   try {
     const result = await markConversationAsRead(createAuthContext(context, userId), userId, otherUserId)
-    return NextResponse.json({ count: result.count })
+    return createSuccessResponse({ count: result.count })
   } catch (error) {
     return handleApiError(error, "Đã xảy ra lỗi", 500)
   }

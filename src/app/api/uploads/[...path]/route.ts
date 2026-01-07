@@ -7,7 +7,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { promises as fs } from "fs"
 import path from "path"
 import { IMAGES_DIR, STORAGE_DIR } from "@/lib/utils/file-utils"
-import { logger } from "@/lib/config"
+import { logger, createErrorResponse } from "@/lib/config"
 
 export async function GET(
   req: NextRequest,
@@ -18,7 +18,7 @@ export async function GET(
     logger.debug("Serving image file", { pathSegments })
     
     if (pathSegments.length === 0) {
-      return NextResponse.json({ error: "Invalid path format" }, { status: 400 })
+      return createErrorResponse("Invalid path format", { status: 400 })
     }
     
     let filePath: string
@@ -55,7 +55,7 @@ export async function GET(
         resolvedPath,
         resolvedBaseDir,
       })
-      return NextResponse.json({ error: "Invalid path" }, { status: 403 })
+      return createErrorResponse("Invalid path", { status: 403 })
     }
 
     // Check if file exists
@@ -64,7 +64,7 @@ export async function GET(
       logger.debug("File exists", { filePath })
     } catch {
       logger.warn("File not found", { filePath })
-      return NextResponse.json({ error: "File not found" }, { status: 404 })
+      return createErrorResponse("File not found", { status: 404 })
     }
 
     // Read file
@@ -102,7 +102,7 @@ export async function GET(
     logger.error("Error serving file", {
       error: error instanceof Error ? error : new Error(String(error)),
     })
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+    return createErrorResponse("Internal server error", { status: 500 })
   }
 }
 

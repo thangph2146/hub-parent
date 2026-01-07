@@ -3,10 +3,10 @@
  * Client sẽ gọi route này sau khi NextAuth signIn thành công
  */
 
-import { NextRequest, NextResponse } from "next/server"
+import { NextRequest } from "next/server"
 import { auth } from "@/lib/auth"
 import { createLoginSession } from "@/features/admin/sessions/server/create-login-session"
-import { logger } from "@/lib/config"
+import { logger, createSuccessResponse, createErrorResponse } from "@/lib/config"
 
 function getClientIP(request: NextRequest): string | null {
   const forwarded = request.headers.get("x-forwarded-for")
@@ -31,10 +31,7 @@ export async function POST(request: NextRequest) {
     const session = await auth()
     
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      )
+      return createErrorResponse("Unauthorized", { status: 401 })
     }
 
     // Lấy userAgent và ipAddress từ request headers
@@ -53,12 +50,9 @@ export async function POST(request: NextRequest) {
       userId: session.user.id,
     })
 
-    return NextResponse.json(
-      { 
-        data: sessionRecord,
-        message: "Session created successfully" 
-      },
-      { status: 201 }
+    return createSuccessResponse(
+      sessionRecord,
+      { message: "Session created successfully", status: 201 }
     )
   } catch (error) {
     // Log chi tiết error để debug
@@ -71,12 +65,12 @@ export async function POST(request: NextRequest) {
       userId: (await auth())?.user?.id,
     })
     
-    return NextResponse.json(
+    return createErrorResponse(
+      "Failed to create session",
       { 
-        error: "Failed to create session",
-        message: process.env.NODE_ENV === "development" ? errorMessage : undefined,
-      },
-      { status: 500 }
+        status: 500,
+        error: process.env.NODE_ENV === "development" ? errorMessage : undefined
+      }
     )
   }
 }

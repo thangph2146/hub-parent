@@ -3,9 +3,10 @@
  * Handler để upload hình ảnh
  */
 
-import { NextRequest, NextResponse } from "next/server"
+import { NextRequest } from "next/server"
 import type { ApiRouteContext } from "@/lib/api/types"
 import { getUserId } from "@/lib/api/api-route-helpers"
+import { createSuccessResponse, createErrorResponse } from "@/lib/config"
 import {
   ensureDirectoryExists,
   generateUniqueFileName,
@@ -46,7 +47,7 @@ export const uploadImageHandler = async (
 
     if (!file) {
       logger.warn("Upload failed: No file provided", { userId })
-      return NextResponse.json({ error: "Không có file được tải lên" }, { status: 400 })
+      return createErrorResponse("Không có file được tải lên", { status: 400 })
     }
 
     logger.info("Upload with folder path", {
@@ -70,8 +71,8 @@ export const uploadImageHandler = async (
         fileName: file.name,
         mimeType: file.type,
       })
-      return NextResponse.json(
-        { error: "Chỉ cho phép upload file hình ảnh (jpg, jpeg, png, gif, webp, svg)" },
+      return createErrorResponse(
+        "Chỉ cho phép upload file hình ảnh (jpg, jpeg, png, gif, webp, svg)",
         { status: 400 }
       )
     }
@@ -85,21 +86,21 @@ export const uploadImageHandler = async (
         fileName: file.name,
         size: file.size,
       })
-      return NextResponse.json({ error: "File quá lớn. Kích thước tối đa là 10MB" }, { status: 400 })
+      return createErrorResponse("File quá lớn. Kích thước tối đa là 10MB", { status: 400 })
     }
     logger.success("File size validated", { size: `${(file.size / 1024 / 1024).toFixed(2)} MB` })
 
-    // Validate image dimensions (max 500px)
-    logger.debug("Validating image dimensions", { maxDimension: 500 })
-    const dimensionCheck = await validateImageDimensions(file, 500)
+    // Validate image dimensions (max 1920px)
+    logger.debug("Validating image dimensions", { maxDimension: 1920 })
+    const dimensionCheck = await validateImageDimensions(file, 1920)
     if (!dimensionCheck.valid) {
       logger.warn("Upload failed: Invalid image dimensions", {
         userId,
         fileName: file.name,
         error: dimensionCheck.error,
       })
-      return NextResponse.json(
-        { error: dimensionCheck.error || "Kích thước hình ảnh không hợp lệ" },
+      return createErrorResponse(
+        dimensionCheck.error || "Kích thước hình ảnh không hợp lệ",
         { status: 400 }
       )
     }
@@ -150,27 +151,21 @@ export const uploadImageHandler = async (
       mimeType: file.type,
     })
 
-    return NextResponse.json({
-      success: true,
-      data: {
-        fileName: uniqueFileName,
-        originalName: file.name,
-        size: file.size,
-        mimeType: file.type,
-        url: urlPath,
-        relativePath,
-      },
-    })
+    return createSuccessResponse({
+      fileName: uniqueFileName,
+      originalName: file.name,
+      size: file.size,
+      mimeType: file.type,
+      url: urlPath,
+      relativePath,
+    }, { message: "Upload hình ảnh thành công" })
   } catch (error) {
     logger.error("Error uploading image", {
       userId,
       error: error instanceof Error ? error : new Error(String(error)),
     })
 
-    return NextResponse.json(
-      { error: "Đã xảy ra lỗi khi upload hình ảnh" },
-      { status: 500 }
-    )
+    return createErrorResponse("Đã xảy ra lỗi khi upload hình ảnh", { status: 500 })
   }
 }
 

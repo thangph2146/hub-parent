@@ -3,9 +3,10 @@
  * Handler để lấy danh sách hình ảnh với pagination và folder tree
  */
 
-import { NextRequest, NextResponse } from "next/server"
+import { NextRequest } from "next/server"
 import type { ApiRouteContext } from "@/lib/api/types"
 import { getUserId } from "@/lib/api/api-route-helpers"
+import { createSuccessResponse, createErrorResponse } from "@/lib/config"
 import { STORAGE_DIR, initializeStorageDirectories } from "@/lib/utils/file-utils"
 import { promises as fs } from "fs"
 import path from "path"
@@ -110,8 +111,7 @@ export const listImagesHandler = async (req: NextRequest, context: ApiRouteConte
       totalPages: Math.ceil(total / limit),
     })
 
-    return NextResponse.json({
-      success: true,
+    return createSuccessResponse({
       data: paginatedImages,
       folderTree,
       pagination: {
@@ -127,10 +127,7 @@ export const listImagesHandler = async (req: NextRequest, context: ApiRouteConte
       error: error instanceof Error ? error : new Error(String(error)),
     })
 
-    return NextResponse.json(
-      { error: "Đã xảy ra lỗi khi lấy danh sách hình ảnh" },
-      { status: 500 }
-    )
+    return createErrorResponse("Đã xảy ra lỗi khi lấy danh sách hình ảnh", { status: 500 })
   }
 }
 

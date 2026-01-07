@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server"
+import { NextRequest } from "next/server"
 import { createGetRoute, createPutRoute, createDeleteRoute } from "@/lib/api/api-route-wrapper"
 import { updateGroup, deleteGroup, getGroup } from "@/features/admin/chat/server"
 import {
@@ -9,6 +9,7 @@ import {
   handleApiError,
   getStringValue,
 } from "@/lib/api/api-route-helpers"
+import { createSuccessResponse, createErrorResponse } from "@/lib/config"
 import type { ApiRouteContext } from "@/lib/api/types"
 
 async function updateGroupHandler(req: NextRequest, context: ApiRouteContext, ...args: unknown[]) {
@@ -28,7 +29,7 @@ async function updateGroupHandler(req: NextRequest, context: ApiRouteContext, ..
       avatar,
     })
 
-    return NextResponse.json({
+    return createSuccessResponse({
       id: group.id,
       name: group.name,
       description: group.description,
@@ -55,7 +56,7 @@ async function deleteGroupHandler(req: NextRequest, context: ApiRouteContext, ..
 
   try {
     await deleteGroup(createAuthContext(context, userId), id)
-    return NextResponse.json({ success: true })
+    return createSuccessResponse({ success: true })
   } catch (error) {
     return handleApiError(error, "Đã xảy ra lỗi khi xóa nhóm", 500)
   }
@@ -69,10 +70,10 @@ async function getGroupHandler(req: NextRequest, context: ApiRouteContext, ...ar
     const group = await getGroup(id, userId)
 
     if (!group) {
-      return NextResponse.json({ error: "Nhóm không tồn tại hoặc bạn không phải thành viên" }, { status: 404 })
+      return createErrorResponse("Nhóm không tồn tại hoặc bạn không phải thành viên", { status: 404 })
     }
 
-    return NextResponse.json({
+    return createSuccessResponse({
       id: group.id,
       name: group.name,
       description: group.description,

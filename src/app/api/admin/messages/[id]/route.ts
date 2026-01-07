@@ -6,7 +6,7 @@
  * - Validate input và return proper error responses
  */
 
-import { NextRequest, NextResponse } from "next/server"
+import { NextRequest } from "next/server"
 import { createPatchRoute } from "@/lib/api/api-route-wrapper"
 import { markMessageAsRead, markMessageAsUnread } from "@/features/admin/chat/server/mutations"
 import { mapMessageRecord } from "@/features/admin/chat/server/helpers"
@@ -17,6 +17,7 @@ import {
   createAuthContext,
   handleApiError,
 } from "@/lib/api/api-route-helpers"
+import { createSuccessResponse, createErrorResponse } from "@/lib/config"
 import type { ApiRouteContext } from "@/lib/api/types"
 
 async function markMessageHandler(req: NextRequest, context: ApiRouteContext, ...args: unknown[]) {
@@ -26,7 +27,7 @@ async function markMessageHandler(req: NextRequest, context: ApiRouteContext, ..
 
   const isRead = typeof body.isRead === "boolean" ? body.isRead : undefined
   if (isRead === undefined) {
-    return NextResponse.json({ error: "isRead is required" }, { status: 400 })
+    return createErrorResponse("isRead is required", { status: 400 })
   }
 
   try {
@@ -35,14 +36,14 @@ async function markMessageHandler(req: NextRequest, context: ApiRouteContext, ..
       : await markMessageAsUnread(createAuthContext(context, userId), messageId, userId)
 
     if (!message) {
-      return NextResponse.json({ error: "Message not found" }, { status: 404 })
+      return createErrorResponse("Message not found", { status: 404 })
     }
 
     // For group messages: map to include readers array
     // For personal messages: return simple response
     if (message.groupId && "reads" in message && Array.isArray(message.reads)) {
       const messageDetail = mapMessageRecord(message as Parameters<typeof mapMessageRecord>[0])
-      return NextResponse.json({
+      return createSuccessResponse({
         id: messageDetail.id,
         isRead: messageDetail.isRead,
         content: messageDetail.content,
@@ -55,7 +56,7 @@ async function markMessageHandler(req: NextRequest, context: ApiRouteContext, ..
     }
 
     // For personal messages: return simple response
-    return NextResponse.json({
+    return createSuccessResponse({
       id: message.id,
       isRead: message.isRead,
       content: message.content,

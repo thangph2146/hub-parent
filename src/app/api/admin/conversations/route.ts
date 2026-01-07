@@ -8,10 +8,11 @@
  * - Support query params: otherUserId (optional) để get messages
  */
 
-import { NextRequest, NextResponse } from "next/server"
+import { NextRequest } from "next/server"
 import { createGetRoute } from "@/lib/api/api-route-wrapper"
 import { listConversations, getMessagesBetweenUsers } from "@/features/admin/chat/server/queries"
 import { getUserId } from "@/lib/api/api-route-helpers"
+import { createSuccessResponse, createErrorResponse } from "@/lib/config"
 import type { ApiRouteContext } from "@/lib/api/types"
 
 async function getConversationsHandler(req: NextRequest, context: ApiRouteContext) {
@@ -23,7 +24,7 @@ async function getConversationsHandler(req: NextRequest, context: ApiRouteContex
   const search = searchParams.get("search") || undefined
 
   const result = await listConversations({ userId, page, limit, search })
-  return NextResponse.json(result)
+  return createSuccessResponse(result)
 }
 
 async function getMessagesHandler(req: NextRequest, context: ApiRouteContext) {
@@ -33,11 +34,11 @@ async function getMessagesHandler(req: NextRequest, context: ApiRouteContext) {
   const limit = parseInt(searchParams.get("limit") || "100", 10)
 
   if (!otherUserId) {
-    return NextResponse.json({ error: "otherUserId is required" }, { status: 400 })
+    return createErrorResponse("otherUserId is required", { status: 400 })
   }
 
   const messages = await getMessagesBetweenUsers(userId, otherUserId, limit)
-  return NextResponse.json(messages)
+  return createSuccessResponse(messages)
 }
 
 export const GET = createGetRoute(async (req: NextRequest, context: ApiRouteContext) => {

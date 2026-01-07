@@ -13,12 +13,12 @@
  * 
  * @public - No authentication required
  */
-import { NextRequest, NextResponse } from "next/server"
+import { NextRequest } from "next/server"
 import { getPosts } from "@/features/public/post/server/queries"
 import { POST_PAGINATION, POST_SEARCH } from "@/features/public/post/utils/constants"
 import type { Post } from "@/features/public/post/types"
 import type { ResourcePagination } from "@/features/admin/resources/server"
-import { logger } from "@/lib/config/logger"
+import { logger, createSuccessResponse, createErrorResponse } from "@/lib/config"
 
 export interface PostsResponse {
   data: Post[]
@@ -41,10 +41,7 @@ export async function GET(req: NextRequest) {
       : POST_PAGINATION.DEFAULT_LIMIT
 
     if (isNaN(page) || isNaN(limit)) {
-      return NextResponse.json(
-        { error: "Invalid pagination parameters" },
-        { status: 400 }
-      )
+      return createErrorResponse("Invalid pagination parameters", { status: 400 })
     }
 
     // Parse filters
@@ -56,10 +53,7 @@ export async function GET(req: NextRequest) {
 
     // Validate search length
     if (search && search.length > POST_SEARCH.MAX_LENGTH) {
-      return NextResponse.json(
-        { error: `Search query too long (max ${POST_SEARCH.MAX_LENGTH} characters)` },
-        { status: 400 }
-      )
+      return createErrorResponse(`Search query too long (max ${POST_SEARCH.MAX_LENGTH} characters)`, { status: 400 })
     }
 
     const result = await getPosts({
@@ -71,10 +65,10 @@ export async function GET(req: NextRequest) {
       sort,
     })
 
-    return NextResponse.json({
+    return createSuccessResponse({
       data: result.data,
       pagination: result.pagination,
-    } satisfies PostsResponse)
+    })
   } catch (error) {
     logger.error("[GET /api/(public)/post/posts] Error", { error })
     
@@ -87,10 +81,7 @@ export async function GET(req: NextRequest) {
       ? error.message 
       : "Không thể tải danh sách bài viết"
 
-    return NextResponse.json(
-      { error: errorMessage },
-      { status }
-    )
+    return createErrorResponse(errorMessage, { status })
   }
 }
 

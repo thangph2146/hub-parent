@@ -63,8 +63,8 @@ export const TextField = <T,>({
           <Button
             type="button"
             variant="ghost"
-            size="sm"
-            className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent disabled:!opacity-100"
+            size="icon-absolute"
+            className="disabled:!opacity-100"
             onClick={() => setShowPassword(!showPassword)}
             disabled={isDisabled || isReadOnly}
             aria-label={showPassword ? "Ẩn mật khẩu" : "Hiển thị mật khẩu"}

@@ -1,7 +1,7 @@
 /**
  * Sign Up API Route - Tạo user mới
  */
-import { NextRequest, NextResponse } from "next/server"
+import { NextRequest } from "next/server"
 import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
 import { createPostRoute } from "@/lib/api/api-route-wrapper"
@@ -13,6 +13,7 @@ import {
   sanitizeString,
   sanitizeEmail,
 } from "@/lib/api/validation"
+import { createSuccessResponse, createErrorResponse } from "@/lib/config"
 
 async function signupHandler(
   request: NextRequest,
@@ -33,20 +34,17 @@ async function signupHandler(
     "Tên"
   )
   if (!nameValidation.valid) {
-    return NextResponse.json({ error: nameValidation.error }, { status: 400 })
+    return createErrorResponse(nameValidation.error, { status: 400 })
   }
 
   const emailValidation = validateEmail(email)
   if (!emailValidation.valid) {
-    return NextResponse.json({ error: emailValidation.error }, { status: 400 })
+    return createErrorResponse(emailValidation.error, { status: 400 })
   }
 
   const passwordValidation = validatePassword(password)
   if (!passwordValidation.valid) {
-    return NextResponse.json(
-      { error: passwordValidation.error },
-      { status: 400 }
-    )
+    return createErrorResponse(passwordValidation.error, { status: 400 })
   }
 
   // Sanitize inputs
@@ -59,10 +57,7 @@ async function signupHandler(
   })
 
   if (existingUser) {
-    return NextResponse.json(
-      { error: "Email đã được sử dụng" },
-      { status: 400 }
-    )
+    return createErrorResponse("Email đã được sử dụng", { status: 400 })
   }
 
   // Hash password
@@ -108,14 +103,13 @@ async function signupHandler(
     },
   })
 
-  return NextResponse.json({
-    message: "Đăng ký thành công",
+  return createSuccessResponse({
     user: {
       id: user.id,
       email: user.email,
       name: user.name,
     },
-  })
+  }, { message: "Đăng ký thành công" })
 }
 
 export const POST = createPostRoute(signupHandler, {

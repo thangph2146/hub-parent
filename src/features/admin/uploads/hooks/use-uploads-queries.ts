@@ -14,13 +14,17 @@ import type { ImageItem, FolderNode, FolderItem } from "../types"
 
 export interface ImagesListResponse {
   success: boolean
-  data: ImageItem[]
-  folderTree?: FolderNode
-  pagination: {
-    page: number
-    limit: number
-    total: number
-    totalPages: number
+  message?: string
+  error: null
+  data: {
+    data: ImageItem[]
+    folderTree?: FolderNode
+    pagination: {
+      page: number
+      limit: number
+      total: number
+      totalPages: number
+    }
   }
 }
 

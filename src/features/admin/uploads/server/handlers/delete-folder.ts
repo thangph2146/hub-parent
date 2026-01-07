@@ -3,9 +3,10 @@
  * Handler để xóa folder
  */
 
-import { NextRequest, NextResponse } from "next/server"
+import { NextRequest } from "next/server"
 import type { ApiRouteContext } from "@/lib/api/types"
 import { getUserId } from "@/lib/api/api-route-helpers"
+import { createSuccessResponse, createErrorResponse } from "@/lib/config"
 import { deleteDirectory } from "@/lib/utils/file-utils"
 import { promises as fs } from "fs"
 import { logger } from "@/lib/config/logger"
@@ -23,13 +24,13 @@ export const deleteFolderHandler = async (req: NextRequest, context: ApiRouteCon
 
   if (!folderPath) {
     logger.warn("Delete failed: Missing path parameter", { userId })
-    return NextResponse.json({ error: "Thiếu tham số path" }, { status: 400 })
+    return createErrorResponse("Thiếu tham số path", { status: 400 })
   }
 
   try {
     const validation = resolveAndValidateFolderPath(folderPath, userId)
     if (!validation.valid) {
-      return NextResponse.json({ error: validation.error }, { status: validation.error === "Định dạng path không hợp lệ" ? 400 : 403 })
+      return createErrorResponse(validation.error, { status: validation.error === "Định dạng path không hợp lệ" ? 400 : 403 })
     }
 
     const folderFullPath = validation.resolvedPath!
@@ -43,12 +44,12 @@ export const deleteFolderHandler = async (req: NextRequest, context: ApiRouteCon
       const stats = await fs.stat(folderFullPath)
       if (!stats.isDirectory()) {
         logger.warn("Delete failed: Path is not a directory", { userId, folderFullPath })
-        return NextResponse.json({ error: "Đường dẫn không phải là thư mục" }, { status: 400 })
+        return createErrorResponse("Đường dẫn không phải là thư mục", { status: 400 })
       }
       logger.debug("Folder exists, proceeding with deletion", { folderFullPath })
     } catch {
       logger.warn("Delete failed: Folder not found", { userId, folderFullPath })
-      return NextResponse.json({ error: "Thư mục không tồn tại" }, { status: 404 })
+      return createErrorResponse("Thư mục không tồn tại", { status: 404 })
     }
 
     await deleteDirectory(folderFullPath)
@@ -59,10 +60,7 @@ export const deleteFolderHandler = async (req: NextRequest, context: ApiRouteCon
       folderFullPath,
     })
 
-    return NextResponse.json({
-      success: true,
-      message: "Xóa thư mục thành công",
-    })
+    return createSuccessResponse(undefined, { message: "Xóa thư mục thành công" })
   } catch (error) {
     logger.error("Error deleting folder", {
       userId,
@@ -70,10 +68,7 @@ export const deleteFolderHandler = async (req: NextRequest, context: ApiRouteCon
       error: error instanceof Error ? error : new Error(String(error)),
     })
 
-    return NextResponse.json(
-      { error: "Đã xảy ra lỗi khi xóa thư mục" },
-      { status: 500 }
-    )
+    return createErrorResponse("Đã xảy ra lỗi khi xóa thư mục", { status: 500 })
   }
 }
 

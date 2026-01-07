@@ -8,7 +8,7 @@
  * - Không chứa business logic (logic nằm trong mutations)
  */
 
-import { NextRequest, NextResponse } from "next/server"
+import { NextRequest } from "next/server"
 import { createPostRoute } from "@/lib/api/api-route-wrapper"
 import { createMessage } from "@/features/admin/chat/server/mutations"
 import {
@@ -18,6 +18,7 @@ import {
   handleApiError,
   getStringValue,
 } from "@/lib/api/api-route-helpers"
+import { createSuccessResponse, createErrorResponse } from "@/lib/config"
 import type { ApiRouteContext } from "@/lib/api/types"
 
 async function sendMessageHandler(req: NextRequest, context: ApiRouteContext) {
@@ -31,11 +32,11 @@ async function sendMessageHandler(req: NextRequest, context: ApiRouteContext) {
   const type = getStringValue(body, "type")
 
   if (!content) {
-    return NextResponse.json({ error: "Content là bắt buộc" }, { status: 400 })
+    return createErrorResponse("Content là bắt buộc", { status: 400 })
   }
 
   if (!receiverId && !groupId) {
-    return NextResponse.json({ error: "receiverId hoặc groupId là bắt buộc" }, { status: 400 })
+    return createErrorResponse("receiverId hoặc groupId là bắt buộc", { status: 400 })
   }
 
   try {
@@ -47,7 +48,7 @@ async function sendMessageHandler(req: NextRequest, context: ApiRouteContext) {
       type: (type as "NOTIFICATION" | "ANNOUNCEMENT" | "PERSONAL" | "SYSTEM") || "PERSONAL",
     })
 
-    return NextResponse.json({
+    return createSuccessResponse({
       id: message.id,
       content: message.content,
       senderId: message.senderId,

@@ -7,7 +7,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { ApplicationError, NotFoundError } from "@/features/admin/resources/server"
 import type { ApiRouteContext } from "./types"
-import { createErrorResponse, logger } from "@/lib/config"
+import { createSuccessResponse, createErrorResponse, logger } from "@/lib/config"
 import { normalizeError } from "@/lib/utils/api-utils"
 import { sanitizeSearchQuery } from "./validation"
 
@@ -153,7 +153,7 @@ export const createOptionsHandler = async (
     // Create response with caching headers
     // Cache for 30 seconds để optimize performance nhưng vẫn đảm bảo data fresh
     // Theo Next.js 16: https://nextjs.org/docs/app/building-your-application/caching
-    const response = NextResponse.json({ data: options })
+    const response = createSuccessResponse(options)
     
     // Set cache headers theo Next.js 16 best practices
     // - private: Chỉ cache ở client, không cache ở shared CDN (vì có authentication)

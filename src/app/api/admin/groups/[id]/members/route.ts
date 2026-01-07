@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server"
+import { NextRequest } from "next/server"
 import { createPostRoute } from "@/lib/api/api-route-wrapper"
 import { addGroupMembers } from "@/features/admin/chat/server"
 import {
@@ -9,6 +9,7 @@ import {
   handleApiError,
   getArrayValue,
 } from "@/lib/api/api-route-helpers"
+import { createSuccessResponse, createErrorResponse } from "@/lib/config"
 import type { ApiRouteContext } from "@/lib/api/types"
 
 async function addGroupMembersHandler(req: NextRequest, context: ApiRouteContext, ...args: unknown[]) {
@@ -19,7 +20,7 @@ async function addGroupMembersHandler(req: NextRequest, context: ApiRouteContext
   const memberIds = getArrayValue<string>(body, "memberIds", (id): id is string => typeof id === "string")
 
   if (memberIds.length === 0) {
-    return NextResponse.json({ error: "Phải có ít nhất một thành viên" }, { status: 400 })
+    return createErrorResponse("Phải có ít nhất một thành viên", { status: 400 })
   }
 
   try {
@@ -27,7 +28,7 @@ async function addGroupMembersHandler(req: NextRequest, context: ApiRouteContext
       groupId: id,
       memberIds,
     })
-    return NextResponse.json(result)
+    return createSuccessResponse(result)
   } catch (error) {
     return handleApiError(error, "Đã xảy ra lỗi khi thêm thành viên", 500)
   }

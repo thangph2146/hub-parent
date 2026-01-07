@@ -284,7 +284,7 @@ export function InsertImageUploadsDialogBody({
   const limit = 100 // Tăng limit để lấy nhiều hình ảnh hơn cho tree view
 
   const { data: imagesData, isLoading } = useImagesList(1, limit)
-  const folderTree = imagesData?.folderTree
+  const folderTree = imagesData?.data?.folderTree
 
   const isDisabled = !selectedImage
 

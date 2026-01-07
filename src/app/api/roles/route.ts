@@ -1,10 +1,11 @@
 /**
  * API Route: GET /api/roles - List roles
  */
-import { NextRequest, NextResponse } from "next/server"
+import { NextRequest } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { PERMISSIONS } from "@/lib/permissions"
 import { createGetRoute } from "@/lib/api/api-route-wrapper"
+import { createSuccessResponse } from "@/lib/config"
 
 async function getRolesHandler(
   _req: NextRequest,
@@ -30,7 +31,7 @@ async function getRolesHandler(
     },
   })
 
-  return NextResponse.json({ data: rolesList })
+  return createSuccessResponse(rolesList)
 }
 
 // Allow ROLES_VIEW, USERS_CREATE, or USERS_VIEW permission

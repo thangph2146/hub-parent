@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server"
+import { NextRequest } from "next/server"
 import { createDeleteRoute } from "@/lib/api/api-route-wrapper"
 import { hardDeleteGroup } from "@/features/admin/chat/server"
 import {
@@ -7,6 +7,7 @@ import {
   createAuthContext,
   handleApiError,
 } from "@/lib/api/api-route-helpers"
+import { createSuccessResponse } from "@/lib/config"
 import type { ApiRouteContext } from "@/lib/api/types"
 
 async function hardDeleteGroupHandler(req: NextRequest, context: ApiRouteContext, ...args: unknown[]) {
@@ -15,7 +16,7 @@ async function hardDeleteGroupHandler(req: NextRequest, context: ApiRouteContext
 
   try {
     await hardDeleteGroup(createAuthContext(context, userId), id)
-    return NextResponse.json({ success: true })
+    return createSuccessResponse({ success: true })
   } catch (error) {
     return handleApiError(error, "Đã xảy ra lỗi khi xóa vĩnh viễn nhóm", 500)
   }

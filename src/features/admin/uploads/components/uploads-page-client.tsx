@@ -77,10 +77,16 @@ export const UploadsPageClient = () => {
     closeFolderDelete,
   })
 
-  // Derived data
-  const allImages = useMemo(() => imagesData?.data || [], [imagesData?.data])
-  const folderTree = imagesData?.folderTree || null
-  const pagination = imagesData?.pagination || null
+  // Derived data - createSuccessResponse wraps in { success, data: {...} }
+  const responseData = imagesData?.data
+  const allImages = useMemo(() => {
+    if (!responseData?.data || !Array.isArray(responseData.data)) {
+      return []
+    }
+    return responseData.data
+  }, [responseData])
+  const folderTree = responseData?.folderTree || null
+  const pagination = responseData?.pagination || null
 
   // Scroll to top when page changes
   useEffect(() => {
@@ -171,8 +177,8 @@ export const UploadsPageClient = () => {
               logger.error("Upload error from component", { error: new Error(error) })
             }}
             label=""
-            maxSizeMB={5}
-            maxDimension={500}
+            maxSizeMB={10}
+            maxDimension={1920}
             folderPath={folderPath.path}
             isExistingFolder={folderPath.isExistingFolder}
           />

@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server"
+import { NextRequest } from "next/server"
 import { createPostRoute } from "@/lib/api/api-route-wrapper"
 import { restoreGroup } from "@/features/admin/chat/server"
 import {
@@ -7,6 +7,7 @@ import {
   createAuthContext,
   handleApiError,
 } from "@/lib/api/api-route-helpers"
+import { createSuccessResponse } from "@/lib/config"
 import type { ApiRouteContext } from "@/lib/api/types"
 
 async function restoreGroupHandler(req: NextRequest, context: ApiRouteContext, ...args: unknown[]) {
@@ -15,7 +16,7 @@ async function restoreGroupHandler(req: NextRequest, context: ApiRouteContext, .
 
   try {
     const group = await restoreGroup(createAuthContext(context, userId), id)
-    return NextResponse.json({
+    return createSuccessResponse({
       id: group.id,
       name: group.name,
       description: group.description,

@@ -4,25 +4,25 @@
  * Yêu cầu: Đăng nhập và có permission "students:view"
  */
 
-import { NextRequest, NextResponse } from "next/server"
+import { NextRequest } from "next/server"
 import { createGetRoute } from "@/lib/api/api-route-wrapper"
 import type { ApiRouteContext } from "@/lib/api/types"
 import { isSuperAdmin } from "@/lib/permissions"
 import { callExternalApi } from "@/lib/api/external-api-client"
 import type { StudentOverallAverageResponse } from "@/lib/api/types"
 import { validateStudentAndGetCode } from "@/features/admin/students/server/helpers"
-import { logger } from "@/lib/config"
+import { logger, createSuccessResponse, createErrorResponse } from "@/lib/config"
 
 const getStudentOverallAverageHandler = async (
   _req: NextRequest,
   context: ApiRouteContext,
   ...args: unknown[]
-): Promise<NextResponse> => {
+) => {
   const { params } = args[0] as { params: Promise<{ id: string }> }
   const { id: studentId } = await params
 
   if (!studentId) {
-    return NextResponse.json({ error: "Student ID is required" }, { status: 400 })
+    return createErrorResponse("Student ID is required", { status: 400 })
   }
 
   try {
@@ -32,14 +32,14 @@ const getStudentOverallAverageHandler = async (
     const validation = await validateStudentAndGetCode(studentId, actorId, isSuperAdminUser)
 
     if (validation.error) {
-      return NextResponse.json({ error: validation.error.message }, { status: validation.error.status })
+      return createErrorResponse(validation.error.message, { status: validation.error.status })
     }
 
     // Gọi external API
     const endpoint = `/api/Averages/overall/${validation.studentCode}`
     const data = await callExternalApi<StudentOverallAverageResponse>(endpoint)
 
-    return NextResponse.json({ data })
+    return createSuccessResponse(data)
   } catch (error) {
     logger.error("[Student Averages API] Error fetching overall average", {
       studentId,
@@ -47,12 +47,12 @@ const getStudentOverallAverageHandler = async (
       error: error instanceof Error ? error.message : String(error),
     })
 
-    return NextResponse.json(
-      {
-        error: "Không thể lấy dữ liệu tổng hợp điểm trung bình chung",
-        message: error instanceof Error ? error.message : "Unknown error",
-      },
-      { status: 500 }
+    return createErrorResponse(
+      "Không thể lấy dữ liệu tổng hợp điểm trung bình chung",
+      { 
+        status: 500,
+        error: error instanceof Error ? error.message : "Unknown error"
+      }
     )
   }
 }

@@ -3,9 +3,10 @@
  * Handler để xóa hình ảnh
  */
 
-import { NextRequest, NextResponse } from "next/server"
+import { NextRequest } from "next/server"
 import type { ApiRouteContext } from "@/lib/api/types"
 import { getUserId } from "@/lib/api/api-route-helpers"
+import { createSuccessResponse, createErrorResponse } from "@/lib/config"
 import { deleteFile, IMAGES_DIR, STORAGE_DIR } from "@/lib/utils/file-utils"
 import { promises as fs } from "fs"
 import { logger } from "@/lib/config/logger"
@@ -23,13 +24,13 @@ export const deleteImageHandler = async (req: NextRequest, context: ApiRouteCont
 
   if (!relativePath) {
     logger.warn("Delete failed: Missing path parameter", { userId })
-    return NextResponse.json({ error: "Thiếu tham số path" }, { status: 400 })
+    return createErrorResponse("Thiếu tham số path", { status: 400 })
   }
 
   try {
     const validation = resolveAndValidateFilePath(relativePath, IMAGES_DIR, STORAGE_DIR, userId)
     if (!validation.valid) {
-      return NextResponse.json({ error: validation.error }, { status: 403 })
+      return createErrorResponse(validation.error, { status: 403 })
     }
 
     const filePath = validation.filePath!
@@ -46,7 +47,7 @@ export const deleteImageHandler = async (req: NextRequest, context: ApiRouteCont
       logger.debug("File exists, proceeding with deletion", { filePath })
     } catch {
       logger.warn("Delete failed: File not found", { userId, filePath })
-      return NextResponse.json({ error: "File không tồn tại" }, { status: 404 })
+      return createErrorResponse("File không tồn tại", { status: 404 })
     }
 
     await deleteFile(filePath)
@@ -57,10 +58,7 @@ export const deleteImageHandler = async (req: NextRequest, context: ApiRouteCont
       relativePath,
     })
 
-    return NextResponse.json({
-      success: true,
-      message: "Xóa hình ảnh thành công",
-    })
+    return createSuccessResponse(undefined, { message: "Xóa hình ảnh thành công" })
   } catch (error) {
     logger.error("Error deleting image", {
       userId,
@@ -68,10 +66,7 @@ export const deleteImageHandler = async (req: NextRequest, context: ApiRouteCont
       error: error instanceof Error ? error : new Error(String(error)),
     })
 
-    return NextResponse.json(
-      { error: "Đã xảy ra lỗi khi xóa hình ảnh" },
-      { status: 500 }
-    )
+    return createErrorResponse("Đã xảy ra lỗi khi xóa hình ảnh", { status: 500 })
   }
 }
 

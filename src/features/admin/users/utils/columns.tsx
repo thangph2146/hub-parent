@@ -114,8 +114,8 @@ export const useUserColumns = ({
             { label: "Ngưng hoạt động", value: "false" },
           ],
         },
-        className: "w-[120px]",
-        headerClassName: "w-[120px]",
+        className: "w-[180px]",
+        headerClassName: "w-[180px]",
         cell: (row) => {
           const isSuperAdmin = row.email === PROTECTED_SUPER_ADMIN_EMAIL
           // Disable switch nếu là super admin và đang ở trạng thái active (không cho toggle OFF)
@@ -145,9 +145,6 @@ export const useUserColumns = ({
               <TypographySpanSmallMuted>
                 {row.isActive ? "Hoạt động" : "Tạm khóa"}
                 </TypographySpanSmallMuted>
-                {isSuperAdmin && (
-                  <TypographySpanSmallMuted>(Super Admin)</TypographySpanSmallMuted>
-                )}
               </Flex>
             </Flex>
           )

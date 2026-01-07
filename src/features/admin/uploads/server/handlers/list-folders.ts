@@ -3,9 +3,10 @@
  * Handler để lấy danh sách folders có sẵn
  */
 
-import { NextRequest, NextResponse } from "next/server"
+import { NextRequest } from "next/server"
 import type { ApiRouteContext } from "@/lib/api/types"
 import { getUserId } from "@/lib/api/api-route-helpers"
+import { createSuccessResponse, createErrorResponse } from "@/lib/config"
 import { initializeStorageDirectories } from "@/lib/utils/file-utils"
 import { logger } from "@/lib/config/logger"
 import { scanStorageDirectoryForFolders } from "../utils/folder-scanning"
@@ -26,20 +27,14 @@ export const listFoldersHandler = async (_req: NextRequest, context: ApiRouteCon
       count: folders.length,
     })
 
-    return NextResponse.json({
-      success: true,
-      data: folders,
-    })
+    return createSuccessResponse(folders)
   } catch (error) {
     logger.error("Error listing folders", {
       userId,
       error: error instanceof Error ? error : new Error(String(error)),
     })
 
-    return NextResponse.json(
-      { error: "Đã xảy ra lỗi khi lấy danh sách thư mục" },
-      { status: 500 }
-    )
+    return createErrorResponse("Đã xảy ra lỗi khi lấy danh sách thư mục", { status: 500 })
   }
 }
 

@@ -3,9 +3,10 @@
  * Handler để tạo folder mới
  */
 
-import { NextRequest, NextResponse } from "next/server"
+import { NextRequest } from "next/server"
 import type { ApiRouteContext } from "@/lib/api/types"
 import { getUserId } from "@/lib/api/api-route-helpers"
+import { createSuccessResponse, createErrorResponse } from "@/lib/config"
 import { ensureDirectoryExists, initializeStorageDirectories } from "@/lib/utils/file-utils"
 import { promises as fs } from "fs"
 import { logger } from "@/lib/config/logger"
@@ -27,14 +28,14 @@ export const createFolderHandler = async (
 
   if (!folderName || !folderName.trim()) {
     logger.warn("Create folder failed: Missing folder name", { userId })
-    return NextResponse.json({ error: "Thiếu tên thư mục" }, { status: 400 })
+    return createErrorResponse("Thiếu tên thư mục", { status: 400 })
   }
 
   const sanitizedFolderName = sanitizeFolderName(folderName)
 
   if (!sanitizedFolderName) {
     logger.warn("Create folder failed: Invalid folder name", { userId, folderName })
-    return NextResponse.json({ error: "Tên thư mục không hợp lệ" }, { status: 400 })
+    return createErrorResponse("Tên thư mục không hợp lệ", { status: 400 })
   }
 
   try {
@@ -46,7 +47,7 @@ export const createFolderHandler = async (
 
     const validation = resolveAndValidateFolderPath(folderPath, userId)
     if (!validation.valid) {
-      return NextResponse.json({ error: validation.error }, { status: validation.error === "Định dạng path không hợp lệ" ? 400 : 403 })
+      return createErrorResponse(validation.error, { status: validation.error === "Định dạng path không hợp lệ" ? 400 : 403 })
     }
 
     const folderFullPath = validation.resolvedPath!
@@ -59,10 +60,7 @@ export const createFolderHandler = async (
           folderPath,
           folderFullPath,
         })
-        return NextResponse.json(
-          { error: "Thư mục đã tồn tại", folderPath },
-          { status: 409 }
-        )
+        return createErrorResponse("Thư mục đã tồn tại", { status: 409, data: { folderPath } })
       }
     } catch (statError) {
       const errorCode = (statError as NodeJS.ErrnoException)?.code
@@ -86,14 +84,10 @@ export const createFolderHandler = async (
       folderFullPath,
     })
 
-    return NextResponse.json({
-      success: true,
-      data: {
-        folderName: sanitizedFolderName,
-        folderPath,
-      },
-      message: "Tạo thư mục thành công",
-    })
+    return createSuccessResponse({
+      folderName: sanitizedFolderName,
+      folderPath,
+    }, { message: "Tạo thư mục thành công" })
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error)
     
@@ -105,12 +99,12 @@ export const createFolderHandler = async (
       errorMessage,
     })
 
-    return NextResponse.json(
+    return createErrorResponse(
+      "Đã xảy ra lỗi khi tạo thư mục",
       { 
-        error: "Đã xảy ra lỗi khi tạo thư mục",
-        details: process.env.NODE_ENV === "development" ? errorMessage : undefined
-      },
-      { status: 500 }
+        status: 500,
+        data: process.env.NODE_ENV === "development" ? { details: errorMessage } : undefined
+      }
     )
   }
 }
