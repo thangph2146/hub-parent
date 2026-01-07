@@ -447,7 +447,7 @@ export function NavUser({ className }: { className?: string }) {
   // Header style (not in sidebar)
   if (!isInSidebar) {
     return (
-      <DropdownMenu>
+      <DropdownMenu modal={false}>
         <DropdownMenuTrigger asChild>
           <Button
             variant="ghost"
@@ -477,7 +477,7 @@ export function NavUser({ className }: { className?: string }) {
   return (
     <SidebarMenu>
       <SidebarMenuItem>
-        <DropdownMenu>
+        <DropdownMenu modal={false}>
           <DropdownMenuTrigger asChild>
             <SidebarMenuButton
               size="lg"

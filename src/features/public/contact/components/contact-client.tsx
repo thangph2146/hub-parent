@@ -11,7 +11,7 @@ import {
   MapPin,
   Clock,
 } from "lucide-react"
-import { Section } from "@/features/public/home/components/section"
+import { Section } from "@/components/ui/section"
 
 export type ContactClientProps = Record<string, never>
 

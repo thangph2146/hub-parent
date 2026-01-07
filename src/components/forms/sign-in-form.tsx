@@ -261,7 +261,7 @@ export function SignInForm({
               </Field>
               <FieldDescription textAlign="center" className="text-sm md:text-base">
                 Nếu bạn chưa có tài khoản?{" "}
-                <Link href="/auth/sign-up" className="font-bold text-secondary hover:text-secondary/80 transition-colors">
+                <Link href="/auth/sign-up" className="font-bold text-primary hover:text-primary/80 transition-colors">
                   Đăng ký
                 </Link>
               </FieldDescription>

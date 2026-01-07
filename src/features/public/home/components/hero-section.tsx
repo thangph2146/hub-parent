@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { ReactNode, useState, useEffect } from "react";
+import { ReactNode, useState, useEffect, useRef } from "react";
 import type { ContentCardButton } from "./content-card";
 import { Flex } from "@/components/ui/flex";
 import { cn } from "@/lib/utils";
@@ -11,6 +11,7 @@ import { IconSize, TypographySpanSmall } from "@/components/ui/typography";
 import { ArrowRight, ChevronDown } from "lucide-react";
 import { FlipWords } from "@/components/ui/flip-words";
 import { motion } from "framer-motion";
+import { useSectionHeight } from "@/hooks/use-section-height";
 
 export type HeroButton = ContentCardButton;
 
@@ -96,13 +97,22 @@ export const HeroSection = ({
   className,
   children,
 }: HeroSectionProps) => {
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const { sectionHeightClassName, sectionHeightStyle, scrollToNextSection } = useSectionHeight({
+    minHeight: 600,
+    fullHeight: true,
+  });
+
   return (
     <Flex
       as="section"
+      ref={sectionRef}
+      data-hero-section="true"
       fullWidth
       position="relative"
       overflow="hidden"
-      className={cn("h-[calc(100dvh-55px)] min-h-[600px] w-full", className)}
+      className={cn(sectionHeightClassName, className)}
+      style={sectionHeightStyle}
     >
       {/* Background Image with Zoom Effect */}
       <Flex position="absolute" className="inset-0 z-0">
@@ -286,7 +296,7 @@ export const HeroSection = ({
 
       {/* Premium Scroll Indicator */}
       <motion.div
-        className="absolute bottom-2 left-1/2 -translate-x-1/2 z-20"
+        className="absolute bottom-2 sm:bottom-4 left-1/2 -translate-x-1/2 z-[60] hidden sm:block"
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 1, duration: 0.5 }}
@@ -295,12 +305,7 @@ export const HeroSection = ({
           animate={{ y: [0, 8, 0] }}
           transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
           className="flex flex-col items-center gap-2 text-white/70 hover:text-white transition-colors cursor-pointer group"
-          onClick={() => {
-            window.scrollTo({
-              top: window.innerHeight - 55,
-              behavior: "smooth"
-            });
-          }}
+          onClick={() => scrollToNextSection(sectionRef.current)}
         >
           <div className="relative px-5 py-2.5 rounded-full backdrop-blur-xl bg-white/10 border border-white/30 group-hover:bg-white/20 group-hover:border-white/40 transition-all duration-300 shadow-lg group-hover:shadow-xl">
             <span className="text-xs tracking-[0.2em] uppercase font-semibold drop-shadow-lg">Cuộn xuống</span>

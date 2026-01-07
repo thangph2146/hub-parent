@@ -1,15 +1,9 @@
 import { ReactNode } from "react";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-} from "@/components/ui/card";
-import { Flex } from "@/components/ui/flex";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import { Flex } from "@/components/ui/flex";
 import { IconSize, TypographySpanSmall } from "@/components/ui/typography";
 import { cn } from "@/lib/utils";
 
@@ -69,25 +63,14 @@ export const ContentCard = ({
 
   return (
     <Card
-      className={cn(
-        enableHover && "transition-all duration-300 hover:-translate-y-1 hover:shadow-xl",
-        cardClassName
-      )}
+      className={cn(enableHover && "transition-all duration-300 hover:-translate-y-1 hover:shadow-xl", cardClassName)}
       overlay={cardOverlay}
       maxWidth={cardMaxWidth}
       padding={cardPadding}
     >
       <CardHeader className={headerClassName}>
-        <CardTitle
-          className={cn("leading-tight", titleClassName || titleDefaultClasses)}
-        >
-          {title}
-        </CardTitle>
-        <CardDescription
-          className={cn("leading-relaxed", descriptionClassName || descriptionDefaultClasses)}
-        >
-          {description}
-        </CardDescription>
+        <CardTitle className={cn("leading-tight", titleClassName || titleDefaultClasses)}>{title}</CardTitle>
+        <CardDescription className={cn("leading-relaxed", descriptionClassName || descriptionDefaultClasses)}>{description}</CardDescription>
       </CardHeader>
       {(buttonsToRender.length > 0 || children) && (
         <CardContent className={contentClassName}>
@@ -98,10 +81,7 @@ export const ContentCard = ({
                   key={index}
                   variant={btn.variant || "outline"}
                   size={btn.size || "sm"}
-                  className={cn(
-                    "transition-all duration-200 hover:scale-[1.02]",
-                    buttonsToRender.length === 1 ? "w-full sm:w-auto" : ""
-                  )}
+                  className={cn("transition-all duration-200 hover:scale-[1.02]", buttonsToRender.length === 1 && "w-full sm:w-auto")}
                   asChild
                 >
                   <Link href={btn.href}>
@@ -109,12 +89,8 @@ export const ContentCard = ({
                       {btn.leftIcon}
                       {btn.responsiveText ? (
                         <>
-                          <TypographySpanSmall className="hidden xs:inline">
-                            {btn.responsiveText.desktop}
-                          </TypographySpanSmall>
-                          <TypographySpanSmall className="xs:hidden">
-                            {btn.responsiveText.mobile}
-                          </TypographySpanSmall>
+                          <TypographySpanSmall className="hidden xs:inline">{btn.responsiveText.desktop}</TypographySpanSmall>
+                          <TypographySpanSmall className="xs:hidden">{btn.responsiveText.mobile}</TypographySpanSmall>
                         </>
                       ) : (
                         <TypographySpanSmall>{btn.text}</TypographySpanSmall>
