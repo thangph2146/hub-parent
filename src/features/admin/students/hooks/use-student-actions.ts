@@ -60,7 +60,6 @@ export const useStudentActions = ({
     messages: STUDENT_MESSAGES,
     getRecordName: (row) => row.studentCode,
     canManage: canActivate,
-    showFeedback,
     onSuccess: async (row, newStatus) => {
       resourceLogger.tableAction({
         resource: "students",

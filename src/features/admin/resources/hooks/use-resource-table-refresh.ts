@@ -148,10 +148,27 @@ export const useResourceTableRefresh = ({
     lastCacheVersionRef.current = cacheVersion
     
     // Debounce cache version refresh để tránh double refresh với mutation refresh
-    // Mutation đã trigger refresh thông qua registry, socket bridge chỉ cần update cache
-    // Chỉ trigger refresh từ cacheVersion nếu mutation chưa trigger (debounce 100ms)
+    // Mutation đã trigger refresh thông qua query invalidation events listener và registry
+    // Chỉ trigger refresh từ cacheVersion nếu không có query invalidation gần đây (debounce 5000ms)
     const now = Date.now()
-    if (now - lastCacheVersionRefreshRef.current < 100) {
+    const timeSinceLastInvalidation = now - lastInvalidationRefreshRef.current
+    
+    // Nếu có query invalidation gần đây (< 6000ms), skip cache version refresh
+    // Vì query invalidation events listener và registry đã trigger refresh rồi
+    // Tăng thời gian lên 6000ms để đảm bảo cache version từ socket không trigger refresh không cần thiết
+    // Thêm buffer 1000ms để tránh edge case khi cache version đến đúng lúc 5000ms
+    if (timeSinceLastInvalidation < 6000) {
+      logger.debug("Cache version refresh skipped (query invalidation already triggered refresh)", { 
+        cacheVersion,
+        timeSinceLastInvalidation,
+        debounceMs: 6000
+      })
+      return
+    }
+    
+    // Debounce cache version refresh để tránh trigger quá nhiều lần
+    // Tăng debounce lên 6000ms để tránh refresh quá thường xuyên từ socket
+    if (now - lastCacheVersionRefreshRef.current < 6000) {
       logger.debug("Cache version refresh debounced", { 
         cacheVersion,
         timeSinceLastRefresh: now - lastCacheVersionRefreshRef.current 
@@ -204,6 +221,11 @@ export const useResourceTableRefresh = ({
       
       // Log để debug (chỉ log khi invalidated, không log dataUpdatedAt changes)
       if (event.type === "updated" && event.query.state.isInvalidated) {
+        // QUAN TRỌNG: Update lastInvalidationRefreshRef ngay khi query được invalidate
+        // Để cache version refresh có thể skip nếu có query invalidation gần đây
+        const now = Date.now()
+        lastInvalidationRefreshRef.current = now
+        
         logger.debug("Query invalidated detected", {
           type: event.type,
           queryKey: queryKey.slice(0, 3),
@@ -227,7 +249,7 @@ export const useResourceTableRefresh = ({
           return
         }
         
-        lastInvalidationRefreshRef.current = now
+        // lastInvalidationRefreshRef đã được update ở trên khi detect invalidate
         
         if (softRefreshRef.current) {
           logger.debug("Query invalidated (detected via cache subscription), triggering soft refresh", { 

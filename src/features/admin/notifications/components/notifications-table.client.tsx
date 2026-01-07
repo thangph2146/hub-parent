@@ -109,8 +109,6 @@ export const NotificationsTableClient = ({
     handleDeleteSingle,
     handleBulkDelete,
     togglingNotifications,
-    markingReadNotifications,
-    markingUnreadNotifications,
     deletingNotifications,
     bulkState,
   } = useNotificationActions({
@@ -119,16 +117,10 @@ export const NotificationsTableClient = ({
 
   const handleToggleReadWithRefresh = useCallback(
     (row: NotificationRow, checked: boolean) => {
-      setDeleteConfirm({
-        open: true,
-        type: checked ? "mark-read" : "mark-unread",
-        row,
-        onConfirm: async () => {
-          await handleToggleRead(row, checked)
-        },
-      })
+      // Cả mark-read và mark-unread đều gọi trực tiếp với toast, không hiển thị dialog
+      handleToggleRead(row, checked)
     },
-    [handleToggleRead, setDeleteConfirm],
+    [handleToggleRead],
   )
 
   const handleDeleteSingleWithRefresh = useCallback(
@@ -312,28 +304,16 @@ export const NotificationsTableClient = ({
       const deletableNotificationIds = deletableNotifications.map((row) => row.id)
       const systemCount = ownNotifications.length - deletableNotifications.length
 
-      const handleBulkMarkAsReadWithRefresh = () => {
-        setDeleteConfirm({
-          open: true,
-          type: "mark-read",
-          bulkIds: unreadNotificationIds,
-          onConfirm: async () => {
-            await handleBulkMarkAsRead(unreadNotificationIds, ownNotifications)
-            refresh?.()
-          },
-        })
+      const handleBulkMarkAsReadWithRefresh = async () => {
+        // mark-read: gọi trực tiếp với toast, không hiển thị dialog
+        await handleBulkMarkAsRead(unreadNotificationIds, ownNotifications)
+        refresh?.()
       }
 
-      const handleBulkMarkAsUnreadWithRefresh = () => {
-        setDeleteConfirm({
-          open: true,
-          type: "mark-unread",
-          bulkIds: readNotificationIds,
-          onConfirm: async () => {
-            await handleBulkMarkAsUnread(readNotificationIds, ownNotifications)
-            refresh?.()
-          },
-        })
+      const handleBulkMarkAsUnreadWithRefresh = async () => {
+        // mark-unread: gọi trực tiếp với toast, không hiển thị dialog
+        await handleBulkMarkAsUnread(readNotificationIds, ownNotifications)
+        refresh?.()
       }
 
       const handleBulkDeleteWithRefresh = () => {
@@ -536,8 +516,8 @@ export const NotificationsTableClient = ({
         onViewChange={handleViewChange}
       />
 
-      {/* Delete Confirmation Dialog */}
-      {deleteConfirm && (
+      {/* Delete Confirmation Dialog - chỉ hiển thị cho delete */}
+      {deleteConfirm && deleteConfirm.type === "delete" && (
         <ConfirmDialog
           open={deleteConfirm.open}
           onOpenChange={(open) => {
@@ -545,35 +525,14 @@ export const NotificationsTableClient = ({
           }}
           title={getDeleteConfirmTitle()}
           description={getDeleteConfirmDescription()}
-          variant={
-            deleteConfirm.type === "delete"
-              ? "destructive"
-              : "default"
-          }
-          confirmLabel={
-            deleteConfirm.type === "mark-read"
-              ? NOTIFICATION_CONFIRM_MESSAGES.MARK_READ_LABEL
-              : deleteConfirm.type === "mark-unread"
-              ? NOTIFICATION_CONFIRM_MESSAGES.MARK_UNREAD_LABEL
-              : NOTIFICATION_CONFIRM_MESSAGES.CONFIRM_LABEL
-          }
+          variant="destructive"
+          confirmLabel={NOTIFICATION_CONFIRM_MESSAGES.CONFIRM_LABEL}
           cancelLabel={NOTIFICATION_CONFIRM_MESSAGES.CANCEL_LABEL}
           onConfirm={handleDeleteConfirm}
           isLoading={
             bulkState.isProcessing ||
             (deleteConfirm.row
-              ? (() => {
-                  switch (deleteConfirm.type) {
-                    case "mark-read":
-                      return markingReadNotifications.has(deleteConfirm.row.id)
-                    case "mark-unread":
-                      return markingUnreadNotifications.has(deleteConfirm.row.id)
-                    case "delete":
-                      return deletingNotifications.has(deleteConfirm.row.id)
-                    default:
-                      return false
-                  }
-                })()
+              ? deletingNotifications.has(deleteConfirm.row.id)
               : false)
           }
         />

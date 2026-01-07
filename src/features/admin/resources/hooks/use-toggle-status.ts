@@ -1,10 +1,10 @@
 import { useCallback, useState } from "react"
 import { useQueryClient } from "@tanstack/react-query"
 import { apiClient } from "@/lib/api/axios"
-import { getErrorMessage, invalidateAndRefetchQueries } from "@/lib/utils"
+import { getErrorMessage } from "@/lib/utils"
 import { resourceLogger } from "@/lib/config/resource-logger"
 import type { ResourceRefreshHandler } from "../types"
-import type { FeedbackVariant } from "@/components/dialogs"
+import { toast } from "@/hooks/use-toast"
 import type { QueryKey } from "@tanstack/react-query"
 
 export interface UseToggleStatusConfig<TRow extends { id: string }> {
@@ -25,7 +25,6 @@ export interface UseToggleStatusConfig<TRow extends { id: string }> {
   }
   getRecordName: (row: TRow) => string
   canManage: boolean
-  showFeedback: (variant: FeedbackVariant, title: string, description?: string, details?: string) => void
   validateToggle?: (row: TRow, newStatus: boolean) => { valid: boolean; error?: string }
   onSuccess?: (row: TRow, newStatus: boolean) => void | Promise<void>
 }
@@ -37,7 +36,7 @@ export const useToggleStatus = <TRow extends { id: string }>(
   const [togglingIds, setTogglingIds] = useState<Set<string>>(new Set())
 
   const handleToggleStatus = useCallback(
-    async (row: TRow, newStatus: boolean, refresh: ResourceRefreshHandler) => {
+    async (row: TRow, newStatus: boolean, _refresh: ResourceRefreshHandler) => {
       const startTime = Date.now()
       const recordName = config.getRecordName(row)
       const actionType = newStatus ? "toggle-active" : "toggle-inactive"
@@ -72,7 +71,11 @@ export const useToggleStatus = <TRow extends { id: string }>(
             duration: Date.now() - startTime,
           },
         })
-        config.showFeedback("error", config.messages.NO_PERMISSION, errorMsg)
+        toast({
+          variant: "destructive",
+          title: config.messages.NO_PERMISSION,
+          description: errorMsg,
+        })
         return
       }
 
@@ -92,12 +95,22 @@ export const useToggleStatus = <TRow extends { id: string }>(
               duration: Date.now() - startTime,
             },
           })
-          config.showFeedback("error", validation.error || config.messages.NO_PERMISSION, validation.error)
+          toast({
+            variant: "destructive",
+            title: validation.error || config.messages.NO_PERMISSION,
+            description: validation.error,
+          })
           return
         }
       }
 
       setTogglingIds((prev) => new Set(prev).add(row.id))
+
+      // Hiển thị toast loading khi đang thay đổi trạng thái
+      const loadingToast = toast({
+        title: "Đang thay đổi trạng thái...",
+        description: `Đang ${newStatus ? "kích hoạt" : "vô hiệu hóa"} ${recordName}`,
+      })
 
       try {
         // Log trước khi gọi API
@@ -140,7 +153,13 @@ export const useToggleStatus = <TRow extends { id: string }>(
           : config.messages.TOGGLE_INACTIVE_SUCCESS || config.messages.TOGGLE_ACTIVE_SUCCESS
         const description = `Đã ${newStatus ? "kích hoạt" : "vô hiệu hóa"} ${recordName}`
 
-        config.showFeedback("success", successTitle, description)
+        // Dismiss loading toast và hiển thị success toast
+        loadingToast.dismiss()
+        toast({
+          variant: "success",
+          title: successTitle,
+          description: description,
+        })
 
         // Log trước khi invalidate queries
         resourceLogger.actionFlow({
@@ -157,10 +176,11 @@ export const useToggleStatus = <TRow extends { id: string }>(
           },
         })
 
-        // Invalidate và refetch queries
+        // Chỉ invalidate queries - table sẽ tự động refresh qua query cache events
+        // Không cần gọi refresh callback vì useResourceTableRefresh đã listen query invalidation events
         const invalidateStartTime = Date.now()
-        await invalidateAndRefetchQueries(queryClient, config.queryKeys.all())
-        await invalidateAndRefetchQueries(queryClient, config.queryKeys.detail(row.id))
+        await queryClient.invalidateQueries({ queryKey: config.queryKeys.all(), refetchType: "active" })
+        await queryClient.invalidateQueries({ queryKey: config.queryKeys.detail(row.id), refetchType: "active" })
         const invalidateDuration = Date.now() - invalidateStartTime
 
         resourceLogger.actionFlow({
@@ -173,37 +193,7 @@ export const useToggleStatus = <TRow extends { id: string }>(
             newStatus,
             operation: "invalidate_queries_completed",
             invalidateDuration,
-          },
-        })
-
-        // Log trước khi refresh table
-        resourceLogger.actionFlow({
-          resource: config.resourceName,
-          action: "toggle-status",
-          step: "init",
-          metadata: {
-            resourceId: row.id,
-            recordName,
-            newStatus,
-            operation: "refresh_table",
-          },
-        })
-
-        // Refresh table
-        const refreshStartTime = Date.now()
-        await refresh()
-        const refreshDuration = Date.now() - refreshStartTime
-
-        resourceLogger.actionFlow({
-          resource: config.resourceName,
-          action: "toggle-status",
-          step: "init",
-          metadata: {
-            resourceId: row.id,
-            recordName,
-            newStatus,
-            operation: "refresh_table_completed",
-            refreshDuration,
+            note: "Table will auto-refresh via query cache events listener",
           },
         })
 
@@ -240,7 +230,6 @@ export const useToggleStatus = <TRow extends { id: string }>(
             totalDuration: Date.now() - startTime,
             apiDuration,
             invalidateDuration,
-            refreshDuration,
           },
         })
 
@@ -275,7 +264,13 @@ export const useToggleStatus = <TRow extends { id: string }>(
           },
         })
 
-        config.showFeedback("error", errorTitle, description, errorMessage)
+        // Dismiss loading toast và hiển thị error toast
+        loadingToast.dismiss()
+        toast({
+          variant: "destructive",
+          title: errorTitle,
+          description: description,
+        })
       } finally {
         setTogglingIds((prev) => {
           const next = new Set(prev)

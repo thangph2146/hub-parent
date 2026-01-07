@@ -315,7 +315,7 @@ export const use${
     content += `
 export const use${
       singular.charAt(0).toUpperCase() + singular.slice(1)
-    }ToggleStatus = (canManage: boolean, showFeedback: any) => 
+    }ToggleStatus = (canManage: boolean) => 
   useToggleStatus<${ResourceRow}>({
     resourceName: "${plural}",
     updateRoute: ${config.toggleStatusConfig.updateRoute.toString()},
@@ -328,7 +328,6 @@ export const use${
       .toString()
       .replace(/\(row\) => /, "")},
     canManage,
-    showFeedback,
     ${
       config.toggleStatusConfig.validateToggle
         ? `validateToggle: ${config.toggleStatusConfig.validateToggle.toString()},`

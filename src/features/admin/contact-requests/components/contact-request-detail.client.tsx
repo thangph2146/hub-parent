@@ -11,7 +11,6 @@ import { useResourceDetailData, useResourceDetailLogger } from "@/features/admin
 import { queryKeys } from "@/lib/query-keys"
 import { usePermissions } from "@/hooks/use-permissions"
 import { PERMISSIONS } from "@/lib/permissions"
-import { useToast } from "@/hooks/use-toast"
 import { useContactRequestActions } from "../hooks/use-contact-request-actions"
 import { useContactRequestFeedback } from "../hooks/use-contact-request-feedback"
 import { CONTACT_REQUEST_LABELS } from "../constants"
@@ -52,7 +51,6 @@ export const ContactRequestDetailClient = ({ contactRequestId, contactRequest, b
   const router = useResourceRouter()
   const { hasAnyPermission } = usePermissions()
   const { showFeedback } = useContactRequestFeedback()
-  const { toast } = useToast()
 
   // Check permissions
   const canUpdate = hasAnyPermission([PERMISSIONS.CONTACT_REQUESTS_UPDATE, PERMISSIONS.CONTACT_REQUESTS_MANAGE])
@@ -83,7 +81,7 @@ export const ContactRequestDetailClient = ({ contactRequestId, contactRequest, b
     canManage,
     canUpdate,
     isSocketConnected: false,
-    showFeedback,
+    showFeedback: showFeedback as (variant: "success" | "error" | "warning" | "info", title: string, description?: string, details?: string) => void,
   })
 
   const [isToggling, setIsToggling] = useState(false)
@@ -91,12 +89,6 @@ export const ContactRequestDetailClient = ({ contactRequestId, contactRequest, b
   const handleToggleReadStatus = useCallback(
     async (checked: boolean) => {
       if (!canUpdate) {
-        toast({
-          variant: "destructive",
-          title: "Không có quyền",
-          description: "Bạn không có quyền thay đổi trạng thái đọc của yêu cầu liên hệ này.",
-        })
-        showFeedback("error", "Không có quyền", "Bạn không có quyền thay đổi trạng thái đọc của yêu cầu liên hệ này.")
         return
       }
 
@@ -118,35 +110,18 @@ export const ContactRequestDetailClient = ({ contactRequestId, contactRequest, b
           deletedAt: detailData.deletedAt,
         }
 
+        // handleToggleRead sẽ hiển thị toast tự động
         await handleToggleRead(mockRow, checked, async () => {
           // Refresh detail data after toggle
           // The query will be invalidated by handleToggleRead
         })
-
-        // Show success toast
-        toast({
-          variant: "success",
-          title: checked ? "Đã đánh dấu đã đọc" : "Đã đánh dấu chưa đọc",
-          description: checked
-            ? `Yêu cầu liên hệ "${detailData.subject}" đã được đánh dấu là đã đọc.`
-            : `Yêu cầu liên hệ "${detailData.subject}" đã được đánh dấu là chưa đọc.`,
-        })
-      } catch (error) {
-        // Show error toast
-        toast({
-          variant: "destructive",
-          title: checked ? "Đánh dấu đã đọc thất bại" : "Đánh dấu chưa đọc thất bại",
-          description: error instanceof Error
-            ? error.message
-            : checked
-              ? "Không thể đánh dấu đã đọc yêu cầu liên hệ."
-              : "Không thể đánh dấu chưa đọc yêu cầu liên hệ.",
-        })
+      } catch {
+        // Error đã được xử lý trong handleToggleRead với toast
       } finally {
         setIsToggling(false)
       }
     },
-    [canUpdate, contactRequestId, detailData, handleToggleRead, showFeedback, toast],
+    [canUpdate, contactRequestId, detailData, handleToggleRead],
   )
 
   const fields = getBaseContactRequestFields([])

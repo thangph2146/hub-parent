@@ -56,7 +56,6 @@ export const useUserActions = ({
     messages: USER_MESSAGES,
     getRecordName: (row) => row.email,
     canManage,
-    showFeedback,
     validateToggle: (row, newStatus) => {
       if (row.email === PROTECTED_SUPER_ADMIN_EMAIL && newStatus === false) {
         return { valid: false, error: USER_MESSAGES.CANNOT_DEACTIVATE_SUPER_ADMIN }

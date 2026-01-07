@@ -4,8 +4,7 @@ import { apiClient } from "@/lib/api/axios"
 import { createAdminMutationOptions } from "../query-config"
 import { useResourceBulkProcessing } from "./use-resource-bulk-processing"
 import { resourceLogger } from "@/lib/config/resource-logger"
-import { invalidateAndRefreshResource } from "../utils"
-import { getErrorMessage, invalidateAndRefetchQueries } from "@/lib/utils"
+import { getErrorMessage } from "@/lib/utils"
 import type { ResourceRefreshHandler } from "../types"
 import type { FeedbackVariant } from "@/components/dialogs"
 import type { QueryKey } from "@tanstack/react-query"
@@ -179,16 +178,18 @@ export const useResourceActions = <T extends { id: string }>(
           },
         })
         
-        // Sử dụng utility function chung để invalidate, refetch và trigger registry refresh
-        // Đảm bảo UI tự động cập nhật ngay sau khi mutation thành công
-        // Lưu ý: Hard delete không refetch detail query vì resource đã bị xóa vĩnh viễn
-        await invalidateAndRefreshResource({
-          queryClient,
-          allQueryKey: config.queryKeys.all(),
-          detailQueryKey: config.queryKeys.detail,
-          resourceId: variables.row.id, // Vẫn truyền resourceId để remove query khỏi cache
-          skipDetailRefetch: isHardDelete,
-        })
+        // Chỉ invalidate queries - table sẽ tự động refresh qua query cache events
+        // Hard delete: Remove detail query khỏi cache hoàn toàn để tránh refetch tự động
+        if (isHardDelete && config.queryKeys.detail) {
+          const detailKey = config.queryKeys.detail(variables.row.id)
+          await queryClient.removeQueries({ queryKey: detailKey })
+        }
+        
+        // Invalidate all queries và detail query (nếu không phải hard delete)
+        await queryClient.invalidateQueries({ queryKey: config.queryKeys.all(), refetchType: "active" })
+        if (!isHardDelete && config.queryKeys.detail) {
+          await queryClient.invalidateQueries({ queryKey: config.queryKeys.detail(variables.row.id), refetchType: "active" })
+        }
 
         resourceLogger.actionFlow({
           resource: config.resourceName,
@@ -295,23 +296,21 @@ export const useResourceActions = <T extends { id: string }>(
           },
         })
         
-        // Sử dụng utility function chung để invalidate, refetch và trigger registry refresh
-        // Đảm bảo UI tự động cập nhật ngay sau khi mutation thành công
-        // Lưu ý: Hard delete không refetch detail queries vì resources đã bị xóa vĩnh viễn
-        await invalidateAndRefreshResource({
-          queryClient,
-          allQueryKey: config.queryKeys.all(),
-          detailQueryKey: config.queryKeys.detail,
-          skipDetailRefetch: isHardDelete,
-          // Bulk actions không cần invalidate từng detail query riêng lẻ
-          // Chỉ cần invalidate all query và registry sẽ trigger refresh cho table
-        })
+        // Chỉ invalidate queries - table sẽ tự động refresh qua query cache events
+        // Hard delete: Remove detail queries khỏi cache hoàn toàn để tránh refetch tự động
+        if (isHardDelete && config.queryKeys.detail) {
+          for (const id of variables.ids) {
+            const detailKey = config.queryKeys.detail(id)
+            await queryClient.removeQueries({ queryKey: detailKey })
+          }
+        }
         
-        // Invalidate detail queries cho tất cả affected IDs (nếu có)
+        // Invalidate all queries
+        await queryClient.invalidateQueries({ queryKey: config.queryKeys.all(), refetchType: "active" })
+        
+        // Invalidate detail queries cho tất cả affected IDs (nếu không phải hard delete)
         // Điều này đảm bảo detail pages cũng được cập nhật
-        // Lưu ý: Hard delete remove queries khỏi cache hoàn toàn để tránh refetch tự động
-        const detailKey = config.queryKeys.detail
-        if (detailKey && !isHardDelete) {
+        if (config.queryKeys.detail && !isHardDelete) {
           resourceLogger.actionFlow({
             resource: config.resourceName,
             action: actionType,
@@ -323,10 +322,11 @@ export const useResourceActions = <T extends { id: string }>(
             },
           })
           
-          await Promise.all(
-            variables.ids.map((id) => invalidateAndRefetchQueries(queryClient, detailKey(id)))
-          )
-        } else if (detailKey && isHardDelete) {
+          for (const id of variables.ids) {
+            const detailKey = config.queryKeys.detail(id)
+            await queryClient.invalidateQueries({ queryKey: detailKey, refetchType: "active" })
+          }
+        } else if (config.queryKeys.detail && isHardDelete) {
           resourceLogger.actionFlow({
             resource: config.resourceName,
             action: actionType,
@@ -339,9 +339,10 @@ export const useResourceActions = <T extends { id: string }>(
           })
           
           // Hard delete: Remove queries khỏi cache hoàn toàn để tránh refetch tự động
-          await Promise.all(
-            variables.ids.map((id) => queryClient.removeQueries({ queryKey: detailKey(id) }))
-          )
+          for (const id of variables.ids) {
+            const detailKey = config.queryKeys.detail(id)
+            await queryClient.removeQueries({ queryKey: detailKey })
+          }
         }
         
         resourceLogger.actionFlow({

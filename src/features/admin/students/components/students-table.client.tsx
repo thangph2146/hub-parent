@@ -5,10 +5,11 @@ import { IconSize } from "@/components/ui/typography"
 import { useCallback, useMemo, useState } from "react"
 import { RotateCcw, Trash2, AlertTriangle, Plus, CheckCircle2, XCircle } from "lucide-react"
 
-import { ConfirmDialog } from "@/components/dialogs"
+import { ConfirmDialog, FeedbackVariant } from "@/components/dialogs"
 import type { DataTableQueryState, DataTableResult } from "@/components/tables"
 import { FeedbackDialog } from "@/components/dialogs"
 import { Button } from "@/components/ui/button"
+import { toast } from "@/hooks/use-toast"
 import { ResourceTableClient, SelectionActionsWrapper } from "@/features/admin/resources/components"
 import type { ResourceViewMode } from "@/features/admin/resources/types"
 import {
@@ -25,7 +26,6 @@ import { useStudentsSocketBridge } from "../hooks/use-students-socket-bridge"
 import { useStudentActions } from "../hooks/use-student-actions"
 import { useStudentFeedback } from "../hooks/use-student-feedback"
 import { useStudentDeleteConfirm } from "../hooks/use-student-delete-confirm"
-import { useStudentToggleConfirm } from "../hooks/use-student-toggle-confirm"
 import { useStudentColumns } from "../utils/columns"
 import { useStudentRowActions } from "../utils/row-actions"
 import { useResourceRouter } from "@/hooks/use-resource-segment"
@@ -50,7 +50,22 @@ export const StudentsTableClient = ({
   const { isSocketConnected, cacheVersion } = useStudentsSocketBridge()
   const { feedback, showFeedback, handleFeedbackOpenChange } = useStudentFeedback()
   const { deleteConfirm, setDeleteConfirm, handleDeleteConfirm } = useStudentDeleteConfirm()
-  const { toggleConfirm, bulkToggleConfirm, openToggleConfirm, closeToggleConfirm, openBulkToggleConfirm, closeBulkToggleConfirm } = useStudentToggleConfirm()
+
+  // Wrapper showFeedback để chuyển đổi bulk toggle sang toast
+  const showFeedbackWithToast = useCallback(
+    (variant: "success" | "error" | "warning" | "info", title: string, description?: string, details?: string) => {
+      // Chỉ chuyển đổi sang toast cho bulk toggle actions (active/unactive)
+      // Các actions khác (delete, restore, hard-delete) vẫn sử dụng dialog
+      if (title.includes("Kích hoạt hàng loạt") || title.includes("Bỏ kích hoạt hàng loạt")) {
+        toast({
+          variant: variant === "success" ? "success" : variant === "error" ? "destructive" : "default",
+          title,
+          description: description || details,
+        })
+      } else {
+        showFeedback(variant as FeedbackVariant, title, description, details) as void
+    }
+  }, [showFeedback])
 
   const {
     handleToggleStatus,
@@ -67,7 +82,7 @@ export const StudentsTableClient = ({
     canManage,
     canActivate,
     isSocketConnected,
-    showFeedback,
+    showFeedback: showFeedbackWithToast,
   })
 
   // Parent mặc định xem "all", Admin/SuperAdmin xem "active"
@@ -131,80 +146,12 @@ export const StudentsTableClient = ({
         },
       })
       
-      openToggleConfirm(
-        row,
-        checked,
-        async () => {
-          await handleToggleStatus(row, checked, refreshTable)
-        }
-      )
+      // Gọi trực tiếp handleToggleStatus, toast sẽ được hiển thị trong hook
+      handleToggleStatus(row, checked, refreshTable)
     },
-    [handleToggleStatus, refreshTable, openToggleConfirm, currentViewId],
+    [handleToggleStatus, refreshTable, currentViewId],
   )
 
-  const handleToggleConfirm = useCallback(async () => {
-    if (!toggleConfirm) return
-    
-    resourceLogger.actionFlow({
-      resource: "students",
-      action: "toggle-status",
-      step: "init",
-      metadata: {
-        operation: "user_confirmed_toggle",
-        resourceId: toggleConfirm.row.id,
-        recordName: toggleConfirm.row.studentCode,
-        newStatus: toggleConfirm.newStatus,
-        currentStatus: toggleConfirm.row.isActive,
-        currentViewId,
-        userAction: "user_confirmed_toggle_in_dialog",
-      },
-    })
-    
-    try {
-      await toggleConfirm.onConfirm()
-      // Đóng dialog confirm ngay sau khi thực hiện thành công
-      // Feedback dialog sẽ được hiển thị bởi handleToggleStatus
-      resourceLogger.actionFlow({
-        resource: "students",
-        action: "toggle-status",
-        step: "init",
-        metadata: {
-          operation: "close_confirm_dialog_after_success",
-          resourceId: toggleConfirm.row.id,
-          recordName: toggleConfirm.row.studentCode,
-        },
-      })
-      closeToggleConfirm()
-    } catch {
-      // Error already handled in onConfirm, nhưng vẫn đóng dialog
-      resourceLogger.actionFlow({
-        resource: "students",
-        action: "toggle-status",
-        step: "error",
-        metadata: {
-          operation: "close_confirm_dialog_after_error",
-          resourceId: toggleConfirm.row.id,
-          recordName: toggleConfirm.row.studentCode,
-        },
-      })
-      closeToggleConfirm()
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [toggleConfirm, currentViewId])
-
-  const handleBulkToggleConfirm = useCallback(async () => {
-    if (!bulkToggleConfirm) return
-    try {
-      await bulkToggleConfirm.onConfirm()
-      // Đóng dialog confirm ngay sau khi thực hiện thành công
-      // Feedback dialog sẽ được hiển thị bởi executeBulkAction
-      closeBulkToggleConfirm()
-    } catch {
-      // Error already handled in onConfirm, nhưng vẫn đóng dialog
-      closeBulkToggleConfirm()
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [bulkToggleConfirm])
 
   const { baseColumns, deletedColumns } = useStudentColumns({
     togglingStudents,
@@ -379,19 +326,12 @@ export const StudentsTableClient = ({
           },
         })
       } else {
-        // "active" và "unactive" cần confirm dialog
-        const newStatus = action === "active"
-        openBulkToggleConfirm(
-          ids,
-          ids.length,
-          newStatus,
-          async () => {
-            await executeBulkAction(action, ids, refresh, clearSelection)
-          }
-        )
+        // "active" và "unactive": gọi trực tiếp với toast, không hiển thị dialog
+        // executeBulkAction sẽ tự xử lý toast thông qua showFeedback
+        executeBulkAction(action, ids, refresh, clearSelection)
       }
     },
-    [executeBulkAction, setDeleteConfirm, openBulkToggleConfirm],
+    [executeBulkAction, setDeleteConfirm],
   )
 
   const createActiveSelectionActions = useCallback(
@@ -743,56 +683,7 @@ export const StudentsTableClient = ({
         />
       )}
 
-      {/* Toggle Status Confirmation Dialog */}
-      {toggleConfirm && (
-        <ConfirmDialog
-          open={toggleConfirm.open}
-          onOpenChange={(open) => {
-            resourceLogger.actionFlow({
-              resource: "students",
-              action: "toggle-status",
-              step: "init",
-              metadata: {
-                operation: open ? "dialog_opened" : "dialog_closed",
-                resourceId: toggleConfirm.row.id,
-                recordName: toggleConfirm.row.studentCode,
-                newStatus: toggleConfirm.newStatus,
-                currentStatus: toggleConfirm.row.isActive,
-                currentViewId,
-                userAction: open ? "dialog_opened_by_user" : "dialog_closed_by_user",
-              },
-            })
-            if (!open) closeToggleConfirm()
-          }}
-          title={STUDENT_CONFIRM_MESSAGES.TOGGLE_TITLE(toggleConfirm.row.studentCode, toggleConfirm.newStatus)}
-          description={STUDENT_CONFIRM_MESSAGES.TOGGLE_DESCRIPTION(toggleConfirm.row.studentCode, toggleConfirm.newStatus)}
-          variant="default"
-          confirmLabel={STUDENT_CONFIRM_MESSAGES.TOGGLE_CONFIRM_LABEL(toggleConfirm.newStatus)}
-          cancelLabel={STUDENT_CONFIRM_MESSAGES.CANCEL_LABEL}
-          onConfirm={handleToggleConfirm}
-          isLoading={
-            bulkState.isProcessing ||
-            (toggleConfirm ? togglingStudents.has(toggleConfirm.row.id) : false)
-          }
-        />
-      )}
 
-      {/* Bulk Toggle Status Confirmation Dialog */}
-      {bulkToggleConfirm && (
-        <ConfirmDialog
-          open={bulkToggleConfirm.open}
-          onOpenChange={(open) => {
-            if (!open) closeBulkToggleConfirm()
-          }}
-          title={STUDENT_CONFIRM_MESSAGES.BULK_TOGGLE_TITLE(bulkToggleConfirm.count, bulkToggleConfirm.newStatus)}
-          description={STUDENT_CONFIRM_MESSAGES.BULK_TOGGLE_DESCRIPTION(bulkToggleConfirm.count, bulkToggleConfirm.newStatus)}
-          variant="default"
-          confirmLabel={STUDENT_CONFIRM_MESSAGES.BULK_TOGGLE_CONFIRM_LABEL(bulkToggleConfirm.newStatus)}
-          cancelLabel={STUDENT_CONFIRM_MESSAGES.CANCEL_LABEL}
-          onConfirm={handleBulkToggleConfirm}
-          isLoading={bulkState.isProcessing}
-        />
-      )}
 
       {/* Feedback Dialog */}
       {feedback && (

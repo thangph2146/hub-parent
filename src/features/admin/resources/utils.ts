@@ -307,7 +307,7 @@ export const invalidateAndRefreshResource = async ({
   }
   
   // Invalidate queries để đánh dấu chúng là stale
-  // Trigger registry refresh TRƯỚC khi refetch để đảm bảo UI được update ngay lập tức
+  // Table sẽ tự động refresh qua query cache events listener
   resourceLogger.cache({
     resource: resourceName,
     action: skipDetailRefetch ? "hard-delete" : "update",
@@ -316,33 +316,15 @@ export const invalidateAndRefreshResource = async ({
     tags: ["all-queries"],
   })
   
-  await queryClient.invalidateQueries({ queryKey: allQueryKey, refetchType: "all" })
+  // Chỉ invalidate all queries với refetchType: "active" - table sẽ tự động refresh
+  await queryClient.invalidateQueries({ queryKey: allQueryKey, refetchType: "active" })
   
-  // Trigger UI refresh TRƯỚC khi refetch để đảm bảo callback được gọi đúng lúc
-  // Registry sẽ gọi handleRefresh để update refreshKey, trigger DataTable re-render
-  resourceLogger.cache({
-    resource: resourceName,
-    action: skipDetailRefetch ? "hard-delete" : "update",
-    resourceId,
-    operation: "refresh",
-    tags: ["registry"],
-  })
-  
+  // Trigger registry refresh để đảm bảo table UI được cập nhật ngay lập tức
+  // (mặc dù table sẽ tự động refresh qua query cache events, nhưng registry đảm bảo refresh ngay)
   resourceRefreshRegistry.triggerRefresh(allQueryKey)
   
-  // Sau đó mới refetch queries để đảm bảo data được cập nhật
-  resourceLogger.cache({
-    resource: resourceName,
-    action: skipDetailRefetch ? "hard-delete" : "update",
-    resourceId,
-    operation: "refresh",
-    tags: ["all-queries"],
-  })
-  
-  await queryClient.refetchQueries({ queryKey: allQueryKey, type: "all" })
-  
-  // Invalidate detail query nếu có (chỉ khi không skip)
-  // Lưu ý: Nếu đã remove ở trên, block này sẽ không chạy vì skipDetailRefetch = true
+  // Invalidate và refetch detail query ngay lập tức (nếu có và không skip)
+  // Detail page cần data mới nhất ngay sau khi form submit
   if (resourceId && detailQueryKey && !skipDetailRefetch) {
     const detailKey = detailQueryKey(resourceId)
     resourceLogger.cache({
@@ -353,17 +335,8 @@ export const invalidateAndRefreshResource = async ({
       tags: ["detail-query"],
     })
     
-    // Normal actions: Invalidate và refetch
+    // Detail query cần refetch ngay để detail page hiển thị data mới nhất
     await queryClient.invalidateQueries({ queryKey: detailKey, refetchType: "all" })
-    
-    resourceLogger.cache({
-      resource: resourceName,
-      action: "update",
-      resourceId,
-      operation: "refresh",
-      tags: ["detail-query"],
-    })
-    
     await queryClient.refetchQueries({ queryKey: detailKey, type: "all" })
   }
 

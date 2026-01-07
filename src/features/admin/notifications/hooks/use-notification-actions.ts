@@ -6,10 +6,10 @@ import { apiRoutes } from "@/lib/api/routes"
 import { queryKeys } from "@/lib/query-keys"
 import { useDeleteNotification } from "@/hooks/use-notifications"
 import { useResourceBulkProcessing } from "@/features/admin/resources/hooks"
-import { invalidateAndRefreshResource } from "@/features/admin/resources/utils"
 import type { FeedbackVariant } from "@/components/dialogs"
 import type { NotificationRow } from "../types"
 import { NOTIFICATION_MESSAGES } from "../constants"
+import { toast } from "@/hooks/use-toast"
 
 interface ApiError {
   response?: {
@@ -45,7 +45,12 @@ export const useNotificationActions = ({
       const isOwner = session?.user?.id === row.userId
       
       if (!isOwner) {
-        showFeedback("error", NOTIFICATION_MESSAGES.NO_PERMISSION, NOTIFICATION_MESSAGES.NO_OWNER_PERMISSION)
+        // Cả mark-read và mark-unread đều sử dụng toast
+        toast({
+          variant: "destructive",
+          title: NOTIFICATION_MESSAGES.NO_PERMISSION,
+          description: NOTIFICATION_MESSAGES.NO_OWNER_PERMISSION,
+        })
         return
       }
 
@@ -55,34 +60,41 @@ export const useNotificationActions = ({
       setTogglingNotifications(updateLoadingState)
       setLoadingState(updateLoadingState)
 
+      // Hiển thị loading toast cho cả mark-read và mark-unread
+      const loadingToastId = toast({
+        title: newStatus ? "Đang đánh dấu đã đọc..." : "Đang đánh dấu chưa đọc...",
+        description: "Vui lòng đợi trong giây lát.",
+      })
+
       try {
         await apiClient.patch(apiRoutes.notifications.markRead(row.id), { isRead: newStatus })
         
-        // Sử dụng utility function chung để invalidate, refetch và trigger registry refresh
-        // Đảm bảo UI tự động cập nhật ngay sau khi mutation thành công
-        await invalidateAndRefreshResource({
-          queryClient,
-          allQueryKey: queryKeys.notifications.admin(),
-        })
+        // Chỉ invalidate queries - table sẽ tự động refresh qua query cache events
+        // Không cần gọi refetchQueries vì useResourceTableRefresh đã listen query invalidation events
+        await queryClient.invalidateQueries({ queryKey: queryKeys.notifications.admin(), refetchType: "active" })
         
-        showFeedback(
-          "success",
-          newStatus ? NOTIFICATION_MESSAGES.MARK_READ_SUCCESS : NOTIFICATION_MESSAGES.MARK_UNREAD_SUCCESS,
-          newStatus 
+        // Cả mark-read và mark-unread đều sử dụng toast
+        loadingToastId.dismiss()
+        toast({
+          variant: "success",
+          title: newStatus ? NOTIFICATION_MESSAGES.MARK_READ_SUCCESS : NOTIFICATION_MESSAGES.MARK_UNREAD_SUCCESS,
+          description: newStatus 
             ? "Thông báo đã được đánh dấu là đã đọc."
-            : "Thông báo đã được đánh dấu là chưa đọc."
-        )
-        // refresh() không cần thiết vì registry đã trigger refresh
+            : "Thông báo đã được đánh dấu là chưa đọc.",
+        })
       } catch (error: unknown) {
         const defaultMessage = newStatus
           ? "Không thể đánh dấu đã đọc thông báo."
           : "Không thể đánh dấu chưa đọc thông báo."
         const errorMessage = getErrorMessage(error, defaultMessage)
-        showFeedback(
-          "error",
-          newStatus ? NOTIFICATION_MESSAGES.MARK_READ_ERROR : NOTIFICATION_MESSAGES.MARK_UNREAD_ERROR,
-          errorMessage
-        )
+        
+        // Cả mark-read và mark-unread đều sử dụng toast
+        loadingToastId.dismiss()
+        toast({
+          variant: "destructive",
+          title: newStatus ? NOTIFICATION_MESSAGES.MARK_READ_ERROR : NOTIFICATION_MESSAGES.MARK_UNREAD_ERROR,
+          description: errorMessage,
+        })
       } finally {
         const removeFromSet = (prev: Set<string>) => {
           const next = new Set(prev)
@@ -93,13 +105,17 @@ export const useNotificationActions = ({
         setLoadingState(removeFromSet)
       }
     },
-    [showFeedback, session?.user?.id, queryClient],
+    [session?.user?.id, queryClient],
   )
 
   const handleBulkMarkAsRead = useCallback(
     async (ids: string[], rows?: NotificationRow[]) => {
       if (!session?.user?.id) {
-        showFeedback("error", "Lỗi", NOTIFICATION_MESSAGES.LOGIN_REQUIRED)
+        toast({
+          variant: "destructive",
+          title: "Lỗi",
+          description: NOTIFICATION_MESSAGES.LOGIN_REQUIRED,
+        })
         return
       }
 
@@ -113,16 +129,22 @@ export const useNotificationActions = ({
         targetNotificationIds = unreadNotifications.map((row) => row.id)
 
         if (targetNotificationIds.length === 0) {
-          showFeedback(
-            "error",
-            NOTIFICATION_MESSAGES.NO_NOTIFICATIONS_TO_MARK,
-            alreadyReadCount > 0
+          toast({
+            variant: "destructive",
+            title: NOTIFICATION_MESSAGES.NO_NOTIFICATIONS_TO_MARK,
+            description: alreadyReadCount > 0
               ? NOTIFICATION_MESSAGES.ALL_ALREADY_READ
               : NOTIFICATION_MESSAGES.NO_OWNER_PERMISSION,
-          )
+          })
           return
         }
       }
+
+      // Hiển thị loading toast
+      const loadingToastId = toast({
+        title: "Đang đánh dấu đã đọc...",
+        description: `Đang xử lý ${targetNotificationIds.length} thông báo.`,
+      })
 
       try {
         startBulkProcessing()
@@ -138,42 +160,52 @@ export const useNotificationActions = ({
 
         const count = response.data.data?.count ?? 0
 
+        // Dismiss loading toast
+        loadingToastId.dismiss()
+
         if (count > 0) {
-          // Sử dụng utility function chung để invalidate, refetch và trigger registry refresh
-          // Đảm bảo UI tự động cập nhật ngay sau khi mutation thành công
-          await invalidateAndRefreshResource({
-            queryClient,
-            allQueryKey: queryKeys.notifications.admin(),
-          })
+          // Chỉ invalidate queries - table sẽ tự động refresh qua query cache events
+          await queryClient.invalidateQueries({ queryKey: queryKeys.notifications.admin(), refetchType: "active" })
           
-          showFeedback(
-            "success",
-            NOTIFICATION_MESSAGES.BULK_MARK_READ_SUCCESS,
-            `Đã đánh dấu ${count} thông báo là đã đọc.`,
-          )
+          toast({
+            variant: "success",
+            title: NOTIFICATION_MESSAGES.BULK_MARK_READ_SUCCESS,
+            description: `Đã đánh dấu ${count} thông báo là đã đọc.`,
+          })
         } else {
-          showFeedback(
-            "error",
-            NOTIFICATION_MESSAGES.NO_CHANGES,
-            alreadyReadCount > 0
+          toast({
+            variant: "destructive",
+            title: NOTIFICATION_MESSAGES.NO_CHANGES,
+            description: alreadyReadCount > 0
               ? NOTIFICATION_MESSAGES.ALL_ALREADY_READ
               : response.data.message || NOTIFICATION_MESSAGES.NO_NOTIFICATIONS_UPDATED,
-          )
+          })
         }
       } catch (error: unknown) {
+        // Dismiss loading toast
+        loadingToastId.dismiss()
+        
         const errorMessage = getErrorMessage(error, "Không thể đánh dấu đã đọc các thông báo.")
-        showFeedback("error", NOTIFICATION_MESSAGES.BULK_MARK_READ_ERROR, errorMessage)
+        toast({
+          variant: "destructive",
+          title: NOTIFICATION_MESSAGES.BULK_MARK_READ_ERROR,
+          description: errorMessage,
+        })
       } finally {
         stopBulkProcessing()
       }
     },
-    [showFeedback, session?.user?.id, startBulkProcessing, stopBulkProcessing, queryClient],
+    [session?.user?.id, startBulkProcessing, stopBulkProcessing, queryClient],
   )
 
   const handleBulkMarkAsUnread = useCallback(
     async (ids: string[], rows?: NotificationRow[]) => {
       if (!session?.user?.id) {
-        showFeedback("error", "Lỗi", NOTIFICATION_MESSAGES.LOGIN_REQUIRED)
+        toast({
+          variant: "destructive",
+          title: "Lỗi",
+          description: NOTIFICATION_MESSAGES.LOGIN_REQUIRED,
+        })
         return
       }
 
@@ -187,16 +219,22 @@ export const useNotificationActions = ({
         targetNotificationIds = readNotifications.map((row) => row.id)
 
         if (targetNotificationIds.length === 0) {
-          showFeedback(
-            "error",
-            NOTIFICATION_MESSAGES.NO_NOTIFICATIONS_TO_MARK,
-            alreadyUnreadCount > 0
+          toast({
+            variant: "destructive",
+            title: NOTIFICATION_MESSAGES.NO_NOTIFICATIONS_TO_MARK,
+            description: alreadyUnreadCount > 0
               ? NOTIFICATION_MESSAGES.ALL_ALREADY_UNREAD
               : NOTIFICATION_MESSAGES.NO_OWNER_PERMISSION,
-          )
+          })
           return
         }
       }
+
+      // Hiển thị loading toast
+      const loadingToastId = toast({
+        title: "Đang đánh dấu chưa đọc...",
+        description: `Đang xử lý ${targetNotificationIds.length} thông báo.`,
+      })
 
       try {
         startBulkProcessing()
@@ -212,36 +250,42 @@ export const useNotificationActions = ({
 
         const count = response.data.data?.count ?? 0
 
+        // Dismiss loading toast
+        loadingToastId.dismiss()
+
         if (count > 0) {
-          // Sử dụng utility function chung để invalidate, refetch và trigger registry refresh
-          // Đảm bảo UI tự động cập nhật ngay sau khi mutation thành công
-          await invalidateAndRefreshResource({
-            queryClient,
-            allQueryKey: queryKeys.notifications.admin(),
-          })
+          // Chỉ invalidate queries - table sẽ tự động refresh qua query cache events
+          await queryClient.invalidateQueries({ queryKey: queryKeys.notifications.admin(), refetchType: "active" })
           
-          showFeedback(
-            "success",
-            NOTIFICATION_MESSAGES.BULK_MARK_UNREAD_SUCCESS,
-            `Đã đánh dấu ${count} thông báo là chưa đọc.`,
-          )
+          toast({
+            variant: "success",
+            title: NOTIFICATION_MESSAGES.BULK_MARK_UNREAD_SUCCESS,
+            description: `Đã đánh dấu ${count} thông báo là chưa đọc.`,
+          })
         } else {
-          showFeedback(
-            "error",
-            NOTIFICATION_MESSAGES.NO_CHANGES,
-            alreadyUnreadCount > 0
+          toast({
+            variant: "destructive",
+            title: NOTIFICATION_MESSAGES.NO_CHANGES,
+            description: alreadyUnreadCount > 0
               ? NOTIFICATION_MESSAGES.ALL_ALREADY_UNREAD
               : response.data.message || NOTIFICATION_MESSAGES.NO_NOTIFICATIONS_UPDATED,
-          )
+          })
         }
       } catch (error: unknown) {
+        // Dismiss loading toast
+        loadingToastId.dismiss()
+        
         const errorMessage = getErrorMessage(error, "Không thể đánh dấu chưa đọc các thông báo.")
-        showFeedback("error", NOTIFICATION_MESSAGES.BULK_MARK_UNREAD_ERROR, errorMessage)
+        toast({
+          variant: "destructive",
+          title: NOTIFICATION_MESSAGES.BULK_MARK_UNREAD_ERROR,
+          description: errorMessage,
+        })
       } finally {
         stopBulkProcessing()
       }
     },
-    [showFeedback, session?.user?.id, startBulkProcessing, stopBulkProcessing, queryClient],
+    [session?.user?.id, startBulkProcessing, stopBulkProcessing, queryClient],
   )
 
   const handleDeleteSingle = useCallback(
@@ -265,13 +309,10 @@ export const useNotificationActions = ({
         
         // Sử dụng utility function chung để invalidate, refetch và trigger registry refresh
         // Đảm bảo UI tự động cập nhật ngay sau khi mutation thành công
-        await invalidateAndRefreshResource({
-          queryClient,
-          allQueryKey: queryKeys.notifications.admin(),
-        })
+        // Chỉ invalidate queries - table sẽ tự động refresh qua query cache events
+        await queryClient.invalidateQueries({ queryKey: queryKeys.notifications.admin(), refetchType: "active" })
         
         showFeedback("success", NOTIFICATION_MESSAGES.DELETE_SUCCESS, "Thông báo đã được xóa thành công.")
-        // refresh() không cần thiết vì registry đã trigger refresh
       } catch (error: unknown) {
         const errorMessage = getErrorMessage(error, "Không thể xóa thông báo.")
         showFeedback("error", NOTIFICATION_MESSAGES.DELETE_ERROR, errorMessage)
@@ -334,10 +375,8 @@ export const useNotificationActions = ({
         if (deletedCount > 0) {
           // Sử dụng utility function chung để invalidate, refetch và trigger registry refresh
           // Đảm bảo UI tự động cập nhật ngay sau khi mutation thành công
-          await invalidateAndRefreshResource({
-            queryClient,
-            allQueryKey: queryKeys.notifications.admin(),
-          })
+          // Chỉ invalidate queries - table sẽ tự động refresh qua query cache events
+          await queryClient.invalidateQueries({ queryKey: queryKeys.notifications.admin(), refetchType: "active" })
           
           let message = `Đã xóa ${deletedCount} thông báo.`
           if (systemCount > 0) {

@@ -174,9 +174,25 @@ export function NotificationBell() {
     return ownedNotifications.filter(n => !n.isRead).length
   }, [ownedNotifications])
   
-  // Log notifications data để debug
+  // Log notifications data để debug - chỉ log khi data thực sự thay đổi
+  const lastLoggedDataRef = useRef<string>("")
   useEffect(() => {
-    if (data) {
+    if (!data) return
+    
+    // Tạo một key duy nhất để track data changes (chỉ dùng các giá trị quan trọng)
+    const dataKey = JSON.stringify({
+      total: data.total,
+      unreadCount: data.unreadCount,
+      ownedUnreadCount,
+      rawCount: rawNotifications.length,
+      uniqueCount: uniqueNotifications.length,
+      ownedCount: ownedNotifications.length,
+    })
+    
+    // Chỉ log nếu data key thay đổi (tránh log nhiều lần khi dependencies thay đổi nhưng data không đổi)
+    if (dataKey !== lastLoggedDataRef.current) {
+      lastLoggedDataRef.current = dataKey
+      
       const otherNotifications = uniqueNotifications.filter(n => n.userId !== currentUserId)
       const otherUnread = otherNotifications.filter(n => !n.isRead).length
       
@@ -196,7 +212,7 @@ export function NotificationBell() {
         note: isProtectedSuperAdmin 
           ? "superadmin@hub.edu.vn: hiển thị tất cả notifications" 
           : "Chỉ hiển thị notifications của chính user (owner)",
-        ownedNotifications: ownedNotifications.map(n => ({
+        ownedNotifications: ownedNotifications.slice(0, 5).map(n => ({
           id: n.id,
           userId: n.userId,
           title: n.title,
@@ -206,7 +222,7 @@ export function NotificationBell() {
         })),
       })
     }
-  }, [data, rawNotifications.length, uniqueNotifications, ownedNotifications, ownedUnreadCount, currentUserId, isSuperAdminUser, isProtectedSuperAdmin, userEmail])
+  }, [data, ownedUnreadCount, rawNotifications.length, uniqueNotifications.length, ownedNotifications.length, currentUserId, isSuperAdminUser, isProtectedSuperAdmin, userEmail, uniqueNotifications, ownedNotifications])
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>

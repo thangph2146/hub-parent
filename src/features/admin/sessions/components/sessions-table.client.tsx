@@ -99,16 +99,10 @@ export const SessionsTableClient = ({
   const handleToggleStatusWithRefresh = useCallback(
     (row: SessionRow, checked: boolean) => {
       if (!canManage) return
-      setDeleteConfirm({
-        open: true,
-        type: checked ? "toggle-active" : "toggle-inactive",
-        row,
-        onConfirm: async () => {
-          await handleToggleStatus(row, checked, refreshTable)
-        },
-      })
+      // Gọi trực tiếp handleToggleStatus, toast sẽ được hiển thị trong hook
+      handleToggleStatus(row, checked, refreshTable)
     },
-    [canManage, handleToggleStatus, refreshTable, setDeleteConfirm],
+    [canManage, handleToggleStatus, refreshTable],
   )
 
   const { baseColumns, deletedColumns } = useSessionColumns({
@@ -450,18 +444,6 @@ export const SessionsTableClient = ({
         deleteConfirm.row?.userName || deleteConfirm.row?.userEmail,
       )
     }
-    if (deleteConfirm.type === "toggle-active") {
-      return SESSION_CONFIRM_MESSAGES.TOGGLE_ACTIVE_TITLE(
-        deleteConfirm.bulkIds?.length,
-        deleteConfirm.row?.userName || deleteConfirm.row?.userEmail,
-      )
-    }
-    if (deleteConfirm.type === "toggle-inactive") {
-      return SESSION_CONFIRM_MESSAGES.TOGGLE_INACTIVE_TITLE(
-        deleteConfirm.bulkIds?.length,
-        deleteConfirm.row?.userName || deleteConfirm.row?.userEmail,
-      )
-    }
     return SESSION_CONFIRM_MESSAGES.DELETE_TITLE(
       deleteConfirm.bulkIds?.length,
       deleteConfirm.row?.userName || deleteConfirm.row?.userEmail,
@@ -478,18 +460,6 @@ export const SessionsTableClient = ({
     }
     if (deleteConfirm.type === "restore") {
       return SESSION_CONFIRM_MESSAGES.RESTORE_DESCRIPTION(
-        deleteConfirm.bulkIds?.length,
-        deleteConfirm.row?.userName || deleteConfirm.row?.userEmail,
-      )
-    }
-    if (deleteConfirm.type === "toggle-active") {
-      return SESSION_CONFIRM_MESSAGES.TOGGLE_ACTIVE_DESCRIPTION(
-        deleteConfirm.bulkIds?.length,
-        deleteConfirm.row?.userName || deleteConfirm.row?.userEmail,
-      )
-    }
-    if (deleteConfirm.type === "toggle-inactive") {
-      return SESSION_CONFIRM_MESSAGES.TOGGLE_INACTIVE_DESCRIPTION(
         deleteConfirm.bulkIds?.length,
         deleteConfirm.row?.userName || deleteConfirm.row?.userEmail,
       )
@@ -541,7 +511,7 @@ export const SessionsTableClient = ({
           variant={
             deleteConfirm.type === "hard" || deleteConfirm.type === "soft"
               ? "destructive"
-              : deleteConfirm.type === "restore" || deleteConfirm.type === "toggle-active" || deleteConfirm.type === "toggle-inactive"
+              : deleteConfirm.type === "restore"
               ? "default"
               : "destructive"
           }
@@ -550,10 +520,6 @@ export const SessionsTableClient = ({
               ? SESSION_CONFIRM_MESSAGES.HARD_DELETE_LABEL
               : deleteConfirm.type === "restore"
               ? SESSION_CONFIRM_MESSAGES.RESTORE_LABEL
-              : deleteConfirm.type === "toggle-active"
-              ? SESSION_CONFIRM_MESSAGES.TOGGLE_ACTIVE_LABEL
-              : deleteConfirm.type === "toggle-inactive"
-              ? SESSION_CONFIRM_MESSAGES.TOGGLE_INACTIVE_LABEL
               : SESSION_CONFIRM_MESSAGES.CONFIRM_LABEL
           }
           cancelLabel={SESSION_CONFIRM_MESSAGES.CANCEL_LABEL}
@@ -565,8 +531,6 @@ export const SessionsTableClient = ({
                 ? restoringSessions.has(deleteConfirm.row.id)
                 : deleteConfirm.type === "hard"
                 ? hardDeletingSessions.has(deleteConfirm.row.id)
-                : deleteConfirm.type === "toggle-active" || deleteConfirm.type === "toggle-inactive"
-                ? togglingSessions.has(deleteConfirm.row.id)
                 : deletingSessions.has(deleteConfirm.row.id)
               : false)
           }

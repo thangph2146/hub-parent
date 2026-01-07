@@ -12,7 +12,7 @@ import { apiRoutes } from "@/lib/api/routes"
 import { useResourceNavigation, useResourceDetailData, useResourceDetailLogger } from "@/features/admin/resources/hooks"
 import { queryKeys } from "@/lib/query-keys"
 import { resourceLogger } from "@/lib/config/resource-logger"
-import { getErrorMessage, invalidateAndRefetchQueries } from "@/lib/utils"
+import { getErrorMessage } from "@/lib/utils"
 import { TypographyP, TypographyPSmallMuted, IconSize } from "@/components/ui/typography"
 import { Flex } from "@/components/ui/flex"
 import { Grid } from "@/components/ui/grid"
@@ -127,11 +127,9 @@ export const CommentDetailClient = ({ commentId, comment, backUrl = "/admin/comm
           await apiClient.post(apiRoutes.comments.unapprove(commentId))
         }
         
-        // Invalidate và refetch list queries - sử dụng "all" để đảm bảo refetch tất cả queries
-        await queryClient.invalidateQueries({ queryKey: queryKeys.adminComments.all(), refetchType: "all" })
-        await queryClient.refetchQueries({ queryKey: queryKeys.adminComments.all(), type: "all" })
-        
-        // Invalidate và refetch detail query
+        // Chỉ invalidate queries - table sẽ tự động refresh qua query cache events
+        // Detail query cần refetch ngay để cập nhật UI
+        await queryClient.invalidateQueries({ queryKey: queryKeys.adminComments.all(), refetchType: "active" })
         await queryClient.invalidateQueries({ queryKey: queryKeys.adminComments.detail(commentId), refetchType: "all" })
         await queryClient.refetchQueries({ queryKey: queryKeys.adminComments.detail(commentId), type: "all" })
         
@@ -145,9 +143,11 @@ export const CommentDetailClient = ({ commentId, comment, backUrl = "/admin/comm
           error: getErrorMessage(error) || "Unknown error",
         })
         
-        // Invalidate và refetch queries trong trường hợp lỗi - sử dụng "all" để đảm bảo refetch tất cả queries
-        await invalidateAndRefetchQueries(queryClient, queryKeys.adminComments.all())
-        await invalidateAndRefetchQueries(queryClient, queryKeys.adminComments.detail(commentId))
+        // Chỉ invalidate queries trong trường hợp lỗi - table sẽ tự động refresh qua query cache events
+        // Detail query cần refetch ngay để đảm bảo UI hiển thị đúng state
+        await queryClient.invalidateQueries({ queryKey: queryKeys.adminComments.all(), refetchType: "active" })
+        await queryClient.invalidateQueries({ queryKey: queryKeys.adminComments.detail(commentId), refetchType: "all" })
+        await queryClient.refetchQueries({ queryKey: queryKeys.adminComments.detail(commentId), type: "all" })
       } finally {
         setIsToggling(false)
       }

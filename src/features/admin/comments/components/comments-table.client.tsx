@@ -103,17 +103,10 @@ export const CommentsTableClient = ({
 
   const handleToggleApproveWithRefresh = useCallback(
     (row: CommentRow, checked: boolean) => {
-      if (!canApprove) return
-      setDeleteConfirm({
-        open: true,
-        type: checked ? "approve" : "unapprove",
-        row,
-        onConfirm: async () => {
-          await handleToggleApprove(row, checked)
-        },
-      })
+      // approve/unapprove: gọi trực tiếp với toast, không hiển thị dialog
+      handleToggleApprove(row, checked)
     },
-    [canApprove, handleToggleApprove, setDeleteConfirm],
+    [handleToggleApprove],
   )
 
   const { baseColumns, deletedColumns } = useCommentColumns({
@@ -482,26 +475,22 @@ export const CommentsTableClient = ({
   )
 
   const deleteConfirmTitle = useMemo(() => {
-    if (!deleteConfirm) return ""
+    if (!deleteConfirm || deleteConfirm.type === "approve" || deleteConfirm.type === "unapprove") return ""
     const count = deleteConfirm.bulkIds?.length ?? 1
     const messages: Record<string, (count: number) => string> = {
       hard: COMMENT_CONFIRM_MESSAGES.HARD_DELETE_TITLE,
       restore: COMMENT_CONFIRM_MESSAGES.RESTORE_TITLE,
-      approve: COMMENT_CONFIRM_MESSAGES.APPROVE_TITLE,
-      unapprove: COMMENT_CONFIRM_MESSAGES.UNAPPROVE_TITLE,
       soft: COMMENT_CONFIRM_MESSAGES.DELETE_TITLE,
     }
     return messages[deleteConfirm.type]?.(count) ?? COMMENT_CONFIRM_MESSAGES.DELETE_TITLE(count)
   }, [deleteConfirm])
 
   const deleteConfirmDescription = useMemo(() => {
-    if (!deleteConfirm) return ""
+    if (!deleteConfirm || deleteConfirm.type === "approve" || deleteConfirm.type === "unapprove") return ""
     const count = deleteConfirm.bulkIds?.length ?? 1
     const messages: Record<string, (count: number) => string> = {
       hard: COMMENT_CONFIRM_MESSAGES.HARD_DELETE_DESCRIPTION,
       restore: COMMENT_CONFIRM_MESSAGES.RESTORE_DESCRIPTION,
-      approve: COMMENT_CONFIRM_MESSAGES.APPROVE_DESCRIPTION,
-      unapprove: COMMENT_CONFIRM_MESSAGES.UNAPPROVE_DESCRIPTION,
       soft: COMMENT_CONFIRM_MESSAGES.DELETE_DESCRIPTION,
     }
     return messages[deleteConfirm.type]?.(count) ?? COMMENT_CONFIRM_MESSAGES.DELETE_DESCRIPTION(count)
@@ -522,8 +511,8 @@ export const CommentsTableClient = ({
         onViewChange={setCurrentViewId}
       />
 
-      {/* Delete Confirmation Dialog */}
-      {deleteConfirm && (
+      {/* Delete Confirmation Dialog - chỉ hiển thị cho delete, restore, hard-delete */}
+      {deleteConfirm && deleteConfirm.type !== "approve" && deleteConfirm.type !== "unapprove" && (
         <ConfirmDialog
           open={deleteConfirm.open}
           onOpenChange={(open) => {
@@ -534,7 +523,7 @@ export const CommentsTableClient = ({
           variant={
             deleteConfirm.type === "hard"
               ? "destructive"
-              : deleteConfirm.type === "restore" || deleteConfirm.type === "approve" || deleteConfirm.type === "unapprove"
+              : deleteConfirm.type === "restore"
               ? "default"
               : "destructive"
           }
@@ -543,10 +532,6 @@ export const CommentsTableClient = ({
               ? COMMENT_CONFIRM_MESSAGES.HARD_DELETE_LABEL
               : deleteConfirm.type === "restore"
               ? COMMENT_CONFIRM_MESSAGES.RESTORE_LABEL
-              : deleteConfirm.type === "approve"
-              ? COMMENT_CONFIRM_MESSAGES.APPROVE_LABEL
-              : deleteConfirm.type === "unapprove"
-              ? COMMENT_CONFIRM_MESSAGES.UNAPPROVE_LABEL
               : COMMENT_CONFIRM_MESSAGES.CONFIRM_LABEL
           }
           cancelLabel={COMMENT_CONFIRM_MESSAGES.CANCEL_LABEL}
@@ -558,10 +543,6 @@ export const CommentsTableClient = ({
                 ? restoringComments.has(deleteConfirm.row.id)
                 : deleteConfirm.type === "hard"
                 ? hardDeletingComments.has(deleteConfirm.row.id)
-                : deleteConfirm.type === "approve"
-                ? approvingComments.has(deleteConfirm.row.id)
-                : deleteConfirm.type === "unapprove"
-                ? unapprovingComments.has(deleteConfirm.row.id)
                 : deletingComments.has(deleteConfirm.row.id)
               : false)
           }

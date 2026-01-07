@@ -53,7 +53,6 @@ export const useSessionActions = ({
     messages: SESSION_MESSAGES,
     getRecordName: (row) => row.userName || row.userEmail || "người dùng",
     canManage,
-    showFeedback,
   })
 
   return {
