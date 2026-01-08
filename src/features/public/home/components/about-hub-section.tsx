@@ -133,7 +133,7 @@ export const AboutHubSection = ({ className }: { className?: string }) => {
                 </h2>
               </div>
               <Button asChild variant="outline" className="group">
-                <Link href={HOME_ROUTES.aboutHub}>
+                <Link href={HOME_ROUTES.aboutHub} prefetch={false}>
                   <Flex align="center" gap={2}>
                     <span className="uppercase font-semibold">VỀ HUB</span>
                     <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />

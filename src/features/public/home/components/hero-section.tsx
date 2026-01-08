@@ -135,7 +135,7 @@ export const HeroSection = ({
                   )}
                   asChild
                 >
-                  <Link href={btn.href}>
+                  <Link href={btn.href} prefetch={false}>
                     <Flex align="center" gap={2}>
                       {btn.leftIcon}
                       {btn.responsiveText ? (

@@ -235,6 +235,7 @@ export function SignInForm({
                   </FieldLabel>
                   <Link
                     href="/auth/forgot-password"
+                    prefetch={false}
                     className="text-primary hover:text-primary/80 transition-colors text-sm font-medium"
                   >
                     Quên mật khẩu?
@@ -309,6 +310,7 @@ export function SignInForm({
                 Nếu bạn chưa có tài khoản?{" "}
                 <Link
                   href="/auth/sign-up"
+                  prefetch={false}
                   className="font-bold text-primary hover:text-primary/80 transition-colors"
                 >
                   Đăng ký

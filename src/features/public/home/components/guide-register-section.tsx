@@ -62,7 +62,7 @@ const CardWithImage = ({ title, description, image, button, reverse = false }: C
               {button && (
                 <CardContent>
                   <Button variant={button.variant} size="sm" className="hover:scale-[1.02] w-full sm:w-auto" asChild>
-                    <Link href={button.href}>
+                    <Link href={button.href} prefetch={false}>
                       <Flex align="center" gap={2}>
                         <TypographySpanSmall>{button.text}</TypographySpanSmall>
                         <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
