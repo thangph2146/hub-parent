@@ -11,13 +11,22 @@ import { PostShare } from "./post-share"
 import { formatPostDateLong } from "../utils/date-formatter"
 import { appConfig } from "@/lib/config"
 import type { PostDetail } from "../types"
+import { useEffect, useState } from "react"
 
 interface PostDetailClientProps {
   post: PostDetail
 }
 
 export const PostDetailClient = ({ post }: PostDetailClientProps) => {
-  const postUrl = `${appConfig.url}/bai-viet/${post.slug}`
+  const [baseUrl, setBaseUrl] = useState(appConfig.url)
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setBaseUrl(window.location.origin)
+    }
+  }, [])
+
+  const postUrl = `${baseUrl}/bai-viet/${post.slug}`
   // Helper function to convert publishedAt to ISO string
   // Handles both Date objects and string values (from serialization)
   const getPublishedAtISO = (): string => {
