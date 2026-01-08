@@ -42,7 +42,7 @@ export function PostCard({ post, className, priority = false }: PostCardProps) {
       className={cn("h-full", className)}
     >
       <Flex as="article" direction="col" height="full" bg="card" rounded="xl" border="all" overflow="hidden" className="group h-full shadow-sm hover:shadow-xl hover:shadow-primary/5 transition-all duration-300 relative">
-        <Link href={`/bai-viet/${post.slug}`} className="flex flex-col flex-1">
+        <Link href={`/bai-viet/${post.slug}`} className="flex flex-col flex-1" prefetch={false}>
           {/* Featured Image with Zoom Effect */}
           <div className="relative aspect-video w-full overflow-hidden bg-muted">
             {post.image ? (

@@ -383,7 +383,7 @@ export function PublicFooter() {
               </Flex>
               <nav>
                 <Flex direction="col" gap={3}>
-                  <Link href={FOOTER_ROUTES.home}>
+                  <Link href={FOOTER_ROUTES.home} prefetch={false}>
                     <Flex align="center" gap={2}>
                       <IconSize size="sm">
                         <ArrowRight />
@@ -418,7 +418,7 @@ export function PublicFooter() {
               </Flex>
               <nav>
                 <Flex direction="col" gap={3}>
-                  <Link href={FOOTER_ROUTES.admin}>
+                  <Link href={FOOTER_ROUTES.admin} prefetch={false}>
                     <Flex align="center" gap={2}>
                       <IconSize size="sm">
                         <ArrowRight />
