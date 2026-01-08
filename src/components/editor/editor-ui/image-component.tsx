@@ -63,6 +63,7 @@ import {
 } from "@/components/editor/plugins/images-plugin"
 import { Logo } from "../../../../public/svg/Logo"
 
+// Cache for image dimensions to prevent layout shift on re-renders
 const imageCache = new Map<string, { width: number; height: number }>()
 const RESIZE_HANDLE_HIDE_DELAY = 200
 
@@ -87,32 +88,11 @@ interface ImageComponentProps {
   width: DimensionValue
 }
 
-function useSuspenseImage(src: string) {
-  // Trên server, không thể load image, nên không throw Promise
-  // Điều này đảm bảo hydration không bị mismatch
-  if (typeof window === "undefined") {
-    return
-  }
-  
-  if (!imageCache.has(src)) {
-    throw new Promise((resolve) => {
-      const img = new window.Image()
-      img.src = src
-      img.onload = () => {
-        imageCache.set(src, {
-          width: img.naturalWidth,
-          height: img.naturalHeight,
-        })
-        resolve(null)
-      }
-      img.onerror = () => {
-        // Fallback to 0x0 if error, but mark as loaded
-        imageCache.set(src, { width: 0, height: 0 })
-        resolve(null)
-      }
-    })
-  }
-}
+/**
+ * REMOVED useSuspenseImage: 
+ * This was causing massive performance issues by pre-loading raw unoptimized images 
+ * via `new window.Image()`. Next.js Image handles optimization and lazy loading much better.
+ */
 
 function LazyImage({
   altText,
@@ -135,8 +115,6 @@ function LazyImage({
   onError: () => void
   fetchPriority?: "high" | "low" | "auto"
 }): JSX.Element {
-  useSuspenseImage(src)
-  
   // Convert DimensionValue to number for width/height attributes
   const getNumericValue = (value: DimensionValue): number | undefined => {
     if (typeof value === "number") return value
@@ -152,11 +130,11 @@ function LazyImage({
   const widthAttr = getNumericValue(width)
   const heightAttr = getNumericValue(height)
   
-  // Get natural dimensions from cache which should be populated by useSuspenseImage
+  // Get natural dimensions from cache if available
   const cachedDims = imageCache.get(src)
   
-  // Đảm bảo giá trị mặc định nhất quán giữa server và client
-  const DEFAULT_DIMENSIONS = { width: 800, height: 600 }
+  // Ensure default values are consistent between server and client
+  const DEFAULT_DIMENSIONS = { width: 1200, height: 800 } // Larger default for high-res screens
   const [actualDimensions, setActualDimensions] = useState<{ width?: number; height?: number }>(
     cachedDims || DEFAULT_DIMENSIONS
   )
@@ -241,6 +219,11 @@ function LazyImage({
           const img = e.currentTarget
           if (img) {
             imageRef.current = img
+            // Cache dimensions to prevent layout shift on future renders of this same src
+            imageCache.set(src, {
+              width: img.naturalWidth,
+              height: img.naturalHeight,
+            })
             if (width === "inherit" || height === "inherit") {
               setActualDimensions({
                 width: img.naturalWidth,
