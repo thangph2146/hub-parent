@@ -73,11 +73,11 @@ function getRouteFromFeature(key: string): string | null {
 
 function getPublicLinks(): LinkItem[] {
   const iconMap: Record<string, LucideIcon> = {
-    Home,
-    FileText,
-    Info,
-    Mail,
-    HelpCircle,
+    home: Home,
+    blog: FileText,
+    about: Info,
+    contact: Mail,
+    help: HelpCircle,
   };
 
   return appFeatures
@@ -86,17 +86,7 @@ function getPublicLinks(): LinkItem[] {
     .map((feature) => {
       const nav = feature.navigation!;
       const href = nav.href || getRouteFromFeature(feature.key) || "#";
-      
-      let IconComponent: LucideIcon = Home;
-      const iconElement = feature.icon;
-      if (iconElement && typeof iconElement === "object" && "type" in iconElement) {
-        const iconType = iconElement.type;
-        if (typeof iconType === "function" && iconType.name) {
-          IconComponent = iconMap[iconType.name] || Home;
-        } else {
-          IconComponent = iconType as LucideIcon;
-        }
-      }
+      const IconComponent = iconMap[feature.key] || Home;
 
       return {
         title: feature.title,

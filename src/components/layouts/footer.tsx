@@ -482,8 +482,7 @@ export function PublicFooter() {
             className="min-w-0"
           >
             <TypographySpan className="break-words text-center text-pretty px-4" suppressHydrationWarning>
-              © {currentYear} {appConfig.namePublic} . Được phát triển bởi{" "}
-              {appConfig.company} Trường Đại học Ngân hàng TP.Hồ Chí Minh
+              © {currentYear} {appConfig.namePublic}. Được phát triển bởi {appConfig.company} Trường Đại học Ngân hàng TP.Hồ Chí Minh
             </TypographySpan>
           </Flex>
 
