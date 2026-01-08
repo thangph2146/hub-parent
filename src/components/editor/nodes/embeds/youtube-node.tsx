@@ -416,6 +416,7 @@ export class YouTubeNode extends DecoratorBlockNode {
       `https://www.youtube-nocookie.com/embed/${this.__id}`
     )
     element.setAttribute("frameborder", "0")
+    element.setAttribute("loading", "lazy")
     element.setAttribute(
       "allow",
       "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
