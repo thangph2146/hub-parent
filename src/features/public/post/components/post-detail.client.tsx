@@ -12,19 +12,23 @@ import { formatPostDateLong } from "../utils/date-formatter"
 import { appConfig } from "@/lib/config"
 import type { PostDetail } from "../types"
 import { useEffect, useState } from "react"
+import { useClientOnly } from "@/hooks/use-client-only"
 
 interface PostDetailClientProps {
   post: PostDetail
 }
 
 export const PostDetailClient = ({ post }: PostDetailClientProps) => {
+  const isMounted = useClientOnly()
   const [baseUrl, setBaseUrl] = useState(appConfig.url)
 
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
-    if (typeof window !== "undefined") {
+    if (isMounted && typeof window !== "undefined") {
       setBaseUrl(window.location.origin)
     }
-  }, [])
+  }, [isMounted])
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const postUrl = `${baseUrl}/bai-viet/${post.slug}`
   // Helper function to convert publishedAt to ISO string
@@ -69,7 +73,9 @@ export const PostDetailClient = ({ post }: PostDetailClientProps) => {
                     <Calendar />
                   </IconSize>
                   <time dateTime={getPublishedAtISO()}>
-                    <TypographySpanSmallMuted>{formatPostDateLong(post.publishedAt)}</TypographySpanSmallMuted>
+                    <TypographySpanSmallMuted>
+                      {isMounted ? formatPostDateLong(post.publishedAt) : "..."}
+                    </TypographySpanSmallMuted>
                   </time>
                 </Flex>
               )}
@@ -79,7 +85,7 @@ export const PostDetailClient = ({ post }: PostDetailClientProps) => {
                     <Clock />
                   </IconSize>
                   <TypographySpanSmallMuted>
-                    {(() => {
+                    {isMounted ? (() => {
                       try {
                         const date = new Date(post.publishedAt)
                         if (isNaN(date.getTime())) return ""
@@ -90,7 +96,7 @@ export const PostDetailClient = ({ post }: PostDetailClientProps) => {
                       } catch {
                         return ""
                       }
-                    })()}
+                    })() : "..."}
                   </TypographySpanSmallMuted>
                 </Flex>
               )}
