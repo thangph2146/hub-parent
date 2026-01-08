@@ -20,7 +20,7 @@ export function ModeToggle() {
   const { setTheme } = useTheme()
 
   return (
-    <DropdownMenu>
+    <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="icon" className="group">
           <IconSize size="md" className="scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90 group-hover:text-primary-foreground">

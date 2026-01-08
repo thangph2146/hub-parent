@@ -84,7 +84,7 @@ export function AdminHeader({ breadcrumbs = [] }: AdminHeaderProps) {
       gap={2}
       border="bottom"
       bg="background"
-      className="top-0 z-50"
+      className="top-0 z-40"
     >
       <Flex flex="1" align="center" gap={2} padding="md-x">
         <SidebarTrigger className="-ml-1" />

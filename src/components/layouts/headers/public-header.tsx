@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { MenuToggleIcon } from "@/components/ui/menu-toggle-icon";
 import { NavUser } from "@/components/layouts/navigation";
-import { createPortal } from "react-dom";
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -16,6 +15,14 @@ import {
   NavigationMenuList,
   NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetOverlay,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import {
   HelpCircle,
   LucideIcon,
@@ -238,82 +245,6 @@ function MobileNavLink({
   );
 }
 
-function MobileMenu({
-  open,
-  onClose,
-  children,
-  className,
-  ...props
-}: React.ComponentProps<"div"> & {
-  open: boolean;
-  onClose?: () => void;
-}) {
-  const [mounted, setMounted] = React.useState(false);
-
-  React.useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  React.useEffect(() => {
-    if (open) {
-      const scrollY = window.scrollY;
-      document.body.style.position = "fixed";
-      document.body.style.top = `-${scrollY}px`;
-      document.body.style.width = "100%";
-      document.body.style.overflow = "hidden";
-      return () => {
-        document.body.style.position = "";
-        document.body.style.top = "";
-        document.body.style.width = "";
-        document.body.style.overflow = "";
-        window.scrollTo(0, scrollY);
-      };
-    }
-  }, [open]);
-
-  if (!open || !mounted || typeof window === "undefined") return null;
-
-  return createPortal(
-    <>
-      <div
-        data-slot={open ? "open" : "closed"}
-        className={cn(
-          "fixed inset-0 z-40 bg-black/50 backdrop-blur-sm lg:hidden",
-          "data-[slot=open]:animate-in data-[slot=open]:fade-in-0",
-          "data-[slot=closed]:animate-out data-[slot=closed]:fade-out-0",
-          "duration-200 ease-out"
-        )}
-        onClick={onClose}
-        aria-hidden="true"
-      />
-      <div
-        id="mobile-menu"
-        data-slot={open ? "open" : "closed"}
-        className={cn(
-          "bg-background fixed top-14 right-0 bottom-0 left-0 z-50",
-          "flex flex-col overflow-hidden border-t border-border",
-          "data-[slot=open]:animate-in data-[slot=open]:slide-in-from-top-2 data-[slot=open]:fade-in-0",
-          "data-[slot=closed]:animate-out data-[slot=closed]:slide-out-to-top-2 data-[slot=closed]:fade-out-0",
-          "duration-300 ease-out lg:hidden pb-safe overflow-y-auto scrollbar-hide"
-        )}
-        style={{ touchAction: "pan-y" }}
-        onClick={(e) => e.stopPropagation()}
-        role="dialog"
-        aria-modal="true"
-        aria-label="Menu điều hướng"
-      >
-        <div
-          className={cn("size-full p-4 sm:p-6 container mx-auto max-w-full", className)}
-          {...props}
-        >
-          {children}
-        </div>
-      </div>
-    </>,
-    document.body
-  );
-}
-
 function ListItem({
   title,
   description,
@@ -386,10 +317,13 @@ export function PublicHeader() {
   }, []);
 
   React.useEffect(() => {
-    document.body.style.overflow = open ? "hidden" : "";
-    return () => {
-      document.body.style.overflow = "";
-    };
+    if (open) {
+      const originalStyle = window.getComputedStyle(document.body).overflow;
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.style.overflow = originalStyle;
+      };
+    }
   }, [open]);
 
   return (
@@ -402,8 +336,8 @@ export function PublicHeader() {
       border="bottom"
       paddingX="4"
       bg="background"
-      style={{ backdropFilter: "blur(20px)", top: 0, zIndex: 50 }}
-      className="top-0 z-50 border-border"
+      style={{ backdropFilter: "blur(20px)", top: 0, zIndex: 40 }}
+      className="top-0 z-40 border-border"
     >
       <Flex as="nav" width="full" height="full" align="center" justify="between" container>
         <Flex align="center" gap={4}>
@@ -524,19 +458,93 @@ export function PublicHeader() {
                 </Button>
               </>
             )}
-            <Button
-              size="icon"
-              variant="outline"
-              onClick={() => setOpen(!open)}
-              className="lg:hidden"
-              aria-expanded={open}
-              aria-controls="mobile-menu"
-              aria-label="Toggle menu"
-            >
-              <IconSize size="md">
-                <MenuToggleIcon open={open} duration={300} />
-              </IconSize>
-            </Button>
+            <Sheet open={open} onOpenChange={setOpen} modal={false}>
+              <SheetTrigger asChild>
+                  <Button
+                    size="icon"
+                    variant="outline"
+                    className="lg:hidden"
+                    aria-label="Toggle menu"
+                  >
+                    <IconSize size="md">
+                      <MenuToggleIcon open={open} duration={300} />
+                    </IconSize>
+                  </Button>
+                </SheetTrigger>
+                 {open && <SheetOverlay onClick={() => setOpen(false)} />}
+                 <SheetContent side="right" className="h-full p-0 border-l bg-background/95 backdrop-blur-xl">
+                  <SheetTitle className="sr-only">Menu điều hướng</SheetTitle>
+                <SheetDescription className="sr-only">
+                  Truy cập các liên kết điều hướng và tài khoản của bạn
+                </SheetDescription>
+                <div className="flex flex-col h-full container mx-auto">
+                  <div className="flex-1 overflow-y-auto px-4 pb-8 scrollbar-hide pt-12 sm:pt-4">
+                    <Flex direction="col" height="full" gap={0}>
+                      {isAuthenticated ? (
+                        <div className="w-full pb-4 border-b border-border">
+                          <NavUser className="w-full" />
+                        </div>
+                      ) : (
+                        <Flex
+                          direction="col-sm-row"
+                          gap={2}
+                          border="bottom"
+                          paddingY="4"
+                          paddingX="0"
+                          className="pb-4 w-full"
+                        >
+                          <AuthButton
+                            icon={LogIn}
+                            title="Đăng nhập"
+                            description="Đăng nhập vào tài khoản của bạn"
+                            href={PUBLIC_ROUTES.auth.signIn}
+                            variant="default"
+                            onClose={() => setOpen(false)}
+                          />
+                          <AuthButton
+                            icon={UserPlus}
+                            title="Đăng ký"
+                            description="Tạo tài khoản mới"
+                            href={PUBLIC_ROUTES.auth.signUp}
+                            variant="outline"
+                            iconBg="bg-accent/10 dark:bg-accent/20"
+                            onClose={() => setOpen(false)}
+                          />
+                        </Flex>
+                      )}
+                      <Flex
+                        direction="col"
+                        gap={1.5}
+                        flex="1"
+                        width="full"
+                        className="mt-4"
+                      >
+                        {mainLinks.map((link) => (
+                          <MobileNavLink key={link.href} link={link} onClose={() => setOpen(false)} />
+                        ))}
+                        {supportLinks.length > 0 && (
+                          <>
+                            <div className="pt-2 pb-1.5">
+                              <TypographyPSmall className="px-2 uppercase tracking-wider font-semibold opacity-70">
+                                Hỗ trợ
+                              </TypographyPSmall>
+                            </div>
+                            {supportLinks.map((link) => (
+                              <MobileNavLink
+                                key={link.href}
+                                link={link}
+                                onClose={() => setOpen(false)}
+                                iconBg="bg-muted/50 dark:bg-muted/30"
+                              />
+                            ))}
+                          </>
+                        )}
+                      </Flex>
+                    </Flex>
+                  </div>
+                </div>
+              </SheetContent>
+            </Sheet>
           </Flex>
         ) : (
           <Flex align="center" gap={2}>
@@ -545,73 +553,6 @@ export function PublicHeader() {
           </Flex>
         )}
       </Flex>
-      {mounted && (
-        <MobileMenu open={open} onClose={() => setOpen(false)}>
-          <Flex direction="col" height="full" gap={0}>
-            {isAuthenticated ? (
-              <div className="w-full pb-4 border-b border-border">
-                <NavUser className="w-full" />
-              </div>
-            ) : (
-              <Flex
-                direction="col-sm-row"
-                gap={2}
-                border="bottom"
-                paddingY="4"
-                paddingX="0"
-                className="pb-4 w-full"
-              >
-                <AuthButton
-                  icon={LogIn}
-                  title="Đăng nhập"
-                  description="Đăng nhập vào tài khoản của bạn"
-                  href={PUBLIC_ROUTES.auth.signIn}
-                  variant="default"
-                  onClose={() => setOpen(false)}
-                />
-                <AuthButton
-                  icon={UserPlus}
-                  title="Đăng ký"
-                  description="Tạo tài khoản mới"
-                  href={PUBLIC_ROUTES.auth.signUp}
-                  variant="outline"
-                  iconBg="bg-accent/10 dark:bg-accent/20"
-                  onClose={() => setOpen(false)}
-                />
-              </Flex>
-            )}
-            <Flex
-              direction="col"
-              gap={1.5}
-              flex="1"
-              overflow="auto"
-              width="full"
-              className="mt-4 -mx-4 px-4"
-            >
-              {mainLinks.map((link) => (
-                <MobileNavLink key={link.href} link={link} onClose={() => setOpen(false)} />
-              ))}
-              {supportLinks.length > 0 && (
-                <>
-                  <div className="pt-2 pb-1.5">
-                    <TypographyPSmall className="px-2 uppercase tracking-wider font-semibold opacity-70">
-                      Hỗ trợ
-                    </TypographyPSmall>
-                  </div>
-                  {supportLinks.map((link) => (
-                    <MobileNavLink
-                      key={link.href}
-                      link={link}
-                      onClose={() => setOpen(false)}
-                      iconBg="bg-muted/50 dark:bg-muted/30"
-                    />
-                  ))}
-                </>
-              )}
-            </Flex>
-          </Flex>
-        </MobileMenu>
-      )}
     </Flex>
   );
 }

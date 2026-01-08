@@ -1,12 +1,13 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Filter, Tags, SlidersHorizontal } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   Sheet,
   SheetContent,
   SheetHeader,
+  SheetOverlay,
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet"
@@ -37,6 +38,16 @@ export function PostSidebarSheet({ categories, tags }: PostSidebarSheetProps) {
   const isMounted = useClientOnly()
   const [open, setOpen] = useState(false)
 
+  useEffect(() => {
+    if (open) {
+      const originalStyle = window.getComputedStyle(document.body).overflow;
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.style.overflow = originalStyle;
+      };
+    }
+  }, [open]);
+
   if (!isMounted) {
     return (
       <Button
@@ -46,13 +57,13 @@ export function PostSidebarSheet({ categories, tags }: PostSidebarSheetProps) {
         <IconSize size="sm">
           <SlidersHorizontal />
         </IconSize>
-        <span className="ml-2 hidden sm:inline">Bộ lọc</span>
+        <span className="ml-2 hidden sm:inline">Bộ lọc bài viết</span>
       </Button>
     )
   }
 
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
+    <Sheet open={open} onOpenChange={setOpen} modal={false}>
       <SheetTrigger asChild>
         <Button
           variant="outline"
@@ -62,15 +73,16 @@ export function PostSidebarSheet({ categories, tags }: PostSidebarSheetProps) {
           <IconSize size="sm">
             <SlidersHorizontal />
           </IconSize>
-          <span className="ml-2 hidden sm:inline">Bộ lọc</span>
+          <span className="ml-2 hidden sm:inline">Bộ lọc bài viết</span>
         </Button>
       </SheetTrigger>
-      <SheetContent 
-        side="left" 
-        className="w-[280px] sm:w-[320px] lg:w-[360px] overflow-y-auto p-0 flex flex-col"
+      {open && <SheetOverlay onClick={() => setOpen(false)} />}
+      <SheetContent
+        side="right"
+        className="w-full sm:w-[320px] lg:w-[360px] overflow-y-auto p-0 flex flex-col bg-background/95 backdrop-blur-xl"
       >
         <SheetHeader className="px-4 sm:px-6 pt-6 pb-4 border-b">
-          <SheetTitle className="text-lg font-semibold">Bộ lọc</SheetTitle>
+          <SheetTitle className="text-lg font-semibold">Bộ lọc bài viết</SheetTitle>
         </SheetHeader>
         <div 
           className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 space-y-4"
