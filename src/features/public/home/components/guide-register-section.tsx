@@ -3,19 +3,16 @@
 import { useRef } from "react";
 import Image from "next/image";
 import { motion, useInView } from "framer-motion";
-import { ChevronDown, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { Flex } from "@/components/ui/flex";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { IconSize, TypographySpanSmall } from "@/components/ui/typography";
+import { TypographySpanSmall } from "@/components/ui/typography";
 import Link from "next/link";
 import { useSectionHeight } from "@/hooks/use-section-height";
-import { cn, getRouteFromFeature } from "@/lib/utils";
-
-const ROUTES = {
-  help: getRouteFromFeature("help") || "/help",
-  signUp: "/auth/sign-up",
-} as const;
+import { useClientOnly } from "@/hooks/use-client-only";
+import { cn } from "@/lib/utils";
+import { HOME_ROUTES, HOME_RESPONSIVE_CONDITIONS } from "../constants";
 
 const DEFAULT_IMAGE_HEIGHT = "h-[200px] sm:h-[250px] lg:h-[350px] xl:h-[400px]";
 
@@ -27,10 +24,9 @@ const GUIDE_DATA = {
     alt: "Hướng dẫn cho phụ huynh",
   },
   button: {
-    href: ROUTES.help,
+    href: HOME_ROUTES.help,
     text: "Xem hướng dẫn",
     variant: "outline" as const,
-    size: "sm" as const,
   },
 } as const;
 
@@ -42,10 +38,9 @@ const REGISTER_DATA = {
     alt: "Đăng ký nhận tin tức",
   },
   button: {
-    href: ROUTES.signUp,
+    href: HOME_ROUTES.signUp,
     text: "Đăng ký ngay",
     variant: "default" as const,
-    size: "sm" as const,
   },
 } as const;
 
@@ -53,7 +48,7 @@ interface CardWithImageProps {
   title: string;
   description: string;
   image: { src: string; alt: string };
-  button?: { href: string; text: string; variant: "default" | "outline"; size: "sm" };
+  button?: { href: string; text: string; variant: "default" | "outline" };
   reverse?: boolean;
 }
 
@@ -65,7 +60,7 @@ const CardWithImage = ({ title, description, image, button, reverse = false }: C
     <motion.div
       ref={containerRef}
       initial={{ opacity: 0, y: 30 }}
-      animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+      animate={isInView ? { opacity: 1, y: 0 } : {}}
       transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
       className="h-full"
     >
@@ -74,67 +69,59 @@ const CardWithImage = ({ title, description, image, button, reverse = false }: C
           className="flex-1 lg:max-w-lg xl:max-w-xl w-full group/card"
           initial={{ opacity: 0, x: reverse ? 30 : -30 }}
           animate={isInView ? { opacity: 1, x: 0 } : {}}
-          transition={{ duration: 0.5, delay: 0.2, ease: "easeOut" }}
+          transition={{ duration: 0.5, delay: 0.2 }}
         >
           <div className="relative p-[1px] rounded-xl bg-gradient-to-br from-primary/20 via-border to-primary/10 group-hover/card:from-primary/40 group-hover/card:to-primary/20 transition-all duration-300">
-            <div className="backdrop-blur-sm bg-background/95 dark:bg-background/90 rounded-xl shadow-lg group-hover/card:shadow-xl transition-shadow duration-300">
-              <Card className="border-0 shadow-none bg-transparent">
-                <CardHeader>
-                  <CardTitle className="text-card-foreground dark:text-foreground leading-tight">{title}</CardTitle>
-                  <CardDescription className="text-muted-foreground leading-relaxed">{description}</CardDescription>
-                </CardHeader>
-                {button && (
-                  <CardContent>
-                    <Button variant={button.variant} size={button.size} className="transition-all duration-200 hover:scale-[1.02] w-full sm:w-auto" asChild>
-                      <Link href={button.href}>
-                        <Flex align="center" gap={2}>
-                          <TypographySpanSmall>{button.text}</TypographySpanSmall>
-                          <IconSize size="sm" className="transition-transform duration-200 group-hover:translate-x-0.5">
-                            <ArrowRight />
-                          </IconSize>
-                        </Flex>
-                      </Link>
-                    </Button>
-                  </CardContent>
-                )}
-              </Card>
-            </div>
+            <Card className="border-0 shadow-lg bg-background/95 backdrop-blur-sm group-hover/card:shadow-xl transition-shadow">
+              <CardHeader>
+                <CardTitle className="text-lg sm:text-xl md:text-2xl leading-tight">{title}</CardTitle>
+                <CardDescription className="text-sm sm:text-base md:text-lg text-muted-foreground leading-relaxed">{description}</CardDescription>
+              </CardHeader>
+              {button && (
+                <CardContent>
+                  <Button variant={button.variant} size="sm" className="hover:scale-[1.02] w-full sm:w-auto" asChild>
+                    <Link href={button.href}>
+                      <Flex align="center" gap={2}>
+                        <TypographySpanSmall>{button.text}</TypographySpanSmall>
+                        <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
+                      </Flex>
+                    </Link>
+                  </Button>
+                </CardContent>
+              )}
+            </Card>
           </div>
         </motion.div>
 
         <motion.div
-          className={cn("relative overflow-hidden w-full lg:flex-1 rounded-xl shadow-xl group cursor-pointer", DEFAULT_IMAGE_HEIGHT)}
+          className={cn("relative overflow-hidden w-full lg:flex-1 rounded-xl shadow-xl group", DEFAULT_IMAGE_HEIGHT)}
           initial={{ opacity: 0, x: reverse ? -30 : 30 }}
           animate={isInView ? { opacity: 1, x: 0 } : {}}
-          transition={{ duration: 0.5, delay: 0.3, ease: "easeOut" }}
+          transition={{ duration: 0.5, delay: 0.3 }}
           whileHover={{ scale: 1.02 }}
         >
           <Image
             src={image.src}
             alt={image.alt}
             fill
-            className="object-cover transition-transform duration-500 ease-out group-hover:scale-110"
+            className="object-cover transition-transform duration-500 group-hover:scale-110"
             sizes="(max-width: 1024px) 100vw, 50vw"
-            priority
-            fetchPriority="high"
             quality={75}
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
         </motion.div>
       </Flex>
     </motion.div>
   );
 };
 
-export interface GuideRegisterSectionProps {
-  className?: string;
-}
-
-export const GuideRegisterSection = ({ className }: GuideRegisterSectionProps) => {
+export const GuideRegisterSection = ({ className }: { className?: string }) => {
   const sectionRef = useRef<HTMLDivElement>(null);
-  const { sectionHeightClassName, sectionHeightStyle, scrollToNextSection } = useSectionHeight({
-    minHeight: 600,
-    fullHeight: true,
+  const isMounted = useClientOnly();
+
+  const { sectionHeightClassName, sectionHeightStyle } = useSectionHeight({
+    minHeight: 0,
+    fullHeight: isMounted && HOME_RESPONSIVE_CONDITIONS.isDesktop(window.innerWidth),
   });
 
   return (
@@ -142,46 +129,18 @@ export const GuideRegisterSection = ({ className }: GuideRegisterSectionProps) =
       as="section"
       ref={sectionRef}
       fullWidth
-      position="relative"
+      container
+      direction="col"
+      align="center"
+      justify="center"
       bg="background"
-      className={cn(sectionHeightClassName, className)}
+      className={cn(sectionHeightClassName, "py-8 sm:py-12 md:py-16 lg:py-20", className)}
       style={sectionHeightStyle}
     >
-      <Flex container padding="responsive-lg" className="h-full items-center justify-center py-8 sm:py-12 md:py-16 lg:py-20">
-        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="grid md:grid-cols-2 gap-8 items-stretch">
-            <CardWithImage {...GUIDE_DATA} />
-            <CardWithImage {...REGISTER_DATA} reverse />
-          </div>
-        </div>
-      </Flex>
-
-      <motion.div
-        className="absolute bottom-2 sm:bottom-4 left-1/2 -translate-x-1/2 z-[60] hidden sm:block"
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 1, duration: 0.5 }}
-      >
-        <motion.div
-          animate={{ y: [0, 8, 0] }}
-          transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
-          className="flex flex-col items-center gap-2 text-foreground/70 hover:text-foreground transition-colors cursor-pointer group"
-          onClick={() => scrollToNextSection(sectionRef.current)}
-        >
-          <div className="relative px-4 sm:px-5 py-2 sm:py-2.5 rounded-full backdrop-blur-xl bg-background/80 border border-border/50 group-hover:bg-background group-hover:border-border transition-all duration-300 shadow-lg group-hover:shadow-xl">
-            <span className="text-[10px] sm:text-xs tracking-[0.15em] sm:tracking-[0.2em] uppercase font-semibold whitespace-nowrap">Cuộn xuống</span>
-          </div>
-          <div className="relative">
-            <motion.div
-              className="absolute inset-0 bg-primary/20 rounded-full blur-lg"
-              animate={{ scale: [1, 1.3, 1], opacity: [0.5, 0.9, 0.5] }}
-              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-            />
-            <ChevronDown className="relative w-6 h-6 sm:w-7 sm:h-7 drop-shadow-lg group-hover:drop-shadow-[0_0_12px_rgba(0,0,0,0.3)] transition-all" />
-          </div>
-        </motion.div>
-      </motion.div>
+      <div className="grid xl:grid-cols-2 gap-8 items-stretch w-full">
+        <CardWithImage {...GUIDE_DATA} />
+        <CardWithImage {...REGISTER_DATA} reverse />
+      </div>
     </Flex>
   );
 };
-

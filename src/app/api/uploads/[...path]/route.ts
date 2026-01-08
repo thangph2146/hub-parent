@@ -41,10 +41,12 @@ export async function GET(
       resolvedBaseDir = path.resolve(STORAGE_DIR)
     }
 
-    logger.debug("Resolved file path", {
+    logger.debug("Resolved file path for search", {
       pathSegments,
       filePath,
       baseDir,
+      resolvedPath: path.resolve(filePath),
+      cwd: process.cwd(),
     })
 
     // Security: Đảm bảo file path không vượt ra ngoài base directory
@@ -54,6 +56,7 @@ export async function GET(
       logger.warn("Invalid path - outside base directory", {
         resolvedPath,
         resolvedBaseDir,
+        filePath,
       })
       return createErrorResponse("Invalid path", { status: 403 })
     }
@@ -61,9 +64,13 @@ export async function GET(
     // Check if file exists
     try {
       await fs.access(filePath)
-      logger.debug("File exists", { filePath })
-    } catch {
-      logger.warn("File not found", { filePath })
+      logger.debug("File exists on disk", { filePath })
+    } catch (error) {
+      logger.warn("File NOT found on disk", { 
+        filePath, 
+        resolvedPath,
+        error: error instanceof Error ? error.message : String(error)
+      })
       return createErrorResponse("File not found", { status: 404 })
     }
 

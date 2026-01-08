@@ -3,7 +3,6 @@
 import { Users, MessageSquare } from "lucide-react";
 import { IconSize } from "@/components/ui/typography";
 import { Flex } from "@/components/ui/flex";
-import { getRouteFromFeature } from "@/lib/utils";
 import type { Post } from "@/features/public/post/types";
 import type { HeroSectionProps } from "./hero-section";
 import { HeroSection } from "./hero-section";
@@ -12,12 +11,7 @@ import { OverviewSection } from "./overview-section";
 import { GuideRegisterSection } from "./guide-register-section";
 import { FeaturedPostsSection } from "./featured-posts-section";
 import { ContactSection } from "./contact-section";
-
-const ROUTES = {
-  signIn: "/auth/sign-in",
-  signUp: "/auth/sign-up",
-  help: getRouteFromFeature("help") || "/help",
-} as const;
+import { HOME_ROUTES } from "../constants";
 
 const HERO_CONFIG: Omit<HeroSectionProps, "className" | "titleClassName" | "descriptionClassName" | "overlayClassName" | "children"> = {
   title: "Hệ thống Kết nối Phụ huynh",
@@ -25,34 +19,26 @@ const HERO_CONFIG: Omit<HeroSectionProps, "className" | "titleClassName" | "desc
   backgroundImage: {
     src: "https://fileserver2.hub.edu.vn/IMAGES/2025/12/16/20251216103027-101020.png",
     alt: "Trường Đại học Ngân hàng TP.HCM",
-    width: 1920,
-    height: 1080,
   },
   buttons: [
     {
-      href: ROUTES.signIn,
+      href: HOME_ROUTES.signIn,
       text: "Đăng nhập ngay",
       variant: "default",
-      size: "default",
       leftIcon: <IconSize size="sm"><Users /></IconSize>,
       responsiveText: { mobile: "Đăng nhập", desktop: "Đăng nhập ngay" },
     },
     {
-      href: ROUTES.signUp,
+      href: HOME_ROUTES.signUp,
       text: "Đăng ký thành viên",
       variant: "outline",
-      size: "default",
       leftIcon: <IconSize size="sm"><MessageSquare /></IconSize>,
       responsiveText: { mobile: "Đăng ký", desktop: "Tạo tài khoản mới" },
     },
   ],
 };
 
-export interface HomeClientProps {
-  featuredPosts?: Post[];
-}
-
-export const HomeClient = ({ featuredPosts = [] }: HomeClientProps) => (
+export const HomeClient = ({ featuredPosts = [] }: { featuredPosts?: Post[] }) => (
   <Flex direction="col" position="relative" fullWidth bg="background" className="isolate">
     <HeroSection {...HERO_CONFIG} />
     <AboutHubSection />

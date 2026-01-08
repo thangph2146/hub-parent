@@ -135,10 +135,24 @@ export const uploadImageHandler = async (
     logger.success("File converted to buffer", { bufferSize: buffer.length })
 
     // Write file to disk
-    logger.debug("Writing file to disk", { fullPath })
+    logger.debug("Writing file to disk", { 
+      fullPath, 
+      resolvedPath: path.resolve(fullPath),
+      cwd: process.cwd() 
+    })
     await fs.writeFile(fullPath, buffer)
-    logger.success("File written to disk", { fullPath })
-
+    
+    // Verify file was actually written
+    try {
+      await fs.access(fullPath)
+      logger.success("File verified on disk after write", { fullPath })
+    } catch (err) {
+      logger.error("File NOT found on disk immediately after write!", { 
+        fullPath,
+        error: err instanceof Error ? err.message : String(err)
+      })
+    }
+    
     logger.success("Image uploaded successfully", {
       userId,
       originalFileName: file.name,

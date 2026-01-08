@@ -138,18 +138,33 @@ export const useCreateLoginSession = () => {
         
         logger.debug("Login session created successfully via hook", { userId })
       } catch (error) {
-        // Log error nhưng không block app
-        logger.error("Failed to create login session via hook", {
-          userId,
-          error: extractAxiosErrorMessage(error),
-        })
-        // Reset processedUserIdRef để có thể retry nếu cần
-        // Nhưng chỉ reset sau một delay để tránh retry ngay lập tức
-        setTimeout(() => {
-          if (processedUserIdRef.current === userId) {
-            processedUserIdRef.current = null
-          }
-        }, 5000) // Retry sau 5 giây nếu có lỗi
+        const errorMessage = extractAxiosErrorMessage(error)
+        const isUserNotFound = errorMessage?.toLowerCase().includes("does not exist") || 
+                              errorMessage?.toLowerCase().includes("not found")
+        
+        // Nếu user không tồn tại, đánh dấu để không retry và downgrade log level
+        if (isUserNotFound) {
+          // Đánh dấu đã xử lý để không retry
+          markSessionAsCreated(userId)
+          // Log warning thay vì error vì đây không phải lỗi nghiêm trọng
+          logger.warn("User not found when creating login session - skipping", {
+            userId,
+            error: errorMessage,
+          })
+        } else {
+          // Log error cho các lỗi khác
+          logger.error("Failed to create login session via hook", {
+            userId,
+            error: errorMessage,
+          })
+          // Reset processedUserIdRef để có thể retry nếu cần
+          // Nhưng chỉ reset sau một delay để tránh retry ngay lập tức
+          setTimeout(() => {
+            if (processedUserIdRef.current === userId) {
+              processedUserIdRef.current = null
+            }
+          }, 5000) // Retry sau 5 giây nếu có lỗi
+        }
       } finally {
         isCreatingRef.current = false
       }

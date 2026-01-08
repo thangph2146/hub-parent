@@ -16,8 +16,9 @@ import { ThemeProvider as NextThemesProvider } from "next-themes"
  */
 const defaultProps = {
   attribute: "class" as const,
-  defaultTheme: "system" as const,
-  enableSystem: true,
+  defaultTheme: "light" as const,
+  forcedTheme: "light" as const,
+  enableSystem: false,
   disableTransitionOnChange: true,
 }
 
