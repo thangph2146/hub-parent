@@ -12,7 +12,8 @@ import type { Post } from "@/features/public/post/types";
 import { useSectionHeight } from "@/hooks/use-section-height";
 import { useClientOnly } from "@/hooks/use-client-only";
 import { cn } from "@/lib/utils";
-import { HOME_ROUTES } from "../constants";
+import { HOME_RESPONSIVE_CONDITIONS, HOME_ROUTES } from "../constants";
+import { ScrollIndicator } from "./scroll-indicator";
 
 export interface FeaturedPostsSectionProps {
   featuredPosts?: Post[];
@@ -33,9 +34,12 @@ const ViewAllButton = ({ mobile = false }: { mobile?: boolean }) => (
 export const FeaturedPostsSection = ({ featuredPosts = [], className }: FeaturedPostsSectionProps) => {
   const sectionRef = useRef<HTMLDivElement>(null);
   const isMounted = useClientOnly();
+
+  const isDesktopHeight = isMounted && HOME_RESPONSIVE_CONDITIONS.isDesktopHeight(window.innerHeight);
+
   const { sectionHeightClassName, sectionHeightStyle } = useSectionHeight({
-    minHeight: "fit-content",
-    fullHeight: isMounted && window.innerHeight > 600,
+    minHeight: 0,
+    fullHeight: !isDesktopHeight,
   });
 
   if (featuredPosts.length === 0) return null;
@@ -45,14 +49,19 @@ export const FeaturedPostsSection = ({ featuredPosts = [], className }: Featured
       as="section"
       ref={sectionRef}
       fullWidth
-      container
-      direction="col"
-      bg="background"
-      className={cn(sectionHeightClassName, "py-12 sm:py-16", className)}
+      position="relative"
+      className={cn(sectionHeightClassName, "bg-background", className)}
       style={sectionHeightStyle}
     >
-      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6">
-        <Flex direction="col" gap={8}>
+      <Flex
+        container
+        fullWidth
+        direction="col"
+        align="center"
+        justify="center"
+        className="px-4 sm:px-8 md:px-12 py-8 sm:py-12 md:py-16 lg:py-20 h-full"
+      >
+        <Flex direction="col" gap={8} fullWidth>
           <Flex align="center" justify="between" gap={4} fullWidth className="border-b pb-6">
             <div className="space-y-1">
               <TypographyH2 className="text-2xl sm:text-3xl font-bold tracking-tight text-primary">
@@ -82,7 +91,9 @@ export const FeaturedPostsSection = ({ featuredPosts = [], className }: Featured
             <ViewAllButton mobile />
           </div>
         </Flex>
-      </div>
+      </Flex>
+
+      {!isDesktopHeight && <ScrollIndicator containerRef={sectionRef} />}
     </Flex>
   );
 };

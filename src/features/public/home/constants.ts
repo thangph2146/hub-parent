@@ -13,4 +13,7 @@ export const HOME_RESPONSIVE_CONDITIONS = {
   showScrollIndicator: (width: number) => width >= 1280,
   // Điều kiện cho fullHeight của các section isDesktop (width < 1280 trả về false)
   isDesktop: (width: number) => width > 1280,
+  // Điều kiện cho ScrollIndicator và cho phép fullHeight
+  isDesktopHeight: (height: number) => height < 699,
+
 };

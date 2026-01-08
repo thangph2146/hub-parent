@@ -12,6 +12,7 @@ import Link from "next/link";
 import { useSectionHeight } from "@/hooks/use-section-height";
 import { useClientOnly } from "@/hooks/use-client-only";
 import { cn } from "@/lib/utils";
+import { ScrollIndicator } from "./scroll-indicator";
 import { HOME_ROUTES, HOME_RESPONSIVE_CONDITIONS } from "../constants";
 
 const DEFAULT_IMAGE_HEIGHT = "h-[200px] sm:h-[250px] lg:h-[350px] xl:h-[400px]";
@@ -119,9 +120,11 @@ export const GuideRegisterSection = ({ className }: { className?: string }) => {
   const sectionRef = useRef<HTMLDivElement>(null);
   const isMounted = useClientOnly();
 
+  const isDesktopHeight = isMounted && HOME_RESPONSIVE_CONDITIONS.isDesktopHeight(window.innerHeight);
+
   const { sectionHeightClassName, sectionHeightStyle } = useSectionHeight({
     minHeight: 0,
-    fullHeight: isMounted && HOME_RESPONSIVE_CONDITIONS.isDesktop(window.innerWidth),
+    fullHeight: !isDesktopHeight,
   });
 
   return (
@@ -129,18 +132,25 @@ export const GuideRegisterSection = ({ className }: { className?: string }) => {
       as="section"
       ref={sectionRef}
       fullWidth
-      container
-      direction="col"
-      align="center"
-      justify="center"
-      bg="background"
-      className={cn(sectionHeightClassName, "px-4 sm:px-8 md:px-12 py-8 sm:py-12 md:py-16 lg:py-20", className)}
+      position="relative"
+      className={cn(sectionHeightClassName, "bg-background", className)}
       style={sectionHeightStyle}
     >
-      <div className="grid xl:grid-cols-2 gap-8 items-stretch w-full">
-        <CardWithImage {...GUIDE_DATA} />
-        <CardWithImage {...REGISTER_DATA} reverse />
-      </div>
+      <Flex
+        container
+        fullWidth
+        direction="col"
+        align="center"
+        justify="center"
+        className="px-4 sm:px-8 md:px-12 py-8 sm:py-12 md:py-16 lg:py-20 h-full"
+      >
+        <div className="grid xl:grid-cols-2 gap-8 items-stretch w-full">
+          <CardWithImage {...GUIDE_DATA} />
+          <CardWithImage {...REGISTER_DATA} reverse />
+        </div>
+      </Flex>
+
+      {!isDesktopHeight && <ScrollIndicator containerRef={sectionRef} />}
     </Flex>
   );
 };
