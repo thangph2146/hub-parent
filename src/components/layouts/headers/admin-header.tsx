@@ -16,7 +16,6 @@ import {
 import { Separator } from "@/components/ui/separator"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { NotificationBell } from "@/components/layouts/notifications"
-import { ModeToggle } from "@/components/layouts/shared"
 import { Flex } from "@/components/ui/flex"
 import { useResourceRouter, useResourceSegment } from "@/hooks/use-resource-segment"
 import { applyResourceSegmentToPath } from "@/lib/permissions"
@@ -139,7 +138,6 @@ export function AdminHeader({ breadcrumbs = [] }: AdminHeaderProps) {
       </Flex>
       {session?.user?.id && (
         <Flex align="center" gap={2} padding="md-x">
-          <ModeToggle />
           <NotificationBell />
         </Flex>
       )}
