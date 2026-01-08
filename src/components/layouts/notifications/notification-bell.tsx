@@ -94,6 +94,23 @@ export function NotificationBell() {
   const markAsRead = useMarkNotificationRead()
   const [open, setOpen] = useState(false)
   
+  // Tự động đóng dropdown khi scroll trang để tránh lỗi hiển thị trôi nổi
+  useEffect(() => {
+    const handleScroll = () => {
+      if (open) {
+        setOpen(false)
+      }
+    }
+
+    if (open) {
+      window.addEventListener("scroll", handleScroll, { passive: true })
+    }
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll)
+    }
+  }, [open])
+  
   // Log mark as read mutations
   useEffect(() => {
     if (markAsRead.isSuccess) {
@@ -225,7 +242,7 @@ export function NotificationBell() {
   }, [data, ownedUnreadCount, rawNotifications.length, uniqueNotifications.length, ownedNotifications.length, currentUserId, isSuperAdminUser, isProtectedSuperAdmin, userEmail, uniqueNotifications, ownedNotifications])
 
   return (
-    <DropdownMenu open={open} onOpenChange={setOpen}>
+    <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
       <DropdownMenuTrigger asChild>
         <Button
           variant="outline"
@@ -251,6 +268,7 @@ export function NotificationBell() {
         align="end"
         className="w-[380px] p-0 sm:w-[420px]"
         sideOffset={8}
+        sticky="always"
       >
         <Flex align="center" justify="between" padding="md" border="bottom">
           <Flex align="center" gap={2}>
