@@ -120,7 +120,9 @@ export const GuideRegisterSection = ({ className }: { className?: string }) => {
   const sectionRef = useRef<HTMLDivElement>(null);
   const isMounted = useClientOnly();
 
-  const isDesktopHeight = isMounted && HOME_RESPONSIVE_CONDITIONS.isDesktopHeight(window.innerHeight);
+  const isDesktopHeight = isMounted && 
+    typeof window !== "undefined" && 
+    HOME_RESPONSIVE_CONDITIONS.isDesktopHeight(window.innerHeight);
 
   const { sectionHeightClassName, sectionHeightStyle } = useSectionHeight({
     minHeight: 0,
