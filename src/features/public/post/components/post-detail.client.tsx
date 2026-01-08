@@ -7,7 +7,9 @@ import { Flex } from "@/components/ui/flex"
 import { Calendar, User, Tag, Clock } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { PostContent } from "./post-content"
+import { PostShare } from "./post-share"
 import { formatPostDateLong } from "../utils/date-formatter"
+import { appConfig } from "@/lib/config"
 import type { PostDetail } from "../types"
 
 interface PostDetailClientProps {
@@ -15,6 +17,7 @@ interface PostDetailClientProps {
 }
 
 export const PostDetailClient = ({ post }: PostDetailClientProps) => {
+  const postUrl = `${appConfig.url}/bai-viet/${post.slug}`
   // Helper function to convert publishedAt to ISO string
   // Handles both Date objects and string values (from serialization)
   const getPublishedAtISO = (): string => {
@@ -31,7 +34,10 @@ export const PostDetailClient = ({ post }: PostDetailClientProps) => {
   }
 
   return (
-    <Flex direction="col">
+    <Flex direction="col" className="relative">
+      {/* Sticky Share - Desktop only */}
+      <PostShare title={post.title} url={postUrl} variant="sticky" />
+
       <Flex direction="col" gap={8}>
         {/* Header */}
         <Flex direction="col" gap={6}>
