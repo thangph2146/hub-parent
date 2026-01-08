@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import Image from "next/image"
-import { Calendar, Tag, ArrowRight, FolderOpen } from "lucide-react"
+import { Calendar, FolderOpen } from "lucide-react"
 import { motion } from "framer-motion"
 import { Badge } from "@/components/ui/badge"
 import { Flex } from "@/components/ui/flex"
@@ -19,7 +19,6 @@ interface PostCardProps {
 
 export function PostCard({ post, className, priority = false }: PostCardProps) {
   const primaryCategory = post.categories[0]
-  const displayTags = post.tags.slice(0, 2)
 
   // Helper function to convert publishedAt to ISO string
   const getPublishedAtISO = (): string => {
@@ -104,27 +103,6 @@ export function PostCard({ post, className, priority = false }: PostCardProps) {
               </TypographyPMuted>
             )}
 
-            {/* Divider */}
-            <div className="h-px w-full bg-border/50 mt-auto" />
-
-            {/* Footer: Read More & Tags */}
-            <Flex align="center" justify="between" className="pt-2">
-              <Flex align="center" gap={1} className="text-primary font-medium group/btn">
-                <span className="text-sm">Đọc ngay</span>
-                <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover/btn:translate-x-1" />
-              </Flex>
-
-              {/* Tags Indicator */}
-              {displayTags.length > 0 && (
-                <div className="flex -space-x-2">
-                  {displayTags.map(tag => (
-                    <div key={tag.id} className="w-6 h-6 rounded-full bg-muted border-2 border-card flex items-center justify-center" title={tag.name}>
-                      <Tag className="w-3 h-3 text-muted-foreground" />
-                    </div>
-                  ))}
-                </div>
-              )}
-            </Flex>
           </Flex>
         </Link>
       </Flex>

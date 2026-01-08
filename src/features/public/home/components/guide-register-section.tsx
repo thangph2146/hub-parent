@@ -134,7 +134,7 @@ export const GuideRegisterSection = ({ className }: { className?: string }) => {
       align="center"
       justify="center"
       bg="background"
-      className={cn(sectionHeightClassName, "py-8 sm:py-12 md:py-16 lg:py-20", className)}
+      className={cn(sectionHeightClassName, "px-4 sm:px-8 md:px-12 py-8 sm:py-12 md:py-16 lg:py-20", className)}
       style={sectionHeightStyle}
     >
       <div className="grid xl:grid-cols-2 gap-8 items-stretch w-full">

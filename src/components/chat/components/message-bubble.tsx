@@ -4,7 +4,6 @@ import { useEffect } from "react"
 import type { Message } from "../types"
 import { formatMessageTime } from "../utils/date-helpers"
 import { highlightText } from "../utils/text-helpers"
-import { isMessageReadByUser } from "../utils/message-helpers"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { TypographyPSmall, TypographyP, TypographySpanSmallMuted } from "@/components/ui/typography"
 import { Flex } from "@/components/ui/flex"
@@ -39,9 +38,6 @@ export function MessageBubble({
   // Hiển thị sender info cho group messages (không phải own message)
   const showSenderInfo = message.groupId && !isOwnMessage && message.sender
   const senderName = message.sender?.name || message.sender?.email || "Unknown"
-  
-  // Check if message is read by current user (for group messages: check readers array)
-  const isReadByCurrentUser = isMessageReadByUser(message, currentUserId)
   
   // Đo kích thước message bubble để log và điều chỉnh
   const { ref: bubbleRef, width: bubbleWidth, height: bubbleHeight } = useElementSize<HTMLDivElement>()
@@ -198,10 +194,11 @@ export function MessageBubble({
                 Đang gửi...
               </TypographySpanSmallMuted>
             )}
-            
-                <TypographyPSmall>
-                  {isReadByCurrentUser ? "✓ Đã đọc" : "○ Chưa đọc"}
-                </TypographyPSmall>
+            {isOwnMessage && !message.groupId && message.status !== "sending" && (
+              <TypographyPSmall>
+                {message.isRead ? "✓ Đã đọc" : "✓ Đã gửi"}
+              </TypographyPSmall>
+            )}
              
           </Flex>
         </Flex>
