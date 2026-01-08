@@ -65,9 +65,10 @@ export const HeroSection = ({
           src={backgroundImage.src}
           alt={backgroundImage.alt}
           fill
-          className="object-cover object-[center_bottom] animate-in fade-in zoom-in-105 duration-[2s]"
+          className="object-cover object-[center_bottom] animate-in fade-in duration-[1s]"
           priority
-          quality={100}
+          quality={90}
+          sizes="100vw"
         />
       </div>
 
@@ -91,7 +92,7 @@ export const HeroSection = ({
           <Flex direction="col" gap={3}>
             <TypographyH1
               className={cn(
-                "text-xl sm:text-2xl lg:text-3xl font-bold text-white leading-tight tracking-tight animate-in fade-in slide-in-from-bottom-4 duration-700 text-balance uppercase",
+                "text-xl sm:text-2xl lg:text-3xl font-bold text-white leading-tight tracking-tight animate-in fade-in duration-700 text-balance uppercase",
                 titleClassName
               )}
             >
@@ -102,14 +103,14 @@ export const HeroSection = ({
                 className="p-0 text-inherit"
               />
             </TypographyH1>
-            <TypographyP className="text-white/80 text-sm sm:text-base font-medium italic animate-in fade-in slide-in-from-bottom-4 duration-700 delay-150">
+            <TypographyP className="text-white/80 text-sm sm:text-base font-medium italic animate-in fade-in duration-700 delay-150">
               &quot;Tâm an lòng, con vững bước – Đồng hành cùng tương lai con tại HUB&quot;
             </TypographyP>
           </Flex>
 
           <TypographyP
             className={cn(
-              "text-base sm:text-lg lg:text-xl text-white/90 leading-relaxed animate-in fade-in slide-in-from-bottom-6 duration-700 delay-200",
+              "text-base sm:text-lg lg:text-xl text-white/90 leading-relaxed animate-in fade-in duration-700 delay-200",
               descriptionClassName
             )}
           >

@@ -40,16 +40,22 @@ export function useSectionHeight(
 
   // Tính toán section height className (chỉ cho các class tĩnh)
   const sectionHeightClassName = useMemo(() => {
-    if (!fullHeight || !isMounted) {
+    if (!fullHeight) {
       return "";
     }
     
-    return cn("w-full");
+    // Sử dụng min-h-[100svh] làm fallback khi SSR để tránh CLS
+    return cn("w-full relative overflow-hidden", !isMounted && "min-h-[100svh]");
   }, [fullHeight, isMounted]);
 
   // Tính toán section height style với CSS variable động
   const sectionHeightStyle = useMemo(() => {
-    if (!fullHeight || !isMounted) {
+    if (!fullHeight) {
+      return {};
+    }
+
+    // Nếu chưa mounted (SSR), không trả về style động để tránh mismatch
+    if (!isMounted) {
       return {};
     }
 

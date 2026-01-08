@@ -30,7 +30,15 @@ export const appConfig = {
   },
   
   // SEO
-  keywords: ["HUB", "Kết nối phụ huynh và nhà trường", "Quản trị nội dung", "Admin Panel"] as string[],
+  keywords: [
+    "HUB", 
+    "Kết nối phụ huynh và nhà trường", 
+    "Đại học Ngân hàng Thành phố Hồ Chí Minh",
+    "HUB Phụ huynh",
+    "Tra cứu kết quả học tập HUB",
+    "Quản trị nội dung", 
+    "Admin Panel"
+  ] as string[],
   
   // Authors
   authors: [{ name: "P.QLCNTT" }] as Array<{ name: string }>,
