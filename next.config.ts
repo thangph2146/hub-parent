@@ -30,6 +30,7 @@ const nextConfig: NextConfig = {
   
   compress: true,
   poweredByHeader: false,
+  productionBrowserSourceMaps: true,
   
   // Optimize package imports for better tree-shaking
   experimental: {

@@ -16,7 +16,7 @@ export const appConfig = {
   
   // Application info
   name: "HUB - Phụ huynh",
-  namePublic: "Kết nối phụ huynh và nhà trường ",
+  namePublic: "Kết nối phụ huynh và nhà trường",
   company: "P.QLCNTT",
   url: process.env.NEXTAUTH_URL || "http://localhost:3000",
   

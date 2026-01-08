@@ -4,7 +4,7 @@
 
 export const formatPostDate = (date: Date | null): string => {
   if (!date) return ""
-  return new Intl.DateTimeFormat("en-US", {
+  return new Intl.DateTimeFormat("vi-VN", {
     year: "numeric",
     month: "short",
     day: "numeric",
