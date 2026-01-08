@@ -66,7 +66,7 @@ export const PostSort = () => {
   }
 
   return (
-    <DropdownMenu>
+    <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" className="h-9 sm:h-10 px-3 sm:px-4">
           <Flex align="center" gap={2}>

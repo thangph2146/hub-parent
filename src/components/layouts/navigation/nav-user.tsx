@@ -368,7 +368,7 @@ export function NavUser({ className }: { className?: string }) {
       <DropdownMenuLabel className="p-0">
         <Flex align="center" gap={2} className="px-1 py-1.5 text-left min-w-0">
           <UserAvatar user={user} rounded size="h-8 w-8" className="shrink-0" />
-          <Flex direction="col" flex="1" minWidth="0" textAlign="left">
+          <Flex direction="col" flex="1" minWidth="0" textAlign="left" className="truncate py-2">
             <TypographySpanMuted className="truncate">{user.name || user.email}</TypographySpanMuted>
             <TypographySpanSmallMuted className="truncate">{user.email}</TypographySpanSmallMuted>
           </Flex>
@@ -481,16 +481,16 @@ export function NavUser({ className }: { className?: string }) {
           <DropdownMenuTrigger asChild>
             <SidebarMenuButton
               size="lg"
-              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+              className="relative border border-sidebar-border/60 shadow-md bg-sidebar-accent/10 backdrop-blur-sm data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground hover:bg-sidebar-accent/30 transition-all duration-300 ease-in-out active:scale-[0.98] group-data-[collapsible=icon]:p-0"
             >
-              <UserAvatar user={user} rounded />
-              <SidebarMenuButtonContent>
-                <SidebarMenuButtonTitle>{user.name || user.email}</SidebarMenuButtonTitle>
-                <SidebarMenuButtonDescription>
+              <UserAvatar user={user} rounded className="ring-2 ring-sidebar-border/30" />
+              <SidebarMenuButtonContent className="ml-1">
+                <SidebarMenuButtonTitle className="font-semibold tracking-tight">{user.name || user.email}</SidebarMenuButtonTitle>
+                <SidebarMenuButtonDescription className="text-sidebar-foreground/60">
                   {primaryRole?.displayName || primaryRole?.name || user.email}
                 </SidebarMenuButtonDescription>
               </SidebarMenuButtonContent>
-              <IconSize size="sm" className="ml-auto opacity-50">
+              <IconSize size="sm" className="ml-auto opacity-40 group-data-[state=open]:rotate-180 transition-transform duration-300">
                 <ChevronsUpDown />
               </IconSize>
             </SidebarMenuButton>

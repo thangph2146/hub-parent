@@ -222,7 +222,7 @@ export const ResourceTableClient = <T extends object>({
     const viewModeSection = (
       <Flex align="center" gap={2} wrap>
         {isMobile ? (
-          <DropdownMenu>
+          <DropdownMenu modal={false}>
             <DropdownMenuTrigger asChild>
               <Button
                 type="button"

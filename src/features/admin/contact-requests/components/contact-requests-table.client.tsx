@@ -340,7 +340,7 @@ export const ContactRequestsTableClient = ({
                 </>
               )}
             {canManage && (
-              <DropdownMenu>
+              <DropdownMenu modal={false}>
                 <DropdownMenuTrigger asChild>
                   <Button
                     type="button"
