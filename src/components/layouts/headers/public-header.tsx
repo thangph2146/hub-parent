@@ -41,6 +41,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import {
   TypographyPSmall,
   TypographyP,
+  TypographySpan,
+  TypographySpanSmall,
   IconSize,
   TypographyH6,
 } from "@/components/ui/typography";
@@ -175,8 +177,8 @@ function AuthButton({
           </IconSize>
         </Flex>
         <Flex direction="col" align="start" className="min-w-0 flex-1">
-          <TypographyP className="font-medium text-sm sm:text-base">{title}</TypographyP>
-          <TypographyPSmall className="text-xs sm:text-sm">{description}</TypographyPSmall>
+          <TypographySpan className="font-medium text-sm sm:text-base">{title}</TypographySpan>
+          <TypographySpanSmall className="text-xs sm:text-sm">{description}</TypographySpanSmall>
         </Flex>
       </Flex>
     </Button>

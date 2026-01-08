@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import {
   Mail,
   MapPin,
@@ -480,7 +481,7 @@ export function PublicFooter() {
             fullWidth
             className="min-w-0"
           >
-            <TypographySpan className="break-words text-center text-pretty px-4">
+            <TypographySpan className="break-words text-center text-pretty px-4" suppressHydrationWarning>
               © {currentYear} {appConfig.namePublic} . Được phát triển bởi{" "}
               {appConfig.company} Trường Đại học Ngân hàng TP.Hồ Chí Minh
             </TypographySpan>
