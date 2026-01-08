@@ -85,7 +85,11 @@ export function PostCard({ post, className, priority = false }: PostCardProps) {
                 <IconSize size="xs">
                   <Calendar className="w-3.5 h-3.5" />
                 </IconSize>
-                <time dateTime={getPublishedAtISO()} className="text-xs font-medium uppercase tracking-wider">
+                <time 
+                  dateTime={getPublishedAtISO()} 
+                  className="text-xs font-semibold uppercase tracking-wider text-foreground/90"
+                  suppressHydrationWarning
+                >
                   {formatPostDate(post.publishedAt)}
                 </time>
               </Flex>

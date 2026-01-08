@@ -22,7 +22,10 @@ export const PostDetailClient = ({ post }: PostDetailClientProps) => {
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      setBaseUrl(window.location.origin)
+      const timer = setTimeout(() => {
+        setBaseUrl(window.location.origin)
+      }, 0)
+      return () => clearTimeout(timer)
     }
   }, [])
 
@@ -68,7 +71,7 @@ export const PostDetailClient = ({ post }: PostDetailClientProps) => {
                   <Calendar />
                 </IconSize>
                 <time dateTime={getPublishedAtISO()} suppressHydrationWarning>
-                  <TypographySpanSmallMuted>
+                  <TypographySpanSmallMuted className="text-foreground/80 font-medium">
                     {formatPostDateLong(post.publishedAt)}
                   </TypographySpanSmallMuted>
                 </time>

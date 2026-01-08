@@ -159,7 +159,7 @@ function FloatingTextFormat({
 
     window.addEventListener("resize", update)
     if (scrollerElem) {
-      scrollerElem.addEventListener("scroll", update)
+      scrollerElem.addEventListener("scroll", update, { passive: true })
     }
 
     return () => {

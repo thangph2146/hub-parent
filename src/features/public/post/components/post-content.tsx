@@ -4,6 +4,8 @@ import dynamic from "next/dynamic"
 import { Card } from "@/components/ui/card"
 import { TypographyPMuted } from "@/components/ui/typography"
 import type { SerializedEditorState } from "lexical"
+import { findFirstImageSrc } from "../utils/content-helpers"
+import { PriorityImageContext } from "@/components/editor/context/priority-image-context"
 
 // Lazy load Editor component to reduce initial bundle size for mobile
 // Editor contains Lexical which is a large library
@@ -38,12 +40,17 @@ export const PostContent = ({ content }: PostContentProps) => {
     )
   }
 
+  // Find priority image (LCP)
+  const priorityImageSrc = content.root ? findFirstImageSrc(content.root) : null
+
   return (
     <div className="w-full">
-      <Editor
-        editorSerializedState={content}
-        readOnly={true}
-      />
+      <PriorityImageContext.Provider value={priorityImageSrc}>
+        <Editor
+          editorSerializedState={content}
+          readOnly={true}
+        />
+      </PriorityImageContext.Provider>
     </div>
   )
 }

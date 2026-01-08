@@ -40,7 +40,6 @@ import {
   SELECTION_CHANGE_COMMAND,
 } from "lexical"
 import { $getRoot } from "lexical"
-import type { LexicalNode } from "lexical"
 
 import { ContentEditable } from "@/components/editor/editor-ui/content-editable"
 import { ImageResizer } from "@/components/editor/editor-ui/image-resizer"
@@ -855,6 +854,8 @@ function CaptionComposer({
   )
 }
 
+import { usePriorityImage } from "@/components/editor/context/priority-image-context"
+
 export default function ImageComponent({
   altText,
   caption,
@@ -878,36 +879,10 @@ export default function ImageComponent({
   const isEditable = useLexicalEditable()
   const editorContainer = useEditorContainer()
   
-  // Check if this is the first image in the editor (LCP candidate)
-  const [isFirstImage, setIsFirstImage] = useState<boolean>(false)
+  // Check if this is the priority image (LCP candidate) from context
+  const prioritySrc = usePriorityImage()
+  const isPriority = src === prioritySrc
   
-  useEffect(() => {
-    editor.getEditorState().read(() => {
-      const root = $getRoot()
-      
-      // Recursively find first image node
-      const findFirstImage = (node: LexicalNode): string | null => {
-        if (node.getType() === "image") {
-          return node.getKey()
-        }
-        
-        // Check children recursively
-        const nodeWithChildren = node as LexicalNode & { getChildren?: () => LexicalNode[] }
-        if (typeof nodeWithChildren.getChildren === "function") {
-          const children = nodeWithChildren.getChildren()
-          for (const child of children) {
-            const imageKey = findFirstImage(child)
-            if (imageKey) return imageKey
-          }
-        }
-        
-        return null
-      }
-      
-      const firstImageKey = findFirstImage(root)
-      setIsFirstImage(firstImageKey === nodeKey)
-    })
-  }, [editor, nodeKey])
   const {
     hasCaptionContent,
     localShowCaption,
@@ -1049,7 +1024,7 @@ export default function ImageComponent({
               height={responsiveDimensions.height}
               maxWidth={maxWidth}
               onError={() => setIsLoadError(true)}
-              fetchPriority={isFirstImage ? "high" : "auto"}
+              fetchPriority={isPriority ? "high" : "auto"}
             />
           )}
         </div>

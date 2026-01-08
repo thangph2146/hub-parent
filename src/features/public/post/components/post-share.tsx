@@ -59,6 +59,7 @@ export const PostShare = ({ title, url, variant = "default", compact: compactPro
                     size="icon"
                     className={`rounded-full h-8 w-8 transition-colors ${platform.color}`}
                     onClick={() => handleShare(platform.id as keyof typeof shareLinks)}
+                    aria-label={`Chia sẻ lên ${platform.label}`}
                   >
                     <platform.icon className="w-4 h-4" />
                   </Button>
@@ -74,6 +75,7 @@ export const PostShare = ({ title, url, variant = "default", compact: compactPro
                   size="icon"
                   className="rounded-full hover:bg-orange-50 hover:text-orange-600 h-8 w-8 transition-colors"
                   onClick={handleCopyLink}
+                  aria-label="Sao chép liên kết"
                 >
                   {copied ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4" />}
                 </Button>
@@ -97,6 +99,7 @@ export const PostShare = ({ title, url, variant = "default", compact: compactPro
                 size="icon"
                 className={`rounded-full h-8 w-8 ${platform.color}`}
                 onClick={() => handleShare(platform.id as keyof typeof shareLinks)}
+                aria-label={`Chia sẻ lên ${platform.id}`}
               >
                 <platform.icon className="w-4 h-4" />
               </Button>
@@ -106,6 +109,7 @@ export const PostShare = ({ title, url, variant = "default", compact: compactPro
               size="icon"
               className="rounded-full h-8 w-8 text-orange-600"
               onClick={handleCopyLink}
+              aria-label="Sao chép liên kết"
             >
               {copied ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4" />}
             </Button>
@@ -146,6 +150,7 @@ export const PostShare = ({ title, url, variant = "default", compact: compactPro
                 size="icon"
                 className="rounded-full hover:bg-blue-50 hover:text-blue-600 border-muted-foreground/20"
                 onClick={() => handleShare("facebook")}
+                aria-label="Chia sẻ lên Facebook"
               >
                 <Facebook className="w-4 h-4" />
               </Button>
@@ -161,6 +166,7 @@ export const PostShare = ({ title, url, variant = "default", compact: compactPro
                 size="icon"
                 className="rounded-full hover:bg-sky-50 hover:text-sky-500 border-muted-foreground/20"
                 onClick={() => handleShare("twitter")}
+                aria-label="Chia sẻ lên X (Twitter)"
               >
                 <Twitter className="w-4 h-4" />
               </Button>
@@ -176,6 +182,7 @@ export const PostShare = ({ title, url, variant = "default", compact: compactPro
                 size="icon"
                 className="rounded-full hover:bg-blue-50 hover:text-blue-700 border-muted-foreground/20"
                 onClick={() => handleShare("linkedin")}
+                aria-label="Chia sẻ lên LinkedIn"
               >
                 <Linkedin className="w-4 h-4" />
               </Button>
@@ -191,6 +198,7 @@ export const PostShare = ({ title, url, variant = "default", compact: compactPro
                 size="icon"
                 className="rounded-full hover:bg-orange-50 hover:text-orange-600 border-muted-foreground/20"
                 onClick={handleCopyLink}
+                aria-label="Sao chép liên kết"
               >
                 {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
               </Button>
