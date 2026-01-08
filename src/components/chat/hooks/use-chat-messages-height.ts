@@ -99,7 +99,7 @@ export function useChatMessagesHeight(options: UseChatMessagesHeightOptions = {}
     chatHeaderRef,
     /** Attach to chat input container (including reply banner area) */
     chatInputRef,
-    /** Computed messages area height that keeps total at ~100dvh */
+    /** Computed messages area height that keeps total at ~100vh */
     messagesHeight,
     /** Individual element heights for debugging/advanced use */
     elements: {

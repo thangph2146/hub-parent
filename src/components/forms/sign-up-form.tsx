@@ -260,6 +260,7 @@ export function SignUpForm({
                 Đã có tài khoản?{" "}
                 <Link
                   href="/auth/sign-in"
+                  prefetch={false}
                   className="font-bold text-primary hover:text-primary/80 transition-colors"
                 >
                   Đăng nhập

@@ -85,7 +85,7 @@ export function PostBreadcrumb({
         {!isListPage && (
           <>
             <BreadcrumbItem>
-              <BreadcrumbLink href="/bai-viet">Bài viết</BreadcrumbLink>
+              <BreadcrumbLink href="/bai-viet" prefetch={false}>Bài viết</BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
 
@@ -94,7 +94,7 @@ export function PostBreadcrumb({
               <>
                 <BreadcrumbItem>
                   {categorySlug ? (
-                    <BreadcrumbLink href={`/bai-viet?category=${categorySlug}`}>
+                    <BreadcrumbLink href={`/bai-viet?category=${categorySlug}`} prefetch={false}>
                       {categoryName}
                     </BreadcrumbLink>
                   ) : (
@@ -110,7 +110,7 @@ export function PostBreadcrumb({
               <>
                 <BreadcrumbItem>
                   {tagSlug ? (
-                    <BreadcrumbLink href={`/bai-viet?tag=${tagSlug}`}>
+                    <BreadcrumbLink href={`/bai-viet?tag=${tagSlug}`} prefetch={false}>
                       {tagName}
                     </BreadcrumbLink>
                   ) : (

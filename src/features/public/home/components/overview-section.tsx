@@ -6,18 +6,11 @@ import { Flex } from "@/components/ui/flex";
 import { TypographyH2, TypographyP } from "@/components/ui/typography";
 import { PointerHighlight } from "@/components/ui/pointer-highlight";
 import { ContainerTextFlip } from "@/components/ui/container-text-flip";
-import { useSectionHeight } from "@/hooks/use-section-height";
 
-import { cn } from "@/lib/utils";
 import { ScrollIndicator } from "./scroll-indicator";
 
 export const OverviewSection = ({ className }: { className?: string }) => {
   const sectionRef = useRef<HTMLDivElement>(null);
-
-  const { sectionHeightClassName, sectionHeightStyle } = useSectionHeight({
-    minHeight: 0,
-    fullHeight: true,
-  });
 
   return (
     <Flex
@@ -29,8 +22,7 @@ export const OverviewSection = ({ className }: { className?: string }) => {
       ref={sectionRef}
       position="relative"
       bg="background"
-      className={cn(sectionHeightClassName, className)}
-      style={sectionHeightStyle}
+      className={className}
     >
       <Flex
         direction="col"
@@ -54,9 +46,9 @@ export const OverviewSection = ({ className }: { className?: string }) => {
           </TypographyH2>
         </PointerHighlight>
 
-        <div className="w-full relative px-8 py-6 rounded-xl bg-gradient-to-br from-primary/5 to-transparent">
-          <Quote className="absolute top-1 left-1 fill-primary/10 w-8 h-8 rotate-180" />
-          <TypographyP className="text-left md:text-center text-base md:text-lg lg:text-xl leading-relaxed text-balance">
+        <div className="w-full relative px-9 py-6 rounded-xl bg-gradient-to-br from-primary/5 to-transparent">
+          <Quote className="absolute top-1 left-1 fill-primary/10 w-6 h-6 rotate-180" />
+          <TypographyP className="text-justify text-base md:text-lg lg:text-xl leading-relaxed text-balance">
             Hệ thống kết nối Phụ huynh và Nhà trường được xây dựng để kiến tạo
             cầu nối, gắn kết giữa phụ huynh, gia đình và nhà trường trong suốt
             hành trình học tập của sinh viên tại trường Đại học Ngân hàng Tp. Hồ
@@ -69,10 +61,10 @@ export const OverviewSection = ({ className }: { className?: string }) => {
             quý phụ huynh đồng hành trong hành trình học tập, sáng tạo và trưởng
             thành của các em.
           </TypographyP>
-          <Quote className="absolute bottom-1 right-1 fill-primary/10 w-8 h-8" />
+          <Quote className="absolute bottom-1 right-1 fill-primary/10 w-6 h-6" />
         </div>
-        <ScrollIndicator variant="dark" containerRef={sectionRef} />
       </Flex>
+      <ScrollIndicator variant="dark" containerRef={sectionRef} />
     </Flex>
   );
 };

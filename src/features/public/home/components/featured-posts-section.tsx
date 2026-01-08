@@ -9,11 +9,8 @@ import { Button } from "@/components/ui/button";
 import { TypographyDescriptionSmall, TypographyH2, TypographySpan } from "@/components/ui/typography";
 import { PostCard } from "@/components/public/post/post-card";
 import type { Post } from "@/features/public/post/types";
-import { useSectionHeight } from "@/hooks/use-section-height";
-import { useClientOnly } from "@/hooks/use-client-only";
 import { cn } from "@/lib/utils";
-import { HOME_RESPONSIVE_CONDITIONS, HOME_ROUTES } from "../constants";
-import { ScrollIndicator } from "./scroll-indicator";
+import { HOME_ROUTES } from "../constants";
 
 export interface FeaturedPostsSectionProps {
   featuredPosts?: Post[];
@@ -22,7 +19,7 @@ export interface FeaturedPostsSectionProps {
 
 const ViewAllButton = ({ mobile = false }: { mobile?: boolean }) => (
   <Button asChild variant={mobile ? "outline" : "ghost"} size="default" className={cn(mobile && "w-full")}>
-    <Link href={HOME_ROUTES.posts}>
+    <Link href={HOME_ROUTES.posts} prefetch={false}>
       <Flex align="center" gap={2}>
         <TypographySpan>{mobile ? "Xem tất cả tin tức" : "Xem tất cả"}</TypographySpan>
         <ArrowRight className={cn(!mobile && "transition-transform group-hover:translate-x-1")} />
@@ -33,16 +30,6 @@ const ViewAllButton = ({ mobile = false }: { mobile?: boolean }) => (
 
 export const FeaturedPostsSection = ({ featuredPosts = [], className }: FeaturedPostsSectionProps) => {
   const sectionRef = useRef<HTMLDivElement>(null);
-  const isMounted = useClientOnly();
-
-  const isDesktopHeight = isMounted && 
-    typeof window !== "undefined" && 
-    HOME_RESPONSIVE_CONDITIONS.isDesktopHeight(window.innerHeight);
-
-  const { sectionHeightClassName, sectionHeightStyle } = useSectionHeight({
-    minHeight: 0,
-    fullHeight: !isDesktopHeight,
-  });
 
   if (featuredPosts.length === 0) return null;
 
@@ -52,8 +39,7 @@ export const FeaturedPostsSection = ({ featuredPosts = [], className }: Featured
       ref={sectionRef}
       fullWidth
       position="relative"
-      className={cn(sectionHeightClassName, "bg-background", className)}
-      style={sectionHeightStyle}
+      className={cn("bg-background", className)}
     >
       <Flex
         container
@@ -94,8 +80,6 @@ export const FeaturedPostsSection = ({ featuredPosts = [], className }: Featured
           </div>
         </Flex>
       </Flex>
-
-      {!isDesktopHeight && <ScrollIndicator containerRef={sectionRef} />}
     </Flex>
   );
 };

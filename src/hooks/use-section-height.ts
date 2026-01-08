@@ -67,8 +67,8 @@ export function useSectionHeight(
       }
     }
 
-    // Đảm bảo height luôn chính xác là 100dvh - headerHeight
-    const calculatedHeight = `calc(100dvh - ${actualHeaderHeight}px)`;
+    // Đảm bảo height luôn chính xác là 100vh - headerHeight
+    const calculatedHeight = `calc(100vh - ${actualHeaderHeight}px)`;
     
     const style: React.CSSProperties = {
       height: calculatedHeight,

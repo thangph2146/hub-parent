@@ -6,8 +6,6 @@ import { Flex } from "@/components/ui/flex";
 import { TypographyH3, TypographyPSmallMuted } from "@/components/ui/typography";
 import { EncryptedText } from "@/components/ui/encrypted-text";
 import { ContactForm } from "@/components/forms/contact-form";
-import { useSectionHeight } from "@/hooks/use-section-height";
-import { cn } from "@/lib/utils";
 import { LifeBuoy, ShieldCheck, Zap } from "lucide-react";
 
 export interface ContactInfoItem {
@@ -42,10 +40,6 @@ export const ContactSection = ({ className }: ContactSectionProps) => {
   const sectionRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef(null);
   const isInView = useInView(containerRef, { once: true, margin: "-50px" });
-  const { sectionHeightClassName, sectionHeightStyle } = useSectionHeight({
-    minHeight: 0,
-    fullHeight: true,
-  });
 
   return (
     <Flex
@@ -56,8 +50,7 @@ export const ContactSection = ({ className }: ContactSectionProps) => {
       direction="col"
       position="relative"
       bg="background"
-      className={cn(sectionHeightClassName, className)}
-      style={sectionHeightStyle}
+      className={className}
     >
       <Flex container padding="responsive-lg" className="h-full items-center justify-center px-0 sm:px-0 md:px-0 lg:px-0 py-0 sm:py-0 md:py-0 lg:py-0">
         <div className="w-full max-w-7xl mx-auto px-4 sm:px-6">

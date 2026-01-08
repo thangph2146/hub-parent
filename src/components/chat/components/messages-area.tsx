@@ -59,8 +59,8 @@ export function MessagesArea({
       fullWidth
       style={{
         height: messagesMaxHeight ? `${messagesMaxHeight}px` : undefined,
-        maxHeight: messagesMaxHeight ? `${messagesMaxHeight}px` : "calc(100dvh - 13rem)",
-        minHeight: messagesMinHeight ? `${messagesMinHeight}px` : "calc(100dvh - 13rem)",
+        maxHeight: messagesMaxHeight ? `${messagesMaxHeight}px` : "calc(100vh - 13rem)",
+        minHeight: messagesMinHeight ? `${messagesMinHeight}px` : "calc(100vh - 13rem)",
       }}
     >
       <Flex 
