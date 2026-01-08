@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { Calendar, FolderOpen } from "lucide-react"
@@ -7,7 +8,7 @@ import { motion } from "framer-motion"
 import { Badge } from "@/components/ui/badge"
 import { Flex } from "@/components/ui/flex"
 import { cn } from "@/lib/utils"
-import { TypographyH4, TypographySpanSmall, TypographyPMuted, IconSize } from "@/components/ui/typography"
+import { TypographyH3, TypographySpanSmall, TypographyPMuted, IconSize } from "@/components/ui/typography"
 import type { Post } from "@/features/public/post/types"
 import { formatPostDate } from "@/features/public/post/utils/date-formatter"
 
@@ -18,6 +19,7 @@ interface PostCardProps {
 }
 
 export function PostCard({ post, className, priority = false }: PostCardProps) {
+  const [imageError, setImageError] = useState(false)
   const primaryCategory = post.categories[0]
 
   // Helper function to convert publishedAt to ISO string
@@ -45,7 +47,7 @@ export function PostCard({ post, className, priority = false }: PostCardProps) {
         <Link href={`/bai-viet/${post.slug}`} className="flex flex-col flex-1" prefetch={false}>
           {/* Featured Image with Zoom Effect */}
           <div className="relative aspect-video w-full overflow-hidden bg-muted">
-            {post.image ? (
+            {post.image && !imageError ? (
               <>
                 <Image
                   src={post.image}
@@ -56,6 +58,7 @@ export function PostCard({ post, className, priority = false }: PostCardProps) {
                   loading={priority ? "eager" : "lazy"}
                   priority={priority}
                   quality={85}
+                  onError={() => setImageError(true)}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60 transition-opacity duration-300" />
               </>
@@ -96,9 +99,9 @@ export function PostCard({ post, className, priority = false }: PostCardProps) {
             )}
 
             {/* Title */}
-            <TypographyH4 className="line-clamp-2 text-xl font-bold text-foreground group-hover:text-primary transition-colors leading-tight">
+            <TypographyH3 className="line-clamp-2 text-xl font-bold text-foreground group-hover:text-primary transition-colors leading-tight">
               {post.title}
-            </TypographyH4>
+            </TypographyH3>
 
             {/* Excerpt (Optional) */}
             {post.excerpt && (

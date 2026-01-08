@@ -107,9 +107,9 @@ export function PublicFooter() {
                   <TypographyH3 className="text-xs sm:text-sm md:text-base lg:text-lg xl:text-xl text-center sm:text-left break-words">
                     Trường Đại học Ngân hàng
                   </TypographyH3>
-                  <TypographyH5 className="text-xs sm:text-xs md:text-sm lg:text-base text-center sm:text-left break-words">
+                  <TypographyH4 className="text-xs sm:text-xs md:text-sm lg:text-base text-center sm:text-left break-words">
                     Thành Phố Hồ Chí Minh
-                  </TypographyH5>
+                  </TypographyH4>
                 </Flex>
               </Flex>
             </Card>
