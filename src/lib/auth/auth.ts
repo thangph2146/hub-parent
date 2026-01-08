@@ -795,6 +795,11 @@ export const authConfig: NextAuthConfig = {
   // JWT signing algorithm mặc định là HS256 (an toàn)
   // Có thể custom JWT thông qua jwt callback
   secret: process.env.NEXTAUTH_SECRET,
+  pages: {
+    signIn: "/auth/sign-in",
+    newUser: "/auth/sign-up",
+    error: "/auth/sign-in", // Điều hướng lỗi về trang sign-in để hiển thị thông báo
+  },
 }
 
 // Validate config trước khi khởi tạo NextAuth (chỉ trong runtime)

@@ -8,31 +8,27 @@ import { Calendar, User, Tag, Clock } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { PostContent } from "./post-content"
 import { PostShare } from "./post-share"
-import { formatPostDateLong } from "../utils/date-formatter"
+import { formatPostDateLong, formatPostTime } from "../utils/date-formatter"
 import { appConfig } from "@/lib/config"
 import type { PostDetail } from "../types"
 import { useEffect, useState } from "react"
-import { useClientOnly } from "@/hooks/use-client-only"
 
 interface PostDetailClientProps {
   post: PostDetail
 }
 
 export const PostDetailClient = ({ post }: PostDetailClientProps) => {
-  const isMounted = useClientOnly()
   const [baseUrl, setBaseUrl] = useState(appConfig.url)
 
-  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
-    if (isMounted && typeof window !== "undefined") {
+    if (typeof window !== "undefined") {
       setBaseUrl(window.location.origin)
     }
-  }, [isMounted])
-  /* eslint-enable react-hooks/set-state-in-effect */
+  }, [])
 
   const postUrl = `${baseUrl}/bai-viet/${post.slug}`
+
   // Helper function to convert publishedAt to ISO string
-  // Handles both Date objects and string values (from serialization)
   const getPublishedAtISO = (): string => {
     if (!post.publishedAt) return ""
     if (typeof post.publishedAt === "string") {
@@ -41,7 +37,6 @@ export const PostDetailClient = ({ post }: PostDetailClientProps) => {
     if (post.publishedAt instanceof Date) {
       return post.publishedAt.toISOString()
     }
-    // Fallback: convert to Date and then to ISO string
     const dateValue = post.publishedAt as string | number | Date
     return new Date(dateValue).toISOString()
   }
@@ -61,46 +56,35 @@ export const PostDetailClient = ({ post }: PostDetailClientProps) => {
 
           {/* Meta Info */}
           <Flex align="center" gap={4} wrap className="sm:gap-6 pt-2 border-t">
+            <Flex align="center" gap={2}>
+              <IconSize size="sm">
+                <User />
+              </IconSize>
+              <TypographySpanSmallMuted>{post.author.name ?? post.author.email}</TypographySpanSmallMuted>
+            </Flex>
+            {post.publishedAt && (
               <Flex align="center" gap={2}>
                 <IconSize size="sm">
-                  <User />
+                  <Calendar />
                 </IconSize>
-                <TypographySpanSmallMuted>{post.author.name ?? post.author.email}</TypographySpanSmallMuted>
-              </Flex>
-              {post.publishedAt && (
-                <Flex align="center" gap={2}>
-                  <IconSize size="sm">
-                    <Calendar />
-                  </IconSize>
-                  <time dateTime={getPublishedAtISO()}>
-                    <TypographySpanSmallMuted>
-                      {isMounted ? formatPostDateLong(post.publishedAt) : "..."}
-                    </TypographySpanSmallMuted>
-                  </time>
-                </Flex>
-              )}
-              {post.publishedAt && (
-                <Flex align="center" gap={2}>
-                  <IconSize size="sm">
-                    <Clock />
-                  </IconSize>
+                <time dateTime={getPublishedAtISO()} suppressHydrationWarning>
                   <TypographySpanSmallMuted>
-                    {isMounted ? (() => {
-                      try {
-                        const date = new Date(post.publishedAt)
-                        if (isNaN(date.getTime())) return ""
-                        return date.toLocaleTimeString("vi-VN", {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })
-                      } catch {
-                        return ""
-                      }
-                    })() : "..."}
+                    {formatPostDateLong(post.publishedAt)}
                   </TypographySpanSmallMuted>
-                </Flex>
-              )}
-            </Flex>
+                </time>
+              </Flex>
+            )}
+            {post.publishedAt && (
+              <Flex align="center" gap={2}>
+                <IconSize size="sm">
+                  <Clock />
+                </IconSize>
+                <TypographySpanSmallMuted suppressHydrationWarning>
+                  {formatPostTime(post.publishedAt)}
+                </TypographySpanSmallMuted>
+              </Flex>
+            )}
+          </Flex>
         </Flex>
 
         {/* Content */}
