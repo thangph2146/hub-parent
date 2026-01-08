@@ -12,8 +12,7 @@ import type { Post } from "@/features/public/post/types";
 import { useSectionHeight } from "@/hooks/use-section-height";
 import { useClientOnly } from "@/hooks/use-client-only";
 import { cn } from "@/lib/utils";
-import { HOME_ROUTES, HOME_RESPONSIVE_CONDITIONS } from "../constants";
-import { ScrollIndicator } from "./scroll-indicator";
+import { HOME_ROUTES } from "../constants";
 
 export interface FeaturedPostsSectionProps {
   featuredPosts?: Post[];
@@ -84,10 +83,6 @@ export const FeaturedPostsSection = ({ featuredPosts = [], className }: Featured
           </div>
         </Flex>
       </div>
-
-      {isMounted && HOME_RESPONSIVE_CONDITIONS.showScrollIndicator(window.innerWidth, window.innerHeight) && (
-        <ScrollIndicator variant="dark" containerRef={sectionRef} />
-      )}
     </Flex>
   );
 };

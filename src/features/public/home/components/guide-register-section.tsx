@@ -13,7 +13,6 @@ import { useSectionHeight } from "@/hooks/use-section-height";
 import { useClientOnly } from "@/hooks/use-client-only";
 import { cn } from "@/lib/utils";
 import { HOME_ROUTES, HOME_RESPONSIVE_CONDITIONS } from "../constants";
-import { ScrollIndicator } from "./scroll-indicator";
 
 const DEFAULT_IMAGE_HEIGHT = "h-[200px] sm:h-[250px] lg:h-[350px] xl:h-[400px]";
 
@@ -118,33 +117,18 @@ const CardWithImage = ({ title, description, image, button, reverse = false }: C
 
 export const GuideRegisterSection = ({ className }: { className?: string }) => {
   const sectionRef = useRef<HTMLDivElement>(null);
-  const isMounted = useClientOnly();
-  const { sectionHeightClassName, sectionHeightStyle } = useSectionHeight({
-    minHeight: "fit-content",
-    fullHeight: isMounted && HOME_RESPONSIVE_CONDITIONS.isDesktop(window.innerWidth),
-  });
 
   return (
-    <Flex
-      as="section"
+    <section
       ref={sectionRef}
-      fullWidth
-      container
-      direction="col"
-      bg="background"
-      className={cn(sectionHeightClassName, "py-8 sm:py-12 md:py-16 lg:py-20", className)}
-      style={sectionHeightStyle}
+      className={cn("w-full bg-background py-8 sm:py-12 lg:py-16", className)}
     >
-      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6">
+      <div className="container mx-auto px-4 sm:px-6">
         <div className="grid xl:grid-cols-2 gap-8 items-stretch">
           <CardWithImage {...GUIDE_DATA} />
           <CardWithImage {...REGISTER_DATA} reverse />
         </div>
-        {isMounted && HOME_RESPONSIVE_CONDITIONS.showScrollIndicator(window.innerWidth, window.innerHeight) && (
-        <ScrollIndicator variant="dark" containerRef={sectionRef} />
-      )}
       </div>
-      
-    </Flex>
+    </section>
   );
 };
