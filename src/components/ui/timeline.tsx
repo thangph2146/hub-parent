@@ -80,6 +80,7 @@ export const Timeline = ({ data }: { data: TimelineEntry[] }) => {
             height: height + "px",
           }}
           className="absolute left-6 sm:left-7 md:left-8 top-0 w-[2px] pointer-events-none z-0 bg-[linear-gradient(to_bottom,var(--tw-gradient-stops))] from-transparent from-[0%] via-neutral-200 dark:via-neutral-700 to-transparent to-[99%]  [mask-image:linear-gradient(to_bottom,transparent_0%,black_10%,black_90%,transparent_100%)] "
+          suppressHydrationWarning
         >
           <motion.div
             style={{

@@ -14,7 +14,7 @@ export function TypographyH1({
   ...props
 }: React.HTMLAttributes<HTMLHeadingElement>) {
   return (
-    <h1 className={cn(typography.heading.h1, className)} {...props}>
+    <h1 className={cn(typography.heading.h1, className)} suppressHydrationWarning {...props}>
       {children}
     </h1>
   )
@@ -26,7 +26,7 @@ export function TypographyH2({
   ...props
 }: React.HTMLAttributes<HTMLHeadingElement>) {
   return (
-    <h2 className={cn(typography.heading.h2, className)} {...props}>
+    <h2 className={cn(typography.heading.h2, className)} suppressHydrationWarning {...props}>
       {children}
     </h2>
   )
@@ -38,7 +38,7 @@ export function TypographyH3({
   ...props
 }: React.HTMLAttributes<HTMLHeadingElement>) {
   return (
-    <h3 className={cn(typography.heading.h3, className)} {...props}>
+    <h3 className={cn(typography.heading.h3, className)} suppressHydrationWarning {...props}>
       {children}
     </h3>
   )
@@ -50,7 +50,7 @@ export function TypographyH4({
   ...props
 }: React.HTMLAttributes<HTMLHeadingElement>) {
   return (
-    <h4 className={cn(typography.heading.h4, className)} {...props}>
+    <h4 className={cn(typography.heading.h4, className)} suppressHydrationWarning {...props}>
       {children}
     </h4>
   )
@@ -62,7 +62,7 @@ export function TypographyH5({
   ...props
 }: React.HTMLAttributes<HTMLHeadingElement>) {
   return (
-    <h5 className={cn(typography.heading.h5, className)} {...props}>
+    <h5 className={cn(typography.heading.h5, className)} suppressHydrationWarning {...props}>
       {children}
     </h5>
   )
@@ -74,7 +74,7 @@ export function TypographyH6({
   ...props
 }: React.HTMLAttributes<HTMLHeadingElement>) {
   return (
-    <h6 className={cn(typography.heading.h6, className)} {...props}>
+    <h6 className={cn(typography.heading.h6, className)} suppressHydrationWarning {...props}>
       {children}
     </h6>
   )
@@ -86,7 +86,7 @@ export function TypographyP({
   ...props
 }: React.HTMLAttributes<HTMLParagraphElement>) {
   return (
-    <p className={cn(typography.body.medium, className)} {...props}>
+    <p className={cn(typography.body.medium, className)} suppressHydrationWarning {...props}>
       {children}
     </p>
   )
@@ -98,7 +98,7 @@ export function TypographyPSmall({
   ...props
 }: React.HTMLAttributes<HTMLParagraphElement>) {
   return (
-    <p className={cn(typography.body.small, className)} {...props}>
+    <p className={cn(typography.body.small, className)} suppressHydrationWarning {...props}>
       {children}
     </p>
   )
@@ -110,7 +110,7 @@ export function TypographyPLarge({
   ...props
 }: React.HTMLAttributes<HTMLParagraphElement>) {
   return (
-    <p className={cn(typography.body.large, className)} {...props}>
+    <p className={cn(typography.body.large, className)} suppressHydrationWarning {...props}>
       {children}
     </p>
   )
@@ -122,7 +122,7 @@ export function TypographyPMuted({
   ...props
 }: React.HTMLAttributes<HTMLParagraphElement>) {
   return (
-    <p className={cn(typography.body.muted.medium, className)} {...props}>
+    <p className={cn(typography.body.muted.medium, className)} suppressHydrationWarning {...props}>
       {children}
     </p>
   )
@@ -134,7 +134,7 @@ export function TypographyPSmallMuted({
   ...props
 }: React.HTMLAttributes<HTMLParagraphElement>) {
   return (
-    <p className={cn(typography.body.muted.small, className)} {...props}>
+    <p className={cn(typography.body.muted.small, className)} suppressHydrationWarning {...props}>
       {children}
     </p>
   )
@@ -146,7 +146,7 @@ export function TypographyPLargeMuted({
   ...props
 }: React.HTMLAttributes<HTMLParagraphElement>) {
   return (
-    <p className={cn(typography.body.muted.large, className)} {...props}>
+    <p className={cn(typography.body.muted.large, className)} suppressHydrationWarning {...props}>
       {children}
     </p>
   )
@@ -158,7 +158,7 @@ export function TypographySpan({
   ...props
 }: React.HTMLAttributes<HTMLSpanElement>) {
   return (
-    <span className={cn(typography.body.medium, className)} {...props}>
+    <span className={cn(typography.body.medium, className)} suppressHydrationWarning {...props}>
       {children}
     </span>
   )
@@ -170,7 +170,7 @@ export function TypographySpanWhite({
   ...props
 }: React.HTMLAttributes<HTMLSpanElement>) {
   return (
-    <span className={cn(typography.body.medium, "text-white/80 hover:text-white transition-all duration-200", className)} {...props}>
+    <span className={cn(typography.body.medium, "text-white/80 hover:text-white transition-all duration-200", className)} suppressHydrationWarning {...props}>
       {children}
     </span>
   )
@@ -182,7 +182,7 @@ export function TypographySpanSmall({
   ...props
 }: React.HTMLAttributes<HTMLSpanElement>) {
   return (
-    <span className={cn(typography.body.small, className)} {...props}>
+    <span className={cn(typography.body.small, className)} suppressHydrationWarning {...props}>
       {children}
     </span>
   )
@@ -194,7 +194,7 @@ export function TypographySpanLarge({
   ...props
 }: React.HTMLAttributes<HTMLSpanElement>) {
   return (
-    <span className={cn(typography.body.large, className)} {...props}>
+    <span className={cn(typography.body.large, className)} suppressHydrationWarning {...props}>
       {children}
     </span>
   )
@@ -206,7 +206,7 @@ export function TypographySpanMuted({
   ...props
 }: React.HTMLAttributes<HTMLSpanElement>) {
   return (
-    <span className={cn(typography.body.muted.medium, "group-hover:text-primary-foreground transition-colors duration-200", className)} {...props}>
+    <span className={cn(typography.body.muted.medium, "group-hover:text-primary-foreground transition-colors duration-200", className)} suppressHydrationWarning {...props}>
       {children}
     </span>
   )
@@ -218,7 +218,7 @@ export function TypographySpanSmallMuted({
   ...props
 }: React.HTMLAttributes<HTMLSpanElement>) {
   return (
-    <span className={cn(typography.body.muted.small, className)} {...props}>
+    <span className={cn(typography.body.muted.small, className)} suppressHydrationWarning {...props}>
       {children}
     </span>
   )
@@ -230,7 +230,7 @@ export function TypographySpanLargeMuted({
   ...props
 }: React.HTMLAttributes<HTMLSpanElement>) {
   return (
-    <span className={cn(typography.body.muted.large, className)} {...props}>
+    <span className={cn(typography.body.muted.large, className)} suppressHydrationWarning {...props}>
       {children}
     </span>
   )
@@ -242,7 +242,7 @@ export function TypographySpanDestructive({
   ...props
 }: React.HTMLAttributes<HTMLSpanElement>) {
   return (
-    <span className={cn(typography.body.small, "text-destructive", className)} {...props}>
+    <span className={cn(typography.body.small, "text-destructive", className)} suppressHydrationWarning {...props}>
       {children}
     </span>
   )
@@ -254,7 +254,7 @@ export function TypographyLink({
   ...props
 }: React.HTMLAttributes<HTMLAnchorElement>) {
   return (
-    <a className={cn("underline-offset-2 hover:underline", className)} {...props}>
+    <a className={cn("underline-offset-2 hover:underline", className)} suppressHydrationWarning {...props}>
       {children}
     </a>
   )
@@ -266,7 +266,7 @@ export function TypographyTitle({
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) {
   return (
-    <div className={cn(typography.title.default, className)} {...props}>
+    <div className={cn(typography.title.default, className)} suppressHydrationWarning {...props}>
       {children}
     </div>
   )
@@ -278,7 +278,7 @@ export function TypographyTitleLarge({
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) {
   return (
-    <div className={cn(typography.title.large, className)} {...props}>
+    <div className={cn(typography.title.large, className)} suppressHydrationWarning {...props}>
       {children}
     </div>
   )
@@ -290,7 +290,7 @@ export function TypographyTitleSmall({
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) {
   return (
-    <div className={cn(typography.title.small, className)} {...props}>
+    <div className={cn(typography.title.small, className)} suppressHydrationWarning {...props}>
       {children}
     </div>
   )
@@ -302,7 +302,7 @@ export function TypographyDescription({
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) {
   return (
-    <div className={cn(typography.description.default, className)} {...props}>
+    <div className={cn(typography.description.default, className)} suppressHydrationWarning {...props}>
       {children}
     </div>
   )
@@ -314,7 +314,7 @@ export function TypographyDescriptionSmall({
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) {
   return (
-    <div className={cn(typography.description.small, className)} {...props}>
+    <div className={cn(typography.description.small, className)} suppressHydrationWarning {...props}>
       {children}
     </div>
   )
@@ -326,7 +326,7 @@ export function TypographyDescriptionLarge({
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) {
   return (
-    <div className={cn(typography.description.large, className)} {...props}>
+    <div className={cn(typography.description.large, className)} suppressHydrationWarning {...props}>
       {children}
     </div>
   )
@@ -352,7 +352,7 @@ export function IconSize({ size = "md", className, children }: IconSizeProps) {
   
   // Fallback: nếu không phải valid element, wrap trong span
   return (
-    <span className={cn(iconSizes[size], className)}>
+    <span className={cn(iconSizes[size], className)} suppressHydrationWarning>
       {children}
     </span>
   )
