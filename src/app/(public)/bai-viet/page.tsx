@@ -101,17 +101,17 @@ export default async function PostPage({ searchParams }: PostPageProps) {
       {/* Main Content */}
       <div className="min-w-0">
         {/* Header with Sort and Date Range */}
-        <div className="sticky top-14 z-10 w-full mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-4 sm:mb-6 lg:mb-8 px-4 sm:px-0 -mx-4 sm:mx-0 py-3 sm:py-0 border-b bg-background/95 supports-[backdrop-filter]:bg-background/80 border-border backdrop-blur-lg">
-          <div className="flex items-center justify-between sm:justify-start gap-3 flex-shrink-0">
+        <div className="sticky top-14 z-10 w-full mx-auto flex items-center justify-between gap-3 sm:gap-4 mb-4 sm:mb-6 lg:mb-8 px-4 sm:px-0 -mx-4 sm:mx-0 py-3 sm:py-0 border-b bg-background/95 supports-[backdrop-filter]:bg-background/80 border-border backdrop-blur-lg overflow-x-auto no-scrollbar">
+          <div className="flex items-center gap-3 flex-shrink-0">
             <div>
-              <TypographyH2 className="text-lg sm:text-xl lg:text-2xl">Tất cả bài viết</TypographyH2>
-              <TypographyPMuted className="mt-0.5 sm:mt-1 text-xs sm:text-sm lg:text-base">
+              <TypographyH2 className="text-base sm:text-xl lg:text-2xl whitespace-nowrap">Tất cả bài viết</TypographyH2>
+              <TypographyPMuted className="mt-0.5 text-[10px] sm:text-sm lg:text-base whitespace-nowrap">
                 {result.pagination.total} bài viết
               </TypographyPMuted>
             </div>
-
           </div>
-          <div className="flex items-center gap-2 flex-shrink-0 flex-wrap">
+          
+          <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
             <PostDateRange />
             <PostSort />
             {/* Mobile Filter Button */}

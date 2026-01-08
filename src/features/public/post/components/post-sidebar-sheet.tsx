@@ -14,6 +14,7 @@ import { CollapsibleSection } from "@/features/public/post/components/collapsibl
 import { PostCategoryNav } from "@/features/public/post/components/post-category-nav"
 import { PostTagNav } from "@/features/public/post/components/post-tag-nav"
 import { IconSize } from "@/components/ui/typography"
+import { useClientOnly } from "@/hooks/use-client-only"
 
 interface Category {
   id: string
@@ -33,14 +34,29 @@ interface PostSidebarSheetProps {
 }
 
 export function PostSidebarSheet({ categories, tags }: PostSidebarSheetProps) {
+  const isMounted = useClientOnly()
   const [open, setOpen] = useState(false)
+
+  if (!isMounted) {
+    return (
+      <Button
+        variant="outline"
+        className="opacity-50 cursor-not-allowed h-9 sm:h-10 px-3 sm:px-4"
+      >
+        <IconSize size="sm">
+          <SlidersHorizontal />
+        </IconSize>
+        <span className="ml-2 hidden sm:inline">Bộ lọc</span>
+      </Button>
+    )
+  }
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
         <Button
           variant="outline"
-          size="sm"
+          className="h-9 sm:h-10 px-3 sm:px-4"
           aria-label="Mở bộ lọc"
         >
           <IconSize size="sm">

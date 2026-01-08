@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { FlipWords } from "@/components/ui/flip-words";
+import { TypographyH1, TypographyP } from "@/components/ui/typography";
 import { useSectionHeight } from "@/hooks/use-section-height";
 import { ScrollIndicator } from "./scroll-indicator";
 
@@ -81,34 +82,39 @@ export const HeroSection = ({
       >
         <Flex
           direction="col"
-          gap={6}
+          gap={4}
           className={cn(
-            "relative max-w-2xl p-6 sm:p-10 rounded-2xl backdrop-blur-xl bg-black/50 border border-white/20 shadow-2xl transition-all duration-500",
+            "relative max-w-2xl p-8 sm:p-12 rounded-3xl backdrop-blur-2xl bg-black/60 border border-white/20 shadow-2xl transition-all duration-500",
             overlayClassName
           )}
         >
-          <h1
-            className={cn(
-              "text-2xl sm:text-3xl lg:text-4xl font-bold text-white leading-tight tracking-tight animate-in fade-in slide-in-from-bottom-4 duration-700 text-balance",
-              titleClassName
-            )}
-          >
-            {title}
-            <br />
-            <FlipWords
-              words={["Kết nối", "Đồng hành", "Phát triển", "Vươn xa"]}
-              className="p-0 text-inherit"
-            />
-          </h1>
+          <Flex direction="col" gap={3}>
+            <TypographyH1
+              className={cn(
+                "text-xl sm:text-2xl lg:text-3xl font-bold text-white leading-tight tracking-tight animate-in fade-in slide-in-from-bottom-4 duration-700 text-balance uppercase",
+                titleClassName
+              )}
+            >
+              {title}
+              <br />
+              <FlipWords
+                words={["Kết nối", "Đồng hành", "Phát triển", "Vươn xa"]}
+                className="p-0 text-inherit"
+              />
+            </TypographyH1>
+            <TypographyP className="text-white/80 text-sm sm:text-base font-medium italic animate-in fade-in slide-in-from-bottom-4 duration-700 delay-150">
+              &quot;Tâm an lòng, con vững bước – Đồng hành cùng tương lai con tại HUB&quot;
+            </TypographyP>
+          </Flex>
 
-          <p
+          <TypographyP
             className={cn(
-              "text-sm sm:text-base lg:text-lg text-white/90 leading-relaxed animate-in fade-in slide-in-from-bottom-4 duration-700 delay-100",
+              "text-base sm:text-lg lg:text-xl text-white/90 leading-relaxed animate-in fade-in slide-in-from-bottom-6 duration-700 delay-200",
               descriptionClassName
             )}
           >
             {description}
-          </p>
+          </TypographyP>
 
           {buttons && buttons.length > 0 && (
             <Flex

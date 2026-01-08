@@ -58,113 +58,66 @@ export const PostTagNav = ({ tags }: PostTagNavProps) => {
 
   return (
     <nav aria-label="Tag navigation" className="w-full">
-      {/* Mobile: Horizontal Scrollable List with Gradient Fade */}
-      <div className="lg:hidden relative group">
-        <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-background to-transparent z-10 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity" />
-        <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-background to-transparent z-10 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity" />
-
-        <ScrollArea className="w-full pb-4">
-          <Flex wrap={false} gap={2} className="px-1">
-            <Link
-              href={clearAllTags()}
-              className={cn(
-                "relative flex items-center gap-2 px-4 py-2 rounded-full whitespace-nowrap transition-all border text-sm font-medium",
-                selectedTags.size === 0
-                  ? "bg-primary text-primary-foreground border-primary shadow-md hover:shadow-lg hover:shadow-primary/20"
-                  : "bg-card text-muted-foreground border-border hover:border-primary/50 hover:bg-accent hover:text-foreground"
-              )}
-            >
-              <TagIcon className={cn("w-4 h-4", selectedTags.size === 0 ? "fill-current" : "")} />
-              <span>Tất cả</span>
-            </Link>
-
-            {tags.map((tag) => {
-              const isActive = selectedTags.has(tag.slug)
-              return (
-                <Link
-                  key={tag.id}
-                  href={toggleTag(tag.slug)}
-                  className={cn(
-                    "relative flex items-center gap-2 px-4 py-2 rounded-full whitespace-nowrap transition-all border text-sm font-medium",
-                    isActive
-                      ? "bg-primary text-primary-foreground border-primary shadow-md hover:shadow-lg hover:shadow-primary/20"
-                      : "bg-card text-muted-foreground border-border hover:border-primary/50 hover:bg-accent hover:text-foreground"
+      <ScrollArea className="w-full max-h-[calc(100vh-12rem)] pr-4">
+        <Flex direction="col" align="stretch" gap={1}>
+          <Link
+            href={clearAllTags()}
+            className={cn(
+              "group relative px-3 py-2 rounded-md transition-all w-full",
+              "hover:bg-accent/50 active:bg-accent",
+              selectedTags.size === 0
+                ? "bg-primary/10 text-primary font-medium"
+                : "text-foreground/70 hover:text-foreground"
+            )}
+          >
+            <Flex align="center" gap={2.5}>
+              <TagIcon className={cn(
+                "w-4 h-4 transition-all flex-shrink-0",
+                selectedTags.size === 0 && "fill-current"
+              )} />
+              <TypographySpanSmall className={cn(
+                "flex-1",
+                selectedTags.size === 0 && "font-medium"
+              )}>
+                Tất cả
+              </TypographySpanSmall>
+            </Flex>
+          </Link>
+          {tags.map((tag) => {
+            const isActive = selectedTags.has(tag.slug)
+            return (
+              <Link
+                key={tag.id}
+                href={toggleTag(tag.slug)}
+                className={cn(
+                  "group relative px-3 py-2 rounded-md transition-all w-full",
+                  "hover:bg-accent/50 active:bg-accent",
+                  isActive
+                    ? "bg-primary/10 text-primary font-medium"
+                    : "text-foreground/70 hover:text-foreground"
+                )}
+              >
+                <Flex align="center" gap={2.5}>
+                  <TagIcon className={cn(
+                    "w-4 h-4 transition-all flex-shrink-0",
+                    isActive && "fill-current"
+                  )} />
+                  <TypographySpanSmall className={cn(
+                    "flex-1",
+                    isActive && "font-medium"
+                  )}>
+                    {tag.name}
+                  </TypographySpanSmall>
+                  {isActive && (
+                    <X className="w-3.5 h-3.5 opacity-50 group-hover:opacity-100 flex-shrink-0" />
                   )}
-                >
-                  <TagIcon className={cn("w-4 h-4", isActive ? "fill-current" : "")} />
-                  <span>{tag.name}</span>
-                  {isActive && <X className="w-3 h-3 ml-1 opacity-70" />}
-                </Link>
-              )
-            })}
-          </Flex>
-          <ScrollBar orientation="horizontal" className="h-1.5" />
-        </ScrollArea>
-      </div>
-
-      {/* Desktop: Vertical scroll */}
-      <Flex className="hidden lg:block pt-4">
-        <ScrollArea className="w-full max-h-[calc(100vh-12rem)] pr-4">
-          <Flex direction="col" align="stretch" gap={1}>
-            <Link
-              href={clearAllTags()}
-              className={cn(
-                "group relative px-3 py-2 rounded-md transition-all w-full",
-                "hover:bg-accent/50 active:bg-accent",
-                selectedTags.size === 0
-                  ? "bg-primary/10 text-primary font-medium"
-                  : "text-foreground/70 hover:text-foreground"
-              )}
-            >
-              <Flex align="center" gap={2.5}>
-                <TagIcon className={cn(
-                  "w-4 h-4 transition-all flex-shrink-0",
-                  selectedTags.size === 0 && "fill-current"
-                )} />
-                <TypographySpanSmall className={cn(
-                  "flex-1",
-                  selectedTags.size === 0 && "font-medium"
-                )}>
-                  Tất cả
-                </TypographySpanSmall>
-              </Flex>
-            </Link>
-            {tags.map((tag) => {
-              const isActive = selectedTags.has(tag.slug)
-              return (
-                <Link
-                  key={tag.id}
-                  href={toggleTag(tag.slug)}
-                  className={cn(
-                    "group relative px-3 py-2 rounded-md transition-all w-full",
-                    "hover:bg-accent/50 active:bg-accent",
-                    isActive
-                      ? "bg-primary/10 text-primary font-medium"
-                      : "text-foreground/70 hover:text-foreground"
-                  )}
-                >
-                  <Flex align="center" gap={2.5}>
-                    <TagIcon className={cn(
-                      "w-4 h-4 transition-all flex-shrink-0",
-                      isActive && "fill-current"
-                    )} />
-                    <TypographySpanSmall className={cn(
-                      "flex-1",
-                      isActive && "font-medium"
-                    )}>
-                      {tag.name}
-                    </TypographySpanSmall>
-                    {isActive && (
-                      <X className="w-3.5 h-3.5 opacity-50 group-hover:opacity-100 flex-shrink-0" />
-                    )}
-                  </Flex>
-                </Link>
-              )
-            })}
-          </Flex>
-          <ScrollBar orientation="vertical" />
-        </ScrollArea>
-      </Flex>
+                </Flex>
+              </Link>
+            )
+          })}
+        </Flex>
+        <ScrollBar orientation="vertical" />
+      </ScrollArea>
     </nav>
   )
 }

@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { IconSize } from "@/components/ui/typography"
 import { Flex } from "@/components/ui/flex"
+import { useClientOnly } from "@/hooks/use-client-only"
 
 const sortOptions = [
   { 
@@ -28,8 +29,10 @@ const sortOptions = [
 ] as const
 
 export const PostSort = () => {
+  const isMounted = useClientOnly()
   const router = useRouter()
   const searchParams = useSearchParams()
+
   const currentSort = (searchParams?.get("sort") || "newest") as "newest" | "oldest"
 
   const handleSortChange = (value: string) => {
@@ -46,15 +49,31 @@ export const PostSort = () => {
 
   const CurrentIcon = currentOption.icon
 
+  if (!isMounted) {
+    return (
+      <Button variant="outline" className="opacity-50 cursor-not-allowed h-9 sm:h-10 px-3 sm:px-4">
+        <Flex align="center" gap={2}>
+          <IconSize size="sm">
+            <ArrowDownUp />
+          </IconSize>
+          <span className="hidden sm:inline">Mới nhất</span>
+          <IconSize size="sm" className="opacity-50">
+            <ChevronDown />
+          </IconSize>
+        </Flex>
+      </Button>
+    )
+  }
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline">
+        <Button variant="outline" className="h-9 sm:h-10 px-3 sm:px-4">
           <Flex align="center" gap={2}>
             <IconSize size="sm">
               <CurrentIcon />
             </IconSize>
-            <span>{currentOption.label}</span>
+            <span className="hidden sm:inline">{currentOption.label}</span>
             <IconSize size="sm" className="opacity-50">
               <ChevronDown />
             </IconSize>
