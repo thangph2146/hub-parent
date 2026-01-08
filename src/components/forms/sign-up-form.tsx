@@ -102,15 +102,28 @@ export function SignUpForm({
         <CardContent padding="none" grid="2">
           <form onSubmit={handleSubmit} className="p-6 md:p-8 lg:p-10">
             <FieldGroup>
-              <Flex direction="col" align="center" gap={3} textAlign="center">
+              <Flex
+                direction="col"
+                align="center"
+                gap={4}
+                textAlign="center"
+                className="mb-4"
+              >
                 <TypographyH2 className="text-2xl md:text-3xl font-bold text-secondary">
-                  Chào mừng quý phụ huynh đến với HUB
+                  Đăng ký hệ thống
                 </TypographyH2>
-                <PointerHighlight>
-                  <TypographyP className="text-xl md:text-2xl font-bold text-primary">  
-                    Đăng ký tài khoản
+
+                <Flex direction="col" gap={1}>
+                  <PointerHighlight>
+                    <TypographyP className="text-xl md:text-2xl font-bold text-primary uppercase tracking-tight">
+                      Hệ thống Kết nối Phụ huynh
+                    </TypographyP>
+                  </PointerHighlight>
+                  <TypographyP className="text-xs md:text-sm font-medium text-muted-foreground italic">
+                    &quot;Nắm bắt hành trình của con, an tâm tương lai vững
+                    chắc&quot;
                   </TypographyP>
-                </PointerHighlight>
+                </Flex>
               </Flex>
               {error && (
                 <Flex rounded="lg" bg="destructive-text" padding="md">
@@ -119,7 +132,7 @@ export function SignUpForm({
               )}
               <Field>
                 <FieldLabel htmlFor="name" className="text-primary font-medium">
-                  Tên
+                  Họ và tên
                 </FieldLabel>
                 <Input
                   id="name"
@@ -230,7 +243,9 @@ export function SignUpForm({
                   size="lg"
                   disabled={isLoading}
                 >
-                  <span className="text-base font-bold">{isLoading ? "Đang đăng ký..." : "Đăng ký"}</span>
+                  <span className="text-base font-bold">
+                    {isLoading ? "Đang đăng ký..." : "Đăng ký"}
+                  </span>
                 </Button>
               </Field>
               <FieldSeparator className="*:data-[slot=field-separator-content]:bg-card">

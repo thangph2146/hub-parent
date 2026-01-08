@@ -196,16 +196,19 @@ export const DateRangePicker = ({
   }
 
   const displayText = useMemo(() => {
+    const isMobile = typeof window !== "undefined" && window.innerWidth < 640;
+    const dateFormat = isMobile ? "dd/MM" : "dd/MM/yyyy";
+
     if (dateFrom && dateTo) {
-      return `${format(dateFrom, "dd/MM/yyyy", { locale: vi })} - ${format(dateTo, "dd/MM/yyyy", { locale: vi })}`
+      return `${format(dateFrom, dateFormat, { locale: vi })} - ${format(dateTo, dateFormat, { locale: vi })}`
     }
     if (dateFrom) {
-      return `Từ ${format(dateFrom, "dd/MM/yyyy", { locale: vi })}`
+      return `${isMobile ? "Từ" : "Từ ngày"} ${format(dateFrom, dateFormat, { locale: vi })}`
     }
     if (dateTo) {
-      return `Đến ${format(dateTo, "dd/MM/yyyy", { locale: vi })}`
+      return `${isMobile ? "Đến" : "Đến ngày"} ${format(dateTo, dateFormat, { locale: vi })}`
     }
-    return placeholder
+    return isMobile ? "Thời gian" : placeholder
   }, [dateFrom, dateTo, placeholder])
 
   const buttonVariant = hasActiveFilter ? "default" : variant

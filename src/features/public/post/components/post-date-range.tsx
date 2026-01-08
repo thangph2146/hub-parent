@@ -3,12 +3,17 @@
 import { useMemo, useEffect, useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { DateRangePicker } from "@/components/ui/date-range-picker"
+import { Button } from "@/components/ui/button"
+import { Calendar } from "lucide-react"
+import { IconSize } from "@/components/ui/typography"
+import { useClientOnly } from "@/hooks/use-client-only"
 import { logger } from "@/lib/config/logger"
 import { format } from "date-fns"
 import { vi } from "date-fns/locale"
 import { apiClient } from "@/lib/api/axios"
 
 export const PostDateRange = () => {
+  const isMounted = useClientOnly()
   const router = useRouter()
   const searchParams = useSearchParams()
   const [datesWithItems, setDatesWithItems] = useState<string[]>([])
@@ -116,6 +121,18 @@ export const PostDateRange = () => {
     })
     
     router.push(newUrl)
+  }
+
+  if (!isMounted) {
+    return (
+      <Button variant="outline" className="opacity-50 cursor-not-allowed h-9 sm:h-10 px-3 sm:px-4">
+        <IconSize size="sm">
+          <Calendar className="mr-2 h-4 w-4" />
+        </IconSize>
+        <span className="hidden sm:inline">Chọn khoảng thời gian</span>
+        <span className="sm:hidden">Thời gian</span>
+      </Button>
+    )
   }
 
   return (
