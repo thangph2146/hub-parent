@@ -112,8 +112,8 @@ export const AboutHubSection = ({ className }: { className?: string }) => {
             {/* Left column */}
             <motion.div
               className="md:col-span-4 space-y-6"
-              initial={{ opacity: 0, y: 20 }}
-              animate={isInView ? { opacity: 1, y: 0 } : {}}
+              initial={{ opacity: 0 }}
+              animate={isInView ? { opacity: 1 } : {}}
               transition={{ duration: 0.6 }}
             >
               <div className="space-y-4">
@@ -148,8 +148,8 @@ export const AboutHubSection = ({ className }: { className?: string }) => {
                 <motion.div
                   key={index}
                   className="flex flex-col space-y-2 p-4 bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={isInView ? { opacity: 1, y: 0 } : {}}
+                  initial={{ opacity: 0 }}
+                  animate={isInView ? { opacity: 1 } : {}}
                   transition={{ duration: 0.6, delay: index * 0.1 }}
                 >
                   <Flex align="center" gap={2}>

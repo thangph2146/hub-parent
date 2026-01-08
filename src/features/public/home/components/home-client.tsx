@@ -39,7 +39,7 @@ const HERO_CONFIG: Omit<HeroSectionProps, "className" | "titleClassName" | "desc
 };
 
 export const HomeClient = ({ featuredPosts = [] }: { featuredPosts?: Post[] }) => (
-  <Flex direction="col" position="relative" fullWidth bg="background" className="isolate">
+  <Flex as="main" direction="col" position="relative" fullWidth bg="background" className="isolate">
     <HeroSection {...HERO_CONFIG} />
     <AboutHubSection />
     <OverviewSection className="min-h-[calc(100vh-56px)]" />

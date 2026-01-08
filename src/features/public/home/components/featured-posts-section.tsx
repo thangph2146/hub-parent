@@ -70,7 +70,7 @@ export const FeaturedPostsSection = ({ featuredPosts = [], className }: Featured
                 key={post.id}
                 post={post}
                 priority={index < 3}
-                className="h-full hover:-translate-y-1 transition-transform duration-300"
+                className="h-full"
               />
             ))}
           </Grid>
