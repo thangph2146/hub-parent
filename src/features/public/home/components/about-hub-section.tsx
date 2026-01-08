@@ -122,7 +122,7 @@ export const AboutHubSection = ({ className }: { className?: string }) => {
         </div>
       </Flex>
 
-      {isMounted && HOME_RESPONSIVE_CONDITIONS.showScrollIndicator(window.innerWidth, window.innerHeight) && (
+      {isMounted && HOME_RESPONSIVE_CONDITIONS.showScrollIndicator(window.innerWidth) && (
         <ScrollIndicator variant="light" containerRef={containerRef} />
       )}
     </Flex>

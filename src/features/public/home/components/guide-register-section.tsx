@@ -117,18 +117,30 @@ const CardWithImage = ({ title, description, image, button, reverse = false }: C
 
 export const GuideRegisterSection = ({ className }: { className?: string }) => {
   const sectionRef = useRef<HTMLDivElement>(null);
+  const isMounted = useClientOnly();
+
+  const { sectionHeightClassName, sectionHeightStyle } = useSectionHeight({
+    minHeight: 0,
+    fullHeight: isMounted && HOME_RESPONSIVE_CONDITIONS.isDesktop(window.innerWidth),
+  });
 
   return (
-    <section
+    <Flex
+      as="section"
       ref={sectionRef}
-      className={cn("w-full bg-background py-8 sm:py-12 lg:py-16", className)}
+      fullWidth
+      container
+      direction="col"
+      align="center"
+      justify="center"
+      bg="background"
+      className={cn(sectionHeightClassName, "py-8 sm:py-12 md:py-16 lg:py-20", className)}
+      style={sectionHeightStyle}
     >
-      <div className="container mx-auto px-4 sm:px-6">
-        <div className="grid xl:grid-cols-2 gap-8 items-stretch">
-          <CardWithImage {...GUIDE_DATA} />
-          <CardWithImage {...REGISTER_DATA} reverse />
-        </div>
+      <div className="grid xl:grid-cols-2 gap-8 items-stretch w-full">
+        <CardWithImage {...GUIDE_DATA} />
+        <CardWithImage {...REGISTER_DATA} reverse />
       </div>
-    </section>
+    </Flex>
   );
 };

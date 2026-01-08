@@ -6,7 +6,6 @@ import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { MenuToggleIcon } from "@/components/ui/menu-toggle-icon";
-import { ModeToggle } from "@/components/layouts/shared";
 import { NavUser } from "@/components/layouts/navigation";
 import { createPortal } from "react-dom";
 import {
@@ -511,7 +510,6 @@ export function PublicHeader() {
         </Flex>
         {mounted ? (
           <Flex align="center" justify="end" gap={2}>
-            <ModeToggle />
             {isAuthenticated ? (
               <div className="hidden lg:block">
                 <NavUser />

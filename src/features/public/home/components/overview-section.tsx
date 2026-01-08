@@ -44,13 +44,13 @@ export const OverviewSection = ({ className }: { className?: string }) => {
 
         <div className="w-full relative px-8 py-6 rounded-xl bg-gradient-to-br from-primary/5 to-transparent">
           <Quote className="absolute top-1 left-1 fill-primary/10 w-8 h-8 rotate-180" />
-          <TypographyP className="text-justify text-base md:text-lg lg:text-xl leading-relaxed">
+          <TypographyP className="text-left md:text-center text-base md:text-lg lg:text-xl leading-relaxed text-balance">
             Hệ thống kết nối Phụ huynh và Nhà trường được xây dựng để kiến tạo cầu nối, gắn kết giữa phụ huynh, gia đình và nhà trường trong suốt hành trình học tập của sinh viên tại trường Đại học Ngân hàng Tp. Hồ Chí Minh. Chúng tôi hiểu rằng sự tham gia tích cực của gia đình đóng vai trò quan trọng trong thành tích, tiến độ học tập của sinh viên. Thông qua nền tảng này, phụ huynh có thể theo dõi tiến độ học tập, điểm số, lịch học và lịch thi của sinh viên. Đồng thời, phụ huynh có thể trao đổi thông tin trực tiếp với giảng viên, cố vấn học tập và nhận thông báo quan trọng từ nhà trường. Chúng tôi mong muốn được quý phụ huynh đồng hành trong hành trình học tập, sáng tạo và trưởng thành của các em.
           </TypographyP>
           <Quote className="absolute bottom-1 right-1 fill-primary/10 w-8 h-8" />
         </div>
 
-        {isMounted && HOME_RESPONSIVE_CONDITIONS.showScrollIndicator(window.innerWidth, window.innerHeight) && (
+        {isMounted && HOME_RESPONSIVE_CONDITIONS.showScrollIndicator(window.innerWidth) && (
           <ScrollIndicator variant="dark" containerRef={sectionRef} />
         )}
       </Flex>

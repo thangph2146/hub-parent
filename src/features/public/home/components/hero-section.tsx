@@ -83,7 +83,7 @@ export const HeroSection = ({
             overlayClassName
           )}
         >
-          <h1 className={cn("text-2xl sm:text-3xl lg:text-4xl font-bold text-white leading-tight tracking-tight animate-in fade-in slide-in-from-bottom-4 duration-700", titleClassName)}>
+          <h1 className={cn("text-2xl sm:text-3xl lg:text-4xl font-bold text-white leading-tight tracking-tight animate-in fade-in slide-in-from-bottom-4 duration-700 text-balance", titleClassName)}>
             {title}<br />
             <FlipWords words={["Kết nối", "Đồng hành", "Phát triển", "Vươn xa"]} className="p-0 text-inherit" />
           </h1>
@@ -128,7 +128,7 @@ export const HeroSection = ({
         </Flex>
       </Flex>
 
-      {isMounted && HOME_RESPONSIVE_CONDITIONS.showScrollIndicator(window.innerWidth, window.innerHeight) && (
+      {isMounted && HOME_RESPONSIVE_CONDITIONS.showScrollIndicator(window.innerWidth) && (
         <ScrollIndicator variant="light" containerRef={sectionRef} />
       )}
     </Flex>

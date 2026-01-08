@@ -8,6 +8,7 @@ import { EncryptedText } from "@/components/ui/encrypted-text";
 import { ContactForm } from "@/components/forms/contact-form";
 import { useSectionHeight } from "@/hooks/use-section-height";
 import { cn } from "@/lib/utils";
+import { LifeBuoy, ShieldCheck, Zap } from "lucide-react";
 
 export interface ContactInfoItem {
   icon: React.ReactNode;
@@ -85,19 +86,15 @@ export const ContactSection = ({ className }: ContactSectionProps) => {
                 <motion.div variants={itemVariants}>
                   <Flex gap={4} wrap className="mt-2">
                     <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-500/10 text-green-600 dark:text-green-400 text-sm font-medium">
-                      <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                      <LifeBuoy className="w-4 h-4 animate-pulse" />
                       Hỗ trợ 24/7
                     </div>
                     <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 text-sm font-medium">
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                      </svg>
+                      <ShieldCheck className="w-4 h-4" />
                       Bảo mật cao
                     </div>
                     <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-400 text-sm font-medium">
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                      </svg>
+                      <Zap className="w-4 h-4" />
                       Đơn giản
                     </div>
                   </Flex>
