@@ -2,6 +2,8 @@
  * Types for public post feature
  */
 
+import type { SerializedEditorState } from "lexical"
+
 export interface Post {
   id: string
   title: string
@@ -29,6 +31,5 @@ export interface Post {
 }
 
 export interface PostDetail extends Post {
-  content: unknown
+  content: SerializedEditorState
 }
-

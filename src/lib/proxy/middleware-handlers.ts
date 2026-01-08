@@ -50,12 +50,17 @@ export const handleCORS = (
   allowedOrigins: string[]
 ): NextResponse | null => {
   const origin = request.headers.get("origin")
+  const host = request.headers.get("host")
   
-  if (origin && !allowedOrigins.includes(origin)) {
-    return NextResponse.json(
-      { error: "Origin not allowed" },
-      { status: 403 }
-    )
+  // Nếu có origin, kiểm tra xem nó có nằm trong danh sách được phép không
+  if (origin) {
+    const isAllowed = allowedOrigins.includes(origin) || (host && origin.includes(host))
+    if (!isAllowed) {
+      return NextResponse.json(
+        { error: "Origin not allowed" },
+        { status: 403 }
+      )
+    }
   }
   
   return null
@@ -108,10 +113,12 @@ export const handleIPWhitelist = (
 }
 
 /**
- * Handle NextAuth routes (skip proxy)
+ * Handle NextAuth and Auth pages (skip proxy)
  */
 export const handleNextAuthRoutes = (pathname: string): NextResponse | null =>
-  pathname.startsWith("/api/auth") ? NextResponse.next() : null
+  pathname.startsWith("/api/auth") || pathname.startsWith("/auth") 
+    ? NextResponse.next() 
+    : null
 
 /**
  * Handle proxy API requests

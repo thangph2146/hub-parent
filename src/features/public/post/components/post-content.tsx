@@ -22,17 +22,13 @@ const Editor = dynamic(
 )
 
 interface PostContentProps {
-  content: unknown
+  content: SerializedEditorState
 }
 
 export const PostContent = ({ content }: PostContentProps) => {
-  // Parse content as SerializedEditorState
-  const editorState: SerializedEditorState | null = 
-    content && typeof content === "object" 
-      ? (content as unknown as SerializedEditorState)
-      : null
-
-  if (!editorState) {
+  // Content is now typed, but we still check if it's valid
+  // Prisma might return null or mismatch if schema changed
+  if (!content || typeof content !== "object") {
     return (
       <Card className="border border-border/50 bg-card p-6">
         <TypographyPMuted className="text-center">
@@ -45,10 +41,9 @@ export const PostContent = ({ content }: PostContentProps) => {
   return (
     <div className="w-full">
       <Editor
-        editorSerializedState={editorState}
+        editorSerializedState={content}
         readOnly={true}
       />
     </div>
   )
 }
-

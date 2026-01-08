@@ -65,13 +65,15 @@ export const mapPostRecord = (post: PostWithRelations): Post => {
   }
 }
 
+import type { SerializedEditorState } from "lexical"
+
 /**
  * Map Prisma post record to PostDetail format
  */
 export const mapPostDetailRecord = (post: PostWithRelations & { content: Prisma.JsonValue }): PostDetail => {
   return {
     ...mapPostRecord(post),
-    content: post.content,
+    content: post.content as unknown as SerializedEditorState,
   }
 }
 

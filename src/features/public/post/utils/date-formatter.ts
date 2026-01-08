@@ -20,3 +20,15 @@ export const formatPostDateLong = (date: Date | null): string => {
   }).format(new Date(date))
 }
 
+export const formatPostTime = (date: Date | null): string => {
+  if (!date) return ""
+  try {
+    return new Intl.DateTimeFormat("vi-VN", {
+      hour: "2-digit",
+      minute: "2-digit",
+    }).format(new Date(date))
+  } catch {
+    return ""
+  }
+}
+
