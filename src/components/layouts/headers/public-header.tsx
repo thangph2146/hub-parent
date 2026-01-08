@@ -195,6 +195,7 @@ function MobileNavLink({
   return (
     <Link
       href={link.href}
+      prefetch={false}
       className={cn(
         "group w-full rounded-lg p-3.5 transition-all duration-200",
         "hover:bg-accent hover:text-accent-foreground",
@@ -266,7 +267,7 @@ function ListItem({
       {...props}
       asChild
     >
-      <Link href={href} className="w-full">
+      <Link href={href} className="w-full" prefetch={false}>
         <Flex align="center" gap={2} direction="row" className="w-full">
           <Flex
             align="center"
@@ -343,6 +344,7 @@ export function PublicHeader() {
         <Flex align="center" gap={4}>
           <Link
             href={PUBLIC_ROUTES.home}
+            prefetch={false}
             className="dark:bg-foreground rounded-md p-1"
             aria-label="Trang chủ - Trường Đại học Ngân hàng TP.HCM"
           >

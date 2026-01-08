@@ -51,7 +51,7 @@ export function PostPagination({ currentPage, totalPages }: PostPaginationProps)
         disabled={currentPage === 1}
         className={cn(currentPage === 1 && "opacity-50 cursor-not-allowed")}
       >
-        <Link href={getPageUrl(currentPage - 1)} aria-label="Previous page">
+        <Link href={getPageUrl(currentPage - 1)} aria-label="Previous page" prefetch={false}>
           <IconSize size="sm">
             <ChevronLeft />
           </IconSize>
@@ -61,7 +61,7 @@ export function PostPagination({ currentPage, totalPages }: PostPaginationProps)
       {startPage > 1 && (
         <>
           <Button variant="outline" asChild>
-            <Link href={getPageUrl(1)}>1</Link>
+            <Link href={getPageUrl(1)} prefetch={false}>1</Link>
           </Button>
           {startPage > 2 && (
             <Flex paddingX="2">
@@ -77,7 +77,7 @@ export function PostPagination({ currentPage, totalPages }: PostPaginationProps)
           variant={currentPage === page ? "default" : "outline"}
           asChild
         >
-          <Link href={getPageUrl(page)}>{page}</Link>
+          <Link href={getPageUrl(page)} prefetch={false}>{page}</Link>
         </Button>
       ))}
 
@@ -89,7 +89,7 @@ export function PostPagination({ currentPage, totalPages }: PostPaginationProps)
             </Flex>
           )}
           <Button variant="outline" asChild>
-            <Link href={getPageUrl(totalPages)}>{totalPages}</Link>
+            <Link href={getPageUrl(totalPages)} prefetch={false}>{totalPages}</Link>
           </Button>
         </>
       )}
@@ -101,7 +101,7 @@ export function PostPagination({ currentPage, totalPages }: PostPaginationProps)
         disabled={currentPage === totalPages}
         className={cn(currentPage === totalPages && "opacity-50 cursor-not-allowed")}
       >
-        <Link href={getPageUrl(currentPage + 1)} aria-label="Next page">
+        <Link href={getPageUrl(currentPage + 1)} aria-label="Next page" prefetch={false}>
           <IconSize size="sm">
             <ChevronRight />
           </IconSize>
