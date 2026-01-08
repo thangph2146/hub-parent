@@ -517,10 +517,10 @@ export function PublicHeader() {
             ) : (
               <>
                 <Button variant="outline" asChild className="hidden lg:flex">
-                  <Link href={PUBLIC_ROUTES.auth.signIn}>Đăng nhập</Link>
+                  <Link href={PUBLIC_ROUTES.auth.signIn} prefetch={false}>Đăng nhập</Link>
                 </Button>
                 <Button asChild className="hidden lg:flex">
-                  <Link href={PUBLIC_ROUTES.auth.signUp}>Đăng ký</Link>
+                  <Link href={PUBLIC_ROUTES.auth.signUp} prefetch={false}>Đăng ký</Link>
                 </Button>
               </>
             )}

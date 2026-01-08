@@ -44,7 +44,7 @@ export const ScrollIndicator = ({ onScroll, containerRef, variant = "dark", clas
   return (
     <div
       className={cn(
-        "absolute bottom-0 sm:bottom-4 left-1/2 -translate-x-1/2 z-[60] hidden sm:block animate-in fade-in slide-in-from-top-2 duration-[500ms] delay-[1000ms]",
+        "absolute bottom-0 sm:bottom-4 left-1/2 -translate-x-1/2 z-[60] block animate-in fade-in slide-in-from-top-2 duration-[500ms] delay-[1000ms]",
         className
       )}
     >

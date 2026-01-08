@@ -33,7 +33,7 @@ export function MessagesPageSkeleton() {
           </Flex>
         </Flex>
 
-        <Flex direction="col" flex="1" gap={3} overflow="auto" className="min-h-[calc(100dvh-64px)]" padding="md" fullWidth>
+        <Flex direction="col" flex="1" gap={3} overflow="auto" className="min-h-[calc(100vh-64px)]" padding="md" fullWidth>
           <Flex direction="col" gap={4} fullWidth>
             {Array.from({ length: 6 }).map((_, index) => (
               <Flex

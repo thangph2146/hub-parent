@@ -86,7 +86,7 @@ export default async function PostPage({ searchParams }: PostPageProps) {
     : null
 
   return (
-    <div className="container min-h-[calc(100dvh-64px)] mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 xl:py-12">
+    <div className="container min-h-[calc(100vh-64px)] mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 xl:py-12">
       {/* Breadcrumb */}
       <div className="mb-4 sm:mb-6">
         <PostBreadcrumb

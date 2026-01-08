@@ -1,19 +1,14 @@
 "use client";
 
-import { useRef } from "react";
 import Image from "next/image";
-import { motion, useInView } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { Flex } from "@/components/ui/flex";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { TypographySpanSmall } from "@/components/ui/typography";
 import Link from "next/link";
-import { useSectionHeight } from "@/hooks/use-section-height";
-import { useClientOnly } from "@/hooks/use-client-only";
 import { cn } from "@/lib/utils";
-import { ScrollIndicator } from "./scroll-indicator";
-import { HOME_ROUTES, HOME_RESPONSIVE_CONDITIONS } from "../constants";
+import { HOME_ROUTES } from "../constants";
 
 const DEFAULT_IMAGE_HEIGHT = "h-[200px] sm:h-[250px] lg:h-[350px] xl:h-[400px]";
 
@@ -54,24 +49,10 @@ interface CardWithImageProps {
 }
 
 const CardWithImage = ({ title, description, image, button, reverse = false }: CardWithImageProps) => {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const isInView = useInView(containerRef, { once: true, margin: "-50px" });
-
   return (
-    <motion.div
-      ref={containerRef}
-      initial={{ opacity: 0, y: 30 }}
-      animate={isInView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-      className="h-full"
-    >
+    <div className="h-full">
       <Flex direction="col" align="center" fullWidth gap={6} className={cn("lg:flex-row lg:gap-8 h-full", reverse && "lg:flex-row-reverse")}>
-        <motion.div
-          className="flex-1 lg:max-w-lg xl:max-w-xl w-full group/card"
-          initial={{ opacity: 0, x: reverse ? 30 : -30 }}
-          animate={isInView ? { opacity: 1, x: 0 } : {}}
-          transition={{ duration: 0.5, delay: 0.2 }}
-        >
+        <div className="flex-1 lg:max-w-lg xl:max-w-xl w-full group/card">
           <div className="relative p-[1px] rounded-xl bg-gradient-to-br from-primary/20 via-border to-primary/10 group-hover/card:from-primary/40 group-hover/card:to-primary/20 transition-all duration-300">
             <Card className="border-0 shadow-lg bg-background/95 backdrop-blur-sm group-hover/card:shadow-xl transition-shadow">
               <CardHeader>
@@ -92,15 +73,9 @@ const CardWithImage = ({ title, description, image, button, reverse = false }: C
               )}
             </Card>
           </div>
-        </motion.div>
+        </div>
 
-        <motion.div
-          className={cn("relative overflow-hidden w-full lg:flex-1 rounded-xl shadow-xl group", DEFAULT_IMAGE_HEIGHT)}
-          initial={{ opacity: 0, x: reverse ? -30 : 30 }}
-          animate={isInView ? { opacity: 1, x: 0 } : {}}
-          transition={{ duration: 0.5, delay: 0.3 }}
-          whileHover={{ scale: 1.02 }}
-        >
+        <div className={cn("relative overflow-hidden w-full lg:flex-1 rounded-xl shadow-xl group", DEFAULT_IMAGE_HEIGHT)}>
           <Image
             src={image.src}
             alt={image.alt}
@@ -110,33 +85,19 @@ const CardWithImage = ({ title, description, image, button, reverse = false }: C
             quality={75}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-        </motion.div>
+        </div>
       </Flex>
-    </motion.div>
+    </div>
   );
 };
 
 export const GuideRegisterSection = ({ className }: { className?: string }) => {
-  const sectionRef = useRef<HTMLDivElement>(null);
-  const isMounted = useClientOnly();
-
-  const isDesktopHeight = isMounted && 
-    typeof window !== "undefined" && 
-    HOME_RESPONSIVE_CONDITIONS.isDesktopHeight(window.innerHeight);
-
-  const { sectionHeightClassName, sectionHeightStyle } = useSectionHeight({
-    minHeight: 0,
-    fullHeight: !isDesktopHeight,
-  });
-
   return (
     <Flex
       as="section"
-      ref={sectionRef}
       fullWidth
       position="relative"
-      className={cn(sectionHeightClassName, "bg-background", className)}
-      style={sectionHeightStyle}
+      className={cn("bg-background", className)}
     >
       <Flex
         container
@@ -151,8 +112,6 @@ export const GuideRegisterSection = ({ className }: { className?: string }) => {
           <CardWithImage {...REGISTER_DATA} reverse />
         </div>
       </Flex>
-
-      {!isDesktopHeight && <ScrollIndicator containerRef={sectionRef} />}
     </Flex>
   );
 };

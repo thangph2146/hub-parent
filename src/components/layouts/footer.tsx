@@ -391,7 +391,7 @@ export function PublicFooter() {
                       <TypographySpanWhite>Trang chủ</TypographySpanWhite>
                     </Flex>
                   </Link>
-                  <Link href={FOOTER_ROUTES.blog}>
+                  <Link href={FOOTER_ROUTES.blog} prefetch={false}>
                     <Flex align="center" gap={2}>
                       <IconSize size="sm">
                         <ArrowRight />
@@ -399,7 +399,7 @@ export function PublicFooter() {
                       <TypographySpanWhite>Blog</TypographySpanWhite>
                     </Flex>
                   </Link>
-                  <Link href={FOOTER_ROUTES.categories}>
+                  <Link href={FOOTER_ROUTES.categories} prefetch={false}>
                     <Flex align="center" gap={2}>
                       <IconSize size="sm">
                         <ArrowRight />

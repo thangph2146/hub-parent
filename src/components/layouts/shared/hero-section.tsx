@@ -307,10 +307,10 @@ export const HeroSection: React.FC = () => {
                 className="max-w-md"
               >
                 <Button size="lg" className="w-full sm:w-auto shadow-lg" asChild>
-                  <Link href="/auth/sign-up">Đăng ký ngay</Link>
+                  <Link href="/auth/sign-up" prefetch={false}>Đăng ký ngay</Link>
                 </Button>
                 <Button variant="outline" size="lg" className="w-full sm:w-auto" asChild>
-                  <Link href="/auth/sign-in">Đăng nhập</Link>
+                  <Link href="/auth/sign-in" prefetch={false}>Đăng nhập</Link>
                 </Button>
               </Flex>
             </motion.div>

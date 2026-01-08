@@ -89,7 +89,7 @@ export function ForgotPasswordForm({
                 asChild
                 className="w-full bg-primary hover:bg-primary/90 text-primary-foreground shadow-md hover:shadow-lg transition-all duration-200 group"
               >
-                <Link href="/auth/sign-in" className="flex items-center justify-center gap-2">
+                <Link href="/auth/sign-in" prefetch={false} className="flex items-center justify-center gap-2">
                   <IconSize size="sm" className="transition-transform group-hover:-translate-x-1"><ArrowLeft /></IconSize>
                   Quay lại đăng nhập
                 </Link>
@@ -98,6 +98,7 @@ export function ForgotPasswordForm({
               <div className="text-center">
                 <Link
                   href="/auth/sign-in"
+                  prefetch={false}
                   className="hover:text-primary transition-colors underline-offset-4 hover:underline"
                 >
                   Nhớ mật khẩu rồi? Đăng nhập ngay

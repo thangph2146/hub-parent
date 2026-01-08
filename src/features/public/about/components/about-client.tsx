@@ -853,7 +853,7 @@ export const AboutClient = () => {
               </DialogTitle>
             </DialogHeader>
             <DialogDescription asChild>
-              <ScrollArea className="max-h-[calc(70dvh)] px-2 overflow-y-auto">
+              <ScrollArea className="max-h-[calc(70vh)] px-2 overflow-y-auto">
               <div className="prose prose-sm sm:prose-base md:prose-lg text-foreground leading-relaxed dark:prose-invert max-w-none">
                 <TypographyDescriptionLarge className="mb-4">
                   Trường Đại học Ngân hàng TP. Hồ Chí Minh đang đào tạo 16 ngành
