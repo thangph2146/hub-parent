@@ -33,11 +33,13 @@ export function ContactList({ contacts, selectedContactId, onContactSelect, sear
     return groupContactsByTime(contacts)
   }, [contacts, searchValue])
   
-  // State để quản lý các collapsible groups (mặc định mở tất cả)
+  // State để quản lý các collapsible groups (mặc định mở nhóm đầu tiên)
   const [openGroups, setOpenGroups] = useState<Set<string>>(() => {
-    const allGroups = new Set<string>()
-    groupedContacts?.forEach(group => allGroups.add(group.group))
-    return allGroups
+    const defaultOpen = new Set<string>()
+    if (groupedContacts && groupedContacts.length > 0) {
+      defaultOpen.add(groupedContacts[0].group)
+    }
+    return defaultOpen
   })
   
   const toggleGroup = (group: string) => {
