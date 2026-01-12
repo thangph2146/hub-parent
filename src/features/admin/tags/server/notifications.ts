@@ -1,4 +1,4 @@
-import { resourceLogger } from "@/lib/config/resource-logger"
+import { resourceLogger } from "@/utils"
 import { createNotificationForAllAdmins, emitNotificationToAllAdminsAfterCreate } from "@/features/admin/notifications/server/mutations"
 import { getActorInfo, formatItemNames, logNotificationError } from "@/features/admin/notifications/server/notification-helpers"
 import { NotificationKind } from "@prisma/client"
@@ -18,11 +18,11 @@ export const notifySuperAdminsOfTagAction = async (
 ) => {
   const startTime = Date.now()
   
-  resourceLogger.actionFlow({
+  resourceLogger.logFlow({
     resource: "tags",
     action: action,
     step: "start",
-    metadata: { tagId: tag.id, tagName: tag.name, actorId },
+    details: { tagId: tag.id, tagName: tag.name, actorId },
   })
 
   try {
@@ -104,12 +104,12 @@ export const notifySuperAdminsOfTagAction = async (
       )
     }
 
-    resourceLogger.actionFlow({
+    resourceLogger.logFlow({
       resource: "tags",
       action: action,
       step: "success",
-      duration: Date.now() - startTime,
-      metadata: { tagId: tag.id, tagName: tag.name },
+      durationMs: Date.now() - startTime,
+      details: { tagId: tag.id, tagName: tag.name },
     })
   } catch (error) {
     logNotificationError("tags", action, error as Record<string, unknown>, { tagId: tag.id, tagName: tag.name })
@@ -124,11 +124,11 @@ export const notifySuperAdminsOfBulkTagAction = async (
 ) => {
   const startTime = Date.now()
   
-  resourceLogger.actionFlow({
+  resourceLogger.logFlow({
     resource: "tags",
     action: action === "delete" ? "bulk-delete" : action === "restore" ? "bulk-restore" : "bulk-hard-delete",
     step: "start",
-    metadata: { count, tagCount: tags?.length || 0, actorId },
+    details: { count, tagCount: tags?.length || 0, actorId },
   })
 
   try {
@@ -199,12 +199,12 @@ export const notifySuperAdminsOfBulkTagAction = async (
       )
     }
 
-    resourceLogger.actionFlow({
+    resourceLogger.logFlow({
       resource: "tags",
       action: action === "delete" ? "bulk-delete" : action === "restore" ? "bulk-restore" : "bulk-hard-delete",
       step: "success",
-      duration: Date.now() - startTime,
-      metadata: { count, tagCount: tags?.length || 0 },
+      durationMs: Date.now() - startTime,
+      details: { count, tagCount: tags?.length || 0 },
     })
   } catch (error) {
     logNotificationError("tags", action === "delete" ? "bulk-delete" : action === "restore" ? "bulk-restore" : "bulk-hard-delete", error as Record<string, unknown>, { count, tagCount: tags?.length || 0 })

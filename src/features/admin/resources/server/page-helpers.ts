@@ -1,4 +1,4 @@
-import { canPerformAction, canPerformAnyAction, type Permission } from "@/lib/permissions"
+import { canPerformAction, canPerformAnyAction, type Permission } from "@/permissions"
 import { getAuthInfo, type AuthInfo } from "./auth-helpers"
 
 export interface TablePermissions {

@@ -11,10 +11,11 @@ import {
   type AuthContext,
 } from "@/features/admin/comments/server/mutations"
 import { BulkCommentActionSchema } from "@/features/admin/comments/server/schemas"
-import { createPostRoute } from "@/lib/api/api-route-wrapper"
-import type { ApiRouteContext } from "@/lib/api/types"
-import { createErrorResponse, createSuccessResponse, resourceLogger } from "@/lib/config"
-import { parseRequestBody, createAuthContext, handleApiError } from "@/lib/api/api-route-helpers"
+import { createPostRoute } from "@/lib"
+import type { ApiRouteContext } from "@/types"
+import { createErrorResponse, createSuccessResponse } from "@/lib"
+import { resourceLogger } from "@/utils"
+import { parseRequestBody, createAuthContext, handleApiError } from "@/lib"
 
 async function bulkCommentsHandler(req: NextRequest, context: ApiRouteContext) {
   try {
@@ -24,11 +25,11 @@ async function bulkCommentsHandler(req: NextRequest, context: ApiRouteContext) {
     const validationResult = BulkCommentActionSchema.safeParse(body)
     if (!validationResult.success) {
       const firstError = validationResult.error.issues[0]
-      resourceLogger.actionFlow({
+      resourceLogger.logFlow({
         resource: "comments",
         action: "error",
         step: "error",
-        metadata: { 
+        details: { 
           error: "Validation failed", 
           validationError: firstError?.message,
           body,
@@ -54,22 +55,22 @@ async function bulkCommentsHandler(req: NextRequest, context: ApiRouteContext) {
     } else if (validatedBody.action === "unapprove") {
       result = await bulkUnapproveComments(ctx, validatedBody.ids)
     } else {
-      resourceLogger.actionFlow({
+      resourceLogger.logFlow({
         resource: "comments",
         action: "error",
         step: "error",
-        metadata: { error: "Invalid action", action: validatedBody.action },
+        details: { error: "Invalid action", action: validatedBody.action },
       })
       return createErrorResponse("Action không hợp lệ", { status: 400 })
     }
 
     return createSuccessResponse(result)
   } catch (error) {
-    resourceLogger.actionFlow({
+    resourceLogger.logFlow({
       resource: "comments",
       action: "error",
       step: "error",
-      metadata: { 
+      details: { 
         error: "Unknown error",
         errorMessage: error instanceof Error ? error.message : String(error),
       },

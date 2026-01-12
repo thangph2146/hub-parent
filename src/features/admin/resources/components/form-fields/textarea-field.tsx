@@ -2,7 +2,7 @@
 
 import { FieldContent, FieldError } from "@/components/ui/field"
 import { Textarea } from "@/components/ui/textarea"
-import { cn } from "@/lib/utils"
+import { cn } from "@/utils"
 import type { ResourceFormField } from "../resource-form"
 
 interface TextareaFieldProps<T> {

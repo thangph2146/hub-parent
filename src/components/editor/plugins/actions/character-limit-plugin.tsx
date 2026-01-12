@@ -1,7 +1,7 @@
 import { CharacterLimitPlugin as LexicalCharacterLimitPlugin } from "@lexical/react/LexicalCharacterLimitPlugin"
 import { TypographySpanSmallMuted } from "@/components/ui/typography"
-import { cn } from "@/lib/utils"
-import { textColors } from "@/lib/typography"
+import { cn } from "@/utils"
+import { textColors } from "@/constants"
 
 export function CharacterLimitPlugin({
   maxLength,

@@ -1,8 +1,8 @@
 import type { Metadata } from "next"
-import { getSession } from "@/lib/auth/auth-server"
-import { PublicHeader } from "@/components/layouts/headers"
-import { PermissionGate } from "@/components/layouts/shared"
-import { PublicFooter } from "@/components/layouts/footer"
+import { getSession } from "@/auth/auth-server"
+import { PublicHeader } from "@/components/layout/headers"
+import { PermissionGate } from "@/components/access-control";
+import { PublicFooter } from "@/components/layout/footer"
 
 /**
  * Auth Layout Metadata

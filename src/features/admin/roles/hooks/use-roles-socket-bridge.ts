@@ -2,7 +2,7 @@
 
 import { useQueryClient } from "@tanstack/react-query"
 import type { RoleRow } from "../types"
-import { queryKeys, type AdminRolesListParams } from "@/lib/query-keys"
+import { queryKeys, type AdminRolesListParams } from "@/constants"
 import { useResourceSocketBridge } from "@/features/admin/resources/hooks/use-resource-socket-bridge"
 import { matchesSearch, matchesFilters } from "../utils/socket-helpers"
 

@@ -41,13 +41,13 @@ import {
   useStudentDetailedScores,
   useStudentYearAverages,
   useStudentTermAverages,
-} from "@/hooks/use-student-scores"
+} from "../hooks/use-student-scores"
 import type {
   DetailedScore,
   YearAverage,
   TermAverage,
-} from "@/lib/api/types"
-import { cn } from "@/lib/utils"
+} from "@/types"
+import { cn } from "@/utils"
 import {
   DataTable,
   type DataTableColumn,

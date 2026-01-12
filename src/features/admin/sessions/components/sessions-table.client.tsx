@@ -2,7 +2,7 @@
 
 import { IconSize } from "@/components/ui/typography"
 import { useCallback, useMemo, useState } from "react"
-import { useResourceRouter } from "@/hooks/use-resource-segment"
+import { useResourceRouter } from "@/hooks"
 import { Plus, RotateCcw, Trash2, AlertTriangle } from "lucide-react"
 
 import { ConfirmDialog } from "@/components/dialogs"
@@ -17,10 +17,10 @@ import {
   useResourceTableLogger,
 } from "@/features/admin/resources/hooks"
 import { sanitizeFilters, normalizeSearch } from "@/features/admin/resources/utils"
-import { apiClient } from "@/lib/api/axios"
-import { apiRoutes } from "@/lib/api/routes"
+import { apiClient } from "@/services/api/axios"
+import { apiRoutes } from "@/constants"
 import { useQueryClient } from "@tanstack/react-query"
-import { queryKeys, type AdminSessionsListParams } from "@/lib/query-keys"
+import { queryKeys, type AdminSessionsListParams } from "@/constants"
 import { useSessionsSocketBridge } from "../hooks/use-sessions-socket-bridge"
 import { useSessionActions } from "../hooks/use-session-actions"
 import { useSessionFeedback } from "../hooks/use-session-feedback"

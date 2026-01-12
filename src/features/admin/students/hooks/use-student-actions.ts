@@ -1,10 +1,10 @@
-import { apiRoutes } from "@/lib/api/routes"
-import { queryKeys } from "@/lib/query-keys"
+import { apiRoutes } from "@/constants"
+import { queryKeys } from "@/constants"
 import { useResourceActions, useToggleStatus } from "@/features/admin/resources/hooks"
 import type { StudentRow } from "../types"
 import type { FeedbackVariant } from "@/components/dialogs"
 import { STUDENT_MESSAGES } from "../constants/messages"
-import { resourceLogger } from "@/lib/config/resource-logger"
+import { resourceLogger } from "@/utils"
 
 interface UseStudentActionsOptions {
   canDelete: boolean
@@ -61,7 +61,7 @@ export const useStudentActions = ({
     getRecordName: (row) => row.studentCode,
     canManage: canActivate,
     onSuccess: async (row, newStatus) => {
-      resourceLogger.tableAction({
+      resourceLogger.logAction({
         resource: "students",
         action: newStatus ? "restore" : "delete",
         studentId: row.id,

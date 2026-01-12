@@ -3,7 +3,7 @@
 import { FieldContent, FieldError } from "@/components/ui/field"
 import { Switch } from "@/components/ui/switch"
 import type { ResourceFormField } from "../resource-form"
-import { cn } from "@/lib/utils"
+import { cn } from "@/utils"
 
 interface SwitchFieldProps<T> {
   field: ResourceFormField<T>

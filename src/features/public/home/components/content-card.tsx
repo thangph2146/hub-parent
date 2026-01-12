@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Flex } from "@/components/ui/flex";
 import { TypographySpanSmall } from "@/components/ui/typography";
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils";
 
 export interface ContentCardButton {
   href: string;

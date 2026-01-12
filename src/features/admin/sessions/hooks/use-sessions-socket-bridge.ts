@@ -1,7 +1,7 @@
 "use client"
 
 import type { SessionRow } from "../types"
-import { queryKeys, type AdminSessionsListParams } from "@/lib/query-keys"
+import { queryKeys, type AdminSessionsListParams } from "@/constants"
 import { useResourceSocketBridge } from "@/features/admin/resources/hooks/use-resource-socket-bridge"
 import { matchesSearch, matchesFilters } from "../utils/socket-helpers"
 

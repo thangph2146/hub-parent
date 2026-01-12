@@ -1,5 +1,5 @@
 import { z } from "zod"
-import { PERMISSIONS } from "@/lib/permissions"
+import { PERMISSIONS } from "@/permissions"
 
 // Get all permission values for validation
 const allPermissions = Object.values(PERMISSIONS) as string[]

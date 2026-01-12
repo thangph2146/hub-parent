@@ -2,9 +2,9 @@
 
 import { ResourceForm, type ResourceFormField } from "@/features/admin/resources/components"
 import { useResourceFormSubmit } from "@/features/admin/resources/hooks"
-import { apiRoutes } from "@/lib/api/routes"
-import { queryKeys } from "@/lib/query-keys"
-import { resourceLogger } from "@/lib/config/resource-logger"
+import { apiRoutes } from "@/constants"
+import { queryKeys } from "@/constants"
+import { resourceLogger } from "@/utils"
 import { getBaseCategoryFields, getCategoryFormSections, type CategoryFormData } from "../form-fields"
 import { useQueryClient } from "@tanstack/react-query"
 
@@ -36,11 +36,11 @@ export const CategoryCreateClient = ({ backUrl = "/admin/categories" }: Category
       fallback: backUrl,
     },
     onSuccess: (response) => {
-      resourceLogger.actionFlow({
+      resourceLogger.logFlow({
         resource: "categories",
         action: "create",
         step: "success",
-        metadata: {
+        details: {
           categoryId: response?.data?.data?.id,
           responseStatus: response?.status,
         },
@@ -73,4 +73,5 @@ export const CategoryCreateClient = ({ backUrl = "/admin/categories" }: Category
     />
   )
 }
+
 

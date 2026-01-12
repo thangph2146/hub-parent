@@ -1,8 +1,8 @@
 "use server"
 
 import type { Prisma } from "@prisma/client"
-import { PERMISSIONS, canPerformAnyAction } from "@/lib/permissions"
-import { prisma } from "@/lib/prisma"
+import { PERMISSIONS, canPerformAnyAction } from "@/permissions"
+import { prisma } from "@/services/prisma"
 import { mapCategoryRecord, type CategoryWithRelations } from "./helpers"
 import type { ListedCategory } from "../types"
 import { generateSlug } from "../utils"

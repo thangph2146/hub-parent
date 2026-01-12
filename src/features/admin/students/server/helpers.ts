@@ -9,7 +9,7 @@ import {
   applyBooleanFilter,
   applyStatusFilterFromFilters,
 } from "@/features/admin/resources/server"
-import type { ListStudentsInput, ListedStudent, StudentDetail, ListStudentsResult } from "../types"
+import type { ListStudentsInput, ListedStudent, StudentDetailInfo, ListStudentsResult } from "../types"
 import type { StudentRow } from "../types"
 
 type StudentWithRelations = Prisma.StudentGetPayload<{
@@ -124,7 +124,7 @@ export const serializeStudentsList = (data: ListStudentsResult): DataTableResult
   }
 }
 
-export const serializeStudentDetail = (student: StudentDetail) => {
+export const serializeStudentDetail = (student: StudentDetailInfo) => {
   return {
     id: student.id,
     userId: student.userId,

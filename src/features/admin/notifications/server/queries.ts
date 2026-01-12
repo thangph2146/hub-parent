@@ -1,7 +1,7 @@
 import { validatePagination, buildPagination, type ResourcePagination, applyBooleanFilter } from "@/features/admin/resources/server"
 import { Prisma, NotificationKind } from "@prisma/client"
-import { prisma } from "@/lib/prisma"
-import { logger } from "@/lib/config/logger"
+import { prisma } from "@/services/prisma"
+import { logger } from "@/utils"
 
 export interface ListNotificationsInput {
   page?: number
@@ -221,9 +221,80 @@ export const listNotifications = async (params: ListNotificationsInput = {}): Pr
     whereClause: JSON.stringify(where, null, 2),
   })
 
-  const [notifications, total] = await Promise.all([
-    prisma.notification.findMany({
-      where,
+  try {
+    const [notifications, total] = await Promise.all([
+      prisma.notification.findMany({
+        where,
+        include: {
+          user: {
+            select: {
+              id: true,
+              email: true,
+              name: true,
+            },
+          },
+        },
+        orderBy: { updatedAt: "desc" },
+        take: limit,
+        skip: (page - 1) * limit,
+      }),
+      prisma.notification.count({ where }),
+    ])
+
+    // Log kết quả từ database
+    logger.info("Notifications queried from database", {
+      totalInDatabase: total,
+      returnedCount: notifications.length,
+      page,
+      limit,
+      notifications: notifications.map((n) => ({
+        id: n.id,
+        userId: n.userId,
+        userEmail: n.user?.email ?? null,
+        kind: n.kind,
+        title: n.title,
+        isRead: n.isRead,
+      })),
+      kindDistribution: notifications.reduce((acc, n) => {
+        acc[n.kind] = (acc[n.kind] || 0) + 1
+        return acc
+      }, {} as Record<string, number>),
+    })
+
+    return {
+      data: notifications.map((n) => ({
+        id: n.id,
+        userId: n.userId,
+        user: n.user ?? {
+          id: n.userId,
+          email: "",
+          name: null,
+        },
+        kind: n.kind,
+        title: n.title,
+        description: n.description,
+        isRead: n.isRead,
+        actionUrl: n.actionUrl,
+        metadata: n.metadata,
+        expiresAt: n.expiresAt,
+        createdAt: n.createdAt,
+        readAt: n.readAt,
+      })),
+      pagination: buildPagination(page, limit, total),
+    }
+  } catch (error) {
+    logger.error("Error querying notifications:", error)
+    return {
+      data: [],
+      pagination: buildPagination(page, limit, 0),
+    }
+  }
+};
+
+export const getNotificationById = async (id: string): Promise<ListedNotification | null> => {
+  try {
+    const notification = await prisma.notification.findUnique({
+      where: { id },
       include: {
         user: {
           select: {
@@ -233,86 +304,32 @@ export const listNotifications = async (params: ListNotificationsInput = {}): Pr
           },
         },
       },
-      orderBy: { updatedAt: "desc" },
-      take: limit,
-      skip: (page - 1) * limit,
-    }),
-    prisma.notification.count({ where }),
-  ])
+    })
 
-  // Log kết quả từ database
-  logger.info("Notifications queried from database", {
-    totalInDatabase: total,
-    returnedCount: notifications.length,
-    page,
-    limit,
-    notifications: notifications.map((n) => ({
-      id: n.id,
-      userId: n.userId,
-      userEmail: n.user?.email ?? null,
-      kind: n.kind,
-      title: n.title,
-      isRead: n.isRead,
-    })),
-    kindDistribution: notifications.reduce((acc, n) => {
-      acc[n.kind] = (acc[n.kind] || 0) + 1
-      return acc
-    }, {} as Record<string, number>),
-  })
+    if (!notification) return null
 
-  return {
-    data: notifications.map((n) => ({
-      id: n.id,
-      userId: n.userId,
-      user: n.user ?? {
-        id: n.userId,
+    return {
+      id: notification.id,
+      userId: notification.userId,
+      user: notification.user ?? {
+        id: notification.userId,
         email: "",
         name: null,
       },
-      kind: n.kind,
-      title: n.title,
-      description: n.description,
-      isRead: n.isRead,
-      actionUrl: n.actionUrl,
-      metadata: n.metadata,
-      expiresAt: n.expiresAt,
-      createdAt: n.createdAt,
-      readAt: n.readAt,
-    })),
-    pagination: buildPagination(page, limit, total),
+      kind: notification.kind,
+      title: notification.title,
+      description: notification.description,
+      isRead: notification.isRead,
+      actionUrl: notification.actionUrl,
+      metadata: notification.metadata,
+      expiresAt: notification.expiresAt,
+      createdAt: notification.createdAt,
+      readAt: notification.readAt,
+    }
+  } catch (error) {
+    logger.error("Error getting notification by id:", error)
+    return null
   }
-};
-
-export const getNotificationById = async (id: string): Promise<ListedNotification | null> => {
-  const notification = await prisma.notification.findUnique({
-    where: { id },
-    include: {
-      user: {
-        select: {
-          id: true,
-          email: true,
-          name: true,
-        },
-      },
-    },
-  })
-
-  if (!notification) return null
-
-  return {
-    id: notification.id,
-    userId: notification.userId,
-    user: notification.user,
-    kind: notification.kind,
-    title: notification.title,
-    description: notification.description,
-    isRead: notification.isRead,
-    actionUrl: notification.actionUrl,
-    metadata: notification.metadata,
-    expiresAt: notification.expiresAt,
-    createdAt: notification.createdAt,
-    readAt: notification.readAt,
-  } as ListedNotification
 }
 
 export const getNotificationColumnOptions = async (

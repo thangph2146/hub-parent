@@ -1,5 +1,5 @@
 import type { QueryKey } from "@tanstack/react-query"
-import { logger } from "@/lib/config/logger"
+import { logger } from "@/utils"
 
 /**
  * Global registry để đăng ký refresh callbacks cho các resource tables

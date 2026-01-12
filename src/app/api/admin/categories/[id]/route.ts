@@ -13,10 +13,11 @@ import {
   ApplicationError,
   NotFoundError,
 } from "@/features/admin/categories/server/mutations"
-import { createGetRoute, createPutRoute, createDeleteRoute } from "@/lib/api/api-route-wrapper"
-import type { ApiRouteContext } from "@/lib/api/types"
-import { createErrorResponse, createSuccessResponse, logger } from "@/lib/config"
-import { validateID } from "@/lib/api/validation"
+import { createGetRoute, createPutRoute, createDeleteRoute } from "@/lib"
+import type { ApiRouteContext } from "@/types"
+import { createErrorResponse, createSuccessResponse } from "@/lib"
+import { logger } from "@/utils"
+import { validateID } from "@/utils"
 
 async function getCategoryHandler(_req: NextRequest, _context: ApiRouteContext, ...args: unknown[]) {
   const { params } = args[0] as { params: Promise<{ id: string }> }

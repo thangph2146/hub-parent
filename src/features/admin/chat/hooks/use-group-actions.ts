@@ -1,8 +1,8 @@
 import { useCallback } from "react"
-import { useToast } from "@/hooks/use-toast"
-import { logger } from "@/lib/config/logger"
-import { getErrorMessage } from "@/lib/utils"
-import type { Contact } from "@/components/chat/types"
+import { useToast } from "@/hooks"
+import { logger } from "@/utils"
+import { getErrorMessage } from "@/utils"
+import type { Contact } from "@/features/admin/chat/types"
 import { refreshGroupData, updateContactWithGroupData } from "../components/chat-template-helpers"
 
 interface UseGroupActionsProps {

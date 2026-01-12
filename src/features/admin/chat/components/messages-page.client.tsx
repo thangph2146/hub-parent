@@ -1,10 +1,10 @@
 "use client"
 
 import { ChatTemplate } from "./chat-template.client"
-import { logger } from "@/lib/config/logger"
-import type { ChatFilterType, Contact, Message } from "@/components/chat/types"
-import { requestJson } from "@/lib/api/client"
-import { withApiBase } from "@/lib/config/api-paths"
+import { logger } from "@/utils"
+import type { ChatFilterType, Contact, Message } from "@/features/admin/chat/types"
+import { requestJson } from "@/services/api/client"
+import { withApiBase } from "@/utils"
 
 interface MessagesPageClientProps {
   initialContacts: Contact[]
@@ -22,7 +22,7 @@ const MessagesPageClient = ({
   const handleNewConversation = async (contact: Contact) => {
     // Optionally fetch messages for new conversation
     try {
-      const { apiRoutes } = await import("@/lib/api/routes")
+      const { apiRoutes } = await import("@/constants/api-routes")
       await requestJson(withApiBase(apiRoutes.adminConversations.list({ otherUserId: contact.id })))
       // Messages will be handled by the chat hook
     } catch (error) {

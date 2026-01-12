@@ -1,8 +1,8 @@
 import type { Metadata } from "next"
 import { Suspense } from "react"
-import { AdminHeader } from "@/components/layouts/headers"
+import { AdminHeader } from "@/components/layout/headers"
 import { DashboardStats } from "@/features/admin/dashboard/dashboard-stats"
-import { DashboardStatsSkeleton } from "@/components/layouts/skeletons"
+import { DashboardStatsSkeleton } from "@/components/skeletons"
 import { createNestedBreadcrumbs } from "@/features/admin/resources/utils"
 
 /**

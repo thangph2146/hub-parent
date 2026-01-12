@@ -1,4 +1,4 @@
-import { getRouteFromFeature } from "@/lib/utils";
+import { getRouteFromFeature } from "@/utils";
 
 export const HOME_ROUTES = {
   signIn: "/auth/sign-in",

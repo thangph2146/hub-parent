@@ -2,7 +2,7 @@
 
 import { ResourceForm, type ResourceFormField } from "@/features/admin/resources/components"
 import { useResourceFormSubmit } from "@/features/admin/resources/hooks"
-import { apiRoutes } from "@/lib/api/routes"
+import { apiRoutes } from "@/constants"
 import { getBaseSessionFields, getSessionFormSections, type SessionFormData } from "../form-fields"
 
 export interface SessionCreateClientProps {

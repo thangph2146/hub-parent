@@ -1,10 +1,10 @@
 "use client"
 
 import { useState, useEffect, useLayoutEffect, useRef, useCallback } from "react"
-import { useSocket } from "@/hooks/use-socket"
+import { useSocket } from "@/hooks"
 import { useChatSocketBridge } from "./use-chat-socket-bridge"
-import type { Contact, Message } from "@/components/chat/types"
-import { TEXTAREA_MIN_HEIGHT, TEXTAREA_MAX_HEIGHT } from "@/components/chat/constants"
+import type { Contact, Message } from "@/features/admin/chat/types"
+import { TEXTAREA_MIN_HEIGHT, TEXTAREA_MAX_HEIGHT } from "@/features/admin/chat/constants"
 import {
   calculateMessagesHeight,
   debouncedMarkAsRead,
@@ -13,8 +13,8 @@ import {
   calculateUnreadCount,
 } from "./use-chat-helpers"
 import { useQueryClient } from "@tanstack/react-query"
-import { queryKeys } from "@/lib/query-keys"
-import type { UnreadCountsResponse } from "@/hooks/use-unread-counts"
+import { queryKeys } from "@/constants"
+import type { UnreadCountsResponse } from "@/hooks"
 import { markMessageAPI, sendMessageAPI, handleAPIError } from "./use-chat-api"
 import {
   createOptimisticMessage,
@@ -23,9 +23,9 @@ import {
   addContactMessage,
   updateMessageReadStatusOptimistic,
 } from "./use-chat-message-helpers"
-import { isMessageReadByUser } from "@/components/chat/utils/message-helpers"
-import { requestJson } from "@/lib/api/client"
-import { withApiBase } from "@/lib/config/api-paths"
+import { isMessageReadByUser } from "@/features/admin/chat/utils/message-helpers"
+import { requestJson } from "@/services/api/client"
+import { withApiBase } from "@/utils"
 
 interface UseChatProps {
   contacts: Contact[]
@@ -156,7 +156,7 @@ export const useChat = ({ contacts, currentUserId, role }: UseChatProps) => {
 
       const checkGroupExists = async () => {
         try {
-          const { apiRoutes } = await import("@/lib/api/routes")
+          const { apiRoutes } = await import("@/constants/api-routes")
           const res = await requestJson(withApiBase(apiRoutes.adminGroups.detail(currentChat.id)))
           if (!isMounted) return
           if (!res.ok && res.status === 0) {

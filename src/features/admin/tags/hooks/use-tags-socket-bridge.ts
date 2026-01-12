@@ -1,7 +1,7 @@
 "use client"
 
 import type { TagRow } from "../types"
-import { queryKeys, type AdminTagsListParams } from "@/lib/query-keys"
+import { queryKeys, type AdminTagsListParams } from "@/constants"
 import { useResourceSocketBridge } from "@/features/admin/resources/hooks/use-resource-socket-bridge"
 import { matchesSearch, matchesFilters } from "../utils/socket-helpers"
 

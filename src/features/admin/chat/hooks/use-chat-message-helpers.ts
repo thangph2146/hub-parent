@@ -1,5 +1,5 @@
-import type { Contact, Message } from "@/components/chat/types"
-import { MAX_MESSAGES_IN_STATE } from "@/components/chat/constants"
+import type { Contact, Message } from "@/features/admin/chat/types"
+import { MAX_MESSAGES_IN_STATE } from "@/features/admin/chat/constants"
 import { calculateUnreadCount } from "./use-chat-helpers"
 
 export const createOptimisticMessage = (params: {

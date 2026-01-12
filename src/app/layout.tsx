@@ -1,10 +1,10 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { Providers } from "@/components/layouts/providers";
+import { Providers } from "@/components/providers";
 import { Toaster } from "@/components/ui/toaster";
-import { appConfig, getOpenGraphConfig, getTwitterConfig } from "@/lib/config";
-import { auth } from "@/lib/auth";
+import { appConfig, getOpenGraphConfig, getTwitterConfig } from "@/constants"
+import { auth } from "@/auth";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -47,13 +47,23 @@ export const metadata: Metadata = {
   applicationName: appConfig.name,
   openGraph: getOpenGraphConfig(),
   twitter: getTwitterConfig(),
-  robots: appConfig.robots,
-  icons: appConfig.icons,
-  manifest: appConfig.manifest,
-  // verification: appConfig.verification,
-  alternates: {
-    canonical: "/",
+  robots: {
+    index: appConfig.robots.index,
+    follow: appConfig.robots.follow,
+    googleBot: {
+      index: appConfig.robots.googleBot.index,
+      follow: appConfig.robots.googleBot.follow,
+      "max-video-preview": appConfig.robots.googleBot["max-video-preview"],
+      "max-image-preview": appConfig.robots.googleBot["max-image-preview"],
+      "max-snippet": appConfig.robots.googleBot["max-snippet"],
+    },
   },
+  icons: appConfig.icons,
+  // manifest: appConfig.manifest,
+  // verification: appConfig.verification,
+  // alternates: {
+  //   canonical: "/",
+  // },
   category: "CMS",
   // Format detection
   formatDetection: {

@@ -1,15 +1,15 @@
 import { useCallback, useState } from "react"
 import { useQueryClient } from "@tanstack/react-query"
-import { apiClient } from "@/lib/api/axios"
-import { apiRoutes } from "@/lib/api/routes"
-import { queryKeys } from "@/lib/query-keys"
+import { apiClient } from "@/services/api/axios"
+import { apiRoutes } from "@/constants"
+import { queryKeys } from "@/constants"
 import { useResourceActions, useResourceBulkProcessing } from "@/features/admin/resources/hooks"
 import type { CommentRow } from "../types"
 import type { FeedbackVariant } from "@/components/dialogs"
 import { COMMENT_MESSAGES } from "../constants/messages"
-import { resourceLogger } from "@/lib/config/resource-logger"
+import { resourceLogger } from "@/utils"
 import type { BulkActionResult } from "@/features/admin/resources/types"
-import { toast } from "@/hooks/use-toast"
+import { toast } from "@/hooks"
 
 interface UseCommentActionsOptions {
   canApprove: boolean
@@ -102,11 +102,11 @@ export const useCommentActions = ({
       })
 
       try {
-        resourceLogger.actionFlow({
+        resourceLogger.logFlow({
           resource: "comments",
           action: newStatus ? "approve" : "unapprove",
           step: "start",
-          metadata: {
+          details: {
             commentId: row.id,
             authorName: row.authorName,
           },
@@ -118,11 +118,11 @@ export const useCommentActions = ({
           await apiClient.post(apiRoutes.comments.unapprove(row.id))
         }
 
-        resourceLogger.actionFlow({
+        resourceLogger.logFlow({
           resource: "comments",
           action: newStatus ? "approve" : "unapprove",
           step: "success",
-          metadata: {
+          details: {
             commentId: row.id,
             authorName: row.authorName,
           },
@@ -149,11 +149,11 @@ export const useCommentActions = ({
         } else if (error instanceof Error) {
           errorMessage = error.message
         }
-        resourceLogger.actionFlow({
+        resourceLogger.logFlow({
           resource: "comments",
           action: newStatus ? "approve" : "unapprove",
           step: "error",
-          metadata: {
+          details: {
             commentId: row.id,
             authorName: row.authorName,
             error: errorMessage,
@@ -196,7 +196,7 @@ export const useCommentActions = ({
       if (!startBulkProcessing()) return
 
       try {
-        resourceLogger.tableAction({
+        resourceLogger.logAction({
           resource: "comments",
           action,
           count: ids.length,
@@ -245,7 +245,7 @@ export const useCommentActions = ({
           delete: COMMENT_MESSAGES.BULK_DELETE_ERROR,
           "hard-delete": COMMENT_MESSAGES.BULK_HARD_DELETE_ERROR,
         }
-        resourceLogger.tableAction({
+        resourceLogger.logAction({
           resource: "comments",
           action,
           count: ids.length,

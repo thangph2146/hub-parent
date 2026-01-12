@@ -13,7 +13,7 @@
 import type { Metadata } from "next"
 import { getPostBySlug } from "@/features/public/post/server/queries"
 import { PostDetail } from "@/features/public/post/components/post-detail"
-import { appConfig, getOpenGraphConfig, getTwitterConfig } from "@/lib/config"
+import { appConfig, getOpenGraphConfig, getTwitterConfig } from "@/constants"
 import Script from "next/script"
 
 interface PostDetailPageProps {

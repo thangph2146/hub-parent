@@ -4,13 +4,13 @@
  */
 
 import { NextRequest } from "next/server"
-import type { ApiRouteContext } from "@/lib/api/types"
-import { getUserId } from "@/lib/api/api-route-helpers"
-import { createSuccessResponse, createErrorResponse } from "@/lib/config"
-import { STORAGE_DIR, initializeStorageDirectories } from "@/lib/utils/file-utils"
+import type { ApiRouteContext } from "@/types"
+import { getUserId } from "@/lib"
+import { createSuccessResponse, createErrorResponse } from "@/lib"
+import { STORAGE_DIR, initializeStorageDirectories } from "@/lib"
 import { promises as fs } from "fs"
 import path from "path"
-import { logger } from "@/lib/config/logger"
+import { logger } from "@/utils"
 import { scanDirectoryForImages } from "../utils/image-scanning"
 import { buildFolderTreeFromImages } from "../utils/folder-tree-builder"
 
@@ -130,4 +130,5 @@ export const listImagesHandler = async (req: NextRequest, context: ApiRouteConte
     return createErrorResponse("Đã xảy ra lỗi khi lấy danh sách hình ảnh", { status: 500 })
   }
 }
+
 

@@ -4,9 +4,9 @@
  */
 
 import { useResourceActions } from "./use-resource-actions"
-import { apiRoutes } from "@/lib/api/routes"
-import { queryKeys, createAdminResourceKeys } from "@/lib/query-keys"
-import { generateResourceApiRoutes } from "@/lib/permissions/api-route-generators"
+import { apiRoutes } from "@/constants"
+import { queryKeys, createAdminResourceKeys } from "@/constants"
+import { generateResourceApiRoutes } from "@/permissions"
 import type { FeedbackVariant } from "@/components/dialogs"
 
 type ResourceActionApiRoutes = {

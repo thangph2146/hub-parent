@@ -8,11 +8,11 @@ import { updateCurrentUserAccount } from "@/features/admin/accounts/server/mutat
 import {
   type AuthContext,
 } from "@/features/admin/resources/server"
-import { createGetRoute, createPutRoute } from "@/lib/api/api-route-wrapper"
-import type { ApiRouteContext } from "@/lib/api/types"
+import { createGetRoute, createPutRoute } from "@/lib"
+import type { ApiRouteContext } from "@/types"
 import type { UpdateAccountInput } from "@/features/admin/accounts/server/schemas"
-import { parseRequestBody, createAuthContext, handleApiError } from "@/lib/api/api-route-helpers"
-import { createSuccessResponse, createErrorResponse } from "@/lib/config"
+import { parseRequestBody, createAuthContext, handleApiError } from "@/lib"
+import { createSuccessResponse, createErrorResponse } from "@/lib"
 
 async function getAccountHandler(_req: NextRequest, context: ApiRouteContext) {
   const userId = context.session.user?.id

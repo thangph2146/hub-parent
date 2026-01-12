@@ -2,24 +2,24 @@
  * Sign Up API Route - Tạo user mới
  */
 import { NextRequest } from "next/server"
-import { prisma } from "@/lib/prisma"
+import { prisma } from "@/services/prisma"
 import bcrypt from "bcryptjs"
-import { createPostRoute } from "@/lib/api/api-route-wrapper"
-import { DEFAULT_ROLES } from "@/lib/permissions"
+import { createPostRoute } from "@/lib"
+import { DEFAULT_ROLES } from "@/permissions"
 import {
   validateEmail,
   validatePassword,
   validateStringLength,
   sanitizeString,
   sanitizeEmail,
-} from "@/lib/api/validation"
-import { createSuccessResponse, createErrorResponse } from "@/lib/config"
+} from "@/utils"
+import { createSuccessResponse, createErrorResponse } from "@/lib"
 
 async function signupHandler(
   request: NextRequest,
   _context: {
-    session: Awaited<ReturnType<typeof import("@/lib/auth").requireAuth>> | null
-    permissions: import("@/lib/permissions").Permission[]
+    session: Awaited<ReturnType<typeof import("@/auth").requireAuth>> | null
+    permissions: import("@/permissions").Permission[]
     roles: Array<{ name: string }>
   }
 ) {

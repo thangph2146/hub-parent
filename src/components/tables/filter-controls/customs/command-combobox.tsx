@@ -5,7 +5,7 @@
 
 import { useState, useId, useCallback } from "react"
 import { Check, ChevronsUpDown, X, Loader2 } from "lucide-react"
-import { cn } from "@/lib/utils"
+import { cn } from "@/utils"
 import { IconSize } from "@/components/ui/typography"
 import { Flex } from "@/components/ui/flex"
 import { Button } from "@/components/ui/button"
@@ -18,7 +18,7 @@ import {
     CommandItem,
     CommandList,
 } from "@/components/ui/command"
-import { useClientOnly } from "@/hooks/use-client-only"
+import { useClientOnly } from "@/hooks"
 import type { ColumnFilterControlProps } from "../types"
 
 export function CommandCombobox<T extends object = object>({

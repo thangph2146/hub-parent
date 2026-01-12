@@ -1,6 +1,6 @@
 import type { Metadata } from "next"
 import { NotFoundClient } from "../features/public/not-found-client"
-import { getOpenGraphConfig, getTwitterConfig } from "@/lib/config"
+import { getOpenGraphConfig, getTwitterConfig } from "@/constants"
 
 /**
  * Not Found Page

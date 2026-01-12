@@ -5,8 +5,8 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import type { DataTableColumn } from "@/components/tables"
 import { Flex } from "@/components/ui/flex"
 import { useDynamicFilterOptions } from "@/features/admin/resources/hooks/use-dynamic-filter-options"
-import { resourceLogger } from "@/lib/config/resource-logger"
-import { apiRoutes } from "@/lib/api/routes"
+import { resourceLogger } from "@/utils"
+import { apiRoutes } from "@/constants"
 import type { StudentRow } from "../types"
 import { STUDENT_LABELS } from "../constants/messages"
 
@@ -117,11 +117,11 @@ export const useStudentColumns = ({ togglingStudents, canToggleStatus, onToggleS
                 checked={row.isActive}
                 disabled={togglingStudents.has(row.id) || !canToggleStatus}
                 onCheckedChange={(checked) => {
-                  resourceLogger.actionFlow({
+                  resourceLogger.logFlow({
                     resource: "students",
                     action: "toggle-status",
                     step: "init",
-                    metadata: {
+                    details: {
                       operation: "switch_clicked",
                       resourceId: row.id,
                       recordName: row.studentCode,
@@ -249,3 +249,4 @@ export const useStudentColumns = ({ togglingStudents, canToggleStatus, onToggleS
     deletedColumns,
   }
 }
+

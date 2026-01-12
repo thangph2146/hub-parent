@@ -1,6 +1,6 @@
 "use client"
 
-import { useScrollToTop } from "@/hooks/use-scroll-to-top"
+import { useScrollToTop } from "@/hooks"
 import { PostList } from "./post-list"
 import type { Post } from "@/features/public/post/types"
 

@@ -10,12 +10,12 @@
  * - filter[column]: column filters (userEmail, kind, isRead)
  */
 import { NextRequest } from "next/server"
-import { auth } from "@/lib/auth/auth"
-import { isSuperAdmin } from "@/lib/permissions"
+import { auth } from "@/auth/auth"
+import { isSuperAdmin } from "@/permissions"
 import { listNotifications } from "@/features/admin/notifications/server/queries"
-import { createErrorResponse, createSuccessResponse } from "@/lib/config"
-import { validatePagination, sanitizeSearchQuery, parseColumnFilters, filtersOrUndefined } from "@/lib/api/validation"
-import { logger } from "@/lib/config/logger"
+import { createErrorResponse, createSuccessResponse } from "@/lib"
+import { validatePagination, sanitizeSearchQuery, parseColumnFilters, filtersOrUndefined } from "@/utils"
+import { logger } from "@/utils"
 
 async function getAdminNotificationsHandler(req: NextRequest) {
   const session = await auth()

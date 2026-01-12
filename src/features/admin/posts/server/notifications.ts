@@ -1,4 +1,4 @@
-import { resourceLogger } from "@/lib/config/resource-logger";
+import { resourceLogger } from "@/utils";
 import {
   createNotificationForAllAdmins,
   emitNotificationToAllAdminsAfterCreate,
@@ -139,7 +139,7 @@ export const notifySuperAdminsOfBulkPostAction = async (
 ) => {
   const startTime = Date.now();
 
-  resourceLogger.actionFlow({
+  resourceLogger.logFlow({
     resource: "posts",
     action:
       action === "delete"
@@ -148,7 +148,7 @@ export const notifySuperAdminsOfBulkPostAction = async (
         ? "bulk-restore"
         : "bulk-hard-delete",
     step: "start",
-    metadata: { count, postCount: posts?.length || 0, actorId },
+    details: { count, postCount: posts?.length || 0, actorId },
   });
 
   try {
@@ -220,7 +220,7 @@ export const notifySuperAdminsOfBulkPostAction = async (
       );
     }
 
-    resourceLogger.actionFlow({
+    resourceLogger.logFlow({
       resource: "posts",
       action:
         action === "delete"
@@ -229,8 +229,8 @@ export const notifySuperAdminsOfBulkPostAction = async (
           ? "bulk-restore"
           : "bulk-hard-delete",
       step: "success",
-      duration: Date.now() - startTime,
-      metadata: { count, postCount: posts?.length || 0 },
+      durationMs: Date.now() - startTime,
+      details: { count, postCount: posts?.length || 0 },
     });
   } catch (error) {
     logNotificationError(

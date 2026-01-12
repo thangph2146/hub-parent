@@ -4,12 +4,12 @@
  */
 
 import { NextRequest } from "next/server"
-import type { ApiRouteContext } from "@/lib/api/types"
-import { getUserId } from "@/lib/api/api-route-helpers"
-import { createSuccessResponse, createErrorResponse } from "@/lib/config"
-import { deleteFile, IMAGES_DIR, STORAGE_DIR } from "@/lib/utils/file-utils"
+import type { ApiRouteContext } from "@/types"
+import { getUserId } from "@/lib"
+import { createSuccessResponse, createErrorResponse } from "@/lib"
+import { deleteFile, IMAGES_DIR, STORAGE_DIR } from "@/lib"
 import { promises as fs } from "fs"
-import { logger } from "@/lib/config/logger"
+import { logger } from "@/utils"
 import { resolveAndValidateFilePath } from "../utils/path-validation"
 
 export const deleteImageHandler = async (req: NextRequest, context: ApiRouteContext) => {
@@ -69,4 +69,5 @@ export const deleteImageHandler = async (req: NextRequest, context: ApiRouteCont
     return createErrorResponse("Đã xảy ra lỗi khi xóa hình ảnh", { status: 500 })
   }
 }
+
 

@@ -6,7 +6,7 @@ import { Switch } from "@/components/ui/switch"
 import { Flex } from "@/components/ui/flex"
 import { TypographyP, TypographyPSmallMuted, TypographyPMuted, IconSize } from "@/components/ui/typography"
 import { formatDateVi } from "@/features/admin/resources/utils"
-import { cn } from "@/lib/utils"
+import { cn } from "@/utils"
 
 export interface NotificationFormData {
   kind: string

@@ -5,7 +5,7 @@ import {
   applyStringFilter,
   applyBooleanFilter,
 } from "@/features/admin/resources/server"
-import type { ListSessionsInput, ListedSession, SessionDetail, ListSessionsResult } from "../types"
+import type { ListSessionsInput, ListedSession, SessionDetailInfo, ListSessionsResult } from "../types"
 import type { SessionRow } from "../types"
 
 type SessionWithRelations = Prisma.SessionGetPayload<{
@@ -127,7 +127,7 @@ export const serializeSessionsList = (data: ListSessionsResult & { rows: Array<L
   }
 }
 
-export const serializeSessionDetail = (session: SessionDetail) => {
+export const serializeSessionDetail = (session: SessionDetailInfo) => {
   return {
     id: session.id,
     userId: session.userId,

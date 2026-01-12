@@ -1,6 +1,6 @@
 import type { Role } from "./utils"
 import type { ResourceResponse, BaseResourceTableClientProps } from "@/features/admin/resources/types"
-import type { ApiResponsePayload } from "@/lib/config/api-response"
+import type { ApiResponsePayload } from "@/types"
 
 export type UserRole = Role
 

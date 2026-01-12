@@ -1,7 +1,7 @@
 "use client";
 import React, { startTransition, useEffect, useRef, useState } from "react";
 import { motion, useInView } from "motion/react";
-import { cn } from "@/lib/utils/index";
+import { cn } from "@/utils";
 
 type EncryptedTextProps = {
   text: string;
@@ -221,3 +221,4 @@ export const EncryptedText: React.FC<EncryptedTextProps> = ({
     />
   );
 };
+

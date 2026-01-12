@@ -1,7 +1,7 @@
 import { useMemo } from "react"
 import type { DataTableColumn } from "@/components/tables"
 import { useDynamicFilterOptions } from "@/features/admin/resources/hooks/use-dynamic-filter-options"
-import { apiRoutes } from "@/lib/api/routes"
+import { apiRoutes } from "@/constants"
 import type { UserRow } from "../types"
 import { Switch } from "@/components/ui/switch"
 import { USER_MESSAGES, PROTECTED_SUPER_ADMIN_EMAIL } from "../constants"

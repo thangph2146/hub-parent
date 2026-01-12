@@ -1,6 +1,6 @@
-import { resourceLogger } from "@/lib/config/resource-logger"
+import { resourceLogger } from "@/utils"
 import type { StudentRow } from "../types"
-import type { AdminStudentsListParams } from "@/lib/query-keys"
+import type { AdminStudentsListParams } from "@/constants"
 import {
   createMatchesSearch,
 } from "@/features/admin/resources/utils/socket-helpers"

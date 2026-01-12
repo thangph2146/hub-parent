@@ -50,7 +50,7 @@ export interface ListedComment {
   deletedAt: string | null
 }
 
-export interface CommentDetail {
+export interface CommentDetailInfo {
   id: string
   content: string
   approved: boolean

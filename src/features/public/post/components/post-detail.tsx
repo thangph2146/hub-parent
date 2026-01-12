@@ -8,7 +8,7 @@
 import { getPostBySlug, getRelatedPosts } from "../server/queries"
 import { PostDetailClient } from "./post-detail.client"
 import { RelatedPosts } from "./related-posts"
-import { PostBreadcrumb } from "@/components/public/post/post-breadcrumb"
+import { PostBreadcrumb } from "./post-breadcrumb"
 import { notFound } from "next/navigation"
 
 export interface PostDetailProps {

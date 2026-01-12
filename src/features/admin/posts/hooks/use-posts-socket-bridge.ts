@@ -1,7 +1,7 @@
 "use client"
 
 import type { PostRow } from "../types"
-import { queryKeys, type AdminPostsListParams } from "@/lib/query-keys"
+import { queryKeys, type AdminPostsListParams } from "@/constants"
 import { useResourceSocketBridge } from "@/features/admin/resources/hooks/use-resource-socket-bridge"
 import { matchesSearch, matchesFilters } from "../utils/socket-helpers"
 

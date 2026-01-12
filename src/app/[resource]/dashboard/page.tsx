@@ -1,5 +1,5 @@
 import type { Metadata } from "next"
-import { AdminHeader } from "@/components/layouts/headers"
+import { AdminHeader } from "@/components/layout/headers"
 import { DashboardWelcome } from "@/features/admin/dashboard/dashboard-welcome"
 import { createListBreadcrumbs } from "@/features/admin/resources/utils"
 

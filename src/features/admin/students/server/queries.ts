@@ -1,40 +1,51 @@
 import type { Prisma } from "@prisma/client"
-import { prisma } from "@/lib/prisma"
+import { prisma } from "@/services/prisma"
 import { validatePagination, buildPagination } from "@/features/admin/resources/server"
 import { mapStudentRecord, buildWhereClause } from "./helpers"
-import type { ListStudentsInput, StudentDetail, ListStudentsResult } from "../types"
+import type { ListStudentsInput, StudentDetailInfo, ListStudentsResult } from "../types"
 
 export const listStudents = async (params: ListStudentsInput = {}): Promise<ListStudentsResult> => {
   const { page, limit } = validatePagination(params.page, params.limit, 100)
   const where = buildWhereClause(params)
 
-  const [data, total] = await Promise.all([
-    prisma.student.findMany({
-      where,
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
+  try {
+    const [data, total] = await Promise.all([
+      prisma.student.findMany({
+        where,
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
           },
         },
-      },
-      orderBy: { updatedAt: "desc" },
-      skip: (page - 1) * limit,
-      take: limit,
-    }),
-    prisma.student.count({ where }),
-  ])
+        orderBy: { updatedAt: "desc" },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      prisma.student.count({ where }),
+    ])
 
-  const pagination = buildPagination(page, limit, total)
+    const pagination = buildPagination(page, limit, total)
 
-  return {
-    rows: data.map(mapStudentRecord),
-    total: pagination.total,
-    page: pagination.page,
-    limit: pagination.limit,
-    totalPages: pagination.totalPages,
+    return {
+      rows: data.map(mapStudentRecord),
+      total: pagination.total,
+      page: pagination.page,
+      limit: pagination.limit,
+      totalPages: pagination.totalPages,
+    }
+  } catch (error) {
+    console.error("[listStudents] Error:", error)
+    return {
+      rows: [],
+      total: 0,
+      page,
+      limit,
+      totalPages: 0,
+    }
   }
 }
 
@@ -87,60 +98,70 @@ export const getStudentColumnOptions = async (
       selectField = { studentCode: true }
   }
 
-  const results = await prisma.student.findMany({
-    where,
-    select: selectField,
-    orderBy: { [column]: "asc" },
-    take: limit,
-  })
-
-  // Map results to options format
-  return results
-    .map((item) => {
-      const value = item[column as keyof typeof item]
-      if (typeof value === "string" && value.trim()) {
-        return {
-          label: value,
-          value: value,
-        }
-      }
-      return null
+  try {
+    const results = await prisma.student.findMany({
+      where,
+      select: selectField,
+      orderBy: { [column]: "asc" },
+      take: limit,
     })
-    .filter((item): item is { label: string; value: string } => item !== null)
+
+    // Map results to options format
+    return results
+      .map((item) => {
+        const value = item[column as keyof typeof item]
+        if (typeof value === "string" && value.trim()) {
+          return {
+            label: value,
+            value: value,
+          }
+        }
+        return null
+      })
+      .filter((item): item is { label: string; value: string } => item !== null)
+  } catch (error) {
+    console.error("[getStudentColumnOptions] Error:", error)
+    return []
+  }
 };
 
 export const getStudentById = async (
   id: string,
   actorId?: string,
   isSuperAdmin?: boolean
-): Promise<StudentDetail | null> => {
+): Promise<StudentDetailInfo | null> => {
   const where: Prisma.StudentWhereUniqueInput = { id }
   
-  const student = await prisma.student.findUnique({
-    where,
-    include: {
-      user: {
-        select: {
-          id: true,
-          name: true,
-          email: true,
+  try {
+    const student = await prisma.student.findUnique({
+      where,
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
         },
       },
-    },
-  })
+    })
 
-  if (!student) {
+    if (!student) {
+      return null
+    }
+
+    if (!isSuperAdmin && actorId && student.userId !== actorId) {
+      return null
+    }
+
+    return {
+      ...mapStudentRecord(student),
+      userName: student.user?.name || null,
+      userEmail: student.user?.email || null,
+    }
+  } catch (error) {
+    console.error("[getStudentById] Error:", error)
     return null
-  }
-
-  if (!isSuperAdmin && actorId && student.userId !== actorId) {
-    return null
-  }
-
-  return {
-    ...mapStudentRecord(student),
-    userName: student.user?.name || null,
-    userEmail: student.user?.email || null,
   }
 };
 

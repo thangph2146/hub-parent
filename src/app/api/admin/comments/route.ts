@@ -1,10 +1,10 @@
 import { NextRequest } from "next/server"
 import { listComments } from "@/features/admin/comments/server/queries"
 import { serializeCommentsList } from "@/features/admin/comments/server/helpers"
-import { createGetRoute } from "@/lib/api/api-route-wrapper"
-import type { ApiRouteContext } from "@/lib/api/types"
-import { validatePagination, sanitizeSearchQuery, parseColumnFilters, buildFilters, filtersOrUndefined } from "@/lib/api/validation"
-import { createErrorResponse, createSuccessResponse } from "@/lib/config"
+import { createGetRoute } from "@/lib"
+import type { ApiRouteContext } from "@/types"
+import { validatePagination, sanitizeSearchQuery, parseColumnFilters, buildFilters, filtersOrUndefined } from "@/utils"
+import { createErrorResponse, createSuccessResponse } from "@/lib"
 import type { ListCommentsInput } from "@/features/admin/comments/types"
 
 async function getCommentsHandler(req: NextRequest, _context: ApiRouteContext) {

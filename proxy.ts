@@ -50,8 +50,8 @@
  */
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
-import { logger } from "@/lib/config"
-import { getProxyConfig } from "@/lib/proxy/config"
+import { logger } from "@/utils"
+import { getProxyConfig } from "@/services/proxy/config"
 import {
   handleCORS,
   handleMaintenanceMode,
@@ -60,7 +60,7 @@ import {
   handleProxyRequests,
   applySecurityHeaders,
   handlePreflightRequest,
-} from "@/lib/proxy/middleware-handlers"
+} from "@/services/proxy/middleware-handlers"
 
 /**
  * Main proxy function - orchestrates all middleware handlers

@@ -3,10 +3,10 @@
 import { useMemo } from "react"
 import { cva, type VariantProps } from "class-variance-authority"
 
-import { cn } from "@/lib/utils"
+import { cn } from "@/utils"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
-import { typography, fontWeights, lineHeights, textColors } from "@/lib/typography"
+import { typography, fontWeights, lineHeights, textColors } from "@/constants"
 
 const fieldBodySmall = typography.body.small
 
@@ -308,3 +308,4 @@ export {
   FieldContent,
   FieldTitle,
 }
+

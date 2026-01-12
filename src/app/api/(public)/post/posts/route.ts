@@ -18,7 +18,8 @@ import { getPosts } from "@/features/public/post/server/queries"
 import { POST_PAGINATION, POST_SEARCH } from "@/features/public/post/utils/constants"
 import type { Post } from "@/features/public/post/types"
 import type { ResourcePagination } from "@/features/admin/resources/server"
-import { logger, createSuccessResponse, createErrorResponse } from "@/lib/config"
+import { createSuccessResponse, createErrorResponse } from "@/lib"
+import { logger } from "@/utils"
 
 export interface PostsResponse {
   data: Post[]

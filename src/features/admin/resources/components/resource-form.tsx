@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { useResourceSegment } from "@/hooks/use-resource-segment";
+import { useResourceSegment } from "@/hooks";
 import { useResourceNavigation, useResourceFormLogger } from "../hooks";
-import { logger } from "@/lib/config/logger";
+import { logger } from "@/utils";
 import { Loader2, Save, ArrowLeft, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,9 +14,9 @@ import {
   FieldSet,
   FieldLegend,
 } from "@/components/ui/field";
-import { cn, arraysEqual } from "@/lib/utils";
+import { cn, arraysEqual } from "@/utils";
 import { renderFieldInput } from "./form-fields";
-import { applyResourceSegmentToPath } from "@/lib/permissions";
+import { applyResourceSegmentToPath } from "@/permissions";
 import {
   TypographyH1,
   TypographyPMuted,

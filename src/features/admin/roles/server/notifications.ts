@@ -1,5 +1,5 @@
-import { logger } from "@/lib/config/logger";
-import { resourceLogger } from "@/lib/config/resource-logger";
+import { logger } from "@/utils";
+import { resourceLogger } from "@/utils";
 import {
   createNotificationForAllAdmins,
   emitNotificationToAllAdminsAfterCreate,
@@ -173,7 +173,7 @@ export const notifySuperAdminsOfBulkRoleAction = async (
 ) => {
   const startTime = Date.now();
 
-  resourceLogger.actionFlow({
+  resourceLogger.logFlow({
     resource: "roles",
     action:
       action === "delete"
@@ -182,7 +182,7 @@ export const notifySuperAdminsOfBulkRoleAction = async (
         ? "bulk-restore"
         : "bulk-hard-delete",
     step: "start",
-    metadata: { count, roleCount: roles?.length || 0, actorId },
+    details: { count, roleCount: roles?.length || 0, actorId },
   });
 
   try {
@@ -254,7 +254,7 @@ export const notifySuperAdminsOfBulkRoleAction = async (
       );
     }
 
-    resourceLogger.actionFlow({
+    resourceLogger.logFlow({
       resource: "roles",
       action:
         action === "delete"
@@ -263,8 +263,8 @@ export const notifySuperAdminsOfBulkRoleAction = async (
           ? "bulk-restore"
           : "bulk-hard-delete",
       step: "success",
-      duration: Date.now() - startTime,
-      metadata: { count, roleCount: roles?.length || 0 },
+      durationMs: Date.now() - startTime,
+      details: { count, roleCount: roles?.length || 0 },
     });
   } catch (error) {
     logNotificationError(

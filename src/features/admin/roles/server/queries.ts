@@ -1,5 +1,5 @@
 import type { Prisma } from "@prisma/client"
-import { prisma } from "@/lib/prisma"
+import { prisma } from "@/services/prisma"
 import {
   validatePagination,
   buildPagination,
@@ -41,19 +41,27 @@ export const listRoles = async (params: ListRolesInput = {}): Promise<ListRolesR
   const { page, limit } = validatePagination(params.page, params.limit, 100)
   const where = buildWhereClause(params)
 
-  const [roles, total] = await Promise.all([
-    prisma.role.findMany({
-      where,
-      skip: (page - 1) * limit,
-      take: limit,
-      orderBy: { updatedAt: "desc" },
-    }),
-    prisma.role.count({ where }),
-  ])
+  try {
+    const [roles, total] = await Promise.all([
+      prisma.role.findMany({
+        where,
+        skip: (page - 1) * limit,
+        take: limit,
+        orderBy: { updatedAt: "desc" },
+      }),
+      prisma.role.count({ where }),
+    ])
 
-  return {
-    data: roles.map(mapRoleRecord),
-    pagination: buildPagination(page, limit, total),
+    return {
+      data: roles.map(mapRoleRecord),
+      pagination: buildPagination(page, limit, total),
+    }
+  } catch (error) {
+    console.error("[listRoles] Error:", error)
+    return {
+      data: [],
+      pagination: buildPagination(page, limit, 0),
+    }
   }
 };
 
@@ -94,88 +102,103 @@ export const getRoleColumnOptions = async (
       selectField = { name: true }
   }
 
-  const results = await prisma.role.findMany({
-    where,
-    select: selectField,
-    orderBy: { [column]: "asc" },
-    take: limit,
-  })
+  try {
+    const results = await prisma.role.findMany({
+      where,
+      select: selectField,
+      orderBy: { [column]: "asc" },
+      take: limit,
+    })
 
-  // Map results to options format
-  return mapToColumnOptions(results, column)
+    // Map results to options format
+    return mapToColumnOptions(results, column)
+  } catch (error) {
+    console.error("[getRoleColumnOptions] Error:", error)
+    return []
+  }
 };
 
 export const getAllPermissionsOptions = async (): Promise<Array<{ label: string; value: string }>> => {
-  const { PERMISSIONS } = await import("@/lib/permissions")
-  
-  // Map resource names to Vietnamese labels
-  const resourceLabels: Record<string, string> = {
-    dashboard: "Dashboard",
-    users: "Người dùng",
-    posts: "Bài viết",
-    categories: "Danh mục",
-    tags: "Thẻ",
-    comments: "Bình luận",
-    roles: "Vai trò",
-    messages: "Tin nhắn",
-    notifications: "Thông báo",
-    contact_requests: "Liên hệ",
-    students: "sinh viên",
-    settings: "Cài đặt",
-  }
+  try {
+    const { PERMISSIONS } = await import("@/permissions")
+    
+    // Map resource names to Vietnamese labels
+    const resourceLabels: Record<string, string> = {
+      dashboard: "Dashboard",
+      users: "Người dùng",
+      posts: "Bài viết",
+      categories: "Danh mục",
+      tags: "Thẻ",
+      comments: "Bình luận",
+      roles: "Vai trò",
+      messages: "Tin nhắn",
+      notifications: "Thông báo",
+      contact_requests: "Liên hệ",
+      students: "sinh viên",
+      settings: "Cài đặt",
+    }
 
-  // Map action names to Vietnamese labels
-  const actionLabels: Record<string, string> = {
-    view: "Xem",
-    create: "Tạo",
-    update: "Cập nhật",
-    delete: "Xóa",
-    publish: "Xuất bản",
-    approve: "Duyệt",
-    assign: "Gán",
-    manage: "Quản lý",
-  }
+    // Map action names to Vietnamese labels
+    const actionLabels: Record<string, string> = {
+      view: "Xem",
+      create: "Tạo",
+      update: "Cập nhật",
+      delete: "Xóa",
+      publish: "Xuất bản",
+      approve: "Duyệt",
+      assign: "Gán",
+      manage: "Quản lý",
+    }
 
-  // Track unique permission values to avoid duplicates
-  const seenValues = new Set<string>()
-  
-  return Object.entries(PERMISSIONS)
-    .map(([_key, value]) => {
-      const permissionValue = String(value)
-      
-      // Skip if we've already seen this permission value
-      if (seenValues.has(permissionValue)) {
-        return null
-      }
-      
-      const [resource, action] = permissionValue.split(":")
-      const resourceLabel = resourceLabels[resource] || resource
-      const actionLabel = actionLabels[action] || action
-      const label = `${actionLabel} - ${resourceLabel}`
-      
-      // Mark this permission value as seen
-      seenValues.add(permissionValue)
-      
-      return {
-        label,
-        value: permissionValue,
-      }
-    })
-    .filter((item): item is { label: string; value: string } => item !== null)
-    .sort((a, b) => a.label.localeCompare(b.label))
+    // Track unique permission values to avoid duplicates
+    const seenValues = new Set<string>()
+    
+    return Object.entries(PERMISSIONS)
+      .map(([_key, value]) => {
+        const permissionValue = String(value)
+        
+        // Skip if we've already seen this permission value
+        if (seenValues.has(permissionValue)) {
+          return null
+        }
+        
+        const [resource, action] = permissionValue.split(":")
+        const resourceLabel = resourceLabels[resource] || resource
+        const actionLabel = actionLabels[action] || action
+        const label = `${actionLabel} - ${resourceLabel}`
+        
+        // Mark this permission value as seen
+        seenValues.add(permissionValue)
+        
+        return {
+          label,
+          value: permissionValue,
+        }
+      })
+      .filter((item): item is { label: string; value: string } => item !== null)
+      .sort((a, b) => a.label.localeCompare(b.label))
+  } catch (error) {
+    console.error("[getAllPermissionsOptions] Error:", error)
+    return []
+  }
 };
 
 export const getRoleById = async (id: string): Promise<RoleDetail | null> => {
-  const role = await prisma.role.findUnique({
-    where: { id },
-  })
+  try {
+    const role = await prisma.role.findUnique({
+      where: { id },
+    })
 
-  if (!role) {
+    if (!role) {
+      return null
+    }
+
+    // mapRoleRecord đã include updatedAt
+    return mapRoleRecord(role)
+  } catch (error) {
+    console.error("[getRoleById] Error:", error)
     return null
   }
-
-  // mapRoleRecord đã include updatedAt
-  return mapRoleRecord(role)
 };;
 
 // Re-export helpers for convenience

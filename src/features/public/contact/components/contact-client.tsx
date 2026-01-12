@@ -3,7 +3,7 @@
 import { TypographyH3, TypographyPSmallMuted, TypographyTitleLarge, TypographyPSmall, TypographyPMuted } from "@/components/ui/typography"
 import { Flex } from "@/components/ui/flex"
 
-import { ContactForm } from "@/components/forms/contact-form"
+import { ContactForm } from "./contact-form"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   Mail,

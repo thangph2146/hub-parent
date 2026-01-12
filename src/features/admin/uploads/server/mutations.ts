@@ -5,7 +5,7 @@
  * Server-side functions để xử lý uploads
  */
 
-import { apiRoutes } from "@/lib/api/routes"
+import { apiRoutes } from "@/constants"
 import type { UploadResponse, UploadError } from "../types"
 
 /**

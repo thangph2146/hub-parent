@@ -1,35 +1,43 @@
 import type { Prisma } from "@prisma/client"
-import { prisma } from "@/lib/prisma"
+import { prisma } from "@/services/prisma"
 import { validatePagination, buildPagination } from "@/features/admin/resources/server"
 import { mapContactRequestRecord, buildWhereClause } from "./helpers"
-import type { ListContactRequestsInput, ContactRequestDetail, ListContactRequestsResult } from "../types"
+import type { ListContactRequestsInput, ContactRequestDetailInfo, ListContactRequestsResult } from "../types"
 
 export const listContactRequests = async (params: ListContactRequestsInput = {}): Promise<ListContactRequestsResult> => {
   const { page, limit } = validatePagination(params.page, params.limit, 100)
-  const where = buildWhereClause(params)
+  const where: Prisma.ContactRequestWhereInput = buildWhereClause(params)
 
-  const [data, total] = await Promise.all([
-    prisma.contactRequest.findMany({
-      where,
-      orderBy: { updatedAt: "desc" },
-      skip: (page - 1) * limit,
-      take: limit,
-      include: {
-        assignedTo: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
+  try {
+    const [data, total] = await Promise.all([
+      prisma.contactRequest.findMany({
+        where,
+        orderBy: { updatedAt: "desc" },
+        skip: (page - 1) * limit,
+        take: limit,
+        include: {
+          assignedTo: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
           },
         },
-      },
-    }),
-    prisma.contactRequest.count({ where }),
-  ])
+      }),
+      prisma.contactRequest.count({ where }),
+    ])
 
-  return {
-    data: data.map(mapContactRequestRecord),
-    pagination: buildPagination(page, limit, total),
+    return {
+      data: data.map(mapContactRequestRecord),
+      pagination: buildPagination(page, limit, total),
+    }
+  } catch (error) {
+    console.error("[listContactRequests] Error:", error)
+    return {
+      data: [],
+      pagination: buildPagination(page, limit, 0),
+    }
   }
 }
 
@@ -82,46 +90,56 @@ export const getContactRequestColumnOptions = async (
       selectField = { name: true }
   }
 
-  const results = await prisma.contactRequest.findMany({
-    where,
-    select: selectField,
-    orderBy: { [column]: "asc" },
-    take: limit,
-  })
-
-  // Map results to options format
-  return results
-    .map((item) => {
-      const value = item[column as keyof typeof item]
-      if (typeof value === "string" && value.trim()) {
-        return {
-          label: value,
-          value: value,
-        }
-      }
-      return null
+  try {
+    const results = await prisma.contactRequest.findMany({
+      where,
+      select: selectField,
+      orderBy: { [column]: "asc" },
+      take: limit,
     })
-    .filter((item): item is { label: string; value: string } => item !== null)
+
+    // Map results to options format
+    return results
+      .map((item) => {
+        const value = item[column as keyof typeof item]
+        if (typeof value === "string" && value.trim()) {
+          return {
+            label: value,
+            value: value,
+          }
+        }
+        return null
+      })
+      .filter((item): item is { label: string; value: string } => item !== null)
+  } catch (error) {
+    console.error("[getContactRequestColumnOptions] Error:", error)
+    return []
+  }
 };
 
-export const getContactRequestById = async (id: string): Promise<ContactRequestDetail | null> => {
-  const contactRequest = await prisma.contactRequest.findUnique({
-    where: { id },
-    include: {
-      assignedTo: {
-        select: {
-          id: true,
-          name: true,
-          email: true,
+export const getContactRequestById = async (id: string): Promise<ContactRequestDetailInfo | null> => {
+  try {
+    const contactRequest = await prisma.contactRequest.findUnique({
+      where: { id },
+      include: {
+        assignedTo: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
         },
       },
-    },
-  })
+    })
 
-  if (!contactRequest) {
+    if (!contactRequest) {
+      return null
+    }
+
+    return mapContactRequestRecord(contactRequest)
+  } catch (error) {
+    console.error("[getContactRequestById] Error:", error)
     return null
   }
-
-  return mapContactRequestRecord(contactRequest)
 };
 

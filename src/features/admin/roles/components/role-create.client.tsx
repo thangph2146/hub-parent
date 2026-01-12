@@ -3,8 +3,8 @@
 import { useQueryClient } from "@tanstack/react-query"
 import { ResourceForm, type ResourceFormField } from "@/features/admin/resources/components"
 import { useResourceFormSubmit } from "@/features/admin/resources/hooks"
-import { apiRoutes } from "@/lib/api/routes"
-import { queryKeys } from "@/lib/query-keys"
+import { apiRoutes } from "@/constants"
+import { queryKeys } from "@/constants"
 import { getBaseRoleFields, getRoleFormSections, type RoleFormData } from "../form-fields"
 
 export interface RoleCreateClientProps {

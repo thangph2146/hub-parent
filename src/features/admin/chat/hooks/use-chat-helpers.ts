@@ -1,8 +1,8 @@
-import type { Contact, Message } from "@/components/chat/types"
-import { TEXTAREA_MIN_HEIGHT, BASE_OFFSET_REM, REM_TO_PX } from "@/components/chat/constants"
-import { isMessageUnreadByUser, isMessageReadByUser } from "@/components/chat/utils/message-helpers"
-import { withApiBase } from "@/lib/config/api-paths"
-import { requestJson } from "@/lib/api/client"
+import type { Contact, Message } from "@/features/admin/chat/types"
+import { TEXTAREA_MIN_HEIGHT, BASE_OFFSET_REM, REM_TO_PX } from "@/features/admin/chat/constants"
+import { isMessageUnreadByUser, isMessageReadByUser } from "@/features/admin/chat/utils/message-helpers"
+import { withApiBase } from "@/utils"
+import { requestJson } from "@/services/api/client"
 
 const ESTIMATED_REPLY_BANNER_HEIGHT = 48
 const ADJUSTMENT_PX = 5
@@ -87,7 +87,7 @@ export const calculateMessagesHeight = (params: {
 
 const markConversationAsReadAPI = async (contactId: string, contactType?: "PERSONAL" | "GROUP"): Promise<void> => {
   try {
-    const { apiRoutes } = await import("@/lib/api/routes")
+    const { apiRoutes } = await import("@/constants/api-routes")
     // For groups: use group mark-read endpoint; personal uses conversations
     const endpoint = withApiBase(
       contactType === "GROUP"
@@ -100,11 +100,11 @@ const markConversationAsReadAPI = async (contactId: string, contactType?: "PERSO
       headers: { "Content-Type": "application/json" },
     })
     if (!res.ok) {
-      const { logger } = await import("@/lib/config")
+      const { logger } = await import("@/utils")
       logger.error("Failed to mark conversation as read", { contactId, contactType, status: res.status })
     }
   } catch (error) {
-    const { logger } = await import("@/lib/config")
+    const { logger } = await import("@/utils")
     logger.error("Error auto-marking conversation as read", error)
   }
 }

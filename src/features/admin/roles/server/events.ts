@@ -1,8 +1,8 @@
-import { prisma } from "@/lib/prisma"
-import { getSocketServer } from "@/lib/socket/state"
+import { prisma } from "@/services/prisma"
+import { getSocketServer } from "@/services/socket/state"
 import { mapRoleRecord, serializeRoleForTable } from "./helpers"
 import type { RoleRow } from "../types"
-import { resourceLogger } from "@/lib/config/resource-logger"
+import { resourceLogger } from "@/utils"
 
 const SUPER_ADMIN_ROOM = "role:super_admin"
 

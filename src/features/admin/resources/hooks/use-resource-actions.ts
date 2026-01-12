@@ -1,13 +1,14 @@
 import { useCallback, useState } from "react"
 import { useQueryClient, useMutation } from "@tanstack/react-query"
-import { apiClient } from "@/lib/api/axios"
+import { apiClient } from "@/services/api/axios"
 import { createAdminMutationOptions } from "../query-config"
 import { useResourceBulkProcessing } from "./use-resource-bulk-processing"
-import { resourceLogger } from "@/lib/config/resource-logger"
-import { getErrorMessage } from "@/lib/utils"
+import { resourceLogger } from "@/utils"
+import { getErrorMessage } from "@/utils"
 import type { ResourceRefreshHandler } from "../types"
 import type { FeedbackVariant } from "@/components/dialogs"
 import type { QueryKey } from "@tanstack/react-query"
+import type { ResourceAction } from "@/types"
 
 type SingleAction = "delete" | "restore" | "hard-delete"
 type BulkAction = SingleAction | "active" | "unactive"
@@ -105,11 +106,11 @@ export const useResourceActions = <T extends { id: string }>(
         
         const method = action === "delete" || action === "hard-delete" ? "delete" : "post"
         
-        resourceLogger.actionFlow({
+        resourceLogger.logFlow({
           resource: config.resourceName,
-          action: getActionType(action, false),
+          action: getActionType(action, false) as ResourceAction,
           step: "init",
-          metadata: {
+          details: {
             resourceId: row.id,
             recordName: config.getRecordName(row),
             endpoint,
@@ -129,14 +130,14 @@ export const useResourceActions = <T extends { id: string }>(
           }
           
           const duration = Date.now() - startTime
-          resourceLogger.actionFlow({
+          resourceLogger.logFlow({
             resource: config.resourceName,
-            action: getActionType(action, false),
+            action: getActionType(action, false) as ResourceAction,
             step: "init",
-            metadata: {
+            durationMs: duration,
+            details: {
               resourceId: row.id,
               recordName: config.getRecordName(row),
-              apiCallDuration: `${duration}ms`,
               apiResponseStatus: response?.status,
               ...(config.getLogMetadata ? config.getLogMetadata(row) : {}),
             },
@@ -145,14 +146,14 @@ export const useResourceActions = <T extends { id: string }>(
           return response
         } catch (error) {
           const duration = Date.now() - startTime
-          resourceLogger.actionFlow({
+          resourceLogger.logFlow({
             resource: config.resourceName,
-            action: getActionType(action, false),
+            action: getActionType(action, false) as ResourceAction,
             step: "error",
-            metadata: {
+            durationMs: duration,
+            details: {
               resourceId: row.id,
               recordName: config.getRecordName(row),
-              apiCallDuration: `${duration}ms`,
               apiError: error instanceof Error ? error.message : String(error),
               ...(config.getLogMetadata ? config.getLogMetadata(row) : {}),
             },
@@ -161,14 +162,14 @@ export const useResourceActions = <T extends { id: string }>(
         }
       },
       onSuccess: async (response, variables) => {
-        const actionType = getActionType(variables.action, false)
+        const actionType = getActionType(variables.action, false) as ResourceAction
         const isHardDelete = variables.action === "hard-delete"
         
-        resourceLogger.actionFlow({
+        resourceLogger.logFlow({
           resource: config.resourceName,
           action: actionType,
           step: "init",
-          metadata: {
+          details: {
             resourceId: variables.row.id,
             recordName: config.getRecordName(variables.row),
             step: "before_cache_operations",
@@ -191,11 +192,11 @@ export const useResourceActions = <T extends { id: string }>(
           await queryClient.invalidateQueries({ queryKey: config.queryKeys.detail(variables.row.id), refetchType: "active" })
         }
 
-        resourceLogger.actionFlow({
+        resourceLogger.logFlow({
           resource: config.resourceName,
           action: actionType,
           step: "success",
-          metadata: {
+          details: {
             resourceId: variables.row.id,
             recordName: config.getRecordName(variables.row),
             step: "after_cache_operations",
@@ -205,14 +206,14 @@ export const useResourceActions = <T extends { id: string }>(
         })
       },
       onError: (error, variables) => {
-        const actionType = getActionType(variables.action, false)
+        const actionType = getActionType(variables.action, false) as ResourceAction
         const errorMessage = getErrorMessage(error) || config.messages.UNKNOWN_ERROR
         
-        resourceLogger.actionFlow({
+        resourceLogger.logFlow({
           resource: config.resourceName,
           action: actionType,
           step: "error",
-          metadata: {
+          details: {
             resourceId: variables.row.id,
             recordName: config.getRecordName(variables.row),
             error: errorMessage,
@@ -228,13 +229,13 @@ export const useResourceActions = <T extends { id: string }>(
   const bulkActionMutation = useMutation({
     ...createAdminMutationOptions({
       mutationFn: async ({ action, ids }: { action: "delete" | "restore" | "hard-delete" | "active" | "unactive"; ids: string[] }) => {
-        const actionType = getActionType(action, true)
+        const actionType = getActionType(action, true) as ResourceAction
         
-        resourceLogger.actionFlow({
+        resourceLogger.logFlow({
           resource: config.resourceName,
           action: actionType,
           step: "init",
-          metadata: {
+          details: {
             requestedCount: ids.length,
             requestedIds: ids,
             endpoint: config.apiRoutes.bulk,
@@ -247,14 +248,14 @@ export const useResourceActions = <T extends { id: string }>(
           const response = await apiClient.post(config.apiRoutes.bulk, { action, ids })
           const duration = Date.now() - startTime
           
-          resourceLogger.actionFlow({
+          resourceLogger.logFlow({
             resource: config.resourceName,
             action: actionType,
             step: "init",
-            metadata: {
+            durationMs: duration,
+            details: {
               requestedCount: ids.length,
               requestedIds: ids,
-              apiCallDuration: `${duration}ms`,
               apiResponseStatus: response?.status,
             },
           })
@@ -262,14 +263,14 @@ export const useResourceActions = <T extends { id: string }>(
           return response
         } catch (error) {
           const duration = Date.now() - startTime
-          resourceLogger.actionFlow({
+          resourceLogger.logFlow({
             resource: config.resourceName,
             action: actionType,
             step: "error",
-            metadata: {
+            durationMs: duration,
+            details: {
               requestedCount: ids.length,
               requestedIds: ids,
-              apiCallDuration: `${duration}ms`,
               apiError: error instanceof Error ? error.message : String(error),
             },
           })
@@ -279,14 +280,14 @@ export const useResourceActions = <T extends { id: string }>(
       onSuccess: async (response, variables) => {
         const result = response.data?.data
         const affected = result?.affected ?? 0
-        const actionType = getActionType(variables.action, true)
+        const actionType = getActionType(variables.action, true) as ResourceAction
         const isHardDelete = variables.action === "hard-delete"
         
-        resourceLogger.actionFlow({
+        resourceLogger.logFlow({
           resource: config.resourceName,
           action: actionType,
           step: "init",
-          metadata: {
+          details: {
             requestedCount: variables.ids.length,
             affectedCount: affected,
             requestedIds: variables.ids,
@@ -311,11 +312,11 @@ export const useResourceActions = <T extends { id: string }>(
         // Invalidate detail queries cho tất cả affected IDs (nếu không phải hard delete)
         // Điều này đảm bảo detail pages cũng được cập nhật
         if (config.queryKeys.detail && !isHardDelete) {
-          resourceLogger.actionFlow({
+          resourceLogger.logFlow({
             resource: config.resourceName,
             action: actionType,
             step: "init",
-            metadata: {
+            details: {
               operation: "invalidate_detail_queries",
               idsCount: variables.ids.length,
               ids: variables.ids,
@@ -327,11 +328,11 @@ export const useResourceActions = <T extends { id: string }>(
             await queryClient.invalidateQueries({ queryKey: detailKey, refetchType: "active" })
           }
         } else if (config.queryKeys.detail && isHardDelete) {
-          resourceLogger.actionFlow({
+          resourceLogger.logFlow({
             resource: config.resourceName,
             action: actionType,
             step: "init",
-            metadata: {
+            details: {
               operation: "remove_detail_queries",
               idsCount: variables.ids.length,
               ids: variables.ids,
@@ -345,11 +346,11 @@ export const useResourceActions = <T extends { id: string }>(
           }
         }
         
-        resourceLogger.actionFlow({
+        resourceLogger.logFlow({
           resource: config.resourceName,
           action: actionType,
           step: "success",
-          metadata: {
+          details: {
             requestedCount: variables.ids.length,
             affectedCount: affected,
             requestedIds: variables.ids,
@@ -358,27 +359,27 @@ export const useResourceActions = <T extends { id: string }>(
           },
         })
         
-        resourceLogger.actionFlow({
+        resourceLogger.logFlow({
           resource: config.resourceName,
           action: actionType,
           step: "success",
-          metadata: {
+          details: {
             requestedCount: variables.ids.length,
             affectedCount: affected,
           },
         })
       },
       onError: (error, variables) => {
-        const actionType = getActionType(variables.action, true)
+        const actionType = getActionType(variables.action, true) as ResourceAction
         const errorMessage = error instanceof Error 
           ? error.message 
           : config.messages.UNKNOWN_ERROR
         
-        resourceLogger.actionFlow({
+        resourceLogger.logFlow({
           resource: config.resourceName,
           action: actionType,
           step: "error",
-          metadata: {
+          details: {
             requestedCount: variables.ids.length,
             requestedIds: variables.ids,
             error: errorMessage,
@@ -421,7 +422,7 @@ export const useResourceActions = <T extends { id: string }>(
       }[action]
       
       if (!actionConfig.permission) {
-        resourceLogger.tableAction({
+        resourceLogger.logAction({
           resource: config.resourceName,
           action,
           resourceId: row.id,
@@ -432,11 +433,11 @@ export const useResourceActions = <T extends { id: string }>(
       
       // Log chi tiết khi user chọn action và confirm
       const recordName = config.getRecordName(row)
-      resourceLogger.actionFlow({
+      resourceLogger.logFlow({
         resource: config.resourceName,
-        action: getActionType(action, false),
+        action: getActionType(action, false) as ResourceAction,
         step: "start",
-        metadata: {
+        details: {
           action: action,
           actionType: getActionType(action, false),
           resourceId: row.id,
@@ -525,13 +526,12 @@ export const useResourceActions = <T extends { id: string }>(
         return
       }
       
-      // Log chi tiết khi user chọn bulk action và confirm
-      const actionType = getActionType(action, true)
-      resourceLogger.actionFlow({
+      const actionType = getActionType(action, true) as ResourceAction
+      resourceLogger.logFlow({
         resource: config.resourceName,
         action: actionType,
         step: "start",
-        metadata: {
+        details: {
           action: action,
           actionType: actionType,
           selectedCount: ids.length,
@@ -564,11 +564,11 @@ export const useResourceActions = <T extends { id: string }>(
           config.showFeedback("error", "Không có thay đổi", errorMessage)
           clearSelection()
           
-          resourceLogger.actionFlow({
+          resourceLogger.logFlow({
             resource: config.resourceName,
-            action: getActionType(action, true),
+            action: getActionType(action, true) as ResourceAction,
             step: "error",
-            metadata: { 
+            details: { 
               requestedCount: ids.length, 
               affectedCount: 0, 
               error: errorMessage, 
@@ -610,11 +610,11 @@ export const useResourceActions = <T extends { id: string }>(
         config.showFeedback("success", messages.title, messages.description)
         clearSelection()
         
-        resourceLogger.actionFlow({
+        resourceLogger.logFlow({
           resource: config.resourceName,
-          action: getActionType(action, true),
+          action: getActionType(action, true) as ResourceAction,
           step: "success",
-          metadata: { 
+          details: { 
             requestedCount: ids.length, 
             affectedCount: affected, 
             requestedIds: ids 
@@ -658,11 +658,11 @@ export const useResourceActions = <T extends { id: string }>(
         
         config.showFeedback("error", errorMessages.title, errorMessages.description)
         
-        resourceLogger.actionFlow({
+        resourceLogger.logFlow({
           resource: config.resourceName,
-          action: getActionType(action, true),
+          action: getActionType(action, true) as ResourceAction,
           step: "error",
-          metadata: { 
+          details: { 
             requestedCount: ids.length, 
             error: errorMessage, 
             requestedIds: ids 

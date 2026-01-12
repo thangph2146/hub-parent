@@ -5,9 +5,9 @@ import { Slot } from "@radix-ui/react-slot"
 import { cva, type VariantProps } from "class-variance-authority"
 import { PanelLeftIcon } from "lucide-react"
 
-import { useIsMobile } from "@/hooks/use-mobile"
-import { cn } from "@/lib/utils"
-import { responsiveTextSizes, fontWeights, lineHeights, iconSizes } from "@/lib/typography"
+import { useIsMobile } from "@/hooks"
+import { cn } from "@/utils"
+import { responsiveTextSizes, fontWeights, lineHeights, iconSizes } from "@/constants"
 
 const sidebarBodySmall = `${responsiveTextSizes.small} ${fontWeights.normal} ${lineHeights.relaxed}`
 const sidebarBodyMedium = `${responsiveTextSizes.medium} ${fontWeights.normal} ${lineHeights.relaxed}`
@@ -828,3 +828,4 @@ export {
   useSidebar,
   useSidebarOptional,
 }
+

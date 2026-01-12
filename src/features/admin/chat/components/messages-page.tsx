@@ -6,7 +6,7 @@ import {
   getMessagesForGroup,
 } from "../server/queries"
 import { MessagesPageClient } from "./messages-page.client"
-import type { ChatFilterType, Contact } from "@/components/chat/types"
+import type { ChatFilterType, Contact } from "@/features/admin/chat/types"
 import { ensureDate, mapGroupListItemToContact, mapMessageDetailToMessage } from "../utils/contact-transformers"
 
 type ContactScope = "active" | "deleted"

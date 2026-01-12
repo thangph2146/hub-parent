@@ -1,7 +1,7 @@
-import { toast } from "@/hooks/use-toast"
-import { requestJson, toJsonBody } from "@/lib/api/client"
-import { getErrorMessage } from "@/lib/utils"
-import { withApiBase } from "@/lib/config/api-paths"
+import { toast } from "@/hooks"
+import { requestJson, toJsonBody } from "@/services/api/client"
+import { getErrorMessage } from "@/utils"
+import { withApiBase } from "@/utils"
 
 // Kept for reference when using raw fetch in other areas
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -15,7 +15,7 @@ const parseErrorResponse = async (response: Response, defaultMessage: string): P
 }
 
 export const markMessageAPI = async (messageId: string, isRead: boolean): Promise<void> => {
-  const { apiRoutes } = await import("@/lib/api/routes")
+  const { apiRoutes } = await import("@/constants/api-routes")
   const res = await requestJson(withApiBase(apiRoutes.adminMessages.markRead(messageId)), {
     method: "PATCH",
     ...toJsonBody({ isRead }),
@@ -31,7 +31,7 @@ export const sendMessageAPI = async (params: {
   groupId?: string
   parentId?: string
 }): Promise<{ id: string; timestamp: string }> => {
-  const { apiRoutes } = await import("@/lib/api/routes")
+  const { apiRoutes } = await import("@/constants/api-routes")
   const res = await requestJson<{ id: string; timestamp: string }>(withApiBase(apiRoutes.adminMessages.send), {
     method: "POST",
     ...toJsonBody({
@@ -50,7 +50,7 @@ export const sendMessageAPI = async (params: {
 
 export const handleAPIError = (error: unknown, defaultMessage: string): void => {
   // Use dynamic import to avoid require()
-  import("@/lib/config").then(({ logger }) => {
+  import("@/utils").then(({ logger }) => {
     logger.error(defaultMessage, error)
   })
   const errorMessage = getErrorMessage(error) || defaultMessage

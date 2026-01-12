@@ -4,9 +4,9 @@
  */
 
 import { NextRequest } from "next/server"
-import type { ApiRouteContext } from "@/lib/api/types"
-import { getUserId } from "@/lib/api/api-route-helpers"
-import { createSuccessResponse, createErrorResponse } from "@/lib/config"
+import type { ApiRouteContext } from "@/types"
+import { getUserId } from "@/lib"
+import { createSuccessResponse, createErrorResponse } from "@/lib"
 import {
   ensureDirectoryExists,
   generateUniqueFileName,
@@ -15,10 +15,10 @@ import {
   isValidFileSize,
   validateImageDimensions,
   initializeStorageDirectories,
-} from "@/lib/utils/file-utils"
+} from "@/lib"
 import { promises as fs } from "fs"
 import path from "path"
-import { logger } from "@/lib/config/logger"
+import { logger } from "@/utils"
 
 export const uploadImageHandler = async (
   req: NextRequest,
@@ -182,4 +182,5 @@ export const uploadImageHandler = async (
     return createErrorResponse("Đã xảy ra lỗi khi upload hình ảnh", { status: 500 })
   }
 }
+
 

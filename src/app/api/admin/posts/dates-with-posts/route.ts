@@ -4,10 +4,10 @@
  */
 import { NextRequest } from "next/server"
 import { getDatesWithPosts } from "@/features/admin/posts/server/queries"
-import { createGetRoute } from "@/lib/api/api-route-wrapper"
-import type { ApiRouteContext } from "@/lib/api/types"
-import { PERMISSIONS, hasPermission } from "@/lib/permissions"
-import { createSuccessResponse } from "@/lib/config"
+import { createGetRoute } from "@/lib"
+import type { ApiRouteContext } from "@/types"
+import { PERMISSIONS, hasPermission } from "@/permissions"
+import { createSuccessResponse } from "@/lib"
 
 async function getDatesWithPostsHandler(req: NextRequest, context: ApiRouteContext) {
   // Kiểm tra permission: nếu có POSTS_VIEW_ALL thì xem tất cả, nếu chỉ có POSTS_VIEW_OWN thì chỉ xem của mình

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useCallback } from "react"
-import { useAuth } from "@/hooks/use-session"
+import { useAuth } from "@/features/auth"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -32,11 +32,11 @@ import {
   FieldGroup,
 } from "@/components/ui/field"
 import { Loader2, Users } from "lucide-react"
-import type { Group, GroupMember } from "@/components/chat/types"
-import { useToast } from "@/hooks/use-toast"
-import { requestJson, toJsonBody } from "@/lib/api/client"
-import { withApiBase } from "@/lib/config/api-paths"
-import { logger } from "@/lib/config/logger"
+import type { Group, GroupMember } from "@/features/admin/chat/types"
+import { useToast } from "@/hooks"
+import { requestJson, toJsonBody } from "@/services/api/client"
+import { withApiBase } from "@/utils"
+import { logger } from "@/utils"
 import { TypographyP, TypographyPSmall, TypographyPMuted, IconSize } from "@/components/ui/typography"
 import { Flex } from "@/components/ui/flex"
 
@@ -66,7 +66,7 @@ export const NewGroupDialog = ({ onSelectGroup }: NewGroupDialogProps) => {
   const searchUsers = useCallback(async (query: string = "") => {
     setIsLoading(true)
     try {
-      const { apiRoutes } = await import("@/lib/api/routes")
+      const { apiRoutes } = await import("@/constants/api-routes")
       const res = await requestJson<UserOption[]>(withApiBase(apiRoutes.adminUsers.search(query)))
       if (!res.ok) throw new Error(res.error || "Failed to search users")
       const data = Array.isArray(res.data) ? res.data : []
@@ -100,7 +100,7 @@ export const NewGroupDialog = ({ onSelectGroup }: NewGroupDialogProps) => {
 
     setIsCreating(true)
     try {
-      const { apiRoutes } = await import("@/lib/api/routes")
+      const { apiRoutes } = await import("@/constants/api-routes")
       const res = await requestJson(withApiBase(apiRoutes.adminGroups.create), {
         method: "POST",
         ...toJsonBody({

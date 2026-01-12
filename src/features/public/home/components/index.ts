@@ -1,3 +1,10 @@
 export { Home } from "./home";
 export { HomeClient } from "./home-client";
-
+export { HeroSection } from "./hero-section";
+export { AboutHubSection } from "./about-hub-section";
+export { OverviewSection } from "./overview-section";
+export { GuideRegisterSection } from "./guide-register-section";
+export { FeaturedPostsSection } from "./featured-posts-section";
+export { ContactSection } from "./contact-section";
+export { ScrollIndicator } from "./scroll-indicator";
+export * from "./content-card";

@@ -4,7 +4,7 @@ import { CommentDetailClient } from "./comment-detail.client"
 import type { CommentDetailData } from "./comment-detail.client"
 import { getAuthInfo } from "@/features/admin/resources/server"
 import { NotFoundMessage } from "@/features/admin/resources/components"
-import { canPerformAction, PERMISSIONS } from "@/lib/permissions"
+import { canPerformAction, PERMISSIONS } from "@/permissions"
 
 export interface CommentDetailProps {
   commentId: string

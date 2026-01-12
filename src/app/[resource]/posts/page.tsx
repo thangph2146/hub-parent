@@ -1,6 +1,6 @@
 import type { Metadata } from "next"
-import { AdminHeader } from "@/components/layouts/headers"
-import { PERMISSIONS } from "@/lib/permissions"
+import { AdminHeader } from "@/components/layout/headers"
+import { PERMISSIONS } from "@/permissions"
 import { getTablePermissionsAsync } from "@/features/admin/resources/server"
 import { PostsTable } from "@/features/admin/posts/components/posts-table"
 import { TablePageSuspense } from "@/features/admin/resources/components"

@@ -4,7 +4,7 @@ import { Switch } from "@/components/ui/switch"
 import type { DataTableColumn } from "@/components/tables"
 import { Flex } from "@/components/ui/flex"
 import { useDynamicFilterOptions } from "@/features/admin/resources/hooks/use-dynamic-filter-options"
-import { apiRoutes } from "@/lib/api/routes"
+import { apiRoutes } from "@/constants"
 import type { SessionRow } from "../types"
 import { SESSION_LABELS } from "../constants"
 

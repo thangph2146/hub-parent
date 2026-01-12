@@ -18,10 +18,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { ChevronDown } from "lucide-react"
-import { useIsMobile } from "@/hooks/use-mobile"
+import { useIsMobile } from "@/hooks"
 import { Flex } from "@/components/ui/flex"
 import { TypographyH2, TypographySpanSmall, IconSize } from "@/components/ui/typography"
-import { logger } from "@/lib/config/logger"
+import { logger } from "@/utils"
 import type {
   ResourceTableLoader,
   ResourceViewMode,
@@ -76,11 +76,24 @@ export const ResourceTableClient = <T extends object>({
   const columns = activeView.columns ?? baseColumns
   const emptyMessage = activeView.emptyMessage
 
+  const lastRefreshTimeRef = useRef(0)
+  
   // Update refreshKey ngay lập tức để trigger re-render của DataTable
   // Sử dụng counter + timestamp + random để đảm bảo refreshKey luôn thay đổi và unique
   // Điều này đảm bảo DataTable sẽ luôn detect được sự thay đổi và trigger refetch
   // Sử dụng queueMicrotask để defer flushSync ra khỏi lifecycle method, tránh React warning
   const handleRefresh = useCallback(() => {
+    // Thêm debounce guard 100ms để tránh duplicate refresh triggers trong cùng một render cycle
+    // hoặc các triggers quá gần nhau (ví dụ từ nhiều mutations xong cùng lúc)
+    const now = Date.now()
+    if (now - lastRefreshTimeRef.current < 100) {
+      logger.debug("ResourceTable refresh throttled (last refresh too recent)", {
+        timeSinceLastRefresh: now - lastRefreshTimeRef.current,
+      })
+      return
+    }
+    lastRefreshTimeRef.current = now
+
     refreshCounterRef.current += 1
     
     // Tạo refreshKey mới với timestamp, counter và random để đảm bảo luôn unique
@@ -146,10 +159,20 @@ export const ResourceTableClient = <T extends object>({
       setCurrentViewId(viewId)
       setSelectedIds([])
       setHasViewChanged(true)
-      handleRefresh()
+      
+      // Chỉ trigger refresh nếu không có initialData cho view mới
+      // Nếu có initialData, DataTable sẽ tự động sử dụng nó mà không cần refetch
+      const hasInitialData = !!initialDataByView?.[viewId]
+      if (!hasInitialData) {
+        logger.debug("View changed and no initial data found, triggering refresh", { viewId })
+        handleRefresh()
+      } else {
+        logger.debug("View changed and initial data found, skipping explicit refresh", { viewId })
+      }
+      
       onViewChange?.(viewId)
     },
-    [currentViewId, handleRefresh, onViewChange],
+    [currentViewId, handleRefresh, onViewChange, initialDataByView],
   )
   
   useEffect(() => {

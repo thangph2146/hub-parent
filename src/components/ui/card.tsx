@@ -1,7 +1,7 @@
 import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
-import { cn } from "@/lib/utils"
-import { headingSizes, fontWeights, responsiveTextSizes, fontWeights as fw, lineHeights } from "@/lib/typography"
+import { cn } from "@/utils"
+import { headingSizes, fontWeights, responsiveTextSizes, fontWeights as fw, lineHeights } from "@/constants"
 
 const cardTitleDefault = `${headingSizes.h4} ${fontWeights.bold}`
 const cardBodySmall = `${responsiveTextSizes.small} ${fw.normal} ${lineHeights.relaxed}`
@@ -165,3 +165,4 @@ export {
   CardDescription,
   CardContent,
 }
+

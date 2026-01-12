@@ -29,9 +29,9 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { useClientOnly } from "@/hooks/use-client-only";
-import { usePermissions } from "@/hooks/use-permissions";
-import { PERMISSIONS, isSuperAdmin } from "@/lib/permissions";
+import { useClientOnly } from "@/hooks";
+import { usePermissions } from "@/features/auth";
+import { PERMISSIONS, isSuperAdmin } from "@/permissions";
 import type { DashboardStatsData } from "./queries";
 import { ScrollArea } from "@/components/ui/scroll-area";
 

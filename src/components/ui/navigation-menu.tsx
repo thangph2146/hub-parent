@@ -3,8 +3,8 @@ import { ChevronDownIcon } from "@radix-ui/react-icons"
 import * as NavigationMenuPrimitive from "@radix-ui/react-navigation-menu"
 import { cva } from "class-variance-authority"
 
-import { cn } from "@/lib/utils"
-import { responsiveTextSizes, fontWeights, lineHeights, iconSizes } from "@/lib/typography"
+import { cn } from "@/utils"
+import { responsiveTextSizes, fontWeights, lineHeights, iconSizes } from "@/constants"
 
 const navigationMenuBodySmall = `${responsiveTextSizes.small} ${fontWeights.normal} ${lineHeights.relaxed}`
 const navigationMenuIconSizeXs = iconSizes.xs
@@ -130,3 +130,4 @@ export {
   NavigationMenuIndicator,
   NavigationMenuViewport,
 }
+

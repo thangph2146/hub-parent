@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react"
-import { resourceLogger } from "@/lib/config/resource-logger"
+import { resourceLogger } from "@/utils"
 
 interface UseResourceDetailLoggerOptions<T extends Record<string, unknown>> {
   resourceName: string
@@ -30,14 +30,14 @@ export const useResourceDetailLogger = <T extends Record<string, unknown>>({
 
     const recordData = fetchedData as Record<string, unknown>
 
-    resourceLogger.detailAction({
+    resourceLogger.logAction({
       resource: resourceName,
       action: "load-detail",
       resourceId,
       recordData,
     })
 
-    resourceLogger.dataStructure({
+    resourceLogger.logStructure({
       resource: resourceName,
       dataType: "detail",
       structure: { fields: recordData },

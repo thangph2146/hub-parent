@@ -5,7 +5,7 @@
 
 export const copyToClipboard = async (
   text: string,
-  toast: ReturnType<typeof import("@/hooks/use-toast").useToast>["toast"]
+  toast: ReturnType<typeof import("@/hooks").useToast>["toast"]
 ): Promise<boolean> => {
   try {
     await navigator.clipboard.writeText(text)

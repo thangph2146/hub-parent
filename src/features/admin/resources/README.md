@@ -218,16 +218,16 @@ export const articleServerConfig: ServerConfig<ArticleRow> = {
 - **Single Source of Truth**: Tất cả code được generate từ `formFields` → Đảm bảo đồng bộ 100%
 - **Tự động hoàn toàn**: Không cần viết manual code cho helpers, mutations, queries, events
 - **Type-safe**: Tất cả types được generate tự động từ form fields
-- **Logger tích hợp**: Tất cả generator files sử dụng logger từ `@/lib/config/logger`
+- **Logger tích hợp**: Tất cả generator files sử dụng logger từ `@/utils`
 - **Dễ maintain**: Chỉ cần update form-fields, tất cả files tự động sync
 
 ## 📝 Logger Usage
 
-Tất cả generator files và features sử dụng logger từ `@/lib/config/logger`:
+Tất cả generator files và features sử dụng logger từ `@/utils`:
 
 ```typescript
-import { logger } from "@/lib/config/logger"
-import { resourceLogger } from "@/lib/config/resource-logger"
+import { logger } from "@/utils"
+import { resourceLogger } from "@/utils"
 ```
 
 - `logger`: Cho general logging (info, warn, error, debug, success)
@@ -283,7 +283,7 @@ Khi tạo feature admin mới, đảm bảo:
    - [ ] Verify query keys và API routes hoạt động
 
 4. **Verification**
-   - [ ] Tất cả files sử dụng logger từ `@/lib/config/logger`
+   - [ ] Tất cả files sử dụng logger từ `@/utils`
    - [ ] Types, Helpers, Schemas, Mutations đồng bộ từ formFields
    - [ ] Queries và Events sử dụng Helpers đã generate
    - [ ] Hooks tự động tạo query keys và API routes
@@ -292,7 +292,7 @@ Khi tạo feature admin mới, đảm bảo:
 
 **Sau khi clean code hoàn tất:**
 - ✅ Chỉ còn 1 file MD: `resources/README.md` (đã gộp tất cả vào đây)
-- ✅ Tất cả files sử dụng logger từ `@/lib/config/logger` (62+ files đã chuẩn hóa)
+- ✅ Tất cả files sử dụng logger từ `@/utils` (62+ files đã chuẩn hóa)
 - ✅ Không có console.log/error/warn trong code
 - ✅ Không có code logic dư thừa
 - ✅ Generator system hoàn chỉnh và sẵn sàng sử dụng
@@ -303,7 +303,7 @@ Khi tạo feature admin mới, đảm bảo:
 ## 📊 Thống Kê Clean Code
 
 - **Files đã clean up**: 62+ files
-- **Logger imports đã chuẩn hóa**: 100% (tất cả sử dụng `@/lib/config/logger`)
+- **Logger imports đã chuẩn hóa**: 100% (tất cả sử dụng `@/utils`)
 - **File MD còn lại**: 1 file (README.md - đã gộp tất cả)
 - **Generator files**: 12 files (tất cả đã tối ưu hóa)
 - **Example templates**: 1 file (EXAMPLE_CONFIG.ts)
@@ -331,7 +331,7 @@ Khi tạo feature admin mới, đảm bảo:
 
 **Tất cả yêu cầu đã được hoàn thành:**
 
-✅ **Logger imports**: 100% files sử dụng `@/lib/config/logger`  
+✅ **Logger imports**: 100% files sử dụng `@/utils`  
 ✅ **Code dư thừa**: Đã loại bỏ, utilities được re-export từ `resources/utils`  
 ✅ **Generator system**: Hoàn chỉnh và sẵn sàng sử dụng  
 ✅ **Example template**: `EXAMPLE_CONFIG.ts` đã sẵn sàng  

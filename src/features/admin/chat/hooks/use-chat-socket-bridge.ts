@@ -1,17 +1,17 @@
 "use client"
 
 import { useEffect } from "react"
-import { useSocket } from "@/hooks/use-socket"
-import type { Contact, Message } from "@/components/chat/types"
+import { useSocket } from "@/hooks"
+import type { Contact, Message } from "@/features/admin/chat/types"
 import {
   updateMessageReadStatus,
   updateContactInState,
   filterContactInState,
 } from "./use-chat-socket-helpers"
-import { isMessageUnreadByUser } from "@/components/chat/utils/message-helpers"
-import { MAX_MESSAGES_IN_STATE } from "@/components/chat/constants"
+import { isMessageUnreadByUser } from "@/features/admin/chat/utils/message-helpers"
+import { MAX_MESSAGES_IN_STATE } from "@/features/admin/chat/constants"
 import { calculateUnreadCount } from "./use-chat-helpers"
-import { logger } from "@/lib/config/logger"
+import { logger } from "@/utils"
 
 interface UseChatSocketBridgeProps {
   currentUserId: string

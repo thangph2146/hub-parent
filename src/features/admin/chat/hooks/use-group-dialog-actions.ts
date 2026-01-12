@@ -1,13 +1,13 @@
 "use client"
 
 import { useCallback, useState } from "react"
-import { apiClient } from "@/lib/api/axios"
-import { apiRoutes } from "@/lib/api/routes"
-import { getErrorMessage } from "@/lib/utils"
-import type { Group } from "@/components/chat/types"
+import { apiClient } from "@/services/api/axios"
+import { apiRoutes } from "@/constants"
+import { getErrorMessage } from "@/utils"
+import type { Group } from "@/features/admin/chat/types"
 import type { FeedbackVariant } from "@/components/dialogs"
 import { GROUP_MESSAGES } from "../constants/messages"
-import { logger } from "@/lib/config/logger"
+import { logger } from "@/utils"
 
 interface UseGroupActionsOptions {
   canDelete: boolean

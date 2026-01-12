@@ -1,15 +1,15 @@
 import { useCallback, useState } from "react"
 import { useSession } from "next-auth/react"
 import { useQueryClient } from "@tanstack/react-query"
-import { apiClient } from "@/lib/api/axios"
-import { apiRoutes } from "@/lib/api/routes"
-import { queryKeys } from "@/lib/query-keys"
-import { useDeleteNotification } from "@/hooks/use-notifications"
+import { apiClient } from "@/services/api/axios"
+import { apiRoutes } from "@/constants"
+import { queryKeys } from "@/constants"
+import { useDeleteNotification } from "@/hooks"
 import { useResourceBulkProcessing } from "@/features/admin/resources/hooks"
 import type { FeedbackVariant } from "@/components/dialogs"
 import type { NotificationRow } from "../types"
 import { NOTIFICATION_MESSAGES } from "../constants"
-import { toast } from "@/hooks/use-toast"
+import { toast } from "@/hooks"
 
 interface ApiError {
   response?: {
@@ -70,8 +70,11 @@ export const useNotificationActions = ({
         await apiClient.patch(apiRoutes.notifications.markRead(row.id), { isRead: newStatus })
         
         // Chỉ invalidate queries - table sẽ tự động refresh qua query cache events
-        // Không cần gọi refetchQueries vì useResourceTableRefresh đã listen query invalidation events
-        await queryClient.invalidateQueries({ queryKey: queryKeys.notifications.admin(), refetchType: "active" })
+        // Sử dụng refetchType: "none" để tránh double loading vì useResourceTableRefresh sẽ trigger refresh qua refreshKey
+        await queryClient.invalidateQueries({ 
+          queryKey: queryKeys.notifications.admin(), 
+          refetchType: "none" 
+        })
         
         // Cả mark-read và mark-unread đều sử dụng toast
         loadingToastId.dismiss()
@@ -165,7 +168,11 @@ export const useNotificationActions = ({
 
         if (count > 0) {
           // Chỉ invalidate queries - table sẽ tự động refresh qua query cache events
-          await queryClient.invalidateQueries({ queryKey: queryKeys.notifications.admin(), refetchType: "active" })
+          // Sử dụng refetchType: "none" để tránh double loading vì useResourceTableRefresh sẽ trigger refresh qua refreshKey
+          await queryClient.invalidateQueries({ 
+            queryKey: queryKeys.notifications.admin(), 
+            refetchType: "none" 
+          })
           
           toast({
             variant: "success",
@@ -255,7 +262,11 @@ export const useNotificationActions = ({
 
         if (count > 0) {
           // Chỉ invalidate queries - table sẽ tự động refresh qua query cache events
-          await queryClient.invalidateQueries({ queryKey: queryKeys.notifications.admin(), refetchType: "active" })
+          // Sử dụng refetchType: "none" để tránh double loading vì useResourceTableRefresh sẽ trigger refresh qua refreshKey
+          await queryClient.invalidateQueries({ 
+            queryKey: queryKeys.notifications.admin(), 
+            refetchType: "none" 
+          })
           
           toast({
             variant: "success",
@@ -310,7 +321,11 @@ export const useNotificationActions = ({
         // Sử dụng utility function chung để invalidate, refetch và trigger registry refresh
         // Đảm bảo UI tự động cập nhật ngay sau khi mutation thành công
         // Chỉ invalidate queries - table sẽ tự động refresh qua query cache events
-        await queryClient.invalidateQueries({ queryKey: queryKeys.notifications.admin(), refetchType: "active" })
+        // Sử dụng refetchType: "none" để tránh double loading vì useResourceTableRefresh sẽ trigger refresh qua refreshKey
+        await queryClient.invalidateQueries({ 
+          queryKey: queryKeys.notifications.admin(), 
+          refetchType: "none" 
+        })
         
         showFeedback("success", NOTIFICATION_MESSAGES.DELETE_SUCCESS, "Thông báo đã được xóa thành công.")
       } catch (error: unknown) {
@@ -376,7 +391,11 @@ export const useNotificationActions = ({
           // Sử dụng utility function chung để invalidate, refetch và trigger registry refresh
           // Đảm bảo UI tự động cập nhật ngay sau khi mutation thành công
           // Chỉ invalidate queries - table sẽ tự động refresh qua query cache events
-          await queryClient.invalidateQueries({ queryKey: queryKeys.notifications.admin(), refetchType: "active" })
+          // Sử dụng refetchType: "none" để tránh double loading vì useResourceTableRefresh sẽ trigger refresh qua refreshKey
+          await queryClient.invalidateQueries({ 
+            queryKey: queryKeys.notifications.admin(), 
+            refetchType: "none" 
+          })
           
           let message = `Đã xóa ${deletedCount} thông báo.`
           if (systemCount > 0) {

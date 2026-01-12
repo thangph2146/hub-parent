@@ -4,10 +4,10 @@
 import { NextRequest } from "next/server"
 import { listContactRequests } from "@/features/admin/contact-requests/server/queries"
 import { serializeContactRequestsList } from "@/features/admin/contact-requests/server/helpers"
-import { createGetRoute } from "@/lib/api/api-route-wrapper"
-import type { ApiRouteContext } from "@/lib/api/types"
-import { validatePagination, sanitizeSearchQuery, parseColumnFilters, filtersOrUndefined } from "@/lib/api/validation"
-import { createSuccessResponse, createErrorResponse } from "@/lib/config"
+import { createGetRoute } from "@/lib"
+import type { ApiRouteContext } from "@/types"
+import { validatePagination, sanitizeSearchQuery, parseColumnFilters, filtersOrUndefined } from "@/utils"
+import { createSuccessResponse, createErrorResponse } from "@/lib"
 
 async function getContactRequestsHandler(req: NextRequest, _context: ApiRouteContext) {
   const searchParams = req.nextUrl.searchParams

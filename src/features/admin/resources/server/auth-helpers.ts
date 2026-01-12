@@ -1,6 +1,6 @@
-import { getSession, getPermissions } from "@/lib/auth/auth-server"
-import { isSuperAdmin } from "@/lib/permissions"
-import type { Permission } from "@/lib/permissions"
+import { getSession, getPermissions } from "@/auth/auth-server"
+import { isSuperAdmin } from "@/permissions"
+import type { Permission } from "@/permissions"
 
 export interface SessionWithMeta {
   user?: { id: string }

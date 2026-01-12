@@ -4,7 +4,7 @@
  */
 
 export const showValidationError = (
-  toast: ReturnType<typeof import("@/hooks/use-toast").useToast>["toast"],
+  toast: ReturnType<typeof import("@/hooks").useToast>["toast"],
   message: string
 ) => {
   toast({

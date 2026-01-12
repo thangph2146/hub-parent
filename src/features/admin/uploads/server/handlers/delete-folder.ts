@@ -4,12 +4,12 @@
  */
 
 import { NextRequest } from "next/server"
-import type { ApiRouteContext } from "@/lib/api/types"
-import { getUserId } from "@/lib/api/api-route-helpers"
-import { createSuccessResponse, createErrorResponse } from "@/lib/config"
-import { deleteDirectory } from "@/lib/utils/file-utils"
+import type { ApiRouteContext } from "@/types"
+import { getUserId } from "@/lib"
+import { createSuccessResponse, createErrorResponse } from "@/lib"
+import { deleteDirectory } from "@/lib"
 import { promises as fs } from "fs"
-import { logger } from "@/lib/config/logger"
+import { logger } from "@/utils"
 import { resolveAndValidateFolderPath } from "../utils/path-validation"
 
 export const deleteFolderHandler = async (req: NextRequest, context: ApiRouteContext) => {
@@ -71,4 +71,5 @@ export const deleteFolderHandler = async (req: NextRequest, context: ApiRouteCon
     return createErrorResponse("Đã xảy ra lỗi khi xóa thư mục", { status: 500 })
   }
 }
+
 

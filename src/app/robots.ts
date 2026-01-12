@@ -1,5 +1,5 @@
 import { MetadataRoute } from "next"
-import { appConfig } from "@/lib/config"
+import { appConfig } from "@/constants"
 
 /**
  * Robots.txt for SEO

@@ -1,5 +1,5 @@
 "use client";
-import { cn } from "@/lib/utils/index";
+import { cn } from "@/utils";
 import { useRef, useEffect, useState } from "react";
 
 export function PointerHighlight({
@@ -124,3 +124,4 @@ const Pointer = ({ ...props }: React.SVGProps<SVGSVGElement>) => {
     </svg>
   );
 };
+

@@ -19,10 +19,10 @@ import {
   useResourceTableLogger,
 } from "@/features/admin/resources/hooks"
 import { normalizeSearch, sanitizeFilters } from "@/features/admin/resources/utils"
-import { apiClient } from "@/lib/api/axios"
-import { apiRoutes } from "@/lib/api/routes"
+import { apiClient } from "@/services/api/axios"
+import { apiRoutes } from "@/constants"
 import { useQueryClient } from "@tanstack/react-query"
-import { queryKeys } from "@/lib/query-keys"
+import { queryKeys } from "@/constants"
 import { useCommentsSocketBridge } from "@/features/admin/comments/hooks/use-comments-socket-bridge"
 import { useCommentActions } from "@/features/admin/comments/hooks/use-comment-actions"
 import { useCommentFeedback } from "@/features/admin/comments/hooks/use-comment-feedback"
@@ -30,7 +30,7 @@ import { useCommentDeleteConfirm } from "@/features/admin/comments/hooks/use-com
 import { useCommentColumns } from "@/features/admin/comments/utils/columns"
 import { useCommentRowActions } from "@/features/admin/comments/utils/row-actions"
 
-import type { AdminCommentsListParams } from "@/lib/query-keys"
+import type { AdminCommentsListParams } from "@/constants"
 import type { CommentRow, CommentsResponse, CommentsTableClientProps } from "../types"
 import { COMMENT_CONFIRM_MESSAGES, COMMENT_LABELS } from "../constants"
 

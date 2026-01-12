@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server"
-import { auth } from "@/lib/auth/auth"
-import { createErrorResponse, createSuccessResponse } from "@/lib/config"
+import { auth } from "@/auth/auth"
+import { createErrorResponse, createSuccessResponse } from "@/lib"
 import { bulkMarkAsRead, bulkMarkAsUnread } from "@/features/admin/notifications/server/mutations"
 
 const MAX_BULK_NOTIFICATIONS = 100

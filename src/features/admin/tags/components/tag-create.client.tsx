@@ -3,9 +3,9 @@
 import { useQueryClient } from "@tanstack/react-query"
 import { ResourceForm, type ResourceFormField } from "@/features/admin/resources/components"
 import { useResourceFormSubmit } from "@/features/admin/resources/hooks"
-import { apiRoutes } from "@/lib/api/routes"
-import { queryKeys } from "@/lib/query-keys"
-import { resourceLogger } from "@/lib/config/resource-logger"
+import { apiRoutes } from "@/constants"
+import { queryKeys } from "@/constants"
+import { resourceLogger } from "@/utils"
 import { getBaseTagFields, getTagFormSections, type TagFormData } from "../form-fields"
 
 export interface TagCreateClientProps {
@@ -34,11 +34,11 @@ export const TagCreateClient = ({ backUrl = "/admin/tags" }: TagCreateClientProp
       fallback: backUrl,
     },
     onSuccess: async (response) => {
-      resourceLogger.actionFlow({
+      resourceLogger.logFlow({
         resource: "tags",
         action: "create",
         step: "success",
-        metadata: {
+        details: {
           tagId: response?.data?.data?.id,
           responseStatus: response?.status,
         },
@@ -71,4 +71,5 @@ export const TagCreateClient = ({ backUrl = "/admin/tags" }: TagCreateClientProp
     />
   )
 }
+
 

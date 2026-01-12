@@ -9,11 +9,11 @@
  */
 
 import { NextRequest } from "next/server"
-import { createGetRoute } from "@/lib/api/api-route-wrapper"
+import { createGetRoute } from "@/lib"
 import { listConversations, getMessagesBetweenUsers } from "@/features/admin/chat/server/queries"
-import { getUserId } from "@/lib/api/api-route-helpers"
-import { createSuccessResponse, createErrorResponse } from "@/lib/config"
-import type { ApiRouteContext } from "@/lib/api/types"
+import { getUserId } from "@/lib"
+import { createSuccessResponse, createErrorResponse } from "@/lib"
+import type { ApiRouteContext } from "@/types"
 
 async function getConversationsHandler(req: NextRequest, context: ApiRouteContext) {
   const userId = getUserId(context)

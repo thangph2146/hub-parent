@@ -5,13 +5,14 @@
  */
 
 import { NextRequest } from "next/server"
-import { createGetRoute } from "@/lib/api/api-route-wrapper"
-import type { ApiRouteContext } from "@/lib/api/types"
-import { isSuperAdmin } from "@/lib/permissions"
-import { callExternalApi } from "@/lib/api/external-api-client"
-import type { StudentScoresResponse } from "@/lib/api/types"
+import { createGetRoute } from "@/lib"
+import type { ApiRouteContext } from "@/types"
+import { isSuperAdmin } from "@/permissions"
+import { callExternalApi } from "@/services/api/external-api-client"
+import type { StudentScoresResponse } from "@/types"
 import { validateStudentAndGetCode } from "@/features/admin/students/server/helpers"
-import { logger, createSuccessResponse, createErrorResponse } from "@/lib/config"
+import { createSuccessResponse, createErrorResponse } from "@/lib"
+import { logger } from "@/utils"
 
 const getStudentDetailedScoresHandler = async (
   _req: NextRequest,

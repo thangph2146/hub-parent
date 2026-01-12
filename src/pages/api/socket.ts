@@ -2,15 +2,15 @@ import type { NextApiRequest, NextApiResponse } from "next"
 import { Server as IOServer } from "socket.io"
 import type { Server as HTTPServer } from "http"
 
-import { logger } from "@/lib/config"
-import { setupSocketHandlers } from "@/lib/socket/server"
+import { logger } from "@/utils"
+import { setupSocketHandlers } from "@/services/socket/server"
 import {
   getSocketServer,
   setSocketServer,
   getSocketInitPromise,
   setSocketInitPromise,
-} from "@/lib/socket/state"
-import type { ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData } from "@/lib/socket/types"
+} from "@/services/socket/state"
+import type { ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData } from "@/services/socket/types"
 
 type ServerWithIO = HTTPServer & { io?: IOServer }
 

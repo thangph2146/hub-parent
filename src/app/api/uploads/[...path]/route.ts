@@ -6,8 +6,9 @@
 import { NextRequest, NextResponse } from "next/server"
 import { promises as fs } from "fs"
 import path from "path"
-import { IMAGES_DIR, STORAGE_DIR } from "@/lib/utils/file-utils"
-import { logger, createErrorResponse } from "@/lib/config"
+import { IMAGES_DIR, STORAGE_DIR } from "@/lib"
+import { createErrorResponse } from "@/lib"
+import { logger } from "@/utils"
 
 export async function GET(
   req: NextRequest,

@@ -1,7 +1,7 @@
 "use client"
 
 import { useCallback, useMemo, useState } from "react"
-import { useResourceRouter } from "@/hooks/use-resource-segment"
+import { useResourceRouter } from "@/hooks"
 import { Plus, RotateCcw, Trash2, AlertTriangle } from "lucide-react"
 
 import { ConfirmDialog } from "@/components/dialogs"
@@ -19,10 +19,10 @@ import {
   useResourceTableLogger,
 } from "@/features/admin/resources/hooks"
 import { normalizeSearch, sanitizeFilters } from "@/features/admin/resources/utils"
-import { apiClient } from "@/lib/api/axios"
-import { apiRoutes } from "@/lib/api/routes"
+import { apiClient } from "@/services/api/axios"
+import { apiRoutes } from "@/constants"
 import { useQueryClient } from "@tanstack/react-query"
-import { queryKeys, type AdminPostsListParams } from "@/lib/query-keys"
+import { queryKeys, type AdminPostsListParams } from "@/constants"
 import { usePostsSocketBridge } from "../hooks/use-posts-socket-bridge"
 import { usePostActions } from "../hooks/use-post-actions"
 import { usePostFeedback } from "../hooks/use-post-feedback"
@@ -32,10 +32,10 @@ import { usePostRowActions } from "../utils/row-actions"
 
 import type { PostRow, PostsResponse, PostsTableClientProps } from "../types"
 import { POST_CONFIRM_MESSAGES, POST_LABELS } from "../constants/messages"
-import { resourceLogger } from "@/lib/config/resource-logger"
-import { sanitizeSearchQuery } from "@/lib/api/validation"
+import { resourceLogger } from "@/utils"
+import { sanitizeSearchQuery } from "@/utils"
 import { IconSize } from "@/components/ui/typography"
-import { toast } from "@/hooks/use-toast"
+import { toast } from "@/hooks"
 
 export const PostsTableClient = ({
   canDelete = false,
@@ -84,11 +84,11 @@ export const PostsTableClient = ({
         return
       }
 
-      resourceLogger.actionFlow({
+      resourceLogger.logFlow({
         resource: "posts",
         action: newStatus ? "publish" : "unpublish",
         step: "start",
-        metadata: { postId: row.id, postTitle: row.title, newStatus },
+        details: { postId: row.id, postTitle: row.title, newStatus },
       })
 
       setTogglingPosts((prev) => {
@@ -116,11 +116,11 @@ export const PostsTableClient = ({
           description: `Bài viết "${row.title}" đã được ${newStatus ? "xuất bản" : "chuyển sang bản nháp"}.`,
         })
         
-        resourceLogger.actionFlow({
+        resourceLogger.logFlow({
           resource: "posts",
           action: newStatus ? "publish" : "unpublish",
           step: "success",
-          metadata: { postId: row.id, postTitle: row.title, newStatus },
+          details: { postId: row.id, postTitle: row.title, newStatus },
         })
 
         // Chỉ invalidate queries - table sẽ tự động refresh qua query cache events
@@ -145,11 +145,11 @@ export const PostsTableClient = ({
           description: `Không thể ${newStatus ? "xuất bản" : "chuyển sang bản nháp"} bài viết "${row.title}". Vui lòng thử lại.`,
         })
 
-        resourceLogger.actionFlow({
+        resourceLogger.logFlow({
           resource: "posts",
           action: newStatus ? "publish" : "unpublish",
           step: "error",
-          metadata: { postId: row.id, postTitle: row.title, newStatus, error: errorMessage },
+          details: { postId: row.id, postTitle: row.title, newStatus, error: errorMessage },
         })
       } finally {
         setTogglingPosts((prev) => {
@@ -335,7 +335,7 @@ export const PostsTableClient = ({
     (action: "delete" | "restore" | "hard-delete", ids: string[], refresh: () => void, clearSelection: () => void) => {
       if (ids.length === 0) return
 
-      resourceLogger.tableAction({
+      resourceLogger.logAction({
         resource: "posts",
         action: action === "delete" ? "bulk-delete" : action === "restore" ? "bulk-restore" : "bulk-hard-delete",
         count: ids.length,
@@ -679,3 +679,4 @@ export const PostsTableClient = ({
     </>
   )
 }
+

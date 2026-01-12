@@ -2,7 +2,7 @@
 
 import { FieldContent, FieldError } from "@/components/ui/field"
 import { DatePicker } from "@/components/ui/date-picker"
-import { cn } from "@/lib/utils"
+import { cn } from "@/utils"
 import type { ResourceFormField } from "../resource-form"
 
 interface DateFieldProps<T> {

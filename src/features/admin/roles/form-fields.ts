@@ -1,6 +1,6 @@
 import type { ResourceFormField, ResourceFormSection } from "@/features/admin/resources/components"
 import { validateRoleName, validateDisplayName, validateDescription } from "./utils"
-import { PERMISSIONS } from "@/lib/permissions"
+import { PERMISSIONS } from "@/permissions"
 import React from "react"
 import { Shield, FileText, ToggleLeft, AlignLeft } from "lucide-react"
 

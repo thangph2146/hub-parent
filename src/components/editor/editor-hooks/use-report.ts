@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef } from "react"
-import { logger } from "@/lib/config/logger"
+import { logger } from "@/utils"
 
 const getElement = (): HTMLElement => {
   let element = document.getElementById("report-container")

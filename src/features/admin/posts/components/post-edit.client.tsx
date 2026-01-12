@@ -14,10 +14,10 @@ import {
 } from "../form-fields"
 import { useResourceFormSubmit, useResourceDetailData } from "@/features/admin/resources/hooks"
 import { createResourceEditOnSuccess } from "@/features/admin/resources/utils"
-import { apiRoutes } from "@/lib/api/routes"
-import { queryKeys } from "@/lib/query-keys"
+import { apiRoutes } from "@/constants"
+import { queryKeys } from "@/constants"
 import type { Prisma } from "@prisma/client"
-import { isSuperAdmin } from "@/lib/permissions"
+import { isSuperAdmin } from "@/permissions"
 
 export interface PostEditData {
     id: string

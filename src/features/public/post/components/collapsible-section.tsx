@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { Flex } from "@/components/ui/flex"
 import { useState } from "react"
-import { cn } from "@/lib/utils"
+import { cn } from "@/utils"
 
 interface CollapsibleSectionProps {
   title: string

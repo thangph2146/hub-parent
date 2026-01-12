@@ -1,9 +1,9 @@
 import type { Metadata } from "next"
-import { AdminHeader } from "@/components/layouts/headers"
+import { AdminHeader } from "@/components/layout/headers"
 import { PostCreate } from "@/features/admin/posts/components/post-create"
 import { FormPageSuspense } from "@/features/admin/resources/components"
 import { createCreateBreadcrumbs, getResourceSegmentFromParams } from "@/features/admin/resources/utils"
-import { applyResourceSegmentToPath } from "@/lib/permissions"
+import { applyResourceSegmentToPath } from "@/permissions"
 
 /**
  * Post Create Page Metadata

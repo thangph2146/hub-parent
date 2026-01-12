@@ -40,7 +40,7 @@ export interface ListedStudent {
   deletedAt: string | null
 }
 
-export interface StudentDetail {
+export interface StudentDetailInfo {
   id: string
   userId: string | null
   name: string | null

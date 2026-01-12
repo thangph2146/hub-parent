@@ -25,10 +25,10 @@ import {
   useResourceTableLogger,
 } from "@/features/admin/resources/hooks"
 import { normalizeSearch, sanitizeFilters } from "@/features/admin/resources/utils"
-import { apiClient } from "@/lib/api/axios"
-import { apiRoutes } from "@/lib/api/routes"
+import { apiClient } from "@/services/api/axios"
+import { apiRoutes } from "@/constants"
 import { useQueryClient } from "@tanstack/react-query"
-import { queryKeys } from "@/lib/query-keys"
+import { queryKeys } from "@/constants"
 import { useContactRequestsSocketBridge } from "../hooks/use-contact-requests-socket-bridge"
 import { useContactRequestActions } from "../hooks/use-contact-request-actions"
 import { useContactRequestFeedback } from "../hooks/use-contact-request-feedback"
@@ -36,7 +36,7 @@ import { useContactRequestDeleteConfirm } from "../hooks/use-contact-request-del
 import { useContactRequestColumns } from "../utils/columns"
 import { useContactRequestRowActions } from "../utils/row-actions"
 
-import type { AdminContactRequestsListParams } from "@/lib/query-keys"
+import type { AdminContactRequestsListParams } from "@/constants"
 import type { ContactRequestRow, ContactRequestsResponse, ContactRequestsTableClientProps } from "../types"
 import { CONTACT_REQUEST_CONFIRM_MESSAGES, CONTACT_REQUEST_LABELS } from "../constants"
 export const ContactRequestsTableClient = ({

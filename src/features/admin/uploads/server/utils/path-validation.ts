@@ -4,8 +4,8 @@
  */
 
 import path from "path"
-import { STORAGE_DIR } from "@/lib/utils/file-utils"
-import { logger } from "@/lib/config/logger"
+import { STORAGE_DIR } from "@/lib"
+import { logger } from "@/utils"
 
 export const validateFolderPath = (folderPath: string): { valid: boolean; error?: string } => {
   if (folderPath.includes("..") || folderPath.includes("\\")) {
@@ -94,4 +94,5 @@ export const resolveAndValidateFilePath = (
  */
 export const sanitizeFolderName = (folderName: string): string =>
   folderName.trim().replace(/[^a-zA-Z0-9-_]/g, "_")
+
 

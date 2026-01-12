@@ -1,7 +1,7 @@
 import type { Prisma } from "@prisma/client"
 import type { DataTableResult } from "@/components/tables"
 import { applyStatusFilter, applyRelationFilters } from "@/features/admin/resources/server"
-import type { ListCommentsInput, ListedComment, CommentDetail, ListCommentsResult, CommentRow } from "../types"
+import type { ListCommentsInput, ListedComment, CommentDetailInfo, ListCommentsResult, CommentRow } from "../types"
 
 type CommentWithRelations = Prisma.CommentGetPayload<{
   include: {
@@ -93,7 +93,7 @@ export const serializeCommentsList = (data: ListCommentsResult): DataTableResult
   }
 }
 
-export const serializeCommentDetail = (comment: CommentDetail): CommentDetail => {
+export const serializeCommentDetail = (comment: CommentDetailInfo): CommentDetailInfo => {
   return comment
 }
 

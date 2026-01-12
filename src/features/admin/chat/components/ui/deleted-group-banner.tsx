@@ -1,0 +1,94 @@
+/**
+ * Banner hiển thị khi group đã bị xóa
+ */
+
+"use client"
+
+import { useState } from "react"
+import { Button } from "@/components/ui/button"
+import { Flex } from "@/components/ui/flex"
+import { Trash2 } from "lucide-react"
+import { TypographyP, IconSize } from "@/components/ui/typography"
+import type { GroupRole, Group, Contact } from "../../types"
+import { HardDeleteGroupDialog } from "@/features/admin/chat/components/dialogs/hard-delete-group-dialog.client"
+
+interface DeletedGroupBannerProps {
+  currentUserRole?: GroupRole
+  group?: Group | null
+  onHardDeleteGroup?: () => void
+  currentUserId: string
+  role?: string | null
+  setContactsState?: React.Dispatch<React.SetStateAction<Contact[]>>
+}
+
+export function DeletedGroupBanner({
+  currentUserRole,
+  group,
+  onHardDeleteGroup,
+  currentUserId,
+  role,
+  setContactsState,
+}: DeletedGroupBannerProps) {
+  const [hardDeleteDialogOpen, setHardDeleteDialogOpen] = useState(false)
+  const canHardDelete = currentUserRole === "OWNER" && onHardDeleteGroup
+
+  const handleHardDeleteClick = () => {
+    setHardDeleteDialogOpen(true)
+  }
+
+  const handleHardDeleteSuccess = () => {
+    onHardDeleteGroup?.()
+  }
+
+  return (
+    <>
+      <Flex 
+        align="center" 
+        justify="between" 
+        gap={2}
+        padding="md"
+        fullWidth
+        border="all"
+        rounded="lg"
+      >
+        <Flex align="center" gap={2}>
+          <IconSize size="sm">
+            <svg
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+              />
+            </svg>
+          </IconSize>
+          <TypographyP>Nhóm này đã bị xóa</TypographyP>
+        </Flex>
+        {canHardDelete && (
+          <Button variant="destructive" size="sm" onClick={handleHardDeleteClick}>
+            <IconSize size="xs"><Trash2 /></IconSize>
+            Xóa vĩnh viễn
+          </Button>
+        )}
+      </Flex>
+
+      {currentUserId && setContactsState && (
+        <HardDeleteGroupDialog
+          open={hardDeleteDialogOpen}
+          onOpenChange={setHardDeleteDialogOpen}
+          group={group || null}
+          onSuccess={handleHardDeleteSuccess}
+          currentUserId={currentUserId}
+          role={role}
+          setContactsState={setContactsState}
+        />
+      )}
+    </>
+  )
+}
+

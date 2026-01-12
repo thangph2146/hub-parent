@@ -5,10 +5,10 @@
  */
 import { NextRequest } from "next/server"
 import { getStudentColumnOptions } from "@/features/admin/students/server/queries"
-import { createGetRoute } from "@/lib/api/api-route-wrapper"
-import type { ApiRouteContext } from "@/lib/api/types"
-import { createOptionsHandler } from "@/lib/api/api-route-helpers"
-import { isSuperAdmin } from "@/lib/permissions"
+import { createGetRoute } from "@/lib"
+import type { ApiRouteContext } from "@/types"
+import { createOptionsHandler } from "@/lib"
+import { isSuperAdmin } from "@/permissions"
 
 async function getStudentOptionsHandler(req: NextRequest, context: ApiRouteContext) {
   // Check if user is super admin

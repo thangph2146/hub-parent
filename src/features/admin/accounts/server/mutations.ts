@@ -2,7 +2,7 @@
 
 import bcrypt from "bcryptjs"
 import type { Prisma } from "@prisma/client"
-import { prisma } from "@/lib/prisma"
+import { prisma } from "@/services/prisma"
 import type { AccountProfile } from "../types"
 import { UpdateAccountSchema, type UpdateAccountInput } from "./schemas"
 import { getCurrentUserProfile } from "./queries"

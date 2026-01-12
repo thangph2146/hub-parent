@@ -4,8 +4,8 @@ import { useCallback, useMemo, useState } from "react"
 import { CheckCircle2, Trash2, BellOff } from "lucide-react"
 import { useSession } from "next-auth/react"
 import { useQueryClient } from "@tanstack/react-query"
-import { queryKeys } from "@/lib/query-keys"
-import { apiRoutes } from "@/lib/api/routes"
+import { queryKeys } from "@/constants"
+import { apiRoutes } from "@/constants"
 import type { DataTableQueryState, DataTableResult } from "@/components/tables"
 import { FeedbackDialog } from "@/components/dialogs"
 import { Button } from "@/components/ui/button"
@@ -20,8 +20,8 @@ import {
   useResourceTableLogger,
 } from "@/features/admin/resources/hooks"
 import { normalizeSearch, sanitizeFilters } from "@/features/admin/resources/utils"
-import { apiClient } from "@/lib/api/axios"
-import { logger } from "@/lib/config/logger"
+import { apiClient } from "@/services/api/axios"
+import { logger } from "@/utils"
 import type { NotificationRow } from "../types"
 import { useNotificationActions } from "../hooks/use-notification-actions"
 import { useNotificationFeedback } from "../hooks/use-notification-feedback"
@@ -307,13 +307,11 @@ export const NotificationsTableClient = ({
       const handleBulkMarkAsReadWithRefresh = async () => {
         // mark-read: gọi trực tiếp với toast, không hiển thị dialog
         await handleBulkMarkAsRead(unreadNotificationIds, ownNotifications)
-        refresh?.()
       }
 
       const handleBulkMarkAsUnreadWithRefresh = async () => {
         // mark-unread: gọi trực tiếp với toast, không hiển thị dialog
         await handleBulkMarkAsUnread(readNotificationIds, ownNotifications)
-        refresh?.()
       }
 
       const handleBulkDeleteWithRefresh = () => {
@@ -323,7 +321,6 @@ export const NotificationsTableClient = ({
           bulkIds: deletableNotificationIds,
           onConfirm: async () => {
             await handleBulkDelete(selectedIds, selectedRows)
-            refresh?.()
           },
         })
       }

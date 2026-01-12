@@ -1,10 +1,10 @@
 "use client"
 
 import { useCallback, useMemo, useState } from "react"
-import { useResourceRouter } from "@/hooks/use-resource-segment"
+import { useResourceRouter } from "@/hooks"
 import { Plus, RotateCcw, Trash2, AlertTriangle } from "lucide-react"
-import { logger } from "@/lib/config/logger"
-import { usePageLoadLogger } from "@/hooks/use-page-load-logger"
+import { logger } from "@/utils"
+import { usePageLoadLogger } from "@/hooks"
 
 import { ConfirmDialog } from "@/components/dialogs"
 import type { DataTableQueryState, DataTableResult } from "@/components/tables"
@@ -21,20 +21,20 @@ import {
   useResourceTableLogger,
 } from "@/features/admin/resources/hooks"
 import { normalizeSearch, sanitizeFilters } from "@/features/admin/resources/utils"
-import { apiClient } from "@/lib/api/axios"
-import { apiRoutes } from "@/lib/api/routes"
+import { apiClient } from "@/services/api/axios"
+import { apiRoutes } from "@/constants"
 import { useQueryClient } from "@tanstack/react-query"
-import { queryKeys } from "@/lib/query-keys"
+import { queryKeys } from "@/constants"
 import { useUsersSocketBridge } from "@/features/admin/users/hooks/use-users-socket-bridge"
 import { useUserActions } from "@/features/admin/users/hooks/use-user-actions"
 import { useUserFeedback } from "@/features/admin/users/hooks/use-user-feedback"
 import { useUserDeleteConfirm } from "@/features/admin/users/hooks/use-user-delete-confirm"
 import { useUserColumns } from "@/features/admin/users/utils/columns"
 import { useUserRowActions } from "@/features/admin/users/utils/row-actions"
-import { resourceLogger } from "@/lib/config/resource-logger"
+import { resourceLogger } from "@/utils"
 import { TypographySpanSmall, TypographySpanSmallMuted, IconSize } from "@/components/ui/typography"
 
-import type { AdminUsersListParams } from "@/lib/query-keys"
+import type { AdminUsersListParams } from "@/constants"
 import type { UserRow, UsersResponse, UsersTableClientProps } from "../types"
 import { USER_CONFIRM_MESSAGES, USER_LABELS, PROTECTED_SUPER_ADMIN_EMAIL } from "../constants"
 import { Flex } from "@/components/ui/flex"
@@ -183,7 +183,7 @@ export const UsersTableClient = ({
   const handleDeleteSingle = useCallback(
     (row: UserRow) => {
       if (!canDelete) return
-      resourceLogger.tableAction({
+      resourceLogger.logAction({
         resource: "users",
         action: "delete",
         resourceId: row.id,
@@ -205,7 +205,7 @@ export const UsersTableClient = ({
   const handleHardDeleteSingle = useCallback(
     (row: UserRow) => {
       if (!canManage) return
-      resourceLogger.tableAction({
+      resourceLogger.logAction({
         resource: "users",
         action: "hard-delete",
         resourceId: row.id,
@@ -227,7 +227,7 @@ export const UsersTableClient = ({
   const handleRestoreSingle = useCallback(
     (row: UserRow) => {
       if (!canRestore) return
-      resourceLogger.tableAction({
+      resourceLogger.logAction({
         resource: "users",
         action: "restore",
         resourceId: row.id,
@@ -262,7 +262,7 @@ export const UsersTableClient = ({
     (action: "delete" | "restore" | "hard-delete", ids: string[], selectedRows: UserRow[], refresh: () => void, clearSelection: () => void) => {
       if (ids.length === 0) return
 
-      resourceLogger.tableAction({
+      resourceLogger.logAction({
         resource: "users",
         action: action === "delete" ? "bulk-delete" : action === "restore" ? "bulk-restore" : "bulk-hard-delete",
         count: ids.length,
@@ -616,4 +616,5 @@ export const UsersTableClient = ({
     </>
   )
 }
+
 

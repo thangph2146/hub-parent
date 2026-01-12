@@ -1,5 +1,5 @@
-import { prisma } from "@/lib/prisma";
-import { resourceLogger } from "@/lib/config/resource-logger";
+import { prisma } from "@/services/prisma";
+import { resourceLogger } from "@/utils";
 import {
   createNotificationForAllAdmins,
   emitNotificationToAllAdminsAfterCreate,
@@ -160,7 +160,7 @@ export const notifySuperAdminsOfBulkUserAction = async (
 ) => {
   const startTime = Date.now();
 
-  resourceLogger.actionFlow({
+  resourceLogger.logFlow({
     resource: "users",
     action:
       action === "delete"
@@ -169,7 +169,7 @@ export const notifySuperAdminsOfBulkUserAction = async (
         ? "bulk-restore"
         : "bulk-hard-delete",
     step: "start",
-    metadata: { count, userCount: users?.length || 0, actorId },
+    details: { count, userCount: users?.length || 0, actorId },
   });
 
   try {
@@ -241,7 +241,7 @@ export const notifySuperAdminsOfBulkUserAction = async (
       );
     }
 
-    resourceLogger.actionFlow({
+    resourceLogger.logFlow({
       resource: "users",
       action:
         action === "delete"
@@ -250,8 +250,8 @@ export const notifySuperAdminsOfBulkUserAction = async (
           ? "bulk-restore"
           : "bulk-hard-delete",
       step: "success",
-      duration: Date.now() - startTime,
-      metadata: { count, userCount: users?.length || 0 },
+      durationMs: Date.now() - startTime,
+      details: { count, userCount: users?.length || 0 },
     });
   } catch (error) {
     logNotificationError(

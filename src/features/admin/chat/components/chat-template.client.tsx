@@ -3,30 +3,30 @@
 import { TypographyH4, IconSize } from "@/components/ui/typography"
 import { Flex } from "@/components/ui/flex"
 
-import { useIsMobile } from "@/hooks/use-mobile"
+import { useIsMobile } from "@/hooks"
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
 import { Menu } from "lucide-react"
-import type { ChatTemplateProps, Contact, Group } from "@/components/chat/types"
+import type { ChatTemplateProps, Contact, Group } from "@/features/admin/chat/types"
 import { useChat } from "../hooks/use-chat"
-import { ChatListHeader, type ChatFilterType } from "@/components/chat/components/chat-list-header"
+import { ChatListHeader, type ChatFilterType } from "./ui/chat-list-header"
 import { NewConversationDialog } from "./dialogs/new-conversation-dialog.client"
 import { NewGroupDialog } from "./dialogs/new-group-dialog.client"
 import { GroupManagementMenu } from "./group-management-menu.client"
-import { ContactList } from "@/components/chat/components/contact-list"
-import { ChatWindow } from "@/components/chat/components/chat-window"
-import { EmptyState } from "@/components/chat/components/empty-state"
+import { ContactList } from "./ui/contact-list"
+import { ChatWindow } from "./ui/chat-window"
+import { EmptyState } from "./ui/empty-state"
 import { useState, useMemo, useCallback, useEffect } from "react"
-import { useDebouncedCallback } from "@/hooks/use-debounced-callback"
-import { requestJson } from "@/lib/api/client"
-import { withApiBase } from "@/lib/config/api-paths"
+import { useDebouncedCallback } from "@/hooks"
+import { requestJson } from "@/services/api/client"
+import { withApiBase } from "@/utils"
 import { getCurrentUserRole, createGroupContact } from "./chat-template-helpers"
 import { useGroupActions } from "../hooks/use-group-actions"
-import { filterContacts } from "@/components/chat/utils/contact-helpers"
+import { filterContacts } from "@/features/admin/chat/utils/contact-helpers"
 import { mapGroupListItemToContact, type GroupListItemLike, type MessageDetailLike } from "../utils/contact-transformers"
-import type { ChatWindowProps } from "@/components/chat/components/chat-window"
-import { logger } from "@/lib/config/logger"
-import { useElementSize } from "@/hooks/use-element-size"
+import type { ChatWindowProps } from "./ui/chat-window"
+import { logger } from "@/utils"
+import { useElementSize } from "@/hooks"
 
 export const ChatTemplate = ({
   contacts,
@@ -238,7 +238,7 @@ export const ChatTemplate = ({
   // Function to fetch deleted groups
   const fetchDeletedGroups = useCallback(async () => {
     try {
-      const { apiRoutes } = await import("@/lib/api/routes")
+      const { apiRoutes } = await import("@/constants/api-routes")
       const listRoute = apiRoutes.adminGroups.list({ page: 1, limit: 50 })
       const separator = listRoute.includes("?") ? "&" : "?"
       const requestUrl = `${listRoute}${separator}includeDeleted=true`
@@ -305,7 +305,7 @@ export const ChatTemplate = ({
       return
     }
     try {
-      const { apiRoutes } = await import("@/lib/api/routes")
+      const { apiRoutes } = await import("@/constants/api-routes")
 
       // Build endpoints
       const convUrl = withApiBase(apiRoutes.adminConversations.list({ page: 1, limit: 50, search: q }))
@@ -532,7 +532,7 @@ export const ChatTemplate = ({
     // If personal contact and no messages loaded, fetch messages via API
     if (contact.type !== "GROUP" && (!contact.messages || contact.messages.length === 0)) {
       try {
-        const { apiRoutes } = await import("@/lib/api/routes")
+        const { apiRoutes } = await import("@/constants/api-routes")
         const url = withApiBase(apiRoutes.adminConversations.list({ otherUserId: contact.id }))
         const res = await requestJson(url)
         if (res.ok && Array.isArray(res.data)) {
@@ -697,4 +697,4 @@ export const ChatTemplate = ({
 }
 
 // Re-export types for convenience
-export type { Message, Contact, MessageType, ChatTemplateProps } from "@/components/chat/types"
+export type { Message, Contact, MessageType, ChatTemplateProps } from "@/features/admin/chat/types"

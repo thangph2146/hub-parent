@@ -1,7 +1,7 @@
-import type { Contact, Group, GroupRole } from "@/components/chat/types"
-import { apiRoutes } from "@/lib/api/routes"
-import { withApiBase } from "@/lib/config/api-paths"
-import { requestJson } from "@/lib/api/client"
+import type { Contact, Group, GroupRole } from "@/features/admin/chat/types"
+import { apiRoutes } from "@/constants"
+import { withApiBase } from "@/utils"
+import { requestJson } from "@/services/api/client"
 
 export const getCurrentUserRole = (contact: Contact | null, currentUserId: string): GroupRole | undefined => {
   if (!contact || contact.type !== "GROUP" || !contact.group) return undefined
@@ -39,7 +39,7 @@ export const refreshGroupData = async (groupId: string): Promise<Group | null> =
     }
     return (response.data as Group) ?? null
   } catch (error) {
-    const { logger } = await import("@/lib/config")
+    const { logger } = await import("@/utils")
     logger.error("Error refreshing group data", error)
     // Re-throw error để caller có thể xử lý message
     throw error

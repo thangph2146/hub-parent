@@ -1,8 +1,8 @@
-import { prisma } from "@/lib/prisma"
-import { getSocketServer } from "@/lib/socket/state"
+import { prisma } from "@/services/prisma"
+import { getSocketServer } from "@/services/socket/state"
 import { mapPostRecord, serializePostForTable } from "./helpers"
 import type { PostRow } from "../types"
-import { resourceLogger } from "@/lib/config/resource-logger"
+import { resourceLogger } from "@/utils"
 
 const SUPER_ADMIN_ROOM = "role:super_admin"
 
@@ -94,11 +94,11 @@ export const emitBatchPostUpsert = async (
   if (!io || postIds.length === 0) return
 
   const startTime = Date.now()
-  resourceLogger.actionFlow({
+  resourceLogger.logFlow({
     resource: "posts",
     action: "socket-update",
     step: "start",
-    metadata: { count: postIds.length, previousStatus, type: "batch" },
+    details: { count: postIds.length, previousStatus, type: "batch" },
   })
 
   // Fetch all posts in parallel
@@ -118,12 +118,12 @@ export const emitBatchPostUpsert = async (
       })),
   })
 
-    resourceLogger.actionFlow({
+    resourceLogger.logFlow({
       resource: "posts",
       action: "socket-update",
       step: "success",
-      duration: Date.now() - startTime,
-      metadata: { count: validRows.length, emitted: validRows.length, type: "batch" },
+      durationMs: Date.now() - startTime,
+      details: { count: validRows.length, emitted: validRows.length, type: "batch" },
     })
   }
 }

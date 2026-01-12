@@ -1,9 +1,10 @@
 import { z } from "zod"
+import { ACCOUNT_MESSAGES } from "../constants"
 
 export const UpdateAccountSchema = z.object({
   name: z
     .string()
-    .min(2, "Tên phải có ít nhất 2 ký tự")
+    .min(2, ACCOUNT_MESSAGES.NAME_MIN)
     .max(100, "Tên không được vượt quá 100 ký tự")
     .trim(),
   bio: z
@@ -37,7 +38,7 @@ export const UpdateAccountSchema = z.object({
       z.string().max(500, "Địa chỉ không được vượt quá 500 ký tự").nullable()
     )
     .optional(),
-  password: z.string().min(8, "Mật khẩu phải có ít nhất 8 ký tự").max(100, "Mật khẩu không được vượt quá 100 ký tự").optional(),
+  password: z.string().min(6, ACCOUNT_MESSAGES.PASSWORD_MIN).max(100, "Mật khẩu không được vượt quá 100 ký tự").optional(),
   avatar: z
     .preprocess(
       (val) => {

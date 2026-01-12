@@ -12,10 +12,10 @@ import {
   ApplicationError,
 } from "@/features/admin/students/server/mutations"
 import { BulkStudentActionSchema } from "@/features/admin/students/server/schemas"
-import { createPostRoute } from "@/lib/api/api-route-wrapper"
-import type { ApiRouteContext } from "@/lib/api/types"
-import { createErrorResponse, createSuccessResponse } from "@/lib/config"
-import { logger } from "@/lib/config/logger"
+import { createPostRoute } from "@/lib"
+import type { ApiRouteContext } from "@/types"
+import { createErrorResponse, createSuccessResponse } from "@/lib"
+import { logger } from "@/utils"
 
 async function bulkStudentsHandler(req: NextRequest, context: ApiRouteContext) {
   let body: unknown

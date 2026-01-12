@@ -4,7 +4,7 @@
  */
 
 import { useState, useCallback } from "react"
-import { logger } from "@/lib/config/logger"
+import { logger } from "@/utils"
 import type { ImageItem } from "../types"
 
 export interface BulkDeleteConfirmState {

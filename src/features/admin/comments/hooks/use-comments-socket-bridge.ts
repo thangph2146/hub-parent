@@ -2,7 +2,7 @@
 
 import { useQueryClient } from "@tanstack/react-query"
 import type { CommentRow } from "../types"
-import { queryKeys, type AdminCommentsListParams } from "@/lib/query-keys"
+import { queryKeys, type AdminCommentsListParams } from "@/constants"
 import type { CommentDetailData } from "../components/comment-detail.client"
 import { useResourceSocketBridge } from "@/features/admin/resources/hooks/use-resource-socket-bridge"
 import { matchesSearch, matchesFilters } from "../utils/socket-helpers"

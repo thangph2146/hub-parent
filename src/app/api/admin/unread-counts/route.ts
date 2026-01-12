@@ -4,13 +4,13 @@
  */
 
 import { NextRequest } from "next/server"
-import { prisma } from "@/lib/prisma"
-import { createGetRoute } from "@/lib/api/api-route-wrapper"
-import { createErrorResponse, createSuccessResponse } from "@/lib/config"
-import { isSuperAdmin } from "@/lib/permissions"
+import { prisma } from "@/services/prisma"
+import { createGetRoute } from "@/lib"
+import { createErrorResponse, createSuccessResponse } from "@/lib"
+import { isSuperAdmin } from "@/permissions"
 import { getTotalUnreadMessagesCountCached } from "@/features/admin/chat/server/unread-counts"
-import type { ApiRouteContext } from "@/lib/api/types"
-import { countUnreadNotificationsWithBreakdown } from "@/lib/utils"
+import type { ApiRouteContext } from "@/types"
+import { countUnreadNotificationsWithBreakdown } from "@/lib"
 
 async function getUnreadCountsHandler(_req: NextRequest, context: ApiRouteContext) {
   const userId = context.session.user?.id
@@ -36,7 +36,7 @@ async function getUnreadCountsHandler(_req: NextRequest, context: ApiRouteContex
   }
 
   // Log để debug
-  const logger = (await import("@/lib/config/logger")).logger
+  const logger = (await import("@/utils/logger")).logger
   
   // Sử dụng shared helper function để đảm bảo logic nhất quán với /api/notifications
   const countParams = {

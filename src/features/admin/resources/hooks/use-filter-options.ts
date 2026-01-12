@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { useQuery } from "@tanstack/react-query"
-import { apiClient } from "@/lib/api/axios"
+import { apiClient } from "@/services/api/axios"
 import type { ColumnFilterSelectOption } from "@/components/tables"
 
 interface UseFilterOptionsParams {

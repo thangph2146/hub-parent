@@ -3,7 +3,8 @@
  * Returns list of dates that have published posts (public access, no authentication required)
  */
 import { getDatesWithPosts } from "@/features/admin/posts/server/queries"
-import { logger, createSuccessResponse } from "@/lib/config"
+import { createSuccessResponse } from "@/lib"
+import { logger } from "@/utils"
 
 export async function GET() {
   logger.debug("[Public Posts API] getDatesWithPostsHandler called", {

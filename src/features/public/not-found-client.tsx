@@ -7,7 +7,7 @@ import { useState } from "react"
 import Link from "next/link"
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
-import { useClientOnly } from "@/hooks/use-client-only"
+import { useClientOnly } from "@/hooks"
 
 /**
  * Not Found Client Component

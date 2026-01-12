@@ -4,8 +4,8 @@ import { PostPageClient } from "@/features/public/post/components/post-page-clie
 import { PostSort } from "@/features/public/post/components/post-sort"
 import { PostDateRange } from "@/features/public/post/components/post-date-range"
 import { getPosts, getCategories, getTags } from "@/features/public/post/server/queries"
-import { appConfig, getOpenGraphConfig, getTwitterConfig } from "@/lib/config"
-import { PostBreadcrumb } from "@/components/public/post/post-breadcrumb"
+import { appConfig, getOpenGraphConfig, getTwitterConfig } from "@/constants"
+import { PostBreadcrumb } from "@/features/public/post/components"
 import { PostSidebarSheet } from "@/features/public/post/components/post-sidebar-sheet"
 
 const openGraphConfig = getOpenGraphConfig();

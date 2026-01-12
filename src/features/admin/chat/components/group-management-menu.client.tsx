@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Settings, Edit, Users, Trash2 } from "lucide-react"
 import { IconSize } from "@/components/ui/typography"
-import type { Group, GroupRole, Contact } from "@/components/chat/types"
+import type { Group, GroupRole, Contact } from "@/features/admin/chat/types"
 import { EditGroupDialog } from "./dialogs/edit-group-dialog.client"
 import { ManageMembersDialog } from "./dialogs/manage-members-dialog.client"
 import { DeleteGroupDialog } from "./dialogs/delete-group-dialog.client"

@@ -4,8 +4,8 @@ import * as React from "react"
 import * as AvatarPrimitive from "@radix-ui/react-avatar"
 import { cva, type VariantProps } from "class-variance-authority"
 
-import { cn } from "@/lib/utils"
-import { iconSizes, responsiveIconSizes } from "@/lib/typography"
+import { cn } from "@/utils"
+import { iconSizes, responsiveIconSizes } from "@/constants"
 
 const avatarVariants = cva(
   "relative flex shrink-0 overflow-hidden rounded-full",
@@ -80,3 +80,4 @@ function AvatarFallback({
 }
 
 export { Avatar, AvatarImage, AvatarFallback }
+

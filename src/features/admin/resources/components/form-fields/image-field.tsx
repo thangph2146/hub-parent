@@ -10,10 +10,10 @@ import { FieldContent, FieldError } from "@/components/ui/field"
 import { ImageIcon, X, Copy, Check } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Image from "next/image"
-import { cn } from "@/lib/utils"
+import { cn } from "@/utils"
 import { TypographySpanMuted, TypographySpanSmallMuted, IconSize } from "@/components/ui/typography"
 import { Flex } from "@/components/ui/flex"
-import { useToast } from "@/hooks/use-toast"
+import { useToast } from "@/hooks"
 
 export interface ImageFieldProps {
   value: unknown

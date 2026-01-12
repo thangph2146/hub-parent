@@ -1,4 +1,4 @@
-import { resourceLogger } from "@/lib/config/resource-logger"
+import { resourceLogger } from "@/utils"
 import type { CommentRow } from "../types"
 import {
   shouldIncludeInStatus,

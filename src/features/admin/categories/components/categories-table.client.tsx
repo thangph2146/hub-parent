@@ -4,7 +4,7 @@ import { IconSize, TypographySpanSmall } from "@/components/ui/typography"
 import { Flex } from "@/components/ui/flex"
 
 import { useCallback, useMemo, useState } from "react"
-import { useResourceRouter } from "@/hooks/use-resource-segment"
+import { useResourceRouter } from "@/hooks"
 import { Plus, RotateCcw, Trash2, AlertTriangle } from "lucide-react"
 
 import { ConfirmDialog } from "@/components/dialogs"
@@ -22,11 +22,11 @@ import {
   useResourceTableLogger,
 } from "@/features/admin/resources/hooks"
 import { normalizeSearch, sanitizeFilters } from "@/features/admin/resources/utils"
-import { apiClient } from "@/lib/api/axios"
-import { apiRoutes } from "@/lib/api/routes"
+import { apiClient } from "@/services/api/axios"
+import { apiRoutes } from "@/constants"
 import { useQueryClient } from "@tanstack/react-query"
-import { queryKeys, type AdminCategoriesListParams } from "@/lib/query-keys"
-import { resourceLogger } from "@/lib/config/resource-logger"
+import { queryKeys, type AdminCategoriesListParams } from "@/constants"
+import { resourceLogger } from "@/utils"
 import { useCategoriesSocketBridge } from "../hooks/use-categories-socket-bridge"
 import { useCategoryActions } from "../hooks/use-category-actions"
 import { useCategoryFeedback } from "../hooks/use-category-feedback"
@@ -102,7 +102,7 @@ export const CategoriesTableClient = ({
   const handleDeleteSingle = useCallback(
     (row: CategoryRow) => {
       if (!canDelete) return
-      resourceLogger.tableAction({
+      resourceLogger.logAction({
         resource: "categories",
         action: "delete",
         resourceId: row.id,
@@ -123,7 +123,7 @@ export const CategoriesTableClient = ({
   const handleHardDeleteSingle = useCallback(
     (row: CategoryRow) => {
       if (!canManage) return
-      resourceLogger.tableAction({
+      resourceLogger.logAction({
         resource: "categories",
         action: "hard-delete",
         resourceId: row.id,
@@ -144,7 +144,7 @@ export const CategoriesTableClient = ({
   const handleRestoreSingle = useCallback(
     (row: CategoryRow) => {
       if (!canRestore) return
-      resourceLogger.tableAction({
+      resourceLogger.logAction({
         resource: "categories",
         action: "restore",
         resourceId: row.id,
@@ -266,7 +266,7 @@ export const CategoriesTableClient = ({
     (action: "delete" | "restore" | "hard-delete", ids: string[], refresh: () => void, clearSelection: () => void) => {
       if (ids.length === 0) return
 
-      resourceLogger.tableAction({
+      resourceLogger.logAction({
         resource: "categories",
         action: action === "delete" ? "bulk-delete" : action === "restore" ? "bulk-restore" : "bulk-hard-delete",
         count: ids.length,
@@ -595,3 +595,4 @@ export const CategoriesTableClient = ({
     </>
   )
 }
+

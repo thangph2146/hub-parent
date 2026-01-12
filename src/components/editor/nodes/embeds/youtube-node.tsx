@@ -7,7 +7,7 @@ import { mergeRegister } from "@lexical/utils"
 import { ImageResizer } from "@/components/editor/editor-ui/image-resizer"
 import { getContainerWidth } from "@/components/editor/editor-ui/image-sizing"
 import { useEditorContainer } from "@/components/editor/context/editor-container-context"
-import { cn } from "@/lib/utils"
+import { cn } from "@/utils"
 import {
   DecoratorBlockNode,
   SerializedDecoratorBlockNode,
