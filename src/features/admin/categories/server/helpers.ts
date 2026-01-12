@@ -8,7 +8,7 @@ import {
   applyStatusFilterFromFilters,
   createSerializeList,
 } from "@/features/admin/resources/server"
-import type { ListCategoriesInput, ListedCategory, CategoryDetail } from "../types"
+import type { ListCategoriesInput, ListedCategory, CategoryDetailInfo } from "../types"
 import type { CategoryRow } from "../types"
 
 type CategoryWithRelations = Prisma.CategoryGetPayload<Record<string, never>>
@@ -74,7 +74,7 @@ export const serializeCategoryForTable = (category: ListedCategory): CategoryRow
 
 export const serializeCategoriesList = createSerializeList(serializeCategoryForTable)
 
-export const serializeCategoryDetail = (category: CategoryDetail) => {
+export const serializeCategoryDetail = (category: CategoryDetailInfo) => {
   return {
     id: category.id,
     name: category.name,

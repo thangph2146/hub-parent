@@ -1,20 +1,20 @@
 import type { Prisma } from "@prisma/client"
-import { prisma } from "@/lib/prisma"
-import { resourceLogger } from "@/lib/config/resource-logger"
+import { prisma } from "@/services/prisma"
+import { resourceLogger } from "@/utils"
 import { validatePagination, buildPagination } from "@/features/admin/resources/server"
 import { mapCommentRecord, buildWhereClause } from "./helpers"
-import type { ListCommentsInput, CommentDetail, ListCommentsResult } from "../types"
+import type { ListCommentsInput, CommentDetailInfo, ListCommentsResult } from "../types"
 
 export const listComments = async (params: ListCommentsInput = {}): Promise<ListCommentsResult> => {
   const { page, limit } = validatePagination(params.page, params.limit, 100)
   const where = buildWhereClause(params)
   const status = params.filters?.deleted === true ? "deleted" : "active"
 
-  resourceLogger.actionFlow({
+  resourceLogger.logFlow({
     resource: "comments",
     action: "query",
     step: "start",
-    metadata: { status, page, limit, where: Object.keys(where).length > 0 ? "filtered" : "all" },
+    details: { status, page, limit, where: Object.keys(where).length > 0 ? "filtered" : "all" },
   })
 
   try {
@@ -34,20 +34,20 @@ export const listComments = async (params: ListCommentsInput = {}): Promise<List
 
     const result = { data: data.map(mapCommentRecord), pagination: buildPagination(page, limit, total) }
 
-    resourceLogger.actionFlow({
+    resourceLogger.logFlow({
       resource: "comments",
       action: "query",
       step: "success",
-      metadata: { page, limit, total, dataCount: data.length, where },
+      details: { page, limit, total, dataCount: data.length, where },
     })
 
     return result
   } catch (error) {
-    resourceLogger.actionFlow({
+    resourceLogger.logFlow({
       resource: "comments",
       action: "query",
       step: "error",
-      metadata: { error: error instanceof Error ? error.message : String(error) },
+      details: { error: error instanceof Error ? error.message : String(error) },
     })
     return { data: [], pagination: buildPagination(page, limit, 0) }
   }
@@ -112,7 +112,7 @@ export const getCommentColumnOptions = async (
   }
 };
 
-export const getCommentById = async (id: string): Promise<CommentDetail | null> => {
+export const getCommentById = async (id: string): Promise<CommentDetailInfo | null> => {
   try {
     const comment = await prisma.comment.findUnique({
       where: { id },

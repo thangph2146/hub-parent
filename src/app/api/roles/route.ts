@@ -2,16 +2,16 @@
  * API Route: GET /api/roles - List roles
  */
 import { NextRequest } from "next/server"
-import { prisma } from "@/lib/prisma"
-import { PERMISSIONS } from "@/lib/permissions"
-import { createGetRoute } from "@/lib/api/api-route-wrapper"
-import { createSuccessResponse } from "@/lib/config"
+import { prisma } from "@/services/prisma"
+import { PERMISSIONS } from "@/permissions"
+import { createGetRoute } from "@/lib"
+import { createSuccessResponse } from "@/lib"
 
 async function getRolesHandler(
   _req: NextRequest,
   _context: {
-    session: Awaited<ReturnType<typeof import("@/lib/auth").requireAuth>>
-    permissions: import("@/lib/permissions").Permission[]
+    session: Awaited<ReturnType<typeof import("@/auth").requireAuth>>
+    permissions: import("@/permissions").Permission[]
     roles: Array<{ name: string }>
   }
 ) {

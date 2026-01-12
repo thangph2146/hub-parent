@@ -9,7 +9,7 @@ import {
   applyBooleanFilter,
   applyRelationFilters,
 } from "@/features/admin/resources/server"
-import type { ListContactRequestsInput, ListedContactRequest, ContactRequestDetail, ListContactRequestsResult } from "../types"
+import type { ListContactRequestsInput, ListedContactRequest, ContactRequestDetailInfo, ListContactRequestsResult } from "../types"
 import type { ContactRequestRow } from "../types"
 
 type ContactRequestWithRelations = Prisma.ContactRequestGetPayload<{
@@ -139,7 +139,7 @@ export const serializeContactRequestsList = (data: ListContactRequestsResult): D
   }
 }
 
-export const serializeContactRequestDetail = (contactRequest: ContactRequestDetail) => {
+export const serializeContactRequestDetail = (contactRequest: ContactRequestDetailInfo) => {
   return {
     id: contactRequest.id,
     name: contactRequest.name,

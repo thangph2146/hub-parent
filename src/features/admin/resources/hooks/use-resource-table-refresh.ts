@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef } from "react"
 import type { QueryClient, QueryKey } from "@tanstack/react-query"
-import { logger } from "@/lib/config/logger"
+import { logger } from "@/utils"
 import { resourceRefreshRegistry } from "./resource-refresh-registry"
 
 interface UseResourceTableRefreshOptions {
@@ -23,7 +23,7 @@ export const useResourceTableRefresh = ({
   const refreshRef = useRef<(() => void) | null>(null)
   const softRefreshRef = useRef<(() => void) | null>(null)
   const pendingRealtimeRefreshRef = useRef(false)
-  const lastCacheVersionRef = useRef<number | undefined>(undefined)
+  const lastCacheVersionRef = useRef<number | undefined>(cacheVersion)
   const lastInvalidationRefreshRef = useRef(0)
   const lastCacheVersionRefreshRef = useRef(0)
   const unregisterRef = useRef<(() => void) | null>(null)
@@ -56,6 +56,8 @@ export const useResourceTableRefresh = ({
     }
   }, [])
 
+  const lastInvalidateKeyRef = useRef<string | null>(null)
+
   const onRefreshReady = useCallback(
     (refreshFn: () => void) => {
       if (!refreshFn) {
@@ -63,14 +65,7 @@ export const useResourceTableRefresh = ({
         return
       }
 
-      logger.debug("onRefreshReady called", {
-        hasRefreshFn: !!refreshFn,
-        hasGetInvalidateQueryKey: !!getInvalidateQueryKey,
-      })
-
       // Lưu refreshFn vào ref để có thể gọi từ bất kỳ đâu
-      // Wrap refreshFn để update lastInvalidationRefreshRef khi được gọi từ registry
-      // Điều này đảm bảo polling biết không cần check lại trong một khoảng thời gian
       const wrappedRefreshFn = () => {
         // Update lastInvalidationRefreshRef để polling biết không cần check lại
         lastInvalidationRefreshRef.current = Date.now()
@@ -79,11 +74,6 @@ export const useResourceTableRefresh = ({
       
       softRefreshRef.current = wrappedRefreshFn
       refreshRef.current = async () => {
-        // Gọi refreshFn ngay lập tức để update refreshKey
-        // refreshFn sẽ update refreshKey, và DataTable sẽ detect change và gọi loader
-        // Loader sẽ fetch data với cache (staleTime: 30s) để giảm số lần refetch không cần thiết
-        // Lưu ý: Queries đã được invalidate và refetch trong mutation onSuccess
-        // Ở đây chỉ cần trigger UI refresh để DataTable re-fetch fresh data khi cần
         if (wrappedRefreshFn) {
           logger.debug("Calling refreshFn to update refreshKey")
           wrappedRefreshFn()
@@ -100,18 +90,25 @@ export const useResourceTableRefresh = ({
       }
 
       // Đăng ký refresh callback vào global registry
-      // Cho phép trigger refresh từ bất kỳ đâu (ví dụ: sau khi form submit)
-      // Sử dụng wrappedRefreshFn để đảm bảo lastInvalidationRefreshRef được update
       const invalidateKey = getInvalidateQueryKey?.()
       if (invalidateKey) {
+        const keyString = JSON.stringify(invalidateKey)
+        
+        // Chỉ đăng ký lại nếu key thay đổi hoặc chưa có đăng ký
+        if (keyString === lastInvalidateKeyRef.current && unregisterRef.current) {
+          logger.debug("Refresh callback already registered for this key, skipping", {
+            queryKey: invalidateKey.slice(0, 3),
+          })
+          return
+        }
+
         // Unregister callback cũ nếu có
         if (unregisterRef.current) {
-          logger.debug("Unregistering old refresh callback")
+          logger.debug("Unregistering old refresh callback (key changed or re-registering)")
           unregisterRef.current()
         }
 
-        // Đăng ký callback mới với cả exact key và prefix key để đảm bảo luôn tìm thấy
-        // Sử dụng wrappedRefreshFn để update lastInvalidationRefreshRef khi registry trigger
+        lastInvalidateKeyRef.current = keyString
         unregisterRef.current = resourceRefreshRegistry.register(
           invalidateKey,
           wrappedRefreshFn,
@@ -120,7 +117,7 @@ export const useResourceTableRefresh = ({
         
         logger.debug("Registered refresh callback in global registry", {
           queryKey: invalidateKey.slice(0, 3),
-          queryKeyFull: JSON.stringify(invalidateKey),
+          queryKeyFull: keyString,
           hasCallback: !!refreshFn,
         })
       } else {
@@ -195,9 +192,6 @@ export const useResourceTableRefresh = ({
     const invalidateKey = getInvalidateQueryKey()
     if (!invalidateKey || !Array.isArray(invalidateKey)) return
 
-    const refreshTimeout: NodeJS.Timeout | null = null
-
-   
     // Subscribe to query cache events
     const unsubscribe = queryClient.getQueryCache().subscribe((event) => {
       if (!event?.query) return
@@ -268,21 +262,9 @@ export const useResourceTableRefresh = ({
       }
     })
 
-    // TẮT POLLING HOÀN TOÀN
-    // Registry đã trigger refresh ngay sau khi mutation thành công và hoạt động tốt
-    // Polling chỉ tạo ra refresh không cần thiết và làm tăng số lần fetch
-    // Nếu registry không hoạt động, có thể bật lại polling nhưng với interval cao hơn (10 giây)
-    // checkInterval = setInterval(checkAndRefresh, 2000)
-
     return () => {
       unsubscribe()
-      // Không cần clearInterval vì đã tắt polling
-      // if (checkInterval) {
-      //   clearInterval(checkInterval)
-      // }
-      if (refreshTimeout) {
-        clearTimeout(refreshTimeout)
-      }
+
     }
   }, [queryClient, getInvalidateQueryKey])
 

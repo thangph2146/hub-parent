@@ -1,7 +1,7 @@
 import type { DataTableResult } from "@/components/tables"
-import { logger } from "@/lib/config/logger"
+import { logger } from "@/utils"
 import type { ResourcePagination, ResourceResponse } from "../types"
-import { validateCUID } from "@/lib/api/validation"
+import { validateCUID } from "@/utils"
 
 export const serializeDate = (date: Date | string | null | undefined): string | null => {
   if (!date) return null

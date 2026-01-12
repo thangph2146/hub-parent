@@ -16,9 +16,9 @@
  */
 
 // Config types
-export type { AdminFeatureConfig } from "./config-generator";
-export type { ServerConfig } from "./server-generator";
-export type { CompleteFeatureConfig, GeneratedFiles } from "./create-feature";
+export type { AdminFeatureConfig } from "./generators/config-generator";
+export type { ServerConfig } from "./generators/server-generator";
+export type { CompleteFeatureConfig, GeneratedFiles } from "./generators/create-feature";
 
 // Main generator function - One-stop để tạo feature mới
 export { 
@@ -27,10 +27,10 @@ export {
   createServerConfigFromFeature,
   createApiEndpoints,
   createFeatureFromMinimal
-} from "./create-feature";
+} from "./generators/create-feature";
 
 // File generators - Client (tự động từ config)
-export { generateMessagesFile, generateHooksFile } from "./config-generator";
+export { generateMessagesFile, generateHooksFile } from "./generators/config-generator";
 
 // File generators - Server (tự động từ config + form fields)
 export {
@@ -39,14 +39,14 @@ export {
   generateEventsFile,
   generateServerIndexFile,
   generateAllServerFiles,
-} from "./server-generator";
+} from "./generators/server-generator";
 
 // File generators - Schemas & Mutations (tự động từ form fields)
-export { generateSchemasFile } from "./schema-generator";
-export { generateMutationsFile } from "./mutations-generator";
+export { generateSchemasFile } from "./generators/schema-generator";
+export { generateMutationsFile } from "./generators/mutations-generator";
 
 // File generators - Types (tự động từ form fields)
-export { generateTypesFile } from "./types-generator";
+export { generateTypesFile } from "./generators/types-generator";
 
 // File generators - API Routes (tự động từ endpoints)
 export {
@@ -56,10 +56,10 @@ export {
   generateRestoreRouteFile,
   generateHardDeleteRouteFile,
   generateBulkRouteFile,
-} from "./api-route-generator";
+} from "./generators/api-route-generator";
 
 // Generate script - Lưu files tự động
-export { generateFeatureFiles } from "./generate-feature";
+export { generateFeatureFiles } from "./generators/generate-feature";
 
 // Sync helpers - Tự động generate code snippets để sync query keys và API routes
 export {
@@ -67,7 +67,7 @@ export {
   generateApiRoutesSnippet,
   generateSyncInstructions,
   generateAllSyncSnippets,
-} from "./sync-helpers";
+} from "./generators/sync-helpers";
 
 // Field extractor utilities
 export {
@@ -83,7 +83,7 @@ export {
   generateListedTypeFields,
   generateCreateDataMapping,
   generateUpdateDataMapping,
-} from "./field-extractor";
+} from "./generators/field-extractor";
 
 // Query config utilities
 export {

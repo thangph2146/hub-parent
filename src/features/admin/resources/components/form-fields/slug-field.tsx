@@ -3,8 +3,8 @@
 import { useEffect, useRef, useState, useCallback } from "react"
 import { FieldContent, FieldError } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
-import { generateSlug } from "@/lib/utils/generate-slug"
-import { cn } from "@/lib/utils"
+import { generateSlug } from "@/utils/generate-slug"
+import { cn } from "@/utils"
 import type { ResourceFormField } from "../resource-form"
 
 interface SlugFieldProps<T> {

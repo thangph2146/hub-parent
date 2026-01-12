@@ -3,11 +3,11 @@ import { getAuthInfo } from "@/features/admin/resources/server"
 import { AccountProfileClient } from "./account-profile.client"
 import { NotFoundMessage } from "@/features/admin/resources/components"
 
-export interface AccountProfileProps {
+export interface AccountProfileViewProps {
   variant?: "page" | "dialog" | "sheet"
 }
 
-export const AccountProfile = async ({ variant = "page" }: AccountProfileProps) => {
+export const AccountProfileView = async ({ variant = "page" }: AccountProfileViewProps) => {
   const authInfo = await getAuthInfo()
 
   if (!authInfo.actorId) {

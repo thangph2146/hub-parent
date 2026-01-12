@@ -1,8 +1,8 @@
 import { useCallback } from "react"
 import type { QueryClient, QueryKey } from "@tanstack/react-query"
-import { useResourceRouter, useResourceSegment } from "@/hooks/use-resource-segment"
-import { applyResourceSegmentToPath } from "@/lib/permissions"
-import { logger } from "@/lib/config/logger"
+import { useResourceRouter, useResourceSegment } from "@/hooks"
+import { applyResourceSegmentToPath } from "@/permissions"
+import { logger } from "@/utils"
 
 export interface UseResourceNavigationOptions {
   queryClient?: QueryClient

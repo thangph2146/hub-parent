@@ -8,16 +8,16 @@
  */
 
 import { NextRequest } from "next/server"
-import { createPostRoute } from "@/lib/api/api-route-wrapper"
+import { createPostRoute } from "@/lib"
 import { markGroupMessagesAsRead } from "@/features/admin/chat/server/mutations"
 import {
   extractParams,
   getUserId,
   createAuthContext,
   handleApiError,
-} from "@/lib/api/api-route-helpers"
-import { createSuccessResponse } from "@/lib/config"
-import type { ApiRouteContext } from "@/lib/api/types"
+} from "@/lib"
+import { createSuccessResponse } from "@/lib"
+import type { ApiRouteContext } from "@/types"
 
 async function markGroupReadHandler(req: NextRequest, context: ApiRouteContext, ...args: unknown[]) {
   const userId = getUserId(context)

@@ -3,7 +3,7 @@
 import { IconSize } from "@/components/ui/typography"
 
 import { useCallback, useMemo, useState } from "react"
-import { useResourceRouter } from "@/hooks/use-resource-segment"
+import { useResourceRouter } from "@/hooks"
 import { Plus, RotateCcw, Trash2, AlertTriangle } from "lucide-react"
 
 import { ConfirmDialog } from "@/components/dialogs"
@@ -21,20 +21,20 @@ import {
   useResourceTableLogger,
 } from "@/features/admin/resources/hooks"
 import { normalizeSearch, sanitizeFilters } from "@/features/admin/resources/utils"
-import { apiClient } from "@/lib/api/axios"
-import { apiRoutes } from "@/lib/api/routes"
+import { apiClient } from "@/services/api/axios"
+import { apiRoutes } from "@/constants"
 import { useQueryClient } from "@tanstack/react-query"
-import { queryKeys } from "@/lib/query-keys"
-import { sanitizeSearchQuery } from "@/lib/api/validation"
+import { queryKeys } from "@/constants"
+import { sanitizeSearchQuery } from "@/utils"
 import { useRolesSocketBridge } from "@/features/admin/roles/hooks/use-roles-socket-bridge"
 import { useRoleActions } from "@/features/admin/roles/hooks/use-role-actions"
 import { useRoleFeedback } from "@/features/admin/roles/hooks/use-role-feedback"
 import { useRoleDeleteConfirm } from "@/features/admin/roles/hooks/use-role-delete-confirm"
 import { useRoleColumns } from "@/features/admin/roles/utils/columns"
 import { useRoleRowActions } from "@/features/admin/roles/utils/row-actions"
-import { resourceLogger } from "@/lib/config/resource-logger"
+import { resourceLogger } from "@/utils"
 
-import type { AdminRolesListParams } from "@/lib/query-keys"
+import type { AdminRolesListParams } from "@/constants"
 import type { RoleRow, RolesResponse, RolesTableClientProps } from "../types"
 import { ROLE_CONFIRM_MESSAGES, ROLE_LABELS } from "../constants/messages"
 export const RolesTableClient = ({
@@ -248,7 +248,7 @@ export const RolesTableClient = ({
           totalPages: payload.pagination?.totalPages ?? 0,
         }
 
-        resourceLogger.tableAction({
+        resourceLogger.logAction({
           resource: "roles",
           action: "load-table",
           view: status,
@@ -256,7 +256,7 @@ export const RolesTableClient = ({
           total: result.total,
         })
 
-        resourceLogger.dataStructure({
+        resourceLogger.logStructure({
           resource: "roles",
           dataType: "table",
           structure: {
@@ -685,3 +685,4 @@ export const RolesTableClient = ({
     </>
   )
 }
+

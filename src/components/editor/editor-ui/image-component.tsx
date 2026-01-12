@@ -48,7 +48,7 @@ import {
   getImageAspectRatio,
 } from "@/components/editor/editor-ui/image-sizing"
 import { $isImageNode } from "@/components/editor/nodes/image-node"
-import { cn } from "@/lib/utils"
+import { cn } from "@/utils"
 import { useEditorContainer } from "@/components/editor/context/editor-container-context"
 import {
   Dialog,
@@ -60,7 +60,7 @@ import {
   InsertImageDialog,
   InsertImagePayload,
 } from "@/components/editor/plugins/images-plugin"
-import { Logo } from "../../../../public/svg/Logo"
+import { Logo } from "@/components/icons/logo"
 
 // Cache for image dimensions to prevent layout shift on re-renders
 const imageCache = new Map<string, { width: number; height: number }>()

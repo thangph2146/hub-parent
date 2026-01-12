@@ -9,12 +9,12 @@ import {
   bulkRestoreUsers,
   bulkHardDeleteUsers,
 } from "@/features/admin/users/server/mutations"
-import { PERMISSIONS } from "@/lib/permissions"
-import { createPostRoute } from "@/lib/api/api-route-wrapper"
-import type { ApiRouteContext } from "@/lib/api/types"
-import { createErrorResponse, createSuccessResponse } from "@/lib/config"
-import { validateArray, validateEnum, validateID } from "@/lib/api/validation"
-import { parseRequestBody, createAuthContext, handleApiError } from "@/lib/api/api-route-helpers"
+import { PERMISSIONS } from "@/permissions"
+import { createPostRoute } from "@/lib"
+import type { ApiRouteContext } from "@/types"
+import { createErrorResponse, createSuccessResponse } from "@/lib"
+import { validateArray, validateEnum, validateID } from "@/utils"
+import { parseRequestBody, createAuthContext, handleApiError } from "@/lib"
 
 type BulkAction = "delete" | "restore" | "hard-delete"
 

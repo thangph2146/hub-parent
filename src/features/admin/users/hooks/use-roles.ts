@@ -2,9 +2,9 @@
 
 import { useMemo } from "react"
 import { useQuery } from "@tanstack/react-query"
-import { apiClient } from "@/lib/api/axios"
-import { apiRoutes } from "@/lib/api/routes"
-import { queryKeys } from "@/lib/query-keys"
+import { apiClient } from "@/services/api/axios"
+import { apiRoutes } from "@/constants"
+import { queryKeys } from "@/constants"
 import { createAdminQueryOptions } from "@/features/admin/resources/query-config"
 import type { Role } from "../utils"
 

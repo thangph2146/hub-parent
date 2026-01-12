@@ -1,7 +1,7 @@
 import { useMemo } from "react"
 import type { DataTableColumn } from "@/components/tables"
 import { useDynamicFilterOptions } from "@/features/admin/resources/hooks/use-dynamic-filter-options"
-import { apiRoutes } from "@/lib/api/routes"
+import { apiRoutes } from "@/constants"
 import { Switch } from "@/components/ui/switch"
 import type { PostRow } from "../types"
 import { TypographySpanSmall, TypographySpanSmallMuted, TypographyP } from "@/components/ui/typography"

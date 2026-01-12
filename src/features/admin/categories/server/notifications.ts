@@ -1,4 +1,4 @@
-import { resourceLogger } from "@/lib/config/resource-logger"
+import { resourceLogger } from "@/utils"
 import { createNotificationForAllAdmins, emitNotificationToAllAdminsAfterCreate } from "@/features/admin/notifications/server/mutations"
 import { getActorInfo, formatItemNames, logNotificationError } from "@/features/admin/notifications/server/notification-helpers"
 import { NotificationKind } from "@prisma/client"
@@ -101,11 +101,11 @@ export const notifySuperAdminsOfCategoryAction = async (
     }
   } catch (error) {
     // Log error nhưng không throw để không ảnh hưởng đến main operation
-    resourceLogger.actionFlow({
+    resourceLogger.logFlow({
       resource: "categories",
       action: action === "create" ? "create" : action === "update" ? "update" : action === "delete" ? "delete" : action === "restore" ? "restore" : "hard-delete",
       step: "error",
-      metadata: { categoryId: category.id, error: error instanceof Error ? error.message : String(error) },
+      details: { categoryId: category.id, error: error instanceof Error ? error.message : String(error) },
     })
   }
 }
@@ -118,11 +118,11 @@ export const notifySuperAdminsOfBulkCategoryAction = async (
 ) => {
   const startTime = Date.now()
   
-  resourceLogger.actionFlow({
+  resourceLogger.logFlow({
     resource: "categories",
     action: action === "delete" ? "bulk-delete" : action === "restore" ? "bulk-restore" : "bulk-hard-delete",
     step: "start",
-    metadata: { count, categoryCount: categories?.length || 0, actorId },
+    details: { count, categoryCount: categories?.length || 0, actorId },
   })
 
   try {
@@ -193,12 +193,12 @@ export const notifySuperAdminsOfBulkCategoryAction = async (
       )
     }
 
-    resourceLogger.actionFlow({
+    resourceLogger.logFlow({
       resource: "categories",
       action: action === "delete" ? "bulk-delete" : action === "restore" ? "bulk-restore" : "bulk-hard-delete",
       step: "success",
-      duration: Date.now() - startTime,
-      metadata: { count, categoryCount: categories?.length || 0 },
+      durationMs: Date.now() - startTime,
+      details: { count, categoryCount: categories?.length || 0 },
     })
   } catch (error) {
     logNotificationError("categories", action === "delete" ? "bulk-delete" : action === "restore" ? "bulk-restore" : "bulk-hard-delete", error as Record<string, unknown>, { count })

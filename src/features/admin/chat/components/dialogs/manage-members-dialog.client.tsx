@@ -25,12 +25,12 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Label } from "@/components/ui/label"
 import { Loader2, UserPlus, UserMinus, ShieldCheck } from "lucide-react"
-import { logger } from "@/lib/config/logger"
-import type { Group, GroupRole } from "@/components/chat/types"
-import { apiRoutes } from "@/lib/api/routes"
-import { requestJson, toJsonBody } from "@/lib/api/client"
-import { withApiBase } from "@/lib/config/api-paths"
-import { useToast } from "@/hooks/use-toast"
+import { logger } from "@/utils"
+import type { Group, GroupRole } from "@/features/admin/chat/types"
+import { apiRoutes } from "@/constants"
+import { requestJson, toJsonBody } from "@/services/api/client"
+import { withApiBase } from "@/utils"
+import { useToast } from "@/hooks"
 
 interface UserOption {
   id: string
@@ -67,7 +67,7 @@ export const ManageMembersDialog = ({
   const searchUsers = useCallback(async (query: string = "") => {
     setIsLoading(true)
     try {
-      const { apiRoutes } = await import("@/lib/api/routes")
+      const { apiRoutes } = await import("@/constants/api-routes")
       const response = await requestJson<UserOption[]>(withApiBase(apiRoutes.adminUsers.search(query)))
       if (!response.ok) throw new Error(response.error || "Failed to search users")
       const data = Array.isArray(response.data) ? response.data : []

@@ -1,8 +1,8 @@
 import { Slot } from "@radix-ui/react-slot"
 import { cva, type VariantProps } from "class-variance-authority"
 
-import { cn } from "@/lib/utils"
-import { responsiveTextSizes, fontWeights, lineHeights, iconSizes } from "@/lib/typography"
+import { cn } from "@/utils"
+import { responsiveTextSizes, fontWeights, lineHeights, iconSizes } from "@/constants"
 import { Separator } from "@/components/ui/separator"
 
 const buttonGroupBodySmall = `${responsiveTextSizes.small} ${fontWeights.normal} ${lineHeights.relaxed}`
@@ -85,3 +85,4 @@ export {
   ButtonGroupText,
   buttonGroupVariants,
 }
+

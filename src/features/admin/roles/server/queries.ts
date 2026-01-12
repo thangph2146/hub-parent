@@ -1,5 +1,5 @@
 import type { Prisma } from "@prisma/client"
-import { prisma } from "@/lib/prisma"
+import { prisma } from "@/services/prisma"
 import {
   validatePagination,
   buildPagination,
@@ -120,7 +120,7 @@ export const getRoleColumnOptions = async (
 
 export const getAllPermissionsOptions = async (): Promise<Array<{ label: string; value: string }>> => {
   try {
-    const { PERMISSIONS } = await import("@/lib/permissions")
+    const { PERMISSIONS } = await import("@/permissions")
     
     // Map resource names to Vietnamese labels
     const resourceLabels: Record<string, string> = {

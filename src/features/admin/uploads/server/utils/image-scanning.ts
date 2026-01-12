@@ -5,8 +5,8 @@
 
 import { promises as fs } from "fs"
 import path from "path"
-import { isValidImageFile, IMAGES_DIR, STORAGE_DIR } from "@/lib/utils/file-utils"
-import { logger } from "@/lib/config/logger"
+import { isValidImageFile, IMAGES_DIR, STORAGE_DIR } from "@/lib"
+import { logger } from "@/utils"
 
 export interface ScannedImage {
   fileName: string
@@ -117,4 +117,5 @@ export const scanDirectoryForImages = async (
 
   return images
 };
+
 

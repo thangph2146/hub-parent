@@ -1,5 +1,5 @@
 import type { Metadata } from "next"
-import { AdminHeader } from "@/components/layouts/headers"
+import { AdminHeader } from "@/components/layout/headers"
 import { MessagesPage } from "@/features/admin/chat/components/messages-page"
 import { MessagesPageSuspense } from "@/features/admin/resources/components"
 import { createNestedBreadcrumbs } from "@/features/admin/resources/utils"

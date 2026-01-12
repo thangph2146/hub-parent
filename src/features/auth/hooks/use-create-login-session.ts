@@ -13,10 +13,10 @@
 
 import { useEffect, useRef } from "react"
 import { useSession } from "next-auth/react"
-import { apiClient } from "@/lib/api/axios"
-import { apiRoutes } from "@/lib/api/routes"
-import { logger } from "@/lib/config"
-import { extractAxiosErrorMessage } from "@/lib/utils"
+import { apiClient } from "@/services/api/axios"
+import { apiRoutes } from "@/constants"
+import { logger } from "@/utils"
+import { extractAxiosErrorMessage } from "@/utils"
 
 const SESSION_CREATED_KEY_PREFIX = "session_created_"
 const SESSION_CREATED_EXPIRY_MS = 5 * 60 * 1000 // 5 phút - đủ để tránh duplicate calls nhưng vẫn cho phép tạo lại nếu cần

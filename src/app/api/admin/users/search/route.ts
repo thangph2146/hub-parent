@@ -8,10 +8,10 @@
  */
 
 import { NextRequest } from "next/server"
-import { createApiRoute } from "@/lib/api/api-route-wrapper"
-import { prisma } from "@/lib/prisma"
-import type { ApiRouteContext } from "@/lib/api/types"
-import { createSuccessResponse, createErrorResponse } from "@/lib/config"
+import { createApiRoute } from "@/lib"
+import { prisma } from "@/services/prisma"
+import type { ApiRouteContext } from "@/types"
+import { createSuccessResponse, createErrorResponse } from "@/lib"
 
 async function searchUsersHandler(req: NextRequest, context: ApiRouteContext) {
   if (!context.session?.user?.id) {

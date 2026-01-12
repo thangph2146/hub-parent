@@ -1,8 +1,8 @@
 "use server"
 
 import type { Prisma } from "@prisma/client"
-import { PERMISSIONS, canPerformAnyAction } from "@/lib/permissions"
-import { prisma } from "@/lib/prisma"
+import { PERMISSIONS, canPerformAnyAction } from "@/permissions"
+import { prisma } from "@/services/prisma"
 import { mapSessionRecord, type SessionWithRelations } from "./helpers"
 import type { ListedSession } from "../types"
 import type { BulkActionResult } from "../types"

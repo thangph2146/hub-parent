@@ -1,7 +1,7 @@
 "use client"
 
 import type { CategoryRow } from "../types"
-import { queryKeys, type AdminCategoriesListParams } from "@/lib/query-keys"
+import { queryKeys, type AdminCategoriesListParams } from "@/constants"
 import { useResourceSocketBridge } from "@/features/admin/resources/hooks/use-resource-socket-bridge"
 import { matchesSearch, matchesFilters } from "../utils/socket-helpers"
 

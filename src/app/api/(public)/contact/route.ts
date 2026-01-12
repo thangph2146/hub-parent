@@ -4,11 +4,11 @@
  * Submit contact form - no authentication required
  */
 import { NextRequest } from "next/server"
-import { prisma } from "@/lib/prisma"
+import { prisma } from "@/services/prisma"
 import { CreateContactRequestSchema } from "@/features/admin/contact-requests/server/schemas"
-import { createErrorResponse, createSuccessResponse } from "@/lib/config"
+import { createErrorResponse, createSuccessResponse } from "@/lib"
 import { notifySuperAdminsOfContactRequestAction } from "@/features/admin/contact-requests/server/notifications"
-import { logger } from "@/lib/config/logger"
+import { logger } from "@/utils"
 
 export async function POST(req: NextRequest) {
   try {

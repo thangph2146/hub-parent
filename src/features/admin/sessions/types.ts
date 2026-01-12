@@ -1,5 +1,5 @@
 import type { ResourceResponse, BaseResourceTableClientProps } from "@/features/admin/resources/types"
-import type { ApiResponsePayload } from "@/lib/config/api-response"
+import type { ApiResponsePayload } from "@/types"
 
 export interface SessionRow {
   id: string
@@ -49,7 +49,7 @@ export interface ListedSession {
   userEmail?: string
 }
 
-export interface SessionDetail {
+export interface SessionDetailInfo {
   id: string
   userId: string
   accessToken: string

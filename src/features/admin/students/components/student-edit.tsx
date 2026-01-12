@@ -5,7 +5,7 @@ import type { StudentEditClientProps } from "./student-edit.client"
 import { getActiveUsersForSelect } from "@/features/admin/users/server/queries"
 import { getAuthInfo } from "@/features/admin/resources/server"
 import { NotFoundMessage } from "@/features/admin/resources/components"
-import { PERMISSIONS, canPerformAnyAction } from "@/lib/permissions"
+import { PERMISSIONS, canPerformAnyAction } from "@/permissions"
 
 export interface StudentEditProps {
   studentId: string

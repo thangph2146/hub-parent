@@ -4,7 +4,7 @@
  */
 
 import { ConfirmDialog } from "@/components/dialogs/confirm-dialog"
-import { logger } from "@/lib/config/logger"
+import { logger } from "@/utils"
 import type {
   BulkDeleteConfirmState,
   SingleDeleteConfirmState,

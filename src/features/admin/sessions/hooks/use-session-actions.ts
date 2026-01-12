@@ -1,5 +1,5 @@
-import { apiRoutes } from "@/lib/api/routes"
-import { queryKeys } from "@/lib/query-keys"
+import { apiRoutes } from "@/constants"
+import { queryKeys } from "@/constants"
 import { useResourceActions, useToggleStatus } from "@/features/admin/resources/hooks"
 import type { SessionRow } from "../types"
 import type { FeedbackVariant } from "@/components/dialogs"

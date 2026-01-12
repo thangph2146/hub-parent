@@ -1,8 +1,8 @@
-import { prisma } from "@/lib/prisma"
-import { getSocketServer } from "@/lib/socket/state"
+import { prisma } from "@/services/prisma"
+import { getSocketServer } from "@/services/socket/state"
 import { mapUserRecord, serializeUserForTable } from "./helpers"
 import type { UserRow } from "../types"
-import { resourceLogger } from "@/lib/config/resource-logger"
+import { resourceLogger } from "@/utils"
 
 const SUPER_ADMIN_ROOM = "role:super_admin"
 
@@ -45,22 +45,22 @@ export const emitUserUpsert = async (
   const io = getSocketServer()
   
   if (!io) {
-    resourceLogger.actionFlow({
+    resourceLogger.logFlow({
       resource: "users",
       action: "socket-update",
       step: "error",
-      metadata: { userId, error: "Socket server not available", type: "single" },
+      details: { userId, error: "Socket server not available", type: "single" },
     })
     return
   }
 
   const row = await fetchUserRow(userId)
   if (!row) {
-    resourceLogger.actionFlow({
+    resourceLogger.logFlow({
       resource: "users",
       action: "socket-update",
       step: "error",
-      metadata: { userId, error: "User not found", type: "single" },
+      details: { userId, error: "User not found", type: "single" },
     })
     if (previousStatus) {
       emitUserRemove(userId, previousStatus)
@@ -71,11 +71,11 @@ export const emitUserUpsert = async (
   const newStatus = resolveStatusFromRow(row)
 
   // Log trước khi emit với chi tiết đầy đủ
-  resourceLogger.actionFlow({
+  resourceLogger.logFlow({
     resource: "users",
     action: "socket-update",
     step: "start",
-    metadata: { 
+    details: { 
       userId, 
       previousStatus, 
       newStatus, 
@@ -92,11 +92,11 @@ export const emitUserUpsert = async (
   })
 
   // Log sau khi emit thành công
-  resourceLogger.actionFlow({
+  resourceLogger.logFlow({
     resource: "users",
     action: "socket-update",
     step: "success",
-    metadata: { userId, userName: row.name, type: "single" },
+    details: { userId, userName: row.name, type: "single" },
   })
 }
 
@@ -108,22 +108,22 @@ export const emitBatchUserUpsert = async (
   if (!io || userIds.length === 0) return
 
   const startTime = Date.now()
-  resourceLogger.actionFlow({
+  resourceLogger.logFlow({
     resource: "users",
     action: "socket-update",
     step: "start",
-    metadata: { count: userIds.length, previousStatus, type: "batch" },
+    details: { count: userIds.length, previousStatus, type: "batch" },
   })
 
   try {
     // Fetch all users in parallel với error handling
     const userPromises = userIds.map((id) => 
       fetchUserRow(id).catch((error) => {
-        resourceLogger.actionFlow({
+        resourceLogger.logFlow({
           resource: "users",
           action: "socket-update",
           step: "error",
-          metadata: { userId: id, error: error instanceof Error ? error.message : String(error) },
+          details: { userId: id, error: error instanceof Error ? error.message : String(error) },
         })
         return null
       })
@@ -143,20 +143,20 @@ export const emitBatchUserUpsert = async (
         })),
   })
 
-      resourceLogger.actionFlow({
+      resourceLogger.logFlow({
         resource: "users",
         action: "socket-update",
         step: "success",
-        duration: Date.now() - startTime,
-        metadata: { count: validRows.length, emitted: validRows.length, type: "batch" },
+        durationMs: Date.now() - startTime,
+        details: { count: validRows.length, emitted: validRows.length, type: "batch" },
       })
     }
   } catch (error) {
-    resourceLogger.actionFlow({
+    resourceLogger.logFlow({
       resource: "users",
       action: "socket-update",
       step: "error",
-      metadata: { 
+      details: { 
         count: userIds.length, 
         error: error instanceof Error ? error.message : String(error) 
       },

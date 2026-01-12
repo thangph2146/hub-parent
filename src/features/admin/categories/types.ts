@@ -32,7 +32,7 @@ export interface ListedCategory {
   deletedAt: Date | null
 }
 
-export type CategoryDetail = ListedCategory
+export type CategoryDetailInfo = ListedCategory
 
 export interface ListCategoriesResult {
   data: ListedCategory[]

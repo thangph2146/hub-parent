@@ -4,8 +4,8 @@ import * as React from "react"
 import * as DialogPrimitive from "@radix-ui/react-dialog"
 import { XIcon } from "lucide-react"
 
-import { cn } from "@/lib/utils"
-import { headingSizes, fontWeights, responsiveTextSizes, lineHeights } from "@/lib/typography"
+import { cn } from "@/utils"
+import { headingSizes, fontWeights, responsiveTextSizes, lineHeights } from "@/constants"
 
 const dialogTitleDefault = `${headingSizes.h4} ${fontWeights.bold}`
 const dialogBodySmall = `${responsiveTextSizes.small} ${fontWeights.normal} ${lineHeights.relaxed}`
@@ -145,3 +145,4 @@ export {
   DialogTitle,
   DialogTrigger,
 }
+

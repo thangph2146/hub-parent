@@ -3,7 +3,7 @@
 import * as React from "react"
 import * as CollapsiblePrimitive from "@radix-ui/react-collapsible"
 import { cva, type VariantProps } from "class-variance-authority"
-import { cn } from "@/lib/utils"
+import { cn } from "@/utils"
 
 const collapsibleVariants = cva("", {
   variants: {
@@ -63,3 +63,4 @@ function CollapsibleContent({
 }
 
 export { Collapsible, CollapsibleTrigger, CollapsibleContent }
+

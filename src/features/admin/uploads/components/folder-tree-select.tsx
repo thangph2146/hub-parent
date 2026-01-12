@@ -15,7 +15,7 @@ import {
   CommandList,
 } from "@/components/ui/command"
 import { Check, Folder, ChevronsUpDown } from "lucide-react"
-import { cn } from "@/lib/utils"
+import { cn } from "@/utils"
 import { IconSize } from "@/components/ui/typography"
 import { FolderTreeSelectItem } from "./folder-tree-select-item"
 import { useFolderTree } from "../hooks/use-folder-tree"

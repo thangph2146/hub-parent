@@ -30,7 +30,7 @@ export interface ListedTag {
   deletedAt: Date | null
 }
 
-export type TagDetail = ListedTag
+export type TagDetailInfo = ListedTag
 
 export interface ListTagsResult {
   data: ListedTag[]

@@ -1,9 +1,9 @@
 import { useCallback } from "react"
-import { apiRoutes } from "@/lib/api/routes"
-import { queryKeys } from "@/lib/query-keys"
+import { apiRoutes } from "@/constants"
+import { queryKeys } from "@/constants"
 import { useResourceActions, useToggleStatus } from "@/features/admin/resources/hooks"
 import type { ResourceRefreshHandler } from "@/features/admin/resources/types"
-import { resourceLogger } from "@/lib/config/resource-logger"
+import { resourceLogger } from "@/utils"
 import type { RoleRow } from "../types"
 import type { FeedbackVariant } from "@/components/dialogs"
 import { ROLE_MESSAGES } from "../constants/messages"
@@ -67,11 +67,11 @@ export const useRoleActions = ({
       return { valid: true }
     },
     onSuccess: async (row, newStatus) => {
-      resourceLogger.actionFlow({
+      resourceLogger.logFlow({
         resource: "roles",
         action: "toggle-status",
         step: newStatus ? "success" : "success",
-        metadata: { roleId: row.id, roleName: row.displayName, newStatus },
+        details: { roleId: row.id, roleName: row.displayName, newStatus },
       })
     },
   })

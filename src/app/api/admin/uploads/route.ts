@@ -4,8 +4,8 @@
  */
 
 import { NextRequest } from "next/server"
-import { createPostRoute, createGetRoute, createDeleteRoute } from "@/lib/api/api-route-wrapper"
-import type { ApiRouteContext } from "@/lib/api/types"
+import { createPostRoute, createGetRoute, createDeleteRoute } from "@/lib"
+import type { ApiRouteContext } from "@/types"
 import { UPLOADS_PERMISSION_GROUPS } from "@/features/admin/uploads/config/permissions"
 import {
   uploadImageHandler,

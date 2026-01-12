@@ -9,7 +9,7 @@
  */
 
 import { NextRequest } from "next/server"
-import { createPostRoute } from "@/lib/api/api-route-wrapper"
+import { createPostRoute } from "@/lib"
 import { createMessage } from "@/features/admin/chat/server/mutations"
 import {
   parseRequestBody,
@@ -17,9 +17,9 @@ import {
   createAuthContext,
   handleApiError,
   getStringValue,
-} from "@/lib/api/api-route-helpers"
-import { createSuccessResponse, createErrorResponse } from "@/lib/config"
-import type { ApiRouteContext } from "@/lib/api/types"
+} from "@/lib"
+import { createSuccessResponse, createErrorResponse } from "@/lib"
+import type { ApiRouteContext } from "@/types"
 
 async function sendMessageHandler(req: NextRequest, context: ApiRouteContext) {
   const body = await parseRequestBody(req)

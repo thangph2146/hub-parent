@@ -12,7 +12,7 @@ import {
 } from "@/features/admin/resources/server"
 import type { ListPostsInput, ListedPost, PostDetail } from "./queries"
 import type { PostRow } from "../types"
-import { logger } from "@/lib/config/logger"
+import { logger } from "@/utils"
 
 type PostWithAuthor = Prisma.PostGetPayload<{
   include: {

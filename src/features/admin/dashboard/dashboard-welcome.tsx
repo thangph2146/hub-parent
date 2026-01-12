@@ -18,10 +18,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Flex } from "@/components/ui/flex"
 import { Grid } from "@/components/ui/grid"
-import { useClientOnly } from "@/hooks/use-client-only"
+import { useClientOnly } from "@/hooks"
 import { usePermissions } from "@/features/auth"
-import { PERMISSIONS, isSuperAdmin } from "@/lib/permissions"
-import { cn } from "@/lib/utils"
+import { PERMISSIONS, isSuperAdmin } from "@/permissions"
+import { cn } from "@/utils"
 import { TypographyDescriptionLarge, TypographyTitleLarge, TypographyPSmallMuted, IconSize, TypographySpan } from "@/components/ui/typography"
 
 const containerVariants = {

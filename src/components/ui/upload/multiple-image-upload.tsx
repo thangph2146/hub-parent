@@ -9,13 +9,13 @@ import * as React from "react"
 import { Upload, X, Loader2, CheckCircle2, AlertCircle } from "lucide-react"
 import NextImage from "next/image"
 import { Button } from "@/components/ui/button"
-import { cn } from "@/lib/utils"
-import { apiClient } from "@/lib/api/axios"
-import { apiRoutes } from "@/lib/api/routes"
-import { logger } from "@/lib/config"
+import { cn } from "@/utils"
+import { apiClient } from "@/services/api/axios"
+import { apiRoutes } from "@/constants"
+import { logger } from "@/utils"
 import { TypographyP, TypographyPSmall, TypographyPSmallMuted, IconSize } from "@/components/ui/typography"
 import type { UploadResponse, UploadError } from "@/features/admin/uploads/types"
-import { useToast } from "@/hooks/use-toast"
+import { useToast } from "@/hooks"
 
 // Simple Progress component
 function UploadProgress({ value, className }: { value: number; className?: string }) {
@@ -550,4 +550,5 @@ export function MultipleImageUpload({
     </div>
   )
 }
+
 

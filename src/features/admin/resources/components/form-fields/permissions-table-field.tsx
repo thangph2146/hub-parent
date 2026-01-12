@@ -26,8 +26,8 @@ import {
 } from "@/components/ui/table";
 import { FieldContent, FieldError } from "@/components/ui/field";
 import { Flex } from "@/components/ui/flex";
-import { cn } from "@/lib/utils";
-import { useElementSize } from "@/hooks/use-element-size";
+import { cn } from "@/utils";
+import { useElementSize } from "@/hooks";
 import type { ResourceFormField } from "../resource-form";
 import {
   type PermissionGroup,

@@ -1,8 +1,8 @@
 "use client"
 
 import type { UserRow } from "../types"
-import { queryKeys, type AdminUsersListParams } from "@/lib/query-keys"
-import { resourceLogger } from "@/lib/config/resource-logger"
+import { queryKeys, type AdminUsersListParams } from "@/constants"
+import { resourceLogger } from "@/utils"
 import { useResourceSocketBridge } from "@/features/admin/resources/hooks/use-resource-socket-bridge"
 import { matchesSearch, matchesFilters } from "../utils/socket-helpers"
 

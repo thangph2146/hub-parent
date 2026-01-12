@@ -1,8 +1,8 @@
 import type { Prisma } from "@prisma/client"
-import { prisma } from "@/lib/prisma"
+import { prisma } from "@/services/prisma"
 import { validatePagination } from "@/features/admin/resources/server"
 import { mapSessionRecord, buildWhereClause } from "./helpers"
-import type { ListSessionsInput, SessionDetail, ListSessionsResult } from "../types"
+import type { ListSessionsInput, SessionDetailInfo, ListSessionsResult } from "../types"
 
 export const listSessions = async (params: ListSessionsInput = {}): Promise<ListSessionsResult> => {
   const { page, limit } = validatePagination(params.page, params.limit, 100)
@@ -137,7 +137,7 @@ export const getSessionColumnOptions = async (
   }
 };
 
-export const getSessionById = async (id: string): Promise<SessionDetail | null> => {
+export const getSessionById = async (id: string): Promise<SessionDetailInfo | null> => {
   try {
     const session = await prisma.session.findUnique({
       where: { id },

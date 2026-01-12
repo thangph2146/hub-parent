@@ -1,9 +1,9 @@
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/services/prisma";
 import {
   getSocketServer,
   storeNotificationInCache,
   mapNotificationToPayload,
-} from "@/lib/socket/state";
+} from "@/services/socket/state";
 import {
   createNotificationForAllAdmins,
   emitNotificationToAllAdminsAfterCreate,

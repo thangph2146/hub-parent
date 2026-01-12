@@ -1,5 +1,5 @@
 import { useCallback } from "react"
-import { useResourceRouter } from "@/hooks/use-resource-segment"
+import { useResourceRouter } from "@/hooks"
 import { RotateCcw, Trash2, AlertTriangle, Eye, Pencil, Check, X } from "lucide-react"
 import { renderRowActions, type RowActionConfig } from "@/features/admin/resources/utils/render-row-actions"
 import type { ContactRequestRow } from "../types"

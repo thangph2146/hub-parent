@@ -1,7 +1,7 @@
 import { MetadataRoute } from "next"
 import { unstable_cache } from "next/cache"
-import { appConfig } from "@/lib/config"
-import { prisma } from "@/lib/prisma"
+import { appConfig } from "@/constants"
+import { prisma } from "@/services/prisma"
 
 /**
  * Sitemap for SEO

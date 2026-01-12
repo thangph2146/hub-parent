@@ -2,8 +2,8 @@ import { Slot } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
 import * as React from "react";
 
-import { cn } from "@/lib/utils/index";
-import { iconSizes, responsiveTextSizes, fontWeights, lineHeights } from "@/lib/typography";
+import { cn } from "@/utils";
+import { iconSizes, responsiveTextSizes, fontWeights, lineHeights } from "@/constants";
 
 const buttonBodySmall = `${responsiveTextSizes.small} ${fontWeights.normal} ${lineHeights.relaxed}`
 
@@ -68,3 +68,4 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 Button.displayName = "Button";
 
 export { Button, buttonVariants };
+

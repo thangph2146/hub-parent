@@ -10,7 +10,7 @@ import {
   type ResourceFormField,
 } from "@/features/admin/resources/components";
 import { Button } from "@/components/ui/button";
-import { useResourceRouter } from "@/hooks/use-resource-segment";
+import { useResourceRouter } from "@/hooks";
 import { formatDateVi } from "@/features/admin/resources/utils";
 import {
   parseAddressToFormFields,
@@ -19,8 +19,9 @@ import { AccountEditClient } from "./account-edit.client";
 import type { AccountProfile } from "../types";
 import { useResourceDetailLogger } from "@/features/admin/resources/hooks";
 import { usePermissions } from "@/features/auth";
-import { PERMISSIONS } from "@/lib/permissions";
+import { PERMISSIONS } from "@/permissions";
 import { getBaseAccountFields, getAccountFormSections, type AccountFormData } from "../form-fields";
+import { ACCOUNT_LABELS } from "../constants";
 
 export interface AccountProfileClientProps {
   account: AccountProfile;
@@ -92,7 +93,7 @@ export const AccountProfileClient = ({
         data={formData}
         fields={fields}
         sections={sections}
-        title="Thông tin tài khoản"
+        title={ACCOUNT_LABELS.MY_PROFILE}
         description="Quản lý thông tin cá nhân và cài đặt tài khoản của bạn"
         readOnly={true}
         showCard={variant === "page" ? false : true}
@@ -104,20 +105,20 @@ export const AccountProfileClient = ({
         action="update"
         footerButtons={
           canUpdate ? (
-              <Button
-                variant="default"
-                onClick={() => setIsEditing(true)}
-              >
-                <Flex align="center" gap={2}>
-                  <IconSize size="sm">
-                    <Edit />
-                  </IconSize>
-                  Chỉnh sửa
-                </Flex>
-              </Button>
+            <Button
+              variant="default"
+              onClick={() => setIsEditing(true)}
+            >
+              <Flex align="center" gap={2}>
+                <IconSize size="sm">
+                  <Edit />
+                </IconSize>
+                {ACCOUNT_LABELS.EDIT_PROFILE}
+              </Flex>
+            </Button>
           ) : null
         }
-    />
+      />
     </>
   );
 };

@@ -1,7 +1,7 @@
 import { Suspense } from "react"
 import { ResourceTableClient } from "./resource-table.client"
 import type { ResourceTableClientProps } from "./resource-table.client"
-import { ResourceTableSkeleton } from "@/components/layouts/skeletons"
+import { ResourceTableSkeleton } from "@/components/skeletons"
 
 export interface ResourceTableProps<T extends object> extends Omit<ResourceTableClientProps<T>, "initialDataByView" | "loader"> {
   initialDataByView?: ResourceTableClientProps<T>["initialDataByView"]

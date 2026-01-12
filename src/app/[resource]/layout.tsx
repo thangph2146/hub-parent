@@ -1,16 +1,17 @@
 import { Suspense } from "react"
 import type { Metadata } from "next"
-import { getSession } from "@/lib/auth/auth-server"
-import { getMenuData, getOpenGraphConfig, getTwitterConfig } from "@/lib/config"
-import { AppSidebar } from "@/components/layouts/navigation"
-import { NavMainWithBadges } from "@/components/layouts/navigation/nav-main-with-badges"
-import { NavMainSkeleton } from "@/components/layouts/skeletons"
+import { getSession } from "@/auth/auth-server"
+import { getMenuData } from "@/utils"
+import { getOpenGraphConfig, getTwitterConfig } from "@/constants"
+import { AppSidebar } from "@/components/layout/navigation"
+import { NavMainWithBadges } from "@/components/layout/navigation/nav-main-with-badges"
+import { NavMainSkeleton } from "@/components/skeletons"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
-import { PermissionGate } from "@/components/layouts/shared"
-import type { Permission } from "@/lib/permissions"
-import { DEFAULT_RESOURCE_SEGMENT } from "@/lib/permissions"
-import { ResourceSegmentProvider } from "@/hooks/use-resource-segment"
-import { ScrollToTop } from "@/components/layouts/scroll-to-top"
+import { PermissionGate } from "@/components/access-control";
+import type { Permission } from "@/permissions"
+import { DEFAULT_RESOURCE_SEGMENT } from "@/permissions"
+import { ResourceSegmentProvider } from "@/components/providers"
+import { ScrollToTop } from "@/components/layout/scroll-to-top"
 
 /**
  * Admin Layout Metadata

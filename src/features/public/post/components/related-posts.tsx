@@ -5,7 +5,7 @@
  * Based on shared categories and tags
  */
 
-import { PostCard } from "@/components/public/post/post-card"
+import { PostCard } from "./post-card"
 import { FileText } from "lucide-react"
 import { TypographyH2, IconSize } from "@/components/ui/typography"
 import { Flex } from "@/components/ui/flex"

@@ -3,8 +3,8 @@
 import * as React from "react"
 import * as LabelPrimitive from "@radix-ui/react-label"
 
-import { cn } from "@/lib/utils"
-import { responsiveTextSizes, fontWeights, lineHeights } from "@/lib/typography"
+import { cn } from "@/utils"
+import { responsiveTextSizes, fontWeights, lineHeights } from "@/constants"
 
 const labelBodySmall = `${responsiveTextSizes.small} ${fontWeights.normal} ${lineHeights.relaxed}`
 
@@ -25,3 +25,4 @@ function Label({
 }
 
 export { Label }
+

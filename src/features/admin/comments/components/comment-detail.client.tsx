@@ -7,12 +7,12 @@ import { ResourceForm } from "@/features/admin/resources/components"
 import { Card } from "@/components/ui/card"
 import { Switch } from "@/components/ui/switch"
 import { formatDateVi } from "../utils"
-import { apiClient } from "@/lib/api/axios"
-import { apiRoutes } from "@/lib/api/routes"
+import { apiClient } from "@/services/api/axios"
+import { apiRoutes } from "@/constants"
 import { useResourceNavigation, useResourceDetailData, useResourceDetailLogger } from "@/features/admin/resources/hooks"
-import { queryKeys } from "@/lib/query-keys"
-import { resourceLogger } from "@/lib/config/resource-logger"
-import { getErrorMessage } from "@/lib/utils"
+import { queryKeys } from "@/constants"
+import { resourceLogger } from "@/utils"
+import { getErrorMessage } from "@/utils"
 import { TypographyP, TypographyPSmallMuted, IconSize } from "@/components/ui/typography"
 import { Flex } from "@/components/ui/flex"
 import { Grid } from "@/components/ui/grid"
@@ -108,7 +108,7 @@ export const CommentDetailClient = ({ commentId, comment, backUrl = "/admin/comm
     async (newStatus: boolean) => {
       if (!canApprove || isToggling || isDeleted) return
 
-      resourceLogger.detailAction({
+      resourceLogger.logAction({
         resource: "comments",
         action: newStatus ? "approve" : "unapprove",
         resourceId: commentId,
@@ -135,7 +135,7 @@ export const CommentDetailClient = ({ commentId, comment, backUrl = "/admin/comm
         
         setApproved(newStatus)
       } catch (error) {
-        resourceLogger.detailAction({
+        resourceLogger.logAction({
           resource: "comments",
           action: newStatus ? "approve" : "unapprove",
           resourceId: commentId,
@@ -227,3 +227,4 @@ export const CommentDetailClient = ({ commentId, comment, backUrl = "/admin/comm
     />
   )
 }
+

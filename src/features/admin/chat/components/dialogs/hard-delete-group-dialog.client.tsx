@@ -12,7 +12,7 @@ import {
 import { Loader2, AlertTriangle } from "lucide-react"
 import { IconSize } from "@/components/ui/typography"
 import { Flex } from "@/components/ui/flex"
-import type { Contact, Group } from "@/components/chat/types"
+import type { Contact, Group } from "@/features/admin/chat/types"
 import { useGroupDeleteConfirm } from "../../hooks/use-group-delete-confirm"
 import { useGroupDialogActions } from "../../hooks/use-group-dialog-actions"
 import { useGroupFeedback } from "../../hooks/use-group-feedback"

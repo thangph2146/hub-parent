@@ -1,8 +1,8 @@
 "use client";
 
 import { ChevronDown } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { useClientOnly } from "@/hooks/use-client-only";
+import { cn } from "@/utils";
+import { useClientOnly } from "@/hooks";
 
 export interface ScrollIndicatorProps {
   /** Function để scroll đến section tiếp theo (tùy chọn nếu đã truyền containerRef) */

@@ -4,7 +4,7 @@ import {
   MessagesPageSkeleton,
   ResourceDetailSkeleton,
   ResourceTableSkeleton,
-} from "@/components/layouts/skeletons"
+} from "@/components/skeletons"
 import { Flex } from "@/components/ui/flex"
 import { TypographyPSmallMuted } from "@/components/ui/typography"
 

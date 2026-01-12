@@ -1,8 +1,8 @@
-import { prisma } from "@/lib/prisma"
-import { getSocketServer } from "@/lib/socket/state"
+import { prisma } from "@/services/prisma"
+import { getSocketServer } from "@/services/socket/state"
 import { mapCategoryRecord, serializeCategoryForTable } from "./helpers"
 import type { CategoryRow } from "../types"
-import { resourceLogger } from "@/lib/config/resource-logger"
+import { resourceLogger } from "@/utils"
 
 const SUPER_ADMIN_ROOM = "role:super_admin"
 
@@ -47,12 +47,11 @@ export const emitCategoryUpsert = async (
     previousStatus,
     newStatus,
   })
-  resourceLogger.socket({
+  resourceLogger.logAction({
     resource: "categories",
     action: "socket-update",
-    event: "category:upsert",
     resourceId: categoryId,
-    payload: { categoryId, previousStatus, newStatus },
+    details: { event: "category:upsert", previousStatus, newStatus },
   })
 }
 
@@ -64,12 +63,11 @@ export const emitCategoryRemove = (categoryId: string, previousStatus: CategoryS
     id: categoryId,
     previousStatus,
   })
-  resourceLogger.socket({
+  resourceLogger.logAction({
     resource: "categories",
     action: "socket-update",
-    event: "category:remove",
     resourceId: categoryId,
-    payload: { categoryId, previousStatus },
+    details: { event: "category:remove", previousStatus },
   })
 }
 

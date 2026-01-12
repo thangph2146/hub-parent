@@ -3,7 +3,7 @@ import { Switch } from "@/components/ui/switch"
 import { Badge } from "@/components/ui/badge"
 import type { DataTableColumn } from "@/components/tables"
 import { useDynamicFilterOptions } from "@/features/admin/resources/hooks/use-dynamic-filter-options"
-import { apiRoutes } from "@/lib/api/routes"
+import { apiRoutes } from "@/constants"
 import type { ContactRequestRow } from "../types"
 import { 
   CONTACT_REQUEST_LABELS, 

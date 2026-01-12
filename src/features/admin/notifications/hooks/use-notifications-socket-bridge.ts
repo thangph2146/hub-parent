@@ -3,18 +3,18 @@
 import { useEffect, useMemo, useState } from "react"
 import { useSession } from "next-auth/react"
 import { useQueryClient } from "@tanstack/react-query"
-import { useSocket } from "@/hooks/use-socket"
-import { logger } from "@/lib/config/logger"
+import { useSocket } from "@/hooks"
+import { logger } from "@/utils"
 import type { NotificationRow } from "../types"
 import type { DataTableResult } from "@/components/tables"
-import { queryKeys } from "@/lib/query-keys"
+import { queryKeys } from "@/constants"
 import { updateResourceQueries } from "@/features/admin/resources/utils/update-resource-queries"
 import {
   insertRowIntoPage,
   removeRowFromPage,
 } from "@/features/admin/resources/utils/socket-helpers"
 import { convertSocketPayloadToRow } from "../utils/socket-helpers"
-import { deduplicateById } from "@/lib/utils"
+import { deduplicateById } from "@/utils"
 
 const calculateTotalPages = (total: number, limit: number): number => {
   return total === 0 ? 0 : Math.ceil(total / limit)
@@ -242,33 +242,60 @@ export const useNotificationsSocketBridge = () => {
             return null
           }
 
-          // Convert payloads to rows and remove duplicates
-          const allRows = payloads
+          // Convert payloads to rows
+          const incomingRows = payloads
             .map((p) => convertSocketPayloadToRow(p, p.userEmail, p.userName))
           
-          // Remove duplicates by ID before sorting
-          const uniqueRows = deduplicateById(allRows)
-          
-          // Sort by createdAt descending
-          const rows = uniqueRows.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-
-          if (rows.length === 0 && data.rows.length === 0) {
+          if (incomingRows.length === 0) {
             return null
           }
 
-          const limitedRows = data.page === 1 ? rows.slice(0, data.limit) : data.rows
-          const total = rows.length
+          // Nếu payload có số lượng lớn (ví dụ >= 10 hoặc >= limit), 
+          // có khả năng đây là full sync cho page 1
+          const isLikelyFullSync = incomingRows.length >= (data.limit || 10)
 
-          logger.debug("Synced notifications in cache", {
-            rowsCount: limitedRows?.length ?? 0,
-            total,
+          let nextRows: NotificationRow[]
+          let nextTotal = data.total
+
+          if (isLikelyFullSync && data.page === 1) {
+            // Full sync cho page 1
+            nextRows = deduplicateById(incomingRows)
+              .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+              .slice(0, data.limit)
+            // Nếu là full sync, total có thể được update nếu payload tin cậy, 
+            // nhưng ở đây ta chỉ update dựa trên số lượng nhận được nếu nó lớn hơn total hiện tại
+            nextTotal = Math.max(data.total, incomingRows.length)
+          } else {
+            // Partial sync - merge vào rows hiện tại
+            const rowsMap = new Map(data.rows.map(r => [r.id, r]))
+            let addedCount = 0
+            
+            incomingRows.forEach(row => {
+              if (!rowsMap.has(row.id)) {
+                addedCount++
+              }
+              rowsMap.set(row.id, row)
+            })
+
+            nextRows = Array.from(rowsMap.values())
+              .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+              .slice(0, data.limit)
+            
+            nextTotal = data.total + addedCount
+          }
+
+          logger.debug("Synced notifications in cache (merged)", {
+            incomingCount: incomingRows.length,
+            rowsCount: nextRows.length,
+            total: nextTotal,
+            isFullSync: isLikelyFullSync && data.page === 1
           })
 
           return {
             ...data,
-            rows: limitedRows ?? [],
-            total,
-            totalPages: calculateTotalPages(total, data.limit),
+            rows: nextRows,
+            total: nextTotal,
+            totalPages: calculateTotalPages(nextTotal, data.limit),
           }
         }
       )

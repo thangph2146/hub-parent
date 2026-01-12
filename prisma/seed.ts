@@ -1,7 +1,7 @@
 import { PrismaClient } from "@prisma/client"
 import bcrypt from "bcryptjs"
 
-import { DEFAULT_ROLES, PERMISSIONS } from "../src/lib/permissions"
+import { DEFAULT_ROLES, PERMISSIONS } from "../src/permissions"
 
 const prisma = new PrismaClient()
 

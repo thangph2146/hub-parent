@@ -1,8 +1,8 @@
 import type { Prisma } from "@prisma/client"
-import { prisma } from "@/lib/prisma"
+import { prisma } from "@/services/prisma"
 import { validatePagination, buildPagination, type ResourcePagination } from "@/features/admin/resources/server"
 import { mapPostRecord, buildWhereClause } from "./helpers"
-import { logger } from "@/lib/config/logger"
+import { logger } from "@/utils"
 
 export interface ListPostsInput {
   page?: number

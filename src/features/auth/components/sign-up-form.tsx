@@ -54,8 +54,8 @@ export function SignUpForm({
 
     try {
       // Tạo user mới - sử dụng apiClient và apiRoutes
-      const { apiClient } = await import("@/lib/api/axios");
-      const { apiRoutes } = await import("@/lib/api/routes");
+      const { apiClient } = await import("@/services/api/axios");
+      const { apiRoutes } = await import("@/constants/api-routes");
 
       await apiClient.post<{ message: string }>(apiRoutes.auth.signUp, {
         name,

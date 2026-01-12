@@ -5,9 +5,9 @@
  */
 import { NextRequest } from "next/server"
 import { getSessionColumnOptions } from "@/features/admin/sessions/server/queries"
-import { createGetRoute } from "@/lib/api/api-route-wrapper"
-import type { ApiRouteContext } from "@/lib/api/types"
-import { createOptionsHandler } from "@/lib/api/api-route-helpers"
+import { createGetRoute } from "@/lib"
+import type { ApiRouteContext } from "@/types"
+import { createOptionsHandler } from "@/lib"
 
 async function getSessionOptionsHandler(req: NextRequest, _context: ApiRouteContext) {
   return createOptionsHandler(req, {

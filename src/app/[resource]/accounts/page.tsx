@@ -1,7 +1,7 @@
 import type { Metadata } from "next"
-import { AdminHeader } from "@/components/layouts/headers"
-import { AccountProfile } from "@/features/admin/accounts/components"
-import { getOpenGraphConfig, getTwitterConfig } from "@/lib/config"
+import { AdminHeader } from "@/components/layout/headers"
+import { AccountProfileView } from "@/features/admin/accounts/components"
+import { getOpenGraphConfig, getTwitterConfig } from "@/constants"
 import { createListBreadcrumbs } from "@/features/admin/resources/utils"
 
 /**
@@ -38,7 +38,7 @@ export default async function AccountsPage() {
     <>
       <AdminHeader breadcrumbs={createListBreadcrumbs({ listLabel: "Tài khoản" })} />
       <div className="flex flex-1 flex-col gap-6 p-6 mx-auto w-full">
-        <AccountProfile variant="page" />
+        <AccountProfileView variant="page" />
       </div>
     </>
   )

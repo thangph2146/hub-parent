@@ -4,8 +4,8 @@ import * as React from "react"
 import * as SheetPrimitive from "@radix-ui/react-dialog"
 import { XIcon } from "lucide-react"
 
-import { cn } from "@/lib/utils"
-import { iconSizes, headingSizes, fontWeights, responsiveTextSizes, lineHeights } from "@/lib/typography"
+import { cn } from "@/utils"
+import { iconSizes, headingSizes, fontWeights, responsiveTextSizes, lineHeights } from "@/constants"
 
 const sheetTitleDefault = `${headingSizes.h4} ${fontWeights.bold}`
 const sheetBodySmall = `${responsiveTextSizes.small} ${fontWeights.normal} ${lineHeights.relaxed}`
@@ -144,3 +144,4 @@ export {
   SheetDescription,
   SheetOverlay,
 }
+

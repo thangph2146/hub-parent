@@ -2,13 +2,13 @@
  * API Route: POST /api/notifications/mark-all-read - Mark all notifications as read
  */
 import { NextRequest } from "next/server"
-import { auth } from "@/lib/auth/auth"
-import { prisma } from "@/lib/prisma"
-import { getSocketServer, getNotificationCache, mapNotificationToPayload } from "@/lib/socket/state"
-import { createErrorResponse, createSuccessResponse } from "@/lib/config"
-import { logger } from "@/lib/config/logger"
-import { isSuperAdmin } from "@/lib/permissions"
-import { buildOwnUnreadNotificationWhereClause, buildNotificationWhereClause, countUnreadNotificationsWithBreakdown } from "@/lib/utils"
+import { auth } from "@/auth/auth"
+import { prisma } from "@/services/prisma"
+import { getSocketServer, getNotificationCache, mapNotificationToPayload } from "@/services/socket/state"
+import { createErrorResponse, createSuccessResponse } from "@/lib"
+import { logger } from "@/utils"
+import { isSuperAdmin } from "@/permissions"
+import { buildOwnUnreadNotificationWhereClause, buildNotificationWhereClause, countUnreadNotificationsWithBreakdown } from "@/lib"
 
 async function markAllAsReadHandler(_req: NextRequest) {
   const session = await auth()

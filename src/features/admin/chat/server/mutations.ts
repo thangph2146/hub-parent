@@ -1,12 +1,12 @@
-import { prisma } from "@/lib/prisma"
+import { prisma } from "@/services/prisma"
 import type { MessageWithRelations } from "./queries"
 import {
   ApplicationError,
   NotFoundError,
   type AuthContext,
 } from "@/features/admin/resources/server"
-import { getSocketServer } from "@/lib/socket/state"
-import { logger } from "@/lib/config/logger"
+import { getSocketServer } from "@/services/socket/state"
+import { logger } from "@/utils"
 import { emitGroupDeleted, emitGroupHardDeleted, emitGroupRestored } from "./events"
 
 export interface CreateMessageInput {

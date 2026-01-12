@@ -9,7 +9,7 @@ import { ConfirmDialog, FeedbackVariant } from "@/components/dialogs"
 import type { DataTableQueryState, DataTableResult } from "@/components/tables"
 import { FeedbackDialog } from "@/components/dialogs"
 import { Button } from "@/components/ui/button"
-import { toast } from "@/hooks/use-toast"
+import { toast } from "@/hooks"
 import { ResourceTableClient, SelectionActionsWrapper } from "@/features/admin/resources/components"
 import type { ResourceViewMode } from "@/features/admin/resources/types"
 import {
@@ -18,22 +18,22 @@ import {
   useResourceTableLogger,
 } from "@/features/admin/resources/hooks"
 import { sanitizeFilters, normalizeSearch } from "@/features/admin/resources/utils"
-import { apiClient } from "@/lib/api/axios"
-import { apiRoutes } from "@/lib/api/routes"
+import { apiClient } from "@/services/api/axios"
+import { apiRoutes } from "@/constants"
 import { useQueryClient } from "@tanstack/react-query"
-import { queryKeys } from "@/lib/query-keys"
+import { queryKeys } from "@/constants"
 import { useStudentsSocketBridge } from "../hooks/use-students-socket-bridge"
 import { useStudentActions } from "../hooks/use-student-actions"
 import { useStudentFeedback } from "../hooks/use-student-feedback"
 import { useStudentDeleteConfirm } from "../hooks/use-student-delete-confirm"
 import { useStudentColumns } from "../utils/columns"
 import { useStudentRowActions } from "../utils/row-actions"
-import { useResourceRouter } from "@/hooks/use-resource-segment"
+import { useResourceRouter } from "@/hooks"
 
-import type { AdminStudentsListParams } from "@/lib/query-keys"
+import type { AdminStudentsListParams } from "@/constants"
 import type { StudentRow, StudentsResponse, StudentsTableClientProps } from "../types"
 import { STUDENT_CONFIRM_MESSAGES, STUDENT_LABELS } from "../constants/messages"
-import { resourceLogger } from "@/lib/config/resource-logger"
+import { resourceLogger } from "@/utils"
 
 export const StudentsTableClient = ({
   canDelete = false,
@@ -131,11 +131,11 @@ export const StudentsTableClient = ({
 
   const handleToggleStatusWithRefresh = useCallback(
     (row: StudentRow, checked: boolean) => {
-      resourceLogger.actionFlow({
+      resourceLogger.logFlow({
         resource: "students",
         action: "toggle-status",
         step: "init",
-        metadata: {
+        details: {
           operation: "user_clicked_toggle_switch",
           resourceId: row.id,
           recordName: row.studentCode,
@@ -259,7 +259,7 @@ export const StudentsTableClient = ({
         totalPages: payload.pagination?.totalPages ?? 0,
       }
 
-      resourceLogger.tableAction({
+      resourceLogger.logAction({
         resource: "students",
         action: "load-table",
         view: params.status ?? "active",
@@ -267,7 +267,7 @@ export const StudentsTableClient = ({
         total: result.total,
       })
 
-      resourceLogger.dataStructure({
+      resourceLogger.logStructure({
         resource: "students",
         dataType: "table",
         structure: {
@@ -699,3 +699,4 @@ export const StudentsTableClient = ({
     </>
   )
 }
+

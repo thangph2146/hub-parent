@@ -1,6 +1,6 @@
 import * as React from "react"
-import { cn } from "@/lib/utils"
-import { typography, iconSizes } from "@/lib/typography"
+import { cn } from "@/utils"
+import { typography, iconSizes } from "@/constants"
 
 /**
  * Typography Components
@@ -357,4 +357,5 @@ export function IconSize({ size = "md", className, children }: IconSizeProps) {
     </span>
   )
 }
+
 

@@ -4,8 +4,8 @@ import * as React from "react"
 import * as SelectPrimitive from "@radix-ui/react-select"
 import { CheckIcon, ChevronDownIcon, ChevronUpIcon } from "lucide-react"
 
-import { cn } from "@/lib/utils"
-import { responsiveTextSizes, fontWeights, lineHeights, iconSizes } from "@/lib/typography"
+import { cn } from "@/utils"
+import { responsiveTextSizes, fontWeights, lineHeights, iconSizes } from "@/constants"
 
 const selectBodySmall = `${responsiveTextSizes.small} ${fontWeights.normal} ${lineHeights.relaxed}`
 const selectIconSizeSm = iconSizes.sm
@@ -190,3 +190,4 @@ export {
   SelectTrigger,
   SelectValue,
 }
+

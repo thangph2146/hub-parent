@@ -6,7 +6,7 @@ import { Flex } from "@/components/ui/flex"
 import { useSearchParams } from "next/navigation"
 import { useMemo } from "react"
 import { FolderOpen, X } from "lucide-react"
-import { cn } from "@/lib/utils"
+import { cn } from "@/utils"
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
 
 interface Category {

@@ -1,5 +1,5 @@
 import * as React from "react"
-import { cn } from "@/lib/utils"
+import { cn } from "@/utils"
 import { Flex } from "@/components/ui/flex"
 import { TypographySpanSmallMuted, IconSize } from "@/components/ui/typography"
 

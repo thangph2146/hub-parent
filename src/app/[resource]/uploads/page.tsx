@@ -1,6 +1,6 @@
 import type { Metadata } from "next"
-import { AdminHeader } from "@/components/layouts/headers"
-import { PERMISSIONS } from "@/lib/permissions"
+import { AdminHeader } from "@/components/layout/headers"
+import { PERMISSIONS } from "@/permissions"
 import { getTablePermissionsAsync } from "@/features/admin/resources/server"
 import { createListBreadcrumbs } from "@/features/admin/resources/utils"
 import { UploadsPageClient } from "../../../features/admin/uploads/components/uploads-page-client"

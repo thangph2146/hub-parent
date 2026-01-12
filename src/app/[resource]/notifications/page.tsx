@@ -1,6 +1,6 @@
 import type { Metadata } from "next"
-import { AdminHeader } from "@/components/layouts/headers"
-import { PERMISSIONS, canPerformAction } from "@/lib/permissions"
+import { AdminHeader } from "@/components/layout/headers"
+import { PERMISSIONS, canPerformAction } from "@/permissions"
 import { getAuthInfo } from "@/features/admin/resources/server"
 import { NotificationsTable } from "@/features/admin/notifications/components/notifications-table"
 import { TablePageSuspense } from "@/features/admin/resources/components"

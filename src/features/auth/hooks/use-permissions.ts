@@ -6,9 +6,9 @@
 
 import { useCallback, useEffect, useMemo } from "react"
 import { useSession } from "next-auth/react"
-import type { Permission } from "@/lib/permissions"
-import { hasAnyPermission } from "@/lib/permissions"
-import { logger } from "@/lib/config"
+import type { Permission } from "@/permissions"
+import { hasAnyPermission } from "@/permissions"
+import { logger } from "@/utils"
 
 // Module-level cache to ensure single log per user/permissions change
 const loggedPermissionsCache = new Map<string, string>()

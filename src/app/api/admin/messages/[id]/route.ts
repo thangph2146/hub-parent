@@ -7,7 +7,7 @@
  */
 
 import { NextRequest } from "next/server"
-import { createPatchRoute } from "@/lib/api/api-route-wrapper"
+import { createPatchRoute } from "@/lib"
 import { markMessageAsRead, markMessageAsUnread } from "@/features/admin/chat/server/mutations"
 import { mapMessageRecord } from "@/features/admin/chat/server/helpers"
 import {
@@ -16,9 +16,9 @@ import {
   getUserId,
   createAuthContext,
   handleApiError,
-} from "@/lib/api/api-route-helpers"
-import { createSuccessResponse, createErrorResponse } from "@/lib/config"
-import type { ApiRouteContext } from "@/lib/api/types"
+} from "@/lib"
+import { createSuccessResponse, createErrorResponse } from "@/lib"
+import type { ApiRouteContext } from "@/types"
 
 async function markMessageHandler(req: NextRequest, context: ApiRouteContext, ...args: unknown[]) {
   const { id: messageId } = await extractParams<{ id: string }>(args)

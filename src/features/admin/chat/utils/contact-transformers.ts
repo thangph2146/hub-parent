@@ -1,5 +1,5 @@
-import type { Contact, Group, GroupMember, Message, MessageType } from "@/components/chat/types"
-import { isMessageUnreadByUser } from "@/components/chat/utils/message-helpers"
+import type { Contact, Group, GroupMember, Message, MessageType } from "@/features/admin/chat/types"
+import { isMessageUnreadByUser } from "@/features/admin/chat/utils/message-helpers"
 
 type DateLike = Date | string | number | null | undefined
 

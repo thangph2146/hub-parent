@@ -1,8 +1,8 @@
 import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
 
-import { cn } from "@/lib/utils"
-import { responsiveTextSizes, fontWeights, lineHeights } from "@/lib/typography"
+import { cn } from "@/utils"
+import { responsiveTextSizes, fontWeights, lineHeights } from "@/constants"
 
 const inputBodyMedium = `${responsiveTextSizes.medium} ${fontWeights.normal} ${lineHeights.relaxed}`
 const inputBodySmall = `${responsiveTextSizes.small} ${fontWeights.normal} ${lineHeights.relaxed}`
@@ -48,3 +48,4 @@ function Input({ className, type, paddingLeft, paddingRight, error, ...props }: 
 }
 
 export { Input }
+

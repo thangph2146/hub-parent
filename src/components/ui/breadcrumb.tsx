@@ -3,8 +3,8 @@ import Link from "next/link"
 import { Slot } from "@radix-ui/react-slot"
 import { ChevronRight, MoreHorizontal } from "lucide-react"
 
-import { cn } from "@/lib/utils"
-import { responsiveTextSizes, fontWeights, lineHeights, iconSizes, responsiveIconSizes } from "@/lib/typography"
+import { cn } from "@/utils"
+import { responsiveTextSizes, fontWeights, lineHeights, iconSizes, responsiveIconSizes } from "@/constants"
 
 const breadcrumbBodySmall = `${responsiveTextSizes.small} ${fontWeights.normal} ${lineHeights.relaxed}`
 const breadcrumbIconSizeXs = iconSizes.xs
@@ -125,3 +125,4 @@ export {
   BreadcrumbSeparator,
   BreadcrumbEllipsis,
 }
+

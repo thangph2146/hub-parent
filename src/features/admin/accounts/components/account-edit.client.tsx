@@ -5,7 +5,7 @@ import {
   type ResourceFormField,
 } from "@/features/admin/resources/components";
 import { useResourceFormSubmit } from "@/features/admin/resources/hooks";
-import { apiRoutes } from "@/lib/api/routes";
+import { apiRoutes } from "@/constants";
 import {
   getBaseAccountFields,
   getAccountFormSections,
@@ -13,12 +13,13 @@ import {
 } from "../form-fields";
 import type { AccountProfile } from "../types";
 import { UpdateAccountSchema } from "../server/schemas";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks";
 import { ZodError } from "zod";
 import {
   parseAddressToFormFields,
   transformAddressFieldsForSubmit,
 } from "../utils";
+import { ACCOUNT_MESSAGES } from "../constants";
 
 export interface AccountEditClientProps {
   account: AccountProfile | null;
@@ -47,9 +48,9 @@ export const AccountEditClient = ({
     method: "PUT",
     resourceId: account?.id,
     messages: {
-      successTitle: "Cập nhật thành công",
+      successTitle: ACCOUNT_MESSAGES.UPDATE_SUCCESS,
       successDescription: "Thông tin tài khoản đã được cập nhật.",
-      errorTitle: "Lỗi cập nhật",
+      errorTitle: ACCOUNT_MESSAGES.UPDATE_ERROR,
     },
     navigation: {
       fallback: backUrl,

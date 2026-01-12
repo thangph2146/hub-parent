@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react"
-import { resourceLogger } from "@/lib/config/resource-logger"
-import type { ResourceAction } from "@/lib/config/resource-logger"
+import { resourceLogger } from "@/utils"
+import type { ResourceAction } from "@/types"
 
 const FORM_LOG_DEBOUNCE_MS = 500
 
@@ -59,7 +59,7 @@ export const useResourceFormLogger = <T extends Record<string, unknown>>({
 
       loggedFormDataKeyRef.current = formDataKey
 
-      resourceLogger.dataStructure({
+      resourceLogger.logStructure({
         resource: resourceName,
         dataType: "form",
         structure: {
@@ -84,7 +84,7 @@ export const useResourceFormLogger = <T extends Record<string, unknown>>({
       loggedSubmitRef.current = true
 
       if (resourceId) {
-        resourceLogger.detailAction({
+        resourceLogger.logAction({
           resource: resourceName,
           action: actionType,
           resourceId,
@@ -92,21 +92,21 @@ export const useResourceFormLogger = <T extends Record<string, unknown>>({
         })
       }
 
-      resourceLogger.actionFlow({
+      resourceLogger.logFlow({
         resource: resourceName,
         action: actionType,
         step: "success",
-        metadata: { resourceId: resourceId || undefined },
+        details: { resourceId: resourceId || undefined },
       })
     }
 
     if (submitError && !loggedSubmitRef.current) {
       loggedSubmitRef.current = true
-      resourceLogger.actionFlow({
+      resourceLogger.logFlow({
         resource: resourceName,
         action: actionType,
         step: "error",
-        metadata: { resourceId: resourceId || undefined, error: submitError },
+        details: { resourceId: resourceId || undefined, error: submitError },
       })
     }
 

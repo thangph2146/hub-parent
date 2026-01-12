@@ -15,7 +15,7 @@ import { CollapsibleSection } from "@/features/public/post/components/collapsibl
 import { PostCategoryNav } from "@/features/public/post/components/post-category-nav"
 import { PostTagNav } from "@/features/public/post/components/post-tag-nav"
 import { IconSize } from "@/components/ui/typography"
-import { useClientOnly } from "@/hooks/use-client-only"
+import { useClientOnly } from "@/hooks"
 
 interface Category {
   id: string

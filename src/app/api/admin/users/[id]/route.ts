@@ -8,11 +8,11 @@ import {
   updateUser,
   softDeleteUser,
 } from "@/features/admin/users/server/mutations"
-import { createGetRoute, createPutRoute, createDeleteRoute } from "@/lib/api/api-route-wrapper"
-import type { ApiRouteContext } from "@/lib/api/types"
-import { validateID } from "@/lib/api/validation"
-import { extractParams, parseRequestBody, createAuthContext, handleApiError } from "@/lib/api/api-route-helpers"
-import { createSuccessResponse, createErrorResponse } from "@/lib/config"
+import { createGetRoute, createPutRoute, createDeleteRoute } from "@/lib"
+import type { ApiRouteContext } from "@/types"
+import { validateID } from "@/utils"
+import { extractParams, parseRequestBody, createAuthContext, handleApiError } from "@/lib"
+import { createSuccessResponse, createErrorResponse } from "@/lib"
 
 async function getUserHandler(_req: NextRequest, _context: ApiRouteContext, ...args: unknown[]) {
   const { id } = await extractParams<{ id: string }>(args)

@@ -1,12 +1,12 @@
 import type { Metadata } from "next"
 import { TypographyH2, TypographyPSmallMuted } from "@/components/ui/typography"
-import { AdminHeader } from "@/components/layouts/headers"
+import { AdminHeader } from "@/components/layout/headers"
 import { PostDetail } from "@/features/admin/posts/components/post-detail"
-import { validateRouteId } from "@/lib/utils"
+import { validateRouteId } from "@/utils"
 import { FormPageSuspense } from "@/features/admin/resources/components"
 import { getPostById } from "@/features/admin/posts/server/queries"
 import { createDetailBreadcrumbs, getResourceSegmentFromParams, truncateBreadcrumbLabel } from "@/features/admin/resources/utils"
-import { applyResourceSegmentToPath } from "@/lib/permissions"
+import { applyResourceSegmentToPath } from "@/permissions"
 
 /**
  * Post Detail Page Metadata (Dynamic)

@@ -3,12 +3,12 @@ import { getPostById } from "@/features/admin/posts/server/queries"
 import { serializePostDetail } from "@/features/admin/posts/server/helpers"
 import { updatePost, deletePost, type AuthContext } from "@/features/admin/posts/server/mutations"
 import { updatePostSchema } from "@/features/admin/posts/server/validation"
-import { createGetRoute, createPutRoute, createDeleteRoute } from "@/lib/api/api-route-wrapper"
-import type { ApiRouteContext } from "@/lib/api/types"
-import { validateID } from "@/lib/api/validation"
-import { PERMISSIONS, hasPermission } from "@/lib/permissions"
-import { extractParams, parseRequestBody, createAuthContext, handleApiError } from "@/lib/api/api-route-helpers"
-import { createSuccessResponse, createErrorResponse } from "@/lib/config"
+import { createGetRoute, createPutRoute, createDeleteRoute } from "@/lib"
+import type { ApiRouteContext } from "@/types"
+import { validateID } from "@/utils"
+import { PERMISSIONS, hasPermission } from "@/permissions"
+import { extractParams, parseRequestBody, createAuthContext, handleApiError } from "@/lib"
+import { createSuccessResponse, createErrorResponse } from "@/lib"
 
 async function getPostHandler(_req: NextRequest, context: ApiRouteContext, ...args: unknown[]) {
   const { id } = await extractParams<{ id: string }>(args)

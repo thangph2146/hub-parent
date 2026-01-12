@@ -4,13 +4,13 @@ import Image from "next/image";
 import { ReactNode, useRef } from "react";
 import type { ContentCardButton } from "./content-card";
 import { Flex } from "@/components/ui/flex";
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { FlipWords } from "@/components/ui/flip-words";
 import { TypographyH1, TypographyP } from "@/components/ui/typography";
-import { useSectionHeight } from "@/hooks/use-section-height";
+import { useSectionHeight } from "@/hooks";
 import { ScrollIndicator } from "./scroll-indicator";
 
 export type HeroButton = ContentCardButton;

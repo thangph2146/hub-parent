@@ -1,6 +1,6 @@
 import { useCallback } from "react"
-import { apiRoutes } from "@/lib/api/routes"
-import { queryKeys } from "@/lib/query-keys"
+import { apiRoutes } from "@/constants"
+import { queryKeys } from "@/constants"
 import { useResourceActions, useToggleStatus } from "@/features/admin/resources/hooks"
 import type { ResourceRefreshHandler } from "@/features/admin/resources/types"
 import type { UserRow } from "../types"

@@ -12,9 +12,9 @@ import {
   getPostTagsField,
 } from "../form-fields"
 import { useResourceFormSubmit } from "@/features/admin/resources/hooks"
-import { apiRoutes } from "@/lib/api/routes"
-import { isSuperAdmin } from "@/lib/permissions"
-import { queryKeys } from "@/lib/query-keys"
+import { apiRoutes } from "@/constants"
+import { isSuperAdmin } from "@/permissions"
+import { queryKeys } from "@/constants"
 import type { Prisma } from "@prisma/client"
 
 export interface PostCreateData {

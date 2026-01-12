@@ -3,7 +3,7 @@
  * Permissions constants cho uploads feature
  */
 
-import { PERMISSIONS } from "@/lib/permissions"
+import { PERMISSIONS } from "@/permissions"
 
 /**
  * Uploads permissions

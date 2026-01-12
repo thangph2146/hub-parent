@@ -1,5 +1,5 @@
 import type { Prisma } from "@prisma/client"
-import { prisma } from "@/lib/prisma"
+import { prisma } from "@/services/prisma"
 import {
   validatePagination,
   buildPagination,
@@ -8,7 +8,7 @@ import {
   mapToColumnOptions,
 } from "@/features/admin/resources/server"
 import { mapTagRecord, buildWhereClause } from "./helpers"
-import type { ListTagsInput, TagDetail, ListTagsResult } from "../types"
+import type { ListTagsInput, TagDetailInfo, ListTagsResult } from "../types"
 
 export const listTags = async (params: ListTagsInput = {}): Promise<ListTagsResult> => {
   const { page, limit } = validatePagination(params.page, params.limit, 100)
@@ -91,7 +91,7 @@ export const getTagColumnOptions = async (
   }
 };
 
-export const getTagById = async (id: string): Promise<TagDetail | null> => {
+export const getTagById = async (id: string): Promise<TagDetailInfo | null> => {
   try {
     const tag = await prisma.tag.findUnique({
       where: { id },

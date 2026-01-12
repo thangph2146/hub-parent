@@ -1,9 +1,9 @@
-import { prisma } from "@/lib/prisma"
-import { getSocketServer } from "@/lib/socket/state"
+import { prisma } from "@/services/prisma"
+import { getSocketServer } from "@/services/socket/state"
 import { mapContactRequestRecord, serializeContactRequestForTable } from "./helpers"
 import type { ContactRequestRow } from "../types"
 import type { ListedContactRequest } from "../types"
-import { resourceLogger } from "@/lib/config/resource-logger"
+import { resourceLogger } from "@/utils"
 
 const SUPER_ADMIN_ROOM = "role:super_admin"
 
@@ -183,11 +183,11 @@ export const emitContactRequestBatchUpsert = async (
     previousStatus,
   })
   
-  resourceLogger.actionFlow({
+  resourceLogger.logFlow({
     resource: "contact-requests",
     action: "socket-update",
     step: "success",
-    metadata: { count: rows.length, type: "batch" },
+    details: { count: rows.length, type: "batch" },
   })
 }
 

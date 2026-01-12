@@ -23,12 +23,12 @@ import {
 } from "@/components/ui/field"
 import { Loader2 } from "lucide-react"
 import { IconSize } from "@/components/ui/typography"
-import { logger } from "@/lib/config/logger"
-import type { Group } from "@/components/chat/types"
-import { apiRoutes } from "@/lib/api/routes"
-import { useToast } from "@/hooks/use-toast"
-import { withApiBase } from "@/lib/config/api-paths"
-import { requestJson, toJsonBody } from "@/lib/api/client"
+import { logger } from "@/utils"
+import type { Group } from "@/features/admin/chat/types"
+import { apiRoutes } from "@/constants"
+import { useToast } from "@/hooks"
+import { withApiBase } from "@/utils"
+import { requestJson, toJsonBody } from "@/services/api/client"
 
 interface EditGroupDialogProps {
   open: boolean

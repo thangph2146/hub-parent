@@ -12,7 +12,7 @@ import {
     type ReactNode,
 } from "react"
 import { ChevronLeft, ChevronRight, Eye, EyeOff, Loader2, Info } from "lucide-react"
-import { cn } from "@/lib/utils"
+import { cn } from "@/utils"
 import { Button } from "@/components/ui/button"
 import {
     Table,
@@ -32,7 +32,7 @@ import {
 } from "@/components/ui/select"
 import { TypographySpanSmallMuted, TypographySpanSmall, TypographyPMuted, IconSize } from "@/components/ui/typography"
 import { Flex } from "@/components/ui/flex"
-import { useDebouncedCallback } from "@/hooks/use-debounced-callback"
+import { useDebouncedCallback } from "@/hooks"
 import { ColumnFilterControl } from "./filter-controls/column-filter-control"
 import type { ColumnFilterConfig } from "./filter-controls/types"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
@@ -197,7 +197,12 @@ export function DataTable<T extends object>({
         if (initialData) {
             return Promise.resolve(initialData)
         }
-        return safeLoad(loader, defaultQuery)
+        const promise = safeLoad(loader, defaultQuery)
+        // Reset guard khi initial fetch xong
+        promise.finally(() => {
+            isFetchingRef.current = false
+        })
+        return promise
     })
     const [isPending, startTransition] = useTransition()
     const selectionEnabled = Boolean(selection?.enabled)
@@ -241,13 +246,16 @@ export function DataTable<T extends object>({
     const prevLoaderRef = useRef<DataTableLoader<T> | undefined>(undefined)
     const prevInitialDataRef = useRef<DataTableResult<T> | undefined>(initialData)
     const isFirstMountRef = useRef(true)
-    const isFetchingRef = useRef(false) // Guard để tránh fetch nhiều lần cùng lúc
+    const isFetchingRef = useRef(!initialData) // Nếu không có initialData, ta sẽ fetch ngay trong useState initializer
+    const lastFetchTimeRef = useRef(0)
 
     useEffect(() => {
         // Guard: Nếu đang fetch, không fetch lại
         if (isFetchingRef.current) {
             return
         }
+
+        const now = Date.now()
         // Kiểm tra refreshKey thay đổi - so sánh với giá trị trước đó
         const refreshKeyChanged = prevRefreshKeyRef.current !== refreshKey
         // Kiểm tra loader thay đổi - quan trọng khi chuyển view (active/deleted)
@@ -263,6 +271,7 @@ export function DataTable<T extends object>({
             prevQueryRef.current = query
             prevLoaderRef.current = loader
             prevInitialDataRef.current = initialData
+            lastFetchTimeRef.current = initialData ? now : 0 // Nếu fetch trong useState, lastFetchTime sẽ được update sau
             return
         }
         
@@ -278,11 +287,21 @@ export function DataTable<T extends object>({
         }
 
         const queryChanged = !areQueriesEqual(query, prevQueryRef.current)
+
+        // Safeguard: Tránh refetch quá nhanh (debounce 100ms)
+        const timeSinceLastFetch = now - lastFetchTimeRef.current
+        if (timeSinceLastFetch < 100 && (queryChanged || refreshKeyChanged || loaderChanged)) {
+            // Chỉ log nếu thực sự có ý định fetch
+            console.debug("[DataTable] Refetch throttled", { timeSinceLastFetch })
+            prevQueryRef.current = query
+            return
+        }
         
         // Ưu tiên xử lý initialData thay đổi trước (khi chuyển view)
         // Điều này đảm bảo khi có initialData mới, nó được sử dụng ngay
         if (initialDataChanged && initialData) {
             prevQueryRef.current = query
+            lastFetchTimeRef.current = Date.now()
             // Có initialData mới, sử dụng ngay để tránh flash empty state
             // Tạo promise mới với data được clone để đảm bảo React detect được sự thay đổi
             // Sử dụng queueMicrotask để đảm bảo promise được tạo mới và React có thể detect
@@ -302,6 +321,7 @@ export function DataTable<T extends object>({
         // Khi loader thay đổi (chuyển view) nhưng không có initialData mới
         if (loaderChanged) {
             prevQueryRef.current = query
+            lastFetchTimeRef.current = Date.now()
             // Không có initialData, fetch mới ngay
             isFetchingRef.current = true
             const promise = safeLoad(loader, query)
@@ -315,6 +335,7 @@ export function DataTable<T extends object>({
         // Khi initialData thay đổi thành undefined (chuyển từ active sang deleted)
         if (initialDataChanged && !initialData && !loaderChanged) {
             prevQueryRef.current = query
+            lastFetchTimeRef.current = Date.now()
             // initialData bị clear, fetch mới
             isFetchingRef.current = true
             const promise = safeLoad(loader, query)
@@ -332,6 +353,7 @@ export function DataTable<T extends object>({
         }
 
         prevQueryRef.current = query
+        lastFetchTimeRef.current = Date.now()
 
         // Khi refreshKey thay đổi (từ mutation) - fetch ngay lập tức
         // Nhưng chỉ khi không có initialData mới (đã được xử lý ở trên)
@@ -343,18 +365,19 @@ export function DataTable<T extends object>({
                 isFetchingRef.current = false
             })
             setDataPromise(promise)
-        } else if (queryChanged) {
-            // Query change từ user action - có thể dùng startTransition
-            isFetchingRef.current = true
-            const promise = safeLoad(loader, query)
-            promise.finally(() => {
-                isFetchingRef.current = false
-            })
-            startTransition(() => {
-                setDataPromise(promise)
-            })
+            return
         }
-    }, [loader, query, refreshKey, initialData])
+
+        // Các trường hợp còn lại (query change) - fetch bình thường
+        isFetchingRef.current = true
+        const promise = safeLoad(loader, query)
+        promise.finally(() => {
+            isFetchingRef.current = false
+        })
+        startTransition(() => {
+            setDataPromise(promise)
+        })
+    }, [query, loader, refreshKey, initialData])
 
     const hasAppliedFilters =
         query.search.trim().length > 0 ||

@@ -5,7 +5,7 @@ import {
   motion,
 } from "framer-motion";
 import React, { useEffect, useRef, useState } from "react";
-import { headingSizes, fontWeights, responsiveTextSizes, lineHeights } from "@/lib/typography";
+import { headingSizes, fontWeights, responsiveTextSizes, lineHeights } from "@/constants";
 
 const { semibold } = fontWeights
 

@@ -1,5 +1,5 @@
 import type { Prisma } from "@prisma/client"
-import { prisma } from "@/lib/prisma"
+import { prisma } from "@/services/prisma"
 import { validatePagination, buildPagination, type ResourcePagination } from "@/features/admin/resources/server"
 import {
   applyColumnOptionsStatusFilter,

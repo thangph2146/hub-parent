@@ -12,8 +12,8 @@ import {
 import Link from "next/link";
 import { Flex } from "@/components/ui/flex";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import { useSectionHeight } from "@/hooks/use-section-height";
+import { cn } from "@/utils";
+import { useSectionHeight } from "@/hooks";
 import { ScrollIndicator } from "./scroll-indicator";
 import { motion, useInView } from "framer-motion";
 import { HOME_ROUTES } from "../constants";

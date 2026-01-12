@@ -13,9 +13,9 @@ import {
   ApplicationError,
   NotFoundError,
 } from "@/features/admin/comments/server/mutations"
-import { createGetRoute, createPutRoute, createDeleteRoute } from "@/lib/api/api-route-wrapper"
-import type { ApiRouteContext } from "@/lib/api/types"
-import { createErrorResponse, createSuccessResponse } from "@/lib/config"
+import { createGetRoute, createPutRoute, createDeleteRoute } from "@/lib"
+import type { ApiRouteContext } from "@/types"
+import { createErrorResponse, createSuccessResponse } from "@/lib"
 
 async function getCommentHandler(_req: NextRequest, _context: ApiRouteContext, ...args: unknown[]) {
   const { params } = args[0] as { params: Promise<{ id: string }> }

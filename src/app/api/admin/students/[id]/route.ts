@@ -12,12 +12,12 @@ import {
   type AuthContext,
 } from "@/features/admin/students/server/mutations"
 import { UpdateStudentSchema } from "@/features/admin/students/server/schemas"
-import { createGetRoute, createPutRoute, createDeleteRoute } from "@/lib/api/api-route-wrapper"
-import type { ApiRouteContext } from "@/lib/api/types"
-import { isSuperAdmin } from "@/lib/permissions"
-import { validateID } from "@/lib/api/validation"
-import { extractParams, parseRequestBody, createAuthContext, handleApiError } from "@/lib/api/api-route-helpers"
-import { createSuccessResponse, createErrorResponse } from "@/lib/config"
+import { createGetRoute, createPutRoute, createDeleteRoute } from "@/lib"
+import type { ApiRouteContext } from "@/types"
+import { isSuperAdmin } from "@/permissions"
+import { validateID } from "@/utils"
+import { extractParams, parseRequestBody, createAuthContext, handleApiError } from "@/lib"
+import { createSuccessResponse, createErrorResponse } from "@/lib"
 
 async function getStudentHandler(_req: NextRequest, context: ApiRouteContext, ...args: unknown[]) {
   try {

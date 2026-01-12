@@ -2,7 +2,7 @@
 
 import { TypographyH1, TypographyDescription, TypographyP, TypographyPMuted, IconSize } from "@/components/ui/typography"
 
-import { cn } from "@/lib/utils"
+import { cn } from "@/utils"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { FieldGroup } from "@/components/ui/field"

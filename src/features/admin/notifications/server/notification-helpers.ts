@@ -1,5 +1,5 @@
-import { prisma } from "@/lib/prisma"
-import { resourceLogger } from "@/lib/config/resource-logger"
+import { prisma } from "@/services/prisma"
+import { resourceLogger } from "@/utils"
 
 /**
  * Helper functions chung cho notification files
@@ -23,11 +23,11 @@ export const logNotificationError = (
   metadata: Record<string, unknown>,
   error: unknown
 ) => {
-  resourceLogger.actionFlow({
+  resourceLogger.logFlow({
     resource,
     action: "error",
     step: "error",
-    metadata: { action, ...metadata, error: getErrorMessage(error) },
+    details: { action, ...metadata, error: getErrorMessage(error) },
   })
 }
 

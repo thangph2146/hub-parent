@@ -10,11 +10,11 @@ import {
   type AuthContext,
 } from "@/features/admin/users/server/mutations"
 import { createUserSchema } from "@/features/admin/users/server/validation"
-import { createGetRoute, createPostRoute } from "@/lib/api/api-route-wrapper"
-import type { ApiRouteContext } from "@/lib/api/types"
-import { validatePagination, sanitizeSearchQuery, parseColumnFilters, filtersOrUndefined } from "@/lib/api/validation"
-import { parseRequestBody, createAuthContext, handleApiError } from "@/lib/api/api-route-helpers"
-import { createSuccessResponse, createErrorResponse } from "@/lib/config"
+import { createGetRoute, createPostRoute } from "@/lib"
+import type { ApiRouteContext } from "@/types"
+import { validatePagination, sanitizeSearchQuery, parseColumnFilters, filtersOrUndefined } from "@/utils"
+import { parseRequestBody, createAuthContext, handleApiError } from "@/lib"
+import { createSuccessResponse, createErrorResponse } from "@/lib"
 
 async function getUsersHandler(req: NextRequest, _context: ApiRouteContext) {
   const searchParams = req.nextUrl.searchParams

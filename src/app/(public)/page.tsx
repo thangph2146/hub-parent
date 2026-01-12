@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { appConfig, getOpenGraphConfig, getTwitterConfig } from "@/lib/config";
+import { appConfig, getOpenGraphConfig, getTwitterConfig } from "@/constants"
 import { Home } from "@/features/public/home/components";
 
 /**
@@ -11,7 +11,6 @@ import { Home } from "@/features/public/home/components";
  * - Open Graph và Twitter Card cho social sharing
  * - Sử dụng appConfig để đảm bảo tính nhất quán
  */
-const openGraphConfig = getOpenGraphConfig();
 const twitterConfig = getTwitterConfig();
 
 export const metadata: Metadata = {
@@ -23,22 +22,10 @@ export const metadata: Metadata = {
     canonical: "/",
   },
   openGraph: {
-    // Theo Next.js docs: Open Graph images must be absolute URLs
-    // Đảm bảo tất cả các thuộc tính đều đúng format
-    type: openGraphConfig.type,
-    locale: openGraphConfig.locale,
-    // Sử dụng relative URL, Next.js sẽ tự động resolve từ metadataBase
+    ...getOpenGraphConfig(),
     url: "/",
-    siteName: openGraphConfig.siteName,
     title: appConfig.titleDefault,
     description: appConfig.description,
-    // Images phải là absolute URLs với đầy đủ width, height, alt
-    images: openGraphConfig.images?.map((img) => ({
-      url: img.url, // Đã là absolute URL từ appConfig
-      width: img.width,
-      height: img.height,
-      alt: img.alt,
-    })),
   },
   twitter: {
     ...twitterConfig,

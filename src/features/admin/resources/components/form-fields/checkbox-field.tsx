@@ -3,7 +3,7 @@
 import { FieldContent, FieldError } from "@/components/ui/field"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
-import { cn } from "@/lib/utils"
+import { cn } from "@/utils"
 import { TypographyP } from "@/components/ui/typography"
 import type { ResourceFormField } from "../resource-form"
 import { Flex } from "@/components/ui/flex"

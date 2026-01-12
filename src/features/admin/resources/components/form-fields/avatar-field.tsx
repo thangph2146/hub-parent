@@ -10,12 +10,12 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { CheckCircle2, X, Copy, Check } from "lucide-react"
-import { cn } from "@/lib/utils"
+import { cn } from "@/utils"
 import { TypographyH4, TypographyPMuted, IconSize } from "@/components/ui/typography"
 import { Flex } from "@/components/ui/flex"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { getUserInitials } from "@/features/admin/resources/utils"
-import { logger } from "@/lib/config/logger"
+import { logger } from "@/utils"
 
 export interface AvatarFieldProps {
   value: unknown

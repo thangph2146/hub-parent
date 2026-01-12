@@ -10,10 +10,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
-import { cn } from "@/lib/utils"
+import { cn } from "@/utils"
 import { IconSize } from "@/components/ui/typography"
 import { Flex } from "@/components/ui/flex"
-import { useClientOnly } from "@/hooks/use-client-only"
+import { useClientOnly } from "@/hooks"
 
 const sortOptions = [
   { 

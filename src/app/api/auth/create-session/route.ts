@@ -4,9 +4,10 @@
  */
 
 import { NextRequest } from "next/server"
-import { auth } from "@/lib/auth"
+import { auth } from "@/auth"
 import { createLoginSession } from "@/features/admin/sessions/server/create-login-session"
-import { logger, createSuccessResponse, createErrorResponse } from "@/lib/config"
+import { createSuccessResponse, createErrorResponse } from "@/lib"
+import { logger } from "@/utils"
 
 function getClientIP(request: NextRequest): string | null {
   const forwarded = request.headers.get("x-forwarded-for")

@@ -1,8 +1,8 @@
 import type { Prisma } from "@prisma/client"
-import { prisma } from "@/lib/prisma"
+import { prisma } from "@/services/prisma"
 import { validatePagination, buildPagination } from "@/features/admin/resources/server"
 import { mapStudentRecord, buildWhereClause } from "./helpers"
-import type { ListStudentsInput, StudentDetail, ListStudentsResult } from "../types"
+import type { ListStudentsInput, StudentDetailInfo, ListStudentsResult } from "../types"
 
 export const listStudents = async (params: ListStudentsInput = {}): Promise<ListStudentsResult> => {
   const { page, limit } = validatePagination(params.page, params.limit, 100)
@@ -129,7 +129,7 @@ export const getStudentById = async (
   id: string,
   actorId?: string,
   isSuperAdmin?: boolean
-): Promise<StudentDetail | null> => {
+): Promise<StudentDetailInfo | null> => {
   const where: Prisma.StudentWhereUniqueInput = { id }
   
   try {

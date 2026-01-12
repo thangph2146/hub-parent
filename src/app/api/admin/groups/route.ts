@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server"
-import { createGetRoute, createPostRoute } from "@/lib/api/api-route-wrapper"
+import { createGetRoute, createPostRoute } from "@/lib"
 import { createGroup, listGroups } from "@/features/admin/chat/server"
 import {
   parseRequestBody,
@@ -8,9 +8,9 @@ import {
   handleApiError,
   getStringValue,
   getArrayValue,
-} from "@/lib/api/api-route-helpers"
-import { createSuccessResponse, createErrorResponse } from "@/lib/config"
-import type { ApiRouteContext } from "@/lib/api/types"
+} from "@/lib"
+import { createSuccessResponse, createErrorResponse } from "@/lib"
+import type { ApiRouteContext } from "@/types"
 
 async function createGroupHandler(req: NextRequest, context: ApiRouteContext) {
   const userId = getUserId(context)

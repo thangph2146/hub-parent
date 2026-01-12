@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma"
+import { prisma } from "@/services/prisma"
 import type { AccountProfile } from "../types"
 
 export const getCurrentUserProfile = async (userId: string): Promise<AccountProfile | null> => {

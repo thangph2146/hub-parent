@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react"
 import { useSession } from "next-auth/react"
-import { useSocket } from "@/hooks/use-socket"
+import { useSocket } from "@/hooks"
 
 export const useSocketConnection = () => {
   const { data: session } = useSession()

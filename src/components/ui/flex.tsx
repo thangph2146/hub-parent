@@ -1,6 +1,6 @@
 import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
-import { cn } from "@/lib/utils"
+import { cn } from "@/utils"
 
 // Shared utilities
 const numberToRem = (value: number): string => `${value * 0.25}rem`
@@ -551,3 +551,4 @@ export const Flex = React.forwardRef<HTMLDivElement, FlexProps>(
 )
 
 Flex.displayName = "Flex"
+

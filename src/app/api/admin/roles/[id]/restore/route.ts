@@ -3,11 +3,11 @@
  */
 import { NextRequest } from "next/server"
 import { type AuthContext, restoreRole } from "@/features/admin/roles/server/mutations"
-import { createPostRoute } from "@/lib/api/api-route-wrapper"
-import type { ApiRouteContext } from "@/lib/api/types"
-import { validateID } from "@/lib/api/validation"
-import { extractParams, createAuthContext, handleApiError } from "@/lib/api/api-route-helpers"
-import { createSuccessResponse, createErrorResponse } from "@/lib/config"
+import { createPostRoute } from "@/lib"
+import type { ApiRouteContext } from "@/types"
+import { validateID } from "@/utils"
+import { extractParams, createAuthContext, handleApiError } from "@/lib"
+import { createSuccessResponse, createErrorResponse } from "@/lib"
 
 async function restoreRoleHandler(_req: NextRequest, context: ApiRouteContext, ...args: unknown[]) {
   try {

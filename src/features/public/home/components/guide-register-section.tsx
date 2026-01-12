@@ -7,7 +7,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 import { Button } from "@/components/ui/button";
 import { TypographySpanSmall } from "@/components/ui/typography";
 import Link from "next/link";
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils";
 import { HOME_ROUTES } from "../constants";
 
 const DEFAULT_IMAGE_HEIGHT = "h-[200px] sm:h-[250px] lg:h-[350px] xl:h-[400px]";

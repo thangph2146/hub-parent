@@ -1,5 +1,5 @@
 import type { ResourceResponse, BaseResourceTableClientProps, ResourcePagination, BulkActionResult } from "@/features/admin/resources/types"
-import type { ApiResponsePayload } from "@/lib/config/api-response"
+import type { ApiResponsePayload } from "@/types"
 
 export type ContactStatus = "NEW" | "IN_PROGRESS" | "RESOLVED" | "CLOSED"
 export type ContactPriority = "LOW" | "MEDIUM" | "HIGH" | "URGENT"
@@ -58,7 +58,7 @@ export interface ListedContactRequest {
   } | null
 }
 
-export type ContactRequestDetail = ListedContactRequest
+export type ContactRequestDetailInfo = ListedContactRequest
 
 export interface ListContactRequestsResult {
   data: ListedContactRequest[]

@@ -1,4 +1,4 @@
-import type { Contact } from "@/components/chat/types"
+import type { Contact } from "@/features/admin/chat/types"
 import { applyReadStatus } from "./use-chat-message-helpers"
 
 export const updateMessageReadStatus = (

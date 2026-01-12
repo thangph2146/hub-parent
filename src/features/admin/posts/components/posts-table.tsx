@@ -2,9 +2,9 @@
 import { listPosts } from "../server/queries"
 import { serializePostsList } from "../server/helpers"
 import { PostsTableClient } from "./posts-table.client"
-import { requireAuth, getPermissions } from "@/lib/auth"
-import { PERMISSIONS, hasPermission } from "@/lib/permissions"
-import { logger } from "@/lib/config/logger"
+import { requireAuth, getPermissions } from "@/auth"
+import { PERMISSIONS, hasPermission } from "@/permissions"
+import { logger } from "@/utils"
 
 export interface PostsTableProps {
   canDelete?: boolean

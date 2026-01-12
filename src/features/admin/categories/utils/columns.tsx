@@ -3,7 +3,7 @@ import { TypographyP, TypographyPSmallMuted } from "@/components/ui/typography"
 import { Flex } from "@/components/ui/flex"
 import type { DataTableColumn } from "@/components/tables"
 import { useDynamicFilterOptions } from "@/features/admin/resources/hooks/use-dynamic-filter-options"
-import { apiRoutes } from "@/lib/api/routes"
+import { apiRoutes } from "@/constants"
 import type { CategoryRow } from "../types"
 
 export const useCategoryColumns = () => {

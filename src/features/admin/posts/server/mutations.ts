@@ -1,8 +1,8 @@
 "use server";
 
 import type { Prisma } from "@prisma/client";
-import { PERMISSIONS, hasPermission } from "@/lib/permissions";
-import { prisma } from "@/lib/prisma";
+import { PERMISSIONS, hasPermission } from "@/permissions";
+import { prisma } from "@/services/prisma";
 import { mapPostRecord, type PostWithAuthor } from "./helpers";
 import {
   ApplicationError,
@@ -832,7 +832,7 @@ export const bulkPostsAction = async (
 
     // Emit batch remove events và tạo bulk notification
     if (count > 0) {
-      const { getSocketServer } = await import("@/lib/socket/state");
+      const { getSocketServer } = await import("@/services/socket/state");
       const io = getSocketServer();
       if (io) {
         const removeEvents = posts.map((post) => ({

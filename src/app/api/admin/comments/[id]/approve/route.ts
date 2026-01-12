@@ -6,12 +6,12 @@ import {
   approveComment,
   type AuthContext,
 } from "@/features/admin/comments/server/mutations"
-import { createPostRoute } from "@/lib/api/api-route-wrapper"
-import type { ApiRouteContext } from "@/lib/api/types"
-import { validateID } from "@/lib/api/validation"
-import { extractParams, createAuthContext, handleApiError } from "@/lib/api/api-route-helpers"
-import { createSuccessResponse, createErrorResponse } from "@/lib/config"
-import { resourceLogger } from "@/lib/config"
+import { createPostRoute } from "@/lib"
+import type { ApiRouteContext } from "@/types"
+import { validateID } from "@/utils"
+import { extractParams, createAuthContext, handleApiError } from "@/lib"
+import { createSuccessResponse, createErrorResponse } from "@/lib"
+import { resourceLogger } from "@/utils"
 
 async function approveCommentHandler(_req: NextRequest, context: ApiRouteContext, ...args: unknown[]) {
   try {
@@ -28,11 +28,11 @@ async function approveCommentHandler(_req: NextRequest, context: ApiRouteContext
     await approveComment(ctx, commentId)
     return createSuccessResponse({ message: "Comment approved successfully" })
   } catch (error) {
-    resourceLogger.actionFlow({
+    resourceLogger.logFlow({
       resource: "comments",
       action: "approve",
       step: "error",
-      metadata: { 
+      details: { 
         error: error instanceof Error ? error.message : "Unknown error",
       },
     })

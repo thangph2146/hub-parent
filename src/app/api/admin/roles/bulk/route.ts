@@ -11,11 +11,11 @@ import {
   ApplicationError,
 } from "@/features/admin/roles/server/mutations"
 import { BulkRoleActionSchema } from "@/features/admin/roles/server/schemas"
-import { PERMISSIONS } from "@/lib/permissions"
-import { createPostRoute } from "@/lib/api/api-route-wrapper"
-import type { ApiRouteContext } from "@/lib/api/types"
-import { createSuccessResponse, createErrorResponse } from "@/lib/config"
-import { logger } from "@/lib/config/logger"
+import { PERMISSIONS } from "@/permissions"
+import { createPostRoute } from "@/lib"
+import type { ApiRouteContext } from "@/types"
+import { createSuccessResponse, createErrorResponse } from "@/lib"
+import { logger } from "@/utils"
 
 async function bulkRolesHandler(req: NextRequest, context: ApiRouteContext) {
   let body: unknown

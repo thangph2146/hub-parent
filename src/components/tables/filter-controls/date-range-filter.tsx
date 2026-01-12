@@ -8,7 +8,7 @@ import { useMemo } from "react"
 import { useQuery } from "@tanstack/react-query"
 import { DateRangePicker } from "@/components/ui/date-range-picker"
 import type { ColumnFilterControlProps } from "./types"
-import { apiClient } from "@/lib/api/axios"
+import { apiClient } from "@/services/api/axios"
 
 export function DateRangeFilter<T extends object = object>({
     column,

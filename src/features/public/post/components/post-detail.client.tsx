@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge"
 import { PostContent } from "./post-content"
 import { PostShare } from "./post-share"
 import { formatPostDateLong, formatPostTime } from "../utils/date-formatter"
-import { appConfig } from "@/lib/config"
+import { appConfig } from "@/constants"
 import type { PostDetail } from "../types"
 import { useEffect, useState } from "react"
 

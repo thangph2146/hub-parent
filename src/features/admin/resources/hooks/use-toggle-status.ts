@@ -1,10 +1,10 @@
 import { useCallback, useState } from "react"
 import { useQueryClient } from "@tanstack/react-query"
-import { apiClient } from "@/lib/api/axios"
-import { getErrorMessage } from "@/lib/utils"
-import { resourceLogger } from "@/lib/config/resource-logger"
+import { apiClient } from "@/services/api/axios"
+import { getErrorMessage } from "@/utils"
+import { resourceLogger } from "@/utils"
 import type { ResourceRefreshHandler } from "../types"
-import { toast } from "@/hooks/use-toast"
+import { toast } from "@/hooks"
 import type { QueryKey } from "@tanstack/react-query"
 
 export interface UseToggleStatusConfig<TRow extends { id: string }> {
@@ -42,11 +42,11 @@ export const useToggleStatus = <TRow extends { id: string }>(
       const actionType = newStatus ? "toggle-active" : "toggle-inactive"
       
       // Log bắt đầu toggle action
-      resourceLogger.actionFlow({
+      resourceLogger.logFlow({
         resource: config.resourceName,
         action: "toggle-status",
         step: "start",
-        metadata: {
+        details: {
           resourceId: row.id,
           recordName,
           newStatus,
@@ -58,17 +58,17 @@ export const useToggleStatus = <TRow extends { id: string }>(
 
       if (!config.canManage) {
         const errorMsg = config.messages.NO_MANAGE_PERMISSION || config.messages.NO_PERMISSION
-        resourceLogger.actionFlow({
+        resourceLogger.logFlow({
           resource: config.resourceName,
           action: "toggle-status",
           step: "error",
-          metadata: {
+          details: {
             resourceId: row.id,
             recordName,
             newStatus,
             error: "NO_PERMISSION",
             errorMessage: errorMsg,
-            duration: Date.now() - startTime,
+            durationMs: Date.now() - startTime,
           },
         })
         toast({
@@ -82,17 +82,17 @@ export const useToggleStatus = <TRow extends { id: string }>(
       if (config.validateToggle) {
         const validation = config.validateToggle(row, newStatus)
         if (!validation.valid) {
-          resourceLogger.actionFlow({
+          resourceLogger.logFlow({
             resource: config.resourceName,
             action: "toggle-status",
             step: "error",
-            metadata: {
+            details: {
               resourceId: row.id,
               recordName,
               newStatus,
               error: "VALIDATION_FAILED",
               errorMessage: validation.error,
-              duration: Date.now() - startTime,
+              durationMs: Date.now() - startTime,
             },
           })
           toast({
@@ -114,11 +114,11 @@ export const useToggleStatus = <TRow extends { id: string }>(
 
       try {
         // Log trước khi gọi API
-        resourceLogger.actionFlow({
+        resourceLogger.logFlow({
           resource: config.resourceName,
           action: "toggle-status",
           step: "init",
-          metadata: {
+          details: {
             resourceId: row.id,
             recordName,
             newStatus,
@@ -134,11 +134,11 @@ export const useToggleStatus = <TRow extends { id: string }>(
         const apiDuration = Date.now() - apiStartTime
 
         // Log sau khi API thành công
-        resourceLogger.actionFlow({
+        resourceLogger.logFlow({
           resource: config.resourceName,
           action: "toggle-status",
           step: "success",
-          metadata: {
+          details: {
             resourceId: row.id,
             recordName,
             newStatus,
@@ -162,11 +162,11 @@ export const useToggleStatus = <TRow extends { id: string }>(
         })
 
         // Log trước khi invalidate queries
-        resourceLogger.actionFlow({
+        resourceLogger.logFlow({
           resource: config.resourceName,
           action: "toggle-status",
           step: "init",
-          metadata: {
+          details: {
             resourceId: row.id,
             recordName,
             newStatus,
@@ -183,11 +183,11 @@ export const useToggleStatus = <TRow extends { id: string }>(
         await queryClient.invalidateQueries({ queryKey: config.queryKeys.detail(row.id), refetchType: "active" })
         const invalidateDuration = Date.now() - invalidateStartTime
 
-        resourceLogger.actionFlow({
+        resourceLogger.logFlow({
           resource: config.resourceName,
           action: "toggle-status",
           step: "init",
-          metadata: {
+          details: {
             resourceId: row.id,
             recordName,
             newStatus,
@@ -203,11 +203,11 @@ export const useToggleStatus = <TRow extends { id: string }>(
           await config.onSuccess?.(row, newStatus)
           const onSuccessDuration = Date.now() - onSuccessStartTime
 
-          resourceLogger.actionFlow({
+          resourceLogger.logFlow({
             resource: config.resourceName,
             action: "toggle-status",
             step: "init",
-            metadata: {
+            details: {
               resourceId: row.id,
               recordName,
               newStatus,
@@ -218,23 +218,23 @@ export const useToggleStatus = <TRow extends { id: string }>(
         }
 
         // Log hoàn thành toggle action
-        resourceLogger.actionFlow({
+        resourceLogger.logFlow({
           resource: config.resourceName,
           action: "toggle-status",
           step: "end",
-          metadata: {
+          details: {
             resourceId: row.id,
             recordName,
             newStatus,
             actionType,
-            totalDuration: Date.now() - startTime,
+            totaldurationMs: Date.now() - startTime,
             apiDuration,
             invalidateDuration,
           },
         })
 
         // Log table action để tracking
-        resourceLogger.tableAction({
+        resourceLogger.logAction({
           resource: config.resourceName,
           action: "toggle-status",
           resourceId: row.id,
@@ -248,11 +248,11 @@ export const useToggleStatus = <TRow extends { id: string }>(
         const description = `Không thể ${newStatus ? "kích hoạt" : "vô hiệu hóa"}. Vui lòng thử lại.`
 
         // Log lỗi
-        resourceLogger.actionFlow({
+        resourceLogger.logFlow({
           resource: config.resourceName,
           action: "toggle-status",
           step: "error",
-          metadata: {
+          details: {
             resourceId: row.id,
             recordName,
             newStatus,
@@ -260,7 +260,7 @@ export const useToggleStatus = <TRow extends { id: string }>(
             error: "API_ERROR",
             errorMessage,
             errorTitle,
-            duration: Date.now() - startTime,
+            durationMs: Date.now() - startTime,
           },
         })
 

@@ -14,7 +14,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { FieldSet, FieldLegend, FieldGroup } from "@/components/ui/field"
 import { TypographySpanSmall, TypographySpanSmallMuted, IconSize, TypographyPSmall, TypographyPSmallMuted } from "@/components/ui/typography"
 import { Flex } from "@/components/ui/flex"
-import { logger } from "@/lib/config/logger"
+import { logger } from "@/utils"
 import { SelectionActionsWrapper } from "@/features/admin/resources/components"
 import { useUploadsStore } from "../uploads-store"
 import { useImagesList, useFoldersList } from "../hooks/use-uploads-queries"

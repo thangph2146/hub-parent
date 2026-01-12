@@ -4,13 +4,13 @@
  * - DELETE /api/notifications/[id] - Delete notification (chỉ thông báo cá nhân, không cho phép xóa SYSTEM)
  */
 import { NextRequest } from "next/server"
-import { auth } from "@/lib/auth/auth"
+import { auth } from "@/auth/auth"
 import { deleteNotification } from "@/features/admin/notifications/server/mutations"
-import { prisma } from "@/lib/prisma"
-import { getSocketServer } from "@/lib/socket/state"
-import { mapNotificationToPayload } from "@/lib/socket/state"
-import { createErrorResponse, createSuccessResponse } from "@/lib/config"
-import { logger } from "@/lib/config/logger"
+import { prisma } from "@/services/prisma"
+import { getSocketServer } from "@/services/socket/state"
+import { mapNotificationToPayload } from "@/services/socket/state"
+import { createErrorResponse, createSuccessResponse } from "@/lib"
+import { logger } from "@/utils"
 
 async function patchNotificationHandler(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await auth()

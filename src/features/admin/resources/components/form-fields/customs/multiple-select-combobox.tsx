@@ -17,7 +17,7 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command"
-import { cn } from "@/lib/utils"
+import { cn } from "@/utils"
 import { TypographyPMuted, TypographyP, IconSize } from "@/components/ui/typography"
 import type { ResourceFormField } from "../../resource-form"
 import { Flex } from "@/components/ui/flex"

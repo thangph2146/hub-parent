@@ -6,11 +6,11 @@ import {
   hardDeleteContactRequest,
   type AuthContext,
 } from "@/features/admin/contact-requests/server/mutations"
-import { createDeleteRoute } from "@/lib/api/api-route-wrapper"
-import type { ApiRouteContext } from "@/lib/api/types"
-import { validateID } from "@/lib/api/validation"
-import { extractParams, createAuthContext, handleApiError } from "@/lib/api/api-route-helpers"
-import { createSuccessResponse, createErrorResponse } from "@/lib/config"
+import { createDeleteRoute } from "@/lib"
+import type { ApiRouteContext } from "@/types"
+import { validateID } from "@/utils"
+import { extractParams, createAuthContext, handleApiError } from "@/lib"
+import { createSuccessResponse, createErrorResponse } from "@/lib"
 
 async function hardDeleteContactRequestHandler(_req: NextRequest, context: ApiRouteContext, ...args: unknown[]) {
   try {

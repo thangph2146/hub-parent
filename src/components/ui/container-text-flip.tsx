@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useState, useEffect, useId } from "react";
+import React, { useState, useEffect } from "react";
 
 import { motion } from "framer-motion";
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils";
 
 export interface ContainerTextFlipProps {
   /** Array of words to cycle through in the animation */
@@ -25,10 +25,7 @@ export function ContainerTextFlip({
   textClassName,
   animationDuration = 700,
 }: ContainerTextFlipProps) {
-  const id = useId();
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
-  const [width, setWidth] = useState<number | string>("auto");
-  const textRef = React.useRef<HTMLDivElement>(null);
 
   // Tìm từ dài nhất để đặt min-width ổn định
   const longestWord = [...words].sort((a, b) => b.length - a.length)[0];
@@ -92,3 +89,4 @@ export function ContainerTextFlip({
     </motion.span>
   );
 }
+

@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server"
-import { createPatchRoute } from "@/lib/api/api-route-wrapper"
+import { createPatchRoute } from "@/lib"
 import { updateGroupMemberRole } from "@/features/admin/chat/server"
 import {
   parseRequestBody,
@@ -8,9 +8,9 @@ import {
   createAuthContext,
   handleApiError,
   getStringValue,
-} from "@/lib/api/api-route-helpers"
-import { createSuccessResponse, createErrorResponse } from "@/lib/config"
-import type { ApiRouteContext } from "@/lib/api/types"
+} from "@/lib"
+import { createSuccessResponse, createErrorResponse } from "@/lib"
+import type { ApiRouteContext } from "@/types"
 
 async function updateGroupMemberRoleHandler(req: NextRequest, context: ApiRouteContext, ...args: unknown[]) {
   const userId = getUserId(context)

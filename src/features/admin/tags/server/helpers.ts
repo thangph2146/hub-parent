@@ -8,7 +8,7 @@ import {
   applyStatusFilterFromFilters,
   createSerializeList,
 } from "@/features/admin/resources/server"
-import type { ListTagsInput, ListedTag, TagDetail } from "../types"
+import type { ListTagsInput, ListedTag, TagDetailInfo } from "../types"
 import type { TagRow } from "../types"
 
 type TagWithRelations = Prisma.TagGetPayload<Record<string, never>>
@@ -72,7 +72,7 @@ export const serializeTagForTable = (tag: ListedTag | { id: string; name: string
 
 export const serializeTagsList = createSerializeList(serializeTagForTable)
 
-export const serializeTagDetail = (tag: TagDetail) => {
+export const serializeTagDetail = (tag: TagDetailInfo) => {
   return {
     id: tag.id,
     name: tag.name,

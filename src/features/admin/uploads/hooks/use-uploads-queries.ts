@@ -4,10 +4,10 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import { apiClient } from "@/lib/api/axios"
-import { apiRoutes } from "@/lib/api/routes"
-import { logger } from "@/lib/config/logger"
-import { useToast } from "@/hooks/use-toast"
+import { apiClient } from "@/services/api/axios"
+import { apiRoutes } from "@/constants"
+import { logger } from "@/utils"
+import { useToast } from "@/hooks"
 import { queryKeys } from "../config/query-keys"
 import { useUploadsStore } from "../uploads-store"
 import type { ImageItem, FolderNode, FolderItem } from "../types"

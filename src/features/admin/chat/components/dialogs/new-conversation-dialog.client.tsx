@@ -29,12 +29,12 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { Loader2, User } from "lucide-react"
-import { logger } from "@/lib/config/logger"
-import { requestJson } from "@/lib/api/client"
-import { withApiBase } from "@/lib/config/api-paths"
+import { logger } from "@/utils"
+import { requestJson } from "@/services/api/client"
+import { withApiBase } from "@/utils"
 import { TypographyP, TypographyPSmall, TypographyPMuted, IconSize } from "@/components/ui/typography"
 import { Flex } from "@/components/ui/flex"
-import type { Contact } from "@/components/chat/types"
+import type { Contact } from "@/features/admin/chat/types"
 
 interface UserOption {
   id: string
@@ -58,7 +58,7 @@ export const NewConversationDialog = ({ onSelectUser, existingContactIds = [] }:
   const searchUsers = useCallback(async (query: string = "") => {
     setIsLoading(true)
     try {
-      const { apiRoutes } = await import("@/lib/api/routes")
+      const { apiRoutes } = await import("@/constants/api-routes")
       const res = await requestJson<UserOption[]>(withApiBase(apiRoutes.adminUsers.search(query)))
       if (!res.ok) throw new Error(res.error || "Failed to search users")
       const data = Array.isArray(res.data) ? res.data : []

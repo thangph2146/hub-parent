@@ -6,7 +6,7 @@
 "use client"
 
 import { motion } from "framer-motion"
-import { responsiveTextSizes, fontWeights, lineHeights } from "@/lib/typography"
+import { responsiveTextSizes, fontWeights, lineHeights } from "@/constants"
 
 const loaderBodyMedium = `${responsiveTextSizes.medium} ${fontWeights.normal} ${lineHeights.relaxed}`
 

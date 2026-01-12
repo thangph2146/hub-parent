@@ -1,8 +1,8 @@
 import type { Prisma } from "@prisma/client"
-import { prisma } from "@/lib/prisma"
+import { prisma } from "@/services/prisma"
 import { validatePagination, buildPagination } from "@/features/admin/resources/server"
 import { mapContactRequestRecord, buildWhereClause } from "./helpers"
-import type { ListContactRequestsInput, ContactRequestDetail, ListContactRequestsResult } from "../types"
+import type { ListContactRequestsInput, ContactRequestDetailInfo, ListContactRequestsResult } from "../types"
 
 export const listContactRequests = async (params: ListContactRequestsInput = {}): Promise<ListContactRequestsResult> => {
   const { page, limit } = validatePagination(params.page, params.limit, 100)
@@ -117,7 +117,7 @@ export const getContactRequestColumnOptions = async (
   }
 };
 
-export const getContactRequestById = async (id: string): Promise<ContactRequestDetail | null> => {
+export const getContactRequestById = async (id: string): Promise<ContactRequestDetailInfo | null> => {
   try {
     const contactRequest = await prisma.contactRequest.findUnique({
       where: { id },

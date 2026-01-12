@@ -2,7 +2,7 @@
 
 import { useQueryClient } from "@tanstack/react-query"
 import type { StudentRow } from "../types"
-import { queryKeys, type AdminStudentsListParams } from "@/lib/query-keys"
+import { queryKeys, type AdminStudentsListParams } from "@/constants"
 import { useResourceSocketBridge } from "@/features/admin/resources/hooks/use-resource-socket-bridge"
 import { matchesSearch, matchesFilters } from "../utils/socket-helpers"
 

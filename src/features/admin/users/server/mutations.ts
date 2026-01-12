@@ -2,8 +2,8 @@
 
 import bcrypt from "bcryptjs";
 import type { Prisma } from "@prisma/client";
-import { PERMISSIONS, canPerformAnyAction } from "@/lib/permissions";
-import { prisma } from "@/lib/prisma";
+import { PERMISSIONS, canPerformAnyAction } from "@/permissions";
+import { prisma } from "@/services/prisma";
 import { mapUserRecord, type ListedUser, type UserWithRoles } from "./queries";
 import {
   notifySuperAdminsOfUserAction,
@@ -714,7 +714,7 @@ export const bulkHardDeleteUsers = async (
     (u) => u.email !== PROTECTED_SUPER_ADMIN_EMAIL
   );
   if (result.count > 0) {
-    const { getSocketServer } = await import("@/lib/socket/state");
+    const { getSocketServer } = await import("@/services/socket/state");
     const io = getSocketServer();
     if (io && deletableUsers.length > 0) {
       const removeEvents = deletableUsers.map((user) => ({

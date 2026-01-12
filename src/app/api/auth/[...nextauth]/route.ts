@@ -1,9 +1,9 @@
 /**
  * NextAuth.js route handlers for Next.js 16
  */
-import { handlers } from "@/lib/auth"
+import { handlers } from "@/auth"
 import { NextRequest, NextResponse } from "next/server"
-import { logger } from "@/lib/config"
+import { logger } from "@/utils"
 
 // Wrap handlers để đảm bảo luôn trả về JSON response hợp lệ
 async function handleRequest(

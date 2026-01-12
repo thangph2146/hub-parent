@@ -5,8 +5,8 @@ import * as ToastPrimitives from "@radix-ui/react-toast"
 import { cva, type VariantProps } from "class-variance-authority"
 import { X } from "lucide-react"
 
-import { cn } from "@/lib/utils"
-import { iconSizes, responsiveTextSizes, fontWeights, lineHeights } from "@/lib/typography"
+import { cn } from "@/utils"
+import { iconSizes, responsiveTextSizes, fontWeights, lineHeights } from "@/constants"
 
 const toastBodySmall = `${responsiveTextSizes.small} ${fontWeights.normal} ${lineHeights.relaxed}`
 const toastIconSizeMd = iconSizes.md
@@ -138,4 +138,5 @@ export {
   ToastClose,
   ToastAction,
 }
+
 

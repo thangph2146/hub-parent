@@ -1,7 +1,7 @@
 "use client"
 
 import { useCallback, useMemo, useState } from "react"
-import { useResourceRouter } from "@/hooks/use-resource-segment"
+import { useResourceRouter } from "@/hooks"
 import { Plus, RotateCcw, Trash2, AlertTriangle } from "lucide-react"
 
 import { ConfirmDialog } from "@/components/dialogs"
@@ -19,11 +19,11 @@ import {
   useResourceTableLogger,
 } from "@/features/admin/resources/hooks"
 import { normalizeSearch, sanitizeFilters } from "@/features/admin/resources/utils"
-import { apiClient } from "@/lib/api/axios"
-import { apiRoutes } from "@/lib/api/routes"
+import { apiClient } from "@/services/api/axios"
+import { apiRoutes } from "@/constants"
 import { useQueryClient } from "@tanstack/react-query"
-import { queryKeys } from "@/lib/query-keys"
-import { resourceLogger } from "@/lib/config/resource-logger"
+import { queryKeys } from "@/constants"
+import { resourceLogger } from "@/utils"
 import { useTagsSocketBridge } from "@/features/admin/tags/hooks/use-tags-socket-bridge"
 import { useTagActions } from "@/features/admin/tags/hooks/use-tag-actions"
 import { useTagFeedback } from "@/features/admin/tags/hooks/use-tag-feedback"
@@ -31,7 +31,7 @@ import { useTagDeleteConfirm } from "@/features/admin/tags/hooks/use-tag-delete-
 import { useTagColumns } from "@/features/admin/tags/utils/columns"
 import { useTagRowActions } from "@/features/admin/tags/utils/row-actions"
 
-import type { AdminTagsListParams } from "@/lib/query-keys"
+import type { AdminTagsListParams } from "@/constants"
 import type { TagRow, TagsResponse, TagsTableClientProps } from "../types"
 import { TAG_CONFIRM_MESSAGES, TAG_LABELS } from "../constants/messages"
 import { IconSize } from "@/components/ui/typography"
@@ -100,7 +100,7 @@ export const TagsTableClient = ({
   const handleDeleteSingle = useCallback(
     (row: TagRow) => {
       if (!canDelete) return
-      resourceLogger.tableAction({
+      resourceLogger.logAction({
         resource: "tags",
         action: "delete",
         resourceId: row.id,
@@ -121,7 +121,7 @@ export const TagsTableClient = ({
   const handleHardDeleteSingle = useCallback(
     (row: TagRow) => {
       if (!canManage) return
-      resourceLogger.tableAction({
+      resourceLogger.logAction({
         resource: "tags",
         action: "hard-delete",
         resourceId: row.id,
@@ -142,7 +142,7 @@ export const TagsTableClient = ({
   const handleRestoreSingle = useCallback(
     (row: TagRow) => {
       if (!canRestore) return
-      resourceLogger.tableAction({
+      resourceLogger.logAction({
         resource: "tags",
         action: "restore",
         resourceId: row.id,
@@ -264,7 +264,7 @@ export const TagsTableClient = ({
     (action: "delete" | "restore" | "hard-delete", ids: string[], refresh: () => void, clearSelection: () => void) => {
       if (ids.length === 0) return
 
-      resourceLogger.tableAction({
+      resourceLogger.logAction({
         resource: "tags",
         action: action === "delete" ? "bulk-delete" : action === "restore" ? "bulk-restore" : "bulk-hard-delete",
         count: ids.length,
@@ -572,3 +572,4 @@ export const TagsTableClient = ({
     </>
   )
 }
+

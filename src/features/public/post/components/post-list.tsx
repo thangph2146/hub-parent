@@ -1,7 +1,7 @@
 "use client"
 
-import { PostCard } from "@/components/public/post/post-card"
-import { PostPagination } from "@/components/public/post/post-pagination"
+import { PostCard } from "./post-card"
+import { PostPagination } from "./post-pagination"
 import { PostEmptyState } from "./post-empty-state"
 import { Flex } from "@/components/ui/flex"
 import { Grid } from "@/components/ui/grid"

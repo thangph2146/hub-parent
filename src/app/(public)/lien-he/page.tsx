@@ -1,5 +1,5 @@
 import type { Metadata } from "next"
-import { appConfig, getOpenGraphConfig, getTwitterConfig } from "@/lib/config"
+import { appConfig, getOpenGraphConfig, getTwitterConfig } from "@/constants"
 import { Contact } from "@/features/public/contact/components"
 
 /**

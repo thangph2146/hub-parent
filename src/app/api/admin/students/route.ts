@@ -12,13 +12,13 @@ import {
   NotFoundError,
 } from "@/features/admin/students/server/mutations"
 import { CreateStudentSchema } from "@/features/admin/students/server/schemas"
-import { createGetRoute, createPostRoute } from "@/lib/api/api-route-wrapper"
-import type { ApiRouteContext } from "@/lib/api/types"
-import { validatePagination, sanitizeSearchQuery, parseColumnFilters, filtersOrUndefined } from "@/lib/api/validation"
-import { createSuccessResponse, createErrorResponse } from "@/lib/config"
-import { isSuperAdmin } from "@/lib/permissions"
+import { createGetRoute, createPostRoute } from "@/lib"
+import type { ApiRouteContext } from "@/types"
+import { validatePagination, sanitizeSearchQuery, parseColumnFilters, filtersOrUndefined } from "@/utils"
+import { createSuccessResponse, createErrorResponse } from "@/lib"
+import { isSuperAdmin } from "@/permissions"
 import { StudentsResponse } from "@/features/admin/students/types"
-import { logger } from "@/lib/config/logger"
+import { logger } from "@/utils"
 
 async function getStudentsHandler(req: NextRequest, context: ApiRouteContext) {
   const searchParams = req.nextUrl.searchParams

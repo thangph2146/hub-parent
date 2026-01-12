@@ -9,14 +9,14 @@ import {
 import { Button } from "@/components/ui/button";
 import type { Prisma } from "@prisma/client";
 import { useQueryClient } from "@tanstack/react-query";
-import { queryKeys } from "@/lib/query-keys";
+import { queryKeys } from "@/constants";
 import {
   useResourceNavigation,
   useResourceDetailData,
   useResourceDetailLogger,
 } from "@/features/admin/resources/hooks";
 import { usePermissions } from "@/features/auth";
-import { PERMISSIONS } from "@/lib/permissions";
+import { PERMISSIONS } from "@/permissions";
 import {
   IconSize,
 } from "@/components/ui/typography";
@@ -31,7 +31,7 @@ import {
   type PostFormData,
 } from "../form-fields";
 import { useSession } from "next-auth/react";
-import { isSuperAdmin } from "@/lib/permissions";
+import { isSuperAdmin } from "@/permissions";
 
 export interface PostDetailData {
   id: string;

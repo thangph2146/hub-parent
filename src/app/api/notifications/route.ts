@@ -12,12 +12,12 @@
  * - QUAN TRỌNG: Logic này nhất quán với "mark all as read" - chỉ mark notifications của user này
  */
 import { NextRequest } from "next/server"
-import { auth } from "@/lib/auth/auth"
-import { prisma } from "@/lib/prisma"
-import { createErrorResponse, createSuccessResponse } from "@/lib/config"
-import { isSuperAdmin } from "@/lib/permissions"
-import { logger } from "@/lib/config/logger"
-import { buildNotificationWhereClause, countUnreadNotificationsWithBreakdown } from "@/lib/utils"
+import { auth } from "@/auth/auth"
+import { prisma } from "@/services/prisma"
+import { createErrorResponse, createSuccessResponse } from "@/lib"
+import { isSuperAdmin } from "@/permissions"
+import { logger } from "@/utils"
+import { buildNotificationWhereClause, countUnreadNotificationsWithBreakdown } from "@/lib"
 
 async function getUserNotificationsHandler(req: NextRequest) {
   const session = await auth()

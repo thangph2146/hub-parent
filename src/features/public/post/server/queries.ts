@@ -6,8 +6,8 @@
  * Để sử dụng trong Server Components, dùng cache() wrapper từ cache.ts
  */
 import type { Prisma } from "@prisma/client"
-import { prisma } from "@/lib/prisma"
-import { validatePagination } from "@/lib/api/validation"
+import { prisma } from "@/services/prisma"
+import { validatePagination } from "@/utils"
 import { buildPagination, type ResourcePagination } from "@/features/admin/resources/server"
 import { mapPostRecord, mapPostDetailRecord, buildPublicPostWhereClause, buildPublicPostOrderBy } from "./helpers"
 import type { Post, PostDetail } from "../types"

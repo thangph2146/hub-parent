@@ -1,7 +1,7 @@
 import { StudentCreateClient } from "./student-create.client"
 import { getActiveUsersForSelect } from "@/features/admin/users/server/queries"
 import { getAuthInfo } from "@/features/admin/resources/server"
-import { PERMISSIONS, canPerformAnyAction } from "@/lib/permissions"
+import { PERMISSIONS, canPerformAnyAction } from "@/permissions"
 
 export interface StudentCreateProps {
   backUrl?: string

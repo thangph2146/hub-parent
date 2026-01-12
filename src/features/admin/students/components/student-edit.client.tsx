@@ -9,8 +9,8 @@ import {
   useResourceDetailData,
 } from "@/features/admin/resources/hooks"
 import { createResourceEditOnSuccess } from "@/features/admin/resources/utils"
-import { apiRoutes } from "@/lib/api/routes"
-import { queryKeys } from "@/lib/query-keys"
+import { apiRoutes } from "@/constants"
+import { queryKeys } from "@/constants"
 import {
   getBaseStudentFields,
   getStudentFormSections,

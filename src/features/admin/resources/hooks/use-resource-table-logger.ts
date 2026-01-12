@@ -1,7 +1,8 @@
 import { useEffect, useRef, useMemo, useCallback } from "react"
 import type { QueryClient } from "@tanstack/react-query"
 import type { DataTableResult } from "@/components/tables"
-import { resourceLogger } from "@/lib/config/resource-logger"
+import { resourceLogger } from "@/utils"
+import type { ResourceLogContext } from "@/types"
 import type { QueryKey } from "@tanstack/react-query"
 
 interface UseResourceTableLoggerOptions<T extends object> {
@@ -136,9 +137,9 @@ export const useResourceTableLogger = <T extends object>({
         logData[`${resourceName}List`] = itemsList
       }
 
-      resourceLogger.tableAction(logData as Parameters<typeof resourceLogger.tableAction>[0])
+      resourceLogger.logAction(logData as ResourceLogContext)
 
-      resourceLogger.dataStructure({
+      resourceLogger.logStructure({
         resource: resourceName,
         dataType: "table",
         rowCount: dataToLog.rows.length,

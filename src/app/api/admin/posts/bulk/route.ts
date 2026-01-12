@@ -3,10 +3,10 @@
  */
 import { NextRequest } from "next/server"
 import { bulkPostsAction, type AuthContext } from "@/features/admin/posts/server/mutations"
-import { createPostRoute } from "@/lib/api/api-route-wrapper"
-import type { ApiRouteContext } from "@/lib/api/types"
-import { createErrorResponse, createSuccessResponse } from "@/lib/config"
-import { parseRequestBody, createAuthContext, handleApiError } from "@/lib/api/api-route-helpers"
+import { createPostRoute } from "@/lib"
+import type { ApiRouteContext } from "@/types"
+import { createErrorResponse, createSuccessResponse } from "@/lib"
+import { parseRequestBody, createAuthContext, handleApiError } from "@/lib"
 import { z } from "zod"
 
 const BulkPostActionSchema = z.object({

@@ -1,8 +1,8 @@
 "use server"
 
 import type { Prisma } from "@prisma/client"
-import { PERMISSIONS, canPerformAnyAction, isSuperAdmin } from "@/lib/permissions"
-import { prisma } from "@/lib/prisma"
+import { PERMISSIONS, canPerformAnyAction, isSuperAdmin } from "@/permissions"
+import { prisma } from "@/services/prisma"
 import { mapStudentRecord } from "./helpers"
 import type { ListedStudent } from "../types"
 import {

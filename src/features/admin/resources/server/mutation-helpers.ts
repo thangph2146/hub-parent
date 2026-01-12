@@ -1,6 +1,7 @@
-import type { Permission } from "@/lib/permissions"
-import { canPerformAction } from "@/lib/permissions"
-import { resourceLogger, type ResourceAction } from "@/lib/config/resource-logger"
+import type { Permission } from "@/permissions"
+import { canPerformAction } from "@/permissions"
+import { resourceLogger } from "@/utils"
+import type { ResourceAction } from "@/types"
 import { ForbiddenError } from "./errors"
 
 export interface AuthContext {
@@ -26,7 +27,7 @@ export const logTableStatusAfterMutation = async (options: {
 }): Promise<void> => {
   const { resource, action, prismaModel, affectedIds, affectedCount } = options
   
-  resourceLogger.actionFlow({ resource, action, step: "start", metadata: { loggingTableStatus: true, affectedCount } })
+  resourceLogger.logFlow({ resource, action, step: "start", details: { loggingTableStatus: true, affectedCount } })
 
   const [activeCount, deletedCount] = await Promise.all([
     prismaModel.count({ where: { deletedAt: null } }),
@@ -39,17 +40,17 @@ export const logTableStatusAfterMutation = async (options: {
     ? `Đã ${action === "bulk-delete" ? "xóa" : "khôi phục"} ${affectedCount} ${resource}. Hiện tại: ${activeCount} active, ${deletedCount} đã xóa`
     : `Đã ${action === "delete" ? "xóa" : "khôi phục"} 1 ${resource}. Hiện tại: ${activeCount} active, ${deletedCount} đã xóa`
 
-  resourceLogger.dataStructure({
+  resourceLogger.logStructure({
     resource,
     dataType: "table",
     structure: { tableStatus: { activeCount, deletedCount, affectedCount, affectedIds: ids, summary } },
   })
 
-  resourceLogger.actionFlow({
+  resourceLogger.logFlow({
     resource,
     action,
     step: "success",
-    metadata: { tableStatusLogged: true, activeCount, deletedCount, affectedCount, summary },
+    details: { tableStatusLogged: true, activeCount, deletedCount, affectedCount, summary },
   })
 }
 
@@ -60,7 +61,7 @@ export const logActionFlow = (
   metadata?: Record<string, unknown>,
   startTime?: number
 ): void => {
-  resourceLogger.actionFlow({ resource, action, step, duration: startTime ? Date.now() - startTime : undefined, metadata })
+  resourceLogger.logFlow({ resource, action, step, durationMs: startTime ? Date.now() - startTime : undefined, details: metadata })
 }
 
 export const logDetailAction = (
@@ -69,6 +70,6 @@ export const logDetailAction = (
   resourceId: string,
   recordData?: Record<string, unknown>
 ): void => {
-  resourceLogger.detailAction({ resource, action, resourceId, recordData, fields: recordData ? Object.keys(recordData) : undefined })
+  resourceLogger.logAction({ resource, action, resourceId, recordData, fields: recordData ? Object.keys(recordData) : undefined })
 }
 

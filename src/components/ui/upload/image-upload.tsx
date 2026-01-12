@@ -10,13 +10,13 @@ import NextImage from "next/image"
 import { Upload, X, Image as ImageIcon, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Flex } from "@/components/ui/flex"
-import { cn } from "@/lib/utils"
-import { apiClient } from "@/lib/api/axios"
-import { apiRoutes } from "@/lib/api/routes"
-import { logger } from "@/lib/config/logger"
+import { cn } from "@/utils"
+import { apiClient } from "@/services/api/axios"
+import { apiRoutes } from "@/constants"
+import { logger } from "@/utils"
 import { TypographyP, TypographyPSmallMuted, TypographyPMuted, IconSize } from "@/components/ui/typography"
 import type { UploadResponse, UploadError } from "@/features/admin/uploads/types"
-import { useToast } from "@/hooks/use-toast"
+import { useToast } from "@/hooks"
 
 export interface ImageUploadProps {
   /** Callback khi upload thành công */
@@ -401,4 +401,5 @@ export function ImageUpload({
     </div>
   )
 }
+
 
