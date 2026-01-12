@@ -41,7 +41,7 @@ import {
   useStudentDetailedScores,
   useStudentYearAverages,
   useStudentTermAverages,
-} from "@/hooks/use-student-scores"
+} from "../hooks/use-student-scores"
 import type {
   DetailedScore,
   YearAverage,

@@ -18,7 +18,7 @@ import {
 import { AccountEditClient } from "./account-edit.client";
 import type { AccountProfile } from "../types";
 import { useResourceDetailLogger } from "@/features/admin/resources/hooks";
-import { usePermissions } from "@/hooks/use-permissions";
+import { usePermissions } from "@/features/auth";
 import { PERMISSIONS } from "@/lib/permissions";
 import { getBaseAccountFields, getAccountFormSections, type AccountFormData } from "../form-fields";
 

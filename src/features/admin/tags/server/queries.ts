@@ -14,19 +14,27 @@ export const listTags = async (params: ListTagsInput = {}): Promise<ListTagsResu
   const { page, limit } = validatePagination(params.page, params.limit, 100)
   const where = buildWhereClause(params)
 
-  const [data, total] = await Promise.all([
-    prisma.tag.findMany({
-      where,
-      orderBy: { updatedAt: "desc" },
-      skip: (page - 1) * limit,
-      take: limit,
-    }),
-    prisma.tag.count({ where }),
-  ])
+  try {
+    const [data, total] = await Promise.all([
+      prisma.tag.findMany({
+        where,
+        orderBy: { updatedAt: "desc" },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      prisma.tag.count({ where }),
+    ])
 
-  return {
-    data: data.map(mapTagRecord),
-    pagination: buildPagination(page, limit, total),
+    return {
+      data: data.map(mapTagRecord),
+      pagination: buildPagination(page, limit, total),
+    }
+  } catch (error) {
+    console.error("[listTags] Error:", error)
+    return {
+      data: [],
+      pagination: buildPagination(page, limit, 0),
+    }
   }
 }
 
@@ -67,48 +75,63 @@ export const getTagColumnOptions = async (
       selectField = { name: true }
   }
 
-  const results = await prisma.tag.findMany({
-    where,
-    select: selectField,
-    orderBy: { [column]: "asc" },
-    take: limit,
-  })
+  try {
+    const results = await prisma.tag.findMany({
+      where,
+      select: selectField,
+      orderBy: { [column]: "asc" },
+      take: limit,
+    })
 
-  // Map results to options format
-  return mapToColumnOptions(results, column)
+    // Map results to options format
+    return mapToColumnOptions(results, column)
+  } catch (error) {
+    console.error("[getTagColumnOptions] Error:", error)
+    return []
+  }
 };
 
 export const getTagById = async (id: string): Promise<TagDetail | null> => {
-  const tag = await prisma.tag.findUnique({
-    where: { id },
-  })
+  try {
+    const tag = await prisma.tag.findUnique({
+      where: { id },
+    })
 
-  if (!tag) {
+    if (!tag) {
+      return null
+    }
+
+    // mapTagRecord đã include updatedAt
+    return mapTagRecord(tag)
+  } catch (error) {
+    console.error("[getTagById] Error:", error)
     return null
   }
-
-  // mapTagRecord đã include updatedAt
-  return mapTagRecord(tag)
 };
 
 export const getActiveTagsForSelect = async (limit: number = 100): Promise<Array<{ label: string; value: string }>> => {
-  const tags = await prisma.tag.findMany({
-    where: {
-      deletedAt: null,
-    },
-    select: {
-      id: true,
-      name: true,
-    },
-    orderBy: {
-      name: "asc",
-    },
-    take: limit,
-  })
+  try {
+    const tags = await prisma.tag.findMany({
+      where: {
+        deletedAt: null,
+      },
+      select: {
+        id: true,
+        name: true,
+      },
+      orderBy: {
+        name: "asc",
+      },
+      take: limit,
+    })
 
-  return tags.map((tag) => ({
-    label: tag.name,
-    value: tag.id,
-  }))
+    return tags.map((tag) => ({
+      label: tag.name,
+      value: tag.id,
+    }))
+  } catch (error) {
+    console.error("[getActiveTagsForSelect] Error:", error)
+    return []
+  }
 };
 

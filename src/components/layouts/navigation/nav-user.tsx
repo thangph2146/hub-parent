@@ -6,7 +6,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
 import { disconnectSocket } from "@/hooks/use-socket";
-import { cleanupSessionCreatedFlag } from "@/hooks/use-create-login-session";
+import { cleanupSessionCreatedFlag } from "@/features/auth";
 import {
   BadgeCheck,
   ChevronsUpDown,

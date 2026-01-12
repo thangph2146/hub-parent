@@ -23,7 +23,7 @@ import {
   IconSize,
 } from "@/components/ui/typography";
 import { IconBrandGoogleFilled } from "@tabler/icons-react";
-import { PointerHighlight } from "../ui/pointer-highlight";
+import { PointerHighlight } from "@/components/ui/pointer-highlight";
 
 export function SignUpForm({
   className,

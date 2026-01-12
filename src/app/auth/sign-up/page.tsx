@@ -1,5 +1,5 @@
 import type { Metadata } from "next"
-import { SignUpForm } from "@/components/forms"
+import { SignUpForm } from "@/features/auth"
 
 /**
  * Sign Up Page Metadata

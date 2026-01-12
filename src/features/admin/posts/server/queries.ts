@@ -96,31 +96,39 @@ export const listPosts = async (params: ListPostsInput = {}): Promise<ListPostsR
     filters: params.filters,
   })
 
-  const [posts, total] = await Promise.all([
-    prisma.post.findMany({
-      where,
-      skip: (page - 1) * limit,
-      take: limit,
-      orderBy: { updatedAt: "desc" },
-      include: POST_INCLUDE,
-    }),
-    prisma.post.count({ where }),
-  ])
+  try {
+    const [posts, total] = await Promise.all([
+      prisma.post.findMany({
+        where,
+        skip: (page - 1) * limit,
+        take: limit,
+        orderBy: { updatedAt: "desc" },
+        include: POST_INCLUDE,
+      }),
+      prisma.post.count({ where }),
+    ])
 
-  const result = {
-    data: posts.map(mapPostRecord),
-    pagination: buildPagination(page, limit, total),
+    const result = {
+      data: posts.map(mapPostRecord),
+      pagination: buildPagination(page, limit, total),
+    }
+
+    logger.info("[Posts Query] listPosts result", {
+      postsCount: result.data.length,
+      total,
+      authorIds: result.data.map((p) => p.author.id),
+      uniqueAuthors: [...new Set(result.data.map((p) => p.author.id))],
+      hasAuthorIdFilter: !!where.authorId,
+    })
+
+    return result
+  } catch (error) {
+    logger.error("[Posts Query] Error in listPosts:", error)
+    return {
+      data: [],
+      pagination: buildPagination(page, limit, 0),
+    }
   }
-
-  logger.info("[Posts Query] listPosts result", {
-    postsCount: result.data.length,
-    total,
-    authorIds: result.data.map((p) => p.author.id),
-    uniqueAuthors: [...new Set(result.data.map((p) => p.author.id))],
-    hasAuthorIdFilter: !!where.authorId,
-  })
-
-  return result
 };
 
 export const getPostColumnOptions = async (
@@ -160,27 +168,31 @@ export const getPostColumnOptions = async (
       selectField = { title: true }
   }
 
-  const results = await prisma.post.findMany({
-    where,
-    select: selectField,
-    orderBy: { [column]: "asc" },
-    take: limit,
-  })
-
-  // Map results to options format
-  return results
-    .map((item) => {
-      const value = item[column as keyof typeof item]
-      if (typeof value === "string" && value.trim()) {
-        return {
-          label: value,
-          value: value,
-        }
-      }
-      return null
+  try {
+    const results = await prisma.post.findMany({
+      where,
+      select: selectField,
+      orderBy: { [column]: "asc" },
+      take: limit,
     })
-    .filter((item): item is { label: string; value: string } => item !== null)
-  
+
+    // Map results to options format
+    return results
+      .map((item) => {
+        const value = item[column as keyof typeof item]
+        if (typeof value === "string" && value.trim()) {
+          return {
+            label: value,
+            value: value,
+          }
+        }
+        return null
+      })
+      .filter((item): item is { label: string; value: string } => item !== null)
+  } catch (error) {
+    logger.error("[Posts Query] Error in getPostColumnOptions:", error)
+    return []
+  }
 }
 
 /**
@@ -199,40 +211,50 @@ export const getDatesWithPosts = async (authorId?: string): Promise<string[]> =>
     where.authorId = authorId
   }
 
-  const posts = await prisma.post.findMany({
-    where,
-    select: {
-      publishedAt: true,
-    },
-    distinct: ["publishedAt"],
-  })
+  try {
+    const posts = await prisma.post.findMany({
+      where,
+      select: {
+        publishedAt: true,
+      },
+      distinct: ["publishedAt"],
+    })
 
-  // Extract unique dates (format: yyyy-MM-dd)
-  const dates = new Set<string>()
-  posts.forEach((post) => {
-    if (post.publishedAt) {
-      const date = new Date(post.publishedAt)
-      const dateStr = date.toISOString().split("T")[0] // Format: yyyy-MM-dd
-      dates.add(dateStr)
-    }
-  })
+    // Extract unique dates (format: yyyy-MM-dd)
+    const dates = new Set<string>()
+    posts.forEach((post) => {
+      if (post.publishedAt) {
+        const date = new Date(post.publishedAt)
+        const dateStr = date.toISOString().split("T")[0] // Format: yyyy-MM-dd
+        dates.add(dateStr)
+      }
+    })
 
-  return Array.from(dates).sort()
+    return Array.from(dates).sort()
+  } catch (error) {
+    logger.error("[Posts Query] Error in getDatesWithPosts:", error)
+    return []
+  }
 }
 
 export const getPostById = async (id: string): Promise<PostDetail | null> => {
-  const post = await prisma.post.findUnique({
-    where: { id },
-    include: POST_INCLUDE,
-  })
+  try {
+    const post = await prisma.post.findUnique({
+      where: { id },
+      include: POST_INCLUDE,
+    })
 
-  if (!post) {
+    if (!post) {
+      return null
+    }
+
+    return {
+      ...mapPostRecord(post),
+      content: post.content,
+    }
+  } catch (error) {
+    logger.error("[Posts Query] Error in getPostById:", error)
     return null
-  }
-
-  return {
-    ...mapPostRecord(post),
-    content: post.content,
   }
 };
 

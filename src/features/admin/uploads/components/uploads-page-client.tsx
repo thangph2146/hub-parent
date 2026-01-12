@@ -7,7 +7,7 @@
 
 import { useEffect, useMemo } from "react"
 import { ImageIcon, Upload, Loader2, Trash2 } from "lucide-react"
-import { MultipleImageUpload } from "@/components/forms"
+import { MultipleImageUpload } from "@/components/ui/upload"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"

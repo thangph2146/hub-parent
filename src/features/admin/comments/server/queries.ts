@@ -17,30 +17,40 @@ export const listComments = async (params: ListCommentsInput = {}): Promise<List
     metadata: { status, page, limit, where: Object.keys(where).length > 0 ? "filtered" : "all" },
   })
 
-  const [data, total] = await Promise.all([
-    prisma.comment.findMany({
-      where,
-      include: {
-        author: { select: { id: true, name: true, email: true } },
-        post: { select: { id: true, title: true } },
-      },
-      orderBy: { updatedAt: "desc" },
-      skip: (page - 1) * limit,
-      take: limit,
-    }),
-    prisma.comment.count({ where }),
-  ])
+  try {
+    const [data, total] = await Promise.all([
+      prisma.comment.findMany({
+        where,
+        include: {
+          author: { select: { id: true, name: true, email: true } },
+          post: { select: { id: true, title: true } },
+        },
+        orderBy: { updatedAt: "desc" },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      prisma.comment.count({ where }),
+    ])
 
-  const result = { data: data.map(mapCommentRecord), pagination: buildPagination(page, limit, total) }
+    const result = { data: data.map(mapCommentRecord), pagination: buildPagination(page, limit, total) }
 
-  resourceLogger.actionFlow({
-    resource: "comments",
-    action: "query",
-    step: "success",
-    metadata: { page, limit, total, dataCount: data.length, where },
-  })
+    resourceLogger.actionFlow({
+      resource: "comments",
+      action: "query",
+      step: "success",
+      metadata: { page, limit, total, dataCount: data.length, where },
+    })
 
-  return result
+    return result
+  } catch (error) {
+    resourceLogger.actionFlow({
+      resource: "comments",
+      action: "query",
+      step: "error",
+      metadata: { error: error instanceof Error ? error.message : String(error) },
+    })
+    return { data: [], pagination: buildPagination(page, limit, 0) }
+  }
 }
 
 export const getCommentColumnOptions = async (
@@ -61,51 +71,61 @@ export const getCommentColumnOptions = async (
     ;(columnMap[column] || columnMap.content)()
   }
 
-  const results = await prisma.comment.findMany({
-    where,
-    include: {
-      author: { select: { name: true, email: true } },
-      post: { select: { title: true } },
-    },
-    take: limit,
-  })
+  try {
+    const results = await prisma.comment.findMany({
+      where,
+      include: {
+        author: { select: { name: true, email: true } },
+        post: { select: { title: true } },
+      },
+      take: limit,
+    })
 
-  const optionsMap = new Map<string, string>()
-  for (const item of results) {
-    let value: string | null = null
-    let label: string | null = null
+    const optionsMap = new Map<string, string>()
+    for (const item of results) {
+      let value: string | null = null
+      let label: string | null = null
 
-    if (column === "content") {
-      value = item.content
-      label = item.content.length > 50 ? item.content.substring(0, 50) + "..." : item.content
-    } else if (column === "authorName") {
-      value = item.author.name || item.author.email
-      label = value
-    } else if (column === "authorEmail") {
-      value = item.author.email
-      label = value
-    } else if (column === "postTitle") {
-      value = item.post.title
-      label = value
+      if (column === "content") {
+        value = item.content
+        label = item.content.length > 50 ? item.content.substring(0, 50) + "..." : item.content
+      } else if (column === "authorName") {
+        value = item.author.name || item.author.email
+        label = value
+      } else if (column === "authorEmail") {
+        value = item.author.email
+        label = value
+      } else if (column === "postTitle") {
+        value = item.post.title
+        label = value
+      }
+
+      if (value && !optionsMap.has(value)) {
+        optionsMap.set(value, label || value)
+      }
     }
 
-    if (value && !optionsMap.has(value)) {
-      optionsMap.set(value, label || value)
-    }
+    return Array.from(optionsMap.entries()).map(([value, label]) => ({ label, value }))
+  } catch (error) {
+    console.error("[getCommentColumnOptions] Error:", error)
+    return []
   }
-
-  return Array.from(optionsMap.entries()).map(([value, label]) => ({ label, value }))
 };
 
 export const getCommentById = async (id: string): Promise<CommentDetail | null> => {
-  const comment = await prisma.comment.findUnique({
-    where: { id },
-    include: {
-      author: { select: { id: true, name: true, email: true } },
-      post: { select: { id: true, title: true } },
-    },
-  })
+  try {
+    const comment = await prisma.comment.findUnique({
+      where: { id },
+      include: {
+        author: { select: { id: true, name: true, email: true } },
+        post: { select: { id: true, title: true } },
+      },
+    })
 
-  return comment ? { ...mapCommentRecord(comment), updatedAt: comment.updatedAt.toISOString() } : null
+    return comment ? { ...mapCommentRecord(comment), updatedAt: comment.updatedAt.toISOString() } : null
+  } catch (error) {
+    console.error("[getCommentById] Error:", error)
+    return null
+  }
 };
 

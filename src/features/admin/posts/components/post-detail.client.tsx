@@ -15,7 +15,7 @@ import {
   useResourceDetailData,
   useResourceDetailLogger,
 } from "@/features/admin/resources/hooks";
-import { usePermissions } from "@/hooks/use-permissions";
+import { usePermissions } from "@/features/auth";
 import { PERMISSIONS } from "@/lib/permissions";
 import {
   IconSize,

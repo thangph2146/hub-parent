@@ -3,7 +3,7 @@
 "use client"
 
 import { useState, useCallback, useEffect } from "react"
-import { useAuth } from "@/hooks/use-session"
+import { useAuth } from "@/features/auth"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,

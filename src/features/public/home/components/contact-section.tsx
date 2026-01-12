@@ -5,7 +5,7 @@ import { motion, useInView } from "framer-motion";
 import { Flex } from "@/components/ui/flex";
 import { TypographyH3, TypographyPSmallMuted } from "@/components/ui/typography";
 import { EncryptedText } from "@/components/ui/encrypted-text";
-import { ContactForm } from "@/components/forms/contact-form";
+import { ContactForm } from "@/features/public/contact";
 import { LifeBuoy, ShieldCheck, Zap } from "lucide-react";
 
 export interface ContactInfoItem {

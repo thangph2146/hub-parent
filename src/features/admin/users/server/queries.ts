@@ -48,32 +48,40 @@ export const listUsers = async (params: ListUsersInput = {}): Promise<ListUsersR
   const { page, limit } = validatePagination(params.page, params.limit, 100)
   const where = buildWhereClause(params)
 
-  const [users, total] = await Promise.all([
-    prisma.user.findMany({
-      where,
-      skip: (page - 1) * limit,
-      take: limit,
-      orderBy: { updatedAt: "desc" },
-      include: {
-        userRoles: {
-          include: {
-            role: {
-              select: {
-                id: true,
-                name: true,
-                displayName: true,
+  try {
+    const [users, total] = await Promise.all([
+      prisma.user.findMany({
+        where,
+        skip: (page - 1) * limit,
+        take: limit,
+        orderBy: { updatedAt: "desc" },
+        include: {
+          userRoles: {
+            include: {
+              role: {
+                select: {
+                  id: true,
+                  name: true,
+                  displayName: true,
+                },
               },
             },
           },
         },
-      },
-    }),
-    prisma.user.count({ where }),
-  ])
+      }),
+      prisma.user.count({ where }),
+    ])
 
-  return {
-    data: users.map(mapUserRecord),
-    pagination: buildPagination(page, limit, total),
+    return {
+      data: users.map(mapUserRecord),
+      pagination: buildPagination(page, limit, total),
+    }
+  } catch (error) {
+    console.error("[listUsers] Error:", error)
+    return {
+      data: [],
+      pagination: buildPagination(page, limit, 0),
+    }
   }
 };
 
@@ -114,135 +122,165 @@ export const getUserColumnOptions = async (
       selectField = { email: true }
   }
 
-  const results = await prisma.user.findMany({
-    where,
-    select: selectField,
-    orderBy: { [column]: "asc" },
-    take: limit,
-  })
+  try {
+    const results = await prisma.user.findMany({
+      where,
+      select: selectField,
+      orderBy: { [column]: "asc" },
+      take: limit,
+    })
 
-  // Map results to options format
-  return mapToColumnOptions(results, column)
+    // Map results to options format
+    return mapToColumnOptions(results, column)
+  } catch (error) {
+    console.error("[getUserColumnOptions] Error:", error)
+    return []
+  }
 };
 
 export const getActiveRoles = async (): Promise<Array<{ id: string; name: string; displayName: string }>> => {
-  const roles = await prisma.role.findMany({
-    where: {
-      isActive: true,
-      deletedAt: null,
-    },
-    select: {
-      id: true,
-      name: true,
-      displayName: true,
-    },
-    orderBy: {
-      displayName: "asc",
-    },
-  })
-  return roles
+  try {
+    const roles = await prisma.role.findMany({
+      where: {
+        isActive: true,
+        deletedAt: null,
+      },
+      select: {
+        id: true,
+        name: true,
+        displayName: true,
+      },
+      orderBy: {
+        displayName: "asc",
+      },
+    })
+    return roles
+  } catch (error) {
+    console.error("[getActiveRoles] Error:", error)
+    return []
+  }
 };
 
 export const getActiveRolesForSelect = async (): Promise<Array<{ label: string; value: string }>> => {
-  const roles = await prisma.role.findMany({
-    where: {
-      isActive: true,
-      deletedAt: null,
-    },
-    select: {
-      id: true,
-      name: true,
-      displayName: true,
-    },
-    orderBy: {
-      displayName: "asc",
-    },
-  })
+  try {
+    const roles = await prisma.role.findMany({
+      where: {
+        isActive: true,
+        deletedAt: null,
+      },
+      select: {
+        id: true,
+        name: true,
+        displayName: true,
+      },
+      orderBy: {
+        displayName: "asc",
+      },
+    })
 
-  return roles.map((role) => ({
-    label: role.displayName || role.name,
-    value: role.id,
-  }))
+    return roles.map((role) => ({
+      label: role.displayName || role.name,
+      value: role.id,
+    }))
+  } catch (error) {
+    console.error("[getActiveRolesForSelect] Error:", error)
+    return []
+  }
 };
 
 export const getActiveUsersForSelect = async (limit: number = 100): Promise<Array<{ label: string; value: string }>> => {
-  const users = await prisma.user.findMany({
-    where: {
-      isActive: true,
-      deletedAt: null,
-    },
-    select: {
-      id: true,
-      name: true,
-      email: true,
-    },
-    orderBy: {
-      name: "asc",
-    },
-    take: limit,
-  })
+  try {
+    const users = await prisma.user.findMany({
+      where: {
+        isActive: true,
+        deletedAt: null,
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+      },
+      orderBy: {
+        name: "asc",
+      },
+      take: limit,
+    })
 
-  return users.map((user) => ({
-    label: user.name ? `${user.name} (${user.email})` : user.email || user.id,
-    value: user.id,
-  }))
+    return users.map((user) => ({
+      label: user.name ? `${user.name} (${user.email})` : user.email || user.id,
+      value: user.id,
+    }))
+  } catch (error) {
+    console.error("[getActiveUsersForSelect] Error:", error)
+    return []
+  }
 };
 
 export const getUserById = async (id: string): Promise<ListedUser | null> => {
-  const user = await prisma.user.findUnique({
-    where: { id },
-    include: {
-      userRoles: {
-        include: {
-          role: {
-            select: {
-              id: true,
-              name: true,
-              displayName: true,
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id },
+      include: {
+        userRoles: {
+          include: {
+            role: {
+              select: {
+                id: true,
+                name: true,
+                displayName: true,
+              },
             },
           },
         },
       },
-    },
-  })
+    })
 
-  if (!user) {
+    if (!user) {
+      return null
+    }
+
+    return mapUserRecord(user)
+  } catch (error) {
+    console.error("[getUserById] Error:", error)
     return null
   }
-
-  return mapUserRecord(user)
 };
 
 export const getUserDetailById = async (id: string): Promise<UserDetail | null> => {
-  const user = await prisma.user.findUnique({
-    where: { id },
-    include: {
-      userRoles: {
-        include: {
-          role: {
-            select: {
-              id: true,
-              name: true,
-              displayName: true,
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id },
+      include: {
+        userRoles: {
+          include: {
+            role: {
+              select: {
+                id: true,
+                name: true,
+                displayName: true,
+              },
             },
           },
         },
       },
-    },
-  })
+    })
 
-  if (!user) {
+    if (!user) {
+      return null
+    }
+
+    // Map user record to UserDetail format (bao gồm các fields detail)
+    return {
+      ...mapUserRecord(user),
+      bio: user.bio,
+      phone: user.phone,
+      address: user.address,
+      emailVerified: user.emailVerified,
+      updatedAt: user.updatedAt,
+    }
+  } catch (error) {
+    console.error("[getUserDetailById] Error:", error)
     return null
-  }
-
-  // Map user record to UserDetail format (bao gồm các fields detail)
-  return {
-    ...mapUserRecord(user),
-    bio: user.bio,
-    phone: user.phone,
-    address: user.address,
-    emailVerified: user.emailVerified,
-    updatedAt: user.updatedAt,
   }
 };
 

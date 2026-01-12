@@ -8,19 +8,27 @@ export const listCategories = async (params: ListCategoriesInput = {}): Promise<
   const { page, limit } = validatePagination(params.page, params.limit, 100)
   const where = buildWhereClause(params)
 
-  const [data, total] = await Promise.all([
-    prisma.category.findMany({
-      where,
-      orderBy: { updatedAt: "desc" },
-      skip: (page - 1) * limit,
-      take: limit,
-    }),
-    prisma.category.count({ where }),
-  ])
+  try {
+    const [data, total] = await Promise.all([
+      prisma.category.findMany({
+        where,
+        orderBy: { updatedAt: "desc" },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      prisma.category.count({ where }),
+    ])
 
-  return {
-    data: data.map(mapCategoryRecord),
-    pagination: buildPagination(page, limit, total),
+    return {
+      data: data.map(mapCategoryRecord),
+      pagination: buildPagination(page, limit, total),
+    }
+  } catch (error) {
+    console.error("[listCategories] Error:", error)
+    return {
+      data: [],
+      pagination: buildPagination(page, limit, 0),
+    }
   }
 }
 
@@ -62,48 +70,63 @@ export const getCategoryColumnOptions = async (
       selectField = { name: true }
   }
 
-  const results = await prisma.category.findMany({
-    where,
-    select: selectField,
-    orderBy: { [column]: "asc" },
-    take: limit,
-  })
+  try {
+    const results = await prisma.category.findMany({
+      where,
+      select: selectField,
+      orderBy: { [column]: "asc" },
+      take: limit,
+    })
 
-  // Map results to options format
-  return mapToColumnOptions(results, column)
+    // Map results to options format
+    return mapToColumnOptions(results, column)
+  } catch (error) {
+    console.error("[getCategoryColumnOptions] Error:", error)
+    return []
+  }
 }
 
 export const getCategoryById = async (id: string): Promise<CategoryDetail | null> => {
-  const category = await prisma.category.findUnique({
-    where: { id },
-  })
+  try {
+    const category = await prisma.category.findUnique({
+      where: { id },
+    })
 
-  if (!category) {
+    if (!category) {
+      return null
+    }
+
+    // mapCategoryRecord đã include updatedAt
+    return mapCategoryRecord(category)
+  } catch (error) {
+    console.error("[getCategoryById] Error:", error)
     return null
   }
-
-  // mapCategoryRecord đã include updatedAt
-  return mapCategoryRecord(category)
 }
 
 export const getActiveCategoriesForSelect = async (limit: number = 100): Promise<Array<{ label: string; value: string }>> => {
-  const categories = await prisma.category.findMany({
-    where: {
-      deletedAt: null,
-    },
-    select: {
-      id: true,
-      name: true,
-    },
-    orderBy: {
-      name: "asc",
-    },
-    take: limit,
-  })
+  try {
+    const categories = await prisma.category.findMany({
+      where: {
+        deletedAt: null,
+      },
+      select: {
+        id: true,
+        name: true,
+      },
+      orderBy: {
+        name: "asc",
+      },
+      take: limit,
+    })
 
-  return categories.map((category) => ({
-    label: category.name,
-    value: category.id,
-  }))
+    return categories.map((category) => ({
+      label: category.name,
+      value: category.id,
+    }))
+  } catch (error) {
+    console.error("[getActiveCategoriesForSelect] Error:", error)
+    return []
+  }
 }
 

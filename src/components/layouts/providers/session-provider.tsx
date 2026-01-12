@@ -28,8 +28,8 @@
 
 import { SessionProvider as NextAuthSessionProvider } from "next-auth/react"
 import type { SessionProviderProps } from "next-auth/react"
-import { useCreateLoginSession } from "@/hooks/use-create-login-session"
-import { usePermissions } from "@/hooks/use-permissions"
+import { useCreateLoginSession } from "@/features/auth"
+import { usePermissions } from "@/features/auth"
 
 function SessionProviderContent({ children }: { children: React.ReactNode }) {
   // Tự động tạo Session record sau khi đăng nhập thành công

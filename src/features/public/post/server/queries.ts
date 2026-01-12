@@ -53,12 +53,75 @@ export const getPosts = async (params: GetPostsParams = {}): Promise<PostsResult
   // Build orderBy using helper
   const orderBy = buildPublicPostOrderBy(params.sort)
 
-  const [posts, total] = await Promise.all([
-    prisma.post.findMany({
-      where,
-      skip: (page - 1) * limit,
-      take: limit,
-      orderBy,
+  try {
+    const [posts, total] = await Promise.all([
+      prisma.post.findMany({
+        where,
+        skip: (page - 1) * limit,
+        take: limit,
+        orderBy,
+        include: {
+          author: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
+          categories: {
+            select: {
+              category: {
+                select: {
+                  id: true,
+                  name: true,
+                  slug: true,
+                },
+              },
+            },
+          },
+          tags: {
+            select: {
+              tag: {
+                select: {
+                  id: true,
+                  name: true,
+                  slug: true,
+                },
+              },
+            },
+          },
+        },
+      }),
+      prisma.post.count({ where }),
+    ])
+
+    // Map posts using helper
+    const mappedPosts: Post[] = posts.map(mapPostRecord)
+
+    return {
+      data: mappedPosts,
+      pagination: buildPagination(page, limit, total),
+    }
+  } catch (error) {
+    console.error("Error fetching posts:", error)
+    return {
+      data: [],
+      pagination: buildPagination(page, limit, 0),
+    }
+  }
+};
+
+export const getPostBySlug = async (slug: string): Promise<PostDetail | null> => {
+  try {
+    const post = await prisma.post.findUnique({
+      where: {
+        slug,
+        published: true,
+        deletedAt: null,
+        publishedAt: {
+          lte: new Date(),
+        },
+      },
       include: {
         author: {
           select: {
@@ -90,66 +153,16 @@ export const getPosts = async (params: GetPostsParams = {}): Promise<PostsResult
           },
         },
       },
-    }),
-    prisma.post.count({ where }),
-  ])
+    })
 
-  // Map posts using helper
-  const mappedPosts: Post[] = posts.map(mapPostRecord)
+    if (!post) return null
 
-  return {
-    data: mappedPosts,
-    pagination: buildPagination(page, limit, total),
+    // Map post detail using helper
+    return mapPostDetailRecord(post)
+  } catch (error) {
+    console.error(`Error fetching post by slug (${slug}):`, error)
+    return null
   }
-};
-
-export const getPostBySlug = async (slug: string): Promise<PostDetail | null> => {
-  const post = await prisma.post.findUnique({
-    where: {
-      slug,
-      published: true,
-      deletedAt: null,
-      publishedAt: {
-        lte: new Date(),
-      },
-    },
-    include: {
-      author: {
-        select: {
-          id: true,
-          name: true,
-          email: true,
-        },
-      },
-      categories: {
-        select: {
-          category: {
-            select: {
-              id: true,
-              name: true,
-              slug: true,
-            },
-          },
-        },
-      },
-      tags: {
-        select: {
-          tag: {
-            select: {
-              id: true,
-              name: true,
-              slug: true,
-            },
-          },
-        },
-      },
-    },
-  })
-
-  if (!post) return null
-
-  // Map post detail using helper
-  return mapPostDetailRecord(post)
 }
 
 /**
@@ -171,135 +184,150 @@ export const getRelatedPosts = async (
     return []
   }
 
-  // Build where clause for related posts
-  const where: Prisma.PostWhereInput = {
-    id: { not: postId }, // Exclude current post
-    published: true,
-    deletedAt: null,
-    publishedAt: {
-      lte: new Date(),
-    },
-    OR: [],
-  }
-
-  // Add category filter
-  if (categoryIds.length > 0) {
-    where.OR!.push({
-      categories: {
-        some: {
-          categoryId: { in: categoryIds },
-        },
+  try {
+    // Build where clause for related posts
+    const where: Prisma.PostWhereInput = {
+      id: { not: postId }, // Exclude current post
+      published: true,
+      deletedAt: null,
+      publishedAt: {
+        lte: new Date(),
       },
-    })
-  }
+      OR: [],
+    }
 
-  // Add tag filter
-  if (tagIds.length > 0) {
-    where.OR!.push({
-      tags: {
-        some: {
-          tagId: { in: tagIds },
+    // Add category filter
+    if (categoryIds.length > 0) {
+      where.OR!.push({
+        categories: {
+          some: {
+            categoryId: { in: categoryIds },
+          },
         },
-      },
-    })
-  }
+      })
+    }
 
-  const posts = await prisma.post.findMany({
-    where,
-    take: limit,
-    orderBy: { publishedAt: "desc" },
-    include: {
-      author: {
-        select: {
-          id: true,
-          name: true,
-          email: true,
+    // Add tag filter
+    if (tagIds.length > 0) {
+      where.OR!.push({
+        tags: {
+          some: {
+            tagId: { in: tagIds },
+          },
         },
-      },
-      categories: {
-        select: {
-          category: {
-            select: {
-              id: true,
-              name: true,
-              slug: true,
+      })
+    }
+
+    const posts = await prisma.post.findMany({
+      where,
+      take: limit,
+      orderBy: { publishedAt: "desc" },
+      include: {
+        author: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+        categories: {
+          select: {
+            category: {
+              select: {
+                id: true,
+                name: true,
+                slug: true,
+              },
+            },
+          },
+        },
+        tags: {
+          select: {
+            tag: {
+              select: {
+                id: true,
+                name: true,
+                slug: true,
+              },
             },
           },
         },
       },
-      tags: {
-        select: {
-          tag: {
-            select: {
-              id: true,
-              name: true,
-              slug: true,
-            },
-          },
-        },
-      },
-    },
-  })
+    })
 
-  return posts.map(mapPostRecord)
+    return posts.map(mapPostRecord)
+  } catch (error) {
+    console.error("Error fetching related posts:", error)
+    return []
+  }
 };
 
 /**
  * Get all categories that have published posts
  */
 export const getCategories = async () => {
-  return await prisma.category.findMany({
-    where: {
-      deletedAt: null,
-      posts: {
-        some: {
-          post: {
-            published: true,
-            deletedAt: null,
-            publishedAt: {
-              lte: new Date(),
+  try {
+    return await prisma.category.findMany({
+      where: {
+        deletedAt: null,
+        posts: {
+          some: {
+            post: {
+              published: true,
+              deletedAt: null,
+              publishedAt: {
+                lte: new Date(),
+              },
             },
           },
         },
       },
-    },
-    select: {
-      id: true,
-      name: true,
-      slug: true,
-    },
-    orderBy: {
-      name: "asc",
-    },
-  })
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+      },
+      orderBy: {
+        name: "asc",
+      },
+    })
+  } catch (error) {
+    console.error("Error fetching categories:", error)
+    return []
+  }
 };
 
 /**
  * Get all tags that have published posts
  */
 export const getTags = async () => {
-  return await prisma.tag.findMany({
-    where: {
-      deletedAt: null,
-      posts: {
-        some: {
-          post: {
-            published: true,
-            deletedAt: null,
-            publishedAt: {
-              lte: new Date(),
+  try {
+    return await prisma.tag.findMany({
+      where: {
+        deletedAt: null,
+        posts: {
+          some: {
+            post: {
+              published: true,
+              deletedAt: null,
+              publishedAt: {
+                lte: new Date(),
+              },
             },
           },
         },
       },
-    },
-    select: {
-      id: true,
-      name: true,
-      slug: true,
-    },
-    orderBy: {
-      name: "asc",
-    },
-  })
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+      },
+      orderBy: {
+        name: "asc",
+      },
+    })
+  } catch (error) {
+    console.error("Error fetching tags:", error)
+    return []
+  }
 }

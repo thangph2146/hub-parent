@@ -18,6 +18,8 @@ export type HeroButton = ContentCardButton;
 export interface HeroSectionProps {
   title: string;
   description: string;
+  flipWords?: string[];
+  quote?: string;
   backgroundImage: {
     src: string;
     alt: string;
@@ -35,6 +37,8 @@ export interface HeroSectionProps {
 export const HeroSection = ({
   title,
   description,
+  flipWords,
+  quote,
   backgroundImage,
   buttons,
   titleClassName,
@@ -98,14 +102,18 @@ export const HeroSection = ({
             >
               {title}
               <br />
-              <FlipWords
-                words={["Kết nối", "Đồng hành", "Phát triển", "Vươn xa"]}
-                className="p-0 text-inherit"
-              />
+              {flipWords && flipWords.length > 0 && (
+                <FlipWords
+                  words={flipWords}
+                  className="p-0 text-inherit"
+                />
+              )}
             </TypographyH1>
-            <TypographyP className="text-white/80 text-sm sm:text-base font-medium italic animate-in fade-in duration-700 delay-150">
-              &quot;Tâm an lòng, con vững bước – Đồng hành cùng tương lai con tại HUB&quot;
-            </TypographyP>
+            {quote && (
+              <TypographyP className="text-white/80 text-sm sm:text-base font-medium italic animate-in fade-in duration-700 delay-150">
+                {quote}
+              </TypographyP>
+            )}
           </Flex>
 
           <TypographyP

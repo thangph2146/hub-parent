@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { ForgotPasswordForm } from "@/components/forms/forgot-password-form";
+import { ForgotPasswordForm } from "@/features/auth";
 
 /**
  * Forgot Password Page Metadata

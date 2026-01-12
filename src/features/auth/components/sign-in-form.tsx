@@ -23,7 +23,7 @@ import {
 import { Input } from "@/components/ui/input";
 import Image from "next/image";
 import Link from "next/link";
-import { PointerHighlight } from "../ui/pointer-highlight";
+import { PointerHighlight } from "@/components/ui/pointer-highlight";
 
 // Map NextAuth error codes thành thông báo tiếng Việt
 const ERROR_MESSAGES: Record<string, string> = {
