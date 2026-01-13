@@ -106,7 +106,7 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
               {/* Help Text */}
               <motion.div
                 variants={itemVariants}
-                className="rounded-lg bg-muted/50 p-4 border border-destructive/20 mb-6"
+                className="rounded-lg bg-muted p-4 border border-destructive/20 mb-6"
               >
                 <TypographyPMuted className="text-center">
                   Đã xảy ra lỗi nghiêm trọng trong ứng dụng. Vui lòng thử lại

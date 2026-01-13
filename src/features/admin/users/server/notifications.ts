@@ -153,10 +153,11 @@ export const notifySuperAdminsOfUserAction = async (
 };
 
 export const notifySuperAdminsOfBulkUserAction = async (
-  action: "delete" | "restore" | "hard-delete",
+  action: "delete" | "restore" | "hard-delete" | "update",
   actorId: string,
   count: number,
-  users?: Array<{ name: string | null; email: string }>
+  users?: Array<{ name: string | null; email: string }>,
+  changes?: { isActive: boolean }
 ) => {
   const startTime = Date.now();
 
@@ -167,9 +168,11 @@ export const notifySuperAdminsOfBulkUserAction = async (
         ? "bulk-delete"
         : action === "restore"
         ? "bulk-restore"
+        : action === "update"
+        ? "bulk-update"
         : "bulk-hard-delete",
     step: "start",
-    details: { count, userCount: users?.length || 0, actorId },
+    details: { count, userCount: users?.length || 0, actorId, changes },
   });
 
   try {
@@ -202,6 +205,13 @@ export const notifySuperAdminsOfBulkUserAction = async (
           ? `${actorName} đã xóa vĩnh viễn ${count} người dùng: ${namesText}`
           : `${actorName} đã xóa vĩnh viễn ${count} người dùng`;
         break;
+      case "update":
+        const statusText = changes?.isActive ? "kích hoạt" : "vô hiệu hóa";
+        title = `✏️ Đã ${statusText} nhiều người dùng`;
+        description = namesText
+          ? `${actorName} đã ${statusText} ${count} người dùng: ${namesText}`
+          : `${actorName} đã ${statusText} ${count} người dùng`;
+        break;
     }
 
     const actionUrl = `/admin/users`;
@@ -217,7 +227,8 @@ export const notifySuperAdminsOfBulkUserAction = async (
         actorName: actor?.name || actor?.email,
         actorEmail: actor?.email,
         count,
-        userEmails: users?.map((u) => u.email) || [],
+        users: users?.map((u) => u.name || u.email),
+        changes,
         timestamp: new Date().toISOString(),
       }
     );
@@ -235,7 +246,8 @@ export const notifySuperAdminsOfBulkUserAction = async (
           actorName: actor?.name || actor?.email,
           actorEmail: actor?.email,
           count,
-          userEmails: users?.map((u) => u.email) || [],
+          users: users?.map((u) => u.name || u.email),
+          changes,
           timestamp: new Date().toISOString(),
         }
       );
@@ -248,10 +260,12 @@ export const notifySuperAdminsOfBulkUserAction = async (
           ? "bulk-delete"
           : action === "restore"
           ? "bulk-restore"
+          : action === "update"
+          ? "bulk-update"
           : "bulk-hard-delete",
       step: "success",
       durationMs: Date.now() - startTime,
-      details: { count, userCount: users?.length || 0 },
+      details: { count, userCount: users?.length || 0, changes },
     });
   } catch (error) {
     logNotificationError(
@@ -260,6 +274,8 @@ export const notifySuperAdminsOfBulkUserAction = async (
         ? "bulk-delete"
         : action === "restore"
         ? "bulk-restore"
+        : action === "update"
+        ? "bulk-update"
         : "bulk-hard-delete",
       error as Record<string, unknown>,
       { count }

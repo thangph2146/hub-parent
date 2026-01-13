@@ -75,11 +75,10 @@ export const ContactRequestDetailClient = ({ contactRequestId, contactRequest, b
     fetchedData,
   })
 
-  const { handleToggleRead, togglingRequests } = useContactRequestActions({
+  const { executeSingleAction, markingReadIds } = useContactRequestActions({
     canDelete,
     canRestore,
     canManage,
-    canUpdate,
     isSocketConnected: false,
     showFeedback,
   })
@@ -110,18 +109,17 @@ export const ContactRequestDetailClient = ({ contactRequestId, contactRequest, b
           deletedAt: detailData.deletedAt,
         }
 
-        // handleToggleRead sẽ hiển thị toast tự động
-        await handleToggleRead(mockRow, checked, async () => {
-          // Refresh detail data after toggle
-          // The query will be invalidated by handleToggleRead
+        // executeSingleAction sẽ hiển thị toast tự động
+        await executeSingleAction(checked ? "mark-read" : "mark-unread", mockRow, () => {
+          // Invalidation already handled by useResourceActions
         })
       } catch {
-        // Error đã được xử lý trong handleToggleRead với toast
+        // Error đã được xử lý trong executeSingleAction với toast
       } finally {
         setIsToggling(false)
       }
     },
-    [canUpdate, contactRequestId, detailData, handleToggleRead],
+    [canUpdate, contactRequestId, detailData, executeSingleAction],
   )
 
   const fields = getBaseContactRequestFields([])
@@ -163,7 +161,7 @@ export const ContactRequestDetailClient = ({ contactRequestId, contactRequest, b
           <Flex align="center" gap={3}>
             <Switch
               checked={detailData.isRead}
-              disabled={isToggling || togglingRequests.has(contactRequestId) || !canUpdate}
+              disabled={isToggling || markingReadIds.has(contactRequestId) || !canUpdate}
               onCheckedChange={handleToggleReadStatus}
               aria-label={detailData.isRead ? "Đánh dấu chưa đọc" : "Đánh dấu đã đọc"}
             />

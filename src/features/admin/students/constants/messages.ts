@@ -1,12 +1,16 @@
 export const STUDENT_MESSAGES = {
   // Success messages
   TOGGLE_ACTIVE_SUCCESS: "Cập nhật thành công",
+  ACTIVE_SUCCESS: "Kích hoạt thành công",
+  UNACTIVE_SUCCESS: "Vô hiệu hóa thành công",
   DELETE_SUCCESS: "Xóa thành công",
   RESTORE_SUCCESS: "Khôi phục thành công",
   HARD_DELETE_SUCCESS: "Xóa vĩnh viễn thành công",
   
   // Error messages
   TOGGLE_ACTIVE_ERROR: "Lỗi cập nhật",
+  ACTIVE_ERROR: "Kích hoạt thất bại",
+  UNACTIVE_ERROR: "Vô hiệu hóa thất bại",
   DELETE_ERROR: "Xóa thất bại",
   RESTORE_ERROR: "Khôi phục thất bại",
   HARD_DELETE_ERROR: "Xóa vĩnh viễn thất bại",

@@ -747,3 +747,124 @@ export const bulkHardDeleteUsers = async (
     affected: result.count,
   };
 };
+
+export const bulkActiveUsers = async (
+  ctx: AuthContext,
+  ids: string[]
+): Promise<BulkActionResult> => {
+  ensurePermission(ctx, PERMISSIONS.USERS_UPDATE, PERMISSIONS.USERS_MANAGE);
+  validateBulkIds(ids, "người dùng");
+
+  const users = await prisma.user.findMany({
+    where: { id: { in: ids }, deletedAt: null },
+    select: { id: true, email: true, name: true, isActive: true },
+  });
+
+  const startTime = Date.now();
+  logActionFlow("users", "bulk-active", "start", {
+    requestedCount: ids.length,
+    foundCount: users.length,
+  });
+
+  const filteredIds = users
+    .filter((u) => !u.isActive)
+    .map((u) => u.id);
+
+  if (filteredIds.length === 0) {
+    let errorMessage = "Không có người dùng nào cần kích hoạt";
+    if (users.length === 0) errorMessage = "Không tìm thấy người dùng nào hợp lệ";
+    else if (users.every(u => u.isActive)) errorMessage = "Tất cả người dùng đã được kích hoạt";
+
+    logActionFlow("users", "bulk-active", "error", { requestedCount: ids.length, error: errorMessage }, startTime);
+    throw new ApplicationError(errorMessage, 400);
+  }
+
+  const result = await prisma.user.updateMany({
+    where: { id: { in: filteredIds }, deletedAt: null },
+    data: { isActive: true },
+  });
+
+  if (result.count > 0) {
+    await logTableStatusAfterMutation({
+      resource: "users",
+      action: "bulk-active",
+      prismaModel: prisma.user,
+      affectedIds: filteredIds,
+      affectedCount: result.count,
+    });
+
+    const affectedUsers = users.filter(u => filteredIds.includes(u.id));
+    await notifySuperAdminsOfBulkUserAction("update", ctx.actorId, result.count, affectedUsers, { isActive: true });
+    await emitBatchUserUpsert(filteredIds, "active");
+    
+    logActionFlow("users", "bulk-active", "success", { requestedCount: ids.length, affectedCount: result.count }, startTime);
+  }
+
+  return {
+    success: true,
+    message: `Đã kích hoạt ${result.count} người dùng`,
+    affected: result.count,
+  };
+};
+
+export const bulkUnactiveUsers = async (
+  ctx: AuthContext,
+  ids: string[]
+): Promise<BulkActionResult> => {
+  ensurePermission(ctx, PERMISSIONS.USERS_UPDATE, PERMISSIONS.USERS_MANAGE);
+  validateBulkIds(ids, "người dùng");
+
+  const users = await prisma.user.findMany({
+    where: { id: { in: ids }, deletedAt: null },
+    select: { id: true, email: true, name: true, isActive: true },
+  });
+
+  const startTime = Date.now();
+  logActionFlow("users", "bulk-unactive", "start", {
+    requestedCount: ids.length,
+    foundCount: users.length,
+  });
+
+  // Protect super admin from being deactivated
+  const superAdminUser = users.find(u => u.email === PROTECTED_SUPER_ADMIN_EMAIL && ids.includes(u.id));
+  
+  const filteredIds = users
+    .filter((u) => u.isActive && u.email !== PROTECTED_SUPER_ADMIN_EMAIL)
+    .map((u) => u.id);
+
+  if (filteredIds.length === 0) {
+    let errorMessage = "Không có người dùng nào có thể hủy kích hoạt";
+    if (superAdminUser && ids.length === 1) errorMessage = "Không thể hủy kích hoạt tài khoản super admin";
+    else if (users.every(u => !u.isActive)) errorMessage = "Tất cả người dùng đã bị hủy kích hoạt";
+
+    logActionFlow("users", "bulk-unactive", "error", { requestedCount: ids.length, error: errorMessage }, startTime);
+    throw new ApplicationError(errorMessage, 400);
+  }
+
+  const result = await prisma.user.updateMany({
+    where: { id: { in: filteredIds }, deletedAt: null },
+    data: { isActive: false },
+  });
+
+  if (result.count > 0) {
+    await logTableStatusAfterMutation({
+      resource: "users",
+      action: "bulk-unactive",
+      prismaModel: prisma.user,
+      affectedIds: filteredIds,
+      affectedCount: result.count,
+    });
+
+    const affectedUsers = users.filter(u => filteredIds.includes(u.id));
+    await notifySuperAdminsOfBulkUserAction("update", ctx.actorId, result.count, affectedUsers, { isActive: false });
+    await emitBatchUserUpsert(filteredIds, "active");
+    
+    logActionFlow("users", "bulk-unactive", "success", { requestedCount: ids.length, affectedCount: result.count }, startTime);
+  }
+
+  return {
+    success: true,
+    message: `Đã hủy kích hoạt ${result.count} người dùng`,
+    affected: result.count,
+  };
+};

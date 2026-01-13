@@ -1,6 +1,6 @@
 import { useCallback } from "react"
 import { useResourceRouter } from "@/hooks"
-import { RotateCcw, Trash2, AlertTriangle, Eye, Pencil } from "lucide-react"
+import { RotateCcw, Trash2, AlertTriangle, Eye, Pencil, CheckCircle, XCircle } from "lucide-react"
 import { renderRowActions, type RowActionConfig } from "@/features/admin/resources/utils/render-row-actions"
 import type { UserRow } from "../types"
 import { USER_LABELS, PROTECTED_SUPER_ADMIN_EMAIL } from "../constants"
@@ -12,9 +12,13 @@ interface UseRowActionsOptions {
   onDelete: (row: UserRow) => void
   onHardDelete: (row: UserRow) => void
   onRestore: (row: UserRow) => void
-  deletingUsers?: Set<string>
-  restoringUsers?: Set<string>
-  hardDeletingUsers?: Set<string>
+  onActive: (row: UserRow) => void
+  onUnactive: (row: UserRow) => void
+  deletingIds?: Set<string>
+  restoringIds?: Set<string>
+  hardDeletingIds?: Set<string>
+  activatingIds?: Set<string>
+  deactivatingIds?: Set<string>
 }
 
 export const useUserRowActions = ({
@@ -24,9 +28,13 @@ export const useUserRowActions = ({
   onDelete,
   onHardDelete,
   onRestore,
-  deletingUsers = new Set(),
-  restoringUsers = new Set(),
-  hardDeletingUsers = new Set(),
+  onActive,
+  onUnactive,
+  deletingIds = new Set(),
+  restoringIds = new Set(),
+  hardDeletingIds = new Set(),
+  activatingIds = new Set(),
+  deactivatingIds = new Set(),
 }: UseRowActionsOptions) => {
   const router = useResourceRouter()
 
@@ -52,31 +60,54 @@ export const useUserRowActions = ({
             router.push(`/admin/users/${row.id}/edit`)
           },
         })
+
+        if (!row.isActive) {
+          const isActivating = activatingIds.has(row.id)
+          actions.push({
+            label: USER_LABELS.ACTIVATE,
+            icon: CheckCircle,
+            onSelect: () => onActive(row),
+            disabled: isActivating || deactivatingIds.has(row.id),
+            isLoading: isActivating,
+            loadingLabel: "Đang kích hoạt...",
+          })
+        } else {
+          const isDeactivating = deactivatingIds.has(row.id)
+          const isSuperAdmin = row.email === PROTECTED_SUPER_ADMIN_EMAIL
+          actions.push({
+            label: USER_LABELS.DEACTIVATE,
+            icon: XCircle,
+            onSelect: () => onUnactive(row),
+            disabled: isDeactivating || activatingIds.has(row.id) || isSuperAdmin,
+            isLoading: isDeactivating,
+            loadingLabel: "Đang vô hiệu hóa...",
+          })
+        }
       }
 
       if (canDelete) {
-        const isDeleting = deletingUsers.has(row.id)
+        const isDeleting = deletingIds.has(row.id)
         const isSuperAdmin = row.email === PROTECTED_SUPER_ADMIN_EMAIL
         actions.push({
           label: USER_LABELS.DELETE,
           icon: Trash2,
           onSelect: () => onDelete(row),
           destructive: true,
-          disabled: isDeleting || restoringUsers.has(row.id) || hardDeletingUsers.has(row.id) || isSuperAdmin,
+          disabled: isDeleting || restoringIds.has(row.id) || hardDeletingIds.has(row.id) || isSuperAdmin,
           isLoading: isDeleting,
           loadingLabel: USER_LABELS.DELETING,
         })
       }
 
       if (canManage) {
-        const isHardDeleting = hardDeletingUsers.has(row.id)
+        const isHardDeleting = hardDeletingIds.has(row.id)
         const isSuperAdmin = row.email === PROTECTED_SUPER_ADMIN_EMAIL
         actions.push({
           label: USER_LABELS.HARD_DELETE,
           icon: AlertTriangle,
           onSelect: () => onHardDelete(row),
           destructive: true,
-          disabled: deletingUsers.has(row.id) || restoringUsers.has(row.id) || isHardDeleting || isSuperAdmin,
+          disabled: deletingIds.has(row.id) || restoringIds.has(row.id) || isHardDeleting || isSuperAdmin,
           isLoading: isHardDeleting,
           loadingLabel: USER_LABELS.HARD_DELETING,
         })
@@ -84,7 +115,7 @@ export const useUserRowActions = ({
 
       return renderRowActions(actions)
     },
-    [canDelete, canManage, onDelete, onHardDelete, router, deletingUsers, restoringUsers, hardDeletingUsers],
+    [canDelete, canManage, onDelete, onHardDelete, onActive, onUnactive, router, deletingIds, restoringIds, hardDeletingIds, activatingIds, deactivatingIds],
   )
 
   const renderDeletedRowActions = useCallback(
@@ -101,26 +132,26 @@ export const useUserRowActions = ({
       ]
 
       if (canRestore) {
-        const isRestoring = restoringUsers.has(row.id)
+        const isRestoring = restoringIds.has(row.id)
         actions.push({
           label: USER_LABELS.RESTORE,
           icon: RotateCcw,
           onSelect: () => onRestore(row),
-          disabled: deletingUsers.has(row.id) || isRestoring || hardDeletingUsers.has(row.id),
+          disabled: deletingIds.has(row.id) || isRestoring || hardDeletingIds.has(row.id),
           isLoading: isRestoring,
           loadingLabel: USER_LABELS.RESTORING,
         })
       }
 
       if (canManage) {
-        const isHardDeleting = hardDeletingUsers.has(row.id)
+        const isHardDeleting = hardDeletingIds.has(row.id)
         const isSuperAdmin = row.email === PROTECTED_SUPER_ADMIN_EMAIL
         actions.push({
           label: USER_LABELS.HARD_DELETE,
           icon: AlertTriangle,
           onSelect: () => onHardDelete(row),
           destructive: true,
-          disabled: deletingUsers.has(row.id) || restoringUsers.has(row.id) || isHardDeleting || isSuperAdmin,
+          disabled: deletingIds.has(row.id) || restoringIds.has(row.id) || isHardDeleting || isSuperAdmin,
           isLoading: isHardDeleting,
           loadingLabel: USER_LABELS.HARD_DELETING,
         })
@@ -128,7 +159,7 @@ export const useUserRowActions = ({
 
       return renderRowActions(actions)
     },
-    [canManage, canRestore, onHardDelete, onRestore, router, deletingUsers, restoringUsers, hardDeletingUsers],
+    [canManage, canRestore, onHardDelete, onRestore, router, deletingIds, restoringIds, hardDeletingIds],
   )
 
   return {

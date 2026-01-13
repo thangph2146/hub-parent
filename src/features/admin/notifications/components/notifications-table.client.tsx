@@ -28,8 +28,7 @@ import { useNotificationFeedback } from "../hooks/use-notification-feedback"
 import { useNotificationDeleteConfirm } from "../hooks/use-notification-delete-confirm"
 import { useNotificationsSocketBridge } from "../hooks/use-notifications-socket-bridge"
 import { useNotificationColumns } from "../utils/columns"
-import { useNotificationRowActions } from "../utils/row-actions"
-import { NOTIFICATION_LABELS, NOTIFICATION_CONFIRM_MESSAGES } from "../constants"
+import { NOTIFICATION_LABELS, NOTIFICATION_CONFIRM_MESSAGES, NOTIFICATION_MESSAGES } from "../constants"
 import { ConfirmDialog } from "@/components/dialogs"
 
 type AdminNotificationsListParams = {
@@ -93,7 +92,7 @@ export const NotificationsTableClient = ({
   })
   
   const getInvalidateQueryKey = useCallback(() => queryKeys.notifications.admin(), [])
-  const { onRefreshReady } = useResourceTableRefresh({
+  const { onRefreshReady, refresh: refreshTable } = useResourceTableRefresh({
     queryClient,
     getInvalidateQueryKey,
     cacheVersion,
@@ -103,24 +102,85 @@ export const NotificationsTableClient = ({
   const { deleteConfirm, setDeleteConfirm, handleDeleteConfirm } = useNotificationDeleteConfirm()
 
   const {
-    handleToggleRead,
-    handleBulkMarkAsRead,
-    handleBulkMarkAsUnread,
-    handleDeleteSingle,
-    handleBulkDelete,
-    togglingNotifications,
-    deletingNotifications,
+    executeSingleAction,
+    executeBulkAction,
+    deletingIds,
+    markingReadIds,
+    markingUnreadIds,
     bulkState,
   } = useNotificationActions({
+    canDelete: true,
+    canRestore: false,
+    canManage: true,
     showFeedback,
+    beforeSingleAction: async (action, row) => {
+      const isOwner = session?.user?.id === row.userId
+      if (!isOwner) {
+        return { 
+          allowed: false, 
+          message: action === "delete" 
+            ? NOTIFICATION_MESSAGES.NO_DELETE_PERMISSION 
+            : NOTIFICATION_MESSAGES.NO_OWNER_PERMISSION 
+        }
+      }
+      if (action === "delete" && row.kind === "SYSTEM") {
+        return { allowed: false, message: NOTIFICATION_MESSAGES.NO_DELETE_SYSTEM }
+      }
+    },
+    beforeBulkAction: async (action, ids, rows) => {
+      if (!session?.user?.id) {
+        return { allowed: false, message: NOTIFICATION_MESSAGES.LOGIN_REQUIRED }
+      }
+
+      if (rows) {
+        const ownNotifications = rows.filter((row) => row.userId === session.user.id)
+        let targetIds = ids
+
+        if (action === "mark-read") {
+          const unreadNotifications = ownNotifications.filter((row) => !row.isRead)
+          targetIds = unreadNotifications.map((row) => row.id)
+          if (targetIds.length === 0) {
+            return { 
+              allowed: false, 
+              message: ownNotifications.length > 0 
+                ? NOTIFICATION_MESSAGES.ALL_ALREADY_READ 
+                : NOTIFICATION_MESSAGES.NO_OWNER_PERMISSION 
+            }
+          }
+        } else if (action === "mark-unread") {
+          const readNotifications = ownNotifications.filter((row) => row.isRead)
+          targetIds = readNotifications.map((row) => row.id)
+          if (targetIds.length === 0) {
+            return { 
+              allowed: false, 
+              message: ownNotifications.length > 0 
+                ? NOTIFICATION_MESSAGES.ALL_ALREADY_UNREAD 
+                : NOTIFICATION_MESSAGES.NO_OWNER_PERMISSION 
+            }
+          }
+        } else if (action === "delete") {
+          const nonSystemNotifications = ownNotifications.filter((row) => row.kind !== "SYSTEM")
+          targetIds = nonSystemNotifications.map((row) => row.id)
+          if (targetIds.length === 0) {
+            return { 
+              allowed: false, 
+              message: ownNotifications.length > nonSystemNotifications.length 
+                ? NOTIFICATION_MESSAGES.NO_DELETE_SYSTEM 
+                : NOTIFICATION_MESSAGES.NO_DELETE_PERMISSION 
+            }
+          }
+        }
+
+        return { allowed: true, targetIds }
+      }
+    }
   })
 
   const handleToggleReadWithRefresh = useCallback(
     (row: NotificationRow, checked: boolean) => {
-      // Cả mark-read và mark-unread đều gọi trực tiếp với toast, không hiển thị dialog
-      handleToggleRead(row, checked)
+      executeSingleAction(checked ? "mark-read" : "mark-unread", row, refreshTable)
     },
-    [handleToggleRead],
+    [executeSingleAction, refreshTable],
   )
 
   const handleDeleteSingleWithRefresh = useCallback(
@@ -130,24 +190,38 @@ export const NotificationsTableClient = ({
         type: "delete",
         row,
         onConfirm: async () => {
-          await handleDeleteSingle(row)
+          await executeSingleAction("delete", row, refreshTable)
         },
       })
     },
-    [handleDeleteSingle, setDeleteConfirm],
+    [executeSingleAction, setDeleteConfirm, refreshTable],
   )
 
   const { baseColumns } = useNotificationColumns({
-    togglingNotifications,
+    togglingNotifications: useMemo(() => new Set([...markingReadIds, ...markingUnreadIds]), [markingReadIds, markingUnreadIds]),
     sessionUserId: session?.user?.id,
     onToggleRead: handleToggleReadWithRefresh,
   })
 
-  const { renderRowActionsForNotifications } = useNotificationRowActions({
-    sessionUserId: session?.user?.id,
-    onDelete: handleDeleteSingleWithRefresh,
-    deletingNotifications,
-  })
+  const renderRowActionsForNotifications = useCallback((row: NotificationRow) => {
+    const isOwner = session?.user?.id === row.userId
+    const isSystem = row.kind === "SYSTEM"
+
+    return (
+      <div className="flex items-center gap-2">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => handleDeleteSingleWithRefresh(row)}
+          disabled={deletingIds.has(row.id) || !isOwner || isSystem}
+          className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+        >
+          <Trash2 className="h-4 w-4" />
+        </Button>
+      </div>
+    )
+  }, [session?.user?.id, handleDeleteSingleWithRefresh, deletingIds])
+
 
   const fetchNotifications = useCallback(
     async ({
@@ -305,13 +379,11 @@ export const NotificationsTableClient = ({
       const systemCount = ownNotifications.length - deletableNotifications.length
 
       const handleBulkMarkAsReadWithRefresh = async () => {
-        // mark-read: gọi trực tiếp với toast, không hiển thị dialog
-        await handleBulkMarkAsRead(unreadNotificationIds, ownNotifications)
+        await executeBulkAction("mark-read", unreadNotificationIds, refreshTable, clearSelection, ownNotifications)
       }
 
       const handleBulkMarkAsUnreadWithRefresh = async () => {
-        // mark-unread: gọi trực tiếp với toast, không hiển thị dialog
-        await handleBulkMarkAsUnread(readNotificationIds, ownNotifications)
+        await executeBulkAction("mark-unread", readNotificationIds, refreshTable, clearSelection, ownNotifications)
       }
 
       const handleBulkDeleteWithRefresh = () => {
@@ -320,7 +392,7 @@ export const NotificationsTableClient = ({
           type: "delete",
           bulkIds: deletableNotificationIds,
           onConfirm: async () => {
-            await handleBulkDelete(selectedIds, selectedRows)
+            await executeBulkAction("delete", deletableNotificationIds, refreshTable, clearSelection, deletableNotifications)
           },
         })
       }
@@ -399,9 +471,8 @@ export const NotificationsTableClient = ({
     },
     [
       session?.user?.id,
-      handleBulkMarkAsRead,
-      handleBulkMarkAsUnread,
-      handleBulkDelete,
+      executeBulkAction,
+      refreshTable,
       bulkState.isProcessing,
       setDeleteConfirm,
     ],
@@ -529,7 +600,7 @@ export const NotificationsTableClient = ({
           isLoading={
             bulkState.isProcessing ||
             (deleteConfirm.row
-              ? deletingNotifications.has(deleteConfirm.row.id)
+              ? deletingIds.has(deleteConfirm.row.id)
               : false)
           }
         />

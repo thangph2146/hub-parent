@@ -171,7 +171,7 @@ export const DashboardWelcome = () => {
   if (!isMounted) {
     return (
       <Flex direction="col" gap={4} flex="1" padding="md-lg" fullWidth>
-        <Flex className="h-64 bg-muted/50 rounded-xl animate-pulse" />
+        <Flex className="h-64 bg-muted rounded-xl animate-pulse" />
       </Flex>
     )
   }

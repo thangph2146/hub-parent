@@ -12,8 +12,8 @@ import type { ResourceAction } from "@/types"
 
 import { invalidateAndRefreshResource } from "../utils/helpers"
 
-type SingleAction = "delete" | "restore" | "hard-delete"
-type BulkAction = SingleAction | "active" | "unactive"
+type SingleAction = "delete" | "restore" | "hard-delete" | "mark-read" | "mark-unread" | "active" | "unactive"
+type BulkAction = SingleAction
 type ActionType = SingleAction | `bulk-${BulkAction}`
 
 const getActionType = (action: BulkAction, isBulk: boolean): ActionType => {
@@ -22,6 +22,8 @@ const getActionType = (action: BulkAction, isBulk: boolean): ActionType => {
       : action === "restore" ? "bulk-restore"
       : action === "active" ? "bulk-active"
       : action === "unactive" ? "bulk-unactive"
+      : action === "mark-read" ? "bulk-mark-read"
+      : action === "mark-unread" ? "bulk-mark-unread"
       : "bulk-hard-delete"
   }
   return action as SingleAction
@@ -56,6 +58,18 @@ export interface ResourceActionConfig<T extends { id: string }> {
     BULK_ACTIVE_ERROR?: string
     BULK_UNACTIVE_SUCCESS?: string
     BULK_UNACTIVE_ERROR?: string
+    BULK_MARK_READ_SUCCESS?: string
+    BULK_MARK_READ_ERROR?: string
+    BULK_MARK_UNREAD_SUCCESS?: string
+    BULK_MARK_UNREAD_ERROR?: string
+    ACTIVE_SUCCESS?: string
+    ACTIVE_ERROR?: string
+    UNACTIVE_SUCCESS?: string
+    UNACTIVE_ERROR?: string
+    MARK_READ_SUCCESS?: string
+    MARK_READ_ERROR?: string
+    MARK_UNREAD_SUCCESS?: string
+    MARK_UNREAD_ERROR?: string
     UNKNOWN_ERROR: string
   }
   getRecordName: (row: T) => string
@@ -67,23 +81,38 @@ export interface ResourceActionConfig<T extends { id: string }> {
   showFeedback: (variant: FeedbackVariant, title: string, description?: string, details?: string) => void
   isSocketConnected?: boolean
   getLogMetadata?: (row: T) => Record<string, unknown>
+  // New validation hooks
+  beforeSingleAction?: (
+    action: SingleAction,
+    row: T
+  ) => Promise<{ allowed: boolean; message?: string } | void>
+  beforeBulkAction?: (
+    action: BulkAction,
+    ids: string[],
+    rows?: T[]
+  ) => Promise<{ allowed: boolean; message?: string; targetIds?: string[] } | void>
 }
 
 export interface UseResourceActionsResult<T extends { id: string }> {
   executeSingleAction: (
-    action: "delete" | "restore" | "hard-delete",
+    action: SingleAction,
     row: T,
     refresh: ResourceRefreshHandler
   ) => Promise<void>
   executeBulkAction: (
-    action: "delete" | "restore" | "hard-delete" | "active" | "unactive",
+    action: BulkAction,
     ids: string[],
     refresh: ResourceRefreshHandler,
-    clearSelection: () => void
+    clearSelection: () => void,
+    rows?: T[]
   ) => Promise<void>
   deletingIds: Set<string>
   restoringIds: Set<string>
   hardDeletingIds: Set<string>
+  markingReadIds: Set<string>
+  markingUnreadIds: Set<string>
+  activatingIds: Set<string>
+  deactivatingIds: Set<string>
   bulkState: ReturnType<typeof useResourceBulkProcessing>["bulkState"]
 }
 
@@ -94,19 +123,33 @@ export const useResourceActions = <T extends { id: string }>(
   const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set())
   const [restoringIds, setRestoringIds] = useState<Set<string>>(new Set())
   const [hardDeletingIds, setHardDeletingIds] = useState<Set<string>>(new Set())
+  const [markingReadIds, setMarkingReadIds] = useState<Set<string>>(new Set())
+  const [markingUnreadIds, setMarkingUnreadIds] = useState<Set<string>>(new Set())
+  const [activatingIds, setActivatingIds] = useState<Set<string>>(new Set())
+  const [deactivatingIds, setDeactivatingIds] = useState<Set<string>>(new Set())
   
   const { bulkState, startBulkProcessing, stopBulkProcessing } = useResourceBulkProcessing()
   
   const singleActionMutation = useMutation({
     ...createAdminMutationOptions({
-      mutationFn: async ({ action, row }: { action: "delete" | "restore" | "hard-delete"; row: T }) => {
+      mutationFn: async ({ action, row }: { action: SingleAction; row: T }) => {
         const endpoint = {
           delete: config.apiRoutes.delete(row.id),
           restore: config.apiRoutes.restore(row.id),
           "hard-delete": config.apiRoutes.hardDelete(row.id),
+          "mark-read": config.apiRoutes.bulk,
+          "mark-unread": config.apiRoutes.bulk,
+          active: config.apiRoutes.bulk,
+          unactive: config.apiRoutes.bulk,
         }[action]
         
-        const method = action === "delete" || action === "hard-delete" ? "delete" : "post"
+        let method: "post" | "delete" = (action === "delete" || action === "hard-delete") ? "delete" : "post"
+        let payload: Record<string, unknown> | undefined = undefined
+
+        if (action === "mark-read" || action === "mark-unread" || action === "active" || action === "unactive") {
+          method = "post"
+          payload = { action, ids: [row.id] }
+        }
         
         resourceLogger.logFlow({
           resource: config.resourceName,
@@ -128,7 +171,7 @@ export const useResourceActions = <T extends { id: string }>(
           if (method === "delete") {
             response = await apiClient.delete(endpoint)
           } else {
-            response = await apiClient.post(endpoint)
+            response = await apiClient.post(endpoint, payload)
           }
           
           const duration = Date.now() - startTime
@@ -234,7 +277,7 @@ export const useResourceActions = <T extends { id: string }>(
   
   const bulkActionMutation = useMutation({
     ...createAdminMutationOptions({
-      mutationFn: async ({ action, ids }: { action: "delete" | "restore" | "hard-delete" | "active" | "unactive"; ids: string[] }) => {
+      mutationFn: async ({ action, ids }: { action: "delete" | "restore" | "hard-delete" | "active" | "unactive" | "mark-read" | "mark-unread"; ids: string[] }) => {
         const actionType = getActionType(action, true) as ResourceAction
         
         resourceLogger.logFlow({
@@ -381,10 +424,18 @@ export const useResourceActions = <T extends { id: string }>(
   
   const executeSingleAction = useCallback(
     async (
-      action: "delete" | "restore" | "hard-delete",
+      action: SingleAction,
       row: T,
-      _refresh: ResourceRefreshHandler // Không sử dụng vì registry đã tự động trigger refresh
     ): Promise<void> => {
+      // 1. Kiểm tra validation hook trước khi thực hiện
+      if (config.beforeSingleAction) {
+        const validation = await config.beforeSingleAction(action, row)
+        if (validation && !validation.allowed) {
+          config.showFeedback("error", "Không thể thực hiện", validation.message || "Hành động này không được phép")
+          return
+        }
+      }
+
       const actionConfig = {
         delete: {
           permission: config.permissions.canDelete,
@@ -407,12 +458,40 @@ export const useResourceActions = <T extends { id: string }>(
           errorTitle: config.messages.HARD_DELETE_ERROR,
           errorDescription: `Không thể xóa vĩnh viễn ${config.getRecordName(row)}`,
         },
+        "mark-read": {
+          permission: true,
+          successTitle: config.messages.MARK_READ_SUCCESS || "Đã đánh dấu đã đọc",
+          successDescription: `Đã đánh dấu đã đọc ${config.getRecordName(row)}`,
+          errorTitle: config.messages.MARK_READ_ERROR || "Lỗi",
+          errorDescription: `Không thể đánh dấu đã đọc ${config.getRecordName(row)}`,
+        },
+        "mark-unread": {
+          permission: true,
+          successTitle: config.messages.MARK_UNREAD_SUCCESS || "Đã đánh dấu chưa đọc",
+          successDescription: `Đã đánh dấu chưa đọc ${config.getRecordName(row)}`,
+          errorTitle: config.messages.MARK_UNREAD_ERROR || "Lỗi",
+          errorDescription: `Không thể đánh dấu chưa đọc ${config.getRecordName(row)}`,
+        },
+        active: {
+          permission: config.permissions.canManage,
+          successTitle: config.messages.ACTIVE_SUCCESS || "Đã kích hoạt",
+          successDescription: `Đã kích hoạt ${config.getRecordName(row)}`,
+          errorTitle: config.messages.ACTIVE_ERROR || "Lỗi",
+          errorDescription: `Không thể kích hoạt ${config.getRecordName(row)}`,
+        },
+        unactive: {
+          permission: config.permissions.canManage,
+          successTitle: config.messages.UNACTIVE_SUCCESS || "Đã hủy kích hoạt",
+          successDescription: `Đã hủy kích hoạt ${config.getRecordName(row)}`,
+          errorTitle: config.messages.UNACTIVE_ERROR || "Lỗi",
+          errorDescription: `Không thể hủy kích hoạt ${config.getRecordName(row)}`,
+        },
       }[action]
       
       if (!actionConfig.permission) {
         resourceLogger.logAction({
           resource: config.resourceName,
-          action,
+          action: action as ResourceAction,
           resourceId: row.id,
           permissionDenied: true,
         })
@@ -444,6 +523,14 @@ export const useResourceActions = <T extends { id: string }>(
         ? setDeletingIds 
         : action === "restore" 
         ? setRestoringIds 
+        : action === "mark-read"
+        ? setMarkingReadIds
+        : action === "mark-unread"
+        ? setMarkingUnreadIds
+        : action === "active"
+        ? setActivatingIds
+        : action === "unactive"
+        ? setDeactivatingIds
         : setHardDeletingIds
       
       setLoadingState((prev) => new Set(prev).add(row.id))
@@ -476,40 +563,75 @@ export const useResourceActions = <T extends { id: string }>(
   
   const executeBulkAction = useCallback(
     async (
-      action: "delete" | "restore" | "hard-delete" | "active" | "unactive",
+      action: "delete" | "restore" | "hard-delete" | "active" | "unactive" | "mark-read" | "mark-unread",
       ids: string[],
-      _refresh: ResourceRefreshHandler, // Không sử dụng vì registry đã tự động trigger refresh
-      clearSelection: () => void
+      _refresh?: ResourceRefreshHandler, // Không sử dụng vì registry đã tự động trigger refresh
+      clearSelection: () => void = () => {},
+      rows?: T[]
     ): Promise<void> => {
       if (ids.length === 0) return
+
+      // 1. Kiểm tra validation hook trước khi thực hiện
+      let targetIds = ids
+      if (config.beforeBulkAction) {
+        const validation = await config.beforeBulkAction(action, ids, rows)
+        if (validation && !validation.allowed) {
+          config.showFeedback("error", "Không thể thực hiện", validation.message || "Hành động này không được phép")
+          return
+        }
+        if (validation?.targetIds) {
+          targetIds = validation.targetIds
+          if (targetIds.length === 0) {
+            config.showFeedback("success", "Thông báo", validation.message || "Không có mục nào hợp lệ để thực hiện hành động này")
+            clearSelection()
+            return
+          }
+        }
+      }
+
       if (!startBulkProcessing()) return
       
       // Check permission before making API call
       const actionConfig = {
         delete: {
-          permission: config.permissions.canManage || config.permissions.canDelete,
-          errorMessage: "Bạn không có quyền xóa hàng loạt",
+          permission: config.permissions.canDelete,
+          successTitle: config.messages.BULK_DELETE_SUCCESS,
+          errorTitle: config.messages.BULK_DELETE_ERROR,
         },
         restore: {
           permission: config.permissions.canRestore,
-          errorMessage: "Bạn không có quyền khôi phục hàng loạt",
+          successTitle: config.messages.BULK_RESTORE_SUCCESS,
+          errorTitle: config.messages.BULK_RESTORE_ERROR,
         },
         "hard-delete": {
           permission: config.permissions.canManage,
-          errorMessage: "Bạn không có quyền xóa vĩnh viễn hàng loạt",
+          successTitle: config.messages.BULK_HARD_DELETE_SUCCESS,
+          errorTitle: config.messages.BULK_HARD_DELETE_ERROR,
         },
         active: {
-          permission: true, // Permission check sẽ được thực hiện ở server side
-          errorMessage: "Bạn không có quyền kích hoạt hàng loạt",
+          permission: config.permissions.canManage,
+          successTitle: config.messages.BULK_ACTIVE_SUCCESS || "Đã kích hoạt hàng loạt",
+          errorTitle: config.messages.BULK_ACTIVE_ERROR || "Lỗi kích hoạt hàng loạt",
         },
         unactive: {
-          permission: true, // Permission check sẽ được thực hiện ở server side
-          errorMessage: "Bạn không có quyền bỏ kích hoạt hàng loạt",
+          permission: config.permissions.canManage,
+          successTitle: config.messages.BULK_UNACTIVE_SUCCESS || "Đã hủy kích hoạt hàng loạt",
+          errorTitle: config.messages.BULK_UNACTIVE_ERROR || "Lỗi hủy kích hoạt hàng loạt",
+        },
+        "mark-read": {
+          permission: true,
+          successTitle: config.messages.BULK_MARK_READ_SUCCESS || "Đã đánh dấu đã đọc hàng loạt",
+          errorTitle: config.messages.BULK_MARK_READ_ERROR || "Lỗi đánh dấu đã đọc hàng loạt",
+        },
+        "mark-unread": {
+          permission: true,
+          successTitle: config.messages.BULK_MARK_UNREAD_SUCCESS || "Đã đánh dấu chưa đọc hàng loạt",
+          errorTitle: config.messages.BULK_MARK_UNREAD_ERROR || "Lỗi đánh dấu chưa đọc hàng loạt",
         },
       }[action]
       
       if (!actionConfig.permission) {
-        config.showFeedback("error", "Không có quyền", actionConfig.errorMessage)
+        config.showFeedback("error", "Không có quyền", actionConfig.errorTitle)
         stopBulkProcessing()
         return
       }
@@ -522,19 +644,19 @@ export const useResourceActions = <T extends { id: string }>(
         details: {
           action: action,
           actionType: actionType,
-          selectedCount: ids.length,
-          selectedIds: ids,
+          selectedCount: targetIds.length,
+          selectedIds: targetIds,
           userAction: "user_confirmed_bulk_action",
           socketConnected: config.isSocketConnected,
           itemsInfo: {
-            count: ids.length,
-            ids: ids,
+            count: targetIds.length,
+            ids: targetIds,
           },
         },
       })
       
       try {
-        const response = await bulkActionMutation.mutateAsync({ action, ids })
+        const response = await bulkActionMutation.mutateAsync({ action, ids: targetIds })
         
         const result = response.data?.data
         const affected = result?.affected ?? 0
@@ -546,6 +668,8 @@ export const useResourceActions = <T extends { id: string }>(
             active: "kích hoạt",
             unactive: "bỏ kích hoạt",
             "hard-delete": "xóa vĩnh viễn",
+            "mark-read": "đánh dấu đã đọc",
+            "mark-unread": "đánh dấu chưa đọc",
           }
           const actionText = actionTextMap[action] || "xử lý"
           const errorMessage = result?.message || `Không có ${config.resourceName} nào được ${actionText}`
@@ -556,111 +680,37 @@ export const useResourceActions = <T extends { id: string }>(
             resource: config.resourceName,
             action: getActionType(action, true) as ResourceAction,
             step: "error",
-            details: { 
-              requestedCount: ids.length, 
-              affectedCount: 0, 
-              error: errorMessage, 
-              requestedIds: ids 
+            details: {
+              requestedCount: ids.length,
+              affectedCount: 0,
+              message: errorMessage,
             },
           })
           return
         }
         
-        const messages = {
-          restore: { 
-            title: config.messages.BULK_RESTORE_SUCCESS, 
-            description: result?.message || `Đã khôi phục ${affected} ${config.resourceName}` 
-          },
-          delete: { 
-            title: config.messages.BULK_DELETE_SUCCESS, 
-            description: result?.message || `Đã xóa ${affected} ${config.resourceName}` 
-          },
-          "hard-delete": { 
-            title: config.messages.BULK_HARD_DELETE_SUCCESS,
-            description: result?.message || `Đã xóa vĩnh viễn ${affected} ${config.resourceName}` 
-          },
-          active: { 
-            title: config.messages.BULK_ACTIVE_SUCCESS || "Kích hoạt hàng loạt thành công",
-            description: result?.message || `Đã kích hoạt ${affected} ${config.resourceName}` 
-          },
-          unactive: { 
-            title: config.messages.BULK_UNACTIVE_SUCCESS || "Bỏ kích hoạt hàng loạt thành công",
-            description: result?.message || `Đã bỏ kích hoạt ${affected} ${config.resourceName}` 
-          },
-        }[action]
+        const successMessage = `${actionConfig.successTitle} (${affected} ${config.resourceName})`
         
-        if (!messages) {
-          config.showFeedback("error", "Lỗi", "Action không được hỗ trợ")
-          stopBulkProcessing()
-          return
-        }
-        
-        config.showFeedback("success", messages.title, messages.description)
+        config.showFeedback("success", "Thành công", successMessage)
         clearSelection()
-        
-        resourceLogger.logFlow({
-          resource: config.resourceName,
-          action: getActionType(action, true) as ResourceAction,
-          step: "success",
-          details: { 
-            requestedCount: ids.length, 
-            affectedCount: affected, 
-            requestedIds: ids 
-          },
-        })
-        
-        // Refresh đã được trigger qua registry trong onSuccess của mutation
-        // Không cần gọi thêm ở đây để tránh duplicate refresh calls
-        stopBulkProcessing()
       } catch (error: unknown) {
-        const errorMessage = error instanceof Error ? error.message : config.messages.UNKNOWN_ERROR
-        
-        const errorMessages = {
-          restore: { 
-            title: config.messages.BULK_RESTORE_ERROR, 
-            description: errorMessage 
-          },
-          delete: { 
-            title: config.messages.BULK_DELETE_ERROR, 
-            description: errorMessage 
-          },
-          "hard-delete": { 
-            title: config.messages.BULK_HARD_DELETE_ERROR,
-            description: errorMessage 
-          },
-          active: { 
-            title: config.messages.BULK_ACTIVE_ERROR || "Kích hoạt hàng loạt thất bại",
-            description: errorMessage 
-          },
-          unactive: { 
-            title: config.messages.BULK_UNACTIVE_ERROR || "Bỏ kích hoạt hàng loạt thất bại",
-            description: errorMessage 
-          },
-        }[action]
-        
-        if (!errorMessages) {
-          config.showFeedback("error", "Lỗi", errorMessage)
-          stopBulkProcessing()
-          return
+        const actionTextMap: Record<BulkAction, string> = {
+          restore: "khôi phục",
+          delete: "xóa",
+          active: "kích hoạt",
+          unactive: "bỏ kích hoạt",
+          "hard-delete": "xóa vĩnh viễn",
+          "mark-read": "đánh dấu đã đọc",
+          "mark-unread": "đánh dấu chưa đọc",
         }
-        
-        config.showFeedback("error", errorMessages.title, errorMessages.description)
-        
-        resourceLogger.logFlow({
-          resource: config.resourceName,
-          action: getActionType(action, true) as ResourceAction,
-          step: "error",
-          details: { 
-            requestedCount: ids.length, 
-            error: errorMessage, 
-            requestedIds: ids 
-          },
-        })
-        
+        const actionText = actionTextMap[action] || "xử lý"
+        const errorMessage = error instanceof Error ? error.message : `Không thể ${actionText} hàng loạt`
+        config.showFeedback("error", "Lỗi", errorMessage)
+      } finally {
         stopBulkProcessing()
       }
     },
-    [config, startBulkProcessing, stopBulkProcessing, bulkActionMutation],
+    [config, bulkActionMutation, startBulkProcessing, stopBulkProcessing]
   )
   
   return {
@@ -669,6 +719,10 @@ export const useResourceActions = <T extends { id: string }>(
     deletingIds,
     restoringIds,
     hardDeletingIds,
+    markingReadIds,
+    markingUnreadIds,
+    activatingIds,
+    deactivatingIds,
     bulkState,
   }
 }

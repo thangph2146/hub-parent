@@ -1,8 +1,15 @@
 import { z } from "zod"
 
+const literalSchema = z.union([z.string(), z.number(), z.boolean(), z.null()]);
+type Literal = z.infer<typeof literalSchema>;
+type Json = Literal | { [key: string]: Json } | Json[];
+const jsonSchema: z.ZodType<Json> = z.lazy(() =>
+  z.union([literalSchema, z.array(jsonSchema), z.record(z.string(), jsonSchema)])
+);
+
 export const createPostSchema = z.object({
   title: z.string().min(1, "Tiêu đề là bắt buộc"),
-  content: z.any(), // Prisma.InputJsonValue is hard to validate strictly with Zod, keeping as any or custom refinement if needed
+  content: jsonSchema, // Prisma.InputJsonValue validated strictly with Zod
   excerpt: z.string().optional().nullable(),
   slug: z.string().min(1, "Slug là bắt buộc"),
   image: z.string().optional().nullable(),
@@ -30,7 +37,7 @@ export const createPostSchema = z.object({
 
 export const updatePostSchema = z.object({
   title: z.string().optional(),
-  content: z.any().optional(),
+  content: jsonSchema.optional(),
   excerpt: z.string().optional().nullable(),
   slug: z.string().optional(),
   image: z.string().optional().nullable(),

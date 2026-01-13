@@ -13,9 +13,9 @@ interface UseStudentRowActionsOptions {
   onDelete: (row: StudentRow) => void
   onHardDelete: (row: StudentRow) => void
   onRestore: (row: StudentRow) => void
-  deletingStudents?: Set<string>
-  restoringStudents?: Set<string>
-  hardDeletingStudents?: Set<string>
+  deletingIds?: Set<string>
+  restoringIds?: Set<string>
+  hardDeletingIds?: Set<string>
 }
 
 export const useStudentRowActions = ({
@@ -26,9 +26,9 @@ export const useStudentRowActions = ({
   onDelete,
   onHardDelete,
   onRestore,
-  deletingStudents = new Set(),
-  restoringStudents = new Set(),
-  hardDeletingStudents = new Set(),
+  deletingIds = new Set(),
+  restoringIds = new Set(),
+  hardDeletingIds = new Set(),
 }: UseStudentRowActionsOptions) => {
   const router = useResourceRouter()
 
@@ -51,26 +51,26 @@ export const useStudentRowActions = ({
       }
 
       if (canDelete) {
-        const isDeleting = deletingStudents.has(row.id)
+        const isDeleting = deletingIds.has(row.id)
         actions.push({
           label: STUDENT_LABELS.DELETE,
           icon: Trash2,
           onSelect: () => onDelete(row),
           destructive: true,
-          disabled: isDeleting || restoringStudents.has(row.id) || hardDeletingStudents.has(row.id),
+          disabled: isDeleting || restoringIds.has(row.id) || hardDeletingIds.has(row.id),
           isLoading: isDeleting,
           loadingLabel: STUDENT_LABELS.DELETING,
         })
       }
 
       if (canManage) {
-        const isHardDeleting = hardDeletingStudents.has(row.id)
+        const isHardDeleting = hardDeletingIds.has(row.id)
         actions.push({
           label: STUDENT_LABELS.HARD_DELETE,
           icon: AlertTriangle,
           onSelect: () => onHardDelete(row),
           destructive: true,
-          disabled: deletingStudents.has(row.id) || restoringStudents.has(row.id) || isHardDeleting,
+          disabled: deletingIds.has(row.id) || restoringIds.has(row.id) || isHardDeleting,
           isLoading: isHardDeleting,
           loadingLabel: STUDENT_LABELS.HARD_DELETING,
         })
@@ -78,7 +78,7 @@ export const useStudentRowActions = ({
 
       return renderRowActions(actions)
     },
-    [canDelete, canManage, canUpdate, onDelete, onHardDelete, router, deletingStudents, restoringStudents, hardDeletingStudents],
+    [canDelete, canManage, canUpdate, onDelete, onHardDelete, router, deletingIds, restoringIds, hardDeletingIds],
   )
 
   const renderDeletedRowActions = useCallback(
@@ -92,25 +92,25 @@ export const useStudentRowActions = ({
       ]
 
       if (canRestore) {
-        const isRestoring = restoringStudents.has(row.id)
+        const isRestoring = restoringIds.has(row.id)
         actions.push({
           label: STUDENT_LABELS.RESTORE,
           icon: RotateCcw,
           onSelect: () => onRestore(row),
-          disabled: deletingStudents.has(row.id) || isRestoring || hardDeletingStudents.has(row.id),
+          disabled: deletingIds.has(row.id) || isRestoring || hardDeletingIds.has(row.id),
           isLoading: isRestoring,
           loadingLabel: STUDENT_LABELS.RESTORING,
         })
       }
 
       if (canManage) {
-        const isHardDeleting = hardDeletingStudents.has(row.id)
+        const isHardDeleting = hardDeletingIds.has(row.id)
         actions.push({
           label: STUDENT_LABELS.HARD_DELETE,
           icon: AlertTriangle,
           onSelect: () => onHardDelete(row),
           destructive: true,
-          disabled: deletingStudents.has(row.id) || restoringStudents.has(row.id) || isHardDeleting,
+          disabled: deletingIds.has(row.id) || restoringIds.has(row.id) || isHardDeleting,
           isLoading: isHardDeleting,
           loadingLabel: STUDENT_LABELS.HARD_DELETING,
         })
@@ -118,7 +118,7 @@ export const useStudentRowActions = ({
 
       return renderRowActions(actions)
     },
-    [canManage, canRestore, onHardDelete, onRestore, router, deletingStudents, restoringStudents, hardDeletingStudents],
+    [canManage, canRestore, onHardDelete, onRestore, router, deletingIds, restoringIds, hardDeletingIds],
   )
 
   return {

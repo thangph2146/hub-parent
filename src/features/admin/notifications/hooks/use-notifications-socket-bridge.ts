@@ -84,7 +84,13 @@ const createNotificationUpsertUpdater = (row: NotificationRow) => {
 
     if (existingIndex >= 0) {
       rows = [...rows]
-      rows[existingIndex] = row
+      // Merge with existing row to preserve fields like userEmail, userName if they are missing in the update
+      rows[existingIndex] = {
+        ...rows[existingIndex],
+        ...row,
+        userEmail: row.userEmail || rows[existingIndex].userEmail,
+        userName: row.userName || rows[existingIndex].userName,
+      }
     } else if (data.page === 1) {
       rows = insertRowIntoPage(rows, row, next.limit)
       total = total + 1
@@ -269,13 +275,30 @@ export const useNotificationsSocketBridge = () => {
             // Partial sync - merge vào rows hiện tại
             const rowsMap = new Map(data.rows.map(r => [r.id, r]))
             let addedCount = 0
+            let hasChanges = false
             
             incomingRows.forEach(row => {
-              if (!rowsMap.has(row.id)) {
+              const existingRow = rowsMap.get(row.id)
+              if (existingRow) {
+                // Merge existing data with incoming data to preserve missing fields
+                rowsMap.set(row.id, {
+                  ...existingRow,
+                  ...row,
+                  userEmail: row.userEmail || existingRow.userEmail,
+                  userName: row.userName || existingRow.userName,
+                })
+                hasChanges = true
+              } else if (data.page === 1) {
+                // Chỉ thêm vào nếu là trang 1
                 addedCount++
+                rowsMap.set(row.id, row)
+                hasChanges = true
               }
-              rowsMap.set(row.id, row)
             })
+
+            if (!hasChanges) {
+              return null
+            }
 
             nextRows = Array.from(rowsMap.values())
               .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())

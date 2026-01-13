@@ -6,7 +6,7 @@ import { useDynamicFilterOptions } from "@/features/admin/resources/hooks/use-dy
 import { apiRoutes } from "@/constants"
 import type { NotificationRow } from "../types"
 import { NOTIFICATION_KINDS, NOTIFICATION_LABELS } from "../constants"
-import { TypographyPMuted, TypographySpanSmallMuted, TypographyP } from "@/components/ui/typography"
+import { TypographySpanSmallMuted, TypographyP } from "@/components/ui/typography"
 import { Flex } from "@/components/ui/flex"
 
 interface UseNotificationColumnsOptions {
@@ -24,6 +24,9 @@ export const useNotificationColumns = ({
     optionsEndpoint: apiRoutes.adminNotifications.options({ column: "userEmail" }),
   })
 
+  const userNameFilter = useDynamicFilterOptions({
+    optionsEndpoint: apiRoutes.adminNotifications.options({ column: "userName" }),
+  })
   const dateFormatter = useMemo(
     () =>
       new Intl.DateTimeFormat("vi-VN", {
@@ -37,7 +40,7 @@ export const useNotificationColumns = ({
     () => [
       {
         accessorKey: "userEmail",
-        header: "Người dùng",
+        header: "Email người nhận",
         filter: {
           type: "select",
           placeholder: "Chọn email...",
@@ -47,24 +50,37 @@ export const useNotificationColumns = ({
           onSearchChange: userEmailFilter.onSearchChange,
           isLoading: userEmailFilter.isLoading,
         },
-        className: "min-w-[200px]",
-        headerClassName: "min-w-[200px]",
+        className: "min-w-[180px]",
+        headerClassName: "min-w-[180px]",
         cell: (row) => {
           const isOwner = sessionUserId === row.userId
           return (
             <Flex align="center" gap={2}>
-              <Flex direction="col" gap={1}>
-                <TypographyP>{row.userEmail || "-"}</TypographyP>
-                {row.userName && <TypographyPMuted>{row.userName}</TypographyPMuted>}
-                {isOwner && (
-                  <Badge variant="outline">
-                    {NOTIFICATION_LABELS.OWN_NOTIFICATION}
-                  </Badge>
-                )}
-              </Flex>
+              <TypographyP className="font-medium">{row.userEmail || "-"}</TypographyP>
+              {isOwner && (
+                <Badge variant="outline" className="text-[10px] px-1 py-0 h-4 w-[80px] text-center">
+                  {NOTIFICATION_LABELS.OWN_NOTIFICATION}
+                </Badge>
+              )}
             </Flex>
           )
         },
+      },
+      {
+        accessorKey: "userName",
+        header: "Tên người nhận",
+        filter: {
+          type: "select",
+          placeholder: "Chọn tên...",
+          searchPlaceholder: "Tìm kiếm...",
+          emptyMessage: "Không tìm thấy.",
+          options: userNameFilter.options,
+          onSearchChange: userNameFilter.onSearchChange,
+          isLoading: userNameFilter.isLoading,
+        },
+        className: "min-w-[180px]",
+        headerClassName: "min-w-[180px]",
+        cell: (row) => <TypographyP>{row.userName || "-"}</TypographyP>,
       },
       {
         accessorKey: "kind",
@@ -140,9 +156,23 @@ export const useNotificationColumns = ({
       {
         accessorKey: "createdAt",
         header: "Ngày tạo",
-        className: "min-w-[200px]",
-        headerClassName: "min-w-[200px]",
+        className: "min-w-[180px]",
+        headerClassName: "min-w-[180px]",
         cell: (row) => dateFormatter.format(new Date(row.createdAt)),
+      },
+      {
+        accessorKey: "readAt",
+        header: "Ngày đọc",
+        className: "min-w-[180px]",
+        headerClassName: "min-w-[180px]",
+        cell: (row) => row.readAt ? dateFormatter.format(new Date(row.readAt)) : "-",
+      },
+      {
+        accessorKey: "expiresAt",
+        header: "Ngày hết hạn",
+        className: "min-w-[180px]",
+        headerClassName: "min-w-[180px]",
+        cell: (row) => row.expiresAt ? dateFormatter.format(new Date(row.expiresAt)) : "-",
       },
     ],
     [
@@ -150,6 +180,9 @@ export const useNotificationColumns = ({
       userEmailFilter.options,
       userEmailFilter.onSearchChange,
       userEmailFilter.isLoading,
+      userNameFilter.options,
+      userNameFilter.onSearchChange,
+      userNameFilter.isLoading,
       sessionUserId,
       togglingNotifications,
       onToggleRead,

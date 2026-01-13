@@ -6,16 +6,10 @@
 
 export {
   DataTable,
-  type DataTableColumn,
-  type DataTableQueryState,
-  type DataTableResult,
-  type DataTableLoader,
-  type DataTableSelectionChange,
-  type DataTableSelectionConfig,
-  type DataTableProps,
-  type ColumnFilterConfig,
-  type ColumnFilterSelectOption,
 } from "./data-table"
 
+export * from "./types"
+
 export { ColumnFilterControl } from "./filter-controls/column-filter-control"
+export type { ColumnFilterSelectOption } from "./filter-controls/types"
 

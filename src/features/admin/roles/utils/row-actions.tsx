@@ -12,9 +12,9 @@ interface UseRowActionsOptions {
   onDelete: (row: RoleRow) => void
   onHardDelete: (row: RoleRow) => void
   onRestore: (row: RoleRow) => void
-  deletingRoles?: Set<string>
-  restoringRoles?: Set<string>
-  hardDeletingRoles?: Set<string>
+  deletingIds?: Set<string>
+  restoringIds?: Set<string>
+  hardDeletingIds?: Set<string>
 }
 
 export const useRoleRowActions = ({
@@ -24,9 +24,9 @@ export const useRoleRowActions = ({
   onDelete,
   onHardDelete,
   onRestore,
-  deletingRoles = new Set(),
-  restoringRoles = new Set(),
-  hardDeletingRoles = new Set(),
+  deletingIds = new Set(),
+  restoringIds = new Set(),
+  hardDeletingIds = new Set(),
 }: UseRowActionsOptions) => {
   const router = useResourceRouter()
 
@@ -49,26 +49,26 @@ export const useRoleRowActions = ({
       }
 
       if (canDelete) {
-        const isDeleting = deletingRoles.has(row.id)
+        const isDeleting = deletingIds.has(row.id)
         actions.push({
           label: ROLE_LABELS.DELETE,
           icon: Trash2,
           onSelect: () => onDelete(row),
           destructive: true,
-          disabled: row.name === "super_admin" || isDeleting || restoringRoles.has(row.id) || hardDeletingRoles.has(row.id),
+          disabled: row.name === "super_admin" || isDeleting || restoringIds.has(row.id) || hardDeletingIds.has(row.id),
           isLoading: isDeleting,
           loadingLabel: ROLE_LABELS.DELETING,
         })
       }
 
       if (canManage) {
-        const isHardDeleting = hardDeletingRoles.has(row.id)
+        const isHardDeleting = hardDeletingIds.has(row.id)
         actions.push({
           label: ROLE_LABELS.HARD_DELETE,
           icon: AlertTriangle,
           onSelect: () => onHardDelete(row),
           destructive: true,
-          disabled: row.name === "super_admin" || deletingRoles.has(row.id) || restoringRoles.has(row.id) || isHardDeleting,
+          disabled: row.name === "super_admin" || deletingIds.has(row.id) || restoringIds.has(row.id) || isHardDeleting,
           isLoading: isHardDeleting,
           loadingLabel: ROLE_LABELS.HARD_DELETING,
         })
@@ -76,7 +76,7 @@ export const useRoleRowActions = ({
 
       return renderRowActions(actions)
     },
-    [canDelete, canManage, onDelete, onHardDelete, router, deletingRoles, restoringRoles, hardDeletingRoles],
+    [canDelete, canManage, onDelete, onHardDelete, router, deletingIds, restoringIds, hardDeletingIds],
   )
 
   const renderDeletedRowActions = useCallback(
@@ -90,25 +90,25 @@ export const useRoleRowActions = ({
       ]
 
       if (canRestore) {
-        const isRestoring = restoringRoles.has(row.id)
+        const isRestoring = restoringIds.has(row.id)
         actions.push({
           label: ROLE_LABELS.RESTORE,
           icon: RotateCcw,
           onSelect: () => onRestore(row),
-          disabled: deletingRoles.has(row.id) || isRestoring || hardDeletingRoles.has(row.id),
+          disabled: deletingIds.has(row.id) || isRestoring || hardDeletingIds.has(row.id),
           isLoading: isRestoring,
           loadingLabel: ROLE_LABELS.RESTORING,
         })
       }
 
       if (canManage) {
-        const isHardDeleting = hardDeletingRoles.has(row.id)
+        const isHardDeleting = hardDeletingIds.has(row.id)
         actions.push({
           label: ROLE_LABELS.HARD_DELETE,
           icon: AlertTriangle,
           onSelect: () => onHardDelete(row),
           destructive: true,
-          disabled: row.name === "super_admin" || deletingRoles.has(row.id) || restoringRoles.has(row.id) || isHardDeleting,
+          disabled: row.name === "super_admin" || deletingIds.has(row.id) || restoringIds.has(row.id) || isHardDeleting,
           isLoading: isHardDeleting,
           loadingLabel: ROLE_LABELS.HARD_DELETING,
         })
@@ -116,7 +116,7 @@ export const useRoleRowActions = ({
 
       return renderRowActions(actions)
     },
-    [canManage, canRestore, onHardDelete, onRestore, router, deletingRoles, restoringRoles, hardDeletingRoles],
+    [canManage, canRestore, onHardDelete, onRestore, router, deletingIds, restoringIds, hardDeletingIds],
   )
 
   return {

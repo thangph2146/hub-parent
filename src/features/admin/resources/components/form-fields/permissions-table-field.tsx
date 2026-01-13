@@ -368,7 +368,7 @@ export const PermissionsTableField = <T,>({
         <div className="overflow-x-auto overflow-y-visible -mx-1 px-1 w-full">
           <Table className="table-fixed w-full">
             <TableHeader>
-              <TableRow className="bg-muted/50 hover:bg-muted/50 border-b border-border">
+              <TableRow className="bg-muted hover:bg-muted border-b border-border">
                 <TableHead
                   className="font-semibold text-foreground h-12 px-4 border-r border-border/50 align-middle"
                   style={{
@@ -468,7 +468,7 @@ export const PermissionsTableField = <T,>({
                           <React.Fragment key={resourceData.resource}>
                             {/* Resource Header Row */}
                             <TableRow
-                              className="bg-muted/30 hover:bg-muted/50 border-b border-border/40"
+                              className="bg-muted/30 hover:bg-muted border-b border-border/40"
                               data-display-name={`Resource-${resourceData.resource}`}
                             >
                               <TableCell colSpan={6} className="p-0">

@@ -8,6 +8,8 @@ import {
   bulkSoftDeleteRoles,
   bulkRestoreRoles,
   bulkHardDeleteRoles,
+  bulkActiveRoles,
+  bulkUnactiveRoles,
   ApplicationError,
 } from "@/features/admin/roles/server/mutations"
 import { BulkRoleActionSchema } from "@/features/admin/roles/server/schemas"
@@ -48,6 +50,10 @@ async function bulkRolesHandler(req: NextRequest, context: ApiRouteContext) {
       result = await bulkRestoreRoles(ctx, validatedBody.ids)
     } else if (validatedBody.action === "hard-delete") {
       result = await bulkHardDeleteRoles(ctx, validatedBody.ids)
+    } else if (validatedBody.action === "active") {
+      result = await bulkActiveRoles(ctx, validatedBody.ids)
+    } else if (validatedBody.action === "unactive") {
+      result = await bulkUnactiveRoles(ctx, validatedBody.ids)
     } else {
       return createErrorResponse("Action không hợp lệ", { status: 400 })
     }

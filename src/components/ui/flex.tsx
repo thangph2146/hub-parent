@@ -215,7 +215,7 @@ const flexVariants = cva("flex", {
       none: "",
       primary: "bg-primary text-primary-foreground",
       muted: "bg-muted text-foreground",
-      "muted-50": "bg-muted/50",
+      "muted-50": "bg-muted",
       "white-10": "bg-white/10",
       white: "bg-white",
       background: "bg-background",

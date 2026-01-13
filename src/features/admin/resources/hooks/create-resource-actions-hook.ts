@@ -36,20 +36,54 @@ export interface CreateResourceActionsHookConfig<TRow extends { id: string }> {
     BULK_RESTORE_ERROR: string
     BULK_HARD_DELETE_SUCCESS: string
     BULK_HARD_DELETE_ERROR: string
+    ACTIVE_SUCCESS?: string
+    ACTIVE_ERROR?: string
+    UNACTIVE_SUCCESS?: string
+    UNACTIVE_ERROR?: string
+    BULK_ACTIVE_SUCCESS?: string
+    BULK_ACTIVE_ERROR?: string
+    BULK_UNACTIVE_SUCCESS?: string
+    BULK_UNACTIVE_ERROR?: string
+    BULK_MARK_READ_SUCCESS?: string
+    BULK_MARK_READ_ERROR?: string
+    BULK_MARK_UNREAD_SUCCESS?: string
+    BULK_MARK_UNREAD_ERROR?: string
+    MARK_READ_SUCCESS?: string
+    MARK_READ_ERROR?: string
+    MARK_UNREAD_SUCCESS?: string
+    MARK_UNREAD_ERROR?: string
     UNKNOWN_ERROR: string
   }
   getRecordName: (row: TRow) => string
   getLogMetadata?: (row: TRow) => Record<string, unknown>
   customApiRoutes?: ResourceActionApiRoutes
   customQueryKeys?: ResourceActionQueryKeys
+  beforeSingleAction?: (
+    action: "delete" | "restore" | "hard-delete" | "mark-read" | "mark-unread" | "active" | "unactive",
+    row: TRow
+  ) => Promise<{ allowed: boolean; message?: string } | void>
+  beforeBulkAction?: (
+    action: "delete" | "restore" | "hard-delete" | "active" | "unactive" | "mark-read" | "mark-unread",
+    ids: string[],
+    rows?: TRow[]
+  ) => Promise<{ allowed: boolean; message?: string; targetIds?: string[] } | void>
 }
 
-export interface UseResourceActionsHookOptions {
+export interface UseResourceActionsHookOptions<TRow extends { id: string }> {
   canDelete: boolean
   canRestore: boolean
   canManage: boolean
   isSocketConnected?: boolean
   showFeedback: (variant: FeedbackVariant, title: string, description?: string, details?: string) => void
+  beforeSingleAction?: (
+    action: "delete" | "restore" | "hard-delete" | "mark-read" | "mark-unread" | "active" | "unactive",
+    row: TRow
+  ) => Promise<{ allowed: boolean; message?: string } | void>
+  beforeBulkAction?: (
+    action: "delete" | "restore" | "hard-delete" | "active" | "unactive" | "mark-read" | "mark-unread",
+    ids: string[],
+    rows?: TRow[]
+  ) => Promise<{ allowed: boolean; message?: string; targetIds?: string[] } | void>
 }
 
 /**
@@ -68,7 +102,7 @@ export interface UseResourceActionsHookOptions {
 export const createResourceActionsHook = <TRow extends { id: string }>(
   config: CreateResourceActionsHookConfig<TRow>
 ) => {
-  return function useActions(options: UseResourceActionsHookOptions) {
+  return function useActions(options: UseResourceActionsHookOptions<TRow>) {
     const resourceName = config.resourceName
     const queryKeyName = `admin${capitalize(resourceName)}` as keyof typeof queryKeys
     const apiRouteName = resourceName as keyof typeof apiRoutes
@@ -100,6 +134,8 @@ export const createResourceActionsHook = <TRow extends { id: string }>(
       showFeedback: options.showFeedback,
       isSocketConnected: options.isSocketConnected,
       getLogMetadata: config.getLogMetadata,
+      beforeSingleAction: options.beforeSingleAction || config.beforeSingleAction,
+      beforeBulkAction: options.beforeBulkAction || config.beforeBulkAction,
     })
   }
 }

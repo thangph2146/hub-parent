@@ -81,32 +81,32 @@ export const CommentsTableClient = ({
   })
 
   const {
-    handleToggleApprove,
     executeSingleAction,
     executeBulkAction,
-    approvingComments,
-    unapprovingComments,
-    togglingComments,
-    deletingComments,
-    restoringComments,
-    hardDeletingComments,
+    deletingIds: deletingComments,
+    restoringIds: restoringComments,
+    hardDeletingIds: hardDeletingComments,
+    activatingIds: approvingComments,
+    deactivatingIds: unapprovingComments,
     bulkState,
   } = useCommentActions({
-    canApprove,
     canDelete,
     canRestore,
     canManage,
     isSocketConnected,
     showFeedback,
-    refreshTable,
   })
 
   const handleToggleApproveWithRefresh = useCallback(
     (row: CommentRow, checked: boolean) => {
-      // approve/unapprove: gọi trực tiếp với toast, không hiển thị dialog
-      handleToggleApprove(row, checked)
+      executeSingleAction(checked ? "active" : "unactive", row, refreshTable)
     },
-    [handleToggleApprove],
+    [executeSingleAction, refreshTable],
+  )
+
+  const togglingComments = useMemo(
+    () => new Set([...Array.from(approvingComments), ...Array.from(unapprovingComments)]),
+    [approvingComments, unapprovingComments],
   )
 
   const { baseColumns, deletedColumns } = useCommentColumns({
@@ -123,11 +123,11 @@ export const CommentsTableClient = ({
         type: "soft",
         row,
         onConfirm: async () => {
-          await executeSingleAction("delete", row)
+          await executeSingleAction("delete", row, refreshTable)
         },
       })
     },
-    [canDelete, executeSingleAction, setDeleteConfirm],
+    [canDelete, executeSingleAction, setDeleteConfirm, refreshTable],
   )
 
   const handleHardDeleteSingle = useCallback(
@@ -138,11 +138,11 @@ export const CommentsTableClient = ({
         type: "hard",
         row,
         onConfirm: async () => {
-          await executeSingleAction("hard-delete", row)
+          await executeSingleAction("hard-delete", row, refreshTable)
         },
       })
     },
-    [canManage, executeSingleAction, setDeleteConfirm],
+    [canManage, executeSingleAction, setDeleteConfirm, refreshTable],
   )
 
   const handleRestoreSingle = useCallback(
@@ -153,11 +153,11 @@ export const CommentsTableClient = ({
         type: "restore",
         row,
         onConfirm: async () => {
-          await executeSingleAction("restore", row)
+          await executeSingleAction("restore", row, refreshTable)
         },
       })
     },
-    [canRestore, executeSingleAction, setDeleteConfirm],
+    [canRestore, executeSingleAction, setDeleteConfirm, refreshTable],
   )
 
   const { renderActiveRowActions, renderDeletedRowActions } = useCommentRowActions({
@@ -244,18 +244,18 @@ export const CommentsTableClient = ({
   })
 
   const executeBulk = useCallback(
-    (action: "delete" | "restore" | "hard-delete" | "approve" | "unapprove", ids: string[], clearSelection: () => void) => {
+    (action: "delete" | "restore" | "hard-delete" | "active" | "unactive", ids: string[], clearSelection: () => void) => {
       if (ids.length === 0) return
       setDeleteConfirm({
         open: true,
-        type: action === "hard-delete" ? "hard" : action === "restore" ? "restore" : action === "approve" ? "approve" : action === "unapprove" ? "unapprove" : "soft",
+        type: action === "hard-delete" ? "hard" : action === "restore" ? "restore" : action === "active" ? "approve" : action === "unactive" ? "unapprove" : "soft",
         bulkIds: ids,
         onConfirm: async () => {
-          await executeBulkAction(action, ids, clearSelection)
+          await executeBulkAction(action, ids, refreshTable, clearSelection)
         },
       })
     },
-    [executeBulkAction, setDeleteConfirm],
+    [executeBulkAction, setDeleteConfirm, refreshTable],
   )
 
   const createActiveSelectionActions = useCallback(
@@ -284,7 +284,7 @@ export const CommentsTableClient = ({
                   size="sm"
                   variant="outline"
                   disabled={bulkState.isProcessing || selectedIds.length === 0}
-                  onClick={() => executeBulk("approve", selectedIds, clearSelection)}
+                  onClick={() => executeBulk("active", selectedIds, clearSelection)}
                   className="whitespace-nowrap"
                 >
                   <IconSize size="md" className="mr-2 shrink-0">
@@ -302,7 +302,7 @@ export const CommentsTableClient = ({
                   size="sm"
                   variant="outline"
                   disabled={bulkState.isProcessing || selectedIds.length === 0}
-                  onClick={() => executeBulk("unapprove", selectedIds, clearSelection)}
+                  onClick={() => executeBulk("unactive", selectedIds, clearSelection)}
                   className="whitespace-nowrap"
                 >
                   <IconSize size="md" className="mr-2 shrink-0">

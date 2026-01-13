@@ -53,37 +53,41 @@ export const StudentsTableClient = ({
 
   // Wrapper showFeedback để chuyển đổi bulk toggle sang toast
   const showFeedbackWithToast = useCallback(
-    (variant: "success" | "error" | "warning" | "info", title: string, description?: string, details?: string) => {
+    (variant: FeedbackVariant, title: string, description?: string, details?: string) => {
       // Chỉ chuyển đổi sang toast cho bulk toggle actions (active/unactive)
       // Các actions khác (delete, restore, hard-delete) vẫn sử dụng dialog
       if (title.includes("Kích hoạt hàng loạt") || title.includes("Bỏ kích hoạt hàng loạt")) {
         toast({
-          variant: variant === "success" ? "success" : variant === "error" ? "destructive" : "default",
+          variant: variant === "success" ? "success" : "destructive",
           title,
           description: description || details,
         })
       } else {
-        showFeedback(variant as FeedbackVariant, title, description, details) as void
-    }
-  }, [showFeedback])
+        showFeedback(variant, title, description, details)
+      }
+    },
+    [showFeedback],
+  )
 
   const {
-    handleToggleStatus,
     executeSingleAction,
     executeBulkAction,
-    togglingStudents,
-    deletingStudents,
-    restoringStudents,
-    hardDeletingStudents,
+    activatingIds,
+    deactivatingIds,
+    deletingIds,
+    restoringIds,
+    hardDeletingIds,
     bulkState,
   } = useStudentActions({
     canDelete,
     canRestore,
     canManage,
-    canActivate,
     isSocketConnected,
     showFeedback: showFeedbackWithToast,
   })
+
+  // Aliases for backward compatibility
+  const togglingStudents = useMemo(() => new Set([...activatingIds, ...deactivatingIds]), [activatingIds, deactivatingIds])
 
   // Parent mặc định xem "all", Admin/SuperAdmin xem "active"
   const [currentViewId, setCurrentViewId] = useState<string>(isParent ? "all" : "active")
@@ -146,10 +150,10 @@ export const StudentsTableClient = ({
         },
       })
       
-      // Gọi trực tiếp handleToggleStatus, toast sẽ được hiển thị trong hook
-      handleToggleStatus(row, checked, refreshTable)
+      // Gọi trực tiếp executeSingleAction, toast sẽ được hiển thị trong hook
+      executeSingleAction(checked ? "active" : "unactive", row, refreshTable)
     },
-    [handleToggleStatus, refreshTable, currentViewId],
+    [executeSingleAction, refreshTable, currentViewId],
   )
 
 
@@ -213,9 +217,9 @@ export const StudentsTableClient = ({
     onDelete: handleDeleteSingle,
     onHardDelete: handleHardDeleteSingle,
     onRestore: handleRestoreSingle,
-    deletingStudents,
-    restoringStudents,
-    hardDeletingStudents,
+    deletingIds,
+    restoringIds,
+    hardDeletingIds,
   })
 
   const fetchStudents = useCallback(
@@ -313,7 +317,7 @@ export const StudentsTableClient = ({
 
 
   const executeBulk = useCallback(
-    (action: "delete" | "restore" | "hard-delete" | "active" | "unactive", ids: string[], refresh: () => void, clearSelection: () => void) => {
+    (action: "delete" | "restore" | "hard-delete" | "active" | "unactive", ids: string[], clearSelection: () => void) => {
       if (ids.length === 0) return
 
       if (action === "delete" || action === "restore" || action === "hard-delete") {
@@ -322,16 +326,16 @@ export const StudentsTableClient = ({
           type: action === "hard-delete" ? "hard" : action === "restore" ? "restore" : "soft",
           bulkIds: ids,
           onConfirm: async () => {
-            await executeBulkAction(action, ids, refresh, clearSelection)
+            await executeBulkAction(action, ids, refreshTable, clearSelection)
           },
         })
       } else {
         // "active" và "unactive": gọi trực tiếp với toast, không hiển thị dialog
         // executeBulkAction sẽ tự xử lý toast thông qua showFeedback
-        executeBulkAction(action, ids, refresh, clearSelection)
+        executeBulkAction(action, ids, refreshTable, clearSelection)
       }
     },
-    [executeBulkAction, setDeleteConfirm],
+    [executeBulkAction, setDeleteConfirm, refreshTable],
   )
 
   const createActiveSelectionActions = useCallback(
@@ -339,7 +343,7 @@ export const StudentsTableClient = ({
       selectedIds,
       selectedRows,
       clearSelection,
-      refresh,
+      refresh: _refresh,
     }: {
       selectedIds: string[]
       selectedRows: StudentRow[]
@@ -366,7 +370,7 @@ export const StudentsTableClient = ({
                   size="sm"
                   variant="default"
                   disabled={bulkState.isProcessing || selectedIds.length === 0}
-                  onClick={() => executeBulk("active", selectedIds, refresh, clearSelection)}
+                  onClick={() => executeBulk("active", selectedIds, clearSelection)}
                   className="whitespace-nowrap"
                 >
                   <IconSize size="md" className="mr-2 shrink-0">
@@ -384,7 +388,7 @@ export const StudentsTableClient = ({
                   size="sm"
                   variant="outline"
                   disabled={bulkState.isProcessing || selectedIds.length === 0}
-                  onClick={() => executeBulk("unactive", selectedIds, refresh, clearSelection)}
+                  onClick={() => executeBulk("unactive", selectedIds, clearSelection)}
                   className="whitespace-nowrap"
                 >
                   <IconSize size="md" className="mr-2 shrink-0">
@@ -401,7 +405,7 @@ export const StudentsTableClient = ({
               size="sm"
               variant="destructive"
               disabled={bulkState.isProcessing || selectedIds.length === 0}
-              onClick={() => executeBulk("delete", selectedIds, refresh, clearSelection)}
+              onClick={() => executeBulk("delete", selectedIds, clearSelection)}
               className="whitespace-nowrap"
             >
               <IconSize size="md" className="mr-2 shrink-0">
@@ -418,7 +422,7 @@ export const StudentsTableClient = ({
                 size="sm"
                 variant="destructive"
                 disabled={bulkState.isProcessing || selectedIds.length === 0}
-                onClick={() => executeBulk("hard-delete", selectedIds, refresh, clearSelection)}
+                onClick={() => executeBulk("hard-delete", selectedIds, clearSelection)}
                 className="whitespace-nowrap"
               >
                 <IconSize size="md" className="mr-2 shrink-0">
@@ -451,7 +455,7 @@ export const StudentsTableClient = ({
     ({
       selectedIds,
       clearSelection,
-      refresh,
+      refresh: _refresh,
     }: {
       selectedIds: string[]
       clearSelection: () => void
@@ -467,7 +471,7 @@ export const StudentsTableClient = ({
                 size="sm"
                 variant="outline"
                 disabled={bulkState.isProcessing || selectedIds.length === 0}
-                onClick={() => executeBulk("restore", selectedIds, refresh, clearSelection)}
+                onClick={() => executeBulk("restore", selectedIds, clearSelection)}
                 className="whitespace-nowrap"
               >
                 <IconSize size="md" className="mr-2 shrink-0">
@@ -485,7 +489,7 @@ export const StudentsTableClient = ({
                 size="sm"
                 variant="destructive"
                 disabled={bulkState.isProcessing || selectedIds.length === 0}
-                onClick={() => executeBulk("hard-delete", selectedIds, refresh, clearSelection)}
+                onClick={() => executeBulk("hard-delete", selectedIds, clearSelection)}
                 className="whitespace-nowrap"
               >
                 <IconSize size="md" className="mr-2 shrink-0">
@@ -674,10 +678,10 @@ export const StudentsTableClient = ({
             bulkState.isProcessing ||
             (deleteConfirm.row
               ? deleteConfirm.type === "restore"
-                ? restoringStudents.has(deleteConfirm.row.id)
+                ? restoringIds.has(deleteConfirm.row.id)
                 : deleteConfirm.type === "hard"
-                ? hardDeletingStudents.has(deleteConfirm.row.id)
-                : deletingStudents.has(deleteConfirm.row.id)
+                  ? hardDeletingIds.has(deleteConfirm.row.id)
+                  : deletingIds.has(deleteConfirm.row.id)
               : false)
           }
         />

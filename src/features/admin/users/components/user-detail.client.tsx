@@ -94,7 +94,7 @@ export const UserDetailClient = ({ userId, user, backUrl = "/admin/users" }: Use
         fields={fields}
         sections={sections}
         prefixContent={
-          <Flex fullWidth align="center" gap={4} padding="md" rounded="lg" border="all" className="bg-muted/50 border-border/50 mb-4">
+          <Flex fullWidth align="center" gap={4} padding="md" rounded="lg" border="all" className="bg-muted border-border/50 mb-4">
             <Flex className="h-24 w-24 relative" fullWidth>
               <Avatar className="h-24 w-24 border-2 border-border">
                 <AvatarImage

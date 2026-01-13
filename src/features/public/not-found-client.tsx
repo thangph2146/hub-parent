@@ -201,7 +201,7 @@ export const NotFoundClient = () => {
 
           {/* Helpful Links */}
           <motion.div variants={itemVariants}>
-            <Flex className="p-6 bg-muted/50 rounded-lg border border-border/50">
+            <Flex className="p-6 bg-muted rounded-lg border border-border/50">
               <Flex direction="col" gap={4}>
                 <TypographyPMuted>
                   Bạn có thể thử:

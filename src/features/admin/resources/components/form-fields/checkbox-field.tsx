@@ -47,7 +47,7 @@ export const CheckboxField = <T,>({
           className={cn(
             error && "border-destructive",
             isReadOnly && "!opacity-100 disabled:!opacity-100 [&:disabled]:!opacity-100 cursor-default bg-muted/30 border-muted-foreground/30",
-            isDisabled && !isReadOnly && "!opacity-100"
+            isDisabled && !isReadOnly && "!opacity-100 bg-muted/50 border-muted-foreground/10"
           )}
         />
         <Label htmlFor={fieldId} asChild>
