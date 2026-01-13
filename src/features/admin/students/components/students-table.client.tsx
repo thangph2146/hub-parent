@@ -376,10 +376,9 @@ export const StudentsTableClient = ({
                   <IconSize size="md" className="mr-2 shrink-0">
                     <CheckCircle2 />
                   </IconSize>
-                  <span className="hidden sm:inline">
+                  <span>
                     {STUDENT_LABELS.ACTIVE_SELECTED(selectedIds.length)}
                   </span>
-                  <span className="sm:hidden">Kích hoạt</span>
                 </Button>
               )}
               {canActivate && hasActiveStudents && (
@@ -394,10 +393,9 @@ export const StudentsTableClient = ({
                   <IconSize size="md" className="mr-2 shrink-0">
                     <XCircle />
                   </IconSize>
-                  <span className="hidden sm:inline">
+                  <span>
                     {STUDENT_LABELS.UNACTIVE_SELECTED(selectedIds.length)}
                   </span>
-                  <span className="sm:hidden">Bỏ kích hoạt</span>
                 </Button>
               )}
             <Button
@@ -411,10 +409,9 @@ export const StudentsTableClient = ({
               <IconSize size="md" className="mr-2 shrink-0">
                 <Trash2 />
               </IconSize>
-              <span className="hidden sm:inline">
+              <span>
                 {STUDENT_LABELS.DELETE_SELECTED(selectedIds.length)}
               </span>
-              <span className="sm:hidden">Xóa</span>
             </Button>
             {canManage && (
               <Button
@@ -428,10 +425,9 @@ export const StudentsTableClient = ({
                 <IconSize size="md" className="mr-2 shrink-0">
                   <AlertTriangle />
                 </IconSize>
-                <span className="hidden sm:inline">
+                <span>
                   {STUDENT_LABELS.HARD_DELETE_SELECTED(selectedIds.length)}
                 </span>
-                <span className="sm:hidden">Xóa vĩnh viễn</span>
               </Button>
             )}
             <Button
@@ -477,10 +473,9 @@ export const StudentsTableClient = ({
                 <IconSize size="md" className="mr-2 shrink-0">
                   <RotateCcw />
                 </IconSize>
-                <span className="hidden sm:inline">
+                <span>
                   {STUDENT_LABELS.RESTORE_SELECTED(selectedIds.length)}
                 </span>
-                <span className="sm:hidden">Khôi phục</span>
               </Button>
             )}
             {canManage && (
@@ -495,10 +490,9 @@ export const StudentsTableClient = ({
                 <IconSize size="md" className="mr-2 shrink-0">
                   <AlertTriangle />
                 </IconSize>
-                <span className="hidden sm:inline">
+                <span>
                   {STUDENT_LABELS.HARD_DELETE_SELECTED(selectedIds.length)}
                 </span>
-                <span className="sm:hidden">Xóa vĩnh viễn</span>
               </Button>
             )}
             <Button

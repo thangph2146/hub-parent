@@ -434,10 +434,9 @@ export const ContactRequestsTableClient = ({
                 className="whitespace-nowrap"
               >
                 <Trash2 className="mr-2 h-5 w-5 shrink-0" />
-                <span className="hidden sm:inline">
+                <span>
                   {CONTACT_REQUEST_LABELS.DELETE_SELECTED(selectedIds.length)}
                 </span>
-                <span className="sm:hidden">Xóa</span>
               </Button>
             )}
             {canManage && (
@@ -459,10 +458,9 @@ export const ContactRequestsTableClient = ({
                 className="whitespace-nowrap"
               >
                 <AlertTriangle className="mr-2 h-5 w-5 shrink-0" />
-                <span className="hidden sm:inline">
+                <span>
                   {CONTACT_REQUEST_LABELS.HARD_DELETE_SELECTED(selectedIds.length)}
                 </span>
-                <span className="sm:hidden">Xóa vĩnh viễn</span>
               </Button>
             )}
             <Button
@@ -511,10 +509,9 @@ const createDeletedSelectionActions = useCallback(
               className="whitespace-nowrap"
             >
               <RotateCcw className="mr-2 h-5 w-5 shrink-0" />
-              <span className="hidden sm:inline">
+              <span>
                 {CONTACT_REQUEST_LABELS.RESTORE_SELECTED(selectedIds.length)}
               </span>
-              <span className="sm:hidden">Khôi phục</span>
             </Button>
           )}
           {canManage && (

@@ -408,10 +408,9 @@ export const UsersTableClient = ({
                         <IconSize size="md">
                           <XCircle />
                         </IconSize>
-                        <span className="hidden sm:inline">
+                        <span>
                           {USER_LABELS.UNACTIVE_SELECTED(deletableRows.length)}
                         </span>
-                        <span className="sm:hidden">Vô hiệu hóa</span>
                       </Button>
                     </>
                   )}
@@ -426,10 +425,9 @@ export const UsersTableClient = ({
                     <IconSize size="md">
                       <Trash2 />
                     </IconSize>
-                    <span className="hidden sm:inline">
+                    <span>
                       {USER_LABELS.DELETE_SELECTED(deletableRows.length)}
                     </span>
-                    <span className="sm:hidden">Xóa</span>
                   </Button>
                   {canManage && (
                     <Button
@@ -443,10 +441,9 @@ export const UsersTableClient = ({
                       <IconSize size="md">
                         <AlertTriangle />
                       </IconSize>
-                      <span className="hidden sm:inline">
+                      <span>
                         {USER_LABELS.HARD_DELETE_SELECTED(deletableRows.length)}
                       </span>
-                      <span className="sm:hidden">Xóa vĩnh viễn</span>
                     </Button>
                   )}
                   <Button
@@ -490,10 +487,9 @@ export const UsersTableClient = ({
                       <IconSize size="md">
                         <RotateCcw />
                       </IconSize>
-                      <span className="hidden sm:inline">
+                      <span>
                         {USER_LABELS.RESTORE_SELECTED(selectedIds.length)}
                       </span>
-                      <span className="sm:hidden">Khôi phục</span>
                     </Button>
                   )}
                   {canManage && (
@@ -508,10 +504,9 @@ export const UsersTableClient = ({
                       <IconSize size="md">
                         <AlertTriangle />
                       </IconSize>
-                      <span className="hidden sm:inline">
+                      <span>
                         {USER_LABELS.HARD_DELETE_SELECTED(selectedIds.length)}
                       </span>
-                      <span className="sm:hidden">Xóa vĩnh viễn</span>
                     </Button>
                   )}
                   <Button
