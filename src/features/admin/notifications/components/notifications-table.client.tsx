@@ -211,12 +211,13 @@ export const NotificationsTableClient = ({
       <div className="flex items-center gap-2">
         <Button
           variant="ghost"
-          size="icon"
+          size="sm"
           onClick={() => handleDeleteSingleWithRefresh(row)}
           disabled={deletingIds.has(row.id) || !isOwner || isSystem}
-          className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+          className="gap-2 text-destructive hover:text-destructive hover:bg-destructive/10"
         >
           <Trash2 className="h-4 w-4" />
+          <span>Xóa</span>
         </Button>
       </div>
     )
@@ -420,10 +421,9 @@ export const NotificationsTableClient = ({
                 className="whitespace-nowrap"
               >
                 <CheckCircle2 className="mr-2 h-5 w-5 shrink-0" />
-                <span className="hidden sm:inline">
+                <span>
                   {NOTIFICATION_LABELS.MARK_READ_SELECTED(unreadNotificationIds.length)}
                 </span>
-                <span className="sm:hidden">Đã đọc</span>
               </Button>
               <Button
               type="button"
@@ -434,10 +434,9 @@ export const NotificationsTableClient = ({
               className="whitespace-nowrap"
             >
                 <BellOff className="mr-2 h-5 w-5 shrink-0" />
-                <span className="hidden sm:inline">
+                <span>
                   {NOTIFICATION_LABELS.MARK_UNREAD_SELECTED(readNotificationIds.length)}
                 </span>
-                <span className="sm:hidden">Chưa đọc</span>
               </Button>
               {deletableNotificationIds.length > 0 && (
                 <Button
@@ -449,10 +448,9 @@ export const NotificationsTableClient = ({
                 className="whitespace-nowrap"
               >
                   <Trash2 className="mr-2 h-5 w-5 shrink-0" />
-                  <span className="hidden sm:inline">
+                  <span>
                     {NOTIFICATION_LABELS.DELETE_SELECTED(deletableNotificationIds.length)}
                   </span>
-                  <span className="sm:hidden">Xóa</span>
                 </Button>
               )}
               <Button
