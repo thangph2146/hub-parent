@@ -1,103 +1,57 @@
-import { useCallback } from "react"
-import { apiRoutes } from "@/constants"
 import { queryKeys } from "@/constants"
-import { useResourceActions, useToggleStatus } from "@/features/admin/resources/hooks"
-import type { ResourceRefreshHandler } from "@/features/admin/resources/types"
-import { resourceLogger } from "@/utils"
+import { createResourceActionsHook } from "@/features/admin/resources/hooks"
 import type { RoleRow } from "../types"
-import type { FeedbackVariant } from "@/components/dialogs"
-import { ROLE_MESSAGES } from "../constants/messages"
+import { ROLE_MESSAGES } from "../constants"
 
-interface UseRoleActionsOptions {
-  canDelete: boolean
-  canRestore: boolean
-  canManage: boolean
-  isSocketConnected?: boolean
-  showFeedback: (variant: FeedbackVariant, title: string, description?: string, details?: string) => void
-}
-
-export const useRoleActions = ({
-  canDelete,
-  canRestore,
-  canManage,
-  isSocketConnected,
-  showFeedback,
-}: UseRoleActionsOptions) => {
-  const {
-    executeSingleAction: baseExecuteSingleAction,
-    executeBulkAction,
-    deletingIds: deletingRoles,
-    restoringIds: restoringRoles,
-    hardDeletingIds: hardDeletingRoles,
-    bulkState,
-  } = useResourceActions<RoleRow>({
-    resourceName: "roles",
-    queryKeys: {
-      all: () => queryKeys.adminRoles.all(),
-      detail: (id) => queryKeys.adminRoles.detail(id),
-    },
-    apiRoutes: {
-      delete: (id) => apiRoutes.roles.delete(id),
-      restore: (id) => apiRoutes.roles.restore(id),
-      hardDelete: (id) => apiRoutes.roles.hardDelete(id),
-      bulk: apiRoutes.roles.bulk,
-    },
-    messages: ROLE_MESSAGES,
-    getRecordName: (row) => row.displayName,
-    permissions: { canDelete, canRestore, canManage },
-    showFeedback,
-    isSocketConnected,
-    getLogMetadata: (row) => ({ roleId: row.id, roleName: row.displayName }),
-  })
-
-  const { handleToggleStatus, togglingIds: togglingRoles } = useToggleStatus<RoleRow>({
-    resourceName: "roles",
-    updateRoute: (id) => apiRoutes.roles.update(id),
-    queryKeys: {
-      all: () => queryKeys.adminRoles.all(),
-      detail: (id) => queryKeys.adminRoles.detail(id),
-    },
-    messages: ROLE_MESSAGES,
-    getRecordName: (row) => row.displayName,
-    canManage,
-    validateToggle: (row) => {
-      if (row.name === "super_admin") {
-        return { valid: false, error: ROLE_MESSAGES.CANNOT_MODIFY_SUPER_ADMIN }
+export const useRoleActions = createResourceActionsHook<RoleRow>({
+  resourceName: "roles",
+  messages: ROLE_MESSAGES,
+  getRecordName: (row) => row.displayName,
+  getLogMetadata: (row) => ({ roleId: row.id, roleName: row.displayName }),
+  customQueryKeys: {
+    all: () => queryKeys.adminRoles.all(),
+    detail: (id) => queryKeys.adminRoles.detail(id),
+  },
+  beforeSingleAction: async (action, row) => {
+    if (row.name === "super_admin") {
+      if (action === "delete" || action === "hard-delete") {
+        return { 
+          allowed: false, 
+          message: action === "hard-delete" 
+            ? ROLE_MESSAGES.CANNOT_HARD_DELETE_SUPER_ADMIN 
+            : ROLE_MESSAGES.CANNOT_DELETE_SUPER_ADMIN 
+        }
       }
-      return { valid: true }
-    },
-    onSuccess: async (row, newStatus) => {
-      resourceLogger.logFlow({
-        resource: "roles",
-        action: "toggle-status",
-        step: newStatus ? "success" : "success",
-        details: { roleId: row.id, roleName: row.displayName, newStatus },
-      })
-    },
-  })
-
-  const executeSingleAction = useCallback(
-    async (action: "delete" | "restore" | "hard-delete", row: RoleRow, refresh: ResourceRefreshHandler): Promise<void> => {
-      if (row.name === "super_admin") {
-        const errorMsg = action === "hard-delete" 
-          ? ROLE_MESSAGES.CANNOT_HARD_DELETE_SUPER_ADMIN
-          : ROLE_MESSAGES.CANNOT_DELETE_SUPER_ADMIN
-        showFeedback("error", errorMsg, errorMsg)
-        return
+      if (action === "unactive") {
+        return { allowed: false, message: ROLE_MESSAGES.CANNOT_MODIFY_SUPER_ADMIN }
       }
-      return baseExecuteSingleAction(action, row, refresh)
-    },
-    [baseExecuteSingleAction, showFeedback]
-  )
+    }
+    return { allowed: true }
+  },
+  beforeBulkAction: async (action, ids, rows) => {
+    if (!rows) return { allowed: true }
 
-  return {
-    handleToggleStatus,
-    executeSingleAction,
-    executeBulkAction,
-    togglingRoles,
-    deletingRoles,
-    restoringRoles,
-    hardDeletingRoles,
-    bulkState,
-  }
-}
+    const hasSuperAdmin = rows.some((row) => row.name === "super_admin")
+
+    if (hasSuperAdmin) {
+      if (action === "delete" || action === "hard-delete" || action === "unactive") {
+        const targetIds = rows
+          .filter((row) => row.name !== "super_admin")
+          .map((row) => row.id)
+
+        if (targetIds.length === 0) {
+          const message = action === "unactive"
+            ? ROLE_MESSAGES.CANNOT_MODIFY_SUPER_ADMIN
+            : action === "hard-delete"
+              ? ROLE_MESSAGES.CANNOT_HARD_DELETE_SUPER_ADMIN
+              : ROLE_MESSAGES.CANNOT_DELETE_SUPER_ADMIN
+          return { allowed: false, message }
+        }
+
+        return { allowed: true, targetIds }
+      }
+    }
+
+    return { allowed: true }
+  },
+})

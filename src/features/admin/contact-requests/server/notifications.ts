@@ -162,6 +162,7 @@ export const notifyUserOfContactRequestAssignment = async (
           assignedById: assignedBy.id,
         },
       },
+      include: { user: true },
     });
 
     // Emit socket event với notification từ database

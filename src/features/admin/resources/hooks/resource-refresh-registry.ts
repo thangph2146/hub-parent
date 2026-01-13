@@ -16,7 +16,7 @@ interface RefreshRegistration {
 class ResourceRefreshRegistry {
   private registrations = new Map<string, RefreshRegistration[]>()
   private lastTriggerTime = new Map<string, number>()
-  private readonly DEBOUNCE_MS = 300 // Debounce 300ms để tránh trigger nhiều lần
+  private readonly DEBOUNCE_MS = 50 // Giảm debounce xuống 50ms để tránh block các refresh hợp lệ từ bulk actions
 
   /**
    * Đăng ký refresh callback cho một query key

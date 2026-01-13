@@ -23,6 +23,7 @@ import {
   useResourceTableLoader,
   useResourceTableRefresh,
   useResourceTableLogger,
+  useResourceBulkProcessing,
 } from "@/features/admin/resources/hooks"
 import { normalizeSearch, sanitizeFilters } from "@/features/admin/resources/utils"
 import { apiClient } from "@/services/api/axios"
@@ -63,27 +64,28 @@ export const ContactRequestsTableClient = ({
   })
 
   const {
-    handleToggleRead,
     executeSingleAction,
     executeBulkAction,
-    handleBulkMarkRead,
-    handleBulkMarkUnread,
-    handleBulkUpdateStatus,
-    markingReadRequests,
-    markingUnreadRequests,
-    togglingRequests,
-    deletingRequests,
-    restoringRequests,
-    hardDeletingRequests,
+    deletingIds: deletingRequests,
+    restoringIds: restoringRequests,
+    hardDeletingIds: hardDeletingRequests,
+    markingReadIds,
+    markingUnreadIds,
     bulkState,
   } = useContactRequestActions({
     canDelete,
     canRestore,
     canManage,
-    canUpdate,
     isSocketConnected,
     showFeedback,
   })
+
+  const { startBulkProcessing, stopBulkProcessing } = useResourceBulkProcessing()
+
+  const togglingRequests = useMemo(
+    () => new Set([...Array.from(markingReadIds), ...Array.from(markingUnreadIds)]),
+    [markingReadIds, markingUnreadIds],
+  )
 
   useResourceTableLogger<ContactRequestRow>({
     resourceName: "contact-requests",
@@ -117,10 +119,9 @@ export const ContactRequestsTableClient = ({
   const handleToggleReadWithRefresh = useCallback(
     (row: ContactRequestRow, checked: boolean) => {
       if (!canUpdate) return
-      // Thực hiện trực tiếp không cần confirm dialog cho action đơn giản này
-      handleToggleRead(row, checked, refreshTable)
+      executeSingleAction(checked ? "mark-read" : "mark-unread", row, refreshTable)
     },
-    [canUpdate, handleToggleRead, refreshTable],
+    [canUpdate, executeSingleAction, refreshTable],
   )
 
   const { baseColumns, deletedColumns } = useContactRequestColumns({
@@ -184,11 +185,11 @@ export const ContactRequestsTableClient = ({
     onDelete: handleDeleteSingle,
     onHardDelete: handleHardDeleteSingle,
     onRestore: handleRestoreSingle,
-    markingReadRequests,
-    markingUnreadRequests,
-    deletingRequests,
-    restoringRequests,
-    hardDeletingRequests,
+    markingReadIds,
+    markingUnreadIds,
+    deletingIds: deletingRequests,
+    restoringIds: restoringRequests,
+    hardDeletingIds: hardDeletingRequests,
   })
 
 
@@ -280,8 +281,51 @@ export const ContactRequestsTableClient = ({
   })
 
 
+  const handleBulkUpdateStatus = useCallback(
+    async (ids: string[], status: ContactStatus, clearSelection: () => void) => {
+      if (!canManage) return
+
+      if (ids.length === 0) return
+      if (!startBulkProcessing()) return
+
+      try {
+        const response = await apiClient.post(apiRoutes.contactRequests.bulk, {
+          action: "update-status",
+          ids,
+          status,
+        })
+
+        if (response.data?.data?.affected === 0) {
+          showFeedback("error", "Không có thay đổi", "Không có yêu cầu liên hệ nào được cập nhật trạng thái")
+          clearSelection()
+          return
+        }
+
+        const statusLabels: Record<string, string> = {
+          NEW: "Mới",
+          IN_PROGRESS: "Đang xử lý",
+          RESOLVED: "Đã xử lý",
+          CLOSED: "Đã đóng",
+        }
+
+        showFeedback(
+          "success",
+          "Cập nhật trạng thái thành công",
+          `Đã cập nhật trạng thái thành "${statusLabels[status]}" cho ${response.data?.data?.affected} yêu cầu liên hệ`
+        )
+        clearSelection()
+        refreshTable()
+      } catch {
+        showFeedback("error", "Cập nhật trạng thái thất bại", "Không thể cập nhật trạng thái yêu cầu liên hệ.")
+      } finally {
+        stopBulkProcessing()
+      }
+    },
+    [canManage, startBulkProcessing, stopBulkProcessing, refreshTable, showFeedback],
+  )
+
   const createActiveSelectionActions = useCallback(
-    ({ selectedIds, selectedRows, clearSelection, refresh }: {
+    ({ selectedIds, selectedRows, clearSelection, refresh: _refresh }: {
       selectedIds: string[]
       selectedRows: ContactRequestRow[]
       clearSelection: () => void
@@ -301,7 +345,7 @@ export const ContactRequestsTableClient = ({
           label={CONTACT_REQUEST_LABELS.SELECTED_CONTACT_REQUESTS(selectedIds.length)}
           actions={
             <>
-              {canManage && (
+              {canUpdate && (
                 <>
                   {hasUnreadRequests && (
                     <Button
@@ -310,8 +354,7 @@ export const ContactRequestsTableClient = ({
                       variant="outline"
                       disabled={bulkState.isProcessing || selectedIds.length === 0}
                       onClick={() => {
-                        // Thực hiện trực tiếp không cần confirm dialog
-                        handleBulkMarkRead(selectedIds, refresh, clearSelection)
+                        executeBulkAction("mark-read", selectedIds, refreshTable, clearSelection)
                       }}
                       className="whitespace-nowrap"
                     >
@@ -327,8 +370,7 @@ export const ContactRequestsTableClient = ({
                       variant="outline"
                       disabled={bulkState.isProcessing || selectedIds.length === 0}
                       onClick={() => {
-                        // Thực hiện trực tiếp không cần confirm dialog
-                        handleBulkMarkUnread(selectedIds, refresh, clearSelection)
+                        executeBulkAction("mark-unread", selectedIds, refreshTable, clearSelection)
                       }}
                       className="whitespace-nowrap"
                     >
@@ -364,7 +406,7 @@ export const ContactRequestsTableClient = ({
                     <DropdownMenuItem
                       key={option.value}
                       onClick={() => {
-                        handleBulkUpdateStatus(selectedIds, option.value, refresh, clearSelection)
+                        handleBulkUpdateStatus(selectedIds, option.value, clearSelection)
                       }}
                     >
                       {option.label}
@@ -385,7 +427,7 @@ export const ContactRequestsTableClient = ({
                     type: "soft",
                     bulkIds: selectedIds,
                     onConfirm: async () => {
-                      await executeBulkAction("delete", selectedIds, refresh, clearSelection)
+                      await executeBulkAction("delete", selectedIds, refreshTable, clearSelection)
                     },
                   })
                 }}
@@ -410,7 +452,7 @@ export const ContactRequestsTableClient = ({
                     type: "hard",
                     bulkIds: selectedIds,
                     onConfirm: async () => {
-                      await executeBulkAction("hard-delete", selectedIds, refresh, clearSelection)
+                      await executeBulkAction("hard-delete", selectedIds, refreshTable, clearSelection)
                     },
                   })
                 }}
@@ -436,85 +478,85 @@ export const ContactRequestsTableClient = ({
         }
       />
     )
-    },
-    [canDelete, canManage, bulkState.isProcessing, setDeleteConfirm, executeBulkAction, handleBulkMarkRead, handleBulkMarkUnread, handleBulkUpdateStatus],
-  )
+  },
+  [canUpdate, canManage, canDelete, bulkState, executeBulkAction, setDeleteConfirm, handleBulkUpdateStatus, refreshTable],
+)
 
-  const createDeletedSelectionActions = useCallback(
-    ({ selectedIds, clearSelection, refresh }: {
-      selectedIds: string[]
-      clearSelection: () => void
-      refresh: () => void
-    }) => (
-      <SelectionActionsWrapper
-        label={CONTACT_REQUEST_LABELS.SELECTED_DELETED_CONTACT_REQUESTS(selectedIds.length)}
-        actions={
-          <>
-            {canRestore && (
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                disabled={bulkState.isProcessing || selectedIds.length === 0}
-                onClick={() => {
-                  setDeleteConfirm({
-                    open: true,
-                    type: "restore",
-                    bulkIds: selectedIds,
-                    onConfirm: async () => {
-                      await executeBulkAction("restore", selectedIds, refresh, clearSelection)
-                    },
-                  })
-                }}
-                className="whitespace-nowrap"
-              >
-                <RotateCcw className="mr-2 h-5 w-5 shrink-0" />
-                <span className="hidden sm:inline">
-                  {CONTACT_REQUEST_LABELS.RESTORE_SELECTED(selectedIds.length)}
-                </span>
-                <span className="sm:hidden">Khôi phục</span>
-              </Button>
-            )}
-            {canManage && (
-              <Button
-                type="button"
-                size="sm"
-                variant="destructive"
-                disabled={bulkState.isProcessing || selectedIds.length === 0}
-                onClick={() => {
-                  setDeleteConfirm({
-                    open: true,
-                    type: "hard",
-                    bulkIds: selectedIds,
-                    onConfirm: async () => {
-                      await executeBulkAction("hard-delete", selectedIds, refresh, clearSelection)
-                    },
-                  })
-                }}
-                className="whitespace-nowrap"
-              >
-                <AlertTriangle className="mr-2 h-5 w-5 shrink-0" />
-                <span className="hidden sm:inline">
-                  {CONTACT_REQUEST_LABELS.HARD_DELETE_SELECTED(selectedIds.length)}
-                </span>
-                <span className="sm:hidden">Xóa vĩnh viễn</span>
-              </Button>
-            )}
+const createDeletedSelectionActions = useCallback(
+  ({ selectedIds, clearSelection, refresh: _refresh }: {
+    selectedIds: string[]
+    clearSelection: () => void
+    refresh: () => void
+  }) => (
+    <SelectionActionsWrapper
+      label={CONTACT_REQUEST_LABELS.SELECTED_DELETED_CONTACT_REQUESTS(selectedIds.length)}
+      actions={
+        <>
+          {canRestore && (
             <Button
               type="button"
               size="sm"
               variant="outline"
-              onClick={clearSelection}
+              disabled={bulkState.isProcessing || selectedIds.length === 0}
+              onClick={() => {
+                setDeleteConfirm({
+                  open: true,
+                  type: "restore",
+                  bulkIds: selectedIds,
+                  onConfirm: async () => {
+                    await executeBulkAction("restore", selectedIds, refreshTable, clearSelection)
+                  },
+                })
+              }}
               className="whitespace-nowrap"
             >
-              {CONTACT_REQUEST_LABELS.CLEAR_SELECTION}
+              <RotateCcw className="mr-2 h-5 w-5 shrink-0" />
+              <span className="hidden sm:inline">
+                {CONTACT_REQUEST_LABELS.RESTORE_SELECTED(selectedIds.length)}
+              </span>
+              <span className="sm:hidden">Khôi phục</span>
             </Button>
-          </>
-        }
-      />
-    ),
-    [canRestore, canManage, bulkState.isProcessing, setDeleteConfirm, executeBulkAction],
-  )
+          )}
+          {canManage && (
+            <Button
+              type="button"
+              size="sm"
+              variant="destructive"
+              disabled={bulkState.isProcessing || selectedIds.length === 0}
+              onClick={() => {
+                setDeleteConfirm({
+                  open: true,
+                  type: "hard",
+                  bulkIds: selectedIds,
+                  onConfirm: async () => {
+                    await executeBulkAction("hard-delete", selectedIds, refreshTable, clearSelection)
+                  },
+                })
+              }}
+              className="whitespace-nowrap"
+            >
+              <AlertTriangle className="mr-2 h-5 w-5 shrink-0" />
+              <span className="hidden sm:inline">
+                {CONTACT_REQUEST_LABELS.HARD_DELETE_SELECTED(selectedIds.length)}
+              </span>
+              <span className="sm:hidden">Xóa vĩnh viễn</span>
+            </Button>
+          )}
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            onClick={clearSelection}
+            className="whitespace-nowrap"
+          >
+            {CONTACT_REQUEST_LABELS.CLEAR_SELECTION}
+          </Button>
+        </>
+      }
+    />
+  ),
+  [canRestore, canManage, bulkState.isProcessing, executeBulkAction, refreshTable, setDeleteConfirm],
+)
 
   const viewModes = useMemo<ResourceViewMode<ContactRequestRow>[]>(() => {
     const modes: ResourceViewMode<ContactRequestRow>[] = [

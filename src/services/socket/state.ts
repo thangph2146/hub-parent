@@ -24,6 +24,8 @@ export interface SocketNotificationPayload {
   read?: boolean
   actionUrl?: string | null
   metadata?: Record<string, unknown> | null
+  userEmail?: string | null
+  userName?: string | null
 }
 
 type GlobalSocketState = typeof globalThis & {
@@ -66,7 +68,7 @@ export const extractNotificationMetadata = (
 }
 
 export const mapNotificationToPayload = (
-  notification: Notification,
+  notification: Notification & { user?: { email: string; name: string | null } },
 ): SocketNotificationPayload => {
   const metadata = extractNotificationMetadata(notification.metadata)
   return {
@@ -82,6 +84,8 @@ export const mapNotificationToPayload = (
     read: notification.isRead,
     actionUrl: notification.actionUrl,
     metadata,
+    userEmail: notification.user?.email,
+    userName: notification.user?.name,
   }
 }
 

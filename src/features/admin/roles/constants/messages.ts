@@ -5,6 +5,8 @@ export const ROLE_MESSAGES = {
   DELETE_SUCCESS: "Xóa thành công",
   RESTORE_SUCCESS: "Khôi phục thành công",
   HARD_DELETE_SUCCESS: "Xóa vĩnh viễn thành công",
+  ACTIVE_SUCCESS: "Kích hoạt thành công",
+  UNACTIVE_SUCCESS: "Vô hiệu hóa thành công",
   
   // Error messages
   TOGGLE_ACTIVE_ERROR: "Lỗi cập nhật",
@@ -12,15 +14,21 @@ export const ROLE_MESSAGES = {
   DELETE_ERROR: "Xóa thất bại",
   RESTORE_ERROR: "Khôi phục thất bại",
   HARD_DELETE_ERROR: "Xóa vĩnh viễn thất bại",
+  ACTIVE_ERROR: "Kích hoạt thất bại",
+  UNACTIVE_ERROR: "Vô hiệu hóa thất bại",
   
   // Bulk action messages
   BULK_DELETE_SUCCESS: "Xóa hàng loạt thành công",
   BULK_RESTORE_SUCCESS: "Khôi phục hàng loạt thành công",
   BULK_HARD_DELETE_SUCCESS: "Xóa vĩnh viễn hàng loạt thành công",
+  BULK_ACTIVE_SUCCESS: "Kích hoạt hàng loạt thành công",
+  BULK_UNACTIVE_SUCCESS: "Vô hiệu hóa hàng loạt thành công",
   
   BULK_DELETE_ERROR: "Xóa hàng loạt thất bại",
   BULK_RESTORE_ERROR: "Khôi phục hàng loạt thất bại",
   BULK_HARD_DELETE_ERROR: "Xóa vĩnh viễn hàng loạt thất bại",
+  BULK_ACTIVE_ERROR: "Kích hoạt hàng loạt thất bại",
+  BULK_UNACTIVE_ERROR: "Vô hiệu hóa hàng loạt thất bại",
   
   // Permission errors
   NO_PERMISSION: "Không có quyền",

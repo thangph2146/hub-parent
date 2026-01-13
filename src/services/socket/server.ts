@@ -140,12 +140,13 @@ const ensureUserNotificationsCached = async (userId: string) => {
   try {
     const notifications = await prisma.notification.findMany({
       where: { userId },
+      include: { user: true },
       orderBy: { createdAt: "desc" },
       take: MAX_IN_MEMORY_NOTIFICATIONS,
     })
 
     if (notifications.length > 0) {
-      notificationCache.set(userId, notifications.map(mapNotificationToPayload))
+      notificationCache.set(userId, notifications.map((n) => mapNotificationToPayload(n)))
       logger.success("Loaded notifications into cache", {
         userId,
         count: notifications.length,

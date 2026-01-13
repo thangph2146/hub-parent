@@ -72,6 +72,7 @@ async function patchNotificationHandler(req: NextRequest, { params }: { params: 
   const updated = await prisma.notification.update({
     where: { id },
     data: updateData,
+    include: { user: true },
   })
   
   logger.success("PATCH /api/notifications/[id]: Notification updated", {

@@ -5,7 +5,7 @@
 
 import { MultiCommandCombobox } from "./customs/multi-command-combobox"
 import type { ColumnFilterControlProps } from "./types"
-import type { DataTableColumn } from "../data-table"
+import type { DataTableColumn } from "../types"
 
 export function MultiSelectFilter<T extends object = object>({
     column,

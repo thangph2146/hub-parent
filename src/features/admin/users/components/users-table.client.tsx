@@ -64,12 +64,12 @@ export const UsersTableClient = ({
 
   const {
     executeSingleAction,
-    executeToggleActive,
     executeBulkAction,
-    deletingUsers,
-    restoringUsers,
-    hardDeletingUsers,
-    togglingUsers,
+    deletingIds,
+    restoringIds,
+    hardDeletingIds,
+    activatingIds,
+    deactivatingIds,
     bulkState,
   } = useUserActions({
     canDelete,
@@ -78,17 +78,22 @@ export const UsersTableClient = ({
     showFeedback,
   })
 
+  const togglingIds = useMemo(
+    () => new Set([...Array.from(activatingIds), ...Array.from(deactivatingIds)]),
+    [activatingIds, deactivatingIds],
+  )
+
   const handleToggleStatus = useCallback(
     (row: UserRow, newStatus: boolean) => {
-      executeToggleActive(row, newStatus, refreshTable)
+      executeSingleAction(newStatus ? "active" : "unactive", row, refreshTable)
     },
-    [executeToggleActive, refreshTable],
+    [executeSingleAction, refreshTable],
   )
 
   const { baseColumns, deletedColumns } = useUserColumns({
     rolesOptions: initialRolesOptions,
     canManage,
-    togglingUsers,
+    togglingUsers: togglingIds,
     onToggleStatus: handleToggleStatus,
     showFeedback,
   })
@@ -253,9 +258,9 @@ export const UsersTableClient = ({
     onDelete: handleDeleteSingle,
     onHardDelete: handleHardDeleteSingle,
     onRestore: handleRestoreSingle,
-    deletingUsers,
-    restoringUsers,
-    hardDeletingUsers,
+    deletingIds,
+    restoringIds,
+    hardDeletingIds,
   })
 
   const executeBulk = useCallback(
@@ -275,11 +280,11 @@ export const UsersTableClient = ({
           type: action === "hard-delete" ? "hard" : action === "restore" ? "restore" : "soft",
           bulkIds: ids,
           onConfirm: async () => {
-            await executeBulkAction(action, ids, selectedRows, refresh, clearSelection)
+            await executeBulkAction(action, ids, refresh, clearSelection, selectedRows)
           },
         })
       } else {
-        executeBulkAction(action, ids, selectedRows, refresh, clearSelection)
+        executeBulkAction(action, ids, refresh, clearSelection, selectedRows)
       }
     },
     [executeBulkAction, setDeleteConfirm],
@@ -593,10 +598,10 @@ export const UsersTableClient = ({
             bulkState.isProcessing ||
             (deleteConfirm.row
               ? deleteConfirm.type === "restore"
-                ? restoringUsers.has(deleteConfirm.row.id)
+                ? restoringIds.has(deleteConfirm.row.id)
                 : deleteConfirm.type === "hard"
-                  ? hardDeletingUsers.has(deleteConfirm.row.id)
-                  : deletingUsers.has(deleteConfirm.row.id)
+                  ? hardDeletingIds.has(deleteConfirm.row.id)
+                  : deletingIds.has(deleteConfirm.row.id)
               : false)
           }
         />

@@ -14,11 +14,11 @@ interface UseContactRequestRowActionsOptions {
   onDelete: (row: ContactRequestRow) => void
   onHardDelete: (row: ContactRequestRow) => void
   onRestore: (row: ContactRequestRow) => void
-  markingReadRequests?: Set<string>
-  markingUnreadRequests?: Set<string>
-  deletingRequests?: Set<string>
-  restoringRequests?: Set<string>
-  hardDeletingRequests?: Set<string>
+  markingReadIds?: Set<string>
+  markingUnreadIds?: Set<string>
+  deletingIds?: Set<string>
+  restoringIds?: Set<string>
+  hardDeletingIds?: Set<string>
 }
 
 export const useContactRequestRowActions = ({
@@ -30,11 +30,11 @@ export const useContactRequestRowActions = ({
   onDelete,
   onHardDelete,
   onRestore,
-  markingReadRequests = new Set(),
-  markingUnreadRequests = new Set(),
-  deletingRequests = new Set(),
-  restoringRequests = new Set(),
-  hardDeletingRequests = new Set(),
+  markingReadIds = new Set(),
+  markingUnreadIds = new Set(),
+  deletingIds = new Set(),
+  restoringIds = new Set(),
+  hardDeletingIds = new Set(),
 }: UseContactRequestRowActionsOptions) => {
   const router = useResourceRouter()
 
@@ -58,22 +58,22 @@ export const useContactRequestRowActions = ({
 
       if (canUpdate) {
         if (row.isRead) {
-          const isMarkingUnread = markingUnreadRequests.has(row.id)
+          const isMarkingUnread = markingUnreadIds.has(row.id)
           actions.push({
             label: CONTACT_REQUEST_LABELS.MARK_UNREAD,
             icon: X,
             onSelect: () => onToggleRead(row, false),
-            disabled: isMarkingUnread || markingReadRequests.has(row.id) || deletingRequests.has(row.id) || restoringRequests.has(row.id) || hardDeletingRequests.has(row.id),
+            disabled: isMarkingUnread || markingReadIds.has(row.id) || deletingIds.has(row.id) || restoringIds.has(row.id) || hardDeletingIds.has(row.id),
             isLoading: isMarkingUnread,
             loadingLabel: CONTACT_REQUEST_LABELS.MARKING_UNREAD,
           })
         } else {
-          const isMarkingRead = markingReadRequests.has(row.id)
+          const isMarkingRead = markingReadIds.has(row.id)
           actions.push({
             label: CONTACT_REQUEST_LABELS.MARK_READ,
             icon: Check,
             onSelect: () => onToggleRead(row, true),
-            disabled: isMarkingRead || markingUnreadRequests.has(row.id) || deletingRequests.has(row.id) || restoringRequests.has(row.id) || hardDeletingRequests.has(row.id),
+            disabled: isMarkingRead || markingUnreadIds.has(row.id) || deletingIds.has(row.id) || restoringIds.has(row.id) || hardDeletingIds.has(row.id),
             isLoading: isMarkingRead,
             loadingLabel: CONTACT_REQUEST_LABELS.MARKING_READ,
           })
@@ -81,26 +81,26 @@ export const useContactRequestRowActions = ({
       }
 
       if (canDelete) {
-        const isDeleting = deletingRequests.has(row.id)
+        const isDeleting = deletingIds.has(row.id)
         actions.push({
           label: CONTACT_REQUEST_LABELS.DELETE,
           icon: Trash2,
           onSelect: () => onDelete(row),
           destructive: true,
-          disabled: isDeleting || markingReadRequests.has(row.id) || markingUnreadRequests.has(row.id) || restoringRequests.has(row.id) || hardDeletingRequests.has(row.id),
+          disabled: isDeleting || markingReadIds.has(row.id) || markingUnreadIds.has(row.id) || restoringIds.has(row.id) || hardDeletingIds.has(row.id),
           isLoading: isDeleting,
           loadingLabel: CONTACT_REQUEST_LABELS.DELETING,
         })
       }
 
       if (canManage) {
-        const isHardDeleting = hardDeletingRequests.has(row.id)
+        const isHardDeleting = hardDeletingIds.has(row.id)
         actions.push({
           label: CONTACT_REQUEST_LABELS.HARD_DELETE,
           icon: AlertTriangle,
           onSelect: () => onHardDelete(row),
           destructive: true,
-          disabled: deletingRequests.has(row.id) || markingReadRequests.has(row.id) || markingUnreadRequests.has(row.id) || restoringRequests.has(row.id) || isHardDeleting,
+          disabled: deletingIds.has(row.id) || markingReadIds.has(row.id) || markingUnreadIds.has(row.id) || restoringIds.has(row.id) || isHardDeleting,
           isLoading: isHardDeleting,
           loadingLabel: CONTACT_REQUEST_LABELS.HARD_DELETING,
         })
@@ -108,7 +108,7 @@ export const useContactRequestRowActions = ({
 
       return renderRowActions(actions)
     },
-    [canDelete, canManage, canUpdate, onDelete, onHardDelete, onToggleRead, router, markingReadRequests, markingUnreadRequests, deletingRequests, restoringRequests, hardDeletingRequests],
+    [canDelete, canManage, canUpdate, onDelete, onHardDelete, onToggleRead, router, markingReadIds, markingUnreadIds, deletingIds, restoringIds, hardDeletingIds],
   )
 
   const renderDeletedRowActions = useCallback(
@@ -122,25 +122,25 @@ export const useContactRequestRowActions = ({
       ]
 
       if (canRestore) {
-        const isRestoring = restoringRequests.has(row.id)
+        const isRestoring = restoringIds.has(row.id)
         actions.push({
           label: CONTACT_REQUEST_LABELS.RESTORE,
           icon: RotateCcw,
           onSelect: () => onRestore(row),
-          disabled: deletingRequests.has(row.id) || isRestoring || hardDeletingRequests.has(row.id),
+          disabled: deletingIds.has(row.id) || isRestoring || hardDeletingIds.has(row.id),
           isLoading: isRestoring,
           loadingLabel: CONTACT_REQUEST_LABELS.RESTORING,
         })
       }
 
       if (canManage) {
-        const isHardDeleting = hardDeletingRequests.has(row.id)
+        const isHardDeleting = hardDeletingIds.has(row.id)
         actions.push({
           label: CONTACT_REQUEST_LABELS.HARD_DELETE,
           icon: AlertTriangle,
           onSelect: () => onHardDelete(row),
           destructive: true,
-          disabled: deletingRequests.has(row.id) || restoringRequests.has(row.id) || isHardDeleting,
+          disabled: deletingIds.has(row.id) || restoringIds.has(row.id) || isHardDeleting,
           isLoading: isHardDeleting,
           loadingLabel: CONTACT_REQUEST_LABELS.HARD_DELETING,
         })
@@ -148,7 +148,7 @@ export const useContactRequestRowActions = ({
 
       return renderRowActions(actions)
     },
-    [canManage, canRestore, onHardDelete, onRestore, router, deletingRequests, restoringRequests, hardDeletingRequests],
+    [canManage, canRestore, onHardDelete, onRestore, router, deletingIds, restoringIds, hardDeletingIds],
   )
 
   return {

@@ -1,7 +1,7 @@
 /**
  * Types và interfaces cho filter controls
  */
-import type { DataTableColumn } from "../data-table"
+import type { DataTableColumn } from "../types"
 
 export interface ColumnFilterSelectOption {
     label: string

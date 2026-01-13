@@ -85,13 +85,13 @@ export const RolesTableClient = ({
   })
 
   const {
-    handleToggleStatus,
     executeSingleAction,
     executeBulkAction,
-    togglingRoles,
-    deletingRoles,
-    restoringRoles,
-    hardDeletingRoles,
+    deletingIds,
+    restoringIds,
+    hardDeletingIds,
+    activatingIds,
+    deactivatingIds,
     bulkState,
   } = useRoleActions({
     canDelete,
@@ -101,15 +101,20 @@ export const RolesTableClient = ({
     showFeedback,
   })
 
+  const togglingIds = useMemo(
+    () => new Set([...Array.from(activatingIds), ...Array.from(deactivatingIds)]),
+    [activatingIds, deactivatingIds],
+  )
+
   const handleToggleStatusWithRefresh = useCallback(
     (row: RoleRow, checked: boolean) => {
-      handleToggleStatus(row, checked, refreshTable)
+      executeSingleAction(checked ? "active" : "unactive", row, refreshTable)
     },
-    [handleToggleStatus, refreshTable],
+    [executeSingleAction, refreshTable],
   )
 
   const { baseColumns, deletedColumns } = useRoleColumns({
-    togglingRoles,
+    togglingRoles: togglingIds,
     canManage,
     onToggleStatus: handleToggleStatusWithRefresh,
   })
@@ -174,9 +179,9 @@ export const RolesTableClient = ({
     onDelete: handleDeleteSingle,
     onHardDelete: handleHardDeleteSingle,
     onRestore: handleRestoreSingle,
-    deletingRoles,
-    restoringRoles,
-    hardDeletingRoles,
+    deletingIds,
+    restoringIds,
+    hardDeletingIds,
   })
 
   const fetchRoles = useCallback(
@@ -662,10 +667,10 @@ export const RolesTableClient = ({
             bulkState.isProcessing ||
             (deleteConfirm.row
               ? deleteConfirm.type === "restore"
-                ? restoringRoles.has(deleteConfirm.row.id)
+                ? restoringIds.has(deleteConfirm.row.id)
                 : deleteConfirm.type === "hard"
-                ? hardDeletingRoles.has(deleteConfirm.row.id)
-                : deletingRoles.has(deleteConfirm.row.id)
+                  ? hardDeletingIds.has(deleteConfirm.row.id)
+                  : deletingIds.has(deleteConfirm.row.id)
               : false)
           }
         />

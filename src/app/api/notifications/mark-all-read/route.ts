@@ -124,6 +124,7 @@ async function markAllAsReadHandler(_req: NextRequest) {
 
       const notifications = await prisma.notification.findMany({
         where: fetchWhere,
+        include: { user: true },
         orderBy: { createdAt: "desc" },
         take: 50,
       })
