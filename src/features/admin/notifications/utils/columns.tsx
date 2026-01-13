@@ -6,7 +6,7 @@ import { useDynamicFilterOptions } from "@/features/admin/resources/hooks/use-dy
 import { apiRoutes } from "@/constants"
 import type { NotificationRow } from "../types"
 import { NOTIFICATION_KINDS, NOTIFICATION_LABELS } from "../constants"
-import { TypographyPMuted, TypographySpanSmallMuted, TypographyP } from "@/components/ui/typography"
+import { TypographySpanSmallMuted, TypographyP } from "@/components/ui/typography"
 import { Flex } from "@/components/ui/flex"
 
 interface UseNotificationColumnsOptions {

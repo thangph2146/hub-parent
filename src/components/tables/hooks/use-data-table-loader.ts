@@ -117,7 +117,7 @@ export function useDataTableLoader<T extends object>({
                 setDataPromise(promise)
             })
         }
-    }, [loader, query, refreshKey, initialData])
+    }, [loader, query, refreshKey, initialData, isFetching])
 
     return {
         dataPromise,

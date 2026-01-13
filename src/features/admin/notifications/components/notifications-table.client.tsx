@@ -28,7 +28,6 @@ import { useNotificationFeedback } from "../hooks/use-notification-feedback"
 import { useNotificationDeleteConfirm } from "../hooks/use-notification-delete-confirm"
 import { useNotificationsSocketBridge } from "../hooks/use-notifications-socket-bridge"
 import { useNotificationColumns } from "../utils/columns"
-import { useNotificationRowActions } from "../utils/row-actions"
 import { NOTIFICATION_LABELS, NOTIFICATION_CONFIRM_MESSAGES, NOTIFICATION_MESSAGES } from "../constants"
 import { ConfirmDialog } from "@/components/dialogs"
 
