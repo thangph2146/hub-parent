@@ -9,6 +9,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useSession } from "next-auth/react";
 import { Calendar, BarChart3, PieChart, LineChart } from "lucide-react";
 import dynamic from "next/dynamic";
+import type HighchartsReactRef from "highcharts-react-official";
 
 // Dynamic import Highcharts để tránh lỗi SSR
 const HighchartsReact = dynamic(
@@ -257,10 +258,8 @@ const HighchartsMonthlyChart = ({
   chartType,
   onSeriesToggle,
 }: HighchartsMonthlyChartProps) => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const chartRef = useRef<any>(null);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [Highcharts, setHighcharts] = useState<any>(null);
+  const chartRef = useRef<HighchartsReactRef.RefObject>(null);
+  const [Highcharts, setHighcharts] = useState<typeof import("highcharts") | null>(null);
   const [isDark, setIsDark] = useState(false);
 
   useEffect(() => {
@@ -481,11 +480,11 @@ const HighchartsMonthlyChart = ({
         },
         padding: 0,
         outside: false,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any, react-hooks/unsupported-syntax
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         formatter: function (this: any) {
           const maxPoints = 8;
-          const pointsToShow = this.points.slice(0, maxPoints);
-          const hasMore = this.points.length > maxPoints;
+          const pointsToShow = this.points ? this.points.slice(0, maxPoints) : [];
+          const hasMore = this.points ? this.points.length > maxPoints : false;
           
           let tooltip = `
             <div style="
@@ -506,6 +505,7 @@ const HighchartsMonthlyChart = ({
               ">${this.x}</div>
               <div style="display: flex; flex-direction: column; gap: 4px;">
           `;
+          
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           pointsToShow.forEach((point: any) => {
             tooltip += `
@@ -537,7 +537,7 @@ const HighchartsMonthlyChart = ({
                   min-width: 60px;
                   text-align: right;
                   flex-shrink: 0;
-                ">${point.y.toLocaleString("vi-VN")}</span>
+                ">${point.y?.toLocaleString("vi-VN")}</span>
               </div>
             `;
           });
@@ -611,7 +611,7 @@ const HighchartsMonthlyChart = ({
           events: {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             legendItemClick: function (this: any) {
-              const seriesKey = this.options.key || this.name;
+              const seriesKey = (this.options as { key?: string }).key || this.name;
               onSeriesToggle(seriesKey);
               return false; // Ngăn Highcharts tự động ẩn/hiện
             },
@@ -664,10 +664,8 @@ interface HighchartsPieChartProps {
 }
 
 const HighchartsPieChart = ({ categoryData, totalPosts }: HighchartsPieChartProps) => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const chartRef = useRef<any>(null);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [Highcharts, setHighcharts] = useState<any>(null);
+  const chartRef = useRef<HighchartsReactRef.RefObject>(null);
+  const [Highcharts, setHighcharts] = useState<typeof import("highcharts") | null>(null);
 
   useEffect(() => {
     // Dynamic import Highcharts

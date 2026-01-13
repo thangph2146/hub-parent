@@ -38,12 +38,21 @@ export function AdminHeader({ breadcrumbs = [] }: AdminHeaderProps) {
   const resourceSegment = useResourceSegment()
   const dashboardHref = applyResourceSegmentToPath("/admin/dashboard", resourceSegment)
   
+  const isNavigating = React.useRef(false)
+  
   // Handle breadcrumb navigation với cache invalidation
   // Sử dụng cache-busting parameter để force Server Component refetch
   // Next.js sẽ tự động revalidate khi navigate, không cần gọi router.refresh()
   const handleBreadcrumbClick = React.useCallback((e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     e.preventDefault()
+
+    if (isNavigating.current) {
+      logger.debug("⏸️ Navigation đang xử lý, bỏ qua click", { href })
+      return
+    }
+
     const startTime = performance.now()
+    isNavigating.current = true
     
     logger.info("🍞 Breadcrumb navigation", {
       source: "breadcrumb",
@@ -65,13 +74,16 @@ export function AdminHeader({ breadcrumbs = [] }: AdminHeaderProps) {
     // Chỉ gọi replace, Next.js sẽ tự động revalidate
     router.replace(targetUrl)
     
-    const duration = performance.now() - startTime
-    logger.success("✅ Breadcrumb navigation hoàn tất", {
-      duration: `${duration.toFixed(2)}ms`,
-      targetUrl,
-    })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [resourceSegment])
+    // Reset flag sau một khoảng thời gian ngắn để cho phép navigate tiếp nếu cần
+    setTimeout(() => {
+      isNavigating.current = false
+      const duration = performance.now() - startTime
+      logger.success("✅ Breadcrumb navigation hoàn tất", {
+        duration: `${duration.toFixed(2)}ms`,
+        targetUrl,
+      })
+    }, 500)
+  }, [resourceSegment, router])
 
   return (
     <Flex

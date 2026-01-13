@@ -207,22 +207,16 @@ export const useResourceFormSubmit = ({
             const url = new URL(detailPath, window.location.origin)
             url.searchParams.set("_t", Date.now().toString())
             router.replace(url.pathname + url.search)
-            await new Promise((resolve) => setTimeout(resolve, 100))
-            router.refresh()
             logger.debug("[useResourceFormSubmit] Navigation completed")
           } else if (navigation.fallback) {
             const url = new URL(navigation.fallback, window.location.origin)
             url.searchParams.set("_t", Date.now().toString())
             router.replace(url.pathname + url.search)
-            await new Promise((resolve) => setTimeout(resolve, 150))
-            router.refresh()
           }
         } else if (navigation?.fallback) {
           const url = new URL(navigation.fallback, window.location.origin)
           url.searchParams.set("_t", Date.now().toString())
           router.replace(url.pathname + url.search)
-          await new Promise((resolve) => setTimeout(resolve, 150))
-          router.refresh()
         }
 
         logger.debug("[useResourceFormSubmit] handleSubmit SUCCESS")

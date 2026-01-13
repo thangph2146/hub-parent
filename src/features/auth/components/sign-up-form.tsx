@@ -77,7 +77,6 @@ export function SignUpForm({
         setIsLoading(false);
       } else {
         router.push("/admin/dashboard");
-        router.refresh();
       }
     } catch {
       setError("Đã xảy ra lỗi. Vui lòng thử lại.");

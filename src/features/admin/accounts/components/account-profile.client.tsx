@@ -10,7 +10,6 @@ import {
   type ResourceFormField,
 } from "@/features/admin/resources/components";
 import { Button } from "@/components/ui/button";
-import { useResourceRouter } from "@/hooks";
 import { formatDateVi } from "@/features/admin/resources/utils";
 import {
   parseAddressToFormFields,
@@ -32,7 +31,6 @@ export const AccountProfileClient = ({
   account,
   variant = "page",
 }: AccountProfileClientProps) => {
-  const router = useResourceRouter();
   const [isEditing, setIsEditing] = React.useState(false);
   const { hasPermission } = usePermissions();
 
@@ -61,7 +59,6 @@ export const AccountProfileClient = ({
         }}
         onSuccess={() => {
           setIsEditing(false);
-          router.refresh();
         }}
         onCancel={() => {
           setIsEditing(false);

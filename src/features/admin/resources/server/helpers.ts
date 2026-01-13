@@ -118,11 +118,9 @@ export const applyStatusFilter = <T extends Record<string, unknown>>(
 ): void => {
   const filterStatus = status ?? "active"
   if (filterStatus === "active") {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ;(where as any).deletedAt = null
+    Object.assign(where, { deletedAt: null })
   } else if (filterStatus === "deleted") {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ;(where as any).deletedAt = { not: null }
+    Object.assign(where, { deletedAt: { not: null } })
   }
   // "all" means no filter applied
 }
@@ -141,8 +139,7 @@ export const applySearchFilter = <T extends Record<string, unknown>>(
     [String(field)]: { contains: searchValue, mode: "insensitive" as const },
   }))
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ;(where as any).OR = orConditions
+  Object.assign(where, { OR: orConditions })
 }
 
 export const applyDateFilter = <T extends Record<string, unknown>>(
@@ -175,11 +172,12 @@ export const applyDateFilter = <T extends Record<string, unknown>>(
 
     if (isNaN(startOfDay.getTime()) || isNaN(endOfDay.getTime())) return
 
-    where[dateField] = {
-      gte: startOfDay,
-      lte: endOfDay,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Prisma where clause requires dynamic typing
-    } as any
+    Object.assign(where, {
+      [dateField]: {
+        gte: startOfDay,
+        lte: endOfDay,
+      }
+    })
   } catch {
     // Invalid date format, skip filter
   }
@@ -219,8 +217,7 @@ export const applyDateRangeFilter = <T extends Record<string, unknown>>(
     }
 
     if (dateRange.gte || dateRange.lte) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Prisma where clause requires dynamic typing
-      where[dateField] = dateRange as any
+      Object.assign(where, { [dateField]: dateRange })
     }
   } catch {
     // Invalid date format, skip filter
@@ -236,11 +233,9 @@ export const applyBooleanFilter = <T extends Record<string, unknown>>(
 
   const normalizedValue = value.trim().toLowerCase()
   if (normalizedValue === "true" || normalizedValue === "1") {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    where[field] = true as any
+    Object.assign(where, { [field]: true })
   } else if (normalizedValue === "false" || normalizedValue === "0") {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    where[field] = false as any
+    Object.assign(where, { [field]: false })
   }
 }
 
@@ -254,8 +249,7 @@ export const applyStringFilter = <T extends Record<string, unknown>>(
   const trimmedValue = value.trim()
   if (trimmedValue.length === 0) return
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  where[field] = { contains: trimmedValue, mode: "insensitive" } as any
+  Object.assign(where, { [field]: { contains: trimmedValue, mode: "insensitive" } })
 }
 
 export const applyRelationFilter = <T extends Record<string, unknown>>(
@@ -272,8 +266,7 @@ export const applyRelationFilter = <T extends Record<string, unknown>>(
   const cuidValidation = validateCUID(trimmedValue)
 
   if (cuidValidation.valid) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ;(where as any)[idField] = trimmedValue
+    Object.assign(where, { [idField]: trimmedValue })
   } else {
     const relationConditions: Record<string, unknown> = {}
     for (const [field, operator] of Object.entries(relationFilters)) {
@@ -283,8 +276,7 @@ export const applyRelationFilter = <T extends Record<string, unknown>>(
         relationConditions[field] = { equals: trimmedValue, mode: "insensitive" as const }
       }
     }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ;(where as any)[relationField] = relationConditions
+    Object.assign(where, { [relationField]: relationConditions })
   }
 }
 
@@ -302,8 +294,7 @@ export const applyRelationFilters = <T extends Record<string, unknown>>(
   if (!filters) return
 
   for (const [relationField, config] of Object.entries(relationConfigs)) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    if ((where as any)[config.idField]) continue
+    if (config.idField in where) continue
 
     const relationFilters = Object.entries(config.fieldMap)
       .map(([k, v]) => {
@@ -318,8 +309,7 @@ export const applyRelationFilters = <T extends Record<string, unknown>>(
     const idFilter = relationFilters.find((f) => validateCUID(f.value).valid)
 
     if (idFilter) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ;(where as any)[config.idField] = idFilter.value
+      Object.assign(where, { [config.idField]: idFilter.value })
     } else {
       const conditions: Record<string, unknown> = {}
       for (const { field, value } of relationFilters) {
@@ -329,8 +319,7 @@ export const applyRelationFilters = <T extends Record<string, unknown>>(
           : { equals: value, mode: "insensitive" as const }
       }
       if (Object.keys(conditions).length > 0) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        ;(where as any)[relationField] = conditions
+        Object.assign(where, { [relationField]: conditions })
       }
     }
   }
@@ -344,11 +333,9 @@ export const applyStatusFilterFromFilters = <T extends Record<string, unknown>>(
 
   const value = statusValue.trim()
   if (value === "deleted") {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ;(where as any).deletedAt = { not: null }
+    Object.assign(where, { deletedAt: { not: null } })
   } else if (value === "active") {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ;(where as any).deletedAt = null
+    Object.assign(where, { deletedAt: null })
   }
 }
 

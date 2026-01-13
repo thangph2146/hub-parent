@@ -7,14 +7,14 @@
 
 import { useEffect, useMemo, useRef } from "react"
 
-type DebouncedFn<T extends (...args: never[]) => void> = ((...args: Parameters<T>) => void) & {
+type DebouncedFn<Args extends unknown[]> = ((...args: Args) => void) & {
   cancel: () => void
 }
 
-export const useDebouncedCallback = <T extends (...args: never[]) => void>(
-  callback: T,
+export const useDebouncedCallback = <Args extends unknown[]>(
+  callback: (...args: Args) => void,
   delay: number
-): DebouncedFn<T> => {
+): DebouncedFn<Args> => {
   const callbackRef = useRef(callback)
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -23,13 +23,12 @@ export const useDebouncedCallback = <T extends (...args: never[]) => void>(
   }, [callback])
 
   const debounced = useMemo(() => {
-    const fn = ((...args: Parameters<T>) => {
+    const fn = ((...args: Args) => {
       if (timerRef.current) clearTimeout(timerRef.current)
       timerRef.current = setTimeout(() => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        ;(callbackRef.current as any)(...(args as any[]))
+        callbackRef.current(...args)
       }, delay)
-    }) as DebouncedFn<T>
+    }) as DebouncedFn<Args>
 
     fn.cancel = () => {
       if (timerRef.current) {

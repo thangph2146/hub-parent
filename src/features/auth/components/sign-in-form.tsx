@@ -112,7 +112,6 @@ export function SignInForm({
         }
 
         router.push(redirectUrl);
-        router.refresh();
       } else {
         // Trường hợp result không có error nhưng cũng không ok
         setError("Đã xảy ra lỗi không xác định. Vui lòng thử lại.");
