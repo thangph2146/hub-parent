@@ -11,7 +11,7 @@ import {
     useTransition,
     type ReactNode,
 } from "react"
-import { ChevronLeft, ChevronRight, Eye, EyeOff, Loader2, Info } from "lucide-react"
+import { ChevronLeft, ChevronRight, Eye, EyeOff, Info } from "lucide-react"
 import { cn } from "@/utils"
 import { Button } from "@/components/ui/button"
 import {
@@ -30,7 +30,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
-import { TypographySpanSmallMuted, TypographySpanSmall, TypographyPMuted, IconSize } from "@/components/ui/typography"
+import { TypographySpanSmallMuted, TypographySpanSmall, IconSize } from "@/components/ui/typography"
 import { Flex } from "@/components/ui/flex"
 import { useDebouncedCallback } from "@/hooks"
 import { ColumnFilterControl } from "./filter-controls/column-filter-control"
@@ -107,6 +107,7 @@ export interface DataTableProps<T extends object> {
     maxHeight?: string | number
     enableHorizontalScroll?: boolean
     maxWidth?: string | number
+    processingIds?: Set<string> | string[]
 }
 
 const DEFAULT_LIMIT_OPTIONS = [10, 20, 50, 100]
@@ -144,6 +145,7 @@ export function DataTable<T extends object>({
     maxHeight: _maxHeight,
     enableHorizontalScroll: _enableHorizontalScroll = true,
     maxWidth,
+    processingIds,
 }: DataTableProps<T>) {
     const availableLimits = useMemo(() => {
         const base = limitOptions && limitOptions.length > 0 ? [...limitOptions] : [...DEFAULT_LIMIT_OPTIONS]
@@ -250,11 +252,6 @@ export function DataTable<T extends object>({
     const lastFetchTimeRef = useRef(0)
 
     useEffect(() => {
-        // Guard: Nếu đang fetch, không fetch lại
-        if (isFetchingRef.current) {
-            return
-        }
-
         const now = Date.now()
         // Kiểm tra refreshKey thay đổi - so sánh với giá trị trước đó
         const refreshKeyChanged = prevRefreshKeyRef.current !== refreshKey
@@ -262,6 +259,12 @@ export function DataTable<T extends object>({
         const loaderChanged = prevLoaderRef.current !== loader
         // Kiểm tra initialData thay đổi - khi chuyển view, initialData có thể thay đổi
         const initialDataChanged = prevInitialDataRef.current !== initialData
+
+        // Guard: Nếu đang fetch, chỉ cho phép tiếp tục nếu là refreshKey thay đổi (force refresh)
+        // Hoặc loader thay đổi (chuyển view)
+        if (isFetchingRef.current && !refreshKeyChanged && !loaderChanged) {
+            return
+        }
         
         // Lần đầu mount - initialize refs và return sớm
         // Không trigger fetch ở đây vì đã có initialData hoặc đã fetch trong useState
@@ -312,7 +315,9 @@ export function DataTable<T extends object>({
             const newPromise = new Promise<DataTableResult<T>>((resolve) => {
                 queueMicrotask(() => resolve(clonedData))
             })
-            setDataPromise(newPromise)
+            startTransition(() => {
+                setDataPromise(newPromise)
+            })
             // Nếu loader cũng thay đổi, vẫn ưu tiên initialData
             // Loader sẽ được update trong ref để lần sau sử dụng đúng
             return
@@ -328,7 +333,9 @@ export function DataTable<T extends object>({
             promise.finally(() => {
                 isFetchingRef.current = false
             })
-            setDataPromise(promise)
+            startTransition(() => {
+                setDataPromise(promise)
+            })
             return
         }
         
@@ -342,7 +349,9 @@ export function DataTable<T extends object>({
             promise.finally(() => {
                 isFetchingRef.current = false
             })
-            setDataPromise(promise)
+            startTransition(() => {
+                setDataPromise(promise)
+            })
             return
         }
         
@@ -364,7 +373,11 @@ export function DataTable<T extends object>({
             promise.finally(() => {
                 isFetchingRef.current = false
             })
-            setDataPromise(promise)
+            // Sử dụng startTransition để tránh flash Suspense skeleton
+            // Giúp giữ lại dữ liệu cũ trên màn hình trong khi tải dữ liệu mới
+            startTransition(() => {
+                setDataPromise(promise)
+            })
             return
         }
 
@@ -634,17 +647,6 @@ export function DataTable<T extends object>({
             ) : null}
 
             <div className="rounded-md border overflow-x-auto relative w-full">
-                {/* Loading overlay khi đang fetch data */}
-                {isPending && (
-                    <Flex align="center" justify="center" className="absolute inset-0 bg-background/80 backdrop-blur-[2px] z-10 rounded-md">
-                        <Flex direction="col" align="center" gap={3}>
-                            <IconSize size="2xl" className="animate-spin rounded-full border-4 border-primary border-t-transparent">
-                                <Loader2 className="animate-spin" />
-                            </IconSize>
-                            <TypographyPMuted>Đang tải dữ liệu...</TypographyPMuted>
-                        </Flex>
-                    </Flex>
-                )}
                 <div className="min-w-full inline-block">
                     <Table className="min-w-full">
                     <TableHeader>
@@ -728,6 +730,8 @@ export function DataTable<T extends object>({
                             onVisibleRowsChange={setVisibleRows}
                             emptyMessage={emptyMessage}
                             totalColumns={columnCount}
+                            processingIds={processingIds}
+                            isPending={isPending}
                         />
                     </Suspense>
                 </Table>
@@ -788,6 +792,8 @@ interface TableBodyContentProps<T extends object> {
     onVisibleRowsChange?: (rows: T[]) => void
     emptyMessage: string
     totalColumns: number
+    processingIds?: Set<string> | string[]
+    isPending?: boolean
 }
 
 function TableBodyContent<T extends object>({
@@ -803,8 +809,33 @@ function TableBodyContent<T extends object>({
     onVisibleRowsChange,
     emptyMessage,
     totalColumns,
+    processingIds,
+    isPending,
 }: TableBodyContentProps<T>) {
     const result = use(dataPromise)
+    
+    // Convert processingIds to Set for efficient lookup
+    const processingIdsSet = useMemo(() => {
+        if (!processingIds) return new Set<string>()
+        return processingIds instanceof Set ? processingIds : new Set(processingIds)
+    }, [processingIds])
+
+    // Track processing IDs to avoid flickering during transition
+    const [persistedProcessingIdsSet, setPersistedProcessingIdsSet] = useState<Set<string>>(processingIdsSet)
+    
+    // Update persisted set during render if not pending and it changed
+    // This is the recommended pattern for deriving state from props/other state
+    if (!isPending && persistedProcessingIdsSet !== processingIdsSet) {
+        setPersistedProcessingIdsSet(processingIdsSet)
+    }
+
+    const effectiveProcessingIdsSet = useMemo(() => {
+        if (!isPending) return processingIdsSet
+        // During transition, combine current and last processing IDs to keep skeletons visible
+        const combined = new Set(processingIdsSet)
+        persistedProcessingIdsSet.forEach(id => combined.add(id))
+        return combined
+    }, [processingIdsSet, persistedProcessingIdsSet, isPending])
     
     // Ensure result and result.rows are valid
     const rows = useMemo(() => {
@@ -836,8 +867,35 @@ function TableBodyContent<T extends object>({
                 const rowId = getRowId(row, index)
                 const rowSelectable = isRowSelectable(row)
                 const rowSelected = selectedIds.has(rowId)
+                const isProcessing = effectiveProcessingIdsSet.has(rowId)
+
+                if (isProcessing) {
+                    return (
+                        <TableRow key={rowId} className="animate-pulse bg-muted/10">
+                            {showSelection ? (
+                                <TableCell className="w-10 max-w-10 min-w-10 align-middle px-2 sticky left-0 z-10 bg-muted border-r border-border">
+                                    <Skeleton className="h-4 w-4 mx-auto" />
+                                </TableCell>
+                            ) : null}
+                            {columns.map((column) => (
+                                <TableCell
+                                    key={`${rowId}-${column.accessorKey}`}
+                                    className={cn("px-2 sm:px-3", column.className)}
+                                >
+                                    <Skeleton className="h-5 w-full" />
+                                </TableCell>
+                            ))}
+                            {actions ? (
+                                <TableCell className="w-[120px] min-w-[120px] max-w-[120px] px-2 sm:px-3 sticky right-0 z-10 bg-muted border-l border-border">
+                                    <Skeleton className="h-8 w-full" />
+                                </TableCell>
+                            ) : null}
+                        </TableRow>
+                    )
+                }
+
                 return (
-                    <TableRow key={rowId} className="group">
+                    <TableRow key={rowId} className="group" data-state={rowSelected ? "selected" : undefined}>
                         {showSelection ? (
                             <TableCell className="w-10 max-w-10 min-w-10 align-middle px-2 sticky left-0 z-10 bg-muted text-secondary-foreground group-data-[state=selected]:bg-secondary/10 border-r border-border">
                                 <SelectionCheckbox

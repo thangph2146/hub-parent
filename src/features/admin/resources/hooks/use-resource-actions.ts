@@ -10,6 +10,8 @@ import type { FeedbackVariant } from "@/components/dialogs"
 import type { QueryKey } from "@tanstack/react-query"
 import type { ResourceAction } from "@/types"
 
+import { invalidateAndRefreshResource } from "../utils/helpers"
+
 type SingleAction = "delete" | "restore" | "hard-delete"
 type BulkAction = SingleAction | "active" | "unactive"
 type ActionType = SingleAction | `bulk-${BulkAction}`
@@ -187,10 +189,14 @@ export const useResourceActions = <T extends { id: string }>(
         }
         
         // Invalidate all queries và detail query (nếu không phải hard delete)
-        await queryClient.invalidateQueries({ queryKey: config.queryKeys.all(), refetchType: "active" })
-        if (!isHardDelete && config.queryKeys.detail) {
-          await queryClient.invalidateQueries({ queryKey: config.queryKeys.detail(variables.row.id), refetchType: "active" })
-        }
+        // Sử dụng invalidateAndRefreshResource để đảm bảo sync UI
+        await invalidateAndRefreshResource({
+          queryClient,
+          allQueryKey: config.queryKeys.all(),
+          detailQueryKey: !isHardDelete ? config.queryKeys.detail : undefined,
+          resourceId: !isHardDelete ? variables.row.id : undefined,
+          skipDetailRefetch: isHardDelete,
+        })
 
         resourceLogger.logFlow({
           resource: config.resourceName,
@@ -297,27 +303,21 @@ export const useResourceActions = <T extends { id: string }>(
           },
         })
         
-        // Chỉ invalidate queries - table sẽ tự động refresh qua query cache events
-        // Hard delete: Remove detail queries khỏi cache hoàn toàn để tránh refetch tự động
-        if (isHardDelete && config.queryKeys.detail) {
-          for (const id of variables.ids) {
-            const detailKey = config.queryKeys.detail(id)
-            await queryClient.removeQueries({ queryKey: detailKey })
-          }
-        }
-        
-        // Invalidate all queries
-        await queryClient.invalidateQueries({ queryKey: config.queryKeys.all(), refetchType: "active" })
-        
-        // Invalidate detail queries cho tất cả affected IDs (nếu không phải hard delete)
-        // Điều này đảm bảo detail pages cũng được cập nhật
-        if (config.queryKeys.detail && !isHardDelete) {
+        // Sử dụng invalidateAndRefreshResource để đảm bảo sync UI cho bulk actions
+        // Chỉ trigger registry refresh một lần duy nhất cho toàn bộ batch
+        await invalidateAndRefreshResource({
+          queryClient,
+          allQueryKey: config.queryKeys.all(),
+        })
+
+        // Invalidate detail queries cho tất cả affected IDs
+        if (config.queryKeys.detail) {
           resourceLogger.logFlow({
             resource: config.resourceName,
             action: actionType,
             step: "init",
             details: {
-              operation: "invalidate_detail_queries",
+              operation: isHardDelete ? "remove_detail_queries" : "invalidate_detail_queries",
               idsCount: variables.ids.length,
               ids: variables.ids,
             },
@@ -325,24 +325,12 @@ export const useResourceActions = <T extends { id: string }>(
           
           for (const id of variables.ids) {
             const detailKey = config.queryKeys.detail(id)
-            await queryClient.invalidateQueries({ queryKey: detailKey, refetchType: "active" })
-          }
-        } else if (config.queryKeys.detail && isHardDelete) {
-          resourceLogger.logFlow({
-            resource: config.resourceName,
-            action: actionType,
-            step: "init",
-            details: {
-              operation: "remove_detail_queries",
-              idsCount: variables.ids.length,
-              ids: variables.ids,
-            },
-          })
-          
-          // Hard delete: Remove queries khỏi cache hoàn toàn để tránh refetch tự động
-          for (const id of variables.ids) {
-            const detailKey = config.queryKeys.detail(id)
-            await queryClient.removeQueries({ queryKey: detailKey })
+            if (isHardDelete) {
+              await queryClient.removeQueries({ queryKey: detailKey })
+            } else {
+              // Invalidate detail queries với refetchType: "all" để đảm bảo detail page cập nhật
+              await queryClient.invalidateQueries({ queryKey: detailKey, refetchType: "all" })
+            }
           }
         }
         

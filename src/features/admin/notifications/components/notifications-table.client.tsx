@@ -286,7 +286,7 @@ export const NotificationsTableClient = ({
 
 
   const createSelectionActions = useCallback(
-    ({ selectedIds, selectedRows, clearSelection, refresh }: {
+    ({ selectedIds, selectedRows, clearSelection, refresh: _refresh }: {
       selectedIds: string[]
       selectedRows: NotificationRow[]
       clearSelection: () => void

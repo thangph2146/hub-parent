@@ -25,6 +25,7 @@ export const useResourceTableRefresh = ({
   const pendingRealtimeRefreshRef = useRef(false)
   const lastCacheVersionRef = useRef<number | undefined>(cacheVersion)
   const lastInvalidationRefreshRef = useRef(0)
+  const lastRefreshTriggerTimeRef = useRef(0)
   const lastCacheVersionRefreshRef = useRef(0)
   const unregisterRef = useRef<(() => void) | null>(null)
 
@@ -67,8 +68,11 @@ export const useResourceTableRefresh = ({
 
       // Lưu refreshFn vào ref để có thể gọi từ bất kỳ đâu
       const wrappedRefreshFn = () => {
+        const now = Date.now()
         // Update lastInvalidationRefreshRef để polling biết không cần check lại
-        lastInvalidationRefreshRef.current = Date.now()
+        lastInvalidationRefreshRef.current = now
+        // Update lastRefreshTriggerTimeRef để fallback debounce biết đã có refresh
+        lastRefreshTriggerTimeRef.current = now
         refreshFn()
       }
       
@@ -233,7 +237,7 @@ export const useResourceTableRefresh = ({
         // Query cache subscription chỉ là fallback nếu registry không hoạt động
         // Debounce 2000ms (2 giây) để đảm bảo registry đã trigger trước
         const now = Date.now()
-        const timeSinceLastRefresh = now - lastInvalidationRefreshRef.current
+        const timeSinceLastRefresh = now - lastRefreshTriggerTimeRef.current
         
         if (timeSinceLastRefresh < 2000) {
           logger.debug("Skipping query cache refresh (debounced, registry may have already triggered)", {
