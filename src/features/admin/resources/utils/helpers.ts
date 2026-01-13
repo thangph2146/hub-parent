@@ -320,11 +320,15 @@ export const invalidateAndRefreshResource = async ({
     },
   })
   
-  // Chỉ invalidate all queries với refetchType: "active" - table sẽ tự động refresh
-  await queryClient.invalidateQueries({ queryKey: allQueryKey, refetchType: "active" })
+  // Chỉ invalidate all queries với refetchType: "none"
+  // Chúng ta sẽ trigger refresh qua registry ngay sau đó
+  // Việc đặt refetchType: "none" giúp tránh việc React Query tự động trigger refetch
+  // trong khi table UI cũng đang chuẩn bị trigger refresh qua refreshKey
+  await queryClient.invalidateQueries({ queryKey: allQueryKey, refetchType: "none" })
   
   // Trigger registry refresh để đảm bảo table UI được cập nhật ngay lập tức
-  // (mặc dù table sẽ tự động refresh qua query cache events, nhưng registry đảm bảo refresh ngay)
+  // Registry sẽ gọi handleRefresh của table, update refreshKey và trigger fetchQuery
+  // Vì query đã được invalidate ở trên, fetchQuery sẽ thực hiện refetch data mới
   resourceRefreshRegistry.triggerRefresh(allQueryKey)
   
   // Invalidate và refetch detail query ngay lập tức (nếu có và không skip)

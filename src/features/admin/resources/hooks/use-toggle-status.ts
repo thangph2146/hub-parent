@@ -6,6 +6,7 @@ import { resourceLogger } from "@/utils"
 import type { ResourceRefreshHandler } from "../types"
 import { toast } from "@/hooks"
 import type { QueryKey } from "@tanstack/react-query"
+import { invalidateAndRefreshResource } from "../utils/helpers"
 
 export interface UseToggleStatusConfig<TRow extends { id: string }> {
   resourceName: string
@@ -176,11 +177,15 @@ export const useToggleStatus = <TRow extends { id: string }>(
           },
         })
 
-        // Chỉ invalidate queries - table sẽ tự động refresh qua query cache events
-        // Không cần gọi refresh callback vì useResourceTableRefresh đã listen query invalidation events
+        // Sử dụng utility function chung để invalidate, refetch và trigger registry refresh
+        // Đảm bảo UI tự động cập nhật ngay sau khi mutation thành công
         const invalidateStartTime = Date.now()
-        await queryClient.invalidateQueries({ queryKey: config.queryKeys.all(), refetchType: "active" })
-        await queryClient.invalidateQueries({ queryKey: config.queryKeys.detail(row.id), refetchType: "active" })
+        await invalidateAndRefreshResource({
+          queryClient,
+          allQueryKey: config.queryKeys.all(),
+          detailQueryKey: config.queryKeys.detail,
+          resourceId: row.id,
+        })
         const invalidateDuration = Date.now() - invalidateStartTime
 
         resourceLogger.logFlow({

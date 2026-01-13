@@ -250,11 +250,6 @@ export function DataTable<T extends object>({
     const lastFetchTimeRef = useRef(0)
 
     useEffect(() => {
-        // Guard: Nếu đang fetch, không fetch lại
-        if (isFetchingRef.current) {
-            return
-        }
-
         const now = Date.now()
         // Kiểm tra refreshKey thay đổi - so sánh với giá trị trước đó
         const refreshKeyChanged = prevRefreshKeyRef.current !== refreshKey
@@ -262,6 +257,12 @@ export function DataTable<T extends object>({
         const loaderChanged = prevLoaderRef.current !== loader
         // Kiểm tra initialData thay đổi - khi chuyển view, initialData có thể thay đổi
         const initialDataChanged = prevInitialDataRef.current !== initialData
+
+        // Guard: Nếu đang fetch, chỉ cho phép tiếp tục nếu là refreshKey thay đổi (force refresh)
+        // Hoặc loader thay đổi (chuyển view)
+        if (isFetchingRef.current && !refreshKeyChanged && !loaderChanged) {
+            return
+        }
         
         // Lần đầu mount - initialize refs và return sớm
         // Không trigger fetch ở đây vì đã có initialData hoặc đã fetch trong useState
