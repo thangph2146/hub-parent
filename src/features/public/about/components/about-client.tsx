@@ -1354,7 +1354,7 @@ export const AboutClient = () => {
                 href={department.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="p-4 sm:p-5 bg-card border border-border rounded-lg sm:rounded-xl hover:bg-muted/50 hover:border-primary/50 transition-all group"
+                className="p-4 sm:p-5 bg-card border border-border rounded-lg sm:rounded-xl hover:bg-muted hover:border-primary/50 transition-all group"
               >
                 <Flex align="center" justify="between" className="w-full">
                   <TypographyDescriptionLarge className="group-hover:text-primary transition-colors">
@@ -1428,7 +1428,7 @@ export const AboutClient = () => {
                     className={`flex flex-col items-center gap-2 sm:gap-3 px-4 sm:px-6 py-3 sm:py-4 rounded-lg sm:rounded-xl transition-all flex-shrink-0 min-w-[140px] sm:min-w-[160px] md:min-w-[180px] ${
                       currentLeaderIndex === index
                         ? "bg-primary text-primary-foreground"
-                        : "bg-card border border-border hover:bg-muted/50 text-foreground"
+                        : "bg-card border border-border hover:bg-muted text-foreground"
                     }`}
                   >
                     <span

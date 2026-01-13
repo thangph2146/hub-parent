@@ -2,7 +2,7 @@
 
 import { useCallback, useMemo, useState } from "react"
 import { useResourceRouter } from "@/hooks"
-import { Plus, RotateCcw, Trash2, AlertTriangle } from "lucide-react"
+import { Plus, RotateCcw, Trash2, AlertTriangle, CheckCircle, XCircle } from "lucide-react"
 import { logger } from "@/utils"
 import { usePageLoadLogger } from "@/hooks"
 
@@ -251,6 +251,50 @@ export const UsersTableClient = ({
     [canRestore, executeSingleAction, refreshTable, setDeleteConfirm],
   )
 
+  const handleActiveSingle = useCallback(
+    (row: UserRow) => {
+      if (!canManage) return
+      resourceLogger.logAction({
+        resource: "users",
+        action: "active",
+        resourceId: row.id,
+        userEmail: row.email,
+        userName: row.name,
+      })
+      setDeleteConfirm({
+        open: true,
+        type: "active",
+        row,
+        onConfirm: async () => {
+          await executeSingleAction("active", row, refreshTable)
+        },
+      })
+    },
+    [canManage, executeSingleAction, refreshTable, setDeleteConfirm],
+  )
+
+  const handleUnactiveSingle = useCallback(
+    (row: UserRow) => {
+      if (!canManage) return
+      resourceLogger.logAction({
+        resource: "users",
+        action: "unactive",
+        resourceId: row.id,
+        userEmail: row.email,
+        userName: row.name,
+      })
+      setDeleteConfirm({
+        open: true,
+        type: "unactive",
+        row,
+        onConfirm: async () => {
+          await executeSingleAction("unactive", row, refreshTable)
+        },
+      })
+    },
+    [canManage, executeSingleAction, refreshTable, setDeleteConfirm],
+  )
+
   const { renderActiveRowActions, renderDeletedRowActions } = useUserRowActions({
     canDelete,
     canRestore,
@@ -258,26 +302,46 @@ export const UsersTableClient = ({
     onDelete: handleDeleteSingle,
     onHardDelete: handleHardDeleteSingle,
     onRestore: handleRestoreSingle,
+    onActive: handleActiveSingle,
+    onUnactive: handleUnactiveSingle,
     deletingIds,
     restoringIds,
     hardDeletingIds,
+    activatingIds,
+    deactivatingIds,
   })
 
   const executeBulk = useCallback(
-    (action: "delete" | "restore" | "hard-delete", ids: string[], selectedRows: UserRow[], refresh: () => void, clearSelection: () => void) => {
+    (action: "delete" | "restore" | "hard-delete" | "active" | "unactive", ids: string[], selectedRows: UserRow[], refresh: () => void, clearSelection: () => void) => {
       if (ids.length === 0) return
 
       resourceLogger.logAction({
         resource: "users",
-        action: action === "delete" ? "bulk-delete" : action === "restore" ? "bulk-restore" : "bulk-hard-delete",
+        action: action === "delete" 
+          ? "bulk-delete" 
+          : action === "restore" 
+          ? "bulk-restore" 
+          : action === "active"
+          ? "bulk-active"
+          : action === "unactive"
+          ? "bulk-unactive"
+          : "bulk-hard-delete",
         count: ids.length,
         userIds: ids,
       })
 
-      if (action === "delete" || action === "restore" || action === "hard-delete") {
+      if (action === "delete" || action === "restore" || action === "hard-delete" || action === "active" || action === "unactive") {
         setDeleteConfirm({
           open: true,
-          type: action === "hard-delete" ? "hard" : action === "restore" ? "restore" : "soft",
+          type: action === "hard-delete" 
+            ? "hard" 
+            : action === "restore" 
+            ? "restore" 
+            : action === "active"
+            ? "active"
+            : action === "unactive"
+            ? "unactive"
+            : "soft",
           bulkIds: ids,
           onConfirm: async () => {
             await executeBulkAction(action, ids, refresh, clearSelection, selectedRows)
@@ -289,18 +353,6 @@ export const UsersTableClient = ({
     },
     [executeBulkAction, setDeleteConfirm],
   )
-
-  const _buildInitialParams = useCallback(
-    (data: DataTableResult<UserRow>): AdminUsersListParams => ({
-      status: "active",
-      page: data.page,
-      limit: data.limit,
-      search: undefined,
-      filters: undefined,
-    }),
-    [],
-  )
-
 
   const viewModes = useMemo<ResourceViewMode<UserRow>[]>(() => {
     const modes: ResourceViewMode<UserRow>[] = [
@@ -327,13 +379,49 @@ export const UsersTableClient = ({
                   )}
                 </Flex>
                 <Flex align="center" gap={2} wrap>
+                  {canManage && (
+                    <>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        disabled={bulkState.isProcessing || selectedIds.length === 0}
+                        onClick={() => executeBulk("active", selectedIds, selectedRows, refresh, clearSelection)}
+                        className="whitespace-nowrap border-green-500 text-green-600 hover:bg-green-50 hover:text-green-700 gap-2"
+                      >
+                        <IconSize size="md">
+                          <CheckCircle />
+                        </IconSize>
+                        <span className="hidden sm:inline">
+                          {USER_LABELS.ACTIVE_SELECTED(selectedIds.length)}
+                        </span>
+                        <span className="sm:hidden">Kích hoạt</span>
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        disabled={bulkState.isProcessing || deletableRows.length === 0}
+                        onClick={() => executeBulk("unactive", deletableRows.map((r) => r.id), deletableRows, refresh, clearSelection)}
+                        className="whitespace-nowrap border-orange-500 text-orange-600 hover:bg-orange-50 hover:text-orange-700 gap-2"
+                      >
+                        <IconSize size="md">
+                          <XCircle />
+                        </IconSize>
+                        <span className="hidden sm:inline">
+                          {USER_LABELS.UNACTIVE_SELECTED(deletableRows.length)}
+                        </span>
+                        <span className="sm:hidden">Vô hiệu hóa</span>
+                      </Button>
+                    </>
+                  )}
                   <Button
                     type="button"
                     size="sm"
                     variant="destructive"
                     disabled={bulkState.isProcessing || deletableRows.length === 0}
                     onClick={() => executeBulk("delete", deletableRows.map((r) => r.id), deletableRows, refresh, clearSelection)}
-                    className="whitespace-nowrap"
+                    className="whitespace-nowrap gap-2"
                   >
                     <IconSize size="md">
                       <Trash2 />
@@ -350,17 +438,11 @@ export const UsersTableClient = ({
                       variant="destructive"
                       disabled={bulkState.isProcessing || deletableRows.length === 0}
                       onClick={() => executeBulk("hard-delete", deletableRows.map((r) => r.id), deletableRows, refresh, clearSelection)}
-                      className="whitespace-nowrap"
+                      className="whitespace-nowrap gap-2"
                     >
-                        <Flex align="center" gap={2}>
-                          <IconSize size="md">
-                            <AlertTriangle />
-                          </IconSize>
-                          <span className="hidden sm:inline">
-                            {USER_LABELS.HARD_DELETE_SELECTED(deletableRows.length)}
-                          </span>
-                          <span className="sm:hidden">Xóa vĩnh viễn</span>
-                        </Flex>
+                      <IconSize size="md">
+                        <AlertTriangle />
+                      </IconSize>
                       <span className="hidden sm:inline">
                         {USER_LABELS.HARD_DELETE_SELECTED(deletableRows.length)}
                       </span>
@@ -403,17 +485,15 @@ export const UsersTableClient = ({
                       variant="outline"
                       disabled={bulkState.isProcessing || selectedIds.length === 0}
                       onClick={() => executeBulk("restore", selectedIds, selectedRows, refresh, clearSelection)}
-                      className="whitespace-nowrap"
+                      className="whitespace-nowrap gap-2"
                     >
-                        <Flex align="center" gap={2}>
-                          <IconSize size="md">
-                            <RotateCcw />
-                          </IconSize>
-                          <span className="hidden sm:inline">
-                            {USER_LABELS.RESTORE_SELECTED(selectedIds.length)}
-                          </span>
-                          <span className="sm:hidden">Khôi phục</span>
-                        </Flex>
+                      <IconSize size="md">
+                        <RotateCcw />
+                      </IconSize>
+                      <span className="hidden sm:inline">
+                        {USER_LABELS.RESTORE_SELECTED(selectedIds.length)}
+                      </span>
+                      <span className="sm:hidden">Khôi phục</span>
                     </Button>
                   )}
                   {canManage && (
@@ -423,17 +503,11 @@ export const UsersTableClient = ({
                       variant="destructive"
                       disabled={bulkState.isProcessing || selectedIds.length === 0}
                       onClick={() => executeBulk("hard-delete", selectedIds, selectedRows, refresh, clearSelection)}
-                      className="whitespace-nowrap"
+                      className="whitespace-nowrap gap-2"
                     >
-                        <Flex align="center" gap={2}>
-                          <IconSize size="md">
-                            <AlertTriangle />
-                          </IconSize>
-                          <span className="hidden sm:inline">
-                            {USER_LABELS.HARD_DELETE_SELECTED(selectedIds.length)}
-                          </span>
-                          <span className="sm:hidden">Xóa vĩnh viễn</span>
-                        </Flex>
+                      <IconSize size="md">
+                        <AlertTriangle />
+                      </IconSize>
                       <span className="hidden sm:inline">
                         {USER_LABELS.HARD_DELETE_SELECTED(selectedIds.length)}
                       </span>
@@ -514,6 +588,16 @@ export const UsersTableClient = ({
         deleteConfirm.bulkIds?.length,
       )
     }
+    if (deleteConfirm.type === "active") {
+      return USER_CONFIRM_MESSAGES.ACTIVE_TITLE(
+        deleteConfirm.bulkIds?.length,
+      )
+    }
+    if (deleteConfirm.type === "unactive") {
+      return USER_CONFIRM_MESSAGES.UNACTIVE_TITLE(
+        deleteConfirm.bulkIds?.length,
+      )
+    }
     return USER_CONFIRM_MESSAGES.DELETE_TITLE(deleteConfirm.bulkIds?.length)
   }
 
@@ -529,6 +613,16 @@ export const UsersTableClient = ({
       return USER_CONFIRM_MESSAGES.RESTORE_DESCRIPTION(
         deleteConfirm.bulkIds?.length,
         deleteConfirm.row?.email,
+      )
+    }
+    if (deleteConfirm.type === "active") {
+      return USER_CONFIRM_MESSAGES.ACTIVE_DESCRIPTION(
+        deleteConfirm.bulkIds?.length,
+      )
+    }
+    if (deleteConfirm.type === "unactive") {
+      return USER_CONFIRM_MESSAGES.UNACTIVE_DESCRIPTION(
+        deleteConfirm.bulkIds?.length,
       )
     }
     return USER_CONFIRM_MESSAGES.DELETE_DESCRIPTION(
@@ -584,13 +678,25 @@ export const UsersTableClient = ({
           }}
           title={getDeleteConfirmTitle()}
           description={getDeleteConfirmDescription()}
-          variant={deleteConfirm.type === "hard" ? "destructive" : deleteConfirm.type === "restore" ? "default" : "destructive"}
+          variant={
+            deleteConfirm.type === "hard"
+              ? "destructive"
+              : deleteConfirm.type === "restore" || deleteConfirm.type === "active"
+                ? "default"
+                : deleteConfirm.type === "unactive"
+                  ? "default"
+                  : "destructive"
+          }
           confirmLabel={
             deleteConfirm.type === "hard"
               ? USER_CONFIRM_MESSAGES.HARD_DELETE_LABEL
               : deleteConfirm.type === "restore"
                 ? USER_CONFIRM_MESSAGES.RESTORE_LABEL
-                : USER_CONFIRM_MESSAGES.CONFIRM_LABEL
+                : deleteConfirm.type === "active"
+                  ? USER_CONFIRM_MESSAGES.ACTIVE_LABEL
+                  : deleteConfirm.type === "unactive"
+                    ? USER_CONFIRM_MESSAGES.UNACTIVE_LABEL
+                    : USER_CONFIRM_MESSAGES.CONFIRM_LABEL
           }
           cancelLabel={USER_CONFIRM_MESSAGES.CANCEL_LABEL}
           onConfirm={handleDeleteConfirm}

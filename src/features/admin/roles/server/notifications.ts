@@ -166,10 +166,11 @@ const formatRoleNames = (
 };
 
 export const notifySuperAdminsOfBulkRoleAction = async (
-  action: "delete" | "restore" | "hard-delete",
+  action: "delete" | "restore" | "hard-delete" | "update",
   actorId: string,
   count: number,
-  roles?: Array<{ displayName: string }>
+  roles?: Array<{ displayName: string }>,
+  changes?: { isActive: boolean }
 ) => {
   const startTime = Date.now();
 
@@ -180,9 +181,11 @@ export const notifySuperAdminsOfBulkRoleAction = async (
         ? "bulk-delete"
         : action === "restore"
         ? "bulk-restore"
+        : action === "update"
+        ? "bulk-update"
         : "bulk-hard-delete",
     step: "start",
-    details: { count, roleCount: roles?.length || 0, actorId },
+    details: { count, roleCount: roles?.length || 0, actorId, changes },
   });
 
   try {
@@ -198,27 +201,33 @@ export const notifySuperAdminsOfBulkRoleAction = async (
 
     switch (action) {
       case "delete":
-        title = `🗑️ ${count} Vai trò bị xóa`;
+        title = "🗑️ Đã xóa nhiều vai trò";
         description = namesText
           ? `${actorName} đã xóa ${count} vai trò: ${namesText}`
           : `${actorName} đã xóa ${count} vai trò`;
         break;
       case "restore":
-        title = `♻️ ${count} Vai trò được khôi phục`;
+        title = "♻️ Đã khôi phục nhiều vai trò";
         description = namesText
           ? `${actorName} đã khôi phục ${count} vai trò: ${namesText}`
           : `${actorName} đã khôi phục ${count} vai trò`;
         break;
       case "hard-delete":
-        title = `⚠️ ${count} Vai trò bị xóa vĩnh viễn`;
+        title = "⚠️ Đã xóa vĩnh viễn nhiều vai trò";
         description = namesText
           ? `${actorName} đã xóa vĩnh viễn ${count} vai trò: ${namesText}`
           : `${actorName} đã xóa vĩnh viễn ${count} vai trò`;
         break;
+      case "update":
+        const statusText = changes?.isActive ? "kích hoạt" : "vô hiệu hóa";
+        title = `✏️ Đã ${statusText} nhiều vai trò`;
+        description = namesText
+          ? `${actorName} đã ${statusText} ${count} vai trò: ${namesText}`
+          : `${actorName} đã ${statusText} ${count} vai trò`;
+        break;
     }
 
-    const actionUrl = `/admin/roles`;
-
+    const actionUrl = "/admin/roles";
     const result = await createNotificationForAllAdmins(
       title,
       description,
@@ -228,14 +237,13 @@ export const notifySuperAdminsOfBulkRoleAction = async (
         type: `role_bulk_${action}`,
         actorId,
         actorName: actor?.name || actor?.email,
-        actorEmail: actor?.email,
         count,
-        roleNames: roles?.map((r) => r.displayName) || [],
+        roles: roles?.map((r) => r.displayName),
+        changes,
         timestamp: new Date().toISOString(),
       }
     );
 
-    // Emit socket event nếu có socket server
     if (result.count > 0) {
       await emitNotificationToAllAdminsAfterCreate(
         title,
@@ -246,9 +254,9 @@ export const notifySuperAdminsOfBulkRoleAction = async (
           type: `role_bulk_${action}`,
           actorId,
           actorName: actor?.name || actor?.email,
-          actorEmail: actor?.email,
           count,
-          roleNames: roles?.map((r) => r.displayName) || [],
+          roles: roles?.map((r) => r.displayName),
+          changes,
           timestamp: new Date().toISOString(),
         }
       );

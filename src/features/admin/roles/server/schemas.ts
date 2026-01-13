@@ -42,7 +42,7 @@ export const UpdateRoleSchema = z.object({
 })
 
 export const BulkRoleActionSchema = z.object({
-  action: z.enum(["delete", "restore", "hard-delete"]),
+  action: z.enum(["delete", "restore", "hard-delete", "active", "unactive"]),
   ids: z.array(z.string().cuid("ID không hợp lệ")).min(1, "Danh sách ID không được trống"),
 })
 

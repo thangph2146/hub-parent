@@ -73,7 +73,7 @@ export const SelectCombobox = <T,>({
         paddingY={2}
         className={cn(
           error && "border-destructive",
-          "border-muted-foreground/20 cursor-default bg-muted/50 !opacity-100"
+          "border-muted-foreground/20 cursor-default bg-muted !opacity-100"
         )}
       >
         <TypographySpanSmall className="truncate !opacity-100">
@@ -97,7 +97,7 @@ export const SelectCombobox = <T,>({
             "w-full justify-between h-10 overflow-hidden",
             !fieldValue && "text-muted-foreground",
             error && "border-destructive",
-            isDisabled && "!opacity-100"
+            isDisabled && "!opacity-100 bg-muted border-muted-foreground/10"
           )}
           disabled={isDisabled}
         >

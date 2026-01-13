@@ -123,7 +123,7 @@ export const MultipleSelectCombobox = <T,>({
         paddingY={2}
         className={cn(
           error && "border-destructive",
-          "border-muted-foreground/20 cursor-default bg-muted/50 !opacity-100"
+          "border-muted-foreground/20 cursor-default bg-muted !opacity-100"
         )}
       >
         {selectedOptions.length > 0 ? (
@@ -157,7 +157,7 @@ export const MultipleSelectCombobox = <T,>({
             "w-full justify-between h-auto min-h-10 px-3 py-2",
             selectedValues.length === 0 && "text-muted-foreground",
             error && "border-destructive",
-            isDisabled && "!opacity-100"
+            isDisabled && "!opacity-100 bg-muted/50 border-muted-foreground/10"
           )}
           disabled={isDisabled}
         >

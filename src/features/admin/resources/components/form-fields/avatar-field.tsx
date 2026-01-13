@@ -116,8 +116,8 @@ export const AvatarField = ({
                   className={cn(
                     "w-full",
                     error && "border-destructive",
-                    isReadOnly && "!opacity-100 disabled:!opacity-100 [&:read-only]:!opacity-100 cursor-default bg-muted/50 border-muted-foreground/20",
-                    isDisabled && !isReadOnly && "!opacity-100"
+                    isReadOnly && "!opacity-100 disabled:!opacity-100 [&:read-only]:!opacity-100 cursor-default bg-muted border-muted-foreground/20",
+                    isDisabled && !isReadOnly && "!opacity-100 bg-muted/50 border-muted-foreground/10"
                   )}
                   disabled={isDisabled && !isReadOnly}
                   readOnly={isReadOnly}

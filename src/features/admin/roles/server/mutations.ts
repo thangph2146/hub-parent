@@ -877,3 +877,118 @@ export const bulkHardDeleteRoles = async (
     affected: result.count,
   };
 };
+
+export const bulkActiveRoles = async (
+  ctx: AuthContext,
+  ids: string[]
+): Promise<BulkActionResult> => {
+  const startTime = Date.now();
+  ensurePermission(ctx, PERMISSIONS.ROLES_UPDATE, PERMISSIONS.ROLES_MANAGE);
+
+  const roles = await prisma.role.findMany({
+    where: { id: { in: ids }, deletedAt: null },
+    select: { id: true, name: true, displayName: true, isActive: true },
+  });
+
+  logActionFlow("roles", "bulk-active", "start", { requestedCount: ids.length, foundCount: roles.length });
+
+  const filteredIds = roles.filter(r => !r.isActive).map(r => r.id);
+
+  if (filteredIds.length === 0) {
+    let errorMessage = "Không có vai trò nào cần kích hoạt";
+    if (roles.length === 0) errorMessage = "Không tìm thấy vai trò nào hợp lệ";
+    else if (roles.every(r => r.isActive)) errorMessage = "Tất cả vai trò đã được kích hoạt";
+
+    logActionFlow("roles", "bulk-active", "error", { requestedCount: ids.length, error: errorMessage }, startTime);
+    throw new ApplicationError(errorMessage, 400);
+  }
+
+  const result = await prisma.role.updateMany({
+    where: { id: { in: filteredIds }, deletedAt: null },
+    data: { isActive: true },
+  });
+
+  if (result.count > 0) {
+    await logTableStatusAfterMutation({
+      resource: "roles",
+      action: "bulk-active",
+      prismaModel: prisma.role,
+      affectedIds: filteredIds,
+      affectedCount: result.count,
+    });
+
+    const affectedRoles = roles.filter(r => filteredIds.includes(r.id));
+    await notifySuperAdminsOfBulkRoleAction("update", ctx.actorId, result.count, affectedRoles);
+    
+    const emitPromises = filteredIds.map(id => emitRoleUpsert(id, "active").catch(() => null));
+    await Promise.allSettled(emitPromises);
+
+    logActionFlow("roles", "bulk-active", "success", { requestedCount: ids.length, affectedCount: result.count }, startTime);
+  }
+
+  return {
+    success: true,
+    message: `Đã kích hoạt ${result.count} vai trò`,
+    affected: result.count,
+  };
+};
+
+export const bulkUnactiveRoles = async (
+  ctx: AuthContext,
+  ids: string[]
+): Promise<BulkActionResult> => {
+  const startTime = Date.now();
+  ensurePermission(ctx, PERMISSIONS.ROLES_UPDATE, PERMISSIONS.ROLES_MANAGE);
+
+  const roles = await prisma.role.findMany({
+    where: { id: { in: ids }, deletedAt: null },
+    select: { id: true, name: true, displayName: true, isActive: true },
+  });
+
+  logActionFlow("roles", "bulk-unactive", "start", { requestedCount: ids.length, foundCount: roles.length });
+
+  // Protect super_admin from being deactivated
+  const superAdminRole = roles.find(r => r.name === "super_admin" && ids.includes(r.id));
+
+  const filteredIds = roles
+    .filter(r => r.isActive && r.name !== "super_admin")
+    .map(r => r.id);
+
+  if (filteredIds.length === 0) {
+    let errorMessage = "Không có vai trò nào có thể hủy kích hoạt";
+    if (superAdminRole && ids.length === 1) errorMessage = "Không thể hủy kích hoạt vai trò super_admin";
+    else if (roles.every(r => !r.isActive)) errorMessage = "Tất cả vai trò đã bị hủy kích hoạt";
+
+    logActionFlow("roles", "bulk-unactive", "error", { requestedCount: ids.length, error: errorMessage }, startTime);
+    throw new ApplicationError(errorMessage, 400);
+  }
+
+  const result = await prisma.role.updateMany({
+    where: { id: { in: filteredIds }, deletedAt: null },
+    data: { isActive: false },
+  });
+
+  if (result.count > 0) {
+    await logTableStatusAfterMutation({
+      resource: "roles",
+      action: "bulk-unactive",
+      prismaModel: prisma.role,
+      affectedIds: filteredIds,
+      affectedCount: result.count,
+    });
+
+    const affectedRoles = roles.filter(r => filteredIds.includes(r.id));
+    await notifySuperAdminsOfBulkRoleAction("update", ctx.actorId, result.count, affectedRoles);
+    
+    const emitPromises = filteredIds.map(id => emitRoleUpsert(id, "active").catch(() => null));
+    await Promise.allSettled(emitPromises);
+
+    logActionFlow("roles", "bulk-unactive", "success", { requestedCount: ids.length, affectedCount: result.count }, startTime);
+  }
+
+  return {
+    success: true,
+    message: `Đã hủy kích hoạt ${result.count} vai trò`,
+    affected: result.count,
+  };
+};

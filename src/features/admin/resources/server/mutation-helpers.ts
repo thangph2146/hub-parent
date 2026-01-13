@@ -18,7 +18,7 @@ export const ensurePermission = (ctx: AuthContext, ...required: Permission[]): v
 
 export const logTableStatusAfterMutation = async (options: {
   resource: string
-  action: "delete" | "restore" | "bulk-delete" | "bulk-restore"
+  action: "delete" | "restore" | "bulk-delete" | "bulk-restore" | "bulk-active" | "bulk-unactive"
   prismaModel: {
     count: (args?: { where?: { deletedAt?: Date | null | { not?: Date | null } } }) => Promise<number>
   }

@@ -61,7 +61,7 @@ export const DateField = <T,>({
         aria-invalid={error ? "true" : "false"}
         aria-describedby={errorId || field.description ? `${fieldId}-description` : undefined}
         className={cn(
-          isReadOnly && "pointer-events-none opacity-50"
+          isReadOnly && "!opacity-100 cursor-default"
         )}
       >
         <DatePicker
@@ -71,8 +71,10 @@ export const DateField = <T,>({
           disabled={isDisabled || isReadOnly}
           enableTime={enableTime}
           className={cn(
+            "h-10",
             error && "border-destructive",
-            isReadOnly && "cursor-default"
+            isReadOnly && "!opacity-100 cursor-default bg-muted/50 border-muted-foreground/20",
+            isDisabled && !isReadOnly && "!opacity-100 bg-muted/50 border-muted-foreground/10"
           )}
         />
       </div>

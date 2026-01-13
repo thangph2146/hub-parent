@@ -1,6 +1,6 @@
 /**
  * API Route: POST /api/admin/users/bulk
- * Body: { action: "delete" | "restore" | "hard-delete", ids: string[] }
+ * Body: { action: "delete" | "restore" | "hard-delete" | "active" | "unactive", ids: string[] }
  */
 import { NextRequest } from "next/server"
 import {
@@ -8,6 +8,8 @@ import {
   bulkSoftDeleteUsers,
   bulkRestoreUsers,
   bulkHardDeleteUsers,
+  bulkActiveUsers,
+  bulkUnactiveUsers,
 } from "@/features/admin/users/server/mutations"
 import { PERMISSIONS } from "@/permissions"
 import { createPostRoute } from "@/lib"
@@ -16,7 +18,7 @@ import { createErrorResponse, createSuccessResponse } from "@/lib"
 import { validateArray, validateEnum, validateID } from "@/utils"
 import { parseRequestBody, createAuthContext, handleApiError } from "@/lib"
 
-type BulkAction = "delete" | "restore" | "hard-delete"
+type BulkAction = "delete" | "restore" | "hard-delete" | "active" | "unactive"
 
 async function bulkUsersHandler(req: NextRequest, context: ApiRouteContext) {
   try {
@@ -24,7 +26,7 @@ async function bulkUsersHandler(req: NextRequest, context: ApiRouteContext) {
 
     const { action, ids } = body as { action?: BulkAction; ids?: unknown }
 
-    const actionValidation = validateEnum(action, ["delete", "restore", "hard-delete"] as const, "Action")
+    const actionValidation = validateEnum(action, ["delete", "restore", "hard-delete", "active", "unactive"] as const, "Action")
     if (!actionValidation.valid) {
       return createErrorResponse(actionValidation.error, { status: 400 })
     }
@@ -51,6 +53,8 @@ async function bulkUsersHandler(req: NextRequest, context: ApiRouteContext) {
       delete: bulkSoftDeleteUsers,
       restore: bulkRestoreUsers,
       "hard-delete": bulkHardDeleteUsers,
+      active: bulkActiveUsers,
+      unactive: bulkUnactiveUsers,
     }
 
     const result = await actions[actionValidation.value!](ctx, idsValidation.value!)

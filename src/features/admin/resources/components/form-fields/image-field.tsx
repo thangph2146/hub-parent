@@ -78,8 +78,8 @@ export const ImageField = ({
             className={cn(
               "flex-1 min-w-0 h-9",
               error && "border-destructive",
-              isReadOnly && "!opacity-100 disabled:!opacity-100 [&:read-only]:!opacity-100 cursor-default bg-muted/50 border-muted-foreground/20",
-              disabled && !isReadOnly && "!opacity-100"
+              isReadOnly && "!opacity-100 disabled:!opacity-100 [&:read-only]:!opacity-100 cursor-default bg-muted border-muted-foreground/20",
+              disabled && !isReadOnly && "!opacity-100 bg-muted/50 border-muted-foreground/10"
             )}
             disabled={disabled && !isReadOnly}
             readOnly={isReadOnly}

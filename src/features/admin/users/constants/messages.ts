@@ -56,6 +56,8 @@ export const USER_LABELS = {
   DELETE: "Xóa",
   RESTORE: "Khôi phục",
   HARD_DELETE: "Xóa vĩnh viễn",
+  ACTIVATE: "Kích hoạt",
+  DEACTIVATE: "Vô hiệu hóa",
   CLEAR_SELECTION: "Bỏ chọn",
   TOGGLE_ACTIVE: "Thay đổi trạng thái",
 
@@ -79,6 +81,8 @@ export const USER_LABELS = {
   DELETE_SELECTED: (count: number) => `Xóa đã chọn (${count})`,
   RESTORE_SELECTED: (count: number) => `Khôi phục (${count})`,
   HARD_DELETE_SELECTED: (count: number) => `Xóa vĩnh viễn (${count})`,
+  ACTIVE_SELECTED: (count: number) => `Kích hoạt (${count})`,
+  UNACTIVE_SELECTED: (count: number) => `Vô hiệu hóa (${count})`,
 
   // Titles
   MANAGE_USERS: "Quản lý người dùng",
@@ -98,8 +102,19 @@ export const USER_CONFIRM_MESSAGES = {
       ? `Bạn có chắc chắn muốn khôi phục ${count} người dùng? Họ sẽ được chuyển về trạng thái hoạt động.`
       : `Bạn có chắc chắn muốn khôi phục người dùng "${email || ""}"? Người dùng sẽ được chuyển về trạng thái hoạt động.`,
 
-  HARD_DELETE_TITLE: (count?: number) =>
-    count ? `Xóa vĩnh viễn ${count} người dùng?` : "Xóa vĩnh viễn người dùng?",
+  ACTIVE_TITLE: (count?: number) => count ? `Kích hoạt ${count} người dùng?` : "Kích hoạt người dùng?",
+  ACTIVE_DESCRIPTION: (count?: number) =>
+    count
+      ? `Bạn có chắc chắn muốn kích hoạt ${count} người dùng đã chọn?`
+      : "Bạn có chắc chắn muốn kích hoạt người dùng này?",
+
+  UNACTIVE_TITLE: (count?: number) => count ? `Vô hiệu hóa ${count} người dùng?` : "Vô hiệu hóa người dùng?",
+  UNACTIVE_DESCRIPTION: (count?: number) =>
+    count
+      ? `Bạn có chắc chắn muốn vô hiệu hóa ${count} người dùng đã chọn?`
+      : "Bạn có chắc chắn muốn vô hiệu hóa người dùng này?",
+
+  HARD_DELETE_TITLE: (count?: number) => count ? `Xóa vĩnh viễn ${count} người dùng?` : "Xóa vĩnh viễn người dùng?",
   HARD_DELETE_DESCRIPTION: (count?: number, email?: string) =>
     count
       ? `Hành động này sẽ xóa vĩnh viễn ${count} người dùng khỏi hệ thống. Dữ liệu sẽ không thể khôi phục. Bạn có chắc chắn muốn tiếp tục?`
@@ -108,6 +123,8 @@ export const USER_CONFIRM_MESSAGES = {
   CONFIRM_LABEL: "Xóa",
   RESTORE_LABEL: "Khôi phục",
   HARD_DELETE_LABEL: "Xóa vĩnh viễn",
+  ACTIVE_LABEL: "Kích hoạt",
+  UNACTIVE_LABEL: "Vô hiệu hóa",
   CANCEL_LABEL: "Hủy",
 } as const
 

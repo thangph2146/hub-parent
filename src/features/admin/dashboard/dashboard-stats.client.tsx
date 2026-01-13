@@ -1024,7 +1024,7 @@ export const DashboardStatsClient = ({ stats }: DashboardStatsClientProps) => {
   if (!isMounted) {
     return (
       <Flex direction="col" gap={4} flex="1" padding="responsive-lg" fullWidth>
-        <Flex className="h-64 bg-muted/50 rounded-xl animate-pulse" fullWidth />
+        <Flex className="h-64 bg-muted rounded-xl animate-pulse" fullWidth />
       </Flex>
     );
   }
@@ -1178,7 +1178,7 @@ export const DashboardStatsClient = ({ stats }: DashboardStatsClientProps) => {
                               {availableResources.map((resource) => (
                                 <div
                                   key={resource.key}
-                                  className="flex items-center gap-2.5 cursor-pointer hover:bg-muted/50 rounded-md p-2 -mx-2 transition-colors"
+                                  className="flex items-center gap-2.5 cursor-pointer hover:bg-muted rounded-md p-2 -mx-2 transition-colors"
                                   onClick={() => toggleResource(resource.key)}
                                 >
                                   <Checkbox
@@ -1214,7 +1214,7 @@ export const DashboardStatsClient = ({ stats }: DashboardStatsClientProps) => {
                           </span>
                         )}
                       </div>
-                      <div className="inline-flex items-center gap-1 rounded-lg border bg-muted/50 p-1 shadow-sm">
+                      <div className="inline-flex items-center gap-1 rounded-lg border bg-muted p-1 shadow-sm">
                         <Button
                           variant={chartType === "line" ? "default" : "ghost"}
                           size="sm"
@@ -1324,7 +1324,7 @@ export const DashboardStatsClient = ({ stats }: DashboardStatsClientProps) => {
                                       animate={{ opacity: 1, x: 0 }}
                                       exit={{ opacity: 0, x: -10 }}
                                       transition={{ delay: index * 0.03 }}
-                                      className="group relative p-3 rounded-lg bg-muted/30 hover:bg-muted/50 border border-transparent hover:border-border/50 transition-all cursor-pointer"
+                                      className="group relative p-3 rounded-lg bg-muted/30 hover:bg-muted border border-transparent hover:border-border/50 transition-all cursor-pointer"
                                     >
                                       <div className="flex items-center gap-3">
                                         <div className="flex items-center gap-2.5 flex-1 min-w-0">

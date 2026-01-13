@@ -47,7 +47,7 @@ export function Editor({
       ref={editorRef}
       className={cn(
         "bg-background rounded-lg shadow w-full",
-        readOnly && "border-none shadow-none"
+        readOnly && "border-none shadow-none bg-muted/50"
       )}
       id="editor-x"
     >

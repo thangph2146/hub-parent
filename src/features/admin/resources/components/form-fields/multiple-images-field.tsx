@@ -154,7 +154,7 @@ const ImageItem = ({
           disabled={disabled && !isReadOnly}
           readOnly={isReadOnly}
           className={cn(
-            isReadOnly && "!opacity-100 disabled:!opacity-100 [&:read-only]:!opacity-100 cursor-default bg-muted/50 border-muted-foreground/20",
+            isReadOnly && "!opacity-100 disabled:!opacity-100 [&:read-only]:!opacity-100 cursor-default bg-muted border-muted-foreground/20",
             disabled && !isReadOnly && "!opacity-100"
           )}
         />
@@ -397,7 +397,10 @@ export const MultipleImagesField = ({ value, onChange, error, disabled = false, 
                     }
                   }}
                   disabled={disabled}
-                  className="flex-1"
+                  className={cn(
+                    "flex-1",
+                    disabled && "!opacity-100 bg-muted border-muted-foreground/10"
+                  )}
                 />
                 <Button
                   type="button"

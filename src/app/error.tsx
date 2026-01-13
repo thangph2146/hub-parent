@@ -104,7 +104,7 @@ export default function Error({ error, reset }: ErrorProps) {
 
             <motion.div
               variants={itemVariants}
-              className="rounded-lg bg-muted/50 p-4 border border-destructive/20"
+              className="rounded-lg bg-muted p-4 border border-destructive/20"
             >
               <TypographyPMuted className="text-center">
                 Vui lòng thử lại hoặc quay về trang chủ. Nếu vấn đề vẫn tiếp tục,

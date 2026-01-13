@@ -528,7 +528,7 @@ export function PublicHeader() {
                                 key={link.href}
                                 link={link}
                                 onClose={() => setOpen(false)}
-                                iconBg="bg-muted/50 dark:bg-muted/30"
+                                iconBg="bg-muted dark:bg-muted/30"
                               />
                             ))}
                           </>

@@ -55,8 +55,8 @@ export const TextField = <T,>({
           className={cn(
             error && "border-destructive",
             isPassword && "pr-10",
-            isReadOnly && "!opacity-100 disabled:!opacity-100 [&:read-only]:!opacity-100 cursor-default bg-muted/50 border-muted-foreground/20",
-            isDisabled && !isReadOnly && "!opacity-100"
+            isReadOnly && "!opacity-100 disabled:!opacity-100 [&:read-only]:!opacity-100 cursor-default bg-muted border-muted-foreground/20",
+            isDisabled && !isReadOnly && "!opacity-100 bg-muted border-muted-foreground/10"
           )}
         />
         {isPassword && (
