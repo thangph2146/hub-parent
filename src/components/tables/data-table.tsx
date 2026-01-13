@@ -11,7 +11,7 @@ import {
     useTransition,
     type ReactNode,
 } from "react"
-import { ChevronLeft, ChevronRight, Eye, EyeOff, Loader2, Info } from "lucide-react"
+import { ChevronLeft, ChevronRight, Eye, EyeOff, Info } from "lucide-react"
 import { cn } from "@/utils"
 import { Button } from "@/components/ui/button"
 import {
@@ -30,7 +30,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
-import { TypographySpanSmallMuted, TypographySpanSmall, TypographyPMuted, IconSize } from "@/components/ui/typography"
+import { TypographySpanSmallMuted, TypographySpanSmall, IconSize } from "@/components/ui/typography"
 import { Flex } from "@/components/ui/flex"
 import { useDebouncedCallback } from "@/hooks"
 import { ColumnFilterControl } from "./filter-controls/column-filter-control"
@@ -821,13 +821,13 @@ function TableBodyContent<T extends object>({
     }, [processingIds])
 
     // Track processing IDs to avoid flickering during transition
-    const [persistedProcessingIdsSet, setPersistedProcessingIdsSet] = useState<Set<string>>(new Set())
+    const [persistedProcessingIdsSet, setPersistedProcessingIdsSet] = useState<Set<string>>(processingIdsSet)
     
-    useEffect(() => {
-        if (!isPending) {
-            setPersistedProcessingIdsSet(processingIdsSet)
-        }
-    }, [processingIdsSet, isPending])
+    // Update persisted set during render if not pending and it changed
+    // This is the recommended pattern for deriving state from props/other state
+    if (!isPending && persistedProcessingIdsSet !== processingIdsSet) {
+        setPersistedProcessingIdsSet(processingIdsSet)
+    }
 
     const effectiveProcessingIdsSet = useMemo(() => {
         if (!isPending) return processingIdsSet
