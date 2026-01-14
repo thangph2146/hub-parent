@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import dynamic from "next/dynamic";
 import { ReactNode, useRef } from "react";
 import type { ContentCardButton } from "./content-card";
 import { Flex } from "@/components/ui/flex";
@@ -8,10 +9,14 @@ import { cn } from "@/utils";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { FlipWords } from "@/components/ui/flip-words";
 import { TypographyH1, TypographyP } from "@/components/ui/typography";
 import { ScrollIndicator } from "./scroll-indicator";
 import { useSectionHeight } from "@/hooks";
+
+// Dynamic import FlipWords to reduce initial bundle size (framer-motion)
+const FlipWords = dynamic(() => import("@/components/ui/flip-words").then(mod => mod.FlipWords), {
+  ssr: true,
+});
 
 export type HeroButton = ContentCardButton;
 
@@ -74,8 +79,8 @@ export const HeroSection = ({
           className="object-cover object-[center_bottom]"
           priority
           fetchPriority="high"
-          quality={75}
-          sizes="100vw"
+          quality={60}
+          sizes="(max-width: 768px) 100vw, 100vw"
         />
       </div>
 

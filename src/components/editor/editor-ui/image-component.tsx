@@ -61,10 +61,17 @@ import {
   InsertImagePayload,
 } from "@/components/editor/plugins/images-plugin"
 import { Logo } from "@/components/icons/logo"
+import { usePriorityImage } from "@/components/editor/context/priority-image-context"
 
-// Cache for image dimensions to prevent layout shift on re-renders
-const imageCache = new Map<string, { width: number; height: number }>()
+// Cache for image dimensions and aspect ratios to prevent layout shift
+const imageCache = new Map<string, { width: number; height: number; ratio: number }>()
 const RESIZE_HANDLE_HIDE_DELAY = 200
+
+// Default aspect ratio for placeholders (16:9 is common for web content)
+const DEFAULT_ASPECT_RATIO = 16 / 9
+const DEFAULT_WIDTH = 800
+const DEFAULT_HEIGHT = Math.round(DEFAULT_WIDTH / DEFAULT_ASPECT_RATIO)
+const DEFAULT_DIMENSIONS = { width: DEFAULT_WIDTH, height: DEFAULT_HEIGHT, ratio: DEFAULT_ASPECT_RATIO }
 
 type TimeoutHandle = ReturnType<typeof setTimeout>
 
@@ -86,12 +93,6 @@ interface ImageComponentProps {
   src: string
   width: DimensionValue
 }
-
-/**
- * REMOVED useSuspenseImage: 
- * This was causing massive performance issues by pre-loading raw unoptimized images 
- * via `new window.Image()`. Next.js Image handles optimization and lazy loading much better.
- */
 
 function LazyImage({
   altText,
@@ -118,7 +119,6 @@ function LazyImage({
   const getNumericValue = (value: DimensionValue): number | undefined => {
     if (typeof value === "number") return value
     if (typeof value === "string") {
-      // Handle "inherit" case - will be set via style, not attributes
       if (value === "inherit") return undefined
       const num = parseInt((value as string).replace("px", ""), 10)
       return isNaN(num) ? undefined : num
@@ -129,68 +129,43 @@ function LazyImage({
   const widthAttr = getNumericValue(width)
   const heightAttr = getNumericValue(height)
   
-  // Get natural dimensions from cache if available
   const cachedDims = imageCache.get(src)
-  
-  // Ensure default values are consistent between server and client
-  const DEFAULT_DIMENSIONS = { width: 1200, height: 800 } // Larger default for high-res screens
-  const [actualDimensions, setActualDimensions] = useState<{ width?: number; height?: number }>(
+  const [actualDimensions, setActualDimensions] = useState<{ width?: number; height?: number; ratio?: number }>(
     cachedDims || DEFAULT_DIMENSIONS
   )
   
-  // Use a wrapper ref to find the actual img element from Next.js Image
   const wrapperRef = useRef<HTMLDivElement>(null)
   
   useEffect(() => {
-    // Next.js Image renders an img element inside, find it and assign to imageRef
     if (wrapperRef.current) {
       const imgElement = wrapperRef.current.querySelector("img") as HTMLImageElement | null
       if (imgElement) {
         imageRef.current = imgElement
-        // Update dimensions if needed
         if ((width === "inherit" || height === "inherit") && imgElement.complete && imgElement.naturalWidth && imgElement.naturalHeight) {
+          const ratio = imgElement.naturalWidth / imgElement.naturalHeight
           setActualDimensions({
             width: imgElement.naturalWidth,
             height: imgElement.naturalHeight,
+            ratio,
+          })
+          imageCache.set(src, {
+            width: imgElement.naturalWidth,
+            height: imgElement.naturalHeight,
+            ratio,
           })
         }
       }
     }
-  }, [width, height, imageRef])
+  }, [width, height, imageRef, src])
   
-  useEffect(() => {
-    // Keep actualDimensions up to date if they weren't available initially for some reason
-    // or if we want to confirm them from the ref
-    if ((width === "inherit" || height === "inherit") && imageRef.current) {
-      const img = imageRef.current
-      if (img.complete && img.naturalWidth && img.naturalHeight) {
-        setActualDimensions({
-          width: img.naturalWidth,
-          height: img.naturalHeight,
-        })
-      }
-    }
-  }, [width, height, imageRef])
-  
-  // Calculate responsive sizes for mobile optimization
   const getSizes = (): string => {
     if (typeof widthAttr === "number" && widthAttr > 0) {
-      // For images with explicit width, use responsive sizes
-      if (widthAttr <= 640) {
-        return "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-      }
+      if (widthAttr <= 640) return "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
       return "(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 992px"
     }
-    // Default responsive sizes for unknown dimensions
     return "(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 992px"
   }
 
-  // Next.js Image requires width/height. Use dimensions from cache/state if inherited.
-  // Đảm bảo giá trị mặc định nhất quán giữa server và client để tránh hydration mismatch
-  // Sử dụng giá trị mặc định hợp lý nếu không có dimensions
-  const DEFAULT_WIDTH = 800
-  const DEFAULT_HEIGHT = 600
-  
   const renderWidth = widthAttr || actualDimensions.width || DEFAULT_WIDTH
   const renderHeight = heightAttr || actualDimensions.height || DEFAULT_HEIGHT
 
@@ -203,25 +178,25 @@ function LazyImage({
         width={renderWidth}
         height={renderHeight}
         sizes={getSizes()}
+        quality={60}
         style={{
           height: height === "inherit" ? "auto" : height,
           width: width === "inherit" ? "100%" : width,
-          maxWidth: "100%", // Apply 100% maxWidth to ensure responsiveness
-          // Note: original code had strict maxWidth handling elsewhere, but NextImage needs control
+          maxWidth: "100%",
         }}
         onError={onError}
         draggable={false}
         priority={fetchPriority === "high"}
         decoding="async"
         onLoad={(e) => {
-          // Update ref and dimensions when image loads
           const img = e.currentTarget
           if (img) {
             imageRef.current = img
-            // Cache dimensions to prevent layout shift on future renders of this same src
+            const ratio = img.naturalWidth / img.naturalHeight
             imageCache.set(src, {
               width: img.naturalWidth,
               height: img.naturalHeight,
+              ratio,
             })
             if (width === "inherit" || height === "inherit") {
               setActualDimensions({
@@ -244,6 +219,7 @@ function useResponsiveImageDimensions({
   isResizing,
   fullWidth,
   maxWidthLimit,
+  src,
 }: {
   editor: LexicalEditor
   height: DimensionValue
@@ -252,6 +228,7 @@ function useResponsiveImageDimensions({
   isResizing: boolean
   fullWidth?: boolean
   maxWidthLimit?: number
+  src: string
 }) {
   const [dimensions, setDimensions] = useState<{
     width: DimensionValue
@@ -327,18 +304,21 @@ function useResponsiveImageDimensions({
         return
       }
 
+      const cached = imageCache.get(src)
       const baseWidth =
         typeof width === "number"
           ? width
-          : image.naturalWidth || image.getBoundingClientRect().width || containerWidth
+          : image.naturalWidth || cached?.width || image.getBoundingClientRect().width || containerWidth
 
       let baseHeight: DimensionValue
       if (typeof height === "number") {
         baseHeight = height
       } else if (image.naturalHeight > 0) {
         baseHeight = image.naturalHeight
+      } else if (cached?.height) {
+        baseHeight = cached.height
       } else {
-        const ratio = getImageAspectRatio(image)
+        const ratio = cached?.ratio || getImageAspectRatio(image) || DEFAULT_ASPECT_RATIO
         baseHeight = ratio > 0 ? Math.round(baseWidth / ratio) : "inherit"
       }
 
@@ -351,10 +331,10 @@ function useResponsiveImageDimensions({
           const ratio =
             typeof baseWidth === "number" && baseWidth > 0
               ? baseWidth / baseHeight
-              : getImageAspectRatio(image)
+              : cached?.ratio || getImageAspectRatio(image) || DEFAULT_ASPECT_RATIO
           nextHeight = Math.max(Math.round(containerWidth / ratio), 1)
         } else if (baseHeight === "inherit") {
-          const ratio = getImageAspectRatio(image)
+          const ratio = cached?.ratio || getImageAspectRatio(image) || DEFAULT_ASPECT_RATIO
           nextHeight = ratio > 0 ? Math.max(Math.round(containerWidth / ratio), 1) : baseHeight
         }
       } else if (
@@ -367,7 +347,7 @@ function useResponsiveImageDimensions({
         if (typeof baseHeight === "number") {
           nextHeight = Math.max(Math.round(baseHeight * scale), 1)
         } else if (baseHeight === "inherit") {
-          const ratio = getImageAspectRatio(image)
+          const ratio = cached?.ratio || getImageAspectRatio(image) || DEFAULT_ASPECT_RATIO
           nextHeight =
             ratio > 0 ? Math.max(Math.round(containerWidth / ratio), 1) : baseHeight
         }
@@ -408,6 +388,7 @@ function useResponsiveImageDimensions({
     width,
     fullWidth,
     maxWidthLimit,
+    src,
   ])
 
   return dimensions
@@ -733,8 +714,6 @@ function useImageNodeInteractions({
 }
 
 function BrokenImage(): JSX.Element {
-  // Create a 1x1 transparent pixel as data URL for Next.js Image
-  // This is a valid image source that Next.js Image can handle
   const transparentPixel = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1' height='1'%3E%3C/svg%3E"
   
   return (
@@ -762,14 +741,12 @@ function ImagePlaceholder({
   width: DimensionValue
   height: DimensionValue
 }): JSX.Element {
-  // Giới hạn kích thước container để tránh quá lớn
   const MAX_CONTAINER_WIDTH = 800
   const MAX_CONTAINER_HEIGHT = 600
   
   let containerWidth = typeof width === "number" ? width : 200
   let containerHeight = typeof height === "number" ? height : 200
   
-  // Giới hạn kích thước tối đa và giữ tỷ lệ
   if (containerWidth > MAX_CONTAINER_WIDTH) {
     const scale = MAX_CONTAINER_WIDTH / containerWidth
     containerWidth = MAX_CONTAINER_WIDTH
@@ -782,12 +759,7 @@ function ImagePlaceholder({
     containerWidth = Math.max(200, containerWidth * scale)
   }
   
-  // Tính kích thước Logo dựa trên container
-  // Sử dụng minDimension để đảm bảo Logo không vượt quá container
   const minDimension = Math.min(containerWidth, containerHeight)
-  
-  // Logo sẽ chiếm 40-50% của kích thước nhỏ nhất để nổi bật hơn trong container lớn
-  // Tối thiểu 150px, tối đa 500px để phù hợp với cả container nhỏ và lớn
   const logoSize = Math.max(150, Math.min(500, minDimension * 0.45))
   
   return (
@@ -810,7 +782,6 @@ function ImagePlaceholder({
             height: logoSize,
           }}
         />
-        {/* Optional: Add a small ping animation for more visual feedback */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <div 
             className="w-2 h-2 bg-gray-400 rounded-full animate-ping" 
@@ -854,8 +825,6 @@ function CaptionComposer({
   )
 }
 
-import { usePriorityImage } from "@/components/editor/context/priority-image-context"
-
 export default function ImageComponent({
   altText,
   caption,
@@ -879,7 +848,6 @@ export default function ImageComponent({
   const isEditable = useLexicalEditable()
   const editorContainer = useEditorContainer()
   
-  // Check if this is the priority image (LCP candidate) from context
   const prioritySrc = usePriorityImage()
   const isPriority = src === prioritySrc
   
@@ -901,6 +869,7 @@ export default function ImageComponent({
     isResizing,
     fullWidth,
     maxWidthLimit: editorContainer?.maxWidth,
+    src,
   })
 
   const { isSelected, selection } = useImageNodeInteractions({
@@ -915,7 +884,6 @@ export default function ImageComponent({
 
   useEffect(() => {
     if (!isEditable && isReplaceDialogOpen) {
-      // Use setTimeout to avoid calling setState synchronously within effect
       setTimeout(() => {
         setIsReplaceDialogOpen(false)
       }, 0)

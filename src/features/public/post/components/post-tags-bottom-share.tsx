@@ -17,15 +17,15 @@ export const PostTagsAndBottomShare = ({ post, postUrl }: PostTagsAndBottomShare
     <div className="mt-8">
       {/* Tags */}
       {post.tags.length > 0 && (
-        <Flex align="center" justify="start" gap={3} wrap className="py-8 border-t">
-          <Flex align="center" justify="center" className="shrink-0">
+        <Flex as="section" direction="row" align="center" justify="start" gap={3} wrap className="py-8 border-t" aria-label="Thẻ bài viết">
+          <Flex align="center" justify="center" className="shrink-0 text-muted-foreground">
             <IconSize size="md">
-              <Tag />
+              <Tag aria-hidden="true" />
             </IconSize>
           </Flex>
           <Flex align="center" gap={2} wrap>
             {post.tags.map((tag) => (
-              <Badge key={tag.id} variant="outline" className="px-3 py-1 text-sm">
+              <Badge key={tag.id} variant="outline" className="px-3 py-1 text-sm font-medium hover:bg-primary/5 transition-colors">
                 {tag.name}
               </Badge>
             ))}
@@ -34,12 +34,12 @@ export const PostTagsAndBottomShare = ({ post, postUrl }: PostTagsAndBottomShare
       )}
 
       {/* Bottom Share */}
-      <Flex direction="col" align="center" gap={4} className="py-12 border-t border-b bg-muted/30 rounded-lg px-6">
+      <Flex as="section" direction="col" align="center" gap={4} className="py-12 border-t border-b bg-muted/30 rounded-lg px-6" aria-label="Chia sẻ bài viết">
         <Flex align="center" gap={2}>
-          <IconSize size="md">
-            <Share2 />
+          <IconSize size="md" className="text-primary">
+            <Share2 aria-hidden="true" />
           </IconSize>
-          <TypographySpanSmallMuted className="font-semibold text-foreground">
+          <TypographySpanSmallMuted className="font-semibold text-foreground text-base">
             Chia sẻ bài viết này
           </TypographySpanSmallMuted>
         </Flex>

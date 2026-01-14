@@ -1,4 +1,3 @@
-import Image from "next/image";
 import { TypographyH2, TypographyDescriptionLarge } from "@/components/ui/typography";
 
 export const FacultyScientistsSection = () => {
@@ -28,20 +27,6 @@ export const FacultyScientistsSection = () => {
                 </TypographyDescriptionLarge>
               </div>
             </div>
-          </div>
-        </div>
-
-        {/* Image */}
-        <div className="relative w-full overflow-hidden rounded-xl sm:rounded-2xl p-1 sm:p-2">
-          <div className="relative w-full aspect-[16/10]">
-            <Image
-              src="https://fileserver2.hub.edu.vn/IMAGES/2025/03/26/2025032609070820241231170644doingu.jpg"
-              alt="Đội ngũ Giảng viên và Nhà khoa học của Trường Đại học Ngân hàng TP.HCM (HUB)"
-              fill
-              className="object-cover"
-              sizes="(max-width: 640px) 100vw, (max-width: 1200px) 90vw, 1200px"
-              quality={75}
-            />
           </div>
         </div>
       </div>
