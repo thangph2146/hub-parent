@@ -75,9 +75,9 @@ export const PostDetailClient = ({ post }: PostDetailClientProps) => {
               alt={post.title}
               fill
               className="object-cover"
-              sizes="(max-width: 1280px) 100vw, 1200px"
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
               priority
-              quality={85}
+              quality={75}
             />
           </div>
         )}
@@ -138,7 +138,7 @@ export const PostDetailClient = ({ post }: PostDetailClientProps) => {
 
         {/* Content */}
         <div className="prose prose-lg dark:prose-invert max-w-none prose-p:leading-relaxed prose-a:text-primary prose-a:no-underline hover:prose-a:underline">
-          <PostContent content={post.content} />
+          <PostContent content={post.content} isPriority={!post.image} />
         </div>
 
         {/* Tags and Bottom Share */}

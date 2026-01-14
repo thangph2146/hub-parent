@@ -53,7 +53,7 @@ export function PostCard({ post, className, priority = false, headingLevel = "h2
                   sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                   loading={priority ? "eager" : "lazy"}
                   priority={priority}
-                  quality={60}
+                  quality={75}
                   onError={() => setImageError(true)}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60 transition-opacity duration-300" />

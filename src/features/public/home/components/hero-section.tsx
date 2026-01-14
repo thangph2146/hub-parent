@@ -79,8 +79,8 @@ export const HeroSection = ({
           className="object-cover object-[center_bottom]"
           priority
           fetchPriority="high"
-          quality={60}
-          sizes="(max-width: 768px) 100vw, 100vw"
+          quality={75}
+          sizes="100vw"
         />
       </div>
 
