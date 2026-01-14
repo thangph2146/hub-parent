@@ -161,9 +161,9 @@ function LazyImage({
   const getSizes = (): string => {
     if (typeof widthAttr === "number" && widthAttr > 0) {
       if (widthAttr <= 640) return "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-      return "(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 992px"
+      return "(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
     }
-    return "(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 992px"
+    return "(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
   }
 
   const renderWidth = widthAttr || actualDimensions.width || DEFAULT_WIDTH
@@ -178,7 +178,7 @@ function LazyImage({
         width={renderWidth}
         height={renderHeight}
         sizes={getSizes()}
-        quality={60}
+        quality={75}
         style={{
           height: height === "inherit" ? "auto" : height,
           width: width === "inherit" ? "100%" : width,
