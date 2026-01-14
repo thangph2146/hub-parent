@@ -1,15 +1,15 @@
 import { useCallback, useState } from "react"
 
-interface DeleteConfirmState<T = unknown> {
+export interface DeleteConfirmState<T = unknown, K extends string = string> {
   open: boolean
-  type: string
+  type: K
   row?: T
   bulkIds?: string[]
   onConfirm: () => Promise<void>
 }
 
-export const useDeleteConfirm = <T = unknown>() => {
-  const [deleteConfirm, setDeleteConfirm] = useState<DeleteConfirmState<T> | null>(null)
+export const useDeleteConfirm = <T = unknown, K extends string = string>() => {
+  const [deleteConfirm, setDeleteConfirm] = useState<DeleteConfirmState<T, K> | null>(null)
 
   const handleDeleteConfirm = useCallback(async () => {
     if (!deleteConfirm) return

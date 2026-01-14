@@ -73,15 +73,24 @@ const CountUp = ({
     const updateCount = (timestamp: number) => {
       if (!startTime) startTime = timestamp;
       const progress = Math.min((timestamp - startTime) / duration, 1);
-      const easeOutQuart = 1 - Math.pow(1 - progress, 4);
-      setCount(Math.floor(value * easeOutQuart));
-      if (progress < 1) animationFrame = requestAnimationFrame(updateCount);
+      // Optimized easeOutQuart: 1 - (1 - x)^4
+      const p = 1 - progress;
+      const easeOutQuart = 1 - p * p * p * p;
+      
+      const nextCount = Math.floor(value * easeOutQuart);
+      setCount(nextCount);
+      
+      if (progress < 1) {
+        animationFrame = requestAnimationFrame(updateCount);
+      }
     };
 
     animationFrame = requestAnimationFrame(updateCount);
     return () => cancelAnimationFrame(animationFrame);
   }, [isInView, value, duration]);
 
+  // Memoize the formatted string to avoid toLocaleString on every re-render
+  // although with useState it only renders when count changes anyway.
   return <span>{count.toLocaleString("vi-VN")}</span>;
 };
 
@@ -117,7 +126,7 @@ export const AboutHubSection = ({ className }: { className?: string }) => {
               transition={{ duration: 0.6 }}
             >
               <div className="space-y-4">
-                <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white leading-tight uppercase tracking-tight">
+                <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white leading-tight uppercase tracking-tight">
                   <span>H</span>
                   <span className="text-brand-yellow">eightening</span>
                   <br />
@@ -127,10 +136,10 @@ export const AboutHubSection = ({ className }: { className?: string }) => {
                   <span>B</span>
                   <span className="text-brand-yellow">rilliance</span>
                   <br />
-                </h1>
-                <h2 className="text-sm sm:text-base lg:text-lg font-semibold text-white/90">
-                  Trường Đại học Ngân hàng Thành phố Hồ Chí Minh
                 </h2>
+                <h3 className="text-sm sm:text-base lg:text-lg font-semibold text-white/90">
+                  Trường Đại học Ngân hàng Thành phố Hồ Chí Minh
+                </h3>
               </div>
               <Button asChild variant="outline" className="group">
                 <Link href={HOME_ROUTES.aboutHub} prefetch={false}>
@@ -157,14 +166,14 @@ export const AboutHubSection = ({ className }: { className?: string }) => {
                       className="w-8 h-8 md:w-10 md:h-10 text-secondary"
                       strokeWidth={1.5}
                     />
-                    <h2 className="text-lg sm:text-2xl lg:text-3xl font-bold text-secondary">
+                    <h3 className="text-lg sm:text-2xl lg:text-3xl font-bold text-secondary">
                       <CountUp value={stat.count} isInView={isInView} />
                       {stat.suffix && (
                         <span className="text-sm sm:text-lg ml-1 text-secondary font-semibold">
                           {stat.suffix}
                         </span>
                       )}
-                    </h2>
+                    </h3>
                   </Flex>
                   <p className="text-xs sm:text-sm lg:text-base text-gray-600 line-clamp-3">
                     {stat.caption}

@@ -4,11 +4,10 @@ import { useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { Calendar, FolderOpen } from "lucide-react"
-import { motion } from "framer-motion"
 import { Badge } from "@/components/ui/badge"
 import { Flex } from "@/components/ui/flex"
 import { cn } from "@/utils"
-import { TypographyH3, TypographySpanSmall, TypographyPMuted, IconSize } from "@/components/ui/typography"
+import { TypographyH2, TypographyH3, TypographySpanSmall, TypographyPMuted, IconSize } from "@/components/ui/typography"
 import type { Post } from "@/features/public/post/types"
 import { formatPostDate } from "@/features/public/post/utils/date-formatter"
 
@@ -16,11 +15,14 @@ interface PostCardProps {
   post: Post
   className?: string
   priority?: boolean
+  headingLevel?: "h2" | "h3"
 }
 
-export function PostCard({ post, className, priority = false }: PostCardProps) {
+export function PostCard({ post, className, priority = false, headingLevel = "h2" }: PostCardProps) {
   const [imageError, setImageError] = useState(false)
   const primaryCategory = post.categories[0]
+
+  const Heading = headingLevel === "h3" ? TypographyH3 : TypographyH2;
 
   // Helper function to convert publishedAt to ISO string
   const getPublishedAtISO = (): string => {
@@ -36,13 +38,7 @@ export function PostCard({ post, className, priority = false }: PostCardProps) {
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      whileHover={{ y: -5 }}
-      transition={{ duration: 0.4 }}
-      className={cn("h-full", className)}
-    >
+    <div className={cn("h-full", className)}>
       <Flex as="article" direction="col" height="full" bg="card" rounded="xl" border="all" overflow="hidden" className="group h-full shadow-sm hover:shadow-xl hover:shadow-primary/5 transition-all duration-300 relative">
         <Link href={`/bai-viet/${post.slug}`} className="flex flex-col flex-1" prefetch={false}>
           {/* Featured Image with Zoom Effect */}
@@ -57,7 +53,7 @@ export function PostCard({ post, className, priority = false }: PostCardProps) {
                   sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                   loading={priority ? "eager" : "lazy"}
                   priority={priority}
-                  quality={80}
+                  quality={70}
                   onError={() => setImageError(true)}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60 transition-opacity duration-300" />
@@ -99,9 +95,9 @@ export function PostCard({ post, className, priority = false }: PostCardProps) {
             )}
 
             {/* Title */}
-            <TypographyH3 className="text-lg font-bold leading-tight line-clamp-2 group-hover:text-primary transition-colors duration-300">
+            <Heading className="text-lg font-bold leading-tight line-clamp-2 group-hover:text-primary transition-colors duration-300">
               {post.title}
-            </TypographyH3>
+            </Heading>
 
             {/* Excerpt */}
             {post.excerpt && (
@@ -116,17 +112,13 @@ export function PostCard({ post, className, priority = false }: PostCardProps) {
                 Xem chi tiết
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full" />
               </span>
-              <motion.span
-                animate={{ x: [0, 5, 0] }}
-                transition={{ repeat: Infinity, duration: 1.5 }}
-                className="ml-2"
-              >
+              <span className="ml-2 group-hover:translate-x-1 transition-transform duration-300">
                 →
-              </motion.span>
+              </span>
             </div>
           </Flex>
         </Link>
       </Flex>
-    </motion.div>
+    </div>
   )
 }

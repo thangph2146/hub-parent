@@ -4,34 +4,36 @@
 
 export const appConfig = {
   // Basic metadata
-  titleDefault: "HUB - Kết nối phụ huynh và nhà trường",
-  titleTemplate: "%s | HUB",
-  description: "HUB - Hệ thống kết nối phụ huynh và nhà trường của Trường Đại học Ngân hàng Thành phố Hồ Chí Minh. Được phát triển bởi P.QLCNTT để tạo cầu nối giữa phụ huynh, gia đình và nhà trường.",
+  titleDefault: "HUB - Kết nối phụ huynh và nhà trường | Trường Đại học Ngân hàng TP.HCM",
+  titleTemplate: "%s | HUB - Trường Đại học Ngân hàng TP.HCM",
+  description: "Hệ thống kết nối phụ huynh và nhà trường (HUB) của Trường Đại học Ngân hàng TP.HCM. Cung cấp thông tin tin tức, kết quả học tập, và các dịch vụ hỗ trợ sinh viên và phụ huynh.",
   
   // Application info
   name: "HUB - Phụ huynh",
-  namePublic: "Kết nối phụ huynh và nhà trường",
-  company: "P.QLCNTT",
+  namePublic: "Cổng thông tin kết nối phụ huynh và nhà trường HUB",
+  company: "Trường Đại học Ngân hàng TP.HCM",
   url: process.env.NEXTAUTH_URL || "http://localhost:3000",
   
   // Social media
   social: {
-    facebook: "",
+    facebook: "https://www.facebook.com/DHNH.HUB",
     twitter: "",
     linkedin: "",
     instagram: "",
-    youtube: "",
+    youtube: "https://www.youtube.com/@truongdaihocnganhangtphcmhub",
   },
   
   // SEO
   keywords: [
     "HUB", 
+    "Trường Đại học Ngân hàng TP.HCM",
+    "Đại học Ngân hàng",
     "Kết nối phụ huynh và nhà trường", 
-    "Đại học Ngân hàng Thành phố Hồ Chí Minh",
-    "HUB Phụ huynh",
-    "Tra cứu kết quả học tập HUB",
-    "Quản trị nội dung", 
-    "Admin Panel"
+    "Tra cứu điểm sinh viên HUB",
+    "Tin tức HUB",
+    "Thông tin đào tạo HUB",
+    "Sinh viên HUB",
+    "Phụ huynh sinh viên HUB"
   ] as string[],
   
   // Authors
@@ -93,7 +95,6 @@ export const appConfig = {
   viewport: {
     width: "device-width",
     initialScale: 1,
-    maximumScale: 1,
   },
 }
 

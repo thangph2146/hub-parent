@@ -1,42 +1,31 @@
 "use client"
 
-import { IconSize } from "@/components/ui/typography"
-
 import { useCallback, useMemo, useState } from "react"
-import { useResourceRouter } from "@/hooks"
-import { Plus, RotateCcw, Trash2, AlertTriangle } from "lucide-react"
-
-import { ConfirmDialog } from "@/components/dialogs"
-import type { DataTableQueryState, DataTableResult } from "@/components/tables"
 import { FeedbackDialog } from "@/components/dialogs"
-import { Button } from "@/components/ui/button"
+import type { DataTableResult } from "@/components/tables"
 import {
   ResourceTableClient,
-  SelectionActionsWrapper,
 } from "@/features/admin/resources/components"
 import type { ResourceViewMode } from "@/features/admin/resources/types"
 import {
-  useResourceTableLoader,
   useResourceTableRefresh,
   useResourceTableLogger,
 } from "@/features/admin/resources/hooks"
-import { normalizeSearch, sanitizeFilters } from "@/features/admin/resources/utils"
-import { apiClient } from "@/services/api/axios"
-import { apiRoutes } from "@/constants"
 import { useQueryClient } from "@tanstack/react-query"
-import { queryKeys } from "@/constants"
-import { sanitizeSearchQuery } from "@/utils"
+import { queryKeys, type AdminRolesListParams } from "@/constants"
 import { useRolesSocketBridge } from "@/features/admin/roles/hooks/use-roles-socket-bridge"
 import { useRoleActions } from "@/features/admin/roles/hooks/use-role-actions"
 import { useRoleFeedback } from "@/features/admin/roles/hooks/use-role-feedback"
 import { useRoleDeleteConfirm } from "@/features/admin/roles/hooks/use-role-delete-confirm"
 import { useRoleColumns } from "@/features/admin/roles/utils/columns"
 import { useRoleRowActions } from "@/features/admin/roles/utils/row-actions"
-import { resourceLogger } from "@/utils"
+import { useRolesTableFetcher } from "@/features/admin/roles/hooks/use-roles-table-fetcher"
+import { ActiveRoleSelectionActions, DeletedRoleSelectionActions } from "./roles-table-sub-sections/RoleSelectionActions"
+import { RoleConfirmDialog } from "./roles-table-sub-sections/RoleConfirmDialog"
+import { RoleTableToolbar } from "./roles-table-sub-sections/RoleTableToolbar"
+import type { RoleRow, RolesTableClientProps } from "../types"
+import { ROLE_LABELS } from "../constants/messages"
 
-import type { AdminRolesListParams } from "@/constants"
-import type { RoleRow, RolesResponse, RolesTableClientProps } from "../types"
-import { ROLE_CONFIRM_MESSAGES, ROLE_LABELS } from "../constants/messages"
 export const RolesTableClient = ({
   canDelete = false,
   canRestore = false,
@@ -184,154 +173,7 @@ export const RolesTableClient = ({
     hardDeletingIds,
   })
 
-  const fetchRoles = useCallback(
-    async ({
-      page,
-      limit,
-      status,
-      search,
-      filters,
-    }: {
-      page: number
-      limit: number
-      status: "active" | "deleted" | "all"
-      search?: string
-      filters?: Record<string, string>
-    }): Promise<DataTableResult<RoleRow>> => {
-      const safePage = Number.isFinite(page) && page > 0 ? page : 1
-      const safeLimit = Number.isFinite(limit) && limit > 0 ? limit : 10
-      const trimmedSearch = typeof search === "string" ? search.trim() : ""
-      const searchValidation =
-        trimmedSearch.length > 0 ? sanitizeSearchQuery(trimmedSearch, Infinity) : { valid: true, value: "" }
-      if (!searchValidation.valid) {
-        throw new Error(searchValidation.error || "Từ khóa tìm kiếm không hợp lệ. Vui lòng thử lại.")
-      }
-
-      const requestParams: Record<string, string> = {
-        page: safePage.toString(),
-        limit: safeLimit.toString(),
-        status: status ?? "active",
-      }
-      if (searchValidation.value) {
-        requestParams.search = searchValidation.value
-      }
-
-      Object.entries(filters ?? {}).forEach(([key, value]) => {
-        if (value !== undefined && value !== null) {
-          const normalized = `${value}`.trim()
-          if (normalized) {
-            const filterValidation = sanitizeSearchQuery(normalized, Infinity)
-            if (filterValidation.valid && filterValidation.value) {
-              requestParams[`filter[${key}]`] = filterValidation.value
-            } else if (!filterValidation.valid) {
-              throw new Error(filterValidation.error || "Giá trị bộ lọc không hợp lệ. Vui lòng thử lại.")
-            }
-          }
-        }
-      })
-
-      try {
-        const response = await apiClient.get<{
-          success: boolean
-          data?: RolesResponse
-          error?: string
-          message?: string
-        }>(apiRoutes.roles.list(), {
-          params: requestParams,
-        })
-
-        const payload = response.data.data
-        if (!payload) {
-          throw new Error(response.data.error || response.data.message || "Không thể tải danh sách vai trò")
-        }
-
-        const result = {
-          rows: payload.data ?? [],
-          page: payload.pagination?.page ?? page,
-          limit: payload.pagination?.limit ?? limit,
-          total: payload.pagination?.total ?? payload.data?.length ?? 0,
-          totalPages: payload.pagination?.totalPages ?? 0,
-        }
-
-        resourceLogger.logAction({
-          resource: "roles",
-          action: "load-table",
-          view: status,
-          page: result.page,
-          total: result.total,
-        })
-
-        resourceLogger.logStructure({
-          resource: "roles",
-          dataType: "table",
-          structure: {
-            columns: result.rows.length > 0 ? Object.keys(result.rows[0]) : [],
-            pagination: {
-              page: result.page,
-              limit: result.limit,
-              total: result.total,
-              totalPages: result.totalPages,
-            },
-            sampleRows: result.rows.map((row) => row as unknown as Record<string, unknown>),
-          },
-          rowCount: result.rows.length,
-        })
-
-        return result
-      } catch (error: unknown) {
-        if (error && typeof error === "object" && "response" in error) {
-          const axiosError = error as { response?: { data?: unknown; status?: number } }
-          const errorMessage = axiosError.response?.data
-            ? typeof axiosError.response.data === "object" && "error" in axiosError.response.data
-              ? String(axiosError.response.data.error)
-              : JSON.stringify(axiosError.response.data)
-            : `Request failed with status ${axiosError.response?.status ?? "unknown"}`
-          throw new Error(errorMessage)
-        }
-        throw error
-      }
-    },
-    [],
-  )
-
-  const buildListParams = useCallback(
-    ({ query, view }: { query: DataTableQueryState; view: ResourceViewMode<RoleRow> }): AdminRolesListParams => {
-      const filtersRecord = sanitizeFilters(query.filters)
-      const normalizedSearch = normalizeSearch(query.search)
-      const sanitizedSearch =
-        normalizedSearch && normalizedSearch.length > 0
-          ? sanitizeSearchQuery(normalizedSearch).value || undefined
-          : undefined
-
-      return {
-        status: (view.status ?? "active") as AdminRolesListParams["status"],
-        page: query.page,
-        limit: query.limit,
-        search: sanitizedSearch,
-        filters: Object.keys(filtersRecord).length ? filtersRecord : undefined,
-      }
-    },
-    [],
-  )
-
-  const fetchRolesWithDefaults = useCallback(
-    (params: AdminRolesListParams) =>
-      fetchRoles({
-        page: params.page,
-        limit: params.limit,
-        status: params.status ?? "active",
-        search: params.search,
-        filters: params.filters,
-      }),
-    [fetchRoles],
-  )
-
-  const loader = useResourceTableLoader<RoleRow, AdminRolesListParams>({
-    queryClient,
-    fetcher: fetchRolesWithDefaults,
-    buildParams: buildListParams,
-    buildQueryKey: queryKeys.adminRoles.list,
-  })
+  const { loader } = useRolesTableFetcher()
 
   const executeBulk = useCallback(
     (action: "delete" | "restore" | "hard-delete", ids: string[], refresh: () => void, clearSelection: () => void) => {
@@ -365,177 +207,6 @@ export const RolesTableClient = ({
   )
 
 
-  const createActiveSelectionActions = useCallback(
-    ({
-      selectedIds,
-      selectedRows,
-      clearSelection,
-      refresh,
-    }: {
-      selectedIds: string[]
-      selectedRows: RoleRow[]
-      clearSelection: () => void
-      refresh: () => void
-    }) => {
-      const deletableRows = selectedRows.filter((row) => row.name !== "super_admin")
-      const hasSuperAdmin = selectedRows.some((row) => row.name === "super_admin")
-
-      return (
-        <SelectionActionsWrapper
-          label={ROLE_LABELS.SELECTED_ROLES(selectedIds.length)}
-          labelSuffix={
-            hasSuperAdmin ? <>{ROLE_LABELS.CANNOT_DELETE_SUPER_ADMIN_HINT}</> : undefined
-          }
-          actions={
-            <>
-              <Button
-                type="button"
-                size="sm"
-                variant="destructive"
-                disabled={bulkState.isProcessing || deletableRows.length === 0}
-                onClick={() =>
-                  executeBulk(
-                    "delete",
-                    deletableRows.map((row) => row.id),
-                    refresh,
-                    clearSelection,
-                  )
-                }
-                className="whitespace-nowrap"
-              >
-                <IconSize size="md" className="mr-2 shrink-0">
-                  <Trash2 />
-                </IconSize>
-                <span className="hidden sm:inline">
-                  {ROLE_LABELS.DELETE_SELECTED(deletableRows.length)}
-                </span>
-                <span className="sm:hidden">Xóa</span>
-              </Button>
-              {canManage && (
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="destructive"
-                  disabled={bulkState.isProcessing || deletableRows.length === 0}
-                  onClick={() =>
-                    executeBulk(
-                      "hard-delete",
-                      deletableRows.map((row) => row.id),
-                      refresh,
-                      clearSelection,
-                    )
-                  }
-                  className="whitespace-nowrap"
-                >
-                  <IconSize size="md" className="mr-2 shrink-0">
-                    <AlertTriangle />
-                  </IconSize>
-                  <span className="hidden sm:inline">
-                    {ROLE_LABELS.HARD_DELETE_SELECTED(deletableRows.length)}
-                  </span>
-                  <span className="sm:hidden">Xóa vĩnh viễn</span>
-                </Button>
-              )}
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                onClick={clearSelection}
-                className="whitespace-nowrap"
-              >
-                {ROLE_LABELS.CLEAR_SELECTION}
-              </Button>
-            </>
-          }
-        />
-      )
-    },
-    [bulkState.isProcessing, canManage, executeBulk],
-  )
-
-  const createDeletedSelectionActions = useCallback(
-    ({
-      selectedIds,
-      selectedRows,
-      clearSelection,
-      refresh,
-    }: {
-      selectedIds: string[]
-      selectedRows: RoleRow[]
-      clearSelection: () => void
-      refresh: () => void
-    }) => {
-      const deletableRows = selectedRows.filter((row) => row.name !== "super_admin")
-      const hasSuperAdmin = selectedRows.some((row) => row.name === "super_admin")
-
-      return (
-        <SelectionActionsWrapper
-          label={ROLE_LABELS.SELECTED_DELETED_ROLES(selectedIds.length)}
-          labelSuffix={
-            hasSuperAdmin ? <>{ROLE_LABELS.CANNOT_HARD_DELETE_SUPER_ADMIN_HINT}</> : undefined
-          }
-          actions={
-            <>
-              {canRestore && (
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  disabled={bulkState.isProcessing || selectedIds.length === 0}
-                  onClick={() => executeBulk("restore", selectedIds, refresh, clearSelection)}
-                  className="whitespace-nowrap"
-                >
-                  <IconSize size="md" className="mr-2 shrink-0">
-                    <RotateCcw />
-                  </IconSize>
-                  <span className="hidden sm:inline">
-                    {ROLE_LABELS.RESTORE_SELECTED(selectedIds.length)}
-                  </span>
-                  <span className="sm:hidden">Khôi phục</span>
-                </Button>
-              )}
-              {canManage && (
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="destructive"
-                  disabled={bulkState.isProcessing || deletableRows.length === 0}
-                  onClick={() =>
-                    executeBulk(
-                      "hard-delete",
-                      deletableRows.map((row) => row.id),
-                      refresh,
-                      clearSelection,
-                    )
-                  }
-                  className="whitespace-nowrap"
-                >
-                  <IconSize size="md" className="mr-2 shrink-0">
-                    <AlertTriangle />
-                  </IconSize>
-                  <span className="hidden sm:inline">
-                    {ROLE_LABELS.HARD_DELETE_SELECTED(deletableRows.length)}
-                  </span>
-                  <span className="sm:hidden">Xóa vĩnh viễn</span>
-                </Button>
-              )}
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                onClick={clearSelection}
-                className="whitespace-nowrap"
-              >
-                {ROLE_LABELS.CLEAR_SELECTION}
-              </Button>
-            </>
-          }
-        />
-      )
-    },
-    [bulkState.isProcessing, canManage, canRestore, executeBulk],
-  )
-
   const viewModes = useMemo<ResourceViewMode<RoleRow>[]>(() => {
     const modes: ResourceViewMode<RoleRow>[] = [
       {
@@ -544,7 +215,16 @@ export const RolesTableClient = ({
         status: "active",
         columns: baseColumns,
         selectionEnabled: canDelete,
-        selectionActions: canDelete ? createActiveSelectionActions : undefined,
+        selectionActions: canDelete
+          ? (props) => (
+            <ActiveRoleSelectionActions
+              {...props}
+              canManage={canManage}
+              isProcessing={bulkState.isProcessing}
+              executeBulk={executeBulk}
+            />
+          )
+          : undefined,
         rowActions: (row) => renderActiveRowActions(row),
         emptyMessage: ROLE_LABELS.NO_ROLES,
       },
@@ -554,7 +234,17 @@ export const RolesTableClient = ({
         status: "deleted",
         columns: deletedColumns,
         selectionEnabled: canRestore || canManage,
-        selectionActions: canRestore || canManage ? createDeletedSelectionActions : undefined,
+        selectionActions: canRestore || canManage
+          ? (props) => (
+            <DeletedRoleSelectionActions
+              {...props}
+              canManage={canManage}
+              canRestore={canRestore}
+              isProcessing={bulkState.isProcessing}
+              executeBulk={executeBulk}
+            />
+          )
+          : undefined,
         rowActions: (row) => renderDeletedRowActions(row),
         emptyMessage: ROLE_LABELS.NO_DELETED_ROLES,
       },
@@ -567,8 +257,8 @@ export const RolesTableClient = ({
     canManage,
     baseColumns,
     deletedColumns,
-    createActiveSelectionActions,
-    createDeletedSelectionActions,
+    bulkState.isProcessing,
+    executeBulk,
     renderActiveRowActions,
     renderDeletedRowActions,
   ])
@@ -578,56 +268,7 @@ export const RolesTableClient = ({
     [initialData],
   )
 
-  const getDeleteConfirmTitle = () => {
-    if (!deleteConfirm) return ""
-    if (deleteConfirm.type === "hard") {
-      return ROLE_CONFIRM_MESSAGES.HARD_DELETE_TITLE(
-        deleteConfirm.bulkIds?.length,
-      )
-    }
-    if (deleteConfirm.type === "restore") {
-      return ROLE_CONFIRM_MESSAGES.RESTORE_TITLE(
-        deleteConfirm.bulkIds?.length,
-      )
-    }
-    return ROLE_CONFIRM_MESSAGES.DELETE_TITLE(deleteConfirm.bulkIds?.length)
-  }
-
-  const getDeleteConfirmDescription = () => {
-    if (!deleteConfirm) return ""
-    if (deleteConfirm.type === "hard") {
-      return ROLE_CONFIRM_MESSAGES.HARD_DELETE_DESCRIPTION(
-        deleteConfirm.bulkIds?.length,
-        deleteConfirm.row?.displayName,
-      )
-    }
-    if (deleteConfirm.type === "restore") {
-      return ROLE_CONFIRM_MESSAGES.RESTORE_DESCRIPTION(
-        deleteConfirm.bulkIds?.length,
-        deleteConfirm.row?.displayName,
-      )
-    }
-    return ROLE_CONFIRM_MESSAGES.DELETE_DESCRIPTION(
-      deleteConfirm.bulkIds?.length,
-      deleteConfirm.row?.displayName,
-    )
-  }
-
-  const router = useResourceRouter()
-
-  const headerActions = canCreate ? (
-    <Button
-      type="button"
-      size="sm"
-      onClick={() => router.push("/admin/roles/new")}
-      className="h-8 px-3"
-    >
-      <IconSize size="md" className="mr-2">
-        <Plus />
-      </IconSize>
-      {ROLE_LABELS.ADD_NEW}
-    </Button>
-  ) : undefined
+  const headerActions = <RoleTableToolbar canCreate={canCreate} />
 
   return (
     <>
@@ -644,37 +285,17 @@ export const RolesTableClient = ({
         onViewChange={setCurrentViewId}
       />
 
-      {/* Delete Confirmation Dialog */}
-      {deleteConfirm && (
-        <ConfirmDialog
-          open={deleteConfirm.open}
-          onOpenChange={(open) => {
-            if (!open) setDeleteConfirm(null)
-          }}
-          title={getDeleteConfirmTitle()}
-          description={getDeleteConfirmDescription()}
-          variant={deleteConfirm.type === "hard" ? "destructive" : deleteConfirm.type === "restore" ? "default" : "destructive"}
-          confirmLabel={
-            deleteConfirm.type === "hard"
-              ? ROLE_CONFIRM_MESSAGES.HARD_DELETE_LABEL
-              : deleteConfirm.type === "restore"
-              ? ROLE_CONFIRM_MESSAGES.RESTORE_LABEL
-              : ROLE_CONFIRM_MESSAGES.CONFIRM_LABEL
-          }
-          cancelLabel={ROLE_CONFIRM_MESSAGES.CANCEL_LABEL}
-          onConfirm={handleDeleteConfirm}
-          isLoading={
-            bulkState.isProcessing ||
-            (deleteConfirm.row
-              ? deleteConfirm.type === "restore"
-                ? restoringIds.has(deleteConfirm.row.id)
-                : deleteConfirm.type === "hard"
-                  ? hardDeletingIds.has(deleteConfirm.row.id)
-                  : deletingIds.has(deleteConfirm.row.id)
-              : false)
-          }
-        />
-      )}
+      <RoleConfirmDialog
+        deleteConfirm={deleteConfirm}
+        onOpenChange={(open) => {
+          if (!open) setDeleteConfirm(null)
+        }}
+        onConfirm={handleDeleteConfirm}
+        isProcessing={bulkState.isProcessing}
+        deletingIds={deletingIds}
+        restoringIds={restoringIds}
+        hardDeletingIds={hardDeletingIds}
+      />
 
       {/* Feedback Dialog */}
       {feedback && (

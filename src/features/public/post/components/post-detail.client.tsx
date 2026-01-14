@@ -1,17 +1,31 @@
 "use client"
 
+import dynamic from "next/dynamic"
 import { IconSize } from "@/components/ui/typography"
 import { TypographySpanSmallMuted, TypographyH1 } from "@/components/ui/typography"
 import { Flex } from "@/components/ui/flex"
 
-import { Calendar, User, Tag, Clock } from "lucide-react"
-import { Badge } from "@/components/ui/badge"
+import { Calendar, User, Clock } from "lucide-react"
 import { PostContent } from "./post-content"
-import { PostShare } from "./post-share"
 import { formatPostDateLong, formatPostTime } from "../utils/date-formatter"
 import { appConfig } from "@/constants"
 import type { PostDetail } from "../types"
 import { useEffect, useState } from "react"
+import { Skeleton } from "@/components/ui/skeleton"
+import { PostTagsAndBottomShareProps } from "./post-tags-bottom-share"
+
+// Dynamic import PostShare to reduce initial bundle size
+const PostShare = dynamic(() => import("./post-share").then(mod => mod.PostShare), {
+  ssr: false,
+});
+
+// Dynamic import Tags and bottom share section
+const PostTagsAndBottomShare = dynamic<PostTagsAndBottomShareProps>(
+  () => import("./post-tags-bottom-share").then((mod) => mod.PostTagsAndBottomShare),
+  {
+    loading: () => <Skeleton className="h-24 w-full" />,
+  }
+);
 
 interface PostDetailClientProps {
   post: PostDetail
@@ -95,23 +109,8 @@ export const PostDetailClient = ({ post }: PostDetailClientProps) => {
           <PostContent content={post.content} />
         </div>
 
-        {/* Tags */}
-        {post.tags.length > 0 && (
-          <Flex align="center" justify="start" gap={3} wrap className="py-8 border-t">
-            <Flex align="center" justify="center" className="shrink-0">
-              <IconSize size="md">
-                <Tag />
-              </IconSize>
-            </Flex>
-            <Flex align="center" gap={2} wrap>
-              {post.tags.map((tag) => (
-                <Badge key={tag.id} variant="outline">
-                  {tag.name}
-                </Badge>
-              ))}
-            </Flex>
-          </Flex>
-        )}
+        {/* Tags and Bottom Share */}
+        <PostTagsAndBottomShare post={post} postUrl={postUrl} />
       </Flex>
     </Flex>
   )

@@ -1,28 +1,17 @@
 "use client"
 
 import { useCallback, useMemo, useState } from "react"
-import { useResourceRouter } from "@/hooks"
-import { Plus, RotateCcw, Trash2, AlertTriangle, CheckCircle, XCircle } from "lucide-react"
-import { logger } from "@/utils"
 import { usePageLoadLogger } from "@/hooks"
 
-import { ConfirmDialog } from "@/components/dialogs"
-import type { DataTableQueryState, DataTableResult } from "@/components/tables"
 import { FeedbackDialog } from "@/components/dialogs"
-import { Button } from "@/components/ui/button"
 import {
   ResourceTableClient,
-  SelectionActionsWrapper,
 } from "@/features/admin/resources/components"
 import type { ResourceViewMode } from "@/features/admin/resources/types"
 import {
-  useResourceTableLoader,
   useResourceTableRefresh,
   useResourceTableLogger,
 } from "@/features/admin/resources/hooks"
-import { normalizeSearch, sanitizeFilters } from "@/features/admin/resources/utils"
-import { apiClient } from "@/services/api/axios"
-import { apiRoutes } from "@/constants"
 import { useQueryClient } from "@tanstack/react-query"
 import { queryKeys } from "@/constants"
 import { useUsersSocketBridge } from "@/features/admin/users/hooks/use-users-socket-bridge"
@@ -32,12 +21,14 @@ import { useUserDeleteConfirm } from "@/features/admin/users/hooks/use-user-dele
 import { useUserColumns } from "@/features/admin/users/utils/columns"
 import { useUserRowActions } from "@/features/admin/users/utils/row-actions"
 import { resourceLogger } from "@/utils"
-import { TypographySpanSmall, TypographySpanSmallMuted, IconSize } from "@/components/ui/typography"
 
-import type { AdminUsersListParams } from "@/constants"
-import type { UserRow, UsersResponse, UsersTableClientProps } from "../types"
-import { USER_CONFIRM_MESSAGES, USER_LABELS, PROTECTED_SUPER_ADMIN_EMAIL } from "../constants"
-import { Flex } from "@/components/ui/flex"
+import type { UserRow, UsersTableClientProps } from "../types"
+import { USER_LABELS } from "../constants"
+import { useUsersTableFetcher } from "@/features/admin/users/hooks/use-users-table-fetcher"
+import { ActiveUserSelectionActions, DeletedUserSelectionActions } from "./users-table-sub-sections/UserSelectionActions"
+import { UserConfirmDialog } from "./users-table-sub-sections/UserConfirmDialog"
+import { UserTableToolbar } from "./users-table-sub-sections/UserTableToolbar"
+
 export const UsersTableClient = ({
   canDelete = false,
   canRestore = false,
@@ -47,7 +38,6 @@ export const UsersTableClient = ({
   initialRolesOptions = [],
 }: UsersTableClientProps) => {
   const queryClient = useQueryClient()
-  const router = useResourceRouter()
 
   // Log page load
   usePageLoadLogger("list")
@@ -98,92 +88,7 @@ export const UsersTableClient = ({
     showFeedback,
   })
 
-  const fetchUsers = useCallback(
-    async ({
-      page,
-      limit,
-      status,
-      search,
-      filters,
-    }: {
-      page: number
-      limit: number
-      status: "active" | "deleted" | "all"
-      search?: string
-      filters?: Record<string, string>
-    }): Promise<DataTableResult<UserRow>> => {
-      const baseUrl = apiRoutes.users.list({
-        page,
-        limit,
-        status,
-        search,
-      })
-
-      const filterParams = new URLSearchParams()
-      Object.entries(filters ?? {}).forEach(([key, value]) => {
-        if (value) {
-          filterParams.set(`filter[${key}]`, value)
-        }
-      })
-
-      const filterString = filterParams.toString()
-      const url = filterString ? `${baseUrl}&${filterString}` : baseUrl
-
-      const response = await apiClient.get<UsersResponse>(url)
-      const payload = response.data
-
-      if (!payload || !payload.data) {
-        throw new Error("Không thể tải danh sách người dùng")
-      }
-
-      // payload.data là object { data: [...], pagination: {...} }
-      const usersData = payload.data.data || []
-      const pagination = payload.data.pagination
-
-      return {
-        rows: usersData,
-        page: pagination?.page ?? page,
-        limit: pagination?.limit ?? limit,
-        total: pagination?.total ?? 0,
-        totalPages: pagination?.totalPages ?? 0,
-      }
-    },
-    [],
-  )
-
-  const buildListParams = useCallback(
-    ({ query, view }: { query: DataTableQueryState; view: ResourceViewMode<UserRow> }): AdminUsersListParams => {
-      const filtersRecord = sanitizeFilters(query.filters)
-
-      return {
-        status: (view.status ?? "active") as AdminUsersListParams["status"],
-        page: query.page,
-        limit: query.limit,
-        search: normalizeSearch(query.search),
-        filters: Object.keys(filtersRecord).length ? filtersRecord : undefined,
-      }
-    },
-    [],
-  )
-
-  const fetchUsersWithDefaults = useCallback(
-    (params: AdminUsersListParams) =>
-      fetchUsers({
-        page: params.page,
-        limit: params.limit,
-        status: params.status ?? "active",
-        search: params.search,
-        filters: params.filters,
-      }),
-    [fetchUsers],
-  )
-
-  const loader = useResourceTableLoader<UserRow, AdminUsersListParams>({
-    queryClient,
-    fetcher: fetchUsersWithDefaults,
-    buildParams: buildListParams,
-    buildQueryKey: queryKeys.adminUsers.list,
-  })
+  const { loader } = useUsersTableFetcher()
 
   const handleDeleteSingle = useCallback(
     (row: UserRow) => {
@@ -330,26 +235,22 @@ export const UsersTableClient = ({
         userIds: ids,
       })
 
-      if (action === "delete" || action === "restore" || action === "hard-delete" || action === "active" || action === "unactive") {
-        setDeleteConfirm({
-          open: true,
-          type: action === "hard-delete" 
-            ? "hard" 
-            : action === "restore" 
-            ? "restore" 
-            : action === "active"
-            ? "active"
-            : action === "unactive"
-            ? "unactive"
-            : "soft",
-          bulkIds: ids,
-          onConfirm: async () => {
-            await executeBulkAction(action, ids, refresh, clearSelection, selectedRows)
-          },
-        })
-      } else {
-        executeBulkAction(action, ids, refresh, clearSelection, selectedRows)
-      }
+      setDeleteConfirm({
+        open: true,
+        type: action === "hard-delete" 
+          ? "hard" 
+          : action === "restore" 
+          ? "restore" 
+          : action === "active"
+          ? "active"
+          : action === "unactive"
+          ? "unactive"
+          : "soft",
+        bulkIds: ids,
+        onConfirm: async () => {
+          await executeBulkAction(action, ids, refresh, clearSelection, selectedRows)
+        },
+      })
     },
     [executeBulkAction, setDeleteConfirm],
   )
@@ -362,103 +263,14 @@ export const UsersTableClient = ({
         status: "active",
         selectionEnabled: canDelete,
         selectionActions: canDelete
-          ? ({ selectedIds, selectedRows, clearSelection, refresh }) => {
-            const deletableRows = selectedRows.filter((row) => row.email !== PROTECTED_SUPER_ADMIN_EMAIL)
-            const hasSuperAdmin = selectedRows.some((row) => row.email === PROTECTED_SUPER_ADMIN_EMAIL)
-
-            return (
-              <Flex direction="col" align="start" justify="between" gap={3} className="sm:flex-row sm:items-center">
-                <Flex direction="col" gap={1} className="flex-shrink-0 sm:flex-row sm:items-center">
-                  <TypographySpanSmall>
-                    {USER_LABELS.SELECTED_USERS(selectedIds.length)}
-                  </TypographySpanSmall>
-                  {hasSuperAdmin && (
-                    <TypographySpanSmallMuted className="sm:ml-2">
-                      (Tài khoản super admin không thể xóa)
-                    </TypographySpanSmallMuted>
-                  )}
-                </Flex>
-                <Flex align="center" gap={2} wrap>
-                  {canManage && (
-                    <>
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="outline"
-                        disabled={bulkState.isProcessing || selectedIds.length === 0}
-                        onClick={() => executeBulk("active", selectedIds, selectedRows, refresh, clearSelection)}
-                        className="whitespace-nowrap border-green-500 text-green-600 hover:bg-green-50 hover:text-green-700 gap-2"
-                      >
-                        <IconSize size="md">
-                          <CheckCircle />
-                        </IconSize>
-                        <span className="hidden sm:inline">
-                          {USER_LABELS.ACTIVE_SELECTED(selectedIds.length)}
-                        </span>
-                        <span className="sm:hidden">Kích hoạt</span>
-                      </Button>
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="outline"
-                        disabled={bulkState.isProcessing || deletableRows.length === 0}
-                        onClick={() => executeBulk("unactive", deletableRows.map((r) => r.id), deletableRows, refresh, clearSelection)}
-                        className="whitespace-nowrap border-orange-500 text-orange-600 hover:bg-orange-50 hover:text-orange-700 gap-2"
-                      >
-                        <IconSize size="md">
-                          <XCircle />
-                        </IconSize>
-                        <span>
-                          {USER_LABELS.UNACTIVE_SELECTED(deletableRows.length)}
-                        </span>
-                      </Button>
-                    </>
-                  )}
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="destructive"
-                    disabled={bulkState.isProcessing || deletableRows.length === 0}
-                    onClick={() => executeBulk("delete", deletableRows.map((r) => r.id), deletableRows, refresh, clearSelection)}
-                    className="whitespace-nowrap gap-2"
-                  >
-                    <IconSize size="md">
-                      <Trash2 />
-                    </IconSize>
-                    <span>
-                      {USER_LABELS.DELETE_SELECTED(deletableRows.length)}
-                    </span>
-                  </Button>
-                  {canManage && (
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="destructive"
-                      disabled={bulkState.isProcessing || deletableRows.length === 0}
-                      onClick={() => executeBulk("hard-delete", deletableRows.map((r) => r.id), deletableRows, refresh, clearSelection)}
-                      className="whitespace-nowrap gap-2"
-                    >
-                      <IconSize size="md">
-                        <AlertTriangle />
-                      </IconSize>
-                      <span>
-                        {USER_LABELS.HARD_DELETE_SELECTED(deletableRows.length)}
-                      </span>
-                    </Button>
-                  )}
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    onClick={clearSelection}
-                    className="whitespace-nowrap"
-                  >
-                    {USER_LABELS.CLEAR_SELECTION}
-                  </Button>
-                </Flex>
-              </Flex>
-            )
-          }
+          ? (props) => (
+            <ActiveUserSelectionActions
+              {...props}
+              canManage={canManage}
+              isProcessing={bulkState.isProcessing}
+              executeBulk={executeBulk}
+            />
+          )
           : undefined,
         rowActions: (row) => renderActiveRowActions(row),
         emptyMessage: USER_LABELS.NO_USERS,
@@ -470,56 +282,13 @@ export const UsersTableClient = ({
         columns: deletedColumns,
         selectionEnabled: canRestore || canManage,
         selectionActions: canRestore || canManage
-          ? ({ selectedIds, selectedRows, clearSelection, refresh }) => (
-            <SelectionActionsWrapper
-              label={USER_LABELS.SELECTED_DELETED_USERS(selectedIds.length)}
-              actions={
-                <>
-                  {canRestore && (
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="outline"
-                      disabled={bulkState.isProcessing || selectedIds.length === 0}
-                      onClick={() => executeBulk("restore", selectedIds, selectedRows, refresh, clearSelection)}
-                      className="whitespace-nowrap gap-2"
-                    >
-                      <IconSize size="md">
-                        <RotateCcw />
-                      </IconSize>
-                      <span>
-                        {USER_LABELS.RESTORE_SELECTED(selectedIds.length)}
-                      </span>
-                    </Button>
-                  )}
-                  {canManage && (
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="destructive"
-                      disabled={bulkState.isProcessing || selectedIds.length === 0}
-                      onClick={() => executeBulk("hard-delete", selectedIds, selectedRows, refresh, clearSelection)}
-                      className="whitespace-nowrap gap-2"
-                    >
-                      <IconSize size="md">
-                        <AlertTriangle />
-                      </IconSize>
-                      <span>
-                        {USER_LABELS.HARD_DELETE_SELECTED(selectedIds.length)}
-                      </span>
-                    </Button>
-                  )}
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    onClick={clearSelection}
-                    className="whitespace-nowrap"
-                  >
-                    {USER_LABELS.CLEAR_SELECTION}
-                  </Button>
-                </>
-              }
+          ? (props) => (
+            <DeletedUserSelectionActions
+              {...props}
+              canManage={canManage}
+              canRestore={canRestore}
+              isProcessing={bulkState.isProcessing}
+              executeBulk={executeBulk}
             />
           )
           : undefined,
@@ -571,83 +340,7 @@ export const UsersTableClient = ({
     cacheVersion,
   })
 
-  const getDeleteConfirmTitle = () => {
-    if (!deleteConfirm) return ""
-    if (deleteConfirm.type === "hard") {
-      return USER_CONFIRM_MESSAGES.HARD_DELETE_TITLE(
-        deleteConfirm.bulkIds?.length,
-      )
-    }
-    if (deleteConfirm.type === "restore") {
-      return USER_CONFIRM_MESSAGES.RESTORE_TITLE(
-        deleteConfirm.bulkIds?.length,
-      )
-    }
-    if (deleteConfirm.type === "active") {
-      return USER_CONFIRM_MESSAGES.ACTIVE_TITLE(
-        deleteConfirm.bulkIds?.length,
-      )
-    }
-    if (deleteConfirm.type === "unactive") {
-      return USER_CONFIRM_MESSAGES.UNACTIVE_TITLE(
-        deleteConfirm.bulkIds?.length,
-      )
-    }
-    return USER_CONFIRM_MESSAGES.DELETE_TITLE(deleteConfirm.bulkIds?.length)
-  }
-
-  const getDeleteConfirmDescription = () => {
-    if (!deleteConfirm) return ""
-    if (deleteConfirm.type === "hard") {
-      return USER_CONFIRM_MESSAGES.HARD_DELETE_DESCRIPTION(
-        deleteConfirm.bulkIds?.length,
-        deleteConfirm.row?.email,
-      )
-    }
-    if (deleteConfirm.type === "restore") {
-      return USER_CONFIRM_MESSAGES.RESTORE_DESCRIPTION(
-        deleteConfirm.bulkIds?.length,
-        deleteConfirm.row?.email,
-      )
-    }
-    if (deleteConfirm.type === "active") {
-      return USER_CONFIRM_MESSAGES.ACTIVE_DESCRIPTION(
-        deleteConfirm.bulkIds?.length,
-      )
-    }
-    if (deleteConfirm.type === "unactive") {
-      return USER_CONFIRM_MESSAGES.UNACTIVE_DESCRIPTION(
-        deleteConfirm.bulkIds?.length,
-      )
-    }
-    return USER_CONFIRM_MESSAGES.DELETE_DESCRIPTION(
-      deleteConfirm.bulkIds?.length,
-      deleteConfirm.row?.email,
-    )
-  }
-
-  const headerActions = canCreate ? (
-    <Button
-      type="button"
-      size="sm"
-      onClick={() => {
-        logger.info("➕ Create new from table header", {
-          source: "table-header-create-new",
-          resourceName: "users",
-          targetUrl: "/admin/users/new",
-        })
-        router.push("/admin/users/new")
-      }}
-      className="h-8 px-3"
-    >
-      <Flex align="center" gap={2}>
-        <IconSize size="md">
-          <Plus />
-        </IconSize>
-        {USER_LABELS.ADD_NEW}
-      </Flex>
-    </Button>
-  ) : undefined
+  const headerActions = <UserTableToolbar canCreate={canCreate} />
 
   return (
     <>
@@ -664,49 +357,17 @@ export const UsersTableClient = ({
         onViewChange={setCurrentViewId}
       />
 
-      {/* Delete Confirmation Dialog */}
-      {deleteConfirm && (
-        <ConfirmDialog
-          open={deleteConfirm.open}
-          onOpenChange={(open) => {
-            if (!open) setDeleteConfirm(null)
-          }}
-          title={getDeleteConfirmTitle()}
-          description={getDeleteConfirmDescription()}
-          variant={
-            deleteConfirm.type === "hard"
-              ? "destructive"
-              : deleteConfirm.type === "restore" || deleteConfirm.type === "active"
-                ? "default"
-                : deleteConfirm.type === "unactive"
-                  ? "default"
-                  : "destructive"
-          }
-          confirmLabel={
-            deleteConfirm.type === "hard"
-              ? USER_CONFIRM_MESSAGES.HARD_DELETE_LABEL
-              : deleteConfirm.type === "restore"
-                ? USER_CONFIRM_MESSAGES.RESTORE_LABEL
-                : deleteConfirm.type === "active"
-                  ? USER_CONFIRM_MESSAGES.ACTIVE_LABEL
-                  : deleteConfirm.type === "unactive"
-                    ? USER_CONFIRM_MESSAGES.UNACTIVE_LABEL
-                    : USER_CONFIRM_MESSAGES.CONFIRM_LABEL
-          }
-          cancelLabel={USER_CONFIRM_MESSAGES.CANCEL_LABEL}
-          onConfirm={handleDeleteConfirm}
-          isLoading={
-            bulkState.isProcessing ||
-            (deleteConfirm.row
-              ? deleteConfirm.type === "restore"
-                ? restoringIds.has(deleteConfirm.row.id)
-                : deleteConfirm.type === "hard"
-                  ? hardDeletingIds.has(deleteConfirm.row.id)
-                  : deletingIds.has(deleteConfirm.row.id)
-              : false)
-          }
-        />
-      )}
+      <UserConfirmDialog
+        deleteConfirm={deleteConfirm}
+        onOpenChange={(open) => {
+          if (!open) setDeleteConfirm(null)
+        }}
+        onConfirm={handleDeleteConfirm}
+        isProcessing={bulkState.isProcessing}
+        deletingIds={deletingIds}
+        restoringIds={restoringIds}
+        hardDeletingIds={hardDeletingIds}
+      />
 
       {/* Feedback Dialog */}
       {feedback && (

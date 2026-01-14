@@ -1,16 +1,13 @@
 "use client"
 
-import { IconSize } from "@/components/ui/typography"
-
 import { useCallback, useMemo, useState } from "react"
-import { RotateCcw, Trash2, AlertTriangle, Plus, CheckCircle2, XCircle } from "lucide-react"
-
-import { ConfirmDialog, FeedbackVariant } from "@/components/dialogs"
-import type { DataTableQueryState, DataTableResult } from "@/components/tables"
-import { FeedbackDialog } from "@/components/dialogs"
+import { FeedbackDialog, type FeedbackVariant } from "@/components/dialogs"
+import { toast } from "@/hooks/ui/use-toast"
 import { Button } from "@/components/ui/button"
-import { toast } from "@/hooks"
+import { IconSize } from "@/components/ui/typography"
+import { CheckCircle2, XCircle, Trash2, AlertTriangle, RotateCcw } from "lucide-react"
 import { ResourceTableClient, SelectionActionsWrapper } from "@/features/admin/resources/components"
+import type { DataTableResult, DataTableQueryState } from "@/components/tables"
 import type { ResourceViewMode } from "@/features/admin/resources/types"
 import {
   useResourceTableRefresh,
@@ -28,12 +25,13 @@ import { useStudentFeedback } from "../hooks/use-student-feedback"
 import { useStudentDeleteConfirm } from "../hooks/use-student-delete-confirm"
 import { useStudentColumns } from "../utils/columns"
 import { useStudentRowActions } from "../utils/row-actions"
-import { useResourceRouter } from "@/hooks"
 
 import type { AdminStudentsListParams } from "@/constants"
 import type { StudentRow, StudentsResponse, StudentsTableClientProps } from "../types"
-import { STUDENT_CONFIRM_MESSAGES, STUDENT_LABELS } from "../constants/messages"
+import { STUDENT_LABELS } from "../constants/messages"
 import { resourceLogger } from "@/utils"
+import { StudentConfirmDialog } from "./students-table-sub-sections/StudentConfirmDialog"
+import { StudentTableToolbar } from "./students-table-sub-sections/StudentTableToolbar"
 
 export const StudentsTableClient = ({
   canDelete = false,
@@ -45,7 +43,6 @@ export const StudentsTableClient = ({
   isParent = false,
   initialData,
 }: StudentsTableClientProps) => {
-  const router = useResourceRouter()
   const queryClient = useQueryClient()
   const { isSocketConnected, cacheVersion } = useStudentsSocketBridge()
   const { feedback, showFeedback, handleFeedbackOpenChange } = useStudentFeedback()
@@ -580,59 +577,7 @@ export const StudentsTableClient = ({
     renderDeletedRowActions,
   ])
 
-  const getDeleteConfirmTitle = () => {
-    if (!deleteConfirm) return ""
-    if (deleteConfirm.type === "hard") {
-      return STUDENT_CONFIRM_MESSAGES.HARD_DELETE_TITLE(
-        deleteConfirm.bulkIds?.length,
-        deleteConfirm.row?.studentCode,
-      )
-    }
-    if (deleteConfirm.type === "restore") {
-      return STUDENT_CONFIRM_MESSAGES.RESTORE_TITLE(
-        deleteConfirm.bulkIds?.length,
-        deleteConfirm.row?.studentCode,
-      )
-    }
-    return STUDENT_CONFIRM_MESSAGES.DELETE_TITLE(
-      deleteConfirm.bulkIds?.length,
-      deleteConfirm.row?.studentCode,
-    )
-  }
-
-  const getDeleteConfirmDescription = () => {
-    if (!deleteConfirm) return ""
-    if (deleteConfirm.type === "hard") {
-      return STUDENT_CONFIRM_MESSAGES.HARD_DELETE_DESCRIPTION(
-        deleteConfirm.bulkIds?.length,
-        deleteConfirm.row?.studentCode,
-      )
-    }
-    if (deleteConfirm.type === "restore") {
-      return STUDENT_CONFIRM_MESSAGES.RESTORE_DESCRIPTION(
-        deleteConfirm.bulkIds?.length,
-        deleteConfirm.row?.studentCode,
-      )
-    }
-    return STUDENT_CONFIRM_MESSAGES.DELETE_DESCRIPTION(
-      deleteConfirm.bulkIds?.length,
-      deleteConfirm.row?.studentCode,
-    )
-  }
-
-  const headerActions = canCreate ? (
-    <Button
-      type="button"
-      size="sm"
-      onClick={() => router.push("/admin/students/new")}
-      className="h-8 px-3"
-    >
-      <IconSize size="md" className="mr-2">
-        <Plus />
-      </IconSize>
-      {STUDENT_LABELS.ADD_NEW}
-    </Button>
-  ) : undefined
+  const headerActions = <StudentTableToolbar canCreate={canCreate} />
 
   return (
     <>
@@ -649,39 +594,17 @@ export const StudentsTableClient = ({
         onViewChange={setCurrentViewId}
       />
 
-      {/* Delete Confirmation Dialog */}
-      {deleteConfirm && (
-        <ConfirmDialog
-          open={deleteConfirm.open}
-          onOpenChange={(open) => {
-            if (!open) setDeleteConfirm(null)
-          }}
-          title={getDeleteConfirmTitle()}
-          description={getDeleteConfirmDescription()}
-          variant={deleteConfirm.type === "hard" ? "destructive" : deleteConfirm.type === "restore" ? "default" : "destructive"}
-          confirmLabel={
-            deleteConfirm.type === "hard"
-              ? STUDENT_CONFIRM_MESSAGES.HARD_DELETE_LABEL
-              : deleteConfirm.type === "restore"
-              ? STUDENT_CONFIRM_MESSAGES.RESTORE_LABEL
-              : STUDENT_CONFIRM_MESSAGES.CONFIRM_LABEL
-          }
-          cancelLabel={STUDENT_CONFIRM_MESSAGES.CANCEL_LABEL}
-          onConfirm={handleDeleteConfirm}
-          isLoading={
-            bulkState.isProcessing ||
-            (deleteConfirm.row
-              ? deleteConfirm.type === "restore"
-                ? restoringIds.has(deleteConfirm.row.id)
-                : deleteConfirm.type === "hard"
-                  ? hardDeletingIds.has(deleteConfirm.row.id)
-                  : deletingIds.has(deleteConfirm.row.id)
-              : false)
-          }
-        />
-      )}
-
-
+      <StudentConfirmDialog
+        deleteConfirm={deleteConfirm}
+        onOpenChange={(open) => {
+          if (!open) setDeleteConfirm(null)
+        }}
+        onConfirm={handleDeleteConfirm}
+        isProcessing={bulkState.isProcessing}
+        deletingIds={deletingIds}
+        restoringIds={restoringIds}
+        hardDeletingIds={hardDeletingIds}
+      />
 
       {/* Feedback Dialog */}
       {feedback && (

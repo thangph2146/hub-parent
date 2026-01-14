@@ -4,7 +4,6 @@ import { useRef } from "react";
 import { Quote } from "lucide-react";
 import { Flex } from "@/components/ui/flex";
 import { TypographyH2, TypographyP } from "@/components/ui/typography";
-import { PointerHighlight } from "@/components/ui/pointer-highlight";
 import { ContainerTextFlip } from "@/components/ui/container-text-flip";
 
 import { ScrollIndicator } from "./scroll-indicator";
@@ -30,21 +29,15 @@ export const OverviewSection = ({ className }: { className?: string }) => {
         padding="responsive-lg"
         className="h-full items-center justify-center space-y-8"
       >
-        <PointerHighlight
-          containerClassName="w-fit"
-          rectangleClassName="border-primary/50"
-          pointerClassName="text-primary"
-        >
-          <TypographyH2>
-            <div className="text-xl md:text-2xl font-bold flex items-center gap-2">
-              Về{" "}
-              <ContainerTextFlip
-                words={["Chúng Tôi", "Tương Lai", "Cam Kết"]}
-                className="text-2xl md:text-3xl font-bold"
-              />
-            </div>
-          </TypographyH2>
-        </PointerHighlight>
+        <TypographyH2>
+          <div className="text-xl md:text-2xl font-bold flex items-center gap-2">
+            Về{" "}
+            <ContainerTextFlip
+              words={["Chúng Tôi", "Tương Lai", "Cam Kết"]}
+              className="text-2xl md:text-3xl font-bold"
+            />
+          </div>
+        </TypographyH2>
 
         <div className="w-full relative px-9 py-6 rounded-xl bg-gradient-to-br from-primary/5 to-transparent">
           <Quote className="absolute top-1 left-1 fill-primary/10 w-6 h-6 rotate-180" />

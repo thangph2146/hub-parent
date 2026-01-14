@@ -10,8 +10,8 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { FlipWords } from "@/components/ui/flip-words";
 import { TypographyH1, TypographyP } from "@/components/ui/typography";
-import { useSectionHeight } from "@/hooks";
 import { ScrollIndicator } from "./scroll-indicator";
+import { useSectionHeight } from "@/hooks";
 
 export type HeroButton = ContentCardButton;
 
@@ -19,7 +19,6 @@ export interface HeroSectionProps {
   title: string;
   description: string;
   flipWords?: string[];
-  quote?: string;
   backgroundImage: {
     src: string;
     alt: string;
@@ -38,7 +37,6 @@ export const HeroSection = ({
   title,
   description,
   flipWords,
-  quote,
   backgroundImage,
   buttons,
   titleClassName,
@@ -47,7 +45,7 @@ export const HeroSection = ({
   className,
   children,
 }: HeroSectionProps) => {
-  const sectionRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const { sectionHeightClassName, sectionHeightStyle } = useSectionHeight({
     minHeight: 0,
     fullHeight: true,
@@ -56,12 +54,16 @@ export const HeroSection = ({
   return (
     <Flex
       as="section"
-      ref={sectionRef}
       fullWidth
       position="relative"
       overflow="hidden"
-      className={cn(sectionHeightClassName, className)}
+      className={cn(
+        sectionHeightClassName,
+        "w-full relative overflow-hidden",
+        className
+      )}
       style={sectionHeightStyle}
+      ref={containerRef}
     >
       {/* Background Image */}
       <div className="absolute inset-0 z-0">
@@ -69,9 +71,10 @@ export const HeroSection = ({
           src={backgroundImage.src}
           alt={backgroundImage.alt}
           fill
-          className="object-cover object-[center_bottom] animate-in fade-in duration-[1s]"
+          className="object-cover object-[center_bottom]"
           priority
-          quality={90}
+          fetchPriority="high"
+          quality={75}
           sizes="100vw"
         />
       </div>
@@ -89,36 +92,28 @@ export const HeroSection = ({
           direction="col"
           gap={4}
           className={cn(
-            "relative max-w-2xl p-8 sm:p-12 rounded-3xl backdrop-blur-2xl bg-black/60 border border-white/20 shadow-2xl transition-all duration-500",
+            "relative max-w-2xl p-8 sm:p-12 rounded-3xl bg-black/60 border border-white/20 shadow-2xl",
             overlayClassName
           )}
         >
-          <Flex direction="col" gap={3}>
-            <TypographyH1
-              className={cn(
-                "text-xl sm:text-2xl lg:text-3xl font-bold text-white leading-tight tracking-tight animate-in fade-in duration-700 text-balance uppercase",
-                titleClassName
-              )}
-            >
-              {title}
-              <br />
-              {flipWords && flipWords.length > 0 && (
-                <FlipWords
-                  words={flipWords}
-                  className="p-0 text-inherit"
-                />
-              )}
-            </TypographyH1>
-            {quote && (
-              <TypographyP className="text-white/80 text-sm sm:text-base font-medium italic animate-in fade-in duration-700 delay-150">
-                {quote}
-              </TypographyP>
+          <TypographyH1
+            className={cn(
+              "text-xl sm:text-2xl lg:text-3xl font-bold text-white leading-tight tracking-tight text-balance uppercase",
+              titleClassName
             )}
-          </Flex>
+          >
+            {title}
+          </TypographyH1>
+          
+          {flipWords && flipWords.length > 0 && (
+            <div className="text-2xl sm:text-3xl lg:text-5xl font-extrabold text-primary flex items-center gap-3">
+              <FlipWords words={flipWords} className="text-primary" />
+            </div>
+          )}
 
           <TypographyP
             className={cn(
-              "text-base sm:text-lg lg:text-xl text-white/90 leading-relaxed animate-in fade-in duration-700 delay-200",
+              "text-sm sm:text-base lg:text-lg text-white/90 leading-relaxed text-balance",
               descriptionClassName
             )}
           >
@@ -126,11 +121,7 @@ export const HeroSection = ({
           </TypographyP>
 
           {buttons && buttons.length > 0 && (
-            <Flex
-              gap={4}
-              wrap
-              className="animate-in fade-in slide-in-from-bottom-4 duration-700 delay-200"
-            >
+            <Flex gap={4} wrap>
               {buttons.map((btn, index) => (
                 <Button
                   key={index}
@@ -174,7 +165,7 @@ export const HeroSection = ({
         </Flex>
       </Flex>
 
-      <ScrollIndicator variant="light" containerRef={sectionRef} />
+      <ScrollIndicator variant="light" containerRef={containerRef} />
     </Flex>
   );
 };

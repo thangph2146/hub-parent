@@ -5,7 +5,6 @@ import { useSearchParams } from "next/navigation"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Flex } from "@/components/ui/flex"
-import { cn } from "@/utils"
 import { IconSize } from "@/components/ui/typography"
 
 interface PostPaginationProps {
@@ -44,27 +43,39 @@ export function PostPagination({ currentPage, totalPages }: PostPaginationProps)
   return (
     <nav aria-label="Pagination">
       <Flex align="center" justify="center" gap={2}>
-        <Button
-          variant="outline"
-          size="icon"
-          asChild
-          disabled={currentPage === 1}
-          className={cn(currentPage === 1 && "opacity-50 cursor-not-allowed")}
-        >
-          <Link href={getPageUrl(currentPage - 1)} aria-label="Previous page" prefetch={false}>
+        {currentPage === 1 ? (
+          <Button
+            variant="outline"
+            size="icon"
+            disabled
+            className="opacity-50 cursor-not-allowed"
+            aria-label="Trang trước"
+          >
             <IconSize size="sm">
               <ChevronLeft />
             </IconSize>
-          </Link>
-        </Button>
+          </Button>
+        ) : (
+          <Button
+            variant="outline"
+            size="icon"
+            asChild
+          >
+            <Link href={getPageUrl(currentPage - 1)} aria-label="Trang trước" prefetch={false}>
+              <IconSize size="sm">
+                <ChevronLeft />
+              </IconSize>
+            </Link>
+          </Button>
+        )}
 
         {startPage > 1 && (
           <>
-            <Button variant="outline" asChild>
+            <Button variant="outline" asChild aria-label="Trang 1">
               <Link href={getPageUrl(1)} prefetch={false}>1</Link>
             </Button>
             {startPage > 2 && (
-              <Flex className="px-2">
+              <Flex className="px-2" aria-hidden="true">
                 <span>...</span>
               </Flex>
             )}
@@ -76,6 +87,8 @@ export function PostPagination({ currentPage, totalPages }: PostPaginationProps)
             key={page}
             variant={currentPage === page ? "default" : "outline"}
             asChild
+            aria-label={`Trang ${page}`}
+            aria-current={currentPage === page ? "page" : undefined}
           >
             <Link href={getPageUrl(page)} prefetch={false}>{page}</Link>
           </Button>
@@ -84,29 +97,41 @@ export function PostPagination({ currentPage, totalPages }: PostPaginationProps)
         {endPage < totalPages && (
           <>
             {endPage < totalPages - 1 && (
-              <Flex className="px-2">
+              <Flex className="px-2" aria-hidden="true">
                 <span>...</span>
               </Flex>
             )}
-            <Button variant="outline" asChild>
+            <Button variant="outline" asChild aria-label={`Trang ${totalPages}`}>
               <Link href={getPageUrl(totalPages)} prefetch={false}>{totalPages}</Link>
             </Button>
           </>
         )}
 
-        <Button
-          variant="outline"
-          size="icon"
-          asChild
-          disabled={currentPage === totalPages}
-          className={cn(currentPage === totalPages && "opacity-50 cursor-not-allowed")}
-        >
-          <Link href={getPageUrl(currentPage + 1)} aria-label="Next page" prefetch={false}>
+        {currentPage === totalPages ? (
+          <Button
+            variant="outline"
+            size="icon"
+            disabled
+            className="opacity-50 cursor-not-allowed"
+            aria-label="Trang tiếp theo"
+          >
             <IconSize size="sm">
               <ChevronRight />
             </IconSize>
-          </Link>
-        </Button>
+          </Button>
+        ) : (
+          <Button
+            variant="outline"
+            size="icon"
+            asChild
+          >
+            <Link href={getPageUrl(currentPage + 1)} aria-label="Trang tiếp theo" prefetch={false}>
+              <IconSize size="sm">
+                <ChevronRight />
+              </IconSize>
+            </Link>
+          </Button>
+        )}
       </Flex>
     </nav>
   )

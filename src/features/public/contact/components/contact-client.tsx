@@ -1,6 +1,6 @@
 "use client"
 
-import { TypographyH3, TypographyPSmallMuted, TypographyTitleLarge, TypographyPSmall, TypographyPMuted } from "@/components/ui/typography"
+import { TypographyH1, TypographyH2, TypographyPSmallMuted, TypographyTitleLarge, TypographyPSmall, TypographyPMuted } from "@/components/ui/typography"
 import { Flex } from "@/components/ui/flex"
 
 import { ContactForm } from "./contact-form"
@@ -18,7 +18,11 @@ export type ContactClientProps = Record<string, never>
 export const ContactClient = ({ }: ContactClientProps) => {
   return (
     <Section padding="responsive-lg" background="background" className="relative min-h-[calc(100vh-64px)] overflow-hidden">
+      <div className="sr-only">
+        <TypographyH1>Liên hệ với HUB - Trường Đại học Ngân hàng TP.HCM</TypographyH1>
+      </div>
       <div className="relative z-10 container mx-auto">
+        <TypographyH2 className="mb-8 lg:mb-12 text-center">Liên hệ với chúng tôi</TypographyH2>
         <Flex direction="col" gap={6} className="w-full lg:flex-row lg:gap-8 items-stretch">
           {/* Left Side - Contact Information */}
           <Flex direction="col" gap={6} className="w-full lg:w-1/3">
@@ -47,9 +51,13 @@ export const ContactClient = ({ }: ContactClientProps) => {
                     </div>
                     <div className="flex-1 min-w-0">
                       <TypographyPSmall className="font-semibold text-foreground/80 mb-0.5">Điện thoại</TypographyPSmall>
-                      <TypographyPMuted className="text-base font-medium text-foreground hover:text-primary transition-colors cursor-pointer">
+                      <a 
+                        href="tel:02838212430" 
+                        className="text-base font-medium text-foreground hover:text-primary transition-colors cursor-pointer"
+                        aria-label="Gọi điện thoại cho HUB: (028) 38 212 430"
+                      >
                         (028) 38 212 430
-                      </TypographyPMuted>
+                      </a>
                     </div>
                   </div>
 
@@ -59,9 +67,13 @@ export const ContactClient = ({ }: ContactClientProps) => {
                     </div>
                     <div className="flex-1 min-w-0">
                       <TypographyPSmall className="font-semibold text-foreground/80 mb-0.5">Email</TypographyPSmall>
-                      <TypographyPMuted className="text-base font-medium text-foreground hover:text-primary transition-colors cursor-pointer break-words">
+                      <a 
+                        href="mailto:dhnhtphcm@hub.edu.vn" 
+                        className="text-base font-medium text-foreground hover:text-primary transition-colors cursor-pointer break-words"
+                        aria-label="Gửi email cho HUB: dhnhtphcm@hub.edu.vn"
+                      >
                         dhnhtphcm@hub.edu.vn
-                      </TypographyPMuted>
+                      </a>
                     </div>
                   </div>
 
@@ -101,7 +113,7 @@ export const ContactClient = ({ }: ContactClientProps) => {
               <CardContent className="h-full p-6 lg:p-8 relative">
                 <Flex direction="col" gap={6} className="h-full">
                   <div>
-                    <TypographyH3 className="text-xl font-bold">Gửi tin nhắn</TypographyH3>
+                    <TypographyH2 className="text-xl font-bold">Gửi tin nhắn</TypographyH2>
                     <TypographyPMuted>Điền vào biểu mẫu bên dưới, chúng tôi sẽ liên hệ lại với bạn.</TypographyPMuted>
                   </div>
                   <div className="flex-1">

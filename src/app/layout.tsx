@@ -95,7 +95,6 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: appConfig.viewport.width,
   initialScale: appConfig.viewport.initialScale,
-  maximumScale: appConfig.viewport.maximumScale,
   // Prevent zoom on input focus (mobile UX best practice)
   userScalable: true,
   themeColor: [
@@ -113,6 +112,10 @@ export default async function RootLayout({
 
   return (
     <html lang="vi" suppressHydrationWarning className="overflow-x-hidden">
+      <head>
+        <link rel="preconnect" href="https://fileserver2.hub.edu.vn" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://fileserver2.hub.edu.vn" />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         suppressHydrationWarning

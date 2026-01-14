@@ -66,8 +66,9 @@ export function PublicFooter() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer>
+    <footer role="contentinfo">
       <Flex
+        as="div"
         direction="col"
         position="relative"
         padding="responsive-lg"
@@ -176,6 +177,7 @@ export function PublicFooter() {
               <Flex direction="col" gap={3} className="min-w-0 w-full">
                 <Link
                   href="mailto:dhnhtphcm@hub.edu.vn"
+                  aria-label="Gửi email cho Trường Đại học Ngân hàng TP.HCM"
                   className="transition-all hover:opacity-80"
                 >
                   <Flex align="start" gap={3}>
@@ -203,6 +205,7 @@ export function PublicFooter() {
 
                 <Link
                   href="tel:0888353488"
+                  aria-label="Gọi điện thoại tư vấn tuyển sinh"
                   className="transition-all hover:opacity-80"
                 >
                   <Flex align="start" gap={3}>
@@ -232,6 +235,7 @@ export function PublicFooter() {
 
                 <Link
                   href="tel:02838212430"
+                  aria-label="Gọi điện thoại phòng đào tạo"
                   className="transition-all hover:opacity-80"
                 >
                   <Flex align="start" gap={3}>
