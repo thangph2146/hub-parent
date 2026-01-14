@@ -30,7 +30,7 @@ export const OrganizationStructureSection = () => {
           <div className="relative w-full aspect-[16/12]">
             <Image
               src="https://fileserver2.hub.edu.vn/IMAGES/2025/09/22/20250922082406Bộ-máy-tổ-chức-2.png"
-              alt="Bộ máy tổ chức"
+              alt="Sơ đồ bộ máy tổ chức của Trường Đại học Ngân hàng TP.HCM (HUB)"
               fill
               className="object-cover"
               sizes="(max-width: 640px) 100vw, (max-width: 1200px) 90vw, 1200px"

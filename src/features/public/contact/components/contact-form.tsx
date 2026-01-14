@@ -1,7 +1,7 @@
 "use client";
 
 import { useForm } from "react-hook-form";
-import { TypographySpanSmall, TypographySpanDestructive, IconSize, TypographyPMuted, TypographyH3 } from "@/components/ui/typography";
+import { TypographySpanSmall, TypographySpanDestructive, IconSize, TypographyPMuted, TypographyH2, TypographyH3 } from "@/components/ui/typography";
 import { Flex } from "@/components/ui/flex";
 import { Grid } from "@/components/ui/grid";
 import { Button } from "@/components/ui/button";
@@ -43,10 +43,12 @@ interface ContactFormProps {
   apiUrl?: string;
   title?: string;
   description?: string;
+  headingLevel?: "h2" | "h3";
 }
 
-export function ContactForm({ onSubmit, className, apiUrl = "/api/contact", title, description }: ContactFormProps) {
+export function ContactForm({ onSubmit, className, apiUrl = "/api/contact", title, description, headingLevel = "h3" }: ContactFormProps) {
   const { toast } = useToast();
+  const Heading = headingLevel === "h2" ? TypographyH2 : TypographyH3;
   const {
     register,
     handleSubmit: handleFormSubmit,
@@ -116,7 +118,7 @@ export function ContactForm({ onSubmit, className, apiUrl = "/api/contact", titl
       <CardContent className="flex flex-col gap-4">
         {(title || description) && (
           <Flex direction="col" gap={2}>
-            {title && <TypographyH3>{title}</TypographyH3>}
+            {title && <Heading>{title}</Heading>}
             {description && <TypographyPMuted>{description}</TypographyPMuted>}
           </Flex>
         )}

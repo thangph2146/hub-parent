@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/utils";
 
 export interface ContainerTextFlipProps {
@@ -27,8 +27,11 @@ export function ContainerTextFlip({
 }: ContainerTextFlipProps) {
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
 
-  // Tìm từ dài nhất để đặt min-width ổn định
-  const longestWord = [...words].sort((a, b) => b.length - a.length)[0];
+  // Memoize longest word to avoid recalculation on every render
+  const longestWord = useMemo(() => 
+    [...words].sort((a, b) => b.length - a.length)[0],
+    [words]
+  );
 
   useEffect(() => {
     const intervalId = setInterval(() => {
@@ -55,36 +58,21 @@ export function ContainerTextFlip({
       </span>
       
       <div className="absolute inset-0 flex items-center justify-center">
-        <motion.div
-          key={words[currentWordIndex]}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
-          transition={{
-            duration: animationDuration / 1000,
-            ease: "easeInOut",
-          }}
-          className={cn("inline-block whitespace-nowrap", textClassName)}
-        >
-          {words[currentWordIndex].split("").map((letter, index) => (
-            <motion.span
-              key={index}
-              initial={{
-                opacity: 0,
-                filter: "blur(10px)",
-              }}
-              animate={{
-                opacity: 1,
-                filter: "blur(0px)",
-              }}
-              transition={{
-                delay: index * 0.02,
-              }}
-            >
-              {letter}
-            </motion.span>
-          ))}
-        </motion.div>
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={words[currentWordIndex]}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{
+              duration: animationDuration / 1000,
+              ease: "easeInOut",
+            }}
+            className={cn("inline-block whitespace-nowrap", textClassName)}
+          >
+            {words[currentWordIndex]}
+          </motion.div>
+        </AnimatePresence>
       </div>
     </motion.span>
   );

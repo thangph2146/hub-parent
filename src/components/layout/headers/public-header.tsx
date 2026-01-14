@@ -1,12 +1,13 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import React from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/utils";
 import { MenuToggleIcon } from "@/components/ui/menu-toggle-icon";
-import { NavUser } from "@/components/layout/navigation";
+
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -38,6 +39,14 @@ import { appFeatures } from "@/constants";
 import { getResourceMainRoute } from "@/permissions";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
+
+// Dynamic import NavUser để giảm bundle size cho public pages
+// NavUser chứa nhiều logic admin và socket bridges không cần thiết cho khách
+const NavUser = dynamic(() => import("@/components/layout/navigation").then(mod => mod.NavUser), {
+  ssr: false,
+  loading: () => <Skeleton className="h-8 w-8 rounded-full" />
+});
+
 import {
   TypographyPSmall,
   TypographyP,
@@ -454,16 +463,18 @@ export function PublicHeader() {
             )}
             <Sheet open={open} onOpenChange={setOpen} modal={false}>
               <SheetTrigger asChild>
-                  <Button
-                    size="icon"
-                    variant="outline"
-                    className="lg:hidden"
-                    aria-label="Toggle menu"
-                  >
-                    <IconSize size="md">
-                      <MenuToggleIcon open={open} duration={300} />
-                    </IconSize>
-                  </Button>
+                    <Button
+                      size="icon"
+                      variant="outline"
+                      className="lg:hidden h-9 w-9"
+                      aria-label="Mở menu điều hướng"
+                      aria-expanded={open}
+                      aria-controls="mobile-navigation"
+                    >
+                      <IconSize size="md">
+                        <MenuToggleIcon open={open} duration={300} />
+                      </IconSize>
+                    </Button>
                 </SheetTrigger>
                  {open && <SheetOverlay onClick={() => setOpen(false)} />}
                  <SheetContent side="right" className="h-full p-0 border-l bg-background/95 backdrop-blur-xl">
@@ -471,7 +482,7 @@ export function PublicHeader() {
                 <SheetDescription className="sr-only">
                   Truy cập các liên kết điều hướng và tài khoản của bạn
                 </SheetDescription>
-                <div className="flex flex-col h-full container mx-auto">
+                <div className="flex flex-col h-full container mx-auto" id="mobile-navigation">
                   <div className="flex-1 overflow-y-auto px-4 pb-8 scrollbar-hide pt-12 sm:pt-4">
                     <Flex direction="col" height="full" gap={0}>
                       {isAuthenticated ? (

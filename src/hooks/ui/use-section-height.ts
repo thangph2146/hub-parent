@@ -54,23 +54,12 @@ export function useSectionHeight(
       return {};
     }
 
-    // Nếu chưa mounted (SSR), không trả về style động để tránh mismatch
-    if (!isMounted) {
-      return {};
-    }
-
     // Đảm bảo headerHeight luôn là số dương
     let actualHeaderHeight = headerHeight;
     
-    if (actualHeaderHeight <= 0 && typeof document !== "undefined") {
-      const header = document.querySelector<HTMLElement>('header[data-public-header="true"]') || 
-                     document.querySelector<HTMLElement>("header");
-      if (header) {
-        const rect = header.getBoundingClientRect();
-        actualHeaderHeight = rect.height > 0 ? rect.height : 56; // Fallback to default
-      } else {
-        actualHeaderHeight = 56; // Fallback to default
-      }
+    // Fallback khi SSR hoặc chưa đo được height
+    if (actualHeaderHeight <= 0) {
+        actualHeaderHeight = 56; // Default header height
     }
 
     // Đảm bảo height luôn chính xác là 100vh - headerHeight
@@ -83,7 +72,7 @@ export function useSectionHeight(
     };
     
     return style;
-  }, [fullHeight, headerHeight, minHeight, isMounted]);
+  }, [fullHeight, headerHeight, minHeight]);
 
   // Scroll đến section tiếp theo
   const scrollToNextSection = (currentElement: HTMLElement | null) => {

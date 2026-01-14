@@ -1,4 +1,5 @@
 "use client";
+"use no memo";
 
 import { useState, useMemo, useEffect, useRef } from "react";
 import dynamic from "next/dynamic";
@@ -262,7 +263,8 @@ export const HighchartsMonthlyChart = ({
         },
         padding: 0,
         outside: false,
-        formatter: function (this: any) {
+        // eslint-disable-next-line react-hooks/unsupported-syntax
+        formatter: function (this: { x: string | number; points?: Array<{ color: string; series: { name: string }; y: number }> }) {
           const maxPoints = 8;
           const pointsToShow = this.points ? this.points.slice(0, maxPoints) : [];
           const hasMore = this.points ? this.points.length > maxPoints : false;
@@ -287,7 +289,7 @@ export const HighchartsMonthlyChart = ({
               <div style="display: flex; flex-direction: column; gap: 4px;">
           `;
           
-          pointsToShow.forEach((point: any) => {
+          pointsToShow.forEach((point) => {
             tooltip += `
               <div style="
                 display: flex;

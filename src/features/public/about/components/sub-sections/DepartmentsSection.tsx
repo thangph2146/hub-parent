@@ -1,4 +1,4 @@
-import { TypographyH2, TypographyDescriptionLarge, TypographyH4, TypographyPSmallMuted } from "@/components/ui/typography";
+import { TypographyH2, TypographyDescriptionLarge, TypographyH3, TypographyPSmallMuted } from "@/components/ui/typography";
 import { DEPARTMENTS } from "../../constants";
 
 export const DepartmentsSection = () => {
@@ -25,9 +25,9 @@ export const DepartmentsSection = () => {
               <div className="mb-4 text-primary group-hover:scale-110 transition-transform duration-300">
                 {dept.icon}
               </div>
-              <TypographyH4 className="mb-2 group-hover:text-primary transition-colors line-clamp-2 min-h-[3rem] flex items-center justify-center">
+              <TypographyH3 className="mb-2 group-hover:text-primary transition-colors line-clamp-2 min-h-[3rem] flex items-center justify-center">
                 {dept.name}
-              </TypographyH4>
+              </TypographyH3>
               <TypographyPSmallMuted className="line-clamp-2">
                 {dept.description}
               </TypographyPSmallMuted>

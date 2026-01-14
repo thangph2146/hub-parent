@@ -22,9 +22,17 @@ const itemVariants = {
   },
 };
 
+export interface ResourceConfig {
+  key: string;
+  label: string;
+  permission: boolean;
+  color: string;
+  isImportant: boolean;
+}
+
 interface MonthlyTrendsSectionProps {
   monthlyData: DashboardStatsData["monthlyData"];
-  availableResources: any[];
+  availableResources: ResourceConfig[];
   selectedResources: Set<string>;
   hiddenSeries: Set<string>;
   chartType: "line" | "bar" | "composed";

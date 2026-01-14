@@ -15,8 +15,11 @@ export const FlipWords = ({
   const [currentWord, setCurrentWord] = useState(words[0]);
   const [isAnimating, setIsAnimating] = useState<boolean>(false);
 
-  // Tìm từ dài nhất để giữ width ổn định
-  const longestWord = [...words].sort((a, b) => b.length - a.length)[0];
+  // Memoize longest word to avoid recalculation on every render
+  const longestWord = React.useMemo(() => 
+    [...words].sort((a, b) => b.length - a.length)[0],
+    [words]
+  );
 
   const startAnimation = useCallback(() => {
     const word = words[words.indexOf(currentWord) + 1] || words[0];
@@ -25,10 +28,15 @@ export const FlipWords = ({
   }, [currentWord, words]);
 
   useEffect(() => {
-    if (!isAnimating)
-      setTimeout(() => {
+    let timeoutId: NodeJS.Timeout;
+    if (!isAnimating) {
+      timeoutId = setTimeout(() => {
         startAnimation();
       }, duration);
+    }
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+    };
   }, [isAnimating, duration, startAnimation]);
 
   return (
@@ -44,25 +52,17 @@ export const FlipWords = ({
         }}
       >
         <motion.div
-          initial={{
-            opacity: 0,
-            y: 10,
-          }}
+          initial={false} // Bỏ animation ban đầu để hiện text ngay lập tức (tốt cho LCP)
           animate={{
             opacity: 1,
             y: 0,
           }}
           transition={{
-            type: "spring",
-            stiffness: 100,
-            damping: 10,
+            duration: 0.3,
           }}
           exit={{
             opacity: 0,
-            y: -40,
-            x: 40,
-            filter: "blur(8px)",
-            scale: 2,
+            y: -10,
             position: "absolute",
           }}
           className={cn(
@@ -71,34 +71,7 @@ export const FlipWords = ({
           )}
           key={currentWord}
         >
-          {currentWord.split(" ").map((word, wordIndex) => (
-            <motion.span
-              key={word + wordIndex}
-              initial={{ opacity: 0, y: 10, filter: "blur(8px)" }}
-              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-              transition={{
-                delay: wordIndex * 0.3,
-                duration: 0.3,
-              }}
-              className="inline-block whitespace-nowrap"
-            >
-              {word.split("").map((letter, letterIndex) => (
-                <motion.span
-                  key={word + letterIndex}
-                  initial={{ opacity: 0, y: 10, filter: "blur(8px)" }}
-                  animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                  transition={{
-                    delay: wordIndex * 0.3 + letterIndex * 0.05,
-                    duration: 0.2,
-                  }}
-                  className="inline-block"
-                >
-                  {letter}
-                </motion.span>
-              ))}
-              <span className="inline-block">&nbsp;</span>
-            </motion.span>
-          ))}
+          {currentWord}
         </motion.div>
       </AnimatePresence>
     </span>

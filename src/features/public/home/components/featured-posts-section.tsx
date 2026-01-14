@@ -65,12 +65,13 @@ export const FeaturedPostsSection = ({ featuredPosts = [], className }: Featured
           </Flex>
 
           <Grid cols={3} gap={8} className="md:grid-cols-3 sm:grid-cols-2 grid-cols-1">
-            {featuredPosts.slice(0, 3).map((post, index) => (
+            {featuredPosts.slice(0, 3).map((post) => (
               <PostCard
                 key={post.id}
                 post={post}
-                priority={index < 3}
+                priority={false}
                 className="h-full"
+                headingLevel="h3"
               />
             ))}
           </Grid>

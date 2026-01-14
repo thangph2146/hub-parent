@@ -95,7 +95,7 @@ export const ContactSection = ({ className }: ContactSectionProps) => {
               </Flex>
 
               <motion.div variants={itemVariants} className="flex-1 lg:w-3/5">
-                <ContactForm title="Liên hệ hỗ trợ" />
+                <ContactForm title="Liên hệ hỗ trợ" headingLevel="h3" />
               </motion.div>
             </Flex>
           </motion.div>

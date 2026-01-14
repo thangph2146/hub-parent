@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { TypographyH2, TypographyDescriptionLarge, TypographyH4, TypographyPSmallMuted, IconSize } from "@/components/ui/typography";
+import { TypographyH2, TypographyDescriptionLarge, TypographyH3, TypographyPSmallMuted, IconSize } from "@/components/ui/typography";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
@@ -47,9 +47,9 @@ export const LeadersSection = () => {
                         sizes="(max-width: 640px) 128px, 160px"
                       />
                     </div>
-                    <TypographyH4 className="mb-1 group-hover:text-primary transition-colors">
+                    <TypographyH3 className="mb-1 group-hover:text-primary transition-colors text-lg font-bold">
                       {leader.name}
-                    </TypographyH4>
+                    </TypographyH3>
                     <TypographyPSmallMuted className="font-medium text-primary/80 mb-2 whitespace-pre-line">
                       {leader.position}
                     </TypographyPSmallMuted>
@@ -70,17 +70,20 @@ export const LeadersSection = () => {
               size="icon"
               onClick={prevLeader}
               className="rounded-full hover:bg-primary hover:text-white transition-all"
+              aria-label="Thế hệ lãnh đạo trước"
             >
               <IconSize size="sm">
                 <ChevronLeft />
               </IconSize>
             </Button>
 
-            <div className="flex gap-2">
+            <div className="flex gap-2" role="group" aria-label="Chọn thế hệ lãnh đạo">
               {LEADER_GENERATIONS.map((_, index) => (
                 <button
                   key={index}
                   onClick={() => setCurrentLeaderIndex(index)}
+                  aria-label={`Thế hệ lãnh đạo ${LEADER_GENERATIONS[index].year}`}
+                  aria-current={index === currentLeaderIndex ? "true" : "false"}
                   className={`h-2 rounded-full transition-all duration-300 ${
                     index === currentLeaderIndex
                       ? "bg-primary w-8"
@@ -95,6 +98,7 @@ export const LeadersSection = () => {
               size="icon"
               onClick={nextLeader}
               className="rounded-full hover:bg-primary hover:text-white transition-all"
+              aria-label="Thế hệ lãnh đạo tiếp theo"
             >
               <IconSize size="sm">
                 <ChevronRight />

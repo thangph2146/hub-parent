@@ -16,7 +16,7 @@ interface UserSelectionActionsProps {
   canManage: boolean;
   canRestore?: boolean;
   isProcessing: boolean;
-  executeBulk: (action: any, ids: string[], rows: UserRow[], refresh: () => void, clear: () => void) => void;
+  executeBulk: (action: "delete" | "restore" | "hard-delete" | "active" | "unactive", ids: string[], rows: UserRow[], refresh: () => void, clear: () => void) => void;
 }
 
 export const ActiveUserSelectionActions = ({

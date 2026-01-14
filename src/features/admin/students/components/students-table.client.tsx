@@ -595,7 +595,7 @@ export const StudentsTableClient = ({
       />
 
       <StudentConfirmDialog
-        deleteConfirm={deleteConfirm as any}
+        deleteConfirm={deleteConfirm}
         onOpenChange={(open) => {
           if (!open) setDeleteConfirm(null)
         }}

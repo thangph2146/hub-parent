@@ -35,8 +35,14 @@ export default function PublicLayout({
 }) {
   return (
     <>
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:rounded-md focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+      >
+        Chuyển đến nội dung chính
+      </a>
       <PublicHeader />
-      <main id="main-content" className="mb-8">
+      <main id="main-content" className="mb-8 outline-none" tabIndex={-1}>
         {children}
       </main>
       <PublicFooter />

@@ -26,7 +26,6 @@ import { ThemeProvider } from "./theme-provider"
 import { SessionProvider } from "./session-provider"
 import { QueryProvider } from "./query-provider"
 import { ScrollToTop } from "./scroll-to-top"
-import { ResourceHints } from "./resource-hints"
 export * from "./resource-segment-provider"
 
 export interface ProvidersProps {
@@ -46,7 +45,6 @@ export function Providers({ children, initialSession }: ProvidersProps) {
     <ThemeProvider>
       <SessionProvider session={initialSession}>
         <QueryProvider>
-          <ResourceHints />
           {children}
           <ScrollToTop />
         </QueryProvider>

@@ -35,7 +35,7 @@ export const RelatedPosts = ({ posts, title = "Bài viết liên quan" }: Relate
 
       <Grid cols={3} gap={8}>
         {posts.map((post) => (
-          <PostCard key={post.id} post={post} />
+          <PostCard key={post.id} post={post} headingLevel="h3" />
         ))}
       </Grid>
     </section>

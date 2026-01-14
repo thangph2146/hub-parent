@@ -19,8 +19,14 @@ const itemVariants = {
   },
 };
 
+interface CategoryDistributionItem {
+  name: string;
+  value: number;
+  color: string;
+}
+
 interface CategoryDistributionSectionProps {
-  categoryData: any[];
+  categoryData: CategoryDistributionItem[];
   totalPosts: number;
 }
 

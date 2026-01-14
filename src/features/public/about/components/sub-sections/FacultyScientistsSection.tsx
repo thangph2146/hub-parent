@@ -36,10 +36,11 @@ export const FacultyScientistsSection = () => {
           <div className="relative w-full aspect-[16/10]">
             <Image
               src="https://fileserver2.hub.edu.vn/IMAGES/2025/03/26/2025032609070820241231170644doingu.jpg"
-              alt="Đội ngũ Giảng viên - Nhà khoa học"
+              alt="Đội ngũ Giảng viên và Nhà khoa học của Trường Đại học Ngân hàng TP.HCM (HUB)"
               fill
               className="object-cover"
               sizes="(max-width: 640px) 100vw, (max-width: 1200px) 90vw, 1200px"
+              quality={75}
             />
           </div>
         </div>

@@ -286,7 +286,7 @@ export const RolesTableClient = ({
       />
 
       <RoleConfirmDialog
-        deleteConfirm={deleteConfirm as any}
+        deleteConfirm={deleteConfirm}
         onOpenChange={(open) => {
           if (!open) setDeleteConfirm(null)
         }}

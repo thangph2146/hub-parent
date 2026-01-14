@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { TypographyH2, TypographyDescriptionLarge, TypographyPSmallMuted, IconSize } from "@/components/ui/typography";
+import { TypographyH2, TypographyDescriptionLarge, TypographyPSmallMuted, IconSize, TypographyH3 } from "@/components/ui/typography";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
@@ -39,9 +39,9 @@ export const FacilitiesSection = () => {
                   {facility.icon}
                 </div>
                 <div>
-                  <h4 className="text-lg sm:text-xl font-bold mb-1 sm:mb-2 group-hover:text-primary transition-colors">
+                  <TypographyH3 className="mb-1 sm:mb-2 group-hover:text-primary transition-colors text-lg font-bold">
                     {facility.title}
-                  </h4>
+                  </TypographyH3> 
                   <TypographyPSmallMuted>
                     {facility.description}
                   </TypographyPSmallMuted>
@@ -72,9 +72,9 @@ export const FacilitiesSection = () => {
                     <p className="text-sm font-medium uppercase tracking-wider mb-1">
                       {image.category}
                     </p>
-                    <h4 className="text-xl sm:text-2xl font-bold">
+                    <TypographyH3 className="text-xl sm:text-2xl font-bold">
                       {image.title}
-                    </h4>
+                    </TypographyH3>
                   </div>
                 </div>
               ))}
@@ -86,6 +86,7 @@ export const FacilitiesSection = () => {
                 variant="outline"
                 size="icon"
                 onClick={prevImage}
+                aria-label="Hình ảnh trước"
                 className="bg-white/20 backdrop-blur-md border-white/30 text-white hover:bg-white/40 rounded-full"
               >
                 <IconSize size="sm">
@@ -96,6 +97,7 @@ export const FacilitiesSection = () => {
                 variant="outline"
                 size="icon"
                 onClick={nextImage}
+                aria-label="Hình ảnh tiếp theo"
                 className="bg-white/20 backdrop-blur-md border-white/30 text-white hover:bg-white/40 rounded-full"
               >
                 <IconSize size="sm">

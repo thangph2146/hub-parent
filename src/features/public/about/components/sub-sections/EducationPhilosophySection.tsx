@@ -42,7 +42,7 @@ export const EducationPhilosophySection = () => {
             <div className="aspect-[9/10] relative w-full">
               <Image
                 src="https://fileserver2.hub.edu.vn/IMAGES/2025/03/26/2025032609084220241231170442trietlygiaoduc.png"
-                alt="Triết lý giáo dục"
+                alt="Triết lý giáo dục của Trường Đại học Ngân hàng TP.HCM (HUB)"
                 fill
                 className="object-cover"
                 sizes="(max-width: 1280px) 100vw, 50vw"

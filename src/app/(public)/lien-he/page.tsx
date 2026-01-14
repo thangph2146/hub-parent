@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import { appConfig, getOpenGraphConfig, getTwitterConfig } from "@/constants"
 import { Contact } from "@/features/public/contact/components"
+import Script from "next/script"
 
 /**
  * Contact Page Metadata
@@ -19,6 +20,9 @@ export const metadata: Metadata = {
     absolute: `Liên hệ | ${appConfig.name}`,
   },
   description: `Liên hệ với ${appConfig.namePublic || appConfig.name}. Gửi tin nhắn cho chúng tôi về bất kỳ vấn đề nào cần được giải quyết.`,
+  alternates: {
+    canonical: "/lien-he",
+  },
   openGraph: {
     ...openGraphConfig,
     url: `${appConfig.url}/lien-he`,
@@ -37,6 +41,31 @@ export const metadata: Metadata = {
 }
 
 export default async function ContactPage() {
-  return <Contact />
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "ContactPage",
+    "name": "Liên hệ với chúng tôi - HUB",
+    "description": "Thông tin liên hệ và biểu mẫu gửi tin nhắn cho Trường Đại học Ngân hàng TP.HCM.",
+    "url": `${appConfig.url}/lien-he`,
+    "contactPoint": {
+      "@type": "ContactPoint",
+      "telephone": "(028) 38 212 430",
+      "contactType": "customer service",
+      "email": "dhnhtphcm@hub.edu.vn",
+      "areaServed": "VN",
+      "availableLanguage": "Vietnamese"
+    }
+  };
+
+  return (
+    <>
+      <Script
+        id="contact-structured-data"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      />
+      <Contact />
+    </>
+  )
 }
 

@@ -32,7 +32,7 @@ export const VisionMissionSection = () => {
             <div className="aspect-[4/3] relative w-full">
               <Image
                 src="https://fileserver2.hub.edu.vn/IMAGES/2025/04/10/2025041010270420250326090935tamhhinsumenh.jpg"
-                alt="Tầm nhìn - Sứ mệnh"
+                alt="Tầm nhìn và Sứ mệnh của Trường Đại học Ngân hàng TP.HCM (HUB)"
                 fill
                 className="object-cover"
                 sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 50vw"

@@ -1,5 +1,5 @@
 import type { Metadata } from "next"
-import { TypographyH2, TypographyPMuted } from "@/components/ui/typography"
+import { TypographyH1, TypographyPMuted } from "@/components/ui/typography"
 import { PostPageClient } from "@/features/public/post/components/post-page-client"
 import { PostSort } from "@/features/public/post/components/post-sort"
 import { PostDateRange } from "@/features/public/post/components/post-date-range"
@@ -104,7 +104,7 @@ export default async function PostPage({ searchParams }: PostPageProps) {
         <div className="sticky top-14 z-10 w-full mx-auto flex items-center justify-between gap-3 sm:gap-4 mb-4 sm:mb-6 lg:mb-8 px-4 sm:px-0 -mx-4 sm:mx-0 py-3 sm:py-0 border-b bg-background/95 supports-[backdrop-filter]:bg-background/80 border-border backdrop-blur-lg overflow-x-auto no-scrollbar">
           <div className="flex items-center gap-3 flex-shrink-0">
             <div>
-              <TypographyH2 className="text-base sm:text-xl lg:text-2xl whitespace-nowrap">Tất cả bài viết</TypographyH2>
+              <TypographyH1 className="text-base sm:text-xl lg:text-2xl whitespace-nowrap">Tất cả bài viết</TypographyH1>
               <TypographyPMuted className="mt-0.5 text-[10px] sm:text-sm lg:text-base whitespace-nowrap">
                 {result.pagination.total} bài viết
               </TypographyPMuted>

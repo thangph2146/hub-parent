@@ -25,10 +25,10 @@ export const OverviewSection = () => {
                   <strong className="text-foreground">16/12/1976</strong>.
                 </TypographyDescriptionLarge>
               </div>
-              <TypographyH3 className="mt-4">
-                <span className="text-secondary font-bold text-xl sm:text-2xl">H</span>EIGHTENING{" "}
-                <span className="text-secondary font-bold text-xl sm:text-2xl">U</span>NIQUE{" "}
-                <span className="text-secondary font-bold text-xl sm:text-2xl">B</span>RILLIANCE
+              <TypographyH3 className="mt-4 text-xl sm:text-2xl font-bold">
+                <span className="text-secondary">H</span>EIGHTENING{" "}
+                <span className="text-secondary">U</span>NIQUE{" "}
+                <span className="text-secondary">B</span>RILLIANCE
               </TypographyH3>
             </div>
           </div>
@@ -45,6 +45,7 @@ export const OverviewSection = () => {
                 fill
                 className="object-cover"
                 sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 50vw"
+                quality={75}
                 priority
               />
             </div>
@@ -53,24 +54,24 @@ export const OverviewSection = () => {
           {/* Statistics List */}
           <div className="space-y-4 sm:space-y-6">
             <div>
-              <TypographyH2 className="mb-2 text-primary">
+              <TypographyH3 className="mb-2 text-primary">
                 49
                 <TypographySpanSmall className="text-primary">
                   + năm
                 </TypographySpanSmall>
-              </TypographyH2>
+              </TypographyH3>
               <TypographyPSmallMuted>
                 Xây dựng và phát triển với 16 ngành và 03 cơ sở sở đào tạo!
               </TypographyPSmallMuted>
             </div>
 
             <div>
-              <TypographyH2 className="mb-2 text-primary">
+              <TypographyH3 className="mb-2 text-primary">
                 17.500
                 <TypographySpanSmall className="text-primary">
                   +
                 </TypographySpanSmall>
-              </TypographyH2>
+              </TypographyH3>
               <TypographyPSmallMuted>
                 Sinh viên đang theo học ở các bậc đào tạo từ đại học, thạc sĩ,
                 tiến sĩ
@@ -78,9 +79,9 @@ export const OverviewSection = () => {
             </div>
 
             <div>
-              <TypographyH2 className="mb-2 text-primary">
+              <TypographyH3 className="mb-2 text-primary">
                 500
-              </TypographyH2>
+              </TypographyH3>
               <TypographyPSmallMuted>
                 Cán bộ, giảng viên, nhân viên, trong đó có 38 Giáo sư, Phó
                 Giáo sư, 197 Tiến sĩ và 238 Thạc sĩ
@@ -88,12 +89,12 @@ export const OverviewSection = () => {
             </div>
 
             <div>
-              <TypographyH2 className="mb-2 text-primary">
+              <TypographyH3 className="mb-2 text-primary">
                 66.000
                 <TypographySpanSmall className="text-primary">
                   +
                 </TypographySpanSmall>
-              </TypographyH2>
+              </TypographyH3>
               <TypographyPSmallMuted>
                 Cử nhân, thạc sĩ, tiến sĩ đã được{" "}
                 <span className="text-secondary font-bold text-lg sm:text-xl">HUB</span> đào tạo

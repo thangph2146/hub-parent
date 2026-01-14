@@ -3,7 +3,6 @@
 import React, {
   useState,
   useMemo,
-  useLayoutEffect,
   useCallback,
 } from "react";
 import {
@@ -14,7 +13,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { FieldContent, FieldError } from "@/components/ui/field";
-import { Flex } from "@/components/ui/flex";
 import { cn } from "@/utils";
 import { useElementSize } from "@/hooks";
 import type { ResourceFormField } from "../resource-form";
@@ -50,17 +48,6 @@ export const PermissionsTableField = <T,>({
 }: PermissionsTableFieldProps<T>) => {
   const { ref: tableRef, width: tableWidth } = useElementSize<HTMLDivElement>();
 
-  const [openGroups, setOpenGroups] = useState<Set<string>>(new Set());
-  const [openResources, setOpenResources] = useState<Set<string>>(new Set());
-
-  const selectedValues = useMemo(() => {
-    return Array.isArray(fieldValue)
-      ? fieldValue.map((v) => String(v))
-      : fieldValue !== null && fieldValue !== undefined && fieldValue !== ""
-      ? [String(fieldValue)]
-      : [];
-  }, [fieldValue]);
-
   const groups: PermissionGroup[] = useMemo(() => {
     if (!field.optionGroups) return [];
     return field.optionGroups.map((group) => ({
@@ -71,6 +58,43 @@ export const PermissionsTableField = <T,>({
       })),
     }));
   }, [field.optionGroups]);
+
+  const parsedGroups = useMemo(() => {
+    return parsePermissionGroups(groups);
+  }, [groups]);
+
+  const [openGroupsState, setOpenGroups] = useState<Set<string> | null>(null);
+  const [openResourcesState, setOpenResources] = useState<Set<string> | null>(null);
+
+  const openGroups = useMemo(() => {
+    if (openGroupsState !== null) return openGroupsState;
+    if (readOnly && parsedGroups.length > 0) {
+      return new Set(parsedGroups.map((g) => g.groupLabel));
+    }
+    return new Set<string>();
+  }, [openGroupsState, readOnly, parsedGroups]);
+
+  const openResources = useMemo(() => {
+    if (openResourcesState !== null) return openResourcesState;
+    if (readOnly && parsedGroups.length > 0) {
+      return new Set(
+        parsedGroups.flatMap((group) =>
+          group.resources.map(
+            (resource) => `${group.groupLabel}-${resource.resource}`
+          )
+        )
+      );
+    }
+    return new Set<string>();
+  }, [openResourcesState, readOnly, parsedGroups]);
+
+  const selectedValues = useMemo(() => {
+    return Array.isArray(fieldValue)
+      ? fieldValue.map((v) => String(v))
+      : fieldValue !== null && fieldValue !== undefined && fieldValue !== ""
+      ? [String(fieldValue)]
+      : [];
+  }, [fieldValue]);
 
   const allAvailablePermissions = useMemo(() => {
     if (groups.length === 0) return [];
@@ -83,24 +107,6 @@ export const PermissionsTableField = <T,>({
     if (!availablePermissions) return true;
     return availablePermissions.includes(permissionValue);
   }, [availablePermissions]);
-
-  const parsedGroups = useMemo(() => {
-    return parsePermissionGroups(groups);
-  }, [groups]);
-
-  useLayoutEffect(() => {
-    if (!readOnly || parsedGroups.length === 0) return;
-    const allGroupLabels = new Set(parsedGroups.map((g) => g.groupLabel));
-    const allResourceKeys = new Set(
-      parsedGroups.flatMap((group) =>
-        group.resources.map(
-          (resource) => `${group.groupLabel}-${resource.resource}`
-        )
-      )
-    );
-    setOpenGroups(allGroupLabels);
-    setOpenResources(allResourceKeys);
-  }, [readOnly, parsedGroups]);
 
   const allSelected = useMemo(() => {
     if (allAvailablePermissions.length === 0) return false;
@@ -119,21 +125,23 @@ export const PermissionsTableField = <T,>({
 
   const toggleGroup = useCallback((groupLabel: string) => {
     setOpenGroups((prev) => {
-      const next = new Set(prev);
+      const current = prev === null ? (readOnly ? new Set(parsedGroups.map(g => g.groupLabel)) : new Set<string>()) : prev;
+      const next = new Set(current);
       if (next.has(groupLabel)) next.delete(groupLabel);
       else next.add(groupLabel);
       return next;
     });
-  }, []);
+  }, [readOnly, parsedGroups]);
 
   const toggleResource = useCallback((resourceKey: string) => {
     setOpenResources((prev) => {
-      const next = new Set(prev);
+      const current = prev === null ? (readOnly ? new Set(parsedGroups.flatMap(g => g.resources.map(r => `${g.groupLabel}-${r.resource}`))) : new Set<string>()) : prev;
+      const next = new Set(current);
       if (next.has(resourceKey)) next.delete(resourceKey);
       else next.add(resourceKey);
       return next;
     });
-  }, []);
+  }, [readOnly, parsedGroups]);
 
   const allExpanded = useMemo(() => {
     if (parsedGroups.length === 0) return false;

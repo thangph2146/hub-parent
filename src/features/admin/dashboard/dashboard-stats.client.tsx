@@ -3,7 +3,7 @@
 import { Flex } from "@/components/ui/flex";
 import { Grid } from "@/components/ui/grid";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { useState, useMemo, useRef, useCallback, useLayoutEffect } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { motion } from "framer-motion";
 import { useSession } from "next-auth/react";
 import { useClientOnly } from "@/hooks";
@@ -110,31 +110,27 @@ export const DashboardStatsClient = ({ stats }: DashboardStatsClientProps) => {
       });
   }, [canViewUsers, canViewPosts, canViewComments, canViewCategories, canViewTags, canViewMessages, canViewNotifications, canViewContactRequests, canViewStudents, canViewSessions, canViewRoles]);
 
-  const [selectedResourcesState, setSelectedResources] = useState<Set<string>>(new Set());
+  const [selectedResourcesState, setSelectedResources] = useState<Set<string> | null>(null);
   const [chartType, setChartType] = useState<"line" | "bar" | "composed">("composed");
   const [hiddenSeries, setHiddenSeries] = useState<Set<string>>(new Set());
 
   const selectedResources = useMemo(() => {
     const availableKeys = new Set(availableResources.map((r) => r.key));
+    if (selectedResourcesState === null) {
+      return availableKeys;
+    }
     return new Set([...selectedResourcesState].filter((key) => availableKeys.has(key)));
   }, [selectedResourcesState, availableResources]);
 
-  const hasAutoSelectedRef = useRef(false);
-  useLayoutEffect(() => {
-    if (!hasAutoSelectedRef.current && selectedResourcesState.size === 0 && availableResources.length > 0) {
-      setSelectedResources(new Set(availableResources.map((r) => r.key)));
-      hasAutoSelectedRef.current = true;
-    }
-  }, [availableResources, selectedResourcesState.size]);
-
   const toggleResource = useCallback((key: string) => {
     setSelectedResources((prev) => {
-      const next = new Set(prev);
+      const current = prev === null ? new Set(availableResources.map(r => r.key)) : prev;
+      const next = new Set(current);
       if (next.has(key)) next.delete(key);
       else next.add(key);
       return next;
     });
-  }, []);
+  }, [availableResources]);
 
   const toggleSeriesVisibility = useCallback((key: string) => {
     setHiddenSeries((prev) => {
@@ -147,12 +143,10 @@ export const DashboardStatsClient = ({ stats }: DashboardStatsClientProps) => {
 
   const selectAll = useCallback(() => {
     setSelectedResources(new Set(availableResources.map((r) => r.key)));
-    hasAutoSelectedRef.current = true;
   }, [availableResources]);
 
   const deselectAll = useCallback(() => {
     setSelectedResources(new Set());
-    hasAutoSelectedRef.current = true;
   }, []);
 
   if (!isMounted) {

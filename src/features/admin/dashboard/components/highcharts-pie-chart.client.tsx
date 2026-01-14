@@ -1,4 +1,5 @@
 "use client";
+"use no memo";
 
 import { useState, useMemo, useEffect, useRef } from "react";
 import dynamic from "next/dynamic";
@@ -57,6 +58,7 @@ export const HighchartsPieChart = ({ categoryData, totalPosts }: HighchartsPieCh
       },
       tooltip: {
         valueSuffix: "%",
+        // eslint-disable-next-line react-hooks/unsupported-syntax
         pointFormatter: function (this: Highcharts.Point) {
           const count = Math.round(((this.percentage || 0) / 100) * totalPosts);
           return `<span style="color:${this.color}">●</span> <b>${this.name}</b>: ${(this.percentage || 0).toFixed(1)}%<br/>${count.toLocaleString("vi-VN")} bài viết`;
@@ -110,6 +112,7 @@ export const HighchartsPieChart = ({ categoryData, totalPosts }: HighchartsPieCh
           type: "pie",
           name: "Tỷ lệ",
           data: highchartsData,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } as any,
       ],
       credits: {
