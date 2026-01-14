@@ -1,11 +1,12 @@
 import { NextRequest } from "next/server"
 import { auth } from "@/auth/auth"
 import { createErrorResponse, createSuccessResponse } from "@/lib"
-import { bulkMarkAsRead, bulkMarkAsUnread } from "@/features/admin/notifications/server/mutations"
+import { bulkMarkAsRead, bulkMarkAsUnread, bulkDelete } from "@/features/admin/notifications/server/mutations"
+import { isSuperAdmin } from "@/permissions"
 
 const MAX_BULK_NOTIFICATIONS = 100
 
-type BulkNotificationAction = "mark-read" | "mark-unread"
+type BulkNotificationAction = "mark-read" | "mark-unread" | "delete"
 
 export async function POST(req: NextRequest) {
   const session = await auth()
@@ -13,6 +14,8 @@ export async function POST(req: NextRequest) {
   if (!session?.user?.id) {
     return createErrorResponse("Unauthorized", { status: 401 })
   }
+
+  const isSuperAdminUser = isSuperAdmin(session.roles || [])
 
   let body: { action?: BulkNotificationAction; ids?: unknown }
   try {
@@ -40,17 +43,24 @@ export async function POST(req: NextRequest) {
     return createErrorResponse("Danh sách ID thông báo không hợp lệ", { status: 400 })
   }
 
-  if (action !== "mark-read" && action !== "mark-unread") {
+  if (action !== "mark-read" && action !== "mark-unread" && action !== "delete") {
     return createErrorResponse("Action không hợp lệ", { status: 400 })
   }
 
   try {
-    const result =
-      action === "mark-read"
-        ? await bulkMarkAsRead(sanitizedIds, session.user.id)
-        : await bulkMarkAsUnread(sanitizedIds, session.user.id)
+    let result: { count: number; alreadyAffected?: number }
+    if (action === "mark-read") {
+      result = await bulkMarkAsRead(sanitizedIds, session.user.id, isSuperAdminUser)
+    } else if (action === "mark-unread") {
+      result = await bulkMarkAsUnread(sanitizedIds, session.user.id, isSuperAdminUser)
+    } else {
+      result = await bulkDelete(sanitizedIds, session.user.id, isSuperAdminUser)
+    }
 
-    return createSuccessResponse({ count: result.count })
+    return createSuccessResponse({ 
+      affected: result.count,
+      alreadyAffected: result.alreadyAffected
+    })
   } catch (error) {
     const message = error instanceof Error ? error.message : "Internal server error"
 

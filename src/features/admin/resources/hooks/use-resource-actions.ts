@@ -582,7 +582,7 @@ export const useResourceActions = <T extends { id: string }>(
         if (validation?.targetIds) {
           targetIds = validation.targetIds
           if (targetIds.length === 0) {
-            config.showFeedback("success", "Thông báo", validation.message || "Không có mục nào hợp lệ để thực hiện hành động này")
+            config.showFeedback("info", "Thông báo", validation.message || "Không có mục nào hợp lệ để thực hiện hành động này")
             clearSelection()
             return
           }
@@ -660,6 +660,7 @@ export const useResourceActions = <T extends { id: string }>(
         
         const result = response.data?.data
         const affected = result?.affected ?? 0
+        const alreadyAffected = result?.alreadyAffected ?? 0
         
         if (affected === 0) {
           const actionTextMap: Record<BulkAction, string> = {
@@ -672,24 +673,33 @@ export const useResourceActions = <T extends { id: string }>(
             "mark-unread": "đánh dấu chưa đọc",
           }
           const actionText = actionTextMap[action] || "xử lý"
-          const errorMessage = result?.message || `Không có ${config.resourceName} nào được ${actionText}`
-          config.showFeedback("error", "Không có thay đổi", errorMessage)
+          
+          let errorMessage = result?.message || `Không có ${config.resourceName} nào được ${actionText}`
+          if (alreadyAffected > 0) {
+            errorMessage = `Tất cả ${alreadyAffected} mục đã chọn đều đã ở trạng thái này`
+          }
+
+          config.showFeedback("info", "Không có thay đổi", errorMessage)
           clearSelection()
           
           resourceLogger.logFlow({
             resource: config.resourceName,
             action: getActionType(action, true) as ResourceAction,
-            step: "error",
+            step: "info",
             details: {
               requestedCount: ids.length,
               affectedCount: 0,
+              alreadyAffected,
               message: errorMessage,
             },
           })
           return
         }
         
-        const successMessage = `${actionConfig.successTitle} (${affected} ${config.resourceName})`
+        let successMessage = `${actionConfig.successTitle} (${affected} ${config.resourceName})`
+        if (alreadyAffected > 0) {
+          successMessage += `. (${alreadyAffected} mục khác đã ở trạng thái này)`
+        }
         
         config.showFeedback("success", "Thành công", successMessage)
         clearSelection()

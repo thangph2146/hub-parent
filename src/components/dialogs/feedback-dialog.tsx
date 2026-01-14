@@ -12,7 +12,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 
-export type FeedbackVariant = "success" | "error"
+export type FeedbackVariant = "info" | "success" | "error"
 
 export interface FeedbackDialogProps {
   open: boolean

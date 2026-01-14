@@ -48,11 +48,19 @@ interface NotificationsTableClientProps {
 export const NotificationsTableClient = ({
   canManage = false,
   initialData,
-  isSuperAdmin: _isSuperAdminProp = false,
+  isSuperAdmin = false,
 }: NotificationsTableClientProps) => {
   const { data: session } = useSession()
   const queryClient = useQueryClient()
   const { cacheVersion } = useNotificationsSocketBridge()
+  
+  // Kiểm tra quyền super admin từ session nếu prop không được truyền chính xác
+  const sessionRoles = session?.roles
+  const isSuperAdminUser = useMemo(() => {
+    if (isSuperAdmin) return true
+    if (!sessionRoles) return false
+    return sessionRoles.some((role) => role.name.toLowerCase() === "super_admin")
+  }, [isSuperAdmin, sessionRoles])
   
   const [currentViewId, setCurrentViewId] = useState<string>("all")
   
@@ -115,7 +123,7 @@ export const NotificationsTableClient = ({
     showFeedback,
     beforeSingleAction: async (action, row) => {
       const isOwner = session?.user?.id === row.userId
-      if (!isOwner) {
+      if (!isOwner && !isSuperAdminUser) {
         return { 
           allowed: false, 
           message: action === "delete" 
@@ -123,7 +131,7 @@ export const NotificationsTableClient = ({
             : NOTIFICATION_MESSAGES.NO_OWNER_PERMISSION 
         }
       }
-      if (action === "delete" && row.kind === "SYSTEM") {
+      if (action === "delete" && row.kind === "SYSTEM" && !isSuperAdminUser) {
         return { allowed: false, message: NOTIFICATION_MESSAGES.NO_DELETE_SYSTEM }
       }
     },
@@ -133,40 +141,46 @@ export const NotificationsTableClient = ({
       }
 
       if (rows) {
-        const ownNotifications = rows.filter((row) => row.userId === session.user.id)
+        const targetNotifications = isSuperAdminUser 
+          ? rows 
+          : rows.filter((row) => row.userId === session.user.id)
+          
         let targetIds = ids
 
         if (action === "mark-read") {
-          const unreadNotifications = ownNotifications.filter((row) => !row.isRead)
+          const unreadNotifications = targetNotifications.filter((row) => !row.isRead)
           targetIds = unreadNotifications.map((row) => row.id)
           if (targetIds.length === 0) {
             return { 
               allowed: false, 
-              message: ownNotifications.length > 0 
+              message: targetNotifications.length > 0 
                 ? NOTIFICATION_MESSAGES.ALL_ALREADY_READ 
-                : NOTIFICATION_MESSAGES.NO_OWNER_PERMISSION 
+                : (isSuperAdminUser ? "Không có thông báo nào để đánh dấu đã đọc" : NOTIFICATION_MESSAGES.NO_OWNER_PERMISSION)
             }
           }
         } else if (action === "mark-unread") {
-          const readNotifications = ownNotifications.filter((row) => row.isRead)
+          const readNotifications = targetNotifications.filter((row) => row.isRead)
           targetIds = readNotifications.map((row) => row.id)
           if (targetIds.length === 0) {
             return { 
               allowed: false, 
-              message: ownNotifications.length > 0 
+              message: targetNotifications.length > 0 
                 ? NOTIFICATION_MESSAGES.ALL_ALREADY_UNREAD 
-                : NOTIFICATION_MESSAGES.NO_OWNER_PERMISSION 
+                : (isSuperAdminUser ? "Không có thông báo nào để đánh dấu chưa đọc" : NOTIFICATION_MESSAGES.NO_OWNER_PERMISSION)
             }
           }
         } else if (action === "delete") {
-          const nonSystemNotifications = ownNotifications.filter((row) => row.kind !== "SYSTEM")
-          targetIds = nonSystemNotifications.map((row) => row.id)
+          const deletableNotifications = isSuperAdminUser 
+            ? targetNotifications 
+            : targetNotifications.filter((row) => row.kind !== "SYSTEM")
+            
+          targetIds = deletableNotifications.map((row) => row.id)
           if (targetIds.length === 0) {
             return { 
               allowed: false, 
-              message: ownNotifications.length > nonSystemNotifications.length 
+              message: targetNotifications.length > deletableNotifications.length 
                 ? NOTIFICATION_MESSAGES.NO_DELETE_SYSTEM 
-                : NOTIFICATION_MESSAGES.NO_DELETE_PERMISSION 
+                : (isSuperAdminUser ? "Không có thông báo nào để xóa" : NOTIFICATION_MESSAGES.NO_DELETE_PERMISSION)
             }
           }
         }
@@ -200,12 +214,14 @@ export const NotificationsTableClient = ({
   const { baseColumns } = useNotificationColumns({
     togglingNotifications: useMemo(() => new Set([...markingReadIds, ...markingUnreadIds]), [markingReadIds, markingUnreadIds]),
     sessionUserId: session?.user?.id,
+    isSuperAdmin: isSuperAdminUser,
     onToggleRead: handleToggleReadWithRefresh,
   })
 
   const renderRowActionsForNotifications = useCallback((row: NotificationRow) => {
     const isOwner = session?.user?.id === row.userId
     const isSystem = row.kind === "SYSTEM"
+    const canDelete = isSuperAdminUser || (isOwner && !isSystem)
 
     return (
       <div className="flex items-center gap-2">
@@ -213,7 +229,7 @@ export const NotificationsTableClient = ({
           variant="ghost"
           size="sm"
           onClick={() => handleDeleteSingleWithRefresh(row)}
-          disabled={deletingIds.has(row.id) || !isOwner || isSystem}
+          disabled={deletingIds.has(row.id) || !canDelete}
           className="gap-2 text-destructive hover:text-destructive hover:bg-destructive/10"
         >
           <Trash2 className="h-4 w-4" />
@@ -221,7 +237,7 @@ export const NotificationsTableClient = ({
         </Button>
       </div>
     )
-  }, [session?.user?.id, handleDeleteSingleWithRefresh, deletingIds])
+  }, [session?.user?.id, handleDeleteSingleWithRefresh, deletingIds, isSuperAdminUser])
 
 
   const fetchNotifications = useCallback(
@@ -367,24 +383,30 @@ export const NotificationsTableClient = ({
       clearSelection: () => void
       refresh: () => void
     }) => {
-      const ownNotifications = selectedRows.filter((row) => row.userId === session?.user?.id)
-      const otherCount = selectedIds.length - ownNotifications.length
+      const targetNotifications = isSuperAdminUser 
+        ? selectedRows 
+        : selectedRows.filter((row) => row.userId === session?.user?.id)
+        
+      const otherCount = isSuperAdminUser ? 0 : selectedIds.length - targetNotifications.length
 
-      const unreadNotifications = ownNotifications.filter((row) => !row.isRead)
+      const unreadNotifications = targetNotifications.filter((row) => !row.isRead)
       const unreadNotificationIds = unreadNotifications.map((row) => row.id)
-      const readNotifications = ownNotifications.filter((row) => row.isRead)
+      const readNotifications = targetNotifications.filter((row) => row.isRead)
       const readNotificationIds = readNotifications.map((row) => row.id)
 
-      const deletableNotifications = ownNotifications.filter((row) => row.kind !== "SYSTEM")
+      const deletableNotifications = isSuperAdminUser 
+        ? targetNotifications 
+        : targetNotifications.filter((row) => row.kind !== "SYSTEM")
+        
       const deletableNotificationIds = deletableNotifications.map((row) => row.id)
-      const systemCount = ownNotifications.length - deletableNotifications.length
+      const systemCount = isSuperAdminUser ? 0 : targetNotifications.length - deletableNotifications.length
 
       const handleBulkMarkAsReadWithRefresh = async () => {
-        await executeBulkAction("mark-read", unreadNotificationIds, refreshTable, clearSelection, ownNotifications)
+        await executeBulkAction("mark-read", unreadNotificationIds, refreshTable, clearSelection, targetNotifications)
       }
 
       const handleBulkMarkAsUnreadWithRefresh = async () => {
-        await executeBulkAction("mark-unread", readNotificationIds, refreshTable, clearSelection, ownNotifications)
+        await executeBulkAction("mark-unread", readNotificationIds, refreshTable, clearSelection, targetNotifications)
       }
 
       const handleBulkDeleteWithRefresh = () => {
@@ -473,6 +495,7 @@ export const NotificationsTableClient = ({
       refreshTable,
       bulkState.isProcessing,
       setDeleteConfirm,
+      isSuperAdminUser,
     ],
   )
 

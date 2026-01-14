@@ -40,6 +40,7 @@ export const resourceLogger = {
   logFlow: (config: ActionFlowLog) => {
     const { resource, action, step, details, durationMs } = config
     const stepEmoji = {
+      info: "ℹ️",
       init: "🆕",
       start: "🚀",
       success: "✅",
