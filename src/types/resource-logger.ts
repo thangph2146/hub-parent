@@ -81,7 +81,7 @@ export interface DataStructureLog {
 export interface ActionFlowLog {
   resource: string
   action: ResourceAction
-  step: "init" | "start" | "success" | "error" | "end"
+  step: "info" | "init" | "start" | "success" | "error" | "end"
   details?: Record<string, unknown>
   durationMs?: number
 }

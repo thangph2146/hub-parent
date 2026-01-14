@@ -313,12 +313,12 @@ export const emitNotificationToAllAdminsAfterCreate = async (
   }
 }
 
-export const markNotificationAsRead = async (notificationId: string, userId: string) => {
+export const markNotificationAsRead = async (notificationId: string, userId: string, isSuperAdmin = false) => {
   if (!notificationId || !userId) {
     throw new Error("Notification ID and User ID are required")
   }
 
-  // Verify notification exists and belongs to user
+  // Verify notification exists
   const notification = await prisma.notification.findUnique({
     where: { id: notificationId },
     select: { id: true, userId: true, isRead: true },
@@ -329,7 +329,8 @@ export const markNotificationAsRead = async (notificationId: string, userId: str
     throw new Error("Notification not found")
   }
 
-  if (notification.userId !== userId) {
+  // Super Admin can mark any notification as read, other users only their own
+  if (!isSuperAdmin && notification.userId !== userId) {
     logger.warn("User attempted to mark notification as read without ownership", {
       notificationId,
       userId,
@@ -356,6 +357,7 @@ export const markNotificationAsRead = async (notificationId: string, userId: str
   logger.info("Notification marked as read", {
     notificationId,
     userId,
+    isSuperAdminAction: isSuperAdmin && notification.userId !== userId,
   })
 
   emitNotificationUpdated(updated)
@@ -363,12 +365,12 @@ export const markNotificationAsRead = async (notificationId: string, userId: str
   return updated
 }
 
-export const markNotificationAsUnread = async (notificationId: string, userId: string) => {
+export const markNotificationAsUnread = async (notificationId: string, userId: string, isSuperAdmin = false) => {
   if (!notificationId || !userId) {
     throw new Error("Notification ID and User ID are required")
   }
 
-  // Verify notification exists and belongs to user
+  // Verify notification exists
   const notification = await prisma.notification.findUnique({
     where: { id: notificationId },
     select: { id: true, userId: true, isRead: true },
@@ -379,7 +381,8 @@ export const markNotificationAsUnread = async (notificationId: string, userId: s
     throw new Error("Notification not found")
   }
 
-  if (notification.userId !== userId) {
+  // Super Admin can mark any notification as unread, other users only their own
+  if (!isSuperAdmin && notification.userId !== userId) {
     logger.warn("User attempted to mark notification as unread without ownership", {
       notificationId,
       userId,
@@ -406,6 +409,7 @@ export const markNotificationAsUnread = async (notificationId: string, userId: s
   logger.info("Notification marked as unread", {
     notificationId,
     userId,
+    isSuperAdminAction: isSuperAdmin && notification.userId !== userId,
   })
 
   emitNotificationUpdated(updated)
@@ -413,12 +417,12 @@ export const markNotificationAsUnread = async (notificationId: string, userId: s
   return updated
 }
 
-export const deleteNotification = async (notificationId: string, userId: string) => {
+export const deleteNotification = async (notificationId: string, userId: string, isSuperAdmin = false) => {
   if (!notificationId || !userId) {
     throw new Error("Notification ID and User ID are required")
   }
 
-  // Verify notification exists and belongs to user
+  // Verify notification exists
   const notification = await prisma.notification.findUnique({
     where: { id: notificationId },
     select: { id: true, userId: true, kind: true },
@@ -429,7 +433,8 @@ export const deleteNotification = async (notificationId: string, userId: string)
     throw new Error("Notification not found")
   }
 
-  if (notification.userId !== userId) {
+  // Super Admin can delete any notification, other users only their own
+  if (!isSuperAdmin && notification.userId !== userId) {
     logger.warn("User attempted to delete notification without ownership", {
       notificationId,
       userId,
@@ -438,7 +443,7 @@ export const deleteNotification = async (notificationId: string, userId: string)
     throw new Error("Forbidden: You can only delete your own notifications")
   }
 
-  if (notification.kind === NotificationKind.SYSTEM) {
+  if (notification.kind === NotificationKind.SYSTEM && !isSuperAdmin) {
     logger.warn("User attempted to delete system notification", {
       notificationId,
       userId,
@@ -455,6 +460,7 @@ export const deleteNotification = async (notificationId: string, userId: string)
     notificationId,
     userId,
     kind: notification.kind,
+    isSuperAdminAction: isSuperAdmin && notification.userId !== userId,
   })
 
   emitNotificationDeleted(notificationId, userId)
@@ -462,7 +468,7 @@ export const deleteNotification = async (notificationId: string, userId: string)
   return deleted
 }
 
-export const bulkMarkAsRead = async (notificationIds: string[], userId: string) => {
+export const bulkMarkAsRead = async (notificationIds: string[], userId: string, isSuperAdmin = false) => {
   if (!notificationIds || notificationIds.length === 0) {
     return { count: 0 }
   }
@@ -471,17 +477,17 @@ export const bulkMarkAsRead = async (notificationIds: string[], userId: string) 
     throw new Error("User ID is required")
   }
 
-  // Verify all notifications belong to user
+  // Fetch notifications to verify ownership or bypass for Super Admin
   const notifications = await prisma.notification.findMany({
     where: { id: { in: notificationIds } },
     select: { id: true, userId: true, isRead: true },
   })
 
   const ownNotificationIds = notifications
-    .filter((n) => n.userId === userId && !n.isRead)
+    .filter((n) => (isSuperAdmin || n.userId === userId) && !n.isRead)
     .map((n) => n.id)
 
-  const invalidNotifications = notifications.filter((n) => n.userId !== userId)
+  const invalidNotifications = isSuperAdmin ? [] : notifications.filter((n) => n.userId !== userId)
   if (invalidNotifications.length > 0) {
     logger.warn("User attempted to mark notifications as read without ownership", {
       userId,
@@ -491,15 +497,24 @@ export const bulkMarkAsRead = async (notificationIds: string[], userId: string) 
     throw new Error("Forbidden: You can only mark your own notifications as read")
   }
 
+  const alreadyReadIds = notifications
+    .filter((n) => (isSuperAdmin || n.userId === userId) && n.isRead)
+    .map((n) => n.id)
+
   if (ownNotificationIds.length === 0) {
-    logger.debug("No unread notifications to mark as read", { userId, totalCount: notificationIds.length })
-    return { count: 0 }
+    logger.debug("No unread notifications to mark as read", { 
+      userId, 
+      totalCount: notificationIds.length,
+      alreadyReadCount: alreadyReadIds.length 
+    })
+    return { count: 0, alreadyAffected: alreadyReadIds.length }
   }
 
   const result = await prisma.notification.updateMany({
     where: { 
       id: { in: ownNotificationIds },
-      userId,
+      // Nếu là super admin thì không cần filter userId trong where clause của updateMany
+      ...(isSuperAdmin ? {} : { userId }),
     },
     data: {
       isRead: true,
@@ -511,16 +526,17 @@ export const bulkMarkAsRead = async (notificationIds: string[], userId: string) 
     userId,
     count: result.count,
     totalRequested: notificationIds.length,
+    isSuperAdmin,
   })
 
   if (result.count > 0) {
     await emitNotificationsSync(ownNotificationIds, userId)
   }
 
-  return { count: result.count }
+  return { count: result.count, alreadyAffected: alreadyReadIds.length }
 }
 
-export const bulkMarkAsUnread = async (notificationIds: string[], userId: string) => {
+export const bulkMarkAsUnread = async (notificationIds: string[], userId: string, isSuperAdmin = false) => {
   if (!notificationIds || notificationIds.length === 0) {
     return { count: 0 }
   }
@@ -535,10 +551,10 @@ export const bulkMarkAsUnread = async (notificationIds: string[], userId: string
   })
 
   const ownNotificationIds = notifications
-    .filter((n) => n.userId === userId && n.isRead)
+    .filter((n) => (isSuperAdmin || n.userId === userId) && n.isRead)
     .map((n) => n.id)
 
-  const invalidNotifications = notifications.filter((n) => n.userId !== userId)
+  const invalidNotifications = isSuperAdmin ? [] : notifications.filter((n) => n.userId !== userId)
   if (invalidNotifications.length > 0) {
     logger.warn("User attempted to mark notifications as unread without ownership", {
       userId,
@@ -548,15 +564,23 @@ export const bulkMarkAsUnread = async (notificationIds: string[], userId: string
     throw new Error("Forbidden: You can only mark your own notifications as unread")
   }
 
+  const alreadyUnreadIds = notifications
+    .filter((n) => (isSuperAdmin || n.userId === userId) && !n.isRead)
+    .map((n) => n.id)
+
   if (ownNotificationIds.length === 0) {
-    logger.debug("No read notifications to mark as unread", { userId, totalCount: notificationIds.length })
-    return { count: 0 }
+    logger.debug("No read notifications to mark as unread", { 
+      userId, 
+      totalCount: notificationIds.length,
+      alreadyUnreadCount: alreadyUnreadIds.length 
+    })
+    return { count: 0, alreadyAffected: alreadyUnreadIds.length }
   }
 
   const result = await prisma.notification.updateMany({
     where: {
       id: { in: ownNotificationIds },
-      userId,
+      ...(isSuperAdmin ? {} : { userId }),
     },
     data: {
       isRead: false,
@@ -568,16 +592,17 @@ export const bulkMarkAsUnread = async (notificationIds: string[], userId: string
     userId,
     count: result.count,
     totalRequested: notificationIds.length,
+    isSuperAdmin,
   })
 
   if (result.count > 0) {
     await emitNotificationsSync(ownNotificationIds, userId)
   }
 
-  return { count: result.count }
+  return { count: result.count, alreadyAffected: alreadyUnreadIds.length }
 }
 
-export const bulkDelete = async (notificationIds: string[], userId: string) => {
+export const bulkDelete = async (notificationIds: string[], userId: string, isSuperAdmin = false) => {
   if (!notificationIds || notificationIds.length === 0) {
     return { count: 0 }
   }
@@ -586,13 +611,13 @@ export const bulkDelete = async (notificationIds: string[], userId: string) => {
     throw new Error("User ID is required")
   }
 
-  // Verify all notifications belong to user
+  // Fetch notifications to verify ownership or bypass for Super Admin
   const notifications = await prisma.notification.findMany({
     where: { id: { in: notificationIds } },
     select: { id: true, userId: true, kind: true },
   })
 
-  const invalidNotifications = notifications.filter((n) => n.userId !== userId)
+  const invalidNotifications = isSuperAdmin ? [] : notifications.filter((n) => n.userId !== userId)
   if (invalidNotifications.length > 0) {
     logger.warn("User attempted to delete notifications without ownership", {
       userId,
@@ -603,7 +628,7 @@ export const bulkDelete = async (notificationIds: string[], userId: string) => {
   }
 
   const systemNotifications = notifications.filter((n) => n.kind === NotificationKind.SYSTEM)
-  if (systemNotifications.length > 0) {
+  if (systemNotifications.length > 0 && !isSuperAdmin) {
     logger.warn("User attempted to delete system notifications", {
       userId,
       systemCount: systemNotifications.length,
@@ -629,6 +654,7 @@ export const bulkDelete = async (notificationIds: string[], userId: string) => {
       count: result.count,
       skippedSystemCount: systemNotifications.length,
       totalRequested: notificationIds.length,
+      isSuperAdmin,
     })
 
     if (result.count > 0) {
@@ -638,13 +664,10 @@ export const bulkDelete = async (notificationIds: string[], userId: string) => {
     return { count: result.count }
   }
 
-  const ownNotificationIds = notifications.map((n) => n.id)
-
   const result = await prisma.notification.deleteMany({
     where: { 
-      id: { in: ownNotificationIds },
-      userId,
-      kind: { not: NotificationKind.SYSTEM },
+      id: { in: notificationIds },
+      ...(isSuperAdmin ? {} : { userId }),
     },
   })
 
@@ -652,10 +675,11 @@ export const bulkDelete = async (notificationIds: string[], userId: string) => {
     userId,
     count: result.count,
     totalRequested: notificationIds.length,
+    isSuperAdmin,
   })
 
   if (result.count > 0) {
-    emitNotificationsDeleted(ownNotificationIds, userId)
+    emitNotificationsDeleted(notificationIds, userId)
   }
 
   return { count: result.count }

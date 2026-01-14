@@ -47,7 +47,7 @@ const buildWhereClause = (params: ListNotificationsInput): Prisma.NotificationWh
   const isSuperAdminUser = params.isSuperAdmin ?? false
 
   // Logic mới:
-  // - Super admin: thấy tất cả thông báo hệ thống (SYSTEM) + thông báo cá nhân của mình
+  // - Super admin: thấy TẤT CẢ thông báo trong hệ thống
   // - User khác: chỉ thấy thông báo cá nhân của mình (KHÔNG thấy thông báo hệ thống)
 
   // Nếu có filter kind cụ thể, sử dụng filter đó (để giữ tính năng filter theo kind)
@@ -64,35 +64,29 @@ const buildWhereClause = (params: ListNotificationsInput): Prisma.NotificationWh
         }
         // Super admin thấy tất cả SYSTEM notifications (không cần filter userId)
       } else {
-        // Filter các loại khác, chỉ hiển thị notifications của user đó
-        where.userId = params.userId
+        // Filter các loại khác, chỉ hiển thị notifications của user đó nếu không phải super admin
+        if (!isSuperAdminUser) {
+          where.userId = params.userId
+        }
       }
     }
   } else {
     // Nếu không có filter kind cụ thể
     if (params.userId) {
       if (isSuperAdminUser) {
-        // Super admin: thấy SYSTEM (tất cả) + thông báo cá nhân của mình
-        where.OR = [
-          { kind: NotificationKind.SYSTEM }, // Tất cả thông báo hệ thống
-          {
-            userId: params.userId,
-            kind: { not: NotificationKind.SYSTEM }, // Thông báo cá nhân của user này
-          },
-        ]
+        // Super admin: thấy TẤT CẢ (không cần filter userId)
+        // Không thêm filter gì vào where để lấy tất cả
       } else {
         // User khác: chỉ thấy thông báo cá nhân của mình (KHÔNG thấy SYSTEM)
         where.userId = params.userId
         where.kind = { not: NotificationKind.SYSTEM }
       }
     } else {
-      // Nếu không có userId, chỉ hiển thị thông báo hệ thống (chỉ cho super admin)
-      // (Trường hợp này không nên xảy ra vì API route luôn truyền userId)
+      // Nếu không có userId
       if (isSuperAdminUser) {
-        where.kind = NotificationKind.SYSTEM
+        // Super admin: thấy tất cả
       } else {
         // User không phải super admin không được thấy gì
-        // Set điều kiện không thể thỏa mãn (sử dụng AND với điều kiện không bao giờ đúng)
         where.AND = [{ id: { not: { in: [] } } }]
       }
     }

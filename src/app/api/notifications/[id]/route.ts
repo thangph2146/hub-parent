@@ -5,12 +5,12 @@
  */
 import { NextRequest } from "next/server"
 import { auth } from "@/auth/auth"
-import { deleteNotification } from "@/features/admin/notifications/server/mutations"
-import { prisma } from "@/services/prisma"
+import { deleteNotification, markNotificationAsRead, markNotificationAsUnread } from "@/features/admin/notifications/server/mutations"
 import { getSocketServer } from "@/services/socket/state"
 import { mapNotificationToPayload } from "@/services/socket/state"
 import { createErrorResponse, createSuccessResponse } from "@/lib"
 import { logger } from "@/utils"
+import { isSuperAdmin } from "@/permissions"
 
 async function patchNotificationHandler(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await auth()
@@ -23,89 +23,52 @@ async function patchNotificationHandler(req: NextRequest, { params }: { params: 
   const body = await req.json().catch(() => ({}))
   const { isRead } = body
 
-  // Verify notification exists
-  const notification = await prisma.notification.findUnique({
-    where: { id },
-  })
+  const isSuperAdminUser = isSuperAdmin(session.roles || [])
 
-  if (!notification) {
-    return createErrorResponse("Notification not found", { status: 404 })
-  }
+  try {
+    const updated = isRead === true || isRead === "true"
+      ? await markNotificationAsRead(id, session.user.id, isSuperAdminUser)
+      : await markNotificationAsUnread(id, session.user.id, isSuperAdminUser)
 
-  // Check permissions: user chỉ có thể đánh dấu đã đọc notification của chính mình
-  const isOwner = notification.userId === session.user.id
-  
-  logger.debug("PATCH /api/notifications/[id]: Processing request", {
-    notificationId: id,
-    userId: session.user.id,
-    notificationUserId: notification.userId,
-    isOwner,
-    currentIsRead: notification.isRead,
-    requestedIsRead: isRead,
-  })
-  
-  if (!isOwner) {
-    logger.warn("PATCH /api/notifications/[id]: Permission denied", {
-      notificationId: id,
-      userId: session.user.id,
-      notificationUserId: notification.userId,
-    })
-    return createErrorResponse("Bạn chỉ có thể thao tác thông báo của chính mình.", { status: 403, error: "Forbidden" })
-  }
-
-  // Update notification
-  const updateData: { isRead: boolean; readAt?: Date | null } = {
-    isRead: isRead === true || isRead === "true",
-  }
-
-  if (updateData.isRead && !notification.readAt) {
-    updateData.readAt = new Date()
-  } else if (!updateData.isRead) {
-    updateData.readAt = null
-  }
-
-  logger.debug("PATCH /api/notifications/[id]: Updating notification", {
-    notificationId: id,
-    updateData,
-  })
-
-  const updated = await prisma.notification.update({
-    where: { id },
-    data: updateData,
-    include: { user: true },
-  })
-  
-  logger.success("PATCH /api/notifications/[id]: Notification updated", {
-    notificationId: id,
-    isRead: updated.isRead,
-    readAt: updated.readAt,
-  })
-
-  // Emit socket event để đồng bộ real-time với các clients khác
-  const io = getSocketServer()
-  if (io && updated.userId) {
-    try {
-      const payload = mapNotificationToPayload(updated)
-      io.to(`user:${updated.userId}`).emit("notification:updated", payload)
-    } catch (error) {
-      logger.warn("Failed to emit socket event for notification update", { error, userId: updated.userId })
+    if (!updated) {
+      return createErrorResponse("Failed to update notification", { status: 500 })
     }
-  }
 
-  return createSuccessResponse({
-    id: updated.id,
-    userId: updated.userId,
-    kind: updated.kind,
-    title: updated.title,
-    description: updated.description,
-    isRead: updated.isRead,
-    actionUrl: updated.actionUrl,
-    metadata: updated.metadata as Record<string, unknown> | null,
-    expiresAt: updated.expiresAt,
-    createdAt: updated.createdAt,
-    updatedAt: updated.updatedAt,
-    readAt: updated.readAt,
-  })
+    // Emit socket event để đồng bộ real-time với các clients khác
+    const io = getSocketServer()
+    if (io && updated.userId) {
+      try {
+        const payload = mapNotificationToPayload(updated)
+        io.to(`user:${updated.userId}`).emit("notification:updated", payload)
+      } catch (error) {
+        logger.warn("Failed to emit socket event for notification update", { error, userId: updated.userId })
+      }
+    }
+
+    return createSuccessResponse({
+      id: updated.id,
+      userId: updated.userId,
+      kind: updated.kind,
+      title: updated.title,
+      description: updated.description,
+      isRead: updated.isRead,
+      actionUrl: updated.actionUrl,
+      metadata: updated.metadata as Record<string, unknown> | null,
+      expiresAt: updated.expiresAt,
+      createdAt: updated.createdAt,
+      updatedAt: updated.updatedAt,
+      readAt: updated.readAt,
+    })
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Internal server error"
+    if (message.includes("Forbidden")) {
+      return createErrorResponse(message, { status: 403 })
+    }
+    if (message.includes("not found")) {
+      return createErrorResponse(message, { status: 404 })
+    }
+    throw error
+  }
 }
 
 async function deleteNotificationHandler(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -116,9 +79,10 @@ async function deleteNotificationHandler(req: NextRequest, { params }: { params:
   }
 
   const { id } = await params
+  const isSuperAdminUser = isSuperAdmin(session.roles || [])
 
   try {
-    await deleteNotification(id, session.user.id)
+    await deleteNotification(id, session.user.id, isSuperAdminUser)
     return createSuccessResponse({ success: true })
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : "Internal server error"
