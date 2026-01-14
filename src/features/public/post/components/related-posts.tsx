@@ -23,14 +23,14 @@ export const RelatedPosts = ({ posts, title = "Bài viết liên quan" }: Relate
   }
 
   return (
-    <section className="pt-12 border-t">
+    <section className="pt-12 border-t" aria-labelledby="related-posts-title">
       <Flex align="center" gap={3} className="mb-8">
         <Flex align="center" justify="center" className="p-2 bg-primary/10 rounded-lg">
           <IconSize size="md">
-            <FileText />
+            <FileText aria-hidden="true" />
           </IconSize>
         </Flex>
-        <TypographyH2>{title}</TypographyH2>
+        <TypographyH2 id="related-posts-title">{title}</TypographyH2>
       </Flex>
 
       <Grid cols={3} gap={8}>

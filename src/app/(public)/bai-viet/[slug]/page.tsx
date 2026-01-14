@@ -105,7 +105,7 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
   }
 
   // Structured data (JSON-LD) for SEO
-  const structuredData = {
+  const blogPostingData = {
     "@context": "https://schema.org",
     "@type": "BlogPosting",
     headline: post.title,
@@ -116,12 +116,15 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
     author: {
       "@type": "Person",
       name: post.author.name || post.author.email,
-      email: post.author.email,
     },
     publisher: {
       "@type": "Organization",
       name: appConfig.namePublic || appConfig.name,
       url: appConfig.url,
+      logo: {
+        "@type": "ImageObject",
+        url: appConfig.openGraph.images[0].url,
+      }
     },
     mainEntityOfPage: {
       "@type": "WebPage",
@@ -134,12 +137,42 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
     ].join(", "),
   }
 
+  const breadcrumbData = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Trang chủ",
+        "item": appConfig.url
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Bài viết",
+        "item": `${appConfig.url}/bai-viet`
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": post.title,
+        "item": `${appConfig.url}/bai-viet/${slug}`
+      }
+    ]
+  }
+
   return (
     <>
       <Script
         id="post-structured-data"
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(blogPostingData) }}
+      />
+      <Script
+        id="breadcrumb-structured-data"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbData) }}
       />
       <PostDetail slug={slug} />
     </>
