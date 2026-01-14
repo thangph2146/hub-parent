@@ -1,5 +1,7 @@
+"use client";
+
 import Image from "next/image";
-import { ReactNode } from "react";
+import { ReactNode, useRef } from "react";
 import type { ContentCardButton } from "./content-card";
 import { Flex } from "@/components/ui/flex";
 import { cn } from "@/utils";
@@ -9,6 +11,7 @@ import { ArrowRight } from "lucide-react";
 import { FlipWords } from "@/components/ui/flip-words";
 import { TypographyH1, TypographyP } from "@/components/ui/typography";
 import { ScrollIndicator } from "./scroll-indicator";
+import { useSectionHeight } from "@/hooks";
 
 export type HeroButton = ContentCardButton;
 
@@ -42,6 +45,12 @@ export const HeroSection = ({
   className,
   children,
 }: HeroSectionProps) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const { sectionHeightClassName, sectionHeightStyle } = useSectionHeight({
+    minHeight: 0,
+    fullHeight: true,
+  });
+
   return (
     <Flex
       as="section"
@@ -49,10 +58,12 @@ export const HeroSection = ({
       position="relative"
       overflow="hidden"
       className={cn(
-        "min-h-[100svh] lg:h-[calc(100vh-56px)]", // CSS-only height to avoid JS execution delay
+        sectionHeightClassName,
         "w-full relative overflow-hidden",
         className
       )}
+      style={sectionHeightStyle}
+      ref={containerRef}
     >
       {/* Background Image */}
       <div className="absolute inset-0 z-0">
@@ -154,7 +165,7 @@ export const HeroSection = ({
         </Flex>
       </Flex>
 
-      <ScrollIndicator variant="light" />
+      <ScrollIndicator variant="light" containerRef={containerRef} />
     </Flex>
   );
 };
