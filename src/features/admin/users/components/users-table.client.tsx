@@ -1,6 +1,7 @@
 "use client"
 
 import { useCallback, useMemo, useState } from "react"
+import { useSession } from "next-auth/react"
 import { usePageLoadLogger } from "@/hooks"
 
 import { FeedbackDialog } from "@/components/dialogs"
@@ -37,6 +38,8 @@ export const UsersTableClient = ({
   initialData,
   initialRolesOptions = [],
 }: UsersTableClientProps) => {
+  const { data: session } = useSession()
+  const currentUserEmail = session?.user?.email
   const queryClient = useQueryClient()
 
   // Log page load
@@ -46,7 +49,7 @@ export const UsersTableClient = ({
   const { deleteConfirm, setDeleteConfirm, handleDeleteConfirm } = useUserDeleteConfirm()
 
   const getInvalidateQueryKey = useCallback(() => queryKeys.adminUsers.all(), [])
-  const { onRefreshReady, refresh: refreshTable } = useResourceTableRefresh({
+  const { onRefreshReady } = useResourceTableRefresh({
     queryClient,
     getInvalidateQueryKey,
     cacheVersion,
@@ -75,9 +78,9 @@ export const UsersTableClient = ({
 
   const handleToggleStatus = useCallback(
     (row: UserRow, newStatus: boolean) => {
-      executeSingleAction(newStatus ? "active" : "unactive", row, refreshTable)
+      executeSingleAction(newStatus ? "active" : "unactive", row)
     },
-    [executeSingleAction, refreshTable],
+    [executeSingleAction],
   )
 
   const { baseColumns, deletedColumns } = useUserColumns({
@@ -86,6 +89,7 @@ export const UsersTableClient = ({
     togglingUsers: togglingIds,
     onToggleStatus: handleToggleStatus,
     showFeedback,
+    currentUserEmail,
   })
 
   const { loader } = useUsersTableFetcher()
@@ -105,11 +109,11 @@ export const UsersTableClient = ({
         type: "soft",
         row,
         onConfirm: async () => {
-          await executeSingleAction("delete", row, refreshTable)
+          await executeSingleAction("delete", row)
         },
       })
     },
-    [canDelete, executeSingleAction, refreshTable, setDeleteConfirm],
+    [canDelete, executeSingleAction, setDeleteConfirm],
   )
 
   const handleHardDeleteSingle = useCallback(
@@ -127,11 +131,11 @@ export const UsersTableClient = ({
         type: "hard",
         row,
         onConfirm: async () => {
-          await executeSingleAction("hard-delete", row, refreshTable)
+          await executeSingleAction("hard-delete", row)
         },
       })
     },
-    [canManage, executeSingleAction, refreshTable, setDeleteConfirm],
+    [canManage, executeSingleAction, setDeleteConfirm],
   )
 
   const handleRestoreSingle = useCallback(
@@ -149,11 +153,11 @@ export const UsersTableClient = ({
         type: "restore",
         row,
         onConfirm: async () => {
-          await executeSingleAction("restore", row, refreshTable)
+          await executeSingleAction("restore", row)
         },
       })
     },
-    [canRestore, executeSingleAction, refreshTable, setDeleteConfirm],
+    [canRestore, executeSingleAction, setDeleteConfirm],
   )
 
   const handleActiveSingle = useCallback(
@@ -171,11 +175,11 @@ export const UsersTableClient = ({
         type: "active",
         row,
         onConfirm: async () => {
-          await executeSingleAction("active", row, refreshTable)
+          await executeSingleAction("active", row)
         },
       })
     },
-    [canManage, executeSingleAction, refreshTable, setDeleteConfirm],
+    [canManage, executeSingleAction, setDeleteConfirm],
   )
 
   const handleUnactiveSingle = useCallback(
@@ -193,11 +197,11 @@ export const UsersTableClient = ({
         type: "unactive",
         row,
         onConfirm: async () => {
-          await executeSingleAction("unactive", row, refreshTable)
+          await executeSingleAction("unactive", row)
         },
       })
     },
-    [canManage, executeSingleAction, refreshTable, setDeleteConfirm],
+    [canManage, executeSingleAction, setDeleteConfirm],
   )
 
   const { renderActiveRowActions, renderDeletedRowActions } = useUserRowActions({
@@ -214,6 +218,7 @@ export const UsersTableClient = ({
     hardDeletingIds,
     activatingIds,
     deactivatingIds,
+    currentUserEmail,
   })
 
   const executeBulk = useCallback(
@@ -269,6 +274,7 @@ export const UsersTableClient = ({
               canManage={canManage}
               isProcessing={bulkState.isProcessing}
               executeBulk={executeBulk}
+              currentUserEmail={currentUserEmail}
             />
           )
           : undefined,
@@ -289,6 +295,7 @@ export const UsersTableClient = ({
               canRestore={canRestore}
               isProcessing={bulkState.isProcessing}
               executeBulk={executeBulk}
+              currentUserEmail={currentUserEmail}
             />
           )
           : undefined,
@@ -307,6 +314,7 @@ export const UsersTableClient = ({
     bulkState.isProcessing,
     renderActiveRowActions,
     renderDeletedRowActions,
+    currentUserEmail,
   ])
 
   const initialDataByView = useMemo(

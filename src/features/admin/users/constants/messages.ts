@@ -49,6 +49,7 @@ export const USER_LABELS = {
   DELETED: "Đã xóa",
   INACTIVE: "Tạm khóa",
   SUPER_ADMIN: "Super Admin",
+  OWN_ACCOUNT: "- Của bạn -",
 
   // Action labels
   VIEW_DETAIL: "Xem chi tiết",

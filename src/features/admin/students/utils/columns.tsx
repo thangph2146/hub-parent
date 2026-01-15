@@ -2,6 +2,7 @@ import { useMemo } from "react"
 import { TypographySpanSmall, TypographySpanSmallMuted } from "@/components/ui/typography"
 import { Switch } from "@/components/ui/switch"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { Info, CheckCircle2 } from "lucide-react"
 import type { DataTableColumn } from "@/components/tables"
 import { Flex } from "@/components/ui/flex"
 import { useDynamicFilterOptions } from "@/features/admin/resources/hooks/use-dynamic-filter-options"
@@ -172,7 +173,8 @@ export const useStudentColumns = ({ togglingStudents, canToggleStatus, onToggleS
           // Hiển thị thông báo đã được duyệt nếu student đã active và chưa bị xóa
           if (row.isActive && !row.deletedAt) {
             return (
-              <Alert variant="default" fullWidth={false} className="w-full max-w-full border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-900/20">
+              <Alert variant="default" className="w-full max-w-full border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-900/20">
+                <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400" />
                 <AlertTitle className="text-green-800 dark:text-green-200 line-clamp-1">
                   {STUDENT_LABELS.APPROVED_TITLE}
                 </AlertTitle>
@@ -185,7 +187,8 @@ export const useStudentColumns = ({ togglingStudents, canToggleStatus, onToggleS
           // Hiển thị thông báo chờ xét duyệt nếu student chưa active và chưa bị xóa
           if (!row.isActive && !row.deletedAt) {
             return (
-              <Alert variant="default" fullWidth={false} className="w-full max-w-full border-yellow-200 bg-yellow-50 dark:border-yellow-800 dark:bg-yellow-900/20">
+              <Alert variant="default" className="w-full max-w-full border-yellow-200 bg-yellow-50 dark:border-yellow-800 dark:bg-yellow-900/20">
+                <Info className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
                 <AlertTitle className="text-yellow-800 dark:text-yellow-200 line-clamp-1">
                   {STUDENT_LABELS.PENDING_APPROVAL_TITLE}
                 </AlertTitle>

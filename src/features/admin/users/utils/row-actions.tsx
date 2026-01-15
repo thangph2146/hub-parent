@@ -19,6 +19,7 @@ interface UseRowActionsOptions {
   hardDeletingIds?: Set<string>
   activatingIds?: Set<string>
   deactivatingIds?: Set<string>
+  currentUserEmail?: string
 }
 
 export const useUserRowActions = ({
@@ -35,6 +36,7 @@ export const useUserRowActions = ({
   hardDeletingIds = new Set(),
   activatingIds = new Set(),
   deactivatingIds = new Set(),
+  currentUserEmail,
 }: UseRowActionsOptions) => {
   const router = useResourceRouter()
 
@@ -74,11 +76,12 @@ export const useUserRowActions = ({
         } else {
           const isDeactivating = deactivatingIds.has(row.id)
           const isSuperAdmin = row.email === PROTECTED_SUPER_ADMIN_EMAIL
+          const isOwnAccount = row.email === currentUserEmail
           actions.push({
             label: USER_LABELS.DEACTIVATE,
             icon: XCircle,
             onSelect: () => onUnactive(row),
-            disabled: isDeactivating || activatingIds.has(row.id) || isSuperAdmin,
+            disabled: isDeactivating || activatingIds.has(row.id) || isSuperAdmin || isOwnAccount,
             isLoading: isDeactivating,
             loadingLabel: "Đang vô hiệu hóa...",
           })
@@ -88,12 +91,13 @@ export const useUserRowActions = ({
       if (canDelete) {
         const isDeleting = deletingIds.has(row.id)
         const isSuperAdmin = row.email === PROTECTED_SUPER_ADMIN_EMAIL
+        const isOwnAccount = row.email === currentUserEmail
         actions.push({
           label: USER_LABELS.DELETE,
           icon: Trash2,
           onSelect: () => onDelete(row),
           destructive: true,
-          disabled: isDeleting || restoringIds.has(row.id) || hardDeletingIds.has(row.id) || isSuperAdmin,
+          disabled: isDeleting || restoringIds.has(row.id) || hardDeletingIds.has(row.id) || isSuperAdmin || isOwnAccount,
           isLoading: isDeleting,
           loadingLabel: USER_LABELS.DELETING,
         })
@@ -102,12 +106,13 @@ export const useUserRowActions = ({
       if (canManage) {
         const isHardDeleting = hardDeletingIds.has(row.id)
         const isSuperAdmin = row.email === PROTECTED_SUPER_ADMIN_EMAIL
+        const isOwnAccount = row.email === currentUserEmail
         actions.push({
           label: USER_LABELS.HARD_DELETE,
           icon: AlertTriangle,
           onSelect: () => onHardDelete(row),
           destructive: true,
-          disabled: deletingIds.has(row.id) || restoringIds.has(row.id) || isHardDeleting || isSuperAdmin,
+          disabled: deletingIds.has(row.id) || restoringIds.has(row.id) || isHardDeleting || isSuperAdmin || isOwnAccount,
           isLoading: isHardDeleting,
           loadingLabel: USER_LABELS.HARD_DELETING,
         })
@@ -115,7 +120,7 @@ export const useUserRowActions = ({
 
       return renderRowActions(actions)
     },
-    [canDelete, canManage, onDelete, onHardDelete, onActive, onUnactive, router, deletingIds, restoringIds, hardDeletingIds, activatingIds, deactivatingIds],
+    [canDelete, canManage, onDelete, onHardDelete, onActive, onUnactive, router, deletingIds, restoringIds, hardDeletingIds, activatingIds, deactivatingIds, currentUserEmail],
   )
 
   const renderDeletedRowActions = useCallback(
@@ -146,12 +151,13 @@ export const useUserRowActions = ({
       if (canManage) {
         const isHardDeleting = hardDeletingIds.has(row.id)
         const isSuperAdmin = row.email === PROTECTED_SUPER_ADMIN_EMAIL
+        const isOwnAccount = row.email === currentUserEmail
         actions.push({
           label: USER_LABELS.HARD_DELETE,
           icon: AlertTriangle,
           onSelect: () => onHardDelete(row),
           destructive: true,
-          disabled: deletingIds.has(row.id) || restoringIds.has(row.id) || isHardDeleting || isSuperAdmin,
+          disabled: deletingIds.has(row.id) || restoringIds.has(row.id) || isHardDeleting || isSuperAdmin || isOwnAccount,
           isLoading: isHardDeleting,
           loadingLabel: USER_LABELS.HARD_DELETING,
         })
@@ -159,7 +165,7 @@ export const useUserRowActions = ({
 
       return renderRowActions(actions)
     },
-    [canManage, canRestore, onHardDelete, onRestore, router, deletingIds, restoringIds, hardDeletingIds],
+    [canManage, canRestore, onHardDelete, onRestore, router, deletingIds, restoringIds, hardDeletingIds, currentUserEmail],
   )
 
   return {

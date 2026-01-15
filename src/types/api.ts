@@ -1,4 +1,4 @@
-import type { requireAuth } from "@/auth"
+import type { requireAuth } from "@/auth/server"
 import type { Permission } from "@/permissions"
 
 export type ApiRouteContext = {

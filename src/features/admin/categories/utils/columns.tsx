@@ -41,7 +41,12 @@ export const useCategoryColumns = () => {
         className: "min-w-[150px] max-w-[250px]",
         headerClassName: "min-w-[150px] max-w-[250px]",
         cell: (row) => (
-          <Flex maxWidth="75" className="break-words" title={row.name}>
+          <Flex maxWidth="75" className="break-words" title={row.name} align="center" gap={2}>
+            {row.parentId && (
+              <TypographyPSmallMuted className="whitespace-nowrap">
+                └─
+              </TypographyPSmallMuted>
+            )}
             {row.name}
           </Flex>
         ),
@@ -63,6 +68,17 @@ export const useCategoryColumns = () => {
         cell: (row) => (
           <Flex maxWidth="75" className="break-words truncate" title={row.slug}>
             {row.slug}
+          </Flex>
+        ),
+      },
+      {
+        accessorKey: "parentName",
+        header: "Danh mục cha",
+        className: "min-w-[150px] max-w-[250px]",
+        headerClassName: "min-w-[150px] max-w-[250px]",
+        cell: (row) => (
+          <Flex maxWidth="75" className="break-words" title={row.parentName || undefined}>
+            {row.parentName ?? <TypographyPSmallMuted>-</TypographyPSmallMuted>}
           </Flex>
         ),
       },

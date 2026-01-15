@@ -10,7 +10,7 @@
  * - filter[column]: column filters (userEmail, kind, isRead)
  */
 import { NextRequest } from "next/server"
-import { auth } from "@/auth/auth"
+import { auth } from "@/auth/server"
 import { isSuperAdmin } from "@/permissions"
 import { listNotifications } from "@/features/admin/notifications/server/queries"
 import { createErrorResponse, createSuccessResponse } from "@/lib"

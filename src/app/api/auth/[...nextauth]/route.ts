@@ -1,7 +1,7 @@
 /**
  * NextAuth.js route handlers for Next.js 16
  */
-import { handlers } from "@/auth"
+import { handlers } from "@/auth/server"
 import { NextRequest, NextResponse } from "next/server"
 import { logger } from "@/utils"
 

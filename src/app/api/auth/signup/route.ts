@@ -18,7 +18,7 @@ import { createSuccessResponse, createErrorResponse } from "@/lib"
 async function signupHandler(
   request: NextRequest,
   _context: {
-    session: Awaited<ReturnType<typeof import("@/auth").requireAuth>> | null
+    session: Awaited<ReturnType<typeof import("@/auth/server").requireAuth>> | null
     permissions: import("@/permissions").Permission[]
     roles: Array<{ name: string }>
   }

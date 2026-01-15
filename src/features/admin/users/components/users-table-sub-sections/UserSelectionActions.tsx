@@ -17,6 +17,7 @@ interface UserSelectionActionsProps {
   canRestore?: boolean;
   isProcessing: boolean;
   executeBulk: (action: "delete" | "restore" | "hard-delete" | "active" | "unactive", ids: string[], rows: UserRow[], refresh: () => void, clear: () => void) => void;
+  currentUserEmail?: string;
 }
 
 export const ActiveUserSelectionActions = ({
@@ -27,9 +28,13 @@ export const ActiveUserSelectionActions = ({
   canManage,
   isProcessing,
   executeBulk,
+  currentUserEmail,
 }: UserSelectionActionsProps) => {
-  const deletableRows = selectedRows.filter((row) => row.email !== PROTECTED_SUPER_ADMIN_EMAIL);
+  const deletableRows = selectedRows.filter(
+    (row) => row.email !== PROTECTED_SUPER_ADMIN_EMAIL && row.email !== currentUserEmail
+  );
   const hasSuperAdmin = selectedRows.some((row) => row.email === PROTECTED_SUPER_ADMIN_EMAIL);
+  const hasOwnAccount = selectedRows.some((row) => row.email === currentUserEmail);
 
   return (
     <Flex direction="col" align="start" justify="between" gap={3} className="sm:flex-row sm:items-center">
@@ -37,9 +42,9 @@ export const ActiveUserSelectionActions = ({
         <TypographySpanSmall>
           {USER_LABELS.SELECTED_USERS(selectedIds.length)}
         </TypographySpanSmall>
-        {hasSuperAdmin && (
+        {(hasSuperAdmin || hasOwnAccount) && (
           <TypographySpanSmallMuted className="sm:ml-2">
-            (Tài khoản super admin không thể xóa)
+            ({hasSuperAdmin && "Tài khoản super admin"}{hasSuperAdmin && hasOwnAccount && ", "}{hasOwnAccount && "Tài khoản của bạn"} không thể xóa)
           </TypographySpanSmallMuted>
         )}
       </Flex>
@@ -134,10 +139,17 @@ export const DeletedUserSelectionActions = ({
   canRestore,
   isProcessing,
   executeBulk,
+  currentUserEmail,
 }: UserSelectionActionsProps) => {
+  const deletableRows = selectedRows.filter(
+    (row) => row.email !== PROTECTED_SUPER_ADMIN_EMAIL && row.email !== currentUserEmail
+  );
+  const hasOwnAccount = selectedRows.some((row) => row.email === currentUserEmail);
+
   return (
     <SelectionActionsWrapper
       label={USER_LABELS.SELECTED_DELETED_USERS(selectedIds.length)}
+      labelSuffix={hasOwnAccount ? "(Tài khoản của bạn không thể xóa vĩnh viễn)" : undefined}
       actions={
         <>
           {canRestore && (
@@ -162,15 +174,15 @@ export const DeletedUserSelectionActions = ({
               type="button"
               size="sm"
               variant="destructive"
-              disabled={isProcessing || selectedIds.length === 0}
-              onClick={() => executeBulk("hard-delete", selectedIds, selectedRows, refresh, clearSelection)}
+              disabled={isProcessing || deletableRows.length === 0}
+              onClick={() => executeBulk("hard-delete", deletableRows.map((r) => r.id), deletableRows, refresh, clearSelection)}
               className="whitespace-nowrap gap-2"
             >
               <IconSize size="md">
                 <AlertTriangle />
               </IconSize>
               <span>
-                {USER_LABELS.HARD_DELETE_SELECTED(selectedIds.length)}
+                {USER_LABELS.HARD_DELETE_SELECTED(deletableRows.length)}
               </span>
             </Button>
           )}

@@ -10,7 +10,7 @@ import { createSuccessResponse } from "@/lib"
 async function getRolesHandler(
   _req: NextRequest,
   _context: {
-    session: Awaited<ReturnType<typeof import("@/auth").requireAuth>>
+    session: Awaited<ReturnType<typeof import("@/auth/server").requireAuth>>
     permissions: import("@/permissions").Permission[]
     roles: Array<{ name: string }>
   }

@@ -7,7 +7,7 @@ import { Flex } from "@/components/ui/flex";
 import { Grid } from "@/components/ui/grid";
 import { Button } from "@/components/ui/button";
 import { TypographyDescriptionSmall, TypographyH2, TypographySpan } from "@/components/ui/typography";
-import { PostCard } from "@/features/public/post/components";
+import { PostCard } from "@/features/public/post/components/post-card";
 import type { Post } from "@/features/public/post/types";
 import { cn } from "@/utils";
 import { HOME_ROUTES } from "../constants";

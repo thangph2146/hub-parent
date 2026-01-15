@@ -11,7 +11,7 @@ import { createOptionsHandler } from "@/lib"
 
 async function getNotificationOptionsHandler(req: NextRequest, _context: ApiRouteContext) {
   return createOptionsHandler(req, {
-    allowedColumns: ["userEmail"],
+    allowedColumns: ["userEmail", "userName"],
     getOptions: (column, search, limit) => getNotificationColumnOptions(column, search, limit),
   })
 }

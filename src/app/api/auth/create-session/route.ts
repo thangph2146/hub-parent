@@ -4,7 +4,7 @@
  */
 
 import { NextRequest } from "next/server"
-import { auth } from "@/auth"
+import { auth } from "@/auth/server"
 import { createLoginSession } from "@/features/admin/sessions/server/create-login-session"
 import { createSuccessResponse, createErrorResponse } from "@/lib"
 import { logger } from "@/utils"

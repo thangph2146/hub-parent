@@ -50,7 +50,11 @@ export const useStudentsSocketBridge = () => {
       const p = payload as StudentBatchUpsertPayload
       return p.students.map((item) => item.student)
     },
-    getRowStatus: (row) => (row.deletedAt ? "deleted" : "active"),
+    getRowStatus: (row) => {
+        if (row.deletedAt) return "deleted"
+        if (!row.isActive) return "inactive"
+        return "active"
+      },
     matchesSearch,
     matchesFilters,
     debounceMs: CACHE_UPDATE_DEBOUNCE_MS,

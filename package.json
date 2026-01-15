@@ -14,7 +14,7 @@
     "db:generate": "prisma generate",
     "perf": "pnpm build && start-server-and-test start http://localhost:3000 'lighthouse http://localhost:3000 --output html --output-path ./lighthouse-report.html --chrome-flags=\"--headless\"'",
     "perf:pages": "pnpm build && start-server-and-test start http://localhost:3000 'node scripts/perf-check-pages.js'",
-    "fix:prisma": "rm -rf node_modules/.pnpm/@prisma+client* node_modules/@prisma/client node_modules/.prisma && prisma generate"
+    "fix:prisma": "powershell -Command \"if (Test-Path node_modules/.pnpm/@prisma+client*) { Remove-Item -Recurse -Force node_modules/.pnpm/@prisma+client* }; if (Test-Path node_modules/@prisma/client) { Remove-Item -Recurse -Force node_modules/@prisma/client }; if (Test-Path node_modules/.prisma) { Remove-Item -Recurse -Force node_modules/.prisma }; pnpm install\""
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
@@ -35,7 +35,8 @@
     "@lexical/table": "^0.38.2",
     "@lexical/text": "^0.38.2",
     "@lexical/utils": "^0.38.2",
-    "@prisma/client": "6.18.0",
+    "@prisma/adapter-pg": "^7.2.0",
+    "@prisma/client": "7.2.0",
     "@radix-ui/react-avatar": "^1.1.10",
     "@radix-ui/react-checkbox": "^1.3.3",
     "@radix-ui/react-collapsible": "^1.1.12",
@@ -70,6 +71,7 @@
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
     "date-fns": "^4.1.0",
+    "dotenv": "^17.2.3",
     "framer-motion": "^12.23.24",
     "highcharts": "^12.4.0",
     "highcharts-react-official": "^3.2.3",
@@ -81,7 +83,8 @@
     "next": "16.0.10",
     "next-auth": "5.0.0-beta.30",
     "next-themes": "^0.4.6",
-    "prisma": "^6.18.0",
+    "pg": "^8.17.0",
+    "prisma": "^7.2.0",
     "react": "19.2.1",
     "react-day-picker": "^9.13.0",
     "react-dom": "19.2.1",
@@ -101,6 +104,7 @@
     "@tailwindcss/postcss": "^4",
     "@types/lodash": "^4.17.20",
     "@types/node": "^20",
+    "@types/pg": "^8.16.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",

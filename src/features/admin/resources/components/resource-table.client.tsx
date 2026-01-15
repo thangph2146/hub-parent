@@ -160,19 +160,13 @@ export const ResourceTableClient = <T extends object>({
       setSelectedIds([])
       setHasViewChanged(true)
       
-      // Chỉ trigger refresh nếu không có initialData cho view mới
-      // Nếu có initialData, DataTable sẽ tự động sử dụng nó mà không cần refetch
-      const hasInitialData = !!initialDataByView?.[viewId]
-      if (!hasInitialData) {
-        logger.debug("View changed and no initial data found, triggering refresh", { viewId })
-        handleRefresh()
-      } else {
-        logger.debug("View changed and initial data found, skipping explicit refresh", { viewId })
-      }
+      // Luôn trigger refresh khi chuyển view để đảm bảo dữ liệu mới nhất (theo yêu cầu admin không sử dụng cache)
+      logger.debug("View changed, triggering refresh", { viewId })
+      handleRefresh()
       
       onViewChange?.(viewId)
     },
-    [currentViewId, handleRefresh, onViewChange, initialDataByView],
+    [currentViewId, handleRefresh, onViewChange],
   )
   
   useEffect(() => {
@@ -200,6 +194,7 @@ export const ResourceTableClient = <T extends object>({
         onSelectionChange: (change: DataTableSelectionChange<T>) => {
           setSelectedIds(change.ids)
         },
+        isRowSelectable: activeView.isRowSelectable,
       }
     : undefined
 

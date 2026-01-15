@@ -110,9 +110,7 @@ export const ContactRequestDetailClient = ({ contactRequestId, contactRequest, b
         }
 
         // executeSingleAction sẽ hiển thị toast tự động
-        await executeSingleAction(checked ? "mark-read" : "mark-unread", mockRow, () => {
-          // Invalidation already handled by useResourceActions
-        })
+        await executeSingleAction(checked ? "mark-read" : "mark-unread", mockRow)
       } catch {
         // Error đã được xử lý trong executeSingleAction với toast
       } finally {

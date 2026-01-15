@@ -4,7 +4,7 @@
  */
 
 import { NextRequest } from "next/server"
-import { auth } from "@/auth"
+import { auth } from "@/auth/server"
 import { getTablePermissionsAsync, getAuthInfo } from "@/features/admin/resources/server"
 import { createErrorResponse, createSuccessResponse } from "./api-response"
 import type { Permission } from "@/permissions"

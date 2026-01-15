@@ -67,7 +67,7 @@ export const RolesTableClient = ({
   })
 
   const getInvalidateQueryKey = useCallback(() => queryKeys.adminRoles.all(), [])
-  const { onRefreshReady, refresh: refreshTable } = useResourceTableRefresh({
+  const { onRefreshReady } = useResourceTableRefresh({
     queryClient,
     getInvalidateQueryKey,
     cacheVersion,
@@ -97,9 +97,9 @@ export const RolesTableClient = ({
 
   const handleToggleStatusWithRefresh = useCallback(
     (row: RoleRow, checked: boolean) => {
-      executeSingleAction(checked ? "active" : "unactive", row, refreshTable)
+      executeSingleAction(checked ? "active" : "unactive", row)
     },
-    [executeSingleAction, refreshTable],
+    [executeSingleAction],
   )
 
   const { baseColumns, deletedColumns } = useRoleColumns({
@@ -120,11 +120,11 @@ export const RolesTableClient = ({
         type: "soft",
         row,
         onConfirm: async () => {
-          await executeSingleAction("delete", row, refreshTable)
+          await executeSingleAction("delete", row)
         },
       })
     },
-    [canDelete, executeSingleAction, refreshTable, setDeleteConfirm, showFeedback],
+    [canDelete, executeSingleAction, setDeleteConfirm, showFeedback],
   )
 
   const handleHardDeleteSingle = useCallback(
@@ -139,11 +139,11 @@ export const RolesTableClient = ({
         type: "hard",
         row,
         onConfirm: async () => {
-          await executeSingleAction("hard-delete", row, refreshTable)
+          await executeSingleAction("hard-delete", row)
         },
       })
     },
-    [canManage, executeSingleAction, refreshTable, setDeleteConfirm, showFeedback],
+    [canManage, executeSingleAction, setDeleteConfirm, showFeedback],
   )
 
   const handleRestoreSingle = useCallback(
@@ -154,11 +154,11 @@ export const RolesTableClient = ({
         type: "restore",
         row,
         onConfirm: async () => {
-          await executeSingleAction("restore", row, refreshTable)
+          await executeSingleAction("restore", row)
         },
       })
     },
-    [canRestore, executeSingleAction, refreshTable, setDeleteConfirm],
+    [canRestore, executeSingleAction, setDeleteConfirm],
   )
 
   const { renderActiveRowActions, renderDeletedRowActions } = useRoleRowActions({

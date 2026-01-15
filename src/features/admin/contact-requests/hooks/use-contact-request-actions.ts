@@ -5,6 +5,7 @@ import { apiRoutes, queryKeys } from "@/constants"
 
 export const useContactRequestActions = createResourceActionsHook<ContactRequestRow>({
   resourceName: "contact-requests",
+  resourceDisplayName: "liên hệ",
   messages: CONTACT_REQUEST_MESSAGES,
   getRecordName: (row) => row.subject,
   getLogMetadata: (row) => ({

@@ -73,7 +73,7 @@ export function useDataTableLoader<T extends object>({
             prevRefreshKeyRef.current = refreshKey
         }
         
-        if (initialDataChanged && initialData) {
+        if (initialDataChanged && initialData && !refreshKeyChanged) {
             prevQueryRef.current = query
             lastFetchTimeRef.current = Date.now()
             const clonedData: DataTableResult<T> = {

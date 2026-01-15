@@ -1,4 +1,4 @@
-import { getSession, getPermissions } from "@/auth/auth-server"
+import { getPermissions, getSession } from "@/auth/server"
 import { isSuperAdmin } from "@/permissions"
 import type { Permission } from "@/permissions"
 

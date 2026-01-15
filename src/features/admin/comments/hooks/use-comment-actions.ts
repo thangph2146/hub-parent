@@ -5,6 +5,7 @@ import { apiRoutes, queryKeys } from "@/constants"
 
 export const useCommentActions = createResourceActionsHook<CommentRow>({
   resourceName: "comments",
+  resourceDisplayName: "bình luận",
   messages: {
     ...COMMENT_MESSAGES,
     ACTIVE_SUCCESS: COMMENT_MESSAGES.APPROVE_SUCCESS,

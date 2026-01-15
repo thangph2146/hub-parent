@@ -1,6 +1,6 @@
 import { Suspense } from "react"
 import type { Metadata } from "next"
-import { getSession } from "@/auth/auth-server"
+import { getSession } from "@/auth/server"
 import { getMenuData } from "@/utils"
 import { getOpenGraphConfig, getTwitterConfig } from "@/constants"
 import { AppSidebar } from "@/components/layout/navigation"

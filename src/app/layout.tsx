@@ -4,7 +4,7 @@ import "./globals.css";
 import { Providers } from "@/components/providers";
 import { Toaster } from "@/components/ui/toaster";
 import { appConfig, getOpenGraphConfig, getTwitterConfig } from "@/constants"
-import { auth } from "@/auth";
+import { auth } from "@/auth/server";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

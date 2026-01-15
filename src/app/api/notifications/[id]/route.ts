@@ -4,7 +4,7 @@
  * - DELETE /api/notifications/[id] - Delete notification (chỉ thông báo cá nhân, không cho phép xóa SYSTEM)
  */
 import { NextRequest } from "next/server"
-import { auth } from "@/auth/auth"
+import { auth } from "@/auth/server"
 import { deleteNotification, markNotificationAsRead, markNotificationAsUnread } from "@/features/admin/notifications/server/mutations"
 import { getSocketServer } from "@/services/socket/state"
 import { mapNotificationToPayload } from "@/services/socket/state"

@@ -1,0 +1,39 @@
+model ContactRequest {
+  id           String          @id @default(cuid())
+  name         String
+  email        String
+  phone        String?
+  subject      String
+  content      String
+  status       ContactStatus   @default(NEW)
+  priority     ContactPriority @default(MEDIUM)
+  isRead       Boolean         @default(false)
+  userId       String?
+  assignedToId String?
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+  deletedAt    DateTime?
+  submittedBy  User?           @relation("ContactSubmittedBy", fields: [userId], references: [id])
+  assignedTo   User?           @relation("ContactAssignedTo", fields: [assignedToId], references: [id])
+
+  @@index([userId, createdAt])
+  @@index([assignedToId])
+  @@index([status])
+  @@index([priority])
+  @@index([isRead])
+  @@map("contact_requests")
+}
+
+enum ContactStatus {
+  NEW
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+enum ContactPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}

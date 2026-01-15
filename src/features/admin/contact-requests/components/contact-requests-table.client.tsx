@@ -119,9 +119,9 @@ export const ContactRequestsTableClient = ({
   const handleToggleReadWithRefresh = useCallback(
     (row: ContactRequestRow, checked: boolean) => {
       if (!canUpdate) return
-      executeSingleAction(checked ? "mark-read" : "mark-unread", row, refreshTable)
+      executeSingleAction(checked ? "mark-read" : "mark-unread", row)
     },
-    [canUpdate, executeSingleAction, refreshTable],
+    [canUpdate, executeSingleAction],
   )
 
   const { baseColumns, deletedColumns } = useContactRequestColumns({
@@ -139,11 +139,11 @@ export const ContactRequestsTableClient = ({
         type: "soft",
         row,
         onConfirm: async () => {
-          await executeSingleAction("delete", row, refreshTable)
+          await executeSingleAction("delete", row)
         },
       })
     },
-    [canDelete, executeSingleAction, refreshTable, setDeleteConfirm],
+    [canDelete, executeSingleAction, setDeleteConfirm],
   )
 
   const handleHardDeleteSingle = useCallback(
@@ -154,11 +154,11 @@ export const ContactRequestsTableClient = ({
         type: "hard",
         row,
         onConfirm: async () => {
-          await executeSingleAction("hard-delete", row, refreshTable)
+          await executeSingleAction("hard-delete", row)
         },
       })
     },
-    [canManage, executeSingleAction, refreshTable, setDeleteConfirm],
+    [canManage, executeSingleAction, setDeleteConfirm],
   )
 
   const handleRestoreSingle = useCallback(
@@ -169,11 +169,11 @@ export const ContactRequestsTableClient = ({
         type: "restore",
         row,
         onConfirm: async () => {
-          await executeSingleAction("restore", row, refreshTable)
+          await executeSingleAction("restore", row)
         },
       })
     },
-    [canRestore, executeSingleAction, refreshTable, setDeleteConfirm],
+    [canRestore, executeSingleAction, setDeleteConfirm],
   )
 
   const { renderActiveRowActions, renderDeletedRowActions } = useContactRequestRowActions({

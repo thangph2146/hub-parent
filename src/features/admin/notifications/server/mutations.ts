@@ -1,5 +1,5 @@
 import { prisma } from "@/services/prisma"
-import { NotificationKind, Prisma } from "@prisma/client"
+import { NotificationKind, Prisma } from "@prisma/client/index"
 import { DEFAULT_ROLES } from "@/permissions"
 import { logger } from "@/utils"
 import {
@@ -329,8 +329,8 @@ export const markNotificationAsRead = async (notificationId: string, userId: str
     throw new Error("Notification not found")
   }
 
-  // Super Admin can mark any notification as read, other users only their own
-  if (!isSuperAdmin && notification.userId !== userId) {
+  // Chỉ chính chủ mới được phép đánh dấu đã đọc
+  if (notification.userId !== userId) {
     logger.warn("User attempted to mark notification as read without ownership", {
       notificationId,
       userId,
@@ -381,8 +381,8 @@ export const markNotificationAsUnread = async (notificationId: string, userId: s
     throw new Error("Notification not found")
   }
 
-  // Super Admin can mark any notification as unread, other users only their own
-  if (!isSuperAdmin && notification.userId !== userId) {
+  // Chỉ chính chủ mới được phép đánh dấu chưa đọc
+  if (notification.userId !== userId) {
     logger.warn("User attempted to mark notification as unread without ownership", {
       notificationId,
       userId,
@@ -484,10 +484,10 @@ export const bulkMarkAsRead = async (notificationIds: string[], userId: string, 
   })
 
   const ownNotificationIds = notifications
-    .filter((n) => (isSuperAdmin || n.userId === userId) && !n.isRead)
+    .filter((n) => n.userId === userId && !n.isRead)
     .map((n) => n.id)
 
-  const invalidNotifications = isSuperAdmin ? [] : notifications.filter((n) => n.userId !== userId)
+  const invalidNotifications = notifications.filter((n) => n.userId !== userId)
   if (invalidNotifications.length > 0) {
     logger.warn("User attempted to mark notifications as read without ownership", {
       userId,
@@ -498,7 +498,7 @@ export const bulkMarkAsRead = async (notificationIds: string[], userId: string, 
   }
 
   const alreadyReadIds = notifications
-    .filter((n) => (isSuperAdmin || n.userId === userId) && n.isRead)
+    .filter((n) => n.userId === userId && n.isRead)
     .map((n) => n.id)
 
   if (ownNotificationIds.length === 0) {
@@ -513,8 +513,7 @@ export const bulkMarkAsRead = async (notificationIds: string[], userId: string, 
   const result = await prisma.notification.updateMany({
     where: { 
       id: { in: ownNotificationIds },
-      // Nếu là super admin thì không cần filter userId trong where clause của updateMany
-      ...(isSuperAdmin ? {} : { userId }),
+      userId,
     },
     data: {
       isRead: true,
@@ -551,10 +550,10 @@ export const bulkMarkAsUnread = async (notificationIds: string[], userId: string
   })
 
   const ownNotificationIds = notifications
-    .filter((n) => (isSuperAdmin || n.userId === userId) && n.isRead)
+    .filter((n) => n.userId === userId && n.isRead)
     .map((n) => n.id)
 
-  const invalidNotifications = isSuperAdmin ? [] : notifications.filter((n) => n.userId !== userId)
+  const invalidNotifications = notifications.filter((n) => n.userId !== userId)
   if (invalidNotifications.length > 0) {
     logger.warn("User attempted to mark notifications as unread without ownership", {
       userId,
@@ -565,7 +564,7 @@ export const bulkMarkAsUnread = async (notificationIds: string[], userId: string
   }
 
   const alreadyUnreadIds = notifications
-    .filter((n) => (isSuperAdmin || n.userId === userId) && !n.isRead)
+    .filter((n) => n.userId === userId && !n.isRead)
     .map((n) => n.id)
 
   if (ownNotificationIds.length === 0) {
@@ -580,7 +579,7 @@ export const bulkMarkAsUnread = async (notificationIds: string[], userId: string
   const result = await prisma.notification.updateMany({
     where: {
       id: { in: ownNotificationIds },
-      ...(isSuperAdmin ? {} : { userId }),
+      userId,
     },
     data: {
       isRead: false,

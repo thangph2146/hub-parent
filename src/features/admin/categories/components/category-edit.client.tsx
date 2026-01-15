@@ -8,6 +8,8 @@ import { apiRoutes } from "@/constants"
 import { queryKeys } from "@/constants"
 import { getBaseCategoryFields, getCategoryFormSections, type CategoryFormData } from "../form-fields"
 import type { CategoryRow } from "../types"
+import { useQuery } from "@tanstack/react-query"
+import { listCategories } from "../server/queries"
 
 interface CategoryEditData extends CategoryRow {
   slug: string
@@ -53,6 +55,14 @@ export const CategoryEditClient = ({
   })
   const category = (categoryData || initialCategory) as CategoryEditData | null
 
+  // Lấy danh sách danh mục để chọn danh mục cha
+  const { data: categoriesData } = useQuery({
+    queryKey: queryKeys.adminCategories.list({ page: 1, limit: 1000, status: "active" }),
+    queryFn: () => listCategories({ page: 1, limit: 1000, status: "active" }),
+  })
+
+  const categories = categoriesData?.data || []
+
   const { handleSubmit } = useResourceFormSubmit({
     apiRoute: (id) => apiRoutes.categories.update(id),
     method: "PUT",
@@ -90,7 +100,7 @@ export const CategoryEditClient = ({
     return handleSubmit(data)
   }
 
-  const editFields: ResourceFormField<CategoryFormData>[] = getBaseCategoryFields()
+  const editFields: ResourceFormField<CategoryFormData>[] = getBaseCategoryFields(categories, category?.id)
   const formSections = getCategoryFormSections()
 
   return (

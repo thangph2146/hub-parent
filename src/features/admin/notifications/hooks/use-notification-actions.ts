@@ -9,6 +9,7 @@ import { apiRoutes, queryKeys } from "@/constants"
  */
 export const useNotificationActions = createResourceActionsHook<NotificationRow>({
   resourceName: "notifications",
+  resourceDisplayName: "thông báo",
   messages: {
     DELETE_SUCCESS: NOTIFICATION_MESSAGES.DELETE_SUCCESS,
     DELETE_ERROR: NOTIFICATION_MESSAGES.DELETE_ERROR,

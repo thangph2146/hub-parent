@@ -2,7 +2,7 @@
 import { listPosts } from "../server/queries"
 import { serializePostsList } from "../server/helpers"
 import { PostsTableClient } from "./posts-table.client"
-import { requireAuth, getPermissions } from "@/auth"
+import { requireAuth, getPermissions } from "@/auth/server"
 import { PERMISSIONS, hasPermission } from "@/permissions"
 import { logger } from "@/utils"
 

@@ -1,5 +1,5 @@
 import type { Metadata } from "next"
-import { getSession } from "@/auth/auth-server"
+import { getSession } from "@/auth/server"
 import { PublicHeader } from "@/components/layout/headers"
 import { PermissionGate } from "@/components/access-control";
 import { PublicFooter } from "@/components/layout/footer"

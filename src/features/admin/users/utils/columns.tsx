@@ -4,8 +4,9 @@ import { useDynamicFilterOptions } from "@/features/admin/resources/hooks/use-dy
 import { apiRoutes } from "@/constants"
 import type { UserRow } from "../types"
 import { Switch } from "@/components/ui/switch"
-import { USER_MESSAGES, PROTECTED_SUPER_ADMIN_EMAIL } from "../constants"
-import { TypographySpanSmallMuted, TypographySpanSmall, TypographySpanMuted } from "@/components/ui/typography"
+import { Badge } from "@/components/ui/badge"
+import { USER_MESSAGES, PROTECTED_SUPER_ADMIN_EMAIL, USER_LABELS } from "../constants"
+import { TypographySpanSmallMuted, TypographySpanSmall, TypographySpanMuted, TypographyP } from "@/components/ui/typography"
 import { Flex } from "@/components/ui/flex"
 
 interface UseUserColumnsOptions {
@@ -14,6 +15,7 @@ interface UseUserColumnsOptions {
   togglingUsers: Set<string>
   onToggleStatus: (row: UserRow, newStatus: boolean) => void
   showFeedback: (variant: "error" | "success", title: string, description?: string) => void
+  currentUserEmail?: string
 }
 
 export const useUserColumns = ({
@@ -22,6 +24,7 @@ export const useUserColumns = ({
   togglingUsers,
   onToggleStatus,
   showFeedback,
+  currentUserEmail,
 }: UseUserColumnsOptions) => {
   const emailFilter = useDynamicFilterOptions({
     optionsEndpoint: apiRoutes.users.options({ column: "email" }),
@@ -56,6 +59,19 @@ export const useUserColumns = ({
         },
         className: "min-w-[200px] max-w-[300px]",
         headerClassName: "min-w-[200px] max-w-[300px]",
+        cell: (row) => {
+          const isOwnAccount = currentUserEmail === row.email
+          return (
+            <Flex align="center" gap={2}>
+              <TypographyP className="font-medium text-sm">{row.email}</TypographyP>
+              {isOwnAccount && (
+                <Badge variant="outline" className="text-[10px] px-1 py-0 h-4 whitespace-nowrap">
+                  {USER_LABELS.OWN_ACCOUNT}
+                </Badge>
+              )}
+            </Flex>
+          )
+        },
       },
       {
         accessorKey: "name",
@@ -182,6 +198,7 @@ export const useUserColumns = ({
       canManage,
       onToggleStatus,
       showFeedback,
+      currentUserEmail,
     ],
   )
 

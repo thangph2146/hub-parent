@@ -18,7 +18,8 @@ import {
   applyResourceSegmentToPath,
 } from "@/permissions"
 import type { Permission } from "@/permissions"
-import { ForbiddenNotice, UnauthenticatedNotice } from "@/components/access-control";
+import { ForbiddenNotice } from "../forbidden-notice";
+import { UnauthenticatedNotice } from "../unauthenticated-notice";
 import { AlreadyAuthenticatedNotice } from "../already-authenticated-notice"
 import { useClientOnly } from "@/hooks"
 import { useSession } from "@/auth"

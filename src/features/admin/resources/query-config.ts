@@ -4,11 +4,11 @@ import type {
 } from "@tanstack/react-query";
 
 export const ADMIN_QUERY_DEFAULTS = {
-  staleTime: 30 * 1000, // 30 seconds - giảm số lần refetch không cần thiết
+  staleTime: 0, // Admin luôn lấy dữ liệu mới nhất để tránh trường hợp dữ liệu không được cập nhật
   gcTime: 5 * 60 * 1000,
-  refetchOnMount: false as const, // Chỉ refetch khi data thực sự stale
-  refetchOnWindowFocus: false as const,
-  refetchOnReconnect: false as const,
+  refetchOnMount: true,
+  refetchOnWindowFocus: true,
+  refetchOnReconnect: true,
 } satisfies Partial<UseQueryOptions<unknown, Error>>;
 
 export const ADMIN_MUTATION_DEFAULTS = {
@@ -52,9 +52,9 @@ export const createAdminFetchOptions = <TData = unknown>(options: {
   queryFn: () => Promise<TData>;
   staleTime: number;
   gcTime: number;
-  refetchOnMount: false;
-  refetchOnWindowFocus: false;
-  refetchOnReconnect: false;
+  refetchOnMount: boolean;
+  refetchOnWindowFocus: boolean;
+  refetchOnReconnect: boolean;
 } => {
   return {
     ...ADMIN_QUERY_DEFAULTS,

@@ -27,6 +27,7 @@ export const useSessionActions = ({
     bulkState,
   } = useResourceActions<SessionRow>({
     resourceName: "sessions",
+    resourceDisplayName: "phiên đăng nhập",
     queryKeys: {
       all: () => queryKeys.adminSessions.all(),
       detail: (id) => queryKeys.adminSessions.detail(id),
@@ -45,6 +46,7 @@ export const useSessionActions = ({
 
   const { handleToggleStatus, togglingIds: togglingSessions } = useToggleStatus<SessionRow>({
     resourceName: "sessions",
+    resourceDisplayName: "phiên đăng nhập",
     updateRoute: (id) => apiRoutes.sessions.update(id),
     queryKeys: {
       all: () => queryKeys.adminSessions.all(),

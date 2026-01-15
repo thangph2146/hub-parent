@@ -1,6 +1,6 @@
 "use server"
 
-import type { Prisma } from "@prisma/client"
+import type { Prisma } from "@prisma/client/index"
 import { PERMISSIONS, canPerformAnyAction } from "@/permissions"
 import { prisma } from "@/services/prisma"
 import { mapCategoryRecord, type CategoryWithRelations } from "./helpers"
@@ -68,7 +68,21 @@ export const createCategory = async (ctx: AuthContext, input: z.infer<typeof Cre
     data: {
       name: trimmedName,
       slug: slug,
+      parent: validatedInput.parentId ? { connect: { id: validatedInput.parentId } } : undefined,
       description: validatedInput.description?.trim() || null,
+    },
+    include: {
+      parent: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+      _count: {
+        select: {
+          children: true,
+        },
+      },
     },
   })
 
@@ -96,10 +110,30 @@ export const updateCategory = async (ctx: AuthContext, id: string, input: z.infe
   if (!id?.trim()) throw new ApplicationError("ID danh mục không hợp lệ", 400)
 
   const validatedInput = UpdateCategorySchema.parse(input)
-  const existing = await prisma.category.findUnique({ where: { id } })
+  const existing = await prisma.category.findUnique({
+    where: { id },
+    include: {
+      parent: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+      _count: {
+        select: {
+          children: true,
+        },
+      },
+    },
+  })
   if (!existing || existing.deletedAt) throw new NotFoundError("Danh mục không tồn tại")
 
-  const changes: { name?: { old: string; new: string }; slug?: { old: string; new: string }; description?: { old: string | null; new: string | null } } = {}
+  const changes: { 
+    name?: { old: string; new: string }; 
+    slug?: { old: string; new: string }; 
+    description?: { old: string | null; new: string | null };
+    parentId?: { old: string | null; new: string | null };
+  } = {}
   const updateData: Prisma.CategoryUpdateInput = {}
 
   if (validatedInput.name !== undefined) {
@@ -128,13 +162,58 @@ export const updateCategory = async (ctx: AuthContext, id: string, input: z.infe
     updateData.description = trimmedDescription
   }
 
+  if (validatedInput.parentId !== undefined) {
+    const parentId = validatedInput.parentId || null
+    if (parentId !== existing.parentId) {
+      // Ngăn chặn vòng lặp (danh mục không thể làm cha của chính nó)
+      if (parentId === id) throw new ApplicationError("Danh mục không thể làm cha của chính nó", 400)
+      
+      // Ngăn chặn vòng lặp sâu hơn (không thể chọn con làm cha)
+      if (parentId) {
+        // Tìm tất cả con cháu của danh mục hiện tại
+        const descendants = await prisma.$queryRaw<Array<{ id: string }>>`
+          WITH RECURSIVE descendants AS (
+            SELECT id FROM categories WHERE "parentId" = ${id}
+            UNION ALL
+            SELECT c.id FROM categories c
+            JOIN descendants d ON c."parentId" = d.id
+          )
+          SELECT id FROM descendants
+        `
+        const descendantIds = descendants.map(d => d.id)
+        if (descendantIds.includes(parentId)) {
+          throw new ApplicationError("Không thể chọn danh mục con làm danh mục cha", 400)
+        }
+      }
+      
+      changes.parentId = { old: existing.parentId, new: parentId }
+      updateData.parent = parentId ? { connect: { id: parentId } } : { disconnect: true }
+    }
+  }
+
   if (Object.keys(updateData).length === 0) {
-    const sanitized = sanitizeCategory(existing)
+    const sanitized = sanitizeCategory(existing as CategoryWithRelations)
     logActionFlow("categories", "update", "success", { categoryId: sanitized.id, categoryName: sanitized.name, changes: {}, noChanges: true }, startTime)
     return sanitized
   }
 
-  const category = await prisma.category.update({ where: { id }, data: updateData })
+  const category = await prisma.category.update({
+    where: { id },
+    data: updateData,
+    include: {
+      parent: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+      _count: {
+        select: {
+          children: true,
+        },
+      },
+    },
+  })
   const sanitized = sanitizeCategory(category)
   const previousStatus: "active" | "deleted" | null = existing.deletedAt ? "deleted" : "active"
 
@@ -152,8 +231,19 @@ export const softDeleteCategory = async (ctx: AuthContext, id: string): Promise<
   logActionFlow("categories", "delete", "start", { categoryId: id, actorId: ctx.actorId })
   ensurePermission(ctx, PERMISSIONS.CATEGORIES_DELETE, PERMISSIONS.CATEGORIES_MANAGE)
 
-  const category = await prisma.category.findUnique({ where: { id } })
+  const category = await prisma.category.findUnique({ 
+    where: { id },
+    include: {
+      _count: {
+        select: { children: true }
+      }
+    }
+  })
   if (!category || category.deletedAt) throw new NotFoundError("Danh mục không tồn tại")
+
+  if (category._count.children > 0) {
+    throw new ApplicationError("Không thể xóa danh mục đang có danh mục con", 400)
+  }
 
   await prisma.category.update({ where: { id }, data: { deletedAt: new Date() } })
   await logTableStatusAfterMutation({ resource: "categories", action: "delete", prismaModel: prisma.category, affectedIds: id })
@@ -170,16 +260,33 @@ export const bulkSoftDeleteCategories = async (ctx: AuthContext, ids: string[]):
   ensurePermission(ctx, PERMISSIONS.CATEGORIES_DELETE, PERMISSIONS.CATEGORIES_MANAGE)
   validateBulkIds(ids, "danh mục")
 
-  const categories = await prisma.category.findMany({ where: { id: { in: ids }, deletedAt: null }, select: { id: true, name: true, slug: true } })
+  const categories = await prisma.category.findMany({ 
+    where: { id: { in: ids }, deletedAt: null }, 
+    select: { 
+      id: true, 
+      name: true, 
+      slug: true,
+      _count: {
+        select: { children: true }
+      }
+    } 
+  })
 
-  if (categories.length === 0) {
+  const eligibleCategories = categories.filter(c => c._count.children === 0)
+  const skippedCount = categories.length - eligibleCategories.length
+
+  if (eligibleCategories.length === 0) {
     const allCategories = await prisma.category.findMany({ where: { id: { in: ids } }, select: { id: true, deletedAt: true } })
-    logActionFlow("categories", "bulk-delete", "error", { requestedCount: ids.length, foundCount: categories.length, error: "Không có danh mục nào có thể xóa" }, startTime)
-    throw new ApplicationError(buildBulkError(allCategories, ids, "danh mục"), 400)
+    let errorMessage = buildBulkError(allCategories, ids, "danh mục")
+    if (categories.length > 0 && skippedCount > 0) {
+      errorMessage = `Tất cả ${categories.length} danh mục đã chọn đều có danh mục con và không thể xóa.`
+    }
+    logActionFlow("categories", "bulk-delete", "error", { requestedCount: ids.length, foundCount: categories.length, error: errorMessage }, startTime)
+    throw new ApplicationError(errorMessage, 400)
   }
 
   const result = await prisma.category.updateMany({
-    where: { id: { in: categories.map((c) => c.id) }, deletedAt: null },
+    where: { id: { in: eligibleCategories.map((c) => c.id) }, deletedAt: null },
     data: { deletedAt: new Date() },
   })
 
@@ -188,15 +295,19 @@ export const bulkSoftDeleteCategories = async (ctx: AuthContext, ids: string[]):
       resource: "categories",
       action: "bulk-delete",
       prismaModel: prisma.category,
-      affectedIds: categories.map((c) => c.id),
+      affectedIds: eligibleCategories.map((c) => c.id),
       affectedCount: result.count,
     })
-    await Promise.allSettled(categories.map((category) => emitCategoryUpsert(category.id, "active").catch(() => null)))
-    await notifySuperAdminsOfBulkCategoryAction("delete", ctx.actorId, result.count, categories)
-    logActionFlow("categories", "bulk-delete", "success", { requestedCount: ids.length, affectedCount: result.count }, startTime)
+    await Promise.allSettled(eligibleCategories.map((category) => emitCategoryUpsert(category.id, "active").catch(() => null)))
+    await notifySuperAdminsOfBulkCategoryAction("delete", ctx.actorId, result.count, eligibleCategories)
+    logActionFlow("categories", "bulk-delete", "success", { requestedCount: ids.length, affectedCount: result.count, skippedCount }, startTime)
   }
 
-  return { success: true, message: `Đã xóa ${result.count} danh mục`, affected: result.count }
+  let message = `Đã xóa ${result.count} danh mục`
+  if (skippedCount > 0) {
+    message += `. (Bỏ qua ${skippedCount} danh mục do có danh mục con)`
+  }
+  return { success: true, message, affected: result.count }
 }
 
 export const restoreCategory = async (ctx: AuthContext, id: string): Promise<void> => {
@@ -271,8 +382,23 @@ export const bulkRestoreCategories = async (ctx: AuthContext, ids: string[]): Pr
 export const hardDeleteCategory = async (ctx: AuthContext, id: string): Promise<void> => {
   if (!canPerformAnyAction(ctx.permissions, ctx.roles, [PERMISSIONS.CATEGORIES_MANAGE])) throw new ForbiddenError()
 
-  const category = await prisma.category.findUnique({ where: { id }, select: { id: true, name: true, slug: true, deletedAt: true } })
+  const category = await prisma.category.findUnique({ 
+    where: { id }, 
+    select: { 
+      id: true, 
+      name: true, 
+      slug: true, 
+      deletedAt: true,
+      _count: {
+        select: { children: true }
+      }
+    } 
+  })
   if (!category) throw new NotFoundError("Danh mục không tồn tại")
+
+  if (category._count.children > 0) {
+    throw new ApplicationError("Không thể xóa danh mục đang có danh mục con", 400)
+  }
 
   const previousStatus: "active" | "deleted" = category.deletedAt ? "deleted" : "active"
   await prisma.category.delete({ where: { id } })
@@ -287,11 +413,37 @@ export const bulkHardDeleteCategories = async (ctx: AuthContext, ids: string[]):
   if (!canPerformAnyAction(ctx.permissions, ctx.roles, [PERMISSIONS.CATEGORIES_MANAGE])) throw new ForbiddenError()
   validateBulkIds(ids, "danh mục")
 
-  const categories = await prisma.category.findMany({ where: { id: { in: ids } }, select: { id: true, name: true, slug: true, deletedAt: true } })
-  const result = await prisma.category.deleteMany({ where: { id: { in: ids } } })
+  const categories = await prisma.category.findMany({ 
+    where: { id: { in: ids } }, 
+    select: { 
+      id: true, 
+      name: true, 
+      slug: true, 
+      deletedAt: true,
+      _count: {
+        select: { children: true }
+      }
+    } 
+  })
+
+  const eligibleCategories = categories.filter(c => c._count.children === 0)
+  const skippedCount = categories.length - eligibleCategories.length
+
+  if (eligibleCategories.length === 0) {
+    let errorMessage = "Không tìm thấy danh mục nào để xóa vĩnh viễn"
+    if (categories.length > 0 && skippedCount > 0) {
+      errorMessage = `Tất cả ${categories.length} danh mục đã chọn đều có danh mục con và không thể xóa vĩnh viễn.`
+    }
+    logActionFlow("categories", "bulk-hard-delete", "error", { requestedCount: ids.length, foundCount: categories.length, error: errorMessage }, startTime)
+    throw new ApplicationError(errorMessage, 400)
+  }
+
+  const result = await prisma.category.deleteMany({ 
+    where: { id: { in: eligibleCategories.map(c => c.id) } } 
+  })
 
   if (result.count > 0) {
-    categories.forEach((category) => {
+    eligibleCategories.forEach((category) => {
       const previousStatus: "active" | "deleted" = category.deletedAt ? "deleted" : "active"
       try {
         emitCategoryRemove(category.id, previousStatus)
@@ -302,9 +454,17 @@ export const bulkHardDeleteCategories = async (ctx: AuthContext, ids: string[]):
         }, startTime)
       }
     })
-    await notifySuperAdminsOfBulkCategoryAction("hard-delete", ctx.actorId, result.count, categories)
-    logActionFlow("categories", "bulk-hard-delete", "success", { requestedCount: ids.length, affectedCount: result.count }, startTime)
+    await notifySuperAdminsOfBulkCategoryAction("hard-delete", ctx.actorId, result.count, eligibleCategories)
+    logActionFlow("categories", "bulk-hard-delete", "success", { requestedCount: ids.length, affectedCount: result.count, skippedCount }, startTime)
   }
 
-  return { success: true, message: `Đã xóa vĩnh viễn ${result.count} danh mục${result.count < categories.length ? ` (${categories.length - result.count} danh mục không tồn tại)` : ""}`, affected: result.count }
+  let message = `Đã xóa vĩnh viễn ${result.count} danh mục`
+  if (skippedCount > 0) {
+    message += `. (Bỏ qua ${skippedCount} danh mục do có danh mục con)`
+  }
+  if (result.count < eligibleCategories.length) {
+    message += ` (${eligibleCategories.length - result.count} danh mục không tồn tại)`
+  }
+
+  return { success: true, message, affected: result.count }
 }
