@@ -22,6 +22,7 @@ export interface ResourceViewMode<T extends object> {
   status?: string
   columns?: DataTableColumn<T>[]
   selectionEnabled?: boolean
+  isRowSelectable?: (row: T) => boolean
   selectionActions?: (context: ResourceSelectionContext<T>) => ReactNode
   rowActions?: (row: T, context: ResourceRowActionContext<T>) => ReactNode
   searchPlaceholder?: string

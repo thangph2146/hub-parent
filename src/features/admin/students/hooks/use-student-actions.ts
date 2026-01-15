@@ -5,6 +5,7 @@ import { STUDENT_MESSAGES } from "../constants/messages"
 
 export const useStudentActions = createResourceActionsHook<StudentRow>({
   resourceName: "students",
+  resourceDisplayName: "sinh viên",
   messages: STUDENT_MESSAGES,
   getRecordName: (row) => row.studentCode,
   getLogMetadata: (row) => ({ studentId: row.id, studentCode: row.studentCode }),

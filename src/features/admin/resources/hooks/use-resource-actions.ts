@@ -16,6 +16,18 @@ type SingleAction = "delete" | "restore" | "hard-delete" | "mark-read" | "mark-u
 type BulkAction = SingleAction
 type ActionType = SingleAction | `bulk-${BulkAction}`
 
+import { isAxiosError } from "axios"
+
+// Helper to extract message from server error
+const getErrorMessageFromServer = (error: unknown, defaultMessage: string): string => {
+  if (isAxiosError(error)) {
+    const serverMessage = error.response?.data?.message || error.response?.data?.error
+    if (serverMessage) return serverMessage
+    return error.message
+  }
+  return error instanceof Error ? error.message : defaultMessage
+}
+
 const getActionType = (action: BulkAction, isBulk: boolean): ActionType => {
   if (isBulk) {
     return action === "delete" ? "bulk-delete"
@@ -31,6 +43,7 @@ const getActionType = (action: BulkAction, isBulk: boolean): ActionType => {
 
 export interface ResourceActionConfig<T extends { id: string }> {
   resourceName: string
+  resourceDisplayName?: string
   queryKeys: {
     all: () => QueryKey
     detail?: (id: string) => QueryKey
@@ -70,6 +83,7 @@ export interface ResourceActionConfig<T extends { id: string }> {
     MARK_READ_ERROR?: string
     MARK_UNREAD_SUCCESS?: string
     MARK_UNREAD_ERROR?: string
+    NO_PERMISSION?: string
     UNKNOWN_ERROR: string
   }
   getRecordName: (row: T) => string
@@ -85,25 +99,24 @@ export interface ResourceActionConfig<T extends { id: string }> {
   beforeSingleAction?: (
     action: SingleAction,
     row: T
-  ) => Promise<{ allowed: boolean; message?: string } | void>
+  ) => Promise<{ allowed: boolean; message?: string; title?: string } | void>
   beforeBulkAction?: (
     action: BulkAction,
     ids: string[],
     rows?: T[]
-  ) => Promise<{ allowed: boolean; message?: string; targetIds?: string[] } | void>
+  ) => Promise<{ allowed: boolean; message?: string; title?: string; targetIds?: string[] } | void>
 }
 
 export interface UseResourceActionsResult<T extends { id: string }> {
   executeSingleAction: (
     action: SingleAction,
-    row: T,
-    refresh: ResourceRefreshHandler
+    row: T
   ) => Promise<void>
   executeBulkAction: (
     action: BulkAction,
     ids: string[],
-    refresh: ResourceRefreshHandler,
-    clearSelection: () => void,
+    refresh?: ResourceRefreshHandler,
+    clearSelection?: () => void,
     rows?: T[]
   ) => Promise<void>
   deletingIds: Set<string>
@@ -431,7 +444,11 @@ export const useResourceActions = <T extends { id: string }>(
       if (config.beforeSingleAction) {
         const validation = await config.beforeSingleAction(action, row)
         if (validation && !validation.allowed) {
-          config.showFeedback("error", "Không thể thực hiện", validation.message || "Hành động này không được phép")
+          config.showFeedback(
+            "error", 
+            validation.title || "Không thể thực hiện", 
+            validation.message || "Hành động này không được phép"
+          )
           return
         }
       }
@@ -495,6 +512,7 @@ export const useResourceActions = <T extends { id: string }>(
           resourceId: row.id,
           permissionDenied: true,
         })
+        config.showFeedback("error", actionConfig.errorTitle, config.messages.NO_PERMISSION || "Từ chối truy cập")
         return
       }
       
@@ -544,7 +562,7 @@ export const useResourceActions = <T extends { id: string }>(
         // Listener/polling sẽ handle refresh nếu registry không tìm thấy callback
         // Không cần gọi thêm ở đây để tránh duplicate refresh calls
       } catch (error: unknown) {
-        const errorMessage = error instanceof Error ? error.message : config.messages.UNKNOWN_ERROR
+        const errorMessage = getErrorMessageFromServer(error, config.messages.UNKNOWN_ERROR)
         config.showFeedback("error", actionConfig.errorTitle, actionConfig.errorDescription, errorMessage)
         
         if (action !== "restore") {
@@ -576,13 +594,21 @@ export const useResourceActions = <T extends { id: string }>(
       if (config.beforeBulkAction) {
         const validation = await config.beforeBulkAction(action, ids, rows)
         if (validation && !validation.allowed) {
-          config.showFeedback("error", "Không thể thực hiện", validation.message || "Hành động này không được phép")
+          config.showFeedback(
+            "error", 
+            validation.title || "Không thể thực hiện", 
+            validation.message || "Hành động này không được phép"
+          )
           return
         }
         if (validation?.targetIds) {
           targetIds = validation.targetIds
           if (targetIds.length === 0) {
-            config.showFeedback("info", "Thông báo", validation.message || "Không có mục nào hợp lệ để thực hiện hành động này")
+            config.showFeedback(
+              "info", 
+              validation.title || "Thông báo", 
+              validation.message || `Không có ${config.resourceDisplayName || "mục"} nào hợp lệ để thực hiện hành động này`
+            )
             clearSelection()
             return
           }
@@ -631,7 +657,14 @@ export const useResourceActions = <T extends { id: string }>(
       }[action]
       
       if (!actionConfig.permission) {
-        config.showFeedback("error", "Không có quyền", actionConfig.errorTitle)
+        resourceLogger.logAction({
+          resource: config.resourceName,
+          action: action as ResourceAction,
+          bulk: true,
+          count: ids.length,
+          permissionDenied: true,
+        })
+        config.showFeedback("error", actionConfig.errorTitle, config.messages.NO_PERMISSION || "Từ chối truy cập")
         stopBulkProcessing()
         return
       }
@@ -674,9 +707,10 @@ export const useResourceActions = <T extends { id: string }>(
           }
           const actionText = actionTextMap[action] || "xử lý"
           
-          let errorMessage = result?.message || `Không có ${config.resourceName} nào được ${actionText}`
+          const displayName = config.resourceDisplayName || config.resourceName
+          let errorMessage = result?.message || `Không có ${displayName} nào được ${actionText}`
           if (alreadyAffected > 0) {
-            errorMessage = `Tất cả ${alreadyAffected} mục đã chọn đều đã ở trạng thái này`
+            errorMessage = `Tất cả ${alreadyAffected} ${config.resourceDisplayName || "mục"} đã chọn đều đã ở trạng thái này`
           }
 
           config.showFeedback("info", "Không có thay đổi", errorMessage)
@@ -696,9 +730,10 @@ export const useResourceActions = <T extends { id: string }>(
           return
         }
         
-        let successMessage = `${actionConfig.successTitle} (${affected} ${config.resourceName})`
+        const displayName = config.resourceDisplayName || config.resourceName
+        let successMessage = `${actionConfig.successTitle} (${affected} ${displayName})`
         if (alreadyAffected > 0) {
-          successMessage += `. (${alreadyAffected} mục khác đã ở trạng thái này)`
+          successMessage += `. (${alreadyAffected} ${config.resourceDisplayName || "mục"} khác đã ở trạng thái này)`
         }
         
         config.showFeedback("success", "Thành công", successMessage)
@@ -714,7 +749,7 @@ export const useResourceActions = <T extends { id: string }>(
           "mark-unread": "đánh dấu chưa đọc",
         }
         const actionText = actionTextMap[action] || "xử lý"
-        const errorMessage = error instanceof Error ? error.message : `Không thể ${actionText} hàng loạt`
+        const errorMessage = getErrorMessageFromServer(error, `Không thể ${actionText} hàng loạt`)
         config.showFeedback("error", "Lỗi", errorMessage)
       } finally {
         stopBulkProcessing()

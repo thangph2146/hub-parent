@@ -1,5 +1,5 @@
 import { validatePagination, buildPagination, type ResourcePagination, applyBooleanFilter } from "@/features/admin/resources/server"
-import { Prisma, NotificationKind } from "@prisma/client"
+import { Prisma, NotificationKind } from "@prisma/client/index"
 import { prisma } from "@/services/prisma"
 import { logger } from "@/utils"
 
@@ -331,7 +331,7 @@ export const getNotificationColumnOptions = async (
   search?: string,
   limit: number = 50
 ): Promise<Array<{ label: string; value: string }>> => {
-  if (column !== "userEmail") {
+  if (column !== "userEmail" && column !== "userName") {
     return []
   }
 
@@ -341,7 +341,12 @@ export const getNotificationColumnOptions = async (
 
   // Add search filter if provided
   if (search && search.trim()) {
-    where.email = { contains: search.trim(), mode: "insensitive" }
+    const searchValue = search.trim()
+    if (column === "userEmail") {
+      where.email = { contains: searchValue, mode: "insensitive" }
+    } else if (column === "userName") {
+      where.name = { contains: searchValue, mode: "insensitive" }
+    }
   }
 
   // Get users that have notifications
@@ -354,19 +359,29 @@ export const getNotificationColumnOptions = async (
     },
     select: {
       email: true,
+      name: true,
     },
-    distinct: ["email"],
-    orderBy: { email: "asc" },
+    distinct: column === "userEmail" ? ["email"] : ["name"],
+    orderBy: column === "userEmail" ? { email: "asc" } : { name: "asc" },
     take: limit,
   })
 
   // Map results to options format
   return usersWithNotifications
     .map((user) => {
-      if (user.email && user.email.trim()) {
-        return {
-          label: user.email,
-          value: user.email,
+      if (column === "userEmail") {
+        if (user.email && user.email.trim()) {
+          return {
+            label: user.email,
+            value: user.email,
+          }
+        }
+      } else if (column === "userName") {
+        if (user.name && user.name.trim()) {
+          return {
+            label: user.name,
+            value: user.name,
+          }
         }
       }
       return null

@@ -1,6 +1,7 @@
 /**
  * Server-side auth utilities
  */
+import "server-only";
 import { auth } from "./auth";
 import type { Permission } from "@/permissions";
 import { prisma } from "@/services/prisma";

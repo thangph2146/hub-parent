@@ -15,6 +15,19 @@ const resolveStatusFromRow = (row: CategoryRow): CategoryStatus => {
 const fetchCategoryRow = async (categoryId: string): Promise<CategoryRow | null> => {
   const category = await prisma.category.findUnique({
     where: { id: categoryId },
+    include: {
+      parent: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+      _count: {
+        select: {
+          children: true,
+        },
+      },
+    },
   })
 
   if (!category) {

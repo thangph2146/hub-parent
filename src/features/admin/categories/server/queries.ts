@@ -1,4 +1,6 @@
-import type { Prisma } from "@prisma/client"
+"use server"
+
+import type { Prisma } from "@prisma/client/index"
 import { prisma } from "@/services/prisma"
 import { validatePagination, buildPagination, applyColumnOptionsStatusFilter, applyColumnOptionsSearchFilter, mapToColumnOptions } from "@/features/admin/resources/server"
 import { mapCategoryRecord, buildWhereClause } from "./helpers"
@@ -12,6 +14,19 @@ export const listCategories = async (params: ListCategoriesInput = {}): Promise<
     const [data, total] = await Promise.all([
       prisma.category.findMany({
         where,
+        include: {
+          parent: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+          _count: {
+            select: {
+              children: true,
+            },
+          },
+        },
         orderBy: { updatedAt: "desc" },
         skip: (page - 1) * limit,
         take: limit,
@@ -90,6 +105,19 @@ export const getCategoryById = async (id: string): Promise<CategoryDetailInfo | 
   try {
     const category = await prisma.category.findUnique({
       where: { id },
+      include: {
+        parent: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        _count: {
+          select: {
+            children: true,
+          },
+        },
+      },
     })
 
     if (!category) {
@@ -104,7 +132,7 @@ export const getCategoryById = async (id: string): Promise<CategoryDetailInfo | 
   }
 }
 
-export const getActiveCategoriesForSelect = async (limit: number = 100): Promise<Array<{ label: string; value: string }>> => {
+export const getActiveCategoriesForSelect = async (limit: number = 100): Promise<Array<{ label: string; value: string; parentId: string | null }>> => {
   try {
     const categories = await prisma.category.findMany({
       where: {
@@ -113,6 +141,7 @@ export const getActiveCategoriesForSelect = async (limit: number = 100): Promise
       select: {
         id: true,
         name: true,
+        parentId: true,
       },
       orderBy: {
         name: "asc",
@@ -123,6 +152,7 @@ export const getActiveCategoriesForSelect = async (limit: number = 100): Promise
     return categories.map((category) => ({
       label: category.name,
       value: category.id,
+      parentId: category.parentId,
     }))
   } catch (error) {
     console.error("[getActiveCategoriesForSelect] Error:", error)

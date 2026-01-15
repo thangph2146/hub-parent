@@ -3,12 +3,20 @@ import { z } from "zod"
 export const CreateCategorySchema = z.object({
   name: z.string().min(2, "Tên danh mục phải có ít nhất 2 ký tự").max(100, "Tên danh mục không được vượt quá 100 ký tự"),
   slug: z.string().min(2, "Slug phải có ít nhất 2 ký tự").max(100, "Slug không được vượt quá 100 ký tự").regex(/^[a-z0-9-]+$/, "Slug chỉ được chứa chữ thường, số và dấu gạch ngang").optional(),
+  parentId: z.preprocess(
+    (val) => (val === "" ? null : val),
+    z.string().cuid("ID danh mục cha không hợp lệ").nullable().optional()
+  ),
   description: z.string().max(500, "Mô tả không được vượt quá 500 ký tự").nullable().optional(),
 })
 
 export const UpdateCategorySchema = z.object({
   name: z.string().min(2, "Tên danh mục phải có ít nhất 2 ký tự").max(100, "Tên danh mục không được vượt quá 100 ký tự").optional(),
   slug: z.string().min(2, "Slug phải có ít nhất 2 ký tự").max(100, "Slug không được vượt quá 100 ký tự").regex(/^[a-z0-9-]+$/, "Slug chỉ được chứa chữ thường, số và dấu gạch ngang").optional(),
+  parentId: z.preprocess(
+    (val) => (val === "" ? null : val),
+    z.string().cuid("ID danh mục cha không hợp lệ").nullable().optional()
+  ),
   description: z.string().max(500, "Mô tả không được vượt quá 500 ký tự").nullable().optional(),
 })
 

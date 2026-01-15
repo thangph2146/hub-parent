@@ -6,7 +6,8 @@ import { apiRoutes } from "@/constants"
 import { queryKeys } from "@/constants"
 import { resourceLogger } from "@/utils"
 import { getBaseCategoryFields, getCategoryFormSections, type CategoryFormData } from "../form-fields"
-import { useQueryClient } from "@tanstack/react-query"
+import { useQueryClient, useQuery } from "@tanstack/react-query"
+import { listCategories } from "../server/queries"
 
 export interface CategoryCreateClientProps {
   backUrl?: string
@@ -15,6 +16,14 @@ export interface CategoryCreateClientProps {
 export const CategoryCreateClient = ({ backUrl = "/admin/categories" }: CategoryCreateClientProps) => {
   const queryClient = useQueryClient()
   const queryKey = queryKeys.adminCategories.all()
+
+  // Lấy danh sách danh mục để chọn danh mục cha
+  const { data: categoriesData } = useQuery({
+    queryKey: queryKeys.adminCategories.list({ page: 1, limit: 1000, status: "active" }),
+    queryFn: () => listCategories({ page: 1, limit: 1000, status: "active" }),
+  })
+
+  const categories = categoriesData?.data || []
 
   const handleBack = () => {
     // Chỉ invalidate queries - table sẽ tự động refresh qua query cache events
@@ -49,7 +58,7 @@ export const CategoryCreateClient = ({ backUrl = "/admin/categories" }: Category
     },
   })
 
-  const createFields: ResourceFormField<CategoryFormData>[] = getBaseCategoryFields()
+  const createFields: ResourceFormField<CategoryFormData>[] = getBaseCategoryFields(categories)
   const formSections = getCategoryFormSections()
 
   return (

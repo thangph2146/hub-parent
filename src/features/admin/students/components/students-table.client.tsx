@@ -148,9 +148,9 @@ export const StudentsTableClient = ({
       })
       
       // Gọi trực tiếp executeSingleAction, toast sẽ được hiển thị trong hook
-      executeSingleAction(checked ? "active" : "unactive", row, refreshTable)
+      executeSingleAction(checked ? "active" : "unactive", row)
     },
-    [executeSingleAction, refreshTable, currentViewId],
+    [executeSingleAction, currentViewId],
   )
 
 
@@ -169,11 +169,11 @@ export const StudentsTableClient = ({
         type: "soft",
         row,
         onConfirm: async () => {
-          await executeSingleAction("delete", row, refreshTable)
+          await executeSingleAction("delete", row)
         },
       })
     },
-    [canDelete, executeSingleAction, refreshTable, setDeleteConfirm],
+    [canDelete, executeSingleAction, setDeleteConfirm],
   )
 
   const handleHardDeleteSingle = useCallback(
@@ -184,11 +184,11 @@ export const StudentsTableClient = ({
         type: "hard",
         row,
         onConfirm: async () => {
-          await executeSingleAction("hard-delete", row, refreshTable)
+          await executeSingleAction("hard-delete", row)
         },
       })
     },
-    [canManage, executeSingleAction, refreshTable, setDeleteConfirm],
+    [canManage, executeSingleAction, setDeleteConfirm],
   )
 
   const handleRestoreSingle = useCallback(
@@ -199,11 +199,11 @@ export const StudentsTableClient = ({
         type: "restore",
         row,
         onConfirm: async () => {
-          await executeSingleAction("restore", row, refreshTable)
+          await executeSingleAction("restore", row)
         },
       })
     },
-    [canRestore, executeSingleAction, refreshTable, setDeleteConfirm],
+    [canRestore, executeSingleAction, setDeleteConfirm],
   )
 
   const { renderActiveRowActions, renderDeletedRowActions } = useStudentRowActions({

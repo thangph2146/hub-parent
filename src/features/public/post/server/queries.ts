@@ -286,6 +286,7 @@ export const getCategories = async () => {
         id: true,
         name: true,
         slug: true,
+        parentId: true,
       },
       orderBy: {
         name: "asc",

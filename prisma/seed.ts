@@ -1,10 +1,21 @@
-import { PrismaClient } from "@prisma/client"
-import bcrypt from "bcryptjs"
+import "dotenv/config"
+import { PrismaClient } from "@prisma/client/index"
+import { PrismaPg } from "@prisma/adapter-pg"
+import { Pool } from "pg"
 
-import { DEFAULT_ROLES, PERMISSIONS } from "../src/permissions"
+// import { DEFAULT_ROLES, PERMISSIONS } from "../src/permissions"
 
-const prisma = new PrismaClient()
+const connectionString = process.env.DATABASE_URL
 
+if (!connectionString) {
+  throw new Error("DATABASE_URL is not defined in environment variables")
+}
+
+const pool = new Pool({ connectionString })
+const adapter = new PrismaPg(pool)
+const prisma = new PrismaClient({ adapter })
+
+/*
 const ROLE_NAMES = {
   SUPER_ADMIN: DEFAULT_ROLES.SUPER_ADMIN.name,
   ADMIN: DEFAULT_ROLES.ADMIN.name,
@@ -53,43 +64,12 @@ const roleConfigs: RoleConfig[] = defaultRoleConfigs.map((role) => {
   }
   return role
 })
-
-const resetDatabase = async () => {
-  await prisma.$transaction(
-    async (tx) => {
-      await tx.messageRead.deleteMany()
-      await tx.groupMember.deleteMany()
-      await tx.group.deleteMany()
-      await tx.notification.deleteMany()
-      await tx.message.deleteMany()
-      await tx.comment.deleteMany()
-      await tx.postTag.deleteMany()
-      await tx.postCategory.deleteMany()
-      await tx.post.deleteMany()
-      await tx.tag.deleteMany()
-      await tx.category.deleteMany()
-      await tx.student.deleteMany()
-      await tx.contactRequest.deleteMany()
-      await tx.userRole.deleteMany()
-      await tx.session.deleteMany()
-      await tx.account.deleteMany()
-      await tx.role.deleteMany()
-      // E-commerce cleanup (removed - no longer needed)
-      await tx.user.deleteMany()
-    },
-    {
-      timeout: 60000, // 60 seconds
-    }
-  )
-}
+*/
 
 async function main() {
-  console.log("🌱 Bắt đầu seed database...")
+  console.log("🌱 Chức năng seed database hiện đang tạm dừng...")
 
-  console.log("🧹 Đang xóa dữ liệu cũ...")
-  await resetDatabase()
-  console.log("🧼 Đã xóa dữ liệu cũ")
-
+  /*
   const roles = await Promise.all(
     roleConfigs.map((role) =>
       prisma.role.upsert({
@@ -185,6 +165,7 @@ async function main() {
   console.log("\n🔑 Thông tin đăng nhập:")
   console.log("Email: superadmin@hub.edu.vn | Password: Buhcm@2026 (SUPER_ADMIN)")
   console.log("Email: admin@hub.edu.vn | Password: Buhcm@2026 (ADMIN)")
+  */
 }
 
 main()

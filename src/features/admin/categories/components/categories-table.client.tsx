@@ -64,11 +64,13 @@ export const CategoriesTableClient = ({
       search: undefined,
       filters: undefined,
     }),
-    columns: ["id", "name", "slug", "description", "createdAt", "deletedAt"],
+    columns: ["id", "name", "slug", "parentId", "parentName", "description", "createdAt", "deletedAt"],
     getRowData: (row) => ({
       id: row.id,
       name: row.name,
       slug: row.slug,
+      parentId: row.parentId,
+      parentName: row.parentName,
       description: row.description,
       createdAt: row.createdAt,
       deletedAt: row.deletedAt,
@@ -76,7 +78,7 @@ export const CategoriesTableClient = ({
     cacheVersion,
   })
   const getInvalidateQueryKey = useCallback(() => queryKeys.adminCategories.all(), [])
-  const { onRefreshReady, refresh: refreshTable } = useResourceTableRefresh({
+  const { onRefreshReady, refresh: _refreshTable } = useResourceTableRefresh({
     queryClient,
     getInvalidateQueryKey,
     cacheVersion,
@@ -113,11 +115,11 @@ export const CategoriesTableClient = ({
         type: "soft",
         row,
         onConfirm: async () => {
-          await executeSingleAction("delete", row, refreshTable)
+          await executeSingleAction("delete", row)
         },
       })
     },
-    [canDelete, executeSingleAction, refreshTable, setDeleteConfirm],
+    [canDelete, executeSingleAction, setDeleteConfirm],
   )
 
   const handleHardDeleteSingle = useCallback(
@@ -134,11 +136,11 @@ export const CategoriesTableClient = ({
         type: "hard",
         row,
         onConfirm: async () => {
-          await executeSingleAction("hard-delete", row, refreshTable)
+          await executeSingleAction("hard-delete", row)
         },
       })
     },
-    [canManage, executeSingleAction, refreshTable, setDeleteConfirm],
+    [canManage, executeSingleAction, setDeleteConfirm],
   )
 
   const handleRestoreSingle = useCallback(
@@ -155,11 +157,11 @@ export const CategoriesTableClient = ({
         type: "restore",
         row,
         onConfirm: async () => {
-          await executeSingleAction("restore", row, refreshTable)
+          await executeSingleAction("restore", row)
         },
       })
     },
-    [canRestore, executeSingleAction, refreshTable, setDeleteConfirm],
+    [canRestore, executeSingleAction, setDeleteConfirm],
   )
 
   const { renderActiveRowActions, renderDeletedRowActions } = useCategoryRowActions({
@@ -263,7 +265,7 @@ export const CategoriesTableClient = ({
   })
 
   const executeBulk = useCallback(
-    (action: "delete" | "restore" | "hard-delete", ids: string[], refresh: () => void, clearSelection: () => void) => {
+    (action: "delete" | "restore" | "hard-delete", ids: string[], refresh: () => void, clearSelection: () => void, rows: CategoryRow[]) => {
       if (ids.length === 0) return
 
       resourceLogger.logAction({
@@ -279,35 +281,26 @@ export const CategoriesTableClient = ({
           type: action === "hard-delete" ? "hard" : action === "restore" ? "restore" : "soft",
           bulkIds: ids,
           onConfirm: async () => {
-            await executeBulkAction(action, ids, refresh, clearSelection)
+            await executeBulkAction(action, ids, refresh, clearSelection, rows)
           },
         })
       } else {
-        executeBulkAction(action, ids, refresh, clearSelection)
+        executeBulkAction(action, ids, refresh, clearSelection, rows)
       }
     },
     [executeBulkAction, setDeleteConfirm],
-  )
-
-  const _buildInitialParams = useCallback(
-    (data: DataTableResult<CategoryRow>): AdminCategoriesListParams => ({
-      status: "active",
-      page: data.page,
-      limit: data.limit,
-      search: undefined,
-      filters: undefined,
-    }),
-    [],
   )
 
 
   const createActiveSelectionActions = useCallback(
     ({
       selectedIds,
+      selectedRows,
       clearSelection,
       refresh,
     }: {
       selectedIds: string[]
+      selectedRows: CategoryRow[]
       clearSelection: () => void
       refresh: () => void
     }) => (
@@ -321,7 +314,7 @@ export const CategoriesTableClient = ({
                 size="sm"
                 variant="destructive"
                 disabled={bulkState.isProcessing || selectedIds.length === 0}
-                onClick={() => executeBulk("delete", selectedIds, refresh, clearSelection)}
+                onClick={() => executeBulk("delete", selectedIds, refresh, clearSelection, selectedRows)}
                 className="whitespace-nowrap"
               >
                 <Flex align="center" gap={2}>
@@ -341,7 +334,7 @@ export const CategoriesTableClient = ({
                 size="sm"
                 variant="destructive"
                 disabled={bulkState.isProcessing || selectedIds.length === 0}
-                onClick={() => executeBulk("hard-delete", selectedIds, refresh, clearSelection)}
+                onClick={() => executeBulk("hard-delete", selectedIds, refresh, clearSelection, selectedRows)}
                 className="whitespace-nowrap"
               >
                 <Flex align="center" gap={2}>
@@ -374,10 +367,12 @@ export const CategoriesTableClient = ({
   const createDeletedSelectionActions = useCallback(
     ({
       selectedIds,
+      selectedRows,
       clearSelection,
       refresh,
     }: {
       selectedIds: string[]
+      selectedRows: CategoryRow[]
       clearSelection: () => void
       refresh: () => void
     }) => (
@@ -391,7 +386,7 @@ export const CategoriesTableClient = ({
                 size="sm"
                 variant="outline"
                 disabled={bulkState.isProcessing || selectedIds.length === 0}
-                onClick={() => executeBulk("restore", selectedIds, refresh, clearSelection)}
+                onClick={() => executeBulk("restore", selectedIds, refresh, clearSelection, selectedRows)}
                 className="whitespace-nowrap"
               >
                 <Flex align="center" gap={2}>
@@ -411,7 +406,7 @@ export const CategoriesTableClient = ({
                 size="sm"
                 variant="destructive"
                 disabled={bulkState.isProcessing || selectedIds.length === 0}
-                onClick={() => executeBulk("hard-delete", selectedIds, refresh, clearSelection)}
+                onClick={() => executeBulk("hard-delete", selectedIds, refresh, clearSelection, selectedRows)}
                 className="whitespace-nowrap"
               >
                 <Flex align="center" gap={2}>

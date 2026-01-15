@@ -5,6 +5,7 @@ import { USER_MESSAGES, PROTECTED_SUPER_ADMIN_EMAIL } from "../constants"
 
 export const useUserActions = createResourceActionsHook<UserRow>({
   resourceName: "users",
+  resourceDisplayName: "người dùng",
   messages: USER_MESSAGES,
   getRecordName: (row) => row.email,
   getLogMetadata: (row) => ({ userId: row.id, userEmail: row.email }),

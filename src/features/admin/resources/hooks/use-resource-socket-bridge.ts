@@ -27,7 +27,7 @@ export interface ResourceSocketBridgeConfig<
   getRowIdFromPayload?: (payload: unknown) => string
   getBatchRowsFromPayload?: (payload: unknown) => TRow[]
   getBatchIdsFromPayload?: (payload: unknown) => string[]
-  getRowStatus: (row: TRow) => "active" | "deleted"
+  getRowStatus: (row: TRow) => "active" | "deleted" | "inactive"
   matchesSearch: (search: string | undefined, row: TRow) => boolean
   matchesFilters: (filters: Record<string, string> | undefined, row: TRow) => boolean
   debounceMs?: number
@@ -41,9 +41,9 @@ const calculateTotalPages = (total: number, limit: number): number => {
   return total === 0 ? 0 : Math.ceil(total / limit)
 }
 
-const createUpsertUpdater = <TRow extends { id: string }, TParams extends { status?: "active" | "deleted" | "all"; page?: number; filters?: Record<string, string>; search?: string }>(
+const createUpsertUpdater = <TRow extends { id: string }, TParams extends { status?: "active" | "deleted" | "inactive" | "all"; page?: number; filters?: Record<string, string>; search?: string }>(
   row: TRow,
-  getRowStatus: (row: TRow) => "active" | "deleted",
+  getRowStatus: (row: TRow) => "active" | "deleted" | "inactive", 
   matchesSearch: (search: string | undefined, row: TRow) => boolean,
   matchesFilters: (filters: Record<string, string> | undefined, row: TRow) => boolean,
 ) => {
@@ -103,7 +103,7 @@ const _createRemoveUpdater = <TRow extends { id: string }>() => {
 
 export const useResourceSocketBridge = <
   TRow extends { id: string },
-  TParams extends { status?: "active" | "deleted" | "all"; page?: number; filters?: Record<string, string>; search?: string } = Record<string, unknown>
+  TParams extends { status?: "active" | "deleted" | "inactive" | "all"; page?: number; filters?: Record<string, string>; search?: string } = Record<string, unknown>
 >(
   config: ResourceSocketBridgeConfig<TRow, TParams>
 ) => {

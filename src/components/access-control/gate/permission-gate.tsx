@@ -10,7 +10,7 @@
  * - Render children nếu có quyền
  */
 
-import { getPermissions, getSession } from "@/auth/auth-server"
+import { getPermissions, getSession } from "@/auth/server"
 import { PermissionGateClient } from "./permission-gate-client"
 
 interface SessionWithMeta {

@@ -23,6 +23,7 @@ type ResourceActionQueryKeys = {
 
 export interface CreateResourceActionsHookConfig<TRow extends { id: string }> {
   resourceName: string
+  resourceDisplayName?: string
   messages: {
     DELETE_SUCCESS: string
     DELETE_ERROR: string
@@ -52,6 +53,7 @@ export interface CreateResourceActionsHookConfig<TRow extends { id: string }> {
     MARK_READ_ERROR?: string
     MARK_UNREAD_SUCCESS?: string
     MARK_UNREAD_ERROR?: string
+    NO_PERMISSION?: string
     UNKNOWN_ERROR: string
   }
   getRecordName: (row: TRow) => string
@@ -61,12 +63,12 @@ export interface CreateResourceActionsHookConfig<TRow extends { id: string }> {
   beforeSingleAction?: (
     action: "delete" | "restore" | "hard-delete" | "mark-read" | "mark-unread" | "active" | "unactive",
     row: TRow
-  ) => Promise<{ allowed: boolean; message?: string } | void>
+  ) => Promise<{ allowed: boolean; message?: string; title?: string } | void>
   beforeBulkAction?: (
     action: "delete" | "restore" | "hard-delete" | "active" | "unactive" | "mark-read" | "mark-unread",
     ids: string[],
     rows?: TRow[]
-  ) => Promise<{ allowed: boolean; message?: string; targetIds?: string[] } | void>
+  ) => Promise<{ allowed: boolean; message?: string; title?: string; targetIds?: string[] } | void>
 }
 
 export interface UseResourceActionsHookOptions<TRow extends { id: string }> {
@@ -78,12 +80,12 @@ export interface UseResourceActionsHookOptions<TRow extends { id: string }> {
   beforeSingleAction?: (
     action: "delete" | "restore" | "hard-delete" | "mark-read" | "mark-unread" | "active" | "unactive",
     row: TRow
-  ) => Promise<{ allowed: boolean; message?: string } | void>
+  ) => Promise<{ allowed: boolean; message?: string; title?: string } | void>
   beforeBulkAction?: (
     action: "delete" | "restore" | "hard-delete" | "active" | "unactive" | "mark-read" | "mark-unread",
     ids: string[],
     rows?: TRow[]
-  ) => Promise<{ allowed: boolean; message?: string; targetIds?: string[] } | void>
+  ) => Promise<{ allowed: boolean; message?: string; title?: string; targetIds?: string[] } | void>
 }
 
 /**
@@ -112,6 +114,7 @@ export const createResourceActionsHook = <TRow extends { id: string }>(
 
     return useResourceActions<TRow>({
       resourceName,
+      resourceDisplayName: config.resourceDisplayName,
       queryKeys: {
         all: () => resolvedQueryKeys.all(),
         detail: resolvedQueryKeys.detail

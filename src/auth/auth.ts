@@ -1,6 +1,7 @@
 /**
  * NextAuth.js configuration and helpers
  */
+import "server-only"
 import NextAuth from "next-auth"
 import type { NextAuthConfig } from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
@@ -10,7 +11,7 @@ import bcrypt from "bcryptjs"
 import { randomBytes } from "crypto"
 import { prisma } from "@/services/prisma"
 import { DEFAULT_ROLES } from "@/permissions"
-import { NotificationKind } from "@prisma/client"
+import { NotificationKind } from "@prisma/client/index"
 import { logger } from "@/utils"
 import { getErrorMessage } from "@/utils"
 import {

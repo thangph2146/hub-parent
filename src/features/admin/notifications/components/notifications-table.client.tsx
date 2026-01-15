@@ -123,7 +123,7 @@ export const NotificationsTableClient = ({
     showFeedback,
     beforeSingleAction: async (action, row) => {
       const isOwner = session?.user?.id === row.userId
-      if (!isOwner && !isSuperAdminUser) {
+      if (!isOwner) {
         return { 
           allowed: false, 
           message: action === "delete" 
@@ -141,9 +141,7 @@ export const NotificationsTableClient = ({
       }
 
       if (rows) {
-        const targetNotifications = isSuperAdminUser 
-          ? rows 
-          : rows.filter((row) => row.userId === session.user.id)
+        const targetNotifications = rows.filter((row) => row.userId === session.user.id)
           
         let targetIds = ids
 
@@ -192,9 +190,9 @@ export const NotificationsTableClient = ({
 
   const handleToggleReadWithRefresh = useCallback(
     (row: NotificationRow, checked: boolean) => {
-      executeSingleAction(checked ? "mark-read" : "mark-unread", row, refreshTable)
+      executeSingleAction(checked ? "mark-read" : "mark-unread", row)
     },
-    [executeSingleAction, refreshTable],
+    [executeSingleAction],
   )
 
   const handleDeleteSingleWithRefresh = useCallback(
@@ -204,37 +202,38 @@ export const NotificationsTableClient = ({
         type: "delete",
         row,
         onConfirm: async () => {
-          await executeSingleAction("delete", row, refreshTable)
+          await executeSingleAction("delete", row)
         },
       })
     },
-    [executeSingleAction, setDeleteConfirm, refreshTable],
+    [executeSingleAction, setDeleteConfirm],
   )
 
   const { baseColumns } = useNotificationColumns({
     togglingNotifications: useMemo(() => new Set([...markingReadIds, ...markingUnreadIds]), [markingReadIds, markingUnreadIds]),
     sessionUserId: session?.user?.id,
-    isSuperAdmin: isSuperAdminUser,
     onToggleRead: handleToggleReadWithRefresh,
   })
 
   const renderRowActionsForNotifications = useCallback((row: NotificationRow) => {
     const isOwner = session?.user?.id === row.userId
     const isSystem = row.kind === "SYSTEM"
-    const canDelete = isSuperAdminUser || (isOwner && !isSystem)
+    const canDelete = isOwner && (isSuperAdminUser || !isSystem)
 
     return (
       <div className="flex items-center gap-2">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => handleDeleteSingleWithRefresh(row)}
-          disabled={deletingIds.has(row.id) || !canDelete}
-          className="gap-2 text-destructive hover:text-destructive hover:bg-destructive/10"
-        >
-          <Trash2 className="h-4 w-4" />
-          <span>Xóa</span>
-        </Button>
+        {canDelete && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => handleDeleteSingleWithRefresh(row)}
+            disabled={deletingIds.has(row.id)}
+            className="gap-2 text-destructive hover:text-destructive hover:bg-destructive/10"
+          >
+            <Trash2 className="h-4 w-4" />
+            <span>Xóa</span>
+          </Button>
+        )}
       </div>
     )
   }, [session?.user?.id, handleDeleteSingleWithRefresh, deletingIds, isSuperAdminUser])
@@ -383,11 +382,9 @@ export const NotificationsTableClient = ({
       clearSelection: () => void
       refresh: () => void
     }) => {
-      const targetNotifications = isSuperAdminUser 
-        ? selectedRows 
-        : selectedRows.filter((row) => row.userId === session?.user?.id)
+      const targetNotifications = selectedRows.filter((row) => row.userId === session?.user?.id)
         
-      const otherCount = isSuperAdminUser ? 0 : selectedIds.length - targetNotifications.length
+      const otherCount = selectedIds.length - targetNotifications.length
 
       const unreadNotifications = targetNotifications.filter((row) => !row.isRead)
       const unreadNotificationIds = unreadNotifications.map((row) => row.id)
@@ -399,7 +396,7 @@ export const NotificationsTableClient = ({
         : targetNotifications.filter((row) => row.kind !== "SYSTEM")
         
       const deletableNotificationIds = deletableNotifications.map((row) => row.id)
-      const systemCount = isSuperAdminUser ? 0 : targetNotifications.length - deletableNotifications.length
+      const systemCount = targetNotifications.length - deletableNotifications.length
 
       const handleBulkMarkAsReadWithRefresh = async () => {
         await executeBulkAction("mark-read", unreadNotificationIds, refreshTable, clearSelection, targetNotifications)
@@ -499,6 +496,11 @@ export const NotificationsTableClient = ({
     ],
   )
 
+  const isRowSelectable = useCallback((row: NotificationRow) => {
+    // Chỉ có thể chọn thông báo của chính mình
+    return session?.user?.id === row.userId
+  }, [session?.user?.id])
+
   const viewModes: ResourceViewMode<NotificationRow>[] = useMemo(
     () => [
       {
@@ -507,6 +509,7 @@ export const NotificationsTableClient = ({
         status: "all",
         columns: baseColumns,
         selectionEnabled: canManage,
+        isRowSelectable,
         selectionActions: canManage ? createSelectionActions : undefined,
         rowActions: (row) => renderRowActionsForNotifications(row),
         emptyMessage: NOTIFICATION_LABELS.NO_NOTIFICATIONS,
@@ -517,6 +520,7 @@ export const NotificationsTableClient = ({
         status: "unread",
         columns: baseColumns,
         selectionEnabled: canManage,
+        isRowSelectable,
         selectionActions: canManage ? createSelectionActions : undefined,
         rowActions: (row) => renderRowActionsForNotifications(row),
         emptyMessage: "Không có thông báo chưa đọc",
@@ -527,6 +531,7 @@ export const NotificationsTableClient = ({
         status: "read",
         columns: baseColumns,
         selectionEnabled: canManage,
+        isRowSelectable,
         selectionActions: canManage ? createSelectionActions : undefined,
         rowActions: (row) => renderRowActionsForNotifications(row),
         emptyMessage: "Không có thông báo đã đọc",
@@ -537,22 +542,13 @@ export const NotificationsTableClient = ({
       baseColumns,
       createSelectionActions,
       renderRowActionsForNotifications,
+      isRowSelectable,
     ],
   )
 
   const initialDataByView = useMemo(
     () => ({
       all: initialData,
-      unread: {
-        ...initialData,
-        rows: initialData.rows.filter((row) => !row.isRead),
-        total: initialData.rows.filter((row) => !row.isRead).length,
-      },
-      read: {
-        ...initialData,
-        rows: initialData.rows.filter((row) => row.isRead),
-        total: initialData.rows.filter((row) => row.isRead).length,
-      },
     }),
     [initialData],
   )

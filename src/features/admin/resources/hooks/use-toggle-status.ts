@@ -10,6 +10,7 @@ import { invalidateAndRefreshResource } from "../utils/helpers"
 
 export interface UseToggleStatusConfig<TRow extends { id: string }> {
   resourceName: string
+  resourceDisplayName: string
   updateRoute: (id: string) => string
   queryKeys: {
     all: () => QueryKey

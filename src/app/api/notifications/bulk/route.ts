@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server"
-import { auth } from "@/auth/auth"
+import { auth } from "@/auth/server"
 import { createErrorResponse, createSuccessResponse } from "@/lib"
 import { bulkMarkAsRead, bulkMarkAsUnread, bulkDelete } from "@/features/admin/notifications/server/mutations"
 import { isSuperAdmin } from "@/permissions"

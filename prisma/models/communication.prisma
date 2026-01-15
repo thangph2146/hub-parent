@@ -1,0 +1,115 @@
+model Message {
+  id         String        @id @default(cuid())
+  senderId   String?
+  receiverId String? // Nullable for group messages
+  groupId    String? // Nullable for personal messages
+  subject    String
+  content    String
+  isRead     Boolean       @default(false) // Legacy field for personal messages
+  type       MessageType   @default(NOTIFICATION)
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+  deletedAt  DateTime?
+  parentId   String?
+  parent     Message?      @relation("MessageReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies    Message[]     @relation("MessageReplies")
+  receiver   User?         @relation("MessageReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
+  sender     User?         @relation("MessageSender", fields: [senderId], references: [id])
+  group      Group?        @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  reads      MessageRead[] // Track who has read this message
+
+  @@index([groupId, createdAt])
+  @@index([receiverId, createdAt])
+  @@index([senderId, createdAt])
+  @@map("messages")
+}
+
+model MessageRead {
+  id        String   @id @default(cuid())
+  messageId String
+  userId    String
+  readAt    DateTime @default(now())
+  message   Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user      User     @relation("MessageReads", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([messageId, userId])
+  @@index([messageId])
+  @@index([userId])
+  @@map("message_reads")
+}
+
+model Group {
+  id          String        @id @default(cuid())
+  name        String
+  description String?
+  avatar      String?
+  createdById String
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  deletedAt   DateTime?
+  creator     User          @relation("GroupCreator", fields: [createdById], references: [id], onDelete: Cascade)
+  members     GroupMember[]
+  messages    Message[]
+
+  @@map("groups")
+}
+
+model GroupMember {
+  id       String    @id @default(cuid())
+  groupId  String
+  userId   String
+  role     GroupRole @default(MEMBER)
+  joinedAt DateTime  @default(now())
+  leftAt   DateTime?
+  group    Group     @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user     User      @relation("GroupMembers", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, userId])
+  @@index([groupId])
+  @@index([userId])
+  @@map("group_members")
+}
+
+model Notification {
+  id          String           @id @default(cuid())
+  userId      String
+  kind        NotificationKind @default(MESSAGE)
+  title       String
+  description String?
+  isRead      Boolean          @default(false)
+  actionUrl   String?
+  metadata    Json? // Store additional data like messageId, fromUserId, etc.
+  expiresAt   DateTime? // Optional expiration date
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  readAt      DateTime? // When notification was marked as read
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+  @@index([userId, createdAt])
+  @@index([kind])
+  @@map("notifications")
+}
+
+enum MessageType {
+  NOTIFICATION
+  ANNOUNCEMENT
+  PERSONAL
+  SYSTEM
+}
+
+enum GroupRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+enum NotificationKind {
+  MESSAGE
+  SYSTEM
+  ANNOUNCEMENT
+  ALERT
+  WARNING
+  SUCCESS
+  INFO
+}

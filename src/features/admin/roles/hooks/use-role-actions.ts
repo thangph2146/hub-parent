@@ -5,6 +5,7 @@ import { ROLE_MESSAGES } from "../constants"
 
 export const useRoleActions = createResourceActionsHook<RoleRow>({
   resourceName: "roles",
+  resourceDisplayName: "vai trò",
   messages: ROLE_MESSAGES,
   getRecordName: (row) => row.displayName,
   getLogMetadata: (row) => ({ roleId: row.id, roleName: row.displayName }),

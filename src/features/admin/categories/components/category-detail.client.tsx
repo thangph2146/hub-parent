@@ -10,11 +10,15 @@ import { PERMISSIONS } from "@/permissions"
 import { IconSize } from "@/components/ui/typography"
 import { Flex } from "@/components/ui/flex"
 import { getBaseCategoryFields, getCategoryFormSections, type CategoryFormData } from "../form-fields"
+import { useQuery } from "@tanstack/react-query"
+import { listCategories } from "../server/queries"
 
 export interface CategoryDetailData {
   id: string
   name: string
   slug: string
+  parentId: string | null
+  parentName?: string | null
   description: string | null
   createdAt: string
   updatedAt: string
@@ -52,7 +56,15 @@ export const CategoryDetailClient = ({ categoryId, category, backUrl = "/admin/c
     fetchedData,
   })
 
-  const fields = getBaseCategoryFields()
+  // Lấy danh sách danh mục để hiển thị tên danh mục cha trong read-only mode
+  const { data: categoriesData } = useQuery({
+    queryKey: queryKeys.adminCategories.list({ page: 1, limit: 1000, status: "active" }),
+    queryFn: () => listCategories({ page: 1, limit: 1000, status: "active" }),
+  })
+
+  const categories = categoriesData?.data || []
+
+  const fields = getBaseCategoryFields(categories)
   const sections = getCategoryFormSections()
   const isDeleted = !!detailData?.deletedAt
   const editUrl = `/admin/categories/${categoryId}/edit`

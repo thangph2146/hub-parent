@@ -99,9 +99,9 @@ export const CommentsTableClient = ({
 
   const handleToggleApproveWithRefresh = useCallback(
     (row: CommentRow, checked: boolean) => {
-      executeSingleAction(checked ? "active" : "unactive", row, refreshTable)
+      executeSingleAction(checked ? "active" : "unactive", row)
     },
-    [executeSingleAction, refreshTable],
+    [executeSingleAction],
   )
 
   const togglingComments = useMemo(
@@ -123,11 +123,11 @@ export const CommentsTableClient = ({
         type: "soft",
         row,
         onConfirm: async () => {
-          await executeSingleAction("delete", row, refreshTable)
+          await executeSingleAction("delete", row)
         },
       })
     },
-    [canDelete, executeSingleAction, setDeleteConfirm, refreshTable],
+    [canDelete, executeSingleAction, setDeleteConfirm],
   )
 
   const handleHardDeleteSingle = useCallback(
@@ -138,11 +138,11 @@ export const CommentsTableClient = ({
         type: "hard",
         row,
         onConfirm: async () => {
-          await executeSingleAction("hard-delete", row, refreshTable)
+          await executeSingleAction("hard-delete", row)
         },
       })
     },
-    [canManage, executeSingleAction, setDeleteConfirm, refreshTable],
+    [canManage, executeSingleAction, setDeleteConfirm],
   )
 
   const handleRestoreSingle = useCallback(
@@ -153,11 +153,11 @@ export const CommentsTableClient = ({
         type: "restore",
         row,
         onConfirm: async () => {
-          await executeSingleAction("restore", row, refreshTable)
+          await executeSingleAction("restore", row)
         },
       })
     },
-    [canRestore, executeSingleAction, setDeleteConfirm, refreshTable],
+    [canRestore, executeSingleAction, setDeleteConfirm],
   )
 
   const { renderActiveRowActions, renderDeletedRowActions } = useCommentRowActions({

@@ -4,10 +4,15 @@ export interface CategoryRow {
   id: string
   name: string
   slug: string
+  parentId: string | null
+  parentName?: string | null
   description: string | null
   createdAt: string
   updatedAt?: string // Optional để hỗ trợ cache comparison
   deletedAt: string | null
+  _count?: {
+    children: number
+  }
 }
 
 export type CategoriesTableClientProps = BaseResourceTableClientProps<CategoryRow>
@@ -26,10 +31,18 @@ export interface ListedCategory {
   id: string
   name: string
   slug: string
+  parentId: string | null
   description: string | null
   createdAt: Date
   updatedAt: Date
   deletedAt: Date | null
+  parent?: {
+    id: string
+    name: string
+  } | null
+  _count?: {
+    children: number
+  }
 }
 
 export type CategoryDetailInfo = ListedCategory

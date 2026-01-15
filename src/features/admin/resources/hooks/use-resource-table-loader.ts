@@ -23,8 +23,7 @@ export const useResourceTableLoader = <T extends object, P>({
       const queryKey = buildQueryKey(params)
 
       // Sử dụng fetchQuery với cache configuration từ ADMIN_QUERY_DEFAULTS
-      // Điều này giúp giảm số lần refetch không cần thiết
-      // Data sẽ được cache trong 30 giây và chỉ refetch khi thực sự stale
+      // Admin luôn lấy dữ liệu mới nhất để tránh trường hợp dữ liệu không được cập nhật
       return queryClient.fetchQuery<DataTableResult<T>>({
         queryKey,
         queryFn: () => fetcher(params),

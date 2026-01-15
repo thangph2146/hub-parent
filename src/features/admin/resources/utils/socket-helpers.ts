@@ -80,8 +80,8 @@ export const createMatchesFilters = <TRow extends { id: string }>(
 }
 
 export const shouldIncludeInStatus = (
-  status: "active" | "deleted" | "all" | undefined,
-  rowStatus: "active" | "deleted"
+  status: "active" | "deleted" | "inactive" | "all" | undefined,
+  rowStatus: "active" | "deleted" | "inactive"
 ): boolean => {
   if (!status || status === "all") return true
   return status === rowStatus

@@ -4,7 +4,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server"
-import { requireAuth, getPermissions } from "@/auth"
+import { requireAuth, getPermissions } from "@/auth/server"
 import type { Permission } from "@/permissions"
 import { canPerformAnyAction, isSuperAdmin } from "@/permissions"
 import { getApiRoutePermissions, type HttpMethod } from "@/permissions"

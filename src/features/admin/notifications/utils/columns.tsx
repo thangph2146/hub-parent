@@ -12,14 +12,12 @@ import { Flex } from "@/components/ui/flex"
 interface UseNotificationColumnsOptions {
   togglingNotifications: Set<string>
   sessionUserId?: string
-  isSuperAdmin?: boolean
   onToggleRead: (row: NotificationRow, checked: boolean) => void
 }
 
 export const useNotificationColumns = ({
   togglingNotifications,
   sessionUserId,
-  isSuperAdmin = false,
   onToggleRead,
 }: UseNotificationColumnsOptions) => {
   const userEmailFilter = useDynamicFilterOptions({
@@ -135,8 +133,8 @@ export const useNotificationColumns = ({
         headerClassName: "min-w-[140px] max-w-[180px]",
         cell: (row) => {
           const isOwner = sessionUserId === row.userId
-          const canToggle = isOwner || isSuperAdmin
-          
+          const canToggle = isOwner // Chỉ chính chủ mới được phép đổi trạng thái isRead
+
           return (
             <Flex align="center" gap={2}>
               <Switch
@@ -187,7 +185,6 @@ export const useNotificationColumns = ({
       userNameFilter.onSearchChange,
       userNameFilter.isLoading,
       sessionUserId,
-      isSuperAdmin,
       togglingNotifications,
       onToggleRead,
     ],

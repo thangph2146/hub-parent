@@ -1,4 +1,4 @@
-import type { Prisma } from "@prisma/client"
+import type { Prisma } from "@prisma/client/index"
 import {
   serializeDate,
   applyStatusFilter,
@@ -11,17 +11,34 @@ import {
 import type { ListCategoriesInput, ListedCategory, CategoryDetailInfo } from "../types"
 import type { CategoryRow } from "../types"
 
-type CategoryWithRelations = Prisma.CategoryGetPayload<Record<string, never>>
+type CategoryWithRelations = Prisma.CategoryGetPayload<{
+  include: {
+    parent: {
+      select: {
+        id: true
+        name: true
+      }
+    }
+    _count: {
+      select: {
+        children: true
+      }
+    }
+  }
+}>
 
 export const mapCategoryRecord = (category: CategoryWithRelations): ListedCategory => {
   return {
     id: category.id,
     name: category.name,
     slug: category.slug,
+    parentId: category.parentId,
     description: category.description,
     createdAt: category.createdAt,
     updatedAt: category.updatedAt,
     deletedAt: category.deletedAt,
+    parent: category.parent,
+    _count: category._count,
   }
 }
 
@@ -65,10 +82,13 @@ export const serializeCategoryForTable = (category: ListedCategory): CategoryRow
     id: category.id,
     name: category.name,
     slug: category.slug,
+    parentId: category.parentId,
+    parentName: category.parent?.name,
     description: category.description,
     createdAt: serializeDate(category.createdAt)!,
-    updatedAt: serializeDate(category.updatedAt) ?? undefined, // Thêm updatedAt để so sánh cache chính xác (convert null to undefined)
+    updatedAt: serializeDate(category.updatedAt) ?? undefined,
     deletedAt: serializeDate(category.deletedAt),
+    _count: category._count,
   }
 }
 
@@ -79,10 +99,13 @@ export const serializeCategoryDetail = (category: CategoryDetailInfo) => {
     id: category.id,
     name: category.name,
     slug: category.slug,
+    parentId: category.parentId,
+    parentName: category.parent?.name,
     description: category.description,
     createdAt: serializeDate(category.createdAt)!,
     updatedAt: serializeDate(category.updatedAt)!,
     deletedAt: serializeDate(category.deletedAt),
+    _count: category._count,
   }
 }
 

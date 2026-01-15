@@ -2,7 +2,7 @@
  * API Route: POST /api/notifications/mark-all-read - Mark all notifications as read
  */
 import { NextRequest } from "next/server"
-import { auth } from "@/auth/auth"
+import { auth } from "@/auth/server"
 import { prisma } from "@/services/prisma"
 import { getSocketServer, getNotificationCache, mapNotificationToPayload } from "@/services/socket/state"
 import { createErrorResponse, createSuccessResponse } from "@/lib"

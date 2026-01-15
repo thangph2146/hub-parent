@@ -4,6 +4,7 @@ import { TAG_MESSAGES } from "../constants/messages"
 
 export const useTagActions = createResourceActionsHook<TagRow>({
   resourceName: "tags",
+  resourceDisplayName: "thẻ",
   messages: TAG_MESSAGES,
   getRecordName: (row) => row.name,
   getLogMetadata: (row) => ({ tagId: row.id, tagName: row.name }),

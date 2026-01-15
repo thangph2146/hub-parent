@@ -12,7 +12,7 @@
  * - QUAN TRỌNG: Logic này nhất quán với "mark all as read" - chỉ mark notifications của user này
  */
 import { NextRequest } from "next/server"
-import { auth } from "@/auth/auth"
+import { auth } from "@/auth/server"
 import { prisma } from "@/services/prisma"
 import { createErrorResponse, createSuccessResponse } from "@/lib"
 import { isSuperAdmin } from "@/permissions"
