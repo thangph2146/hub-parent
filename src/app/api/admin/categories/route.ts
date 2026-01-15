@@ -22,6 +22,7 @@ async function getCategoriesHandler(req: NextRequest, _context: ApiRouteContext)
   const paginationValidation = validatePagination({
     page: searchParams.get("page"),
     limit: searchParams.get("limit"),
+    maxLimit: 1000,
   })
 
   if (!paginationValidation.valid) {

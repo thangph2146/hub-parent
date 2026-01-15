@@ -2,6 +2,7 @@ import { MetadataRoute } from "next"
 import { unstable_cache } from "next/cache"
 import { appConfig } from "@/constants"
 import { prisma } from "@/services/prisma"
+import { logger } from "@/utils"
 
 /**
  * Sitemap for SEO
@@ -89,7 +90,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
     return [...staticPages, ...postPages]
   } catch (error) {
-    console.error("Error generating sitemap:", error)
+    logger.error("Error generating sitemap:", error)
     // Return static pages only if database query fails
     return staticPages
   }

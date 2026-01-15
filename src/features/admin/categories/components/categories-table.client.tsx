@@ -8,7 +8,7 @@ import { useResourceRouter } from "@/hooks"
 import { Plus, RotateCcw, Trash2, AlertTriangle } from "lucide-react"
 
 import { ConfirmDialog } from "@/components/dialogs"
-import type { DataTableQueryState, DataTableResult } from "@/components/tables"
+import type { DataTableQueryState, DataTableResult, DataTableTreeConfig } from "@/components/tables"
 import { FeedbackDialog } from "@/components/dialogs"
 import { Button } from "@/components/ui/button"
 import {
@@ -16,11 +16,7 @@ import {
   SelectionActionsWrapper,
 } from "@/features/admin/resources/components"
 import type { ResourceViewMode } from "@/features/admin/resources/types"
-import {
-  useResourceTableLoader,
-  useResourceTableRefresh,
-  useResourceTableLogger,
-} from "@/features/admin/resources/hooks"
+import { useResourceNavigation, useResourceTableLoader, useResourceTableRefresh, useResourceTableLogger } from "@/features/admin/resources/hooks"
 import { normalizeSearch, sanitizeFilters } from "@/features/admin/resources/utils"
 import { apiClient } from "@/services/api/axios"
 import { apiRoutes } from "@/constants"
@@ -43,7 +39,7 @@ export const CategoriesTableClient = ({
   canCreate = false,
   initialData,
 }: CategoriesTableClientProps) => {
-  const router = useResourceRouter()
+  const { navigate, router } = useResourceNavigation()
   const queryClient = useQueryClient()
   const { feedback, showFeedback, handleFeedbackOpenChange } = useCategoryFeedback()
   const { deleteConfirm, setDeleteConfirm, handleDeleteConfirm } = useCategoryDeleteConfirm()
@@ -219,11 +215,16 @@ export const CategoriesTableClient = ({
         throw new Error(response.data.error || response.data.message || "Không thể tải danh sách danh mục")
       }
 
+      const rawRows = payload.data ?? []
+
+      // Sắp xếp theo tên trước để khi TableBodyContent xây dựng cây, các anh em cùng cấp sẽ được xếp theo alpha
+      const sortedRows = [...rawRows].sort((a, b) => a.name.localeCompare(b.name))
+
       return {
-        rows: payload.data ?? [],
+        rows: sortedRows,
         page: payload.pagination?.page ?? page,
         limit: payload.pagination?.limit ?? limit,
-        total: payload.pagination?.total ?? payload.data?.length ?? 0,
+        total: payload.pagination?.total ?? rawRows.length,
         totalPages: payload.pagination?.totalPages ?? 0,
       }
     },
@@ -237,7 +238,8 @@ export const CategoriesTableClient = ({
       return {
         status: (view.status ?? "active") as AdminCategoriesListParams["status"],
         page: query.page,
-        limit: query.limit,
+        // Tăng limit cho categories để hiển thị cây chuẩn hơn (thường danh mục không quá nhiều)
+        limit: query.limit < 100 ? 1000 : query.limit,
         search: normalizeSearch(query.search),
         filters: Object.keys(filtersRecord).length ? filtersRecord : undefined,
       }
@@ -517,7 +519,7 @@ export const CategoriesTableClient = ({
     <Button
       type="button"
       size="sm"
-      onClick={() => router.push("/admin/categories/new")}
+      onClick={() => navigate("/admin/categories/new")}
       className="h-8 px-3"
     >
       <Flex align="center" gap={2}>
@@ -528,6 +530,15 @@ export const CategoriesTableClient = ({
       </Flex>
     </Button>
   ) : undefined
+
+  const treeConfig = useMemo<DataTableTreeConfig<CategoryRow>>(
+    () => ({
+      parentIdKey: "parentId",
+      idKey: "id",
+      defaultExpanded: true,
+    }),
+    [],
+  )
 
   return (
     <>
@@ -542,6 +553,7 @@ export const CategoriesTableClient = ({
         headerActions={headerActions}
         onRefreshReady={onRefreshReady}
         onViewChange={setCurrentViewId}
+        tree={treeConfig}
       />
 
       {/* Delete Confirmation Dialog */}

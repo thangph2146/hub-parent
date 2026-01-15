@@ -2,12 +2,13 @@
 
 import type { Prisma } from "@prisma/client/index"
 import { prisma } from "@/services/prisma"
+import { logger } from "@/utils"
 import { validatePagination, buildPagination, applyColumnOptionsStatusFilter, applyColumnOptionsSearchFilter, mapToColumnOptions } from "@/features/admin/resources/server"
 import { mapCategoryRecord, buildWhereClause } from "./helpers"
 import type { ListCategoriesInput, CategoryDetailInfo, ListCategoriesResult } from "../types"
 
 export const listCategories = async (params: ListCategoriesInput = {}): Promise<ListCategoriesResult> => {
-  const { page, limit } = validatePagination(params.page, params.limit, 100)
+  const { page, limit } = validatePagination(params.page, params.limit, 1000)
   const where = buildWhereClause(params)
 
   try {
@@ -39,7 +40,7 @@ export const listCategories = async (params: ListCategoriesInput = {}): Promise<
       pagination: buildPagination(page, limit, total),
     }
   } catch (error) {
-    console.error("[listCategories] Error:", error)
+    logger.error("[listCategories] Error:", error)
     return {
       data: [],
       pagination: buildPagination(page, limit, 0),
@@ -96,7 +97,7 @@ export const getCategoryColumnOptions = async (
     // Map results to options format
     return mapToColumnOptions(results, column)
   } catch (error) {
-    console.error("[getCategoryColumnOptions] Error:", error)
+    logger.error("[getCategoryColumnOptions] Error:", error)
     return []
   }
 }
@@ -127,7 +128,7 @@ export const getCategoryById = async (id: string): Promise<CategoryDetailInfo | 
     // mapCategoryRecord đã include updatedAt
     return mapCategoryRecord(category)
   } catch (error) {
-    console.error("[getCategoryById] Error:", error)
+    logger.error("[getCategoryById] Error:", error)
     return null
   }
 }
@@ -155,7 +156,7 @@ export const getActiveCategoriesForSelect = async (limit: number = 100): Promise
       parentId: category.parentId,
     }))
   } catch (error) {
-    console.error("[getActiveCategoriesForSelect] Error:", error)
+    logger.error("[getActiveCategoriesForSelect] Error:", error)
     return []
   }
 }

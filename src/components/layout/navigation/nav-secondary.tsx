@@ -1,4 +1,5 @@
 import * as React from "react"
+import { logger } from "@/utils"
 
 import {
   SidebarGroup,
@@ -24,7 +25,7 @@ export function NavSecondary({
         <SidebarMenu>
           {items.map((item) => {
             if (!React.isValidElement(item.icon)) {
-              console.warn(`Icon is not a valid React element for "${item.title}"`)
+              logger.warn(`Icon is not a valid React element for "${item.title}"`)
               return null
             }
             

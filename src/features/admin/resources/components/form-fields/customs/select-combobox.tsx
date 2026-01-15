@@ -46,9 +46,30 @@ export const SelectCombobox = <T,>({
 }: SelectComboboxProps<T>) => {
   const [selectOpen, setSelectOpen] = useState(false)
   const isDisabled = disabled || field.disabled || isPending
-  const isReadOnly = readOnly && !isDisabled
+  const isReadOnly = readOnly
 
   if (!field.options || field.options.length === 0) {
+    if (isReadOnly) {
+      return (
+        <Flex
+          id={fieldId || field.name as string}
+          align="center"
+          fullWidth
+          height="10"
+          rounded="md"
+          border="all"
+          bg="background"
+          paddingX={3}
+          paddingY={2}
+          className={cn(
+            error && "border-destructive",
+            "border-muted-foreground/20 cursor-default bg-muted !opacity-100"
+          )}
+        >
+          <TypographyPMuted>Không có dữ liệu</TypographyPMuted>
+        </Flex>
+      )
+    }
     return (
       <Flex align="center" fullWidth height="10" rounded="md" border="all" bg="background" paddingX={3} paddingY={2}>
         <TypographyPMuted>Không có tùy chọn</TypographyPMuted>
@@ -56,7 +77,11 @@ export const SelectCombobox = <T,>({
     )
   }
 
-  const selectedOption = field.options.find((opt) => String(opt.value) === String(fieldValue))
+  const normalizedFieldValue = fieldValue === null || fieldValue === undefined ? "" : String(fieldValue)
+  const selectedOption = field.options.find((opt) => {
+    const optValue = opt.value === null || opt.value === undefined ? "" : String(opt.value)
+    return optValue === normalizedFieldValue
+  })
 
   // When readOnly, show plain text instead of button
   if (isReadOnly) {

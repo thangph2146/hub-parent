@@ -240,13 +240,15 @@ export const sanitizeObject = <T extends Record<string, unknown>>(obj: T): T => 
 export const validatePagination = (params: {
   page?: unknown
   limit?: unknown
+  maxLimit?: number
 }): { valid: boolean; error?: string; page?: number; limit?: number } => {
   const pageValidation = validateInteger(params.page, 1, 1000, "Trang")
   if (!pageValidation.valid) {
     return pageValidation
   }
 
-  const limitValidation = validateInteger(params.limit, 1, 100, "Giới hạn")
+  const maxLimit = params.maxLimit ?? 100
+  const limitValidation = validateInteger(params.limit, 1, maxLimit, "Giới hạn")
   if (!limitValidation.valid) {
     return limitValidation
   }

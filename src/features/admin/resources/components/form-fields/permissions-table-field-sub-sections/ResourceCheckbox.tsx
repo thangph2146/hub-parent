@@ -9,6 +9,7 @@ interface ResourceCheckboxProps {
   disabled?: boolean;
   readOnly?: boolean;
   label: string;
+  className?: string;
 }
 
 export function ResourceCheckbox({
@@ -18,6 +19,7 @@ export function ResourceCheckbox({
   disabled,
   readOnly,
   label,
+  className,
 }: ResourceCheckboxProps) {
   const checkboxRef = useRef<React.ElementRef<typeof Checkbox>>(null);
 
@@ -33,7 +35,7 @@ export function ResourceCheckbox({
   }, [indeterminate]);
 
   return (
-    <label className="flex items-center gap-2 cursor-pointer">
+    <label className={cn("flex items-center gap-2 cursor-pointer", className)}>
       <Checkbox
         ref={checkboxRef}
         checked={checked}
@@ -45,7 +47,7 @@ export function ResourceCheckbox({
           disabled && !readOnly && "!opacity-100"
         )}
       />
-      <span className="font-semibold text-sm text-foreground leading-relaxed">
+      <span className={cn("font-semibold text-sm text-foreground leading-relaxed", className?.includes("text-xs") && "text-xs font-medium")}>
         {label}
       </span>
     </label>

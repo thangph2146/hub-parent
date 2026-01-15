@@ -9,6 +9,7 @@ import {
   type DataTableQueryState,
   type DataTableResult,
   type DataTableSelectionChange,
+  type DataTableTreeConfig,
 } from "@/components/tables"
 import { Button } from "@/components/ui/button"
 import {
@@ -41,6 +42,7 @@ export interface ResourceTableClientProps<T extends object> {
   headerActions?: React.ReactNode
   onRefreshReady?: (refresh: () => void) => void
   onViewChange?: (viewId: string) => void
+  tree?: DataTableTreeConfig<T>
 }
 
 export const ResourceTableClient = <T extends object>({
@@ -55,6 +57,7 @@ export const ResourceTableClient = <T extends object>({
   headerActions,
   onRefreshReady,
   onViewChange,
+  tree,
 }: ResourceTableClientProps<T>) => {
   if (viewModes.length === 0) {
     throw new Error("ResourceTableClient requires at least one view mode")
@@ -315,6 +318,7 @@ export const ResourceTableClient = <T extends object>({
         fallbackRowCount={fallbackRowCount}
         refreshKey={refreshKey}
         initialData={initialData}
+        tree={tree}
       />
     </Flex>
   )

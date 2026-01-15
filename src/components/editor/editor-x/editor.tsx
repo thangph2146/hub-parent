@@ -12,7 +12,7 @@ import { TooltipProvider } from "@/components/ui/tooltip"
 
 import { nodes } from "./nodes"
 import { Plugins } from "./plugins"
-import { cn } from "@/utils"
+import { cn, logger } from "@/utils"
 import { useElementSize } from "@/hooks"
 import { EditorContainerProvider } from "@/components/editor/context/editor-container-context"
 
@@ -21,7 +21,7 @@ const editorConfig: InitialConfigType = {
   theme: editorTheme,
   nodes,
   onError: (error: Error) => {
-    console.error(error)
+    logger.error("[Editor] Error:", error)
   },
 }
 

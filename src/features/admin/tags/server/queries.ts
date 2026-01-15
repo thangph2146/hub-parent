@@ -1,5 +1,6 @@
-import type { Prisma } from "@prisma/client"
+import type { Prisma } from "@prisma/client/index"
 import { prisma } from "@/services/prisma"
+import { logger } from "@/utils"
 import {
   validatePagination,
   buildPagination,
@@ -30,7 +31,7 @@ export const listTags = async (params: ListTagsInput = {}): Promise<ListTagsResu
       pagination: buildPagination(page, limit, total),
     }
   } catch (error) {
-    console.error("[listTags] Error:", error)
+    logger.error("[listTags] Error:", error)
     return {
       data: [],
       pagination: buildPagination(page, limit, 0),
@@ -86,10 +87,10 @@ export const getTagColumnOptions = async (
     // Map results to options format
     return mapToColumnOptions(results, column)
   } catch (error) {
-    console.error("[getTagColumnOptions] Error:", error)
+    logger.error("[getTagColumnOptions] Error:", error)
     return []
   }
-};
+}
 
 export const getTagById = async (id: string): Promise<TagDetailInfo | null> => {
   try {
@@ -104,10 +105,10 @@ export const getTagById = async (id: string): Promise<TagDetailInfo | null> => {
     // mapTagRecord đã include updatedAt
     return mapTagRecord(tag)
   } catch (error) {
-    console.error("[getTagById] Error:", error)
+    logger.error("[getTagById] Error:", error)
     return null
   }
-};
+}
 
 export const getActiveTagsForSelect = async (limit: number = 100): Promise<Array<{ label: string; value: string }>> => {
   try {
@@ -130,8 +131,8 @@ export const getActiveTagsForSelect = async (limit: number = 100): Promise<Array
       value: tag.id,
     }))
   } catch (error) {
-    console.error("[getActiveTagsForSelect] Error:", error)
+    logger.error("[getActiveTagsForSelect] Error:", error)
     return []
   }
-};
+}
 

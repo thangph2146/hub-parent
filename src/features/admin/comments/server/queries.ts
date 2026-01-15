@@ -1,4 +1,4 @@
-import type { Prisma } from "@prisma/client"
+import type { Prisma } from "@prisma/client/index"
 import { prisma } from "@/services/prisma"
 import { resourceLogger } from "@/utils"
 import { validatePagination, buildPagination } from "@/features/admin/resources/server"
@@ -107,14 +107,19 @@ export const getCommentColumnOptions = async (
 
     return Array.from(optionsMap.entries()).map(([value, label]) => ({ label, value }))
   } catch (error) {
-    console.error("[getCommentColumnOptions] Error:", error)
+    resourceLogger.logFlow({
+      resource: "comments",
+      action: "query",
+      step: "error",
+      details: { error: error instanceof Error ? error.message : String(error) },
+    })
     return []
   }
-};
+}
 
 export const getCommentById = async (id: string): Promise<CommentDetailInfo | null> => {
   try {
-    const comment = await prisma.comment.findUnique({
+    const data = await prisma.comment.findUnique({
       where: { id },
       include: {
         author: { select: { id: true, name: true, email: true } },
@@ -122,10 +127,17 @@ export const getCommentById = async (id: string): Promise<CommentDetailInfo | nu
       },
     })
 
-    return comment ? { ...mapCommentRecord(comment), updatedAt: comment.updatedAt.toISOString() } : null
+    if (!data) return null
+
+    return mapCommentRecord(data)
   } catch (error) {
-    console.error("[getCommentById] Error:", error)
+    resourceLogger.logFlow({
+      resource: "comments",
+      action: "query",
+      step: "error",
+      details: { id, error: error instanceof Error ? error.message : String(error) },
+    })
     return null
   }
-};
+}
 

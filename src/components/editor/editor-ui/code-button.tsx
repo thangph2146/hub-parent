@@ -8,6 +8,7 @@ import {
   LexicalEditor,
 } from "lexical"
 import { CircleCheckIcon, CopyIcon } from "lucide-react"
+import { logger } from "@/utils"
 
 import { useDebounce } from "@/components/editor/editor-hooks/use-debounce"
 import { IconSize } from "@/components/ui/typography"
@@ -49,7 +50,7 @@ export function CopyButton({ editor, getCodeDOMNode }: Props) {
       setCopyCompleted(true)
       removeSuccessIcon()
     } catch (err) {
-      console.error("Failed to copy: ", err)
+      logger.error("Failed to copy: ", err)
     }
   }
 

@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useTransition } from "react"
+import { logger } from "@/utils"
 import type { DataTableLoader, DataTableResult, DataTableQueryState } from "../types"
 
 export interface UseDataTableLoaderOptions<T extends object> {
@@ -150,7 +151,7 @@ function safeLoad<T extends object>(
                 totalPages: 0,
             }
         }
-        console.error("[DataTable] Failed to load data", error)
+        logger.error("[DataTable] Failed to load data", error)
         return {
             rows: [],
             page: query.page,

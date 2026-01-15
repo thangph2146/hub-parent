@@ -1,5 +1,6 @@
-import type { Prisma } from "@prisma/client"
+import type { Prisma } from "@prisma/client/index"
 import { prisma } from "@/services/prisma"
+import { logger } from "@/utils"
 import {
   validatePagination,
   buildPagination,
@@ -57,13 +58,13 @@ export const listRoles = async (params: ListRolesInput = {}): Promise<ListRolesR
       pagination: buildPagination(page, limit, total),
     }
   } catch (error) {
-    console.error("[listRoles] Error:", error)
+    logger.error("[listRoles] Error:", error)
     return {
       data: [],
       pagination: buildPagination(page, limit, 0),
     }
   }
-};
+}
 
 export const getRoleColumnOptions = async (
   column: string,
@@ -113,10 +114,10 @@ export const getRoleColumnOptions = async (
     // Map results to options format
     return mapToColumnOptions(results, column)
   } catch (error) {
-    console.error("[getRoleColumnOptions] Error:", error)
+    logger.error("[getRoleColumnOptions] Error:", error)
     return []
   }
-};
+}
 
 export const getAllPermissionsOptions = async (): Promise<Array<{ label: string; value: string }>> => {
   try {
@@ -178,10 +179,10 @@ export const getAllPermissionsOptions = async (): Promise<Array<{ label: string;
       .filter((item): item is { label: string; value: string } => item !== null)
       .sort((a, b) => a.label.localeCompare(b.label))
   } catch (error) {
-    console.error("[getAllPermissionsOptions] Error:", error)
+    logger.error("[getAllPermissionsOptions] Error:", error)
     return []
   }
-};
+}
 
 export const getRoleById = async (id: string): Promise<RoleDetail | null> => {
   try {
@@ -196,10 +197,10 @@ export const getRoleById = async (id: string): Promise<RoleDetail | null> => {
     // mapRoleRecord đã include updatedAt
     return mapRoleRecord(role)
   } catch (error) {
-    console.error("[getRoleById] Error:", error)
+    logger.error("[getRoleById] Error:", error)
     return null
   }
-};;
+}
 
 // Re-export helpers for convenience
 export { mapRoleRecord, type RoleWithRelations } from "./helpers"

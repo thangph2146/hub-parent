@@ -10,6 +10,7 @@
 import { useRouter, useSearchParams } from "next/navigation"
 import { CheckCircle2, ArrowLeft, LayoutDashboard } from "lucide-react"
 import { motion } from "framer-motion"
+import { logger } from "@/utils"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { TypographyH1, TypographyPMuted, IconSize } from "@/components/ui/typography"
@@ -74,7 +75,7 @@ export function AlreadyAuthenticatedNotice({ adminUrl = "/admin/dashboard" }: Al
         return
       } catch (error) {
         // Nếu decode thất bại, fallback về logic cũ
-        console.error("Failed to decode callbackUrl:", error)
+        logger.error("Failed to decode callbackUrl:", error)
       }
     }
 

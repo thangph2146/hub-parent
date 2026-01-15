@@ -30,7 +30,9 @@ export const getCategoryFormSections = (): ResourceFormSection[] => [
 
 export const getBaseCategoryFields = (
   categories: Array<{ id: string; name: string; parentId: string | null }> = [],
-  currentCategoryId?: string
+  currentCategoryId?: string,
+  currentParentId?: string | null,
+  currentParentName?: string | null
 ): ResourceFormField<CategoryFormData>[] => {
   // 1. Identify children to avoid cycles
   const descendants = new Set<string>()
@@ -56,7 +58,14 @@ export const getBaseCategoryFields = (
   
   const addOptions = (parentId: string | null = null, level = 0) => {
     const children = availableCategories
-      .filter(c => c.parentId === parentId)
+      .filter(c => {
+        // Nếu đang tìm gốc (parentId === null)
+        if (parentId === null) {
+          // Là gốc nếu parentId trống HOẶC parentId không nằm trong danh sách available (tránh bị mất nếu cha bị ẩn/xóa)
+          return !c.parentId || c.parentId === "" || !availableCategories.some(p => p.id === c.parentId)
+        }
+        return c.parentId === parentId
+      })
       .sort((a, b) => a.name.localeCompare(b.name))
       
     children.forEach(c => {
@@ -65,11 +74,22 @@ export const getBaseCategoryFields = (
         label: prefix + c.name,
         value: c.id
       })
-      addOptions(c.id, level + 1)
+      // Chỉ đệ quy nếu tìm thấy con thực sự (tránh vòng lặp vô tận nếu data lỗi)
+      if (c.id !== parentId) {
+        addOptions(c.id, level + 1)
+      }
     })
   }
   
   addOptions(null)
+
+  // 5. Nếu có currentParentId mà chưa có trong list (ví dụ danh mục cha bị ẩn/xóa), add vào đầu list
+  if (currentParentId && !sortedOptions.some(opt => opt.value === currentParentId)) {
+    sortedOptions.unshift({
+      label: (currentParentName || "Danh mục cha hiện tại") + " (Đã ẩn/xóa)",
+      value: currentParentId
+    })
+  }
 
   return [
     {

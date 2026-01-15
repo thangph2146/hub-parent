@@ -5,7 +5,7 @@ import { PERMISSIONS, canPerformAnyAction } from "@/permissions"
 import { prisma } from "@/services/prisma"
 import { mapCategoryRecord, type CategoryWithRelations } from "./helpers"
 import type { ListedCategory } from "../types"
-import { generateSlug } from "../utils"
+import { generateSlug } from "@/features/admin/resources/utils"
 import type { BulkActionResult } from "../types"
 import {
   CreateCategorySchema,

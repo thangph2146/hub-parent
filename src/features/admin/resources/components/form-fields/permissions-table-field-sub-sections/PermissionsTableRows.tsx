@@ -1,6 +1,6 @@
 import React from "react";
 import { TableCell, TableRow } from "@/components/ui/table";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, CornerDownRight } from "lucide-react";
 import { Flex } from "@/components/ui/flex";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/utils";
@@ -55,12 +55,15 @@ export const ResourceRow = ({ resourceName, isOpen, onToggle }: ResourceRowProps
         onClick={onToggle}
         className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-muted/80 transition-colors cursor-pointer h-12 pl-8"
       >
-        <ChevronDown
-          className={cn(
-            "h-5 w-5 transition-transform shrink-0 text-muted-foreground",
-            isOpen && "transform rotate-180 text-foreground"
-          )}
-        />
+        <div className="flex items-center gap-2">
+          <CornerDownRight className="h-4 w-4 text-muted-foreground/40 shrink-0" />
+          <ChevronDown
+            className={cn(
+              "h-5 w-5 transition-transform shrink-0 text-muted-foreground",
+              isOpen && "transform rotate-180 text-foreground"
+            )}
+          />
+        </div>
         <span className="font-medium text-sm text-foreground flex-1 text-left">
           {resourceName}
         </span>
@@ -139,17 +142,21 @@ export const PermissionItemRow = ({
       data-display-name={`Permission-${displayName}`}
     >
       <TableCell
-        className="pl-16 h-12 px-4 py-0 border-r border-border/30 align-middle"
+        className="pl-20 h-12 px-4 py-0 border-r border-border/30 align-middle"
         style={{ width: `${columnWidths.function}px` }}
       >
-        <ResourceCheckbox
-          checked={areAllPermissionsSelected(perms)}
-          indeterminate={areSomePermissionsSelected(perms)}
-          onCheckedChange={() => handleToggleAllPermissions(perms)}
-          disabled={disabled || isPending || readOnly}
-          readOnly={readOnly}
-          label={displayName}
-        />
+        <Flex align="center" gap={2}>
+          <CornerDownRight className="h-3.5 w-3.5 text-muted-foreground/30 shrink-0 ml-1" />
+          <ResourceCheckbox
+            checked={areAllPermissionsSelected(perms)}
+            indeterminate={areSomePermissionsSelected(perms)}
+            onCheckedChange={() => handleToggleAllPermissions(perms)}
+            disabled={disabled || isPending || readOnly}
+            readOnly={readOnly}
+            label={displayName}
+            className="text-xs"
+          />
+        </Flex>
       </TableCell>
       
       {renderActionCell(viewPerm, "Xem")}

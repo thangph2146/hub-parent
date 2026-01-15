@@ -1,4 +1,5 @@
 import { prisma } from "@/services/prisma"
+import { logger } from "@/utils"
 import type { AccountProfile } from "../types"
 
 export const getCurrentUserProfile = async (userId: string): Promise<AccountProfile | null> => {
@@ -38,8 +39,8 @@ export const getCurrentUserProfile = async (userId: string): Promise<AccountProf
       roles: user.userRoles.map((ur) => ur.role),
     }
   } catch (error) {
-    console.error("[getCurrentUserProfile] Error:", error)
+    logger.error("[getCurrentUserProfile] Error:", error)
     return null
   }
-};
+}
 

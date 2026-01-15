@@ -38,7 +38,10 @@ import type { DataTableProps } from "./types"
 const DEFAULT_LIMIT_OPTIONS = [10, 20, 50, 100]
 const DEFAULT_EMPTY_MESSAGE = "Không có dữ liệu"
 
-type UnknownRecord = Record<string, unknown>
+const defaultGetRowId = (row: unknown) => {
+    const id = (row as Record<string, unknown>).id
+    return typeof id === "string" ? id : JSON.stringify(row)
+}
 
 export function DataTable<T extends object>({
     columns,
@@ -50,10 +53,7 @@ export function DataTable<T extends object>({
     initialLimit,
     limitOptions,
     emptyMessage = DEFAULT_EMPTY_MESSAGE,
-    getRowId = (row) => {
-        const id = (row as UnknownRecord).id
-        return typeof id === "string" ? id : JSON.stringify(row)
-    },
+    getRowId = defaultGetRowId,
     refreshKey,
     fallbackRowCount = 5,
     initialData,
@@ -61,6 +61,7 @@ export function DataTable<T extends object>({
     selectionActions,
     maxWidth,
     processingIds,
+    tree,
 }: DataTableProps<T>) {
     const availableLimits = useMemo(() => {
         const base = limitOptions && limitOptions.length > 0 ? [...limitOptions] : [...DEFAULT_LIMIT_OPTIONS]
@@ -296,9 +297,10 @@ export function DataTable<T extends object>({
                                 onVisibleRowsChange={setVisibleRows}
                                 emptyMessage={emptyMessage}
                                 totalColumns={columnCount}
-                                processingIds={processingIds}
-                                isPending={isPending}
-                            />
+                            processingIds={processingIds}
+                            isPending={isPending}
+                            tree={tree}
+                        />
                         </Suspense>
                     </Table>
                 </div>

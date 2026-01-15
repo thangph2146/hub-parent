@@ -1,4 +1,6 @@
-import { useResourceRouter } from "@/hooks"
+"use client"
+
+import { useResourceNavigation } from "./use-resource-navigation"
 import { useToast } from "@/hooks"
 import { extractAxiosErrorMessage } from "@/utils/api-utils"
 import { apiClient } from "@/services/api/axios"
@@ -37,7 +39,7 @@ export const useResourceFormSubmit = ({
   transformData,
   onSuccess,
 }: UseResourceFormSubmitOptions): UseResourceFormSubmitResult => {
-  const router = useResourceRouter()
+  const { navigate } = useResourceNavigation()
   const { toast } = useToast()
 
   const handleSubmit = async (data: Record<string, unknown>): Promise<{ success: boolean; error?: string }> => {
@@ -204,19 +206,13 @@ export const useResourceFormSubmit = ({
 
           if (detailPath) {
             logger.debug("[useResourceFormSubmit] Navigating to detail", { detailPath })
-            const url = new URL(detailPath, window.location.origin)
-            url.searchParams.set("_t", Date.now().toString())
-            router.replace(url.pathname + url.search)
+            navigate(detailPath)
             logger.debug("[useResourceFormSubmit] Navigation completed")
           } else if (navigation.fallback) {
-            const url = new URL(navigation.fallback, window.location.origin)
-            url.searchParams.set("_t", Date.now().toString())
-            router.replace(url.pathname + url.search)
+            navigate(navigation.fallback)
           }
         } else if (navigation?.fallback) {
-          const url = new URL(navigation.fallback, window.location.origin)
-          url.searchParams.set("_t", Date.now().toString())
-          router.replace(url.pathname + url.search)
+          navigate(navigation.fallback)
         }
 
         logger.debug("[useResourceFormSubmit] handleSubmit SUCCESS")

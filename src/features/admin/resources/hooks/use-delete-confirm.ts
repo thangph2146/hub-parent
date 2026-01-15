@@ -1,3 +1,5 @@
+"use client"
+
 import { useCallback, useState } from "react"
 
 export interface DeleteConfirmState<T = unknown, K extends string = string> {

@@ -167,14 +167,7 @@ export const useNotificationColumns = ({
         className: "min-w-[180px]",
         headerClassName: "min-w-[180px]",
         cell: (row) => row.readAt ? dateFormatter.format(new Date(row.readAt)) : "-",
-      },
-      {
-        accessorKey: "expiresAt",
-        header: "Ngày hết hạn",
-        className: "min-w-[180px]",
-        headerClassName: "min-w-[180px]",
-        cell: (row) => row.expiresAt ? dateFormatter.format(new Date(row.expiresAt)) : "-",
-      },
+      }
     ],
     [
       dateFormatter,

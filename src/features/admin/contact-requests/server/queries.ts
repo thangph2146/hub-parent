@@ -1,5 +1,6 @@
-import type { Prisma } from "@prisma/client"
+import type { Prisma } from "@prisma/client/index"
 import { prisma } from "@/services/prisma"
+import { logger } from "@/utils"
 import { validatePagination, buildPagination } from "@/features/admin/resources/server"
 import { mapContactRequestRecord, buildWhereClause } from "./helpers"
 import type { ListContactRequestsInput, ContactRequestDetailInfo, ListContactRequestsResult } from "../types"
@@ -33,7 +34,7 @@ export const listContactRequests = async (params: ListContactRequestsInput = {})
       pagination: buildPagination(page, limit, total),
     }
   } catch (error) {
-    console.error("[listContactRequests] Error:", error)
+    logger.error("[listContactRequests] Error:", error)
     return {
       data: [],
       pagination: buildPagination(page, limit, 0),
@@ -112,10 +113,10 @@ export const getContactRequestColumnOptions = async (
       })
       .filter((item): item is { label: string; value: string } => item !== null)
   } catch (error) {
-    console.error("[getContactRequestColumnOptions] Error:", error)
+    logger.error("[getContactRequestColumnOptions] Error:", error)
     return []
   }
-};
+}
 
 export const getContactRequestById = async (id: string): Promise<ContactRequestDetailInfo | null> => {
   try {
@@ -138,8 +139,8 @@ export const getContactRequestById = async (id: string): Promise<ContactRequestD
 
     return mapContactRequestRecord(contactRequest)
   } catch (error) {
-    console.error("[getContactRequestById] Error:", error)
+    logger.error("[getContactRequestById] Error:", error)
     return null
   }
-};
+}
 
