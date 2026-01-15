@@ -5,6 +5,7 @@ import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
 import { IconBrandGoogleFilled } from "@tabler/icons-react";
+import { logger } from "@/utils";
 import {
   TypographyH2,
   TypographyP,
@@ -119,7 +120,7 @@ export function SignInForm({
       }
     } catch (error) {
       // Xử lý lỗi network hoặc JSON parsing
-      console.error("Sign in error:", error);
+      logger.error("Sign in error:", error);
 
       // Kiểm tra các loại lỗi phổ biến
       let errorMessage = "Đã xảy ra lỗi. Vui lòng thử lại.";

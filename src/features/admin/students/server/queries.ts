@@ -1,5 +1,6 @@
-import type { Prisma } from "@prisma/client"
+import type { Prisma } from "@prisma/client/index"
 import { prisma } from "@/services/prisma"
+import { logger } from "@/utils"
 import { validatePagination, buildPagination } from "@/features/admin/resources/server"
 import { mapStudentRecord, buildWhereClause } from "./helpers"
 import type { ListStudentsInput, StudentDetailInfo, ListStudentsResult } from "../types"
@@ -38,7 +39,7 @@ export const listStudents = async (params: ListStudentsInput = {}): Promise<List
       totalPages: pagination.totalPages,
     }
   } catch (error) {
-    console.error("[listStudents] Error:", error)
+    logger.error("[listStudents] Error:", error)
     return {
       rows: [],
       total: 0,
@@ -106,24 +107,18 @@ export const getStudentColumnOptions = async (
       take: limit,
     })
 
-    // Map results to options format
-    return results
-      .map((item) => {
-        const value = item[column as keyof typeof item]
-        if (typeof value === "string" && value.trim()) {
-          return {
-            label: value,
-            value: value,
-          }
-        }
-        return null
-      })
-      .filter((item): item is { label: string; value: string } => item !== null)
+    return results.map((item) => {
+      const value = item[column as keyof typeof item]
+      return {
+        label: String(value),
+        value: String(value),
+      }
+    })
   } catch (error) {
-    console.error("[getStudentColumnOptions] Error:", error)
+    logger.error("[getStudentColumnOptions] Error:", error)
     return []
   }
-};
+}
 
 export const getStudentById = async (
   id: string,
@@ -131,7 +126,7 @@ export const getStudentById = async (
   isSuperAdmin?: boolean
 ): Promise<StudentDetailInfo | null> => {
   const where: Prisma.StudentWhereUniqueInput = { id }
-  
+
   try {
     const student = await prisma.student.findUnique({
       where,
@@ -160,8 +155,8 @@ export const getStudentById = async (
       userEmail: student.user?.email || null,
     }
   } catch (error) {
-    console.error("[getStudentById] Error:", error)
+    logger.error("[getStudentById] Error:", error)
     return null
   }
-};
+}
 

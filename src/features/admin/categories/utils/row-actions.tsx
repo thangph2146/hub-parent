@@ -1,5 +1,7 @@
+"use client"
+
 import { useCallback } from "react"
-import { useResourceRouter } from "@/hooks"
+import { useResourceNavigation } from "@/features/admin/resources/hooks"
 import { RotateCcw, Trash2, AlertTriangle, Eye, Pencil } from "lucide-react"
 import { renderRowActions, type RowActionConfig } from "@/features/admin/resources/utils/render-row-actions"
 import type { CategoryRow } from "../types"
@@ -28,7 +30,7 @@ export const useCategoryRowActions = ({
   restoringCategories = new Set(),
   hardDeletingCategories = new Set(),
 }: UseRowActionsOptions) => {
-  const router = useResourceRouter()
+  const { navigate } = useResourceNavigation()
 
   const renderActiveRowActions = useCallback(
     (row: CategoryRow) => {
@@ -36,7 +38,7 @@ export const useCategoryRowActions = ({
         {
           label: CATEGORY_LABELS.VIEW_DETAIL,
           icon: Eye,
-          onSelect: () => router.push(`/admin/categories/${row.id}`),
+          onSelect: () => navigate(`/admin/categories/${row.id}`),
         },
       ]
 
@@ -44,7 +46,7 @@ export const useCategoryRowActions = ({
         actions.push({
           label: CATEGORY_LABELS.EDIT,
           icon: Pencil,
-          onSelect: () => router.push(`/admin/categories/${row.id}/edit`),
+          onSelect: () => navigate(`/admin/categories/${row.id}/edit`),
         })
       }
 
@@ -76,7 +78,7 @@ export const useCategoryRowActions = ({
 
       return renderRowActions(actions)
     },
-    [canDelete, canManage, onDelete, onHardDelete, router, deletingCategories, restoringCategories, hardDeletingCategories],
+    [canDelete, canManage, onDelete, onHardDelete, navigate, deletingCategories, restoringCategories, hardDeletingCategories],
   )
 
   const renderDeletedRowActions = useCallback(
@@ -85,7 +87,7 @@ export const useCategoryRowActions = ({
         {
           label: CATEGORY_LABELS.VIEW_DETAIL,
           icon: Eye,
-          onSelect: () => router.push(`/admin/categories/${row.id}`),
+          onSelect: () => navigate(`/admin/categories/${row.id}`),
         },
       ]
 
@@ -116,7 +118,7 @@ export const useCategoryRowActions = ({
 
       return renderRowActions(actions)
     },
-    [canManage, canRestore, onHardDelete, onRestore, router, deletingCategories, restoringCategories, hardDeletingCategories],
+    [canManage, canRestore, onHardDelete, onRestore, navigate, deletingCategories, restoringCategories, hardDeletingCategories],
   )
 
   return {

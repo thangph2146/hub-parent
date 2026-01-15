@@ -10,6 +10,7 @@ export interface CategoryRow {
   createdAt: string
   updatedAt?: string // Optional để hỗ trợ cache comparison
   deletedAt: string | null
+  depth?: number // Phân cấp cho cấu trúc cây
   _count?: {
     children: number
   }

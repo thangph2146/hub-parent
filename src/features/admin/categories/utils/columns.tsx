@@ -1,3 +1,5 @@
+"use client"
+
 import { useMemo } from "react"
 import { TypographyP, TypographyPSmallMuted } from "@/components/ui/typography"
 import { Flex } from "@/components/ui/flex"
@@ -38,16 +40,19 @@ export const useCategoryColumns = () => {
           onSearchChange: nameFilter.onSearchChange,
           isLoading: nameFilter.isLoading,
         },
-        className: "min-w-[150px] max-w-[250px]",
-        headerClassName: "min-w-[150px] max-w-[250px]",
+        className: "min-w-[180px] max-w-[300px]",
+        headerClassName: "min-w-[180px] max-w-[300px]",
         cell: (row) => (
-          <Flex maxWidth="75" className="break-words" title={row.name} align="center" gap={2}>
-            {row.parentId && (
-              <TypographyPSmallMuted className="whitespace-nowrap">
-                └─
-              </TypographyPSmallMuted>
-            )}
-            {row.name}
+          <Flex 
+            maxWidth="75" 
+            className="break-words" 
+            title={row.name} 
+            align="center" 
+            gap={2}
+          >
+            <TypographyP className="font-medium">
+              {row.name}
+            </TypographyP>
           </Flex>
         ),
       },

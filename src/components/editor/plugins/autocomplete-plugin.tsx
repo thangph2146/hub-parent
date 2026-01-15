@@ -9,6 +9,7 @@
  */
 import type { JSX } from "react"
 import { useCallback, useEffect } from "react"
+import { logger } from "@/utils"
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext"
 import {
   $getSelectionStyleValueForProperty,
@@ -84,9 +85,7 @@ function $search(selection: null | BaseSelection): [boolean, string] {
 function useQuery(): (searchText: string) => SearchPromise {
   return useCallback((searchText: string) => {
     const server = new AutocompleteServer()
-    console.time("query")
     const response = server.query(searchText)
-    console.timeEnd("query")
     return response
   }, [])
 }
@@ -104,7 +103,6 @@ function formatSuggestionText(suggestion: string): string {
 export function AutocompletePlugin(): JSX.Element | null {
   const [editor] = useLexicalComposerContext()
   const query = useQuery()
-  // const {toolbarState} = useToolbarState();
 
   useEffect(() => {
     let autocompleteNodeKey: null | NodeKey = null
@@ -192,7 +190,7 @@ export function AutocompletePlugin(): JSX.Element | null {
           })
           .catch((e) => {
             if (e !== "Dismissed") {
-              console.error(e)
+              logger.error("[AutocompletePlugin] Error:", e)
             }
           })
         lastMatch = match

@@ -5,10 +5,18 @@ import { Pool } from "pg"
 
 // import { DEFAULT_ROLES, PERMISSIONS } from "../src/permissions"
 
-const connectionString = process.env.DATABASE_URL
+let connectionString = process.env.DATABASE_URL
 
 if (!connectionString) {
   throw new Error("DATABASE_URL is not defined in environment variables")
+}
+
+// Ensure sslmode=verify-full to avoid SECURITY WARNING with pg driver
+if (connectionString.includes("sslmode=require")) {
+  connectionString = connectionString.replace("sslmode=require", "sslmode=verify-full")
+} else if (!connectionString.includes("sslmode=")) {
+  const separator = connectionString.includes("?") ? "&" : "?"
+  connectionString = `${connectionString}${separator}sslmode=verify-full`
 }
 
 const pool = new Pool({ connectionString })

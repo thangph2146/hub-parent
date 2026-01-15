@@ -1,7 +1,7 @@
 "use client"
 
 import { useQueryClient } from "@tanstack/react-query"
-import { ResourceForm, type ResourceFormField } from "@/features/admin/resources/components"
+import { ResourceForm } from "@/features/admin/resources/components"
 import { useResourceFormSubmit, useResourceNavigation, useResourceDetailData } from "@/features/admin/resources/hooks"
 import { createResourceEditOnSuccess } from "@/features/admin/resources/utils"
 import { apiRoutes } from "@/constants"
@@ -10,6 +10,7 @@ import { getBaseCategoryFields, getCategoryFormSections, type CategoryFormData }
 import type { CategoryRow } from "../types"
 import { useQuery } from "@tanstack/react-query"
 import { listCategories } from "../server/queries"
+import { useMemo } from "react"
 
 interface CategoryEditData extends CategoryRow {
   slug: string
@@ -57,11 +58,11 @@ export const CategoryEditClient = ({
 
   // Lấy danh sách danh mục để chọn danh mục cha
   const { data: categoriesData } = useQuery({
-    queryKey: queryKeys.adminCategories.list({ page: 1, limit: 1000, status: "active" }),
-    queryFn: () => listCategories({ page: 1, limit: 1000, status: "active" }),
+    queryKey: queryKeys.adminCategories.list({ page: 1, limit: 1000, status: "all" }),
+    queryFn: () => listCategories({ page: 1, limit: 1000, status: "all" }),
   })
 
-  const categories = categoriesData?.data || []
+  const categories = useMemo(() => categoriesData?.data || [], [categoriesData])
 
   const { handleSubmit } = useResourceFormSubmit({
     apiRoute: (id) => apiRoutes.categories.update(id),
@@ -89,24 +90,35 @@ export const CategoryEditClient = ({
     }),
   })
 
-  if (!category?.id) return null
-
-  const isDeleted = !!category.deletedAt
+  const isDeleted = !!category?.deletedAt
   const formDisabled = isDeleted && variant !== "page"
-  const editUrl = `/admin/categories/${category.id}/edit`
+  const editUrl = category?.id ? `/admin/categories/${category.id}/edit` : ""
   
   const handleSubmitWrapper = async (data: Partial<CategoryFormData>) => {
     if (isDeleted) return { success: false, error: "Bản ghi đã bị xóa, không thể chỉnh sửa" }
     return handleSubmit(data)
   }
 
-  const editFields: ResourceFormField<CategoryFormData>[] = getBaseCategoryFields(categories, category?.id)
-  const formSections = getCategoryFormSections()
+  const editFields = useMemo(() => 
+    getBaseCategoryFields(
+      categories, 
+      category?.id, 
+      category?.parentId, 
+      category?.parentName
+    ).map(field => ({ 
+      ...field, 
+      disabled: formDisabled || field.disabled 
+    })),
+    [categories, category?.id, category?.parentId, category?.parentName, formDisabled]
+  )
+  const formSections = useMemo(() => getCategoryFormSections(), [])
+
+  if (!category?.id) return null
 
   return (
     <ResourceForm<CategoryFormData>
       data={category}
-      fields={editFields.map(field => ({ ...field, disabled: formDisabled || field.disabled }))}
+      fields={editFields}
       sections={formSections}
       onSubmit={handleSubmitWrapper}
       title="Chỉnh sửa danh mục"

@@ -43,6 +43,14 @@ export interface DataTableSelectionConfig<T extends object> {
     disabled?: boolean
 }
 
+export interface DataTableTreeConfig<T extends object> {
+    parentIdKey?: keyof T & string
+    idKey?: keyof T & string
+    childrenCountKey?: string // Key to check if row has children without loading them all
+    indentSize?: number
+    defaultExpanded?: boolean
+}
+
 export interface DataTableProps<T extends object> {
     columns: DataTableColumn<T>[]
     loader: DataTableLoader<T>
@@ -67,4 +75,5 @@ export interface DataTableProps<T extends object> {
     enableHorizontalScroll?: boolean
     maxWidth?: string | number
     processingIds?: Set<string> | string[]
+    tree?: DataTableTreeConfig<T>
 }

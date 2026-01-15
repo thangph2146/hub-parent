@@ -61,18 +61,13 @@ export function AdminHeader({ breadcrumbs = [] }: AdminHeaderProps) {
       currentPath: window.location.pathname,
     })
     
-    // Navigate với cache-busting parameter để force Server Component refetch
-    const url = new URL(href, window.location.origin)
-    url.searchParams.set("_t", Date.now().toString())
-    const targetUrl = url.pathname + url.search
-    
     logger.debug("➡️ Đang navigate từ breadcrumb", {
       originalHref: href,
-      targetUrl,
+      targetUrl: href,
     })
     
     // Chỉ gọi replace, Next.js sẽ tự động revalidate
-    router.replace(targetUrl)
+    router.replace(href)
     
     // Reset flag sau một khoảng thời gian ngắn để cho phép navigate tiếp nếu cần
     setTimeout(() => {
@@ -80,7 +75,7 @@ export function AdminHeader({ breadcrumbs = [] }: AdminHeaderProps) {
       const duration = performance.now() - startTime
       logger.success("✅ Breadcrumb navigation hoàn tất", {
         duration: `${duration.toFixed(2)}ms`,
-        targetUrl,
+        targetUrl: href,
       })
     }, 500)
   }, [resourceSegment, router])

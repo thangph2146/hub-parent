@@ -168,8 +168,6 @@ export const authConfig: NextAuthConfig = {
   // However, if NEXTAUTH_URL is set, it will take precedence
   // This ensures consistent domain usage even with reverse proxies or load balancers
   trustHost: true, // Important for Next.js 16
-  // Adapter chỉ dùng khi cần database session, không dùng với JWT
-  // adapter: PrismaAdapter(prisma) as any,
   providers: [
     CredentialsProvider({
       name: "Credentials",

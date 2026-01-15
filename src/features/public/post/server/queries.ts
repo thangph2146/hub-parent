@@ -5,9 +5,9 @@
  * Sử dụng cho các trường hợp cần fresh data hoặc trong API routes
  * Để sử dụng trong Server Components, dùng cache() wrapper từ cache.ts
  */
-import type { Prisma } from "@prisma/client"
+import type { Prisma } from "@prisma/client/index"
 import { prisma } from "@/services/prisma"
-import { validatePagination } from "@/utils"
+import { validatePagination, logger } from "@/utils"
 import { buildPagination, type ResourcePagination } from "@/features/admin/resources/server"
 import { mapPostRecord, mapPostDetailRecord, buildPublicPostWhereClause, buildPublicPostOrderBy } from "./helpers"
 import type { Post, PostDetail } from "../types"
@@ -103,13 +103,13 @@ export const getPosts = async (params: GetPostsParams = {}): Promise<PostsResult
       pagination: buildPagination(page, limit, total),
     }
   } catch (error) {
-    console.error("Error fetching posts:", error)
+    logger.error("Error fetching posts:", error)
     return {
       data: [],
       pagination: buildPagination(page, limit, 0),
     }
   }
-};
+}
 
 export const getPostBySlug = async (slug: string): Promise<PostDetail | null> => {
   try {
@@ -160,7 +160,7 @@ export const getPostBySlug = async (slug: string): Promise<PostDetail | null> =>
     // Map post detail using helper
     return mapPostDetailRecord(post)
   } catch (error) {
-    console.error(`Error fetching post by slug (${slug}):`, error)
+    logger.error(`Error fetching post by slug (${slug}):`, error)
     return null
   }
 }
@@ -257,10 +257,10 @@ export const getRelatedPosts = async (
 
     return posts.map(mapPostRecord)
   } catch (error) {
-    console.error("Error fetching related posts:", error)
+    logger.error("Error fetching related posts:", error)
     return []
   }
-};
+}
 
 /**
  * Get all categories that have published posts
@@ -293,10 +293,10 @@ export const getCategories = async () => {
       },
     })
   } catch (error) {
-    console.error("Error fetching categories:", error)
+    logger.error("Error fetching categories:", error)
     return []
   }
-};
+}
 
 /**
  * Get all tags that have published posts
@@ -328,7 +328,7 @@ export const getTags = async () => {
       },
     })
   } catch (error) {
-    console.error("Error fetching tags:", error)
+    logger.error("Error fetching tags:", error)
     return []
   }
 }

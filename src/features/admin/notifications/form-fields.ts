@@ -1,12 +1,11 @@
 import type { ResourceFormField, ResourceFormSection } from "@/features/admin/resources/components"
 import React from "react"
-import { Bell, FileText, User, Calendar, Clock, ExternalLink, AlertCircle } from "lucide-react"
+import { Bell, FileText, User, Calendar, Clock, ExternalLink } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Switch } from "@/components/ui/switch"
 import { Flex } from "@/components/ui/flex"
 import { TypographyP, TypographyPSmallMuted, TypographyPMuted, IconSize } from "@/components/ui/typography"
 import { formatDateVi } from "@/features/admin/resources/utils"
-import { cn } from "@/utils"
 
 export interface NotificationFormData {
   kind: string
@@ -91,7 +90,7 @@ export const getNotificationDetailFields = <T extends NotificationFormData>(
     onToggleRead?: (checked: boolean) => void
   }
 ): ResourceFormField<T>[] => {
-  const { kindBadge, isRead, readAt, actionUrl, createdAt, expiresAt, isNotificationOwner, isToggling, onToggleRead } = options
+  const { kindBadge, isRead, readAt, actionUrl, createdAt, isNotificationOwner, isToggling, onToggleRead } = options
 
   return [
     // Kind Badge
@@ -230,56 +229,5 @@ export const getNotificationDetailFields = <T extends NotificationFormData>(
         )
       },
     },
-    // Expires At
-    ...(expiresAt
-      ? [
-          {
-            name: "expiresAt" as keyof T,
-            label: "Ngày hết hạn",
-            type: "text" as const,
-            section: "metadata",
-            icon: React.createElement(Calendar, { className: "h-4 w-4" }),
-            render: () => {
-              const isExpired = new Date(expiresAt) < new Date()
-              return React.createElement(
-                Flex,
-                { direction: "col", gap: 2 },
-                React.createElement(
-                  Flex,
-                  { align: "center", gap: 2 },
-                  React.createElement(
-                    IconSize,
-                    { size: "xs", className: "text-muted-foreground shrink-0" },
-                    React.createElement(Calendar)
-                  ),
-                  React.createElement(
-                    "time",
-                    {
-                      dateTime: expiresAt,
-                      className: cn("", isExpired ? "text-destructive" : "text-foreground"),
-                      title: new Date(expiresAt).toLocaleString("vi-VN", {
-                        dateStyle: "full",
-                        timeStyle: "long",
-                      }),
-                    },
-                    formatDateVi(expiresAt)
-                  )
-                ),
-                isExpired &&
-                  React.createElement(
-                    Badge,
-                    { variant: "destructive", className: "w-fit" },
-                    React.createElement(
-                      Flex,
-                      { align: "center", gap: 1 },
-                      React.createElement(IconSize, { size: "xs" }, React.createElement(AlertCircle)),
-                      React.createElement("span", null, "Đã hết hạn")
-                    )
-                  )
-              )
-            },
-          } as ResourceFormField<T>,
-        ]
-      : []),
   ]
 }

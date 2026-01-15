@@ -11,7 +11,6 @@ export type AboutProps = Record<string, never>
 
 export async function About({}: AboutProps) {
   // Nếu cần fetch data, thêm vào đây
-  // const data = await getAboutDataCached()
 
   return <AboutClient />
 }

@@ -1,3 +1,5 @@
+"use client"
+
 import { useCallback } from "react"
 import type { QueryClient, QueryKey } from "@tanstack/react-query"
 import { useResourceRouter, useResourceSegment } from "@/hooks"
@@ -11,6 +13,7 @@ export interface UseResourceNavigationOptions {
 
 export interface UseResourceNavigationResult {
   navigateBack: (backUrl: string, onBack?: () => Promise<void> | void) => Promise<void>
+  navigate: (path: string) => Promise<void>
   router: ReturnType<typeof useResourceRouter>
 }
 
@@ -83,15 +86,58 @@ export const useResourceNavigation = ({
           targetUrl: resolvedBackUrl,
         })
       } finally {
-        // Reset flag sau một delay nhỏ để đảm bảo navigation đã hoàn tất
+        // Reset flag sau một delay để đảm bảo navigation đã bắt đầu xử lý
+        // 500ms là đủ để tránh các click trùng lặp (double click)
         setTimeout(() => {
           isNavigating = false
-        }, 100)
+        }, 500)
       }
     },
     [router, resourceSegment, queryClient, invalidateQueryKey],
   )
 
-  return { navigateBack, router }
+  const navigate = useCallback(
+    async (path: string) => {
+      if (isNavigating) {
+        logger.debug("⏸️ Navigation đang được xử lý, bỏ qua duplicate call", {
+          path,
+        })
+        return
+      }
+
+      isNavigating = true
+      const startTime = performance.now()
+
+      try {
+        logger.info("🔄 Bắt đầu navigation", {
+          source: "navigate",
+          path,
+          resourceSegment,
+        })
+
+        const resolvedPath = applyResourceSegmentToPath(path, resourceSegment)
+
+        logger.info("➡️ Đang navigate", {
+          originalUrl: path,
+          resolvedUrl: resolvedPath,
+        })
+
+        router.push(resolvedPath)
+
+        const duration = performance.now() - startTime
+        logger.success("✅ Navigation hoàn tất", {
+          duration: `${duration.toFixed(2)}ms`,
+          targetUrl: resolvedPath,
+        })
+      } finally {
+        setTimeout(() => {
+          isNavigating = false
+        }, 500)
+      }
+    },
+    [router, resourceSegment]
+  )
+
+  return { navigateBack, navigate, router }
 }
 

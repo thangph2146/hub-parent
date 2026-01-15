@@ -1,6 +1,6 @@
 "use client"
 
-import { ResourceForm, type ResourceFormField } from "@/features/admin/resources/components"
+import { ResourceForm } from "@/features/admin/resources/components"
 import { useResourceFormSubmit } from "@/features/admin/resources/hooks"
 import { apiRoutes } from "@/constants"
 import { queryKeys } from "@/constants"
@@ -8,6 +8,7 @@ import { resourceLogger } from "@/utils"
 import { getBaseCategoryFields, getCategoryFormSections, type CategoryFormData } from "../form-fields"
 import { useQueryClient, useQuery } from "@tanstack/react-query"
 import { listCategories } from "../server/queries"
+import { useMemo } from "react"
 
 export interface CategoryCreateClientProps {
   backUrl?: string
@@ -19,11 +20,11 @@ export const CategoryCreateClient = ({ backUrl = "/admin/categories" }: Category
 
   // Lấy danh sách danh mục để chọn danh mục cha
   const { data: categoriesData } = useQuery({
-    queryKey: queryKeys.adminCategories.list({ page: 1, limit: 1000, status: "active" }),
-    queryFn: () => listCategories({ page: 1, limit: 1000, status: "active" }),
+    queryKey: queryKeys.adminCategories.list({ page: 1, limit: 1000, status: "all" }),
+    queryFn: () => listCategories({ page: 1, limit: 1000, status: "all" }),
   })
 
-  const categories = categoriesData?.data || []
+  const categories = useMemo(() => categoriesData?.data || [], [categoriesData])
 
   const handleBack = () => {
     // Chỉ invalidate queries - table sẽ tự động refresh qua query cache events
@@ -58,8 +59,8 @@ export const CategoryCreateClient = ({ backUrl = "/admin/categories" }: Category
     },
   })
 
-  const createFields: ResourceFormField<CategoryFormData>[] = getBaseCategoryFields(categories)
-  const formSections = getCategoryFormSections()
+  const createFields = useMemo(() => getBaseCategoryFields(categories), [categories])
+  const formSections = useMemo(() => getCategoryFormSections(), [])
 
   return (
     <ResourceForm<CategoryFormData>

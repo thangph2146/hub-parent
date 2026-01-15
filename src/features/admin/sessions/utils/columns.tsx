@@ -120,24 +120,6 @@ export const useSessionColumns = ({
         ),
       },
       {
-        accessorKey: "expiresAt",
-        header: SESSION_LABELS.EXPIRES_AT,
-        filter: {
-          type: "date",
-          placeholder: "Chọn ngày hết hạn",
-          dateFormat: "dd/MM/yyyy",
-        },
-        className: "min-w-[140px] max-w-[180px]",
-        headerClassName: "min-w-[140px] max-w-[180px]",
-        cell: (row) => {
-          try {
-            return dateFormatter.format(new Date(row.expiresAt))
-          } catch {
-            return row.expiresAt
-          }
-        },
-      },
-      {
         accessorKey: "createdAt",
         header: SESSION_LABELS.CREATED_AT,
         filter: {

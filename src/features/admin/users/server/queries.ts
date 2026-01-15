@@ -1,5 +1,6 @@
-import type { Prisma } from "@prisma/client"
+import type { Prisma } from "@prisma/client/index"
 import { prisma } from "@/services/prisma"
+import { logger } from "@/utils"
 import { validatePagination, buildPagination, type ResourcePagination } from "@/features/admin/resources/server"
 import {
   applyColumnOptionsStatusFilter,
@@ -77,13 +78,13 @@ export const listUsers = async (params: ListUsersInput = {}): Promise<ListUsersR
       pagination: buildPagination(page, limit, total),
     }
   } catch (error) {
-    console.error("[listUsers] Error:", error)
+    logger.error("[listUsers] Error:", error)
     return {
       data: [],
       pagination: buildPagination(page, limit, 0),
     }
   }
-};
+}
 
 export const getUserColumnOptions = async (
   column: string,
@@ -98,28 +99,29 @@ export const getUserColumnOptions = async (
   // Apply search filter based on column
   if (search && search.trim()) {
     switch (column) {
-      case "email":
-        applyColumnOptionsSearchFilter(where, search, "email")
-        break
       case "name":
         applyColumnOptionsSearchFilter(where, search, "name")
         break
-      default:
+      case "email":
         applyColumnOptionsSearchFilter(where, search, "email")
+        break
+      default:
+        // For other columns, search in name as fallback
+        applyColumnOptionsSearchFilter(where, search, "name")
     }
   }
 
   // Build select based on column
   let selectField: Prisma.UserSelect
   switch (column) {
-    case "email":
-      selectField = { email: true }
-      break
     case "name":
       selectField = { name: true }
       break
-    default:
+    case "email":
       selectField = { email: true }
+      break
+    default:
+      selectField = { name: true }
   }
 
   try {
@@ -133,10 +135,10 @@ export const getUserColumnOptions = async (
     // Map results to options format
     return mapToColumnOptions(results, column)
   } catch (error) {
-    console.error("[getUserColumnOptions] Error:", error)
+    logger.error("[getUserColumnOptions] Error:", error)
     return []
   }
-};
+}
 
 export const getActiveRoles = async (): Promise<Array<{ id: string; name: string; displayName: string }>> => {
   try {
@@ -156,10 +158,10 @@ export const getActiveRoles = async (): Promise<Array<{ id: string; name: string
     })
     return roles
   } catch (error) {
-    console.error("[getActiveRoles] Error:", error)
+    logger.error("[getActiveRoles] Error:", error)
     return []
   }
-};
+}
 
 export const getActiveRolesForSelect = async (): Promise<Array<{ label: string; value: string }>> => {
   try {
@@ -183,10 +185,10 @@ export const getActiveRolesForSelect = async (): Promise<Array<{ label: string; 
       value: role.id,
     }))
   } catch (error) {
-    console.error("[getActiveRolesForSelect] Error:", error)
+    logger.error("[getActiveRolesForSelect] Error:", error)
     return []
   }
-};
+}
 
 export const getActiveUsersForSelect = async (limit: number = 100): Promise<Array<{ label: string; value: string }>> => {
   try {
@@ -211,10 +213,10 @@ export const getActiveUsersForSelect = async (limit: number = 100): Promise<Arra
       value: user.id,
     }))
   } catch (error) {
-    console.error("[getActiveUsersForSelect] Error:", error)
+    logger.error("[getActiveUsersForSelect] Error:", error)
     return []
   }
-};
+}
 
 export const getUserById = async (id: string): Promise<ListedUser | null> => {
   try {
@@ -241,10 +243,10 @@ export const getUserById = async (id: string): Promise<ListedUser | null> => {
 
     return mapUserRecord(user)
   } catch (error) {
-    console.error("[getUserById] Error:", error)
+    logger.error("[getUserById] Error:", error)
     return null
   }
-};
+}
 
 export const getUserDetailById = async (id: string): Promise<UserDetail | null> => {
   try {
@@ -279,10 +281,10 @@ export const getUserDetailById = async (id: string): Promise<UserDetail | null> 
       updatedAt: user.updatedAt,
     }
   } catch (error) {
-    console.error("[getUserDetailById] Error:", error)
+    logger.error("[getUserDetailById] Error:", error)
     return null
   }
-};
+}
 
 // Re-export helpers for convenience
 export { mapUserRecord, type UserWithRoles } from "./helpers"

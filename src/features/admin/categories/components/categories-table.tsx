@@ -12,7 +12,7 @@ export interface CategoriesTableProps {
 export async function CategoriesTable({ canDelete, canRestore, canManage, canCreate }: CategoriesTableProps) {
   const categoriesData = await listCategories({
     page: 1,
-    limit: 10,
+    limit: 1000,
     status: "active",
   })
 

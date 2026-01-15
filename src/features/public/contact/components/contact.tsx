@@ -11,7 +11,6 @@ export type ContactProps = Record<string, never>
 
 export async function Contact({}: ContactProps) {
   // Nếu cần fetch data, thêm vào đây
-  // const data = await getContactDataCached()
 
   return <ContactClient />
 }

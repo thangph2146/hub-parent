@@ -1,5 +1,6 @@
 "use client"
 
+import { useMemo } from "react"
 import { Edit } from "lucide-react"
 import { ResourceForm } from "@/features/admin/resources/components"
 import { Button } from "@/components/ui/button"
@@ -33,7 +34,7 @@ export interface CategoryDetailClientProps {
 }
 
 export const CategoryDetailClient = ({ categoryId, category, backUrl = "/admin/categories" }: CategoryDetailClientProps) => {
-  const { navigateBack, router } = useResourceNavigation({
+  const { navigateBack, navigate } = useResourceNavigation({
     invalidateQueryKey: queryKeys.adminCategories.all(),
   })
   const { hasAnyPermission } = usePermissions()
@@ -58,14 +59,22 @@ export const CategoryDetailClient = ({ categoryId, category, backUrl = "/admin/c
 
   // Lấy danh sách danh mục để hiển thị tên danh mục cha trong read-only mode
   const { data: categoriesData } = useQuery({
-    queryKey: queryKeys.adminCategories.list({ page: 1, limit: 1000, status: "active" }),
-    queryFn: () => listCategories({ page: 1, limit: 1000, status: "active" }),
+    queryKey: queryKeys.adminCategories.list({ page: 1, limit: 1000, status: "all" }),
+    queryFn: () => listCategories({ page: 1, limit: 1000, status: "all" }),
   })
 
-  const categories = categoriesData?.data || []
+  const categories = useMemo(() => categoriesData?.data || [], [categoriesData])
 
-  const fields = getBaseCategoryFields(categories)
-  const sections = getCategoryFormSections()
+  const fields = useMemo(
+    () => getBaseCategoryFields(
+      categories, 
+      categoryId, 
+      detailData?.parentId, 
+      detailData?.parentName
+    ), 
+    [categories, categoryId, detailData?.parentId, detailData?.parentName]
+  )
+  const sections = useMemo(() => getCategoryFormSections(), [])
   const isDeleted = !!detailData?.deletedAt
   const editUrl = `/admin/categories/${categoryId}/edit`
 
@@ -84,7 +93,7 @@ export const CategoryDetailClient = ({ categoryId, category, backUrl = "/admin/c
       onSubmit={async () => ({ success: false, error: "Read-only mode" })}
       footerButtons={
         !isDeleted && canUpdate ? (
-          <Button variant="outline" onClick={() => router.push(editUrl)}>
+          <Button variant="outline" onClick={() => navigate(editUrl)}>
             <Flex align="center" gap={2}>
               <IconSize size="sm"><Edit /></IconSize>
               Chỉnh sửa

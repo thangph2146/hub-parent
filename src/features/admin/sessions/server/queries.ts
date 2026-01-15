@@ -1,5 +1,6 @@
-import type { Prisma } from "@prisma/client"
+import type { Prisma } from "@prisma/client/index"
 import { prisma } from "@/services/prisma"
+import { logger } from "@/utils"
 import { validatePagination } from "@/features/admin/resources/server"
 import { mapSessionRecord, buildWhereClause } from "./helpers"
 import type { ListSessionsInput, SessionDetailInfo, ListSessionsResult } from "../types"
@@ -48,7 +49,7 @@ export const listSessions = async (params: ListSessionsInput = {}): Promise<List
       totalPages,
     }
   } catch (error) {
-    console.error("[listSessions] Error:", error)
+    logger.error("[listSessions] Error:", error)
     return {
       rows: [],
       total: 0,
@@ -57,7 +58,7 @@ export const listSessions = async (params: ListSessionsInput = {}): Promise<List
       totalPages: 0,
     }
   }
-};
+}
 
 export const getSessionColumnOptions = async (
   column: string,
@@ -132,10 +133,10 @@ export const getSessionColumnOptions = async (
       })
       .filter((item): item is { label: string; value: string } => item !== null)
   } catch (error) {
-    console.error("[getSessionColumnOptions] Error:", error)
+    logger.error("[getSessionColumnOptions] Error:", error)
     return []
   }
-};
+}
 
 export const getSessionById = async (id: string): Promise<SessionDetailInfo | null> => {
   try {
@@ -152,18 +153,17 @@ export const getSessionById = async (id: string): Promise<SessionDetailInfo | nu
       },
     })
 
-    if (!session) {
-      return null
-    }
+    if (!session) return null
 
+    const mapped = mapSessionRecord(session)
     return {
-      ...mapSessionRecord(session),
+      ...mapped,
       userName: session.user?.name || null,
       userEmail: session.user?.email || "",
     }
   } catch (error) {
-    console.error("[getSessionById] Error:", error)
+    logger.error("[getSessionById] Error:", error)
     return null
   }
-};
+}
 
