@@ -111,8 +111,8 @@ export const HeroSection = ({
           </TypographyH1>
           
           {flipWords && flipWords.length > 0 && (
-            <div className="text-2xl sm:text-3xl lg:text-5xl font-extrabold text-primary flex items-center gap-3">
-              <FlipWords words={flipWords} className="text-primary" />
+            <div className="text-2xl sm:text-3xl lg:text-5xl font-extrabold text-white flex items-center gap-3">
+              <FlipWords words={flipWords} />
             </div>
           )}
 
