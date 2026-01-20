@@ -1,5 +1,5 @@
 import { useCallback } from "react"
-import { useResourceRouter } from "@/hooks"
+import { useResourceNavigation } from "@/features/admin/resources/hooks"
 import { RotateCcw, Trash2, AlertTriangle, Eye, Pencil } from "lucide-react"
 import { renderRowActions, type RowActionConfig } from "@/features/admin/resources/utils/render-row-actions"
 import type { PostRow } from "../types"
@@ -28,7 +28,7 @@ export const usePostRowActions = ({
   restoringIds = new Set(),
   hardDeletingIds = new Set(),
 }: UseRowActionsOptions) => {
-  const router = useResourceRouter()
+  const { navigate } = useResourceNavigation()
 
   const renderActiveRowActions = useCallback(
     (row: PostRow) => {
@@ -36,7 +36,7 @@ export const usePostRowActions = ({
         {
           label: POST_LABELS.VIEW_DETAIL,
           icon: Eye,
-          onSelect: () => router.push(`/admin/posts/${row.id}`),
+          onSelect: () => navigate(`/admin/posts/${row.id}`),
         },
       ]
 
@@ -44,7 +44,7 @@ export const usePostRowActions = ({
         actions.push({
           label: POST_LABELS.EDIT,
           icon: Pencil,
-          onSelect: () => router.push(`/admin/posts/${row.id}/edit`),
+          onSelect: () => navigate(`/admin/posts/${row.id}/edit`),
         })
       }
 
@@ -76,7 +76,7 @@ export const usePostRowActions = ({
 
       return renderRowActions(actions)
     },
-    [canDelete, canManage, onDelete, onHardDelete, router, deletingIds, restoringIds, hardDeletingIds],
+    [canDelete, canManage, onDelete, onHardDelete, navigate, deletingIds, restoringIds, hardDeletingIds],
   )
 
   const renderDeletedRowActions = useCallback(
@@ -85,7 +85,7 @@ export const usePostRowActions = ({
         {
           label: POST_LABELS.VIEW_DETAIL,
           icon: Eye,
-          onSelect: () => router.push(`/admin/posts/${row.id}`),
+          onSelect: () => navigate(`/admin/posts/${row.id}`),
         },
       ]
 
@@ -116,7 +116,7 @@ export const usePostRowActions = ({
 
       return renderRowActions(actions)
     },
-    [canManage, canRestore, onHardDelete, onRestore, router, deletingIds, restoringIds, hardDeletingIds],
+    [canManage, canRestore, onHardDelete, onRestore, navigate, deletingIds, restoringIds, hardDeletingIds],
   )
 
   return {

@@ -50,15 +50,15 @@ function Calendar({
     disabled: "text-muted-foreground opacity-50",
   };
 
-  const mergedClassNames = { ...defaultClassNames };
+  const mergedClassNames: Record<string, string> = { ...defaultClassNames };
   if (classNames) {
     for (const key in classNames) {
       const k = key as keyof typeof classNames;
-      const dk = key as keyof typeof defaultClassNames;
-      if (defaultClassNames[dk]) {
-        mergedClassNames[dk] = cn(defaultClassNames[dk], classNames[k]);
+      const dk = key as string;
+      if (defaultClassNames[dk as keyof typeof defaultClassNames]) {
+        mergedClassNames[dk] = cn(defaultClassNames[dk as keyof typeof defaultClassNames], classNames[k]);
       } else {
-        (mergedClassNames as any)[k] = classNames[k];
+        mergedClassNames[dk] = classNames[k] as string;
       }
     }
   }

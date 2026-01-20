@@ -4,10 +4,10 @@
 "use client"
 
 import { useState, useEffect, useMemo, useRef, Fragment } from "react"
-import { useRouter } from "next/navigation"
 import { Bell, CheckCheck, Loader2, ArrowRight, Wifi, WifiOff } from "lucide-react"
 import { useSession } from "@/auth"
 import { useNotifications, useMarkAllAsRead, useMarkNotificationRead, useNotificationsSocketBridge } from "@/hooks"
+import { useResourceNavigation } from "@/features/admin/resources/hooks"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -25,7 +25,7 @@ import { TypographyH3, TypographyP, TypographyPSmall, TypographyPSmallMuted, Typ
 import { deduplicateById, getDuplicateIds } from "@/utils"
 
 export function NotificationBell() {
-  const router = useRouter()
+  const { navigate } = useResourceNavigation()
   const { data: session } = useSession()
   const { socket } = useNotificationsSocketBridge()
   
@@ -425,8 +425,8 @@ export function NotificationBell() {
                           notificationId: notification.id,
                           actionUrl: notification.actionUrl,
                         })
-                        // Sử dụng Next.js router thay vì window.location để tránh reload page
-                        router.push(notification.actionUrl)
+                        // Sử dụng navigate từ useResourceNavigation để handle resource segment và prevent race conditions
+                        navigate(notification.actionUrl)
                       } else {
                         logger.debug("NotificationBell: No action URL, just closing dropdown", {
                           notificationId: notification.id,
@@ -452,10 +452,10 @@ export function NotificationBell() {
                 size="sm"
                 className="w-full justify-between"
                 onClick={() => {
-                  // Sử dụng Next.js router thay vì window.location để tránh reload page
-                  router.push("/admin/notifications")
-                  setOpen(false)
-                }}
+            // Sử dụng navigate từ useResourceNavigation để handle resource segment và prevent race conditions
+            navigate("/admin/notifications")
+            setOpen(false)
+          }}
               >
                 <Flex align="center" gap={2}>
                   <span>Xem tất cả thông báo</span>
