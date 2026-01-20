@@ -31,10 +31,11 @@ async function getStudentHandler(_req: NextRequest, context: ApiRouteContext, ..
     // Check if user is super admin
     const actorId = context.session.user?.id
     const isSuperAdminUser = isSuperAdmin(context.roles)
+    const permissions = context.permissions || []
 
     // Sử dụng getStudentById (non-cached) để đảm bảo data luôn fresh
     // API routes cần fresh data, không nên sử dụng cache để tránh trả về dữ liệu cũ
-    const student = await getStudentById(studentId, actorId, isSuperAdminUser)
+    const student = await getStudentById(studentId, actorId, isSuperAdminUser, permissions)
 
     if (!student) {
       return createErrorResponse("Student not found", { status: 404 })

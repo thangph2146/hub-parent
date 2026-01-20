@@ -4,6 +4,7 @@ import { logger } from "@/utils"
 import { validatePagination, buildPagination } from "@/features/admin/resources/server"
 import { mapStudentRecord, buildWhereClause } from "./helpers"
 import type { ListStudentsInput, StudentDetailInfo, ListStudentsResult } from "../types"
+import { PERMISSIONS } from "@/constants/permissions"
 
 export const listStudents = async (params: ListStudentsInput = {}): Promise<ListStudentsResult> => {
   const { page, limit } = validatePagination(params.page, params.limit, 100)
@@ -55,13 +56,18 @@ export const getStudentColumnOptions = async (
   search?: string,
   limit: number = 50,
   actorId?: string,
-  isSuperAdmin?: boolean
+  isSuperAdmin?: boolean,
+  permissions?: string[]
 ): Promise<Array<{ label: string; value: string }>> => {
   const where: Prisma.StudentWhereInput = {
     deletedAt: null,
   }
 
-  if (!isSuperAdmin && actorId) {
+  // Filter by userId based on permissions
+  const isViewAll = isSuperAdmin || permissions?.includes(PERMISSIONS.STUDENTS_VIEW_ALL)
+  const isViewOwn = permissions?.includes(PERMISSIONS.STUDENTS_VIEW_OWN)
+
+  if (!isViewAll && (isViewOwn || actorId)) {
     where.userId = actorId
   }
 
@@ -123,7 +129,8 @@ export const getStudentColumnOptions = async (
 export const getStudentById = async (
   id: string,
   actorId?: string,
-  isSuperAdmin?: boolean
+  isSuperAdmin?: boolean,
+  permissions?: string[]
 ): Promise<StudentDetailInfo | null> => {
   const where: Prisma.StudentWhereUniqueInput = { id }
 
@@ -145,7 +152,10 @@ export const getStudentById = async (
       return null
     }
 
-    if (!isSuperAdmin && actorId && student.userId !== actorId) {
+    // Check permissions
+    const isViewAll = isSuperAdmin || permissions?.includes(PERMISSIONS.STUDENTS_VIEW_ALL)
+    
+    if (!isViewAll && actorId && student.userId !== actorId) {
       return null
     }
 

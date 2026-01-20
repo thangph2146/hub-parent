@@ -22,8 +22,8 @@ export async function generateMetadata({
   params: Promise<{ id: string }>
 }): Promise<Metadata> {
   const { id } = await params
-  const { actorId, isSuperAdminUser } = await getAuthInfo()
-  const student = await getStudentById(id, actorId, isSuperAdminUser)
+  const { actorId, isSuperAdminUser, permissions } = await getAuthInfo()
+  const student = await getStudentById(id, actorId, isSuperAdminUser, permissions)
 
   if (!student) {
     return {
@@ -57,8 +57,8 @@ export default async function StudentDetailPage({ params }: StudentDetailPagePro
   
   // Fetch student data (non-cached) để hiển thị tên trong breadcrumb
   // Theo chuẩn Next.js 16: không cache admin data
-  const { actorId, isSuperAdminUser } = await getAuthInfo()
-  const student = await getStudentById(id, actorId, isSuperAdminUser)
+  const { actorId, isSuperAdminUser, permissions } = await getAuthInfo()
+  const student = await getStudentById(id, actorId, isSuperAdminUser, permissions)
   const studentName = truncateBreadcrumbLabel(student?.name || student?.studentCode || "Chi tiết")
   
   // Validate route ID

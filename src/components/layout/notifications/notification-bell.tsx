@@ -19,6 +19,7 @@ import { Separator } from "@/components/ui/separator"
 import { Flex } from "@/components/ui/flex"
 import { Badge } from "@/components/ui/badge"
 import { isSuperAdmin } from "@/permissions"
+import { PERMISSIONS, type Permission } from "@/constants/permissions"
 import { logger } from "@/utils"
 import { TypographyH3, TypographyP, TypographyPSmall, TypographyPSmallMuted, TypographySpanSmall, IconSize } from "@/components/ui/typography"
 import { deduplicateById, getDuplicateIds } from "@/utils"
@@ -164,27 +165,24 @@ export function NotificationBell() {
   
   // Check nếu user là super admin để hiển thị link đến admin notifications page
   const roles = session?.roles ?? []
+  const permissions = (session?.permissions ?? []) as Permission[]
   const isSuperAdminUser = isSuperAdmin(roles)
   const currentUserId = session?.user?.id
   const userEmail = session?.user?.email
   
-  // QUAN TRỌNG: Chỉ superadmin@hub.edu.vn mới thấy tất cả notifications
-  // Các user khác (kể cả super admin khác) chỉ thấy notifications của chính họ
+  // QUAN TRỌNG: Chỉ superadmin@hub.edu.vn hoặc user có quyền VIEW_ALL mới thấy tất cả notifications
+  // Các user khác chỉ thấy notifications của chính họ
   const PROTECTED_SUPER_ADMIN_EMAIL = "superadmin@hub.edu.vn"
   const isProtectedSuperAdmin = userEmail === PROTECTED_SUPER_ADMIN_EMAIL
+  const isViewAll = isProtectedSuperAdmin || permissions.includes(PERMISSIONS.NOTIFICATIONS_VIEW_ALL)
   
   // Filter notifications:
-  // - Chỉ superadmin@hub.edu.vn: hiển thị tất cả notifications (của mình và của user khác)
-  // - Các user khác: chỉ hiển thị notifications của chính họ (owner)
+  // THEO YÊU CẦU NGƯỜI DÙNG: Chỉ hiển thị notifications của chính user (owner) trong chuông thông báo
+  // mặc dù có permission VIEW_ALL (VIEW_ALL sẽ xem được hết ở trang admin notifications)
   const ownedNotifications = useMemo(() => {
-    if (isProtectedSuperAdmin) {
-      // superadmin@hub.edu.vn: hiển thị tất cả notifications
-      return uniqueNotifications
-    } else {
-      // Các user khác: chỉ hiển thị notifications của chính họ
-      return uniqueNotifications.filter(n => n.userId === currentUserId)
-    }
-  }, [uniqueNotifications, currentUserId, isProtectedSuperAdmin])
+    // Luôn luôn lọc theo currentUserId để đảm bảo tính nhất quán với số lượng unread (badge)
+    return uniqueNotifications.filter(n => n.userId === currentUserId)
+  }, [uniqueNotifications, currentUserId])
   
   // Tính lại unread count chỉ cho owned notifications
   const ownedUnreadCount = useMemo(() => {
@@ -217,7 +215,7 @@ export function NotificationBell() {
         userId: currentUserId,
         userEmail,
         isSuperAdmin: isSuperAdminUser,
-        isProtectedSuperAdmin,
+        isViewAll,
         apiUnreadCount: data.unreadCount,
         ownedUnreadCount,
         total: data.total,
@@ -226,8 +224,8 @@ export function NotificationBell() {
         ownedNotificationsCount: ownedNotifications.length,
         otherNotificationsCount: otherNotifications.length,
         otherUnreadCount: otherUnread,
-        note: isProtectedSuperAdmin 
-          ? "superadmin@hub.edu.vn: hiển thị tất cả notifications" 
+        note: isViewAll 
+          ? "Hiển thị tất cả notifications (VIEW_ALL)" 
           : "Chỉ hiển thị notifications của chính user (owner)",
         ownedNotifications: ownedNotifications.slice(0, 5).map(n => ({
           id: n.id,
@@ -239,7 +237,7 @@ export function NotificationBell() {
         })),
       })
     }
-  }, [data, ownedUnreadCount, rawNotifications.length, uniqueNotifications.length, ownedNotifications.length, currentUserId, isSuperAdminUser, isProtectedSuperAdmin, userEmail, uniqueNotifications, ownedNotifications])
+  }, [data, ownedUnreadCount, rawNotifications.length, uniqueNotifications.length, ownedNotifications.length, currentUserId, isSuperAdminUser, isViewAll, userEmail, uniqueNotifications, ownedNotifications])
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
@@ -305,11 +303,11 @@ export function NotificationBell() {
                     userId: currentUserId,
                     userEmail,
                     isSuperAdmin: isSuperAdminUser,
-                    isProtectedSuperAdmin,
+                    isViewAll,
                     apiUnreadCount: data?.unreadCount,
                     totalFromAPI: data?.total,
-                    note: isProtectedSuperAdmin 
-                      ? "superadmin@hub.edu.vn: có thể mark tất cả notifications" 
+                    note: isViewAll 
+                      ? "Có thể mark tất cả notifications (VIEW_ALL)" 
                       : "Chỉ mark notifications của chính user (owner)",
                   })
                   
@@ -390,15 +388,15 @@ export function NotificationBell() {
                         userEmail,
                         notificationUserId: notification.userId,
                         isOwner,
-                        isProtectedSuperAdmin,
-                        note: isProtectedSuperAdmin 
-                          ? "superadmin@hub.edu.vn: có thể thao tác với tất cả notifications" 
+                        isViewAll,
+                        note: isViewAll 
+                          ? "Có thể thao tác với tất cả notifications (VIEW_ALL)" 
                           : "Chỉ hiển thị notifications của chính user (owner)",
                       })
                       
                       // Tự động mark as read khi click vào notification (nếu chưa đọc)
-                      // superadmin@hub.edu.vn có thể mark tất cả, các user khác chỉ mark của chính mình
-                      if (!notification.isRead && (isProtectedSuperAdmin || isOwner)) {
+                      // VIEW_ALL có thể mark tất cả, các user khác chỉ mark của chính mình
+                      if (!notification.isRead && (isViewAll || isOwner)) {
                         logger.debug("NotificationBell: Auto-marking as read", {
                           notificationId: notification.id,
                           title: notification.title,
@@ -406,19 +404,19 @@ export function NotificationBell() {
                           userEmail,
                           notificationUserId: notification.userId,
                           isOwner,
-                          isProtectedSuperAdmin,
+                          isViewAll,
                           action: "mark_as_read",
                         })
                         markAsRead.mutate({ id: notification.id, isRead: true })
-                      } else if (!notification.isRead && !isOwner && !isProtectedSuperAdmin) {
-                        logger.warn("NotificationBell: Cannot mark as read - not owner and not protected super admin", {
+                      } else if (!notification.isRead && !isOwner && !isViewAll) {
+                        logger.warn("NotificationBell: Cannot mark as read - not owner and no VIEW_ALL permission", {
                           notificationId: notification.id,
                           userId: currentUserId,
                           userEmail,
                           notificationUserId: notification.userId,
                           isOwner,
-                          isProtectedSuperAdmin,
-                          note: "User không phải owner và không phải superadmin@hub.edu.vn",
+                          isViewAll,
+                          note: "User không phải owner và không có quyền VIEW_ALL",
                         })
                       }
                       
@@ -444,8 +442,8 @@ export function NotificationBell() {
           )}
         </Flex>
 
-        {/* Luôn hiển thị link "Xem tất cả" nếu có thông báo và user là super admin */}
-        {!isLoading && ownedNotifications.length > 0 && isProtectedSuperAdmin && (
+        {/* Luôn hiển thị link "Xem tất cả" nếu có thông báo và user có quyền VIEW_ALL */}
+        {!isLoading && ownedNotifications.length > 0 && isViewAll && (
           <>
             <Separator />
             <Flex padding="sm">

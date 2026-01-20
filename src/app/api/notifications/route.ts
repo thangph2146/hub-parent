@@ -19,6 +19,8 @@ import { isSuperAdmin } from "@/permissions"
 import { logger } from "@/utils"
 import { buildNotificationWhereClause, countUnreadNotificationsWithBreakdown } from "@/lib"
 
+import { type Permission } from "@/constants/permissions"
+
 async function getUserNotificationsHandler(req: NextRequest) {
   const session = await auth()
 
@@ -49,12 +51,14 @@ async function getUserNotificationsHandler(req: NextRequest) {
   const unreadOnly = unreadOnlyParam === "true"
 
   // Check if user is super admin
-  const roles = (session as typeof session & { roles?: Array<{ name: string }> })?.roles || []
+  const roles = session.roles || []
+  const permissions = (session.permissions || []) as Permission[]
   const isSuperAdminUser = isSuperAdmin(roles)
   const userEmail = session.user.email
   
-  // QUAN TRỌNG: Tất cả users (kể cả superadmin@hub.edu.vn) chỉ thấy notifications của chính họ
-  // Logic này nhất quán với "mark all as read" - chỉ mark notifications của user này
+  // QUAN TRỌNG: Logic permissions:
+  // - Nếu có NOTIFICATIONS_VIEW_ALL hoặc là protected super admin: xem tất cả
+  // - Nếu không: chỉ thấy notifications của chính user này
   const PROTECTED_SUPER_ADMIN_EMAIL = "superadmin@hub.edu.vn"
   const isProtectedSuperAdmin = userEmail === PROTECTED_SUPER_ADMIN_EMAIL
 
@@ -63,6 +67,7 @@ async function getUserNotificationsHandler(req: NextRequest) {
     userEmail,
     isSuperAdmin: isSuperAdminUser,
     isProtectedSuperAdmin,
+    permissionsCount: permissions.length,
   })
 
   // Build where clause - Sử dụng shared helper để đảm bảo consistency với /api/admin/unread-counts
@@ -70,6 +75,7 @@ async function getUserNotificationsHandler(req: NextRequest) {
     userId: session.user.id,
     userEmail,
     isProtectedSuperAdmin,
+    permissions,
   }
   const where = buildNotificationWhereClause(countParams)
 

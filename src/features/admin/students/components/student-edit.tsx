@@ -28,7 +28,7 @@ export async function StudentEdit({
 }: StudentEditProps) {
   const { actorId, isSuperAdminUser, permissions, roles } = await getAuthInfo()
 
-  const student = await getStudentById(studentId, actorId, isSuperAdminUser)
+  const student = await getStudentById(studentId, actorId, isSuperAdminUser, permissions)
 
   if (!student) {
     return <NotFoundMessage resourceName="sinh viên" />

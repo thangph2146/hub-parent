@@ -30,7 +30,8 @@ const getStudentOverallAverageHandler = async (
     // Validate student và lấy studentCode
     const actorId = context.session.user?.id
     const isSuperAdminUser = isSuperAdmin(context.roles)
-    const validation = await validateStudentAndGetCode(studentId, actorId, isSuperAdminUser)
+    const permissions = context.permissions || []
+    const validation = await validateStudentAndGetCode(studentId, actorId, isSuperAdminUser, permissions)
 
     if (validation.error) {
       return createErrorResponse(validation.error.message, { status: validation.error.status })

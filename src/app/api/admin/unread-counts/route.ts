@@ -21,10 +21,12 @@ async function getUnreadCountsHandler(_req: NextRequest, context: ApiRouteContex
   }
 
   const roles = context.roles ?? []
+  const permissions = context.permissions ?? []
   const isSuperAdminUser = isSuperAdmin(roles)
   
-  // QUAN TRỌNG: Tất cả users (kể cả superadmin@hub.edu.vn) chỉ đếm notifications của chính họ
-  // Logic này nhất quán với "mark all as read" - chỉ mark notifications của user này
+  // QUAN TRỌNG: Logic permissions:
+  // - Nếu có NOTIFICATIONS_VIEW_ALL hoặc là protected super admin: xem tất cả
+  // - Nếu không: chỉ đếm notifications của chính user này
   const PROTECTED_SUPER_ADMIN_EMAIL = "superadmin@hub.edu.vn"
   const isProtectedSuperAdmin = userEmail === PROTECTED_SUPER_ADMIN_EMAIL
 
@@ -43,6 +45,7 @@ async function getUnreadCountsHandler(_req: NextRequest, context: ApiRouteContex
     userId,
     userEmail,
     isProtectedSuperAdmin,
+    permissions,
   }
 
   const [countResult, unreadMessagesCount, contactRequestsCount] = await Promise.all([
