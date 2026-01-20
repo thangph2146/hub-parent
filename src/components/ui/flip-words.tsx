@@ -67,7 +67,8 @@ export const FlipWords = ({
           }}
           className={cn(
             "z-10 inline-block text-left px-2",
-            "whitespace-nowrap"
+            "whitespace-nowrap",
+            "text-inherit"
           )}
           key={currentWord}
         >
