@@ -34,7 +34,7 @@ export const OverviewSection = ({ className }: { className?: string }) => {
             Về{" "}
             <ContainerTextFlip
               words={["Chúng Tôi", "Tương Lai", "Cam Kết"]}
-              className="text-2xl md:text-3xl font-bold"
+              className="text-2xl md:text-3xl font-bold text-primary"
             />
           </div>
         </TypographyH2>
