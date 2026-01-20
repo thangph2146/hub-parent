@@ -13,7 +13,8 @@ import { apiRoutes } from "@/constants"
 import { logger } from "@/utils"
 import { invalidateAndRefreshResource } from "@/features/admin/resources/utils"
 import type { UnreadCountsResponse } from "@/hooks"
-import { deduplicateById, getDuplicateIds } from "@/utils"
+import { deduplicateById } from "@/utils"
+import { PERMISSIONS, type Permission } from "@/constants/permissions"
 
 /**
  * Helper to extract payload from API response or throw error
@@ -369,8 +370,17 @@ export const useNotificationsSocketBridge = () => {
     registeredUsers.add(userId)
 
     // Helper to check if notification belongs to user
-    const isNotificationForUser = (payload: SocketNotificationPayload): boolean =>
-      payload.toUserId === userId
+    const isNotificationForUser = (payload: SocketNotificationPayload): boolean => {
+      // Nếu là protected super admin hoặc có quyền VIEW_ALL, nhận tất cả notifications
+      const userEmail = session?.user?.email
+      const permissions = (session?.permissions ?? []) as Permission[]
+      const isViewAll = isProtectedSuperAdmin(userEmail) || permissions.includes(PERMISSIONS.NOTIFICATIONS_VIEW_ALL)
+      
+      if (isViewAll) return true
+
+      // Mặc định chỉ nhận notifications dành cho mình
+      return payload.toUserId === userId
+    }
 
     // Helper để convert SocketNotificationPayload sang Notification format
     // QUAN TRỌNG: Sử dụng payload.toUserId để đảm bảo đúng owner
@@ -430,17 +440,6 @@ export const useNotificationsSocketBridge = () => {
       )
     }
 
-    const setUnreadCountsValue = (value: number) => {
-      queryClient.setQueryData<UnreadCountsResponse>(
-        getUnreadCountsKey(userId),
-        (current) => {
-          if (!current) return createDefaultUnreadCounts(value)
-          if (current.unreadNotifications === value) return current
-          return { ...current, unreadNotifications: value }
-        },
-      )
-    }
-
     const applyNotificationUpdate = (payload: SocketNotificationPayload) => {
       const notification = convertSocketToNotification(payload)
       const previousState = getExistingNotificationState(notification.id)
@@ -448,11 +447,10 @@ export const useNotificationsSocketBridge = () => {
       const currentIsRead = notification.isRead
 
       // QUAN TRỌNG: Chỉ tính unreadDelta nếu notification thuộc về user này
-      // superadmin@hub.edu.vn có thể thấy tất cả nhưng chỉ đếm của chính mình
+      // Theo yêu cầu người dùng: chỉ hiển thị số lượng thông báo của owner chứ không hiển thị số lượng all mặc dù có permission view all
       const userEmail = session?.user?.email
-      const isSuperAdmin = isProtectedSuperAdmin(userEmail)
       const isOwner = notification.userId === userId
-      const shouldCount = isSuperAdmin || isOwner
+      const shouldCount = isOwner
       
       let unreadDelta = 0
       if (shouldCount) {
@@ -469,7 +467,6 @@ export const useNotificationsSocketBridge = () => {
         userEmail,
         notificationUserId: notification.userId,
         isOwner,
-        isProtectedSuperAdmin: isSuperAdmin,
         shouldCount,
         previousIsRead,
         currentIsRead,
@@ -538,87 +535,88 @@ export const useNotificationsSocketBridge = () => {
 
     const stopSync = onNotificationsSync((payloads: SocketNotificationPayload[]) => {
       // Lọc và convert notifications cho user này
-      const userNotifications = payloads
+      const incomingNotifications = payloads
         .filter(isNotificationForUser)
         .map(convertSocketToNotification)
         .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
       
       // Filter duplicates by ID (quan trọng để tránh duplicate notifications)
-      const uniqueNotifications = deduplicateById(userNotifications)
-      const duplicateIds = getDuplicateIds(userNotifications)
+      const uniqueIncoming = deduplicateById(incomingNotifications)
       
-      if (duplicateIds.size > 0) {
-        logger.warn("useNotificationsSocketBridge: Duplicate notifications in sync payload", {
-          userId,
-          totalPayloads: payloads.length,
-          userNotificationsCount: userNotifications.length,
-          uniqueCount: uniqueNotifications.length,
-          duplicateCount: duplicateIds.size,
-          duplicateIds: Array.from(duplicateIds),
-        })
-      }
-      
-      // QUAN TRỌNG: Chỉ superadmin@hub.edu.vn mới đếm tất cả notifications
-      // Các user khác chỉ đếm notifications của chính họ (owner)
-      const userEmail = session?.user?.email
-      const isSuperAdmin = isProtectedSuperAdmin(userEmail)
-      
-      // Filter notifications để đếm unread:
-      // - superadmin@hub.edu.vn: đếm tất cả notifications
-      // - Các user khác: chỉ đếm notifications của chính họ
-      const notificationsForCount = isSuperAdmin
-        ? uniqueNotifications
-        : uniqueNotifications.filter(n => n.userId === userId)
-      
-      const unreadCount = notificationsForCount.filter((n) => !n.isRead).length
-      const ownedNotificationsCount = uniqueNotifications.filter(n => n.userId === userId).length
-      const ownedUnreadCount = uniqueNotifications.filter(n => n.userId === userId && !n.isRead).length
-      
-      logger.debug("useNotificationsSocketBridge: Processing notifications:sync", {
-        userId,
-        userEmail,
-        isProtectedSuperAdmin: isSuperAdmin,
-        totalPayloads: payloads.length,
-        userNotificationsCount: userNotifications.length,
-        uniqueCount: uniqueNotifications.length,
-        ownedNotificationsCount,
-        ownedUnreadCount,
-        unreadCount,
-        note: isSuperAdmin 
-          ? "superadmin@hub.edu.vn: đếm tất cả notifications" 
-          : "Chỉ đếm notifications của chính user (owner)",
-      })
-      
-      // Update cache với toàn bộ notifications mới (đã filter duplicates)
+      if (uniqueIncoming.length === 0) return
+
+      let totalUnreadDelta = 0
+
       queryClient.setQueriesData<NotificationsResponse>(
         { queryKey: getAllUserNotificationsKey(userId) },
         (oldData) => {
           if (!oldData) {
-            return {
-              notifications: uniqueNotifications.slice(0, 20),
-              total: uniqueNotifications.length,
-              unreadCount,
-              hasMore: uniqueNotifications.length > 20,
-            }
+            // Nếu không có data cũ, không tự tạo data mới từ sync payload 
+            // vì sync payload có thể chỉ là partial update, dễ gây lỗi "chỉ còn 1 thông báo"
+            // Cache sẽ được populate bởi useQuery khi fetch data từ API
+            return oldData
           }
 
+          // Merge notifications
+          const notificationsMap = new Map(oldData.notifications.map(n => [n.id, n]))
+          let addedCount = 0
+          let localUnreadDelta = 0
+
+          uniqueIncoming.forEach(incoming => {
+            const existing = notificationsMap.get(incoming.id)
+            // QUAN TRỌNG: Theo yêu cầu người dùng, chỉ đếm notifications của chính user (owner)
+            const shouldCount = incoming.userId === userId
+
+            if (existing) {
+              // Update existing
+              if (shouldCount && existing.isRead !== incoming.isRead) {
+                localUnreadDelta += incoming.isRead ? -1 : 1
+              }
+              notificationsMap.set(incoming.id, incoming)
+            } else {
+              // Add new
+              addedCount++
+              if (shouldCount && !incoming.isRead) {
+                localUnreadDelta += 1
+              }
+              notificationsMap.set(incoming.id, incoming)
+            }
+          })
+
+          totalUnreadDelta = localUnreadDelta
+
+          const sortedNotifications = Array.from(notificationsMap.values())
+            .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+          
           const capacity = oldData.notifications.length > 0 ? oldData.notifications.length : 20
-          const limitedNotifications =
-            capacity > 0 ? uniqueNotifications.slice(0, capacity) : uniqueNotifications
-          const hasMore = uniqueNotifications.length > limitedNotifications.length
+          // Đảm bảo không bị giới hạn quá chặt nếu uniqueIncoming nhiều hơn capacity
+          const limitedNotifications = capacity > 0 
+            ? sortedNotifications.slice(0, Math.max(capacity, uniqueIncoming.length)) 
+            : sortedNotifications
+
+          const newTotal = oldData.total + addedCount
+          const newUnreadCount = Math.max(0, oldData.unreadCount + localUnreadDelta)
 
           return {
             ...oldData,
             notifications: limitedNotifications,
-            total: uniqueNotifications.length,
-            unreadCount,
-            hasMore,
+            total: newTotal,
+            unreadCount: newUnreadCount,
+            hasMore: newTotal > limitedNotifications.length,
           }
         },
       )
 
-      // Update unread counts
-      setUnreadCountsValue(unreadCount)
+      // Update unread counts bằng delta thay vì set giá trị tuyệt đối
+      if (totalUnreadDelta !== 0) {
+        updateUnreadCountsByDelta(totalUnreadDelta)
+      }
+      
+      logger.debug("useNotificationsSocketBridge: Processed notifications:sync (merged)", {
+        userId,
+        incomingCount: uniqueIncoming.length,
+        unreadDelta: totalUnreadDelta,
+      })
     })
 
     // Xử lý xóa notification đơn lẻ
@@ -705,7 +703,7 @@ export const useNotificationsSocketBridge = () => {
       }
       registeredUsers.delete(userId)
     }
-  }, [session?.user?.id, session?.user?.email, socket, onNotification, onNotificationUpdated, onNotificationsSync, queryClient])
+  }, [session?.user?.id, session?.user?.email, socket, onNotification, onNotificationUpdated, onNotificationsSync, queryClient, session])
 
   return { socket }
 }
@@ -772,7 +770,7 @@ export const useAdminNotificationsSocketBridge = () => {
         socket.off("notifications:deleted", handleBulkDeleted)
       }
     }
-  }, [session?.user?.id, socket, onNotification, onNotificationUpdated, onNotificationsSync, queryClient])
+  }, [session?.user?.id, socket, onNotification, onNotificationUpdated, onNotificationsSync, queryClient, session])
 
   return { socket }
 }

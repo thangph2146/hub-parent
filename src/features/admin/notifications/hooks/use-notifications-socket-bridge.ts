@@ -14,7 +14,6 @@ import {
   removeRowFromPage,
 } from "@/features/admin/resources/utils/socket-helpers"
 import { convertSocketPayloadToRow } from "../utils/socket-helpers"
-import { deduplicateById } from "@/utils"
 
 const calculateTotalPages = (total: number, limit: number): number => {
   return total === 0 ? 0 : Math.ceil(total / limit)
@@ -256,63 +255,44 @@ export const useNotificationsSocketBridge = () => {
             return null
           }
 
-          // Nếu payload có số lượng lớn (ví dụ >= 10 hoặc >= limit), 
-          // có khả năng đây là full sync cho page 1
-          const isLikelyFullSync = incomingRows.length >= (data.limit || 10)
-
-          let nextRows: NotificationRow[]
-          let nextTotal = data.total
-
-          if (isLikelyFullSync && data.page === 1) {
-            // Full sync cho page 1
-            nextRows = deduplicateById(incomingRows)
-              .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-              .slice(0, data.limit)
-            // Nếu là full sync, total có thể được update nếu payload tin cậy, 
-            // nhưng ở đây ta chỉ update dựa trên số lượng nhận được nếu nó lớn hơn total hiện tại
-            nextTotal = Math.max(data.total, incomingRows.length)
-          } else {
-            // Partial sync - merge vào rows hiện tại
-            const rowsMap = new Map(data.rows.map(r => [r.id, r]))
-            let addedCount = 0
-            let hasChanges = false
-            
-            incomingRows.forEach(row => {
-              const existingRow = rowsMap.get(row.id)
-              if (existingRow) {
-                // Merge existing data with incoming data to preserve missing fields
-                rowsMap.set(row.id, {
-                  ...existingRow,
-                  ...row,
-                  userEmail: row.userEmail || existingRow.userEmail,
-                  userName: row.userName || existingRow.userName,
-                })
-                hasChanges = true
-              } else if (data.page === 1) {
-                // Chỉ thêm vào nếu là trang 1
-                addedCount++
-                rowsMap.set(row.id, row)
-                hasChanges = true
-              }
-            })
-
-            if (!hasChanges) {
-              return null
+          // THEO YÊU CẦU NGƯỜI DÙNG: Luôn sử dụng strategy MERGE thay vì OVERWRITE
+          // để tránh việc mất data khi sync payload chỉ là một phần (ví dụ chỉ 50 items mới nhất)
+          // Điều này giải quyết lỗi "chỉ còn 1 thông báo" sau khi sync.
+          
+          const rowsMap = new Map(data.rows.map(r => [r.id, r]))
+          let hasChanges = false
+          
+          incomingRows.forEach(row => {
+            const existingRow = rowsMap.get(row.id)
+            if (existingRow) {
+              // Merge existing data with incoming data to preserve missing fields (userEmail, userName, etc.)
+              rowsMap.set(row.id, {
+                ...existingRow,
+                ...row,
+                userEmail: row.userEmail || existingRow.userEmail,
+                userName: row.userName || existingRow.userName,
+              })
+              hasChanges = true
+            } else if (data.page === 1) {
+              // Chỉ thêm vào nếu là trang 1 để đảm bảo tính đúng đắn của phân trang
+              rowsMap.set(row.id, row)
+              hasChanges = true
             }
+          })
 
-            nextRows = Array.from(rowsMap.values())
-              .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-              .slice(0, data.limit)
-            
-            nextTotal = data.total + addedCount
+          if (!hasChanges) {
+            return null
           }
 
-          logger.debug("Synced notifications in cache (merged)", {
-            incomingCount: incomingRows.length,
-            rowsCount: nextRows.length,
-            total: nextTotal,
-            isFullSync: isLikelyFullSync && data.page === 1
-          })
+          // Sort lại theo thời gian giảm dần
+          const nextRows = Array.from(rowsMap.values())
+            .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+            .slice(0, data.limit)
+
+          // Không giảm total khi sync (vì payload có thể chỉ là một phần)
+          // Chỉ tăng total nếu có items thực sự mới được thêm vào
+          const addedCount = Math.max(0, nextRows.length - data.rows.length)
+          const nextTotal = data.total + addedCount
 
           return {
             ...data,

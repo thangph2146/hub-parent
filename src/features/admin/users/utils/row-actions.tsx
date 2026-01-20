@@ -1,5 +1,5 @@
 import { useCallback } from "react"
-import { useResourceRouter } from "@/hooks"
+import { useResourceNavigation } from "@/features/admin/resources/hooks"
 import { RotateCcw, Trash2, AlertTriangle, Eye, Pencil, CheckCircle, XCircle } from "lucide-react"
 import { renderRowActions, type RowActionConfig } from "@/features/admin/resources/utils/render-row-actions"
 import type { UserRow } from "../types"
@@ -38,7 +38,7 @@ export const useUserRowActions = ({
   deactivatingIds = new Set(),
   currentUserEmail,
 }: UseRowActionsOptions) => {
-  const router = useResourceRouter()
+  const { navigate } = useResourceNavigation()
 
   const renderActiveRowActions = useCallback(
     (row: UserRow) => {
@@ -47,8 +47,7 @@ export const useUserRowActions = ({
           label: USER_LABELS.VIEW_DETAIL,
           icon: Eye,
           onSelect: () => {
-            // Logging được xử lý bởi useResourceRouter
-            router.push(`/admin/users/${row.id}`)
+            navigate(`/admin/users/${row.id}`)
           },
         },
       ]
@@ -58,8 +57,7 @@ export const useUserRowActions = ({
           label: USER_LABELS.EDIT,
           icon: Pencil,
           onSelect: () => {
-            // Logging được xử lý bởi useResourceRouter
-            router.push(`/admin/users/${row.id}/edit`)
+            navigate(`/admin/users/${row.id}/edit`)
           },
         })
 
@@ -120,7 +118,7 @@ export const useUserRowActions = ({
 
       return renderRowActions(actions)
     },
-    [canDelete, canManage, onDelete, onHardDelete, onActive, onUnactive, router, deletingIds, restoringIds, hardDeletingIds, activatingIds, deactivatingIds, currentUserEmail],
+    [canDelete, canManage, onDelete, onHardDelete, onActive, onUnactive, navigate, deletingIds, restoringIds, hardDeletingIds, activatingIds, deactivatingIds, currentUserEmail],
   )
 
   const renderDeletedRowActions = useCallback(
@@ -130,8 +128,7 @@ export const useUserRowActions = ({
           label: USER_LABELS.VIEW_DETAIL,
           icon: Eye,
           onSelect: () => {
-            // Logging được xử lý bởi useResourceRouter
-            router.push(`/admin/users/${row.id}`)
+            navigate(`/admin/users/${row.id}`)
           },
         },
       ]
@@ -165,7 +162,7 @@ export const useUserRowActions = ({
 
       return renderRowActions(actions)
     },
-    [canManage, canRestore, onHardDelete, onRestore, router, deletingIds, restoringIds, hardDeletingIds, currentUserEmail],
+    [canManage, canRestore, onHardDelete, onRestore, navigate, deletingIds, restoringIds, hardDeletingIds, currentUserEmail],
   )
 
   return {

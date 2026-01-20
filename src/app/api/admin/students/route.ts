@@ -41,6 +41,7 @@ async function getStudentsHandler(req: NextRequest, context: ApiRouteContext) {
   // Check if user is super admin
   const actorId = context.session.user?.id
   const isSuperAdminUser = isSuperAdmin(context.roles)
+  const permissions = context.permissions || []
 
   // Sử dụng listStudents (non-cached) thay vì listStudentsCached để đảm bảo data luôn fresh
   // API routes cần fresh data, không nên sử dụng cache để tránh trả về dữ liệu cũ
@@ -52,6 +53,7 @@ async function getStudentsHandler(req: NextRequest, context: ApiRouteContext) {
     status,
     actorId,
     isSuperAdmin: isSuperAdminUser,
+    permissions,
   })
 
   // Serialize result to match StudentsResponse format

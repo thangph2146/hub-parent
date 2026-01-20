@@ -1,5 +1,5 @@
 import { useCallback } from "react"
-import { useResourceRouter } from "@/hooks"
+import { useResourceNavigation } from "@/features/admin/resources/hooks"
 import { Trash2, Eye } from "lucide-react"
 import { renderRowActions, type RowActionConfig } from "@/features/admin/resources/utils/render-row-actions"
 import type { NotificationRow } from "../types"
@@ -16,7 +16,7 @@ export const useNotificationRowActions = ({
   onDelete,
   deletingNotifications = new Set(),
 }: UseRowActionsOptions) => {
-  const router = useResourceRouter()
+  const { navigate } = useResourceNavigation()
 
   const renderRowActionsForNotifications = useCallback(
     (row: NotificationRow) => {
@@ -27,7 +27,7 @@ export const useNotificationRowActions = ({
         {
           label: NOTIFICATION_LABELS.VIEW_DETAIL,
           icon: Eye,
-          onSelect: () => router.push(`/admin/notifications/${row.id}`),
+          onSelect: () => navigate(`/admin/notifications/${row.id}`),
         },
       ]
 
@@ -46,7 +46,7 @@ export const useNotificationRowActions = ({
 
       return renderRowActions(actions)
     },
-    [sessionUserId, onDelete, deletingNotifications, router],
+    [sessionUserId, onDelete, deletingNotifications, navigate],
   )
 
   return {

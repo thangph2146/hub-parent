@@ -12,6 +12,7 @@ export interface StudentsTableProps {
   actorId?: string
   isSuperAdmin?: boolean
   isParent?: boolean
+  permissions?: string[]
 }
 
 export async function StudentsTable({ 
@@ -24,6 +25,7 @@ export async function StudentsTable({
   actorId,
   isSuperAdmin: isSuperAdminUser = false,
   isParent = false,
+  permissions = [],
 }: StudentsTableProps) {
   // Parent xem tất cả students (kể cả inactive), default status = "all"
   // Admin/SuperAdmin xem active students, default status = "active"
@@ -35,6 +37,7 @@ export async function StudentsTable({
     status: defaultStatus,
     actorId,
     isSuperAdmin: isSuperAdminUser,
+    permissions,
   })
 
   return (

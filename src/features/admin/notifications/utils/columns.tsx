@@ -58,7 +58,7 @@ export const useNotificationColumns = ({
             <Flex align="center" gap={2}>
               <TypographyP className="font-medium">{row.userEmail || "-"}</TypographyP>
               {isOwner && (
-                <Badge variant="outline" className="text-[10px] px-1 py-0 h-4 w-[80px] text-center">
+                <Badge variant="outline" className="text-[10px] px-1 py-0 w-[90px] text-center align-center justify-center">
                   {NOTIFICATION_LABELS.OWN_NOTIFICATION}
                 </Badge>
               )}

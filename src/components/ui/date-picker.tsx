@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { useState } from "react"
-import { CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react"
+import { CalendarIcon, ChevronLeft, ChevronRight, ChevronDown } from "lucide-react"
 import { format } from "date-fns"
 import { vi } from "date-fns/locale"
 
@@ -12,13 +12,6 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Input } from "@/components/ui/input"
 import { cn } from "@/utils"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 import { useClientOnly } from "@/hooks"
 import { responsiveTextSizes, fontWeights, lineHeights, iconSizes, textSizes } from "@/constants"
 import { FieldTitle } from "@/components/ui/field"
@@ -27,6 +20,79 @@ const datePickerBodySmall = `${responsiveTextSizes.small} ${fontWeights.normal} 
 const datePickerBodyMedium = `${responsiveTextSizes.medium} ${fontWeights.normal} ${lineHeights.relaxed}`
 const datePickerIconSizeXs = iconSizes.xs
 const datePickerIconSize2xl = iconSizes["2xl"]
+
+interface CustomDropdownProps {
+  value: string
+  options: { label: string; value: string }[]
+  onValueChange: (value: string) => void
+  ariaLabel?: string
+  className?: string
+}
+
+function CustomDropdown({
+  value,
+  options,
+  onValueChange,
+  ariaLabel,
+  className,
+}: CustomDropdownProps) {
+  const [isOpen, setIsOpen] = useState(false)
+  const containerRef = React.useRef<HTMLDivElement>(null)
+
+  React.useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setIsOpen(false)
+      }
+    }
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside)
+    }
+    return () => document.removeEventListener("mousedown", handleClickOutside)
+  }, [isOpen])
+
+  const selectedOption = options.find((opt) => opt.value === value)
+
+  return (
+    <div className={cn("relative", className)} ref={containerRef}>
+      <Button
+        variant="outline"
+        size="sm"
+        className="h-8 w-fit min-w-[60px] justify-between gap-1 px-2 font-normal"
+        onClick={() => setIsOpen(!isOpen)}
+        aria-label={ariaLabel}
+        type="button"
+      >
+        <span className="truncate">{selectedOption?.label || value}</span>
+        <ChevronDown className="h-3 w-3 opacity-50 shrink-0" />
+      </Button>
+      {isOpen && (
+        <div className="absolute left-0 top-full z-[100] mt-1 min-w-[100px] overflow-hidden rounded-md border bg-popover shadow-md animate-in fade-in-0 zoom-in-95">
+          <ScrollArea className="h-[200px]">
+            <div className="flex flex-col p-1">
+              {options.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  className={cn(
+                    "flex w-full items-center rounded-sm px-2 py-1.5 text-left text-xs outline-none transition-colors hover:bg-accent hover:text-accent-foreground",
+                    value === option.value && "bg-accent text-accent-foreground font-medium"
+                  )}
+                  onClick={() => {
+                    onValueChange(option.value)
+                    setIsOpen(false)
+                  }}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          </ScrollArea>
+        </div>
+      )}
+    </div>
+  )
+}
 
 interface DatePickerProps {
   date?: Date
@@ -63,16 +129,32 @@ export function DatePicker({
 }: DatePickerProps) {
   // Default autoClose: true when enableTime is false, false when enableTime is true
   const shouldAutoClose = autoClose !== undefined ? autoClose : !enableTime
-  const today = React.useMemo(() => new Date(), [])
+  // Helper to parse date from various formats
+  const parseDate = (dateValue: string | Date | undefined | null): Date | undefined => {
+    if (!dateValue) return undefined
+    if (dateValue instanceof Date) return isNaN(dateValue.getTime()) ? undefined : dateValue
+    if (typeof dateValue === "string") {
+      const parsed = new Date(dateValue)
+      return isNaN(parsed.getTime()) ? undefined : parsed
+    }
+    return undefined
+  }
+
+  const today = React.useMemo(() => {
+    const d = new Date()
+    d.setHours(0, 0, 0, 0)
+    return d
+  }, [])
   const mounted = useClientOnly()
   const datePickerId = React.useId()
-  const [internalDate, setInternalDate] = useState<Date | undefined>(date)
+  const initialDate = React.useMemo(() => parseDate(date), [date])
+  const [internalDate, setInternalDate] = useState<Date | undefined>(initialDate)
   const [internalTime, setInternalTime] = useState<string | null>(selectedTime ?? null)
   const [open, setOpen] = useState(false)
   // Pending date for confirmation (only used when enableTime is true)
-  const [pendingDate, setPendingDate] = useState<Date | undefined>(date)
+  const [pendingDate, setPendingDate] = useState<Date | undefined>(initialDate)
   // Track previous date prop to detect external changes
-  const prevDateRef = React.useRef<Date | undefined>(date)
+  const prevDateRef = React.useRef<string | Date | undefined | null>(date)
 
   // Parse time từ date nếu có
   const getTimeFromDate = (dateValue: Date | undefined) => {
@@ -84,7 +166,7 @@ export function DatePicker({
     }
   }
 
-  const [timeInputs, setTimeInputs] = useState(getTimeFromDate(date))
+  const [timeInputs, setTimeInputs] = useState(getTimeFromDate(initialDate))
 
   // Sync internal state with external prop only when popover is closed
   // This prevents losing user selection when they're still interacting
@@ -92,19 +174,21 @@ export function DatePicker({
     // Only sync when popover is closed (user finished interaction)
     // This allows user to change selection without losing it
     if (!open) {
-      const dateChanged = prevDateRef.current?.getTime() !== date?.getTime()
+      const dateChanged = prevDateRef.current !== date
       if (dateChanged) {
-        setInternalDate(date)
-        setPendingDate(date)
-        if (date && enableTime) {
-          setTimeInputs(getTimeFromDate(date))
+        const parsedDate = parseDate(date)
+        setInternalDate(parsedDate)
+        setPendingDate(parsedDate)
+        if (parsedDate && enableTime) {
+          setTimeInputs(getTimeFromDate(parsedDate))
         }
         prevDateRef.current = date
       }
     }
   }, [date, enableTime, open])
 
-  const currentDate = date !== undefined ? date : internalDate
+  // Use internalDate during interaction, otherwise use parsed date prop
+  const currentDate = open ? internalDate : (parseDate(date) || internalDate)
 
   const combineDateAndTime = (selectedDate: Date | undefined, hour: number, minute: number, second: number): Date | undefined => {
     if (!selectedDate) return undefined
@@ -255,6 +339,14 @@ export function DatePicker({
   }
 
   if (showTimeSlots && timeSlots) {
+    if (!mounted) {
+      return (
+        <div className={cn("rounded-lg border border-border h-[400px] flex items-center justify-center", className)}>
+          <div className="animate-pulse bg-muted rounded w-full h-full" />
+        </div>
+      )
+    }
+
     return (
       <div className={cn("rounded-lg border border-border", className)}>
         <div className="flex flex-col">
@@ -270,39 +362,25 @@ export function DatePicker({
               <ChevronLeft size={20} strokeWidth={2.5} className="text-current" />
             </Button>
             <div className="flex items-center justify-center gap-2 flex-1">
-              <Select
-                key={`month-${currentMonthIndex}`}
+              <CustomDropdown
                 value={currentMonthIndex.toString()}
                 onValueChange={handleMonthChange}
-              >
-                <SelectTrigger size="sm" className="h-8 justify-between" aria-label="Chọn tháng">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {monthNames.map((monthName, index) => (
-                    <SelectItem key={index} value={index.toString()}>
-                      {monthName}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                options={monthNames.map((monthName, index) => ({
+                  label: monthName,
+                  value: index.toString(),
+                }))}
+                ariaLabel="Chọn tháng"
+              />
               <span className={`${datePickerBodySmall} font-medium text-muted-foreground`}>/</span>
-              <Select
-                key={`year-${currentYear}`}
+              <CustomDropdown
                 value={currentYear.toString()}
                 onValueChange={handleYearChange}
-              >
-                <SelectTrigger size="sm" className="h-8 justify-between" aria-label="Chọn năm">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {years.map((year) => (
-                    <SelectItem key={year} value={year.toString()}>
-                      {year}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                options={years.map((year) => ({
+                  label: year.toString(),
+                  value: year.toString(),
+                }))}
+                ariaLabel="Chọn năm"
+              />
             </div>
             <Button
               variant="ghost"
@@ -341,9 +419,6 @@ export function DatePicker({
                   }
                 : undefined
             }
-            modifiersClassNames={{
-              hasItems: "*:after:pointer-events-none *:after:absolute *:after:bottom-1 *:after:start-1/2 *:after:z-10 *:after:size-[3px] *:after:-translate-x-1/2 *:after:rounded-full *:after:bg-secondary *:after:transition-colors [&[data-selected]:not(.range-middle)>*]:after:bg-secondary-foreground",
-            }}
           />
           <div className="relative w-full max-sm:h-48 sm:w-40">
             <div className="absolute inset-0 border-border py-4 max-sm:border-t sm:border-s">
@@ -417,8 +492,8 @@ export function DatePicker({
       <PopoverContent
         id={datePickerId} 
         className={cn(
-          "w-auto p-0",
-          enableTime && "min-w-[280px]"
+          "w-auto p-0 z-40",
+          enableTime && "sm:min-w-[460px]"
         )} 
         align="start"
         sideOffset={4}
@@ -436,37 +511,25 @@ export function DatePicker({
               <ChevronLeft size={20} strokeWidth={2.5} className="text-current" />
             </Button>
             <div className="flex items-center justify-center gap-2 flex-1">
-              <Select
+              <CustomDropdown
                 value={currentMonthIndex.toString()}
                 onValueChange={handleMonthChange}
-              >
-                <SelectTrigger size="sm" className="h-8 w-fit justify-between" aria-label="Chọn tháng">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {monthNames.map((monthName, index) => (
-                    <SelectItem key={index} value={index.toString()}>
-                      {monthName}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                options={monthNames.map((monthName, index) => ({
+                  label: monthName,
+                  value: index.toString(),
+                }))}
+                ariaLabel="Chọn tháng"
+              />
               <span className={`${datePickerBodySmall} font-medium text-muted-foreground`}>/</span>
-              <Select
+              <CustomDropdown
                 value={currentYear.toString()}
                 onValueChange={handleYearChange}
-              >
-                <SelectTrigger size="sm" className="h-8 w-fit" aria-label="Chọn năm">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {years.map((year) => (
-                    <SelectItem key={year} value={year.toString()}>
-                      {year}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                options={years.map((year) => ({
+                  label: year.toString(),
+                  value: year.toString(),
+                }))}
+                ariaLabel="Chọn năm"
+              />
             </div>
             <Button
               variant="ghost"
@@ -478,119 +541,125 @@ export function DatePicker({
               <ChevronRight size={20} strokeWidth={2.5} className="text-current" />
             </Button>
           </div>
-          <Calendar
-            mode="single"
-            selected={currentDate}
-            onSelect={handleDateSelect}
-            month={displayMonth}
-            onMonthChange={setDisplayMonth}
-            initialFocus
-            locale={vi}
-            formatters={{
-              formatMonthCaption,
-            }}
-            classNames={{
-              month_caption: "hidden", // Hide default caption vì chúng ta sẽ dùng custom dropdown
-              nav: "hidden", // Hide default navigation buttons vì chúng ta đã thêm vào Custom Month/Year Selector
-            }}
-            modifiers={
-              datesWithItems && datesWithItems.length > 0
-                ? {
-                    hasItems: datesWithItems.map((dateStr: string) => {
-                      const [year, month, day] = dateStr.split("-").map(Number)
-                      return new Date(year, month - 1, day)
-                    }),
-                  }
-                : undefined
-            }
-            modifiersClassNames={{
-              hasItems: "*:after:pointer-events-none *:after:absolute *:after:bottom-1 *:after:start-1/2 *:after:z-10 *:after:size-[3px] *:after:-translate-x-1/2 *:after:rounded-full *:after:bg-secondary *:after:transition-colors [&[data-selected]:not(.range-middle)>*]:after:bg-secondary-foreground",
-            }}
-          />
-          {enableTime && (
-            <div className="border-t bg-muted/30">
-              <div className="px-4 py-3 space-y-2.5">
-                <FieldTitle>Thời gian</FieldTitle>
-                <div className="flex items-end gap-2 justify-center">
-                  <div className="flex flex-col items-center gap-1.5">
-                    <label htmlFor="time-hour" className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
-                      Giờ
-                    </label>
-                    <Input
-                      id="time-hour"
-                      type="number"
-                      min={0}
-                      max={23}
-                      value={timeInputs.hour.toString().padStart(2, "0")}
-                      onChange={(e) => {
-                        const val = e.target.value === "" ? 0 : parseInt(e.target.value) || 0
-                        handleTimeInputChange("hour", val)
-                      }}
-                      onBlur={(e) => {
-                        const val = Math.max(0, Math.min(23, parseInt(e.target.value) || 0))
-                        handleTimeInputChange("hour", val)
-                      }}
-                      className={`h-10 w-16 text-center ${datePickerBodyMedium} font-semibold`}
-                      placeholder="00"
-                      disabled={disabled}
-                    />
-                  </div>
-                  <span className={`${textSizes.xl} font-bold text-muted-foreground pb-1.5 leading-none`}>:</span>
-                  <div className="flex flex-col items-center gap-1.5">
-                    <label htmlFor="time-minute" className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
-                      Phút
-                    </label>
-                    <Input
-                      id="time-minute"
-                      type="number"
-                      min={0}
-                      max={59}
-                      value={timeInputs.minute.toString().padStart(2, "0")}
-                      onChange={(e) => {
-                        const val = e.target.value === "" ? 0 : parseInt(e.target.value) || 0
-                        handleTimeInputChange("minute", val)
-                      }}
-                      onBlur={(e) => {
-                        const val = Math.max(0, Math.min(59, parseInt(e.target.value) || 0))
-                        handleTimeInputChange("minute", val)
-                      }}
-                      className={`h-10 w-16 text-center ${datePickerBodyMedium} font-semibold`}
-                      placeholder="00"
-                      disabled={disabled}
-                    />
-                  </div>
-                  {showSeconds && (
-                    <>
-                      <span className={`${textSizes.xl} font-bold text-muted-foreground pb-1.5 leading-none`}>:</span>
+          
+          <div className="flex max-sm:flex-col sm:flex-row">
+            <Calendar
+              mode="single"
+              selected={currentDate}
+              onSelect={handleDateSelect}
+              month={displayMonth}
+              onMonthChange={setDisplayMonth}
+              initialFocus
+              locale={vi}
+              formatters={{
+                formatMonthCaption,
+              }}
+              classNames={{
+                month_caption: "hidden", // Hide default caption vì chúng ta sẽ dùng custom dropdown
+                nav: "hidden", // Hide default navigation buttons vì chúng ta đã thêm vào Custom Month/Year Selector
+              }}
+              modifiers={
+                datesWithItems && datesWithItems.length > 0
+                  ? {
+                      hasItems: datesWithItems.map((dateStr: string) => {
+                        const [year, month, day] = dateStr.split("-").map(Number)
+                        return new Date(year, month - 1, day)
+                      }),
+                    }
+                  : undefined
+              }
+              modifiersClassNames={{
+                hasItems: "*:after:pointer-events-none *:after:absolute *:after:bottom-1 *:after:start-1/2 *:after:z-10 *:after:size-[3px] *:after:-translate-x-1/2 *:after:rounded-full *:after:bg-secondary *:after:transition-colors [&[data-selected]:not(.range-middle)>*]:after:bg-secondary-foreground",
+              }}
+              className="p-3"
+            />
+            {enableTime && (
+              <div className="max-sm:border-t sm:border-s bg-muted/30 flex items-center justify-center min-w-[180px]">
+                <div className="px-4 py-3 space-y-3">
+                  <FieldTitle className="text-center">Thời gian</FieldTitle>
+                  <div className="flex flex-col items-center gap-4">
+                    <div className="flex items-end gap-2 justify-center">
                       <div className="flex flex-col items-center gap-1.5">
-                        <label htmlFor="time-second" className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
-                          Giây
+                        <label htmlFor="time-hour" className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
+                          Giờ
                         </label>
                         <Input
-                          id="time-second"
+                          id="time-hour"
                           type="number"
                           min={0}
-                          max={59}
-                          value={timeInputs.second.toString().padStart(2, "0")}
+                          max={23}
+                          value={timeInputs.hour.toString().padStart(2, "0")}
                           onChange={(e) => {
                             const val = e.target.value === "" ? 0 : parseInt(e.target.value) || 0
-                            handleTimeInputChange("second", val)
+                            handleTimeInputChange("hour", val)
                           }}
                           onBlur={(e) => {
-                            const val = Math.max(0, Math.min(59, parseInt(e.target.value) || 0))
-                            handleTimeInputChange("second", val)
+                            const val = Math.max(0, Math.min(23, parseInt(e.target.value) || 0))
+                            handleTimeInputChange("hour", val)
                           }}
                           className={`h-10 w-16 text-center ${datePickerBodyMedium} font-semibold`}
                           placeholder="00"
                           disabled={disabled}
                         />
                       </div>
-                    </>
-                  )}
+                      <span className={`${textSizes.xl} font-bold text-muted-foreground pb-1.5 leading-none`}>:</span>
+                      <div className="flex flex-col items-center gap-1.5">
+                        <label htmlFor="time-minute" className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
+                          Phút
+                        </label>
+                        <Input
+                          id="time-minute"
+                          type="number"
+                          min={0}
+                          max={59}
+                          value={timeInputs.minute.toString().padStart(2, "0")}
+                          onChange={(e) => {
+                            const val = e.target.value === "" ? 0 : parseInt(e.target.value) || 0
+                            handleTimeInputChange("minute", val)
+                          }}
+                          onBlur={(e) => {
+                            const val = Math.max(0, Math.min(59, parseInt(e.target.value) || 0))
+                            handleTimeInputChange("minute", val)
+                          }}
+                          className={`h-10 w-16 text-center ${datePickerBodyMedium} font-semibold`}
+                          placeholder="00"
+                          disabled={disabled}
+                        />
+                      </div>
+                    </div>
+                    {showSeconds && (
+                      <div className="flex flex-col items-center gap-1.5">
+                        <label htmlFor="time-second" className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
+                          Giây
+                        </label>
+                        <div className="flex items-center gap-2">
+                          <span className={`${textSizes.xl} font-bold text-muted-foreground leading-none`}>:</span>
+                          <Input
+                            id="time-second"
+                            type="number"
+                            min={0}
+                            max={59}
+                            value={timeInputs.second.toString().padStart(2, "0")}
+                            onChange={(e) => {
+                              const val = e.target.value === "" ? 0 : parseInt(e.target.value) || 0
+                              handleTimeInputChange("second", val)
+                            }}
+                            onBlur={(e) => {
+                              const val = Math.max(0, Math.min(59, parseInt(e.target.value) || 0))
+                              handleTimeInputChange("second", val)
+                            }}
+                            className={`h-10 w-16 text-center ${datePickerBodyMedium} font-semibold`}
+                            placeholder="00"
+                            disabled={disabled}
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
           <div className="border-t p-2 flex gap-2">
             {hasValue && (
               <Button

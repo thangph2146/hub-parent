@@ -17,8 +17,23 @@ export interface UseResourceNavigationResult {
   router: ReturnType<typeof useResourceRouter>
 }
 
-// Flag để prevent duplicate navigation calls
-let isNavigating = false
+// State để theo dõi navigation hiện tại
+interface NavigationState {
+  isNavigating: boolean
+  targetPath: string | null
+  startTime: number
+}
+
+let currentNavigation: NavigationState = {
+  isNavigating: false,
+  targetPath: null,
+  startTime: 0,
+}
+
+// Thời gian tối đa để khóa một navigation (tránh trường hợp bị kẹt)
+const NAVIGATION_LOCK_TIMEOUT = 5000 
+// Thời gian tối thiểu giữa các lần click cùng một URL
+const DOUBLE_CLICK_PREVENTION_MS = 800
 
 export const useResourceNavigation = ({
   queryClient,
@@ -29,68 +44,80 @@ export const useResourceNavigation = ({
 
   const navigateBack = useCallback(
     async (backUrl: string, onBack?: () => Promise<void> | void) => {
-      // Prevent duplicate navigation calls
-      if (isNavigating) {
-        logger.debug("⏸️ Navigation đang được xử lý, bỏ qua duplicate call", {
+      const now = Date.now()
+      const resolvedBackUrl = applyResourceSegmentToPath(backUrl, resourceSegment)
+
+      // Kiểm tra xem có đang navigate đến cùng một URL không
+      if (
+        currentNavigation.isNavigating && 
+        currentNavigation.targetPath === resolvedBackUrl &&
+        now - currentNavigation.startTime < DOUBLE_CLICK_PREVENTION_MS
+      ) {
+        logger.debug("⏸️ Navigation đến cùng URL đang được xử lý, bỏ qua duplicate call", {
           backUrl,
+          resolvedBackUrl,
+          timeSinceStart: now - currentNavigation.startTime,
         })
         return
       }
 
-      isNavigating = true
-      const startTime = performance.now()
+      // Nếu đang navigate đến URL khác, hoặc đã quá timeout, cho phép tiếp tục
+      if (
+        currentNavigation.isNavigating && 
+        now - currentNavigation.startTime > NAVIGATION_LOCK_TIMEOUT
+      ) {
+        logger.warn("⚠️ Navigation cũ quá lâu, forcing new navigation", {
+          oldTarget: currentNavigation.targetPath,
+          newTarget: resolvedBackUrl,
+        })
+      }
+
+      currentNavigation = {
+        isNavigating: true,
+        targetPath: resolvedBackUrl,
+        startTime: now,
+      }
+      
+      const perfStartTime = performance.now()
       
       try {
-        logger.info("🔄 Bắt đầu navigation", {
-          source: "navigateBack",
+        logger.info("🔄 Bắt đầu navigateBack", {
           backUrl,
+          resolvedBackUrl,
           resourceSegment,
-          hasOnBack: !!onBack,
-          hasQueryClient: !!queryClient,
-          hasInvalidateKey: !!invalidateQueryKey,
         })
 
-        // 1. Apply resource segment to backUrl trước
-        const resolvedBackUrl = applyResourceSegmentToPath(backUrl, resourceSegment)
-        
         // 2. Gọi custom onBack callback nếu có (để invalidate React Query cache)
-        // Lưu ý: onBack callback KHÔNG nên gọi navigateBack nữa vì navigation đã được handle ở đây
         if (onBack) {
-          logger.debug("📞 Gọi onBack callback")
           await onBack()
         }
 
         // 3. Invalidate React Query cache nếu có queryClient và queryKey
-        // Chỉ invalidate, không refetch ngay để tránh duplicate requests
         if (queryClient && invalidateQueryKey) {
-          logger.debug("🗑️ Invalidate React Query cache", {
-            queryKey: invalidateQueryKey,
-          })
           await queryClient.invalidateQueries({ 
             queryKey: invalidateQueryKey, 
-            refetchType: "active" // Chỉ refetch queries đang active
+            refetchType: "active"
           })
         }
 
-        logger.info("➡️ Đang navigate", {
-          originalUrl: backUrl,
-          resolvedUrl: resolvedBackUrl,
-        })
+        logger.info("➡️ Đang thực hiện router.replace", { resolvedBackUrl })
 
-        // 4. Navigate - không cần cache-busting parameter và refresh nếu đã có cache
+        // 4. Navigate
         router.replace(resolvedBackUrl)
         
-        const duration = performance.now() - startTime
-        logger.success("✅ Navigation hoàn tất", {
+        const duration = performance.now() - perfStartTime
+        logger.success("✅ Navigation back initiated", {
           duration: `${duration.toFixed(2)}ms`,
           targetUrl: resolvedBackUrl,
         })
       } finally {
-        // Reset flag sau một delay để đảm bảo navigation đã bắt đầu xử lý
-        // 500ms là đủ để tránh các click trùng lặp (double click)
+        // Reset flag sau một delay ngắn để tránh double click
         setTimeout(() => {
-          isNavigating = false
-        }, 500)
+          if (currentNavigation.targetPath === resolvedBackUrl) {
+            currentNavigation.isNavigating = false
+            currentNavigation.targetPath = null
+          }
+        }, DOUBLE_CLICK_PREVENTION_MS)
       }
     },
     [router, resourceSegment, queryClient, invalidateQueryKey],
@@ -98,41 +125,72 @@ export const useResourceNavigation = ({
 
   const navigate = useCallback(
     async (path: string) => {
-      if (isNavigating) {
-        logger.debug("⏸️ Navigation đang được xử lý, bỏ qua duplicate call", {
+      const now = Date.now()
+      const resolvedPath = applyResourceSegmentToPath(path, resourceSegment)
+
+      // Kiểm tra xem có đang navigate đến cùng một URL không
+      if (
+        currentNavigation.isNavigating && 
+        currentNavigation.targetPath === resolvedPath &&
+        now - currentNavigation.startTime < DOUBLE_CLICK_PREVENTION_MS
+      ) {
+        logger.debug("⏸️ Navigation đến cùng URL đang được xử lý, bỏ qua duplicate call", {
           path,
+          resolvedPath,
+          timeSinceStart: now - currentNavigation.startTime,
         })
         return
       }
 
-      isNavigating = true
-      const startTime = performance.now()
+      // Nếu đang navigate đến URL khác, hoặc đã quá timeout, cho phép tiếp tục
+      if (
+        currentNavigation.isNavigating && 
+        now - currentNavigation.startTime > NAVIGATION_LOCK_TIMEOUT
+      ) {
+        logger.warn("⚠️ Navigation cũ quá lâu, forcing new navigation", {
+          oldTarget: currentNavigation.targetPath,
+          newTarget: resolvedPath,
+        })
+      }
+
+      currentNavigation = {
+        isNavigating: true,
+        targetPath: resolvedPath,
+        startTime: now,
+      }
+      
+      const perfStartTime = performance.now()
 
       try {
-        logger.info("🔄 Bắt đầu navigation", {
-          source: "navigate",
+        logger.info("🔄 Bắt đầu navigate", {
           path,
+          resolvedPath,
           resourceSegment,
         })
 
-        const resolvedPath = applyResourceSegmentToPath(path, resourceSegment)
+        // Kiểm tra xem có đang ở chính URL đó không để tránh redundant navigation
+        if (typeof window !== "undefined" && window.location.pathname === resolvedPath) {
+          logger.debug("ℹ️ Đang ở chính URL mục tiêu, thực hiện router.refresh thay vì push", { resolvedPath })
+          router.refresh()
+        } else {
+          logger.info("➡️ Đang thực hiện router.push", { resolvedPath })
+          router.push(resolvedPath)
+        }
 
-        logger.info("➡️ Đang navigate", {
-          originalUrl: path,
-          resolvedUrl: resolvedPath,
-        })
-
-        router.push(resolvedPath)
-
-        const duration = performance.now() - startTime
-        logger.success("✅ Navigation hoàn tất", {
+        const duration = performance.now() - perfStartTime
+        logger.success("✅ Navigation initiated", {
           duration: `${duration.toFixed(2)}ms`,
           targetUrl: resolvedPath,
         })
       } finally {
+        // Reset flag sau một delay ngắn để tránh double click
+        // Sử dụng một khoảng thời gian dài hơn một chút để đảm bảo RSC bắt đầu load
         setTimeout(() => {
-          isNavigating = false
-        }, 500)
+          if (currentNavigation.targetPath === resolvedPath) {
+            currentNavigation.isNavigating = false
+            currentNavigation.targetPath = null
+          }
+        }, DOUBLE_CLICK_PREVENTION_MS)
       }
     },
     [router, resourceSegment]

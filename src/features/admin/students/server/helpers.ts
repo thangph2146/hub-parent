@@ -11,6 +11,7 @@ import {
 } from "@/features/admin/resources/server"
 import type { ListStudentsInput, ListedStudent, StudentDetailInfo, ListStudentsResult } from "../types"
 import type { StudentRow } from "../types"
+import { PERMISSIONS } from "@/constants/permissions"
 
 type StudentWithRelations = Prisma.StudentGetPayload<{
   include: {
@@ -62,8 +63,11 @@ export const buildWhereClause = (params: ListStudentsInput): Prisma.StudentWhere
     }
   }
 
-  // Filter by userId if not super admin
-  if (!params.isSuperAdmin && params.actorId) {
+  // Filter by userId based on permissions
+  const isViewAll = params.isSuperAdmin || params.permissions?.includes(PERMISSIONS.STUDENTS_VIEW_ALL)
+  const isViewOwn = params.permissions?.includes(PERMISSIONS.STUDENTS_VIEW_OWN)
+
+  if (!isViewAll && (isViewOwn || params.actorId)) {
     where.userId = params.actorId
   }
 
@@ -149,10 +153,11 @@ export type { StudentWithRelations }
 export const validateStudentAndGetCode = async (
   studentId: string,
   actorId: string | undefined,
-  isSuperAdminUser: boolean
+  isSuperAdminUser: boolean,
+  permissions?: string[]
 ) => {
   const { getStudentById } = await import("./queries")
-  const student = await getStudentById(studentId, actorId, isSuperAdminUser)
+  const student = await getStudentById(studentId, actorId, isSuperAdminUser, permissions)
 
   if (!student) {
     return { error: { status: 404, message: "Student not found" } } as const

@@ -26,6 +26,7 @@ export interface ListStudentsInput {
   status?: "active" | "inactive" | "deleted" | "all"
   actorId?: string
   isSuperAdmin?: boolean
+  permissions?: string[]
 }
 
 export interface ListedStudent {

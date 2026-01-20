@@ -4,7 +4,6 @@ import { IconSize, TypographySpanSmall } from "@/components/ui/typography"
 import { Flex } from "@/components/ui/flex"
 
 import { useCallback, useMemo, useState } from "react"
-import { useResourceRouter } from "@/hooks"
 import { Plus, RotateCcw, Trash2, AlertTriangle } from "lucide-react"
 
 import { ConfirmDialog } from "@/components/dialogs"
@@ -39,7 +38,7 @@ export const CategoriesTableClient = ({
   canCreate = false,
   initialData,
 }: CategoriesTableClientProps) => {
-  const { navigate, router } = useResourceNavigation()
+  const { navigate } = useResourceNavigation()
   const queryClient = useQueryClient()
   const { feedback, showFeedback, handleFeedbackOpenChange } = useCategoryFeedback()
   const { deleteConfirm, setDeleteConfirm, handleDeleteConfirm } = useCategoryDeleteConfirm()

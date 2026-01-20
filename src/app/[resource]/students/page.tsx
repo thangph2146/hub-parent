@@ -61,6 +61,7 @@ async function StudentsTableContent() {
       actorId={actorId}
       isSuperAdmin={isSuperAdminUser}
       isParent={isParent}
+      permissions={permissions}
     />
   )
 }

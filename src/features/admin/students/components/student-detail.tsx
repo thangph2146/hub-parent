@@ -11,9 +11,9 @@ export interface StudentDetailProps {
 }
 
 export async function StudentDetail({ studentId, backUrl = "/admin/students" }: StudentDetailProps) {
-  const { actorId, isSuperAdminUser } = await getAuthInfo()
+  const { actorId, isSuperAdminUser, permissions } = await getAuthInfo()
   
-  const student = await getStudentById(studentId, actorId, isSuperAdminUser)
+  const student = await getStudentById(studentId, actorId, isSuperAdminUser, permissions)
 
   if (!student) {
     return <NotFoundMessage resourceName="sinh viên" />
