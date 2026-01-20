@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { useState } from "react"
-import { CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react"
+import { CalendarIcon, ChevronLeft, ChevronRight, ChevronDown } from "lucide-react"
 import { format } from "date-fns"
 import { vi } from "date-fns/locale"
 
@@ -12,13 +12,6 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Input } from "@/components/ui/input"
 import { cn } from "@/utils"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 import { useClientOnly } from "@/hooks"
 import { responsiveTextSizes, fontWeights, lineHeights, iconSizes, textSizes } from "@/constants"
 import { FieldTitle } from "@/components/ui/field"
@@ -27,6 +20,79 @@ const datePickerBodySmall = `${responsiveTextSizes.small} ${fontWeights.normal} 
 const datePickerBodyMedium = `${responsiveTextSizes.medium} ${fontWeights.normal} ${lineHeights.relaxed}`
 const datePickerIconSizeXs = iconSizes.xs
 const datePickerIconSize2xl = iconSizes["2xl"]
+
+interface CustomDropdownProps {
+  value: string
+  options: { label: string; value: string }[]
+  onValueChange: (value: string) => void
+  ariaLabel?: string
+  className?: string
+}
+
+function CustomDropdown({
+  value,
+  options,
+  onValueChange,
+  ariaLabel,
+  className,
+}: CustomDropdownProps) {
+  const [isOpen, setIsOpen] = useState(false)
+  const containerRef = React.useRef<HTMLDivElement>(null)
+
+  React.useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setIsOpen(false)
+      }
+    }
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside)
+    }
+    return () => document.removeEventListener("mousedown", handleClickOutside)
+  }, [isOpen])
+
+  const selectedOption = options.find((opt) => opt.value === value)
+
+  return (
+    <div className={cn("relative", className)} ref={containerRef}>
+      <Button
+        variant="outline"
+        size="sm"
+        className="h-8 w-fit min-w-[60px] justify-between gap-1 px-2 font-normal"
+        onClick={() => setIsOpen(!isOpen)}
+        aria-label={ariaLabel}
+        type="button"
+      >
+        <span className="truncate">{selectedOption?.label || value}</span>
+        <ChevronDown className="h-3 w-3 opacity-50 shrink-0" />
+      </Button>
+      {isOpen && (
+        <div className="absolute left-0 top-full z-[100] mt-1 min-w-[100px] overflow-hidden rounded-md border bg-popover shadow-md animate-in fade-in-0 zoom-in-95">
+          <ScrollArea className="h-[200px]">
+            <div className="flex flex-col p-1">
+              {options.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  className={cn(
+                    "flex w-full items-center rounded-sm px-2 py-1.5 text-left text-xs outline-none transition-colors hover:bg-accent hover:text-accent-foreground",
+                    value === option.value && "bg-accent text-accent-foreground font-medium"
+                  )}
+                  onClick={() => {
+                    onValueChange(option.value)
+                    setIsOpen(false)
+                  }}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          </ScrollArea>
+        </div>
+      )}
+    </div>
+  )
+}
 
 interface DatePickerProps {
   date?: Date
@@ -64,7 +130,7 @@ export function DatePicker({
   // Default autoClose: true when enableTime is false, false when enableTime is true
   const shouldAutoClose = autoClose !== undefined ? autoClose : !enableTime
   // Helper to parse date from various formats
-  const parseDate = (dateValue: any): Date | undefined => {
+  const parseDate = (dateValue: string | Date | undefined | null): Date | undefined => {
     if (!dateValue) return undefined
     if (dateValue instanceof Date) return isNaN(dateValue.getTime()) ? undefined : dateValue
     if (typeof dateValue === "string") {
@@ -88,7 +154,7 @@ export function DatePicker({
   // Pending date for confirmation (only used when enableTime is true)
   const [pendingDate, setPendingDate] = useState<Date | undefined>(initialDate)
   // Track previous date prop to detect external changes
-  const prevDateRef = React.useRef<any>(date)
+  const prevDateRef = React.useRef<string | Date | undefined | null>(date)
 
   // Parse time từ date nếu có
   const getTimeFromDate = (dateValue: Date | undefined) => {
@@ -296,39 +362,25 @@ export function DatePicker({
               <ChevronLeft size={20} strokeWidth={2.5} className="text-current" />
             </Button>
             <div className="flex items-center justify-center gap-2 flex-1">
-              <Select
-                key={`month-${currentMonthIndex}`}
+              <CustomDropdown
                 value={currentMonthIndex.toString()}
                 onValueChange={handleMonthChange}
-              >
-                <SelectTrigger size="sm" className="h-8 justify-between" aria-label="Chọn tháng">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {monthNames.map((monthName, index) => (
-                    <SelectItem key={index} value={index.toString()}>
-                      {monthName}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                options={monthNames.map((monthName, index) => ({
+                  label: monthName,
+                  value: index.toString(),
+                }))}
+                ariaLabel="Chọn tháng"
+              />
               <span className={`${datePickerBodySmall} font-medium text-muted-foreground`}>/</span>
-              <Select
-                key={`year-${currentYear}`}
+              <CustomDropdown
                 value={currentYear.toString()}
                 onValueChange={handleYearChange}
-              >
-                <SelectTrigger size="sm" className="h-8 justify-between" aria-label="Chọn năm">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {years.map((year) => (
-                    <SelectItem key={year} value={year.toString()}>
-                      {year}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                options={years.map((year) => ({
+                  label: year.toString(),
+                  value: year.toString(),
+                }))}
+                ariaLabel="Chọn năm"
+              />
             </div>
             <Button
               variant="ghost"
@@ -440,7 +492,7 @@ export function DatePicker({
       <PopoverContent
         id={datePickerId} 
         className={cn(
-          "w-auto p-0",
+          "w-auto p-0 z-40",
           enableTime && "sm:min-w-[460px]"
         )} 
         align="start"
@@ -459,37 +511,25 @@ export function DatePicker({
               <ChevronLeft size={20} strokeWidth={2.5} className="text-current" />
             </Button>
             <div className="flex items-center justify-center gap-2 flex-1">
-              <Select
+              <CustomDropdown
                 value={currentMonthIndex.toString()}
                 onValueChange={handleMonthChange}
-              >
-                <SelectTrigger size="sm" className="h-8 w-fit justify-between" aria-label="Chọn tháng">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {monthNames.map((monthName, index) => (
-                    <SelectItem key={index} value={index.toString()}>
-                      {monthName}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                options={monthNames.map((monthName, index) => ({
+                  label: monthName,
+                  value: index.toString(),
+                }))}
+                ariaLabel="Chọn tháng"
+              />
               <span className={`${datePickerBodySmall} font-medium text-muted-foreground`}>/</span>
-              <Select
+              <CustomDropdown
                 value={currentYear.toString()}
                 onValueChange={handleYearChange}
-              >
-                <SelectTrigger size="sm" className="h-8 w-fit" aria-label="Chọn năm">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {years.map((year) => (
-                    <SelectItem key={year} value={year.toString()}>
-                      {year}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                options={years.map((year) => ({
+                  label: year.toString(),
+                  value: year.toString(),
+                }))}
+                ariaLabel="Chọn năm"
+              />
             </div>
             <Button
               variant="ghost"
