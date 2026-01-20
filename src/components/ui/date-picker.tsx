@@ -63,16 +63,32 @@ export function DatePicker({
 }: DatePickerProps) {
   // Default autoClose: true when enableTime is false, false when enableTime is true
   const shouldAutoClose = autoClose !== undefined ? autoClose : !enableTime
-  const today = React.useMemo(() => new Date(), [])
+  // Helper to parse date from various formats
+  const parseDate = (dateValue: any): Date | undefined => {
+    if (!dateValue) return undefined
+    if (dateValue instanceof Date) return isNaN(dateValue.getTime()) ? undefined : dateValue
+    if (typeof dateValue === "string") {
+      const parsed = new Date(dateValue)
+      return isNaN(parsed.getTime()) ? undefined : parsed
+    }
+    return undefined
+  }
+
+  const today = React.useMemo(() => {
+    const d = new Date()
+    d.setHours(0, 0, 0, 0)
+    return d
+  }, [])
   const mounted = useClientOnly()
   const datePickerId = React.useId()
-  const [internalDate, setInternalDate] = useState<Date | undefined>(date)
+  const initialDate = React.useMemo(() => parseDate(date), [date])
+  const [internalDate, setInternalDate] = useState<Date | undefined>(initialDate)
   const [internalTime, setInternalTime] = useState<string | null>(selectedTime ?? null)
   const [open, setOpen] = useState(false)
   // Pending date for confirmation (only used when enableTime is true)
-  const [pendingDate, setPendingDate] = useState<Date | undefined>(date)
+  const [pendingDate, setPendingDate] = useState<Date | undefined>(initialDate)
   // Track previous date prop to detect external changes
-  const prevDateRef = React.useRef<Date | undefined>(date)
+  const prevDateRef = React.useRef<any>(date)
 
   // Parse time từ date nếu có
   const getTimeFromDate = (dateValue: Date | undefined) => {
@@ -84,7 +100,7 @@ export function DatePicker({
     }
   }
 
-  const [timeInputs, setTimeInputs] = useState(getTimeFromDate(date))
+  const [timeInputs, setTimeInputs] = useState(getTimeFromDate(initialDate))
 
   // Sync internal state with external prop only when popover is closed
   // This prevents losing user selection when they're still interacting
@@ -92,19 +108,21 @@ export function DatePicker({
     // Only sync when popover is closed (user finished interaction)
     // This allows user to change selection without losing it
     if (!open) {
-      const dateChanged = prevDateRef.current?.getTime() !== date?.getTime()
+      const dateChanged = prevDateRef.current !== date
       if (dateChanged) {
-        setInternalDate(date)
-        setPendingDate(date)
-        if (date && enableTime) {
-          setTimeInputs(getTimeFromDate(date))
+        const parsedDate = parseDate(date)
+        setInternalDate(parsedDate)
+        setPendingDate(parsedDate)
+        if (parsedDate && enableTime) {
+          setTimeInputs(getTimeFromDate(parsedDate))
         }
         prevDateRef.current = date
       }
     }
   }, [date, enableTime, open])
 
-  const currentDate = date !== undefined ? date : internalDate
+  // Use internalDate during interaction, otherwise use parsed date prop
+  const currentDate = open ? internalDate : (parseDate(date) || internalDate)
 
   const combineDateAndTime = (selectedDate: Date | undefined, hour: number, minute: number, second: number): Date | undefined => {
     if (!selectedDate) return undefined
@@ -255,6 +273,14 @@ export function DatePicker({
   }
 
   if (showTimeSlots && timeSlots) {
+    if (!mounted) {
+      return (
+        <div className={cn("rounded-lg border border-border h-[400px] flex items-center justify-center", className)}>
+          <div className="animate-pulse bg-muted rounded w-full h-full" />
+        </div>
+      )
+    }
+
     return (
       <div className={cn("rounded-lg border border-border", className)}>
         <div className="flex flex-col">
@@ -341,9 +367,6 @@ export function DatePicker({
                   }
                 : undefined
             }
-            modifiersClassNames={{
-              hasItems: "*:after:pointer-events-none *:after:absolute *:after:bottom-1 *:after:start-1/2 *:after:z-10 *:after:size-[3px] *:after:-translate-x-1/2 *:after:rounded-full *:after:bg-secondary *:after:transition-colors [&[data-selected]:not(.range-middle)>*]:after:bg-secondary-foreground",
-            }}
           />
           <div className="relative w-full max-sm:h-48 sm:w-40">
             <div className="absolute inset-0 border-border py-4 max-sm:border-t sm:border-s">
@@ -418,7 +441,7 @@ export function DatePicker({
         id={datePickerId} 
         className={cn(
           "w-auto p-0",
-          enableTime && "min-w-[280px]"
+          enableTime && "sm:min-w-[460px]"
         )} 
         align="start"
         sideOffset={4}
@@ -478,119 +501,125 @@ export function DatePicker({
               <ChevronRight size={20} strokeWidth={2.5} className="text-current" />
             </Button>
           </div>
-          <Calendar
-            mode="single"
-            selected={currentDate}
-            onSelect={handleDateSelect}
-            month={displayMonth}
-            onMonthChange={setDisplayMonth}
-            initialFocus
-            locale={vi}
-            formatters={{
-              formatMonthCaption,
-            }}
-            classNames={{
-              month_caption: "hidden", // Hide default caption vì chúng ta sẽ dùng custom dropdown
-              nav: "hidden", // Hide default navigation buttons vì chúng ta đã thêm vào Custom Month/Year Selector
-            }}
-            modifiers={
-              datesWithItems && datesWithItems.length > 0
-                ? {
-                    hasItems: datesWithItems.map((dateStr: string) => {
-                      const [year, month, day] = dateStr.split("-").map(Number)
-                      return new Date(year, month - 1, day)
-                    }),
-                  }
-                : undefined
-            }
-            modifiersClassNames={{
-              hasItems: "*:after:pointer-events-none *:after:absolute *:after:bottom-1 *:after:start-1/2 *:after:z-10 *:after:size-[3px] *:after:-translate-x-1/2 *:after:rounded-full *:after:bg-secondary *:after:transition-colors [&[data-selected]:not(.range-middle)>*]:after:bg-secondary-foreground",
-            }}
-          />
-          {enableTime && (
-            <div className="border-t bg-muted/30">
-              <div className="px-4 py-3 space-y-2.5">
-                <FieldTitle>Thời gian</FieldTitle>
-                <div className="flex items-end gap-2 justify-center">
-                  <div className="flex flex-col items-center gap-1.5">
-                    <label htmlFor="time-hour" className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
-                      Giờ
-                    </label>
-                    <Input
-                      id="time-hour"
-                      type="number"
-                      min={0}
-                      max={23}
-                      value={timeInputs.hour.toString().padStart(2, "0")}
-                      onChange={(e) => {
-                        const val = e.target.value === "" ? 0 : parseInt(e.target.value) || 0
-                        handleTimeInputChange("hour", val)
-                      }}
-                      onBlur={(e) => {
-                        const val = Math.max(0, Math.min(23, parseInt(e.target.value) || 0))
-                        handleTimeInputChange("hour", val)
-                      }}
-                      className={`h-10 w-16 text-center ${datePickerBodyMedium} font-semibold`}
-                      placeholder="00"
-                      disabled={disabled}
-                    />
-                  </div>
-                  <span className={`${textSizes.xl} font-bold text-muted-foreground pb-1.5 leading-none`}>:</span>
-                  <div className="flex flex-col items-center gap-1.5">
-                    <label htmlFor="time-minute" className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
-                      Phút
-                    </label>
-                    <Input
-                      id="time-minute"
-                      type="number"
-                      min={0}
-                      max={59}
-                      value={timeInputs.minute.toString().padStart(2, "0")}
-                      onChange={(e) => {
-                        const val = e.target.value === "" ? 0 : parseInt(e.target.value) || 0
-                        handleTimeInputChange("minute", val)
-                      }}
-                      onBlur={(e) => {
-                        const val = Math.max(0, Math.min(59, parseInt(e.target.value) || 0))
-                        handleTimeInputChange("minute", val)
-                      }}
-                      className={`h-10 w-16 text-center ${datePickerBodyMedium} font-semibold`}
-                      placeholder="00"
-                      disabled={disabled}
-                    />
-                  </div>
-                  {showSeconds && (
-                    <>
-                      <span className={`${textSizes.xl} font-bold text-muted-foreground pb-1.5 leading-none`}>:</span>
+          
+          <div className="flex max-sm:flex-col sm:flex-row">
+            <Calendar
+              mode="single"
+              selected={currentDate}
+              onSelect={handleDateSelect}
+              month={displayMonth}
+              onMonthChange={setDisplayMonth}
+              initialFocus
+              locale={vi}
+              formatters={{
+                formatMonthCaption,
+              }}
+              classNames={{
+                month_caption: "hidden", // Hide default caption vì chúng ta sẽ dùng custom dropdown
+                nav: "hidden", // Hide default navigation buttons vì chúng ta đã thêm vào Custom Month/Year Selector
+              }}
+              modifiers={
+                datesWithItems && datesWithItems.length > 0
+                  ? {
+                      hasItems: datesWithItems.map((dateStr: string) => {
+                        const [year, month, day] = dateStr.split("-").map(Number)
+                        return new Date(year, month - 1, day)
+                      }),
+                    }
+                  : undefined
+              }
+              modifiersClassNames={{
+                hasItems: "*:after:pointer-events-none *:after:absolute *:after:bottom-1 *:after:start-1/2 *:after:z-10 *:after:size-[3px] *:after:-translate-x-1/2 *:after:rounded-full *:after:bg-secondary *:after:transition-colors [&[data-selected]:not(.range-middle)>*]:after:bg-secondary-foreground",
+              }}
+              className="p-3"
+            />
+            {enableTime && (
+              <div className="max-sm:border-t sm:border-s bg-muted/30 flex items-center justify-center min-w-[180px]">
+                <div className="px-4 py-3 space-y-3">
+                  <FieldTitle className="text-center">Thời gian</FieldTitle>
+                  <div className="flex flex-col items-center gap-4">
+                    <div className="flex items-end gap-2 justify-center">
                       <div className="flex flex-col items-center gap-1.5">
-                        <label htmlFor="time-second" className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
-                          Giây
+                        <label htmlFor="time-hour" className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
+                          Giờ
                         </label>
                         <Input
-                          id="time-second"
+                          id="time-hour"
                           type="number"
                           min={0}
-                          max={59}
-                          value={timeInputs.second.toString().padStart(2, "0")}
+                          max={23}
+                          value={timeInputs.hour.toString().padStart(2, "0")}
                           onChange={(e) => {
                             const val = e.target.value === "" ? 0 : parseInt(e.target.value) || 0
-                            handleTimeInputChange("second", val)
+                            handleTimeInputChange("hour", val)
                           }}
                           onBlur={(e) => {
-                            const val = Math.max(0, Math.min(59, parseInt(e.target.value) || 0))
-                            handleTimeInputChange("second", val)
+                            const val = Math.max(0, Math.min(23, parseInt(e.target.value) || 0))
+                            handleTimeInputChange("hour", val)
                           }}
                           className={`h-10 w-16 text-center ${datePickerBodyMedium} font-semibold`}
                           placeholder="00"
                           disabled={disabled}
                         />
                       </div>
-                    </>
-                  )}
+                      <span className={`${textSizes.xl} font-bold text-muted-foreground pb-1.5 leading-none`}>:</span>
+                      <div className="flex flex-col items-center gap-1.5">
+                        <label htmlFor="time-minute" className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
+                          Phút
+                        </label>
+                        <Input
+                          id="time-minute"
+                          type="number"
+                          min={0}
+                          max={59}
+                          value={timeInputs.minute.toString().padStart(2, "0")}
+                          onChange={(e) => {
+                            const val = e.target.value === "" ? 0 : parseInt(e.target.value) || 0
+                            handleTimeInputChange("minute", val)
+                          }}
+                          onBlur={(e) => {
+                            const val = Math.max(0, Math.min(59, parseInt(e.target.value) || 0))
+                            handleTimeInputChange("minute", val)
+                          }}
+                          className={`h-10 w-16 text-center ${datePickerBodyMedium} font-semibold`}
+                          placeholder="00"
+                          disabled={disabled}
+                        />
+                      </div>
+                    </div>
+                    {showSeconds && (
+                      <div className="flex flex-col items-center gap-1.5">
+                        <label htmlFor="time-second" className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
+                          Giây
+                        </label>
+                        <div className="flex items-center gap-2">
+                          <span className={`${textSizes.xl} font-bold text-muted-foreground leading-none`}>:</span>
+                          <Input
+                            id="time-second"
+                            type="number"
+                            min={0}
+                            max={59}
+                            value={timeInputs.second.toString().padStart(2, "0")}
+                            onChange={(e) => {
+                              const val = e.target.value === "" ? 0 : parseInt(e.target.value) || 0
+                              handleTimeInputChange("second", val)
+                            }}
+                            onBlur={(e) => {
+                              const val = Math.max(0, Math.min(59, parseInt(e.target.value) || 0))
+                              handleTimeInputChange("second", val)
+                            }}
+                            className={`h-10 w-16 text-center ${datePickerBodyMedium} font-semibold`}
+                            placeholder="00"
+                            disabled={disabled}
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
           <div className="border-t p-2 flex gap-2">
             {hasValue && (
               <Button
