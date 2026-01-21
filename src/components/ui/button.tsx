@@ -2,7 +2,7 @@ import { Slot } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
 import * as React from "react";
 
-import { cn } from "@/utils";
+import { cn } from "@/utils/index";
 import { iconSizes, responsiveTextSizes, fontWeights, lineHeights } from "@/constants";
 
 const buttonBodySmall = `${responsiveTextSizes.small} ${fontWeights.normal} ${lineHeights.relaxed}`

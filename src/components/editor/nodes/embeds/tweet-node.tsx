@@ -61,8 +61,8 @@ function TweetComponent({
 
   const createTweet = useCallback(async () => {
     try {
-      // @ts-expect-error Twitter is attached to the window.
-      await window.twttr.widgets.createTweet(tweetID, containerRef.current)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await (window as any).twttr.widgets.createTweet(tweetID, containerRef.current)
 
       setIsTweetLoading(false)
       isTwitterScriptLoading = false

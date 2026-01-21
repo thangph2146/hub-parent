@@ -177,8 +177,6 @@ export const usePostColumns = ({
         filter: {
           type: "date-range",
           placeholder: "Chọn khoảng thời gian",
-          fromLabel: "Từ ngày",
-          toLabel: "Đến ngày",
           applyLabel: "Áp dụng",
           clearLabel: "Xóa",
           datesApiRoute: "/admin/posts/dates-with-posts",

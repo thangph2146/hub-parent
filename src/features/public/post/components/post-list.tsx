@@ -46,13 +46,19 @@ export const PostList = ({ posts, currentPage, totalPages }: PostListProps) => {
   return (
     <>
       <motion.div
+        key={`${currentPage}-${posts.map(p => p.id).join('-')}`}
         variants={container}
         initial="hidden"
         animate="show"
       >
         <Grid cols="responsive-3" gap={8} className="pb-8">
           {posts.map((post, index) => (
-            <motion.div key={post.id} variants={item} className="h-full">
+            <motion.div 
+              key={post.id} 
+              variants={item} 
+              className="h-full"
+              layout
+            >
               <PostCard
                 post={post}
                 priority={index < 3}

@@ -112,8 +112,7 @@ export const HighchartsPieChart = ({ categoryData, totalPosts }: HighchartsPieCh
           type: "pie",
           name: "Tỷ lệ",
           data: highchartsData,
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } as any,
+        } as Highcharts.SeriesPieOptions,
       ],
       credits: {
         enabled: false,
