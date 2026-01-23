@@ -1,334 +1,274 @@
 "use client"
 
-import { useMemo, useState, useEffect } from "react"
-import { Calendar, X } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { DatePicker } from "@/components/ui/date-picker"
-import { cn } from "@/utils"
-import { IconSize } from "@/components/ui/typography"
-import { Flex } from "@/components/ui/flex"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import * as React from "react"
 import { format } from "date-fns"
+import { CalendarIcon } from "lucide-react"
+import { type DateRange } from "react-day-picker"
 import { vi } from "date-fns/locale"
-import { logger } from "@/utils"
-import { Field, FieldLabel, FieldContent } from "@/components/ui/field"
+import { ChevronLeft, ChevronRight } from "lucide-react"
+
+import { cn } from "@/utils"
+import { Button } from "@/components/ui/button"
+import { Calendar } from "@/components/ui/calendar"
+import { Field, FieldLabel } from "@/components/ui/field"
+import { DropdownItem } from "@/components/ui/dropdown-item"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
 
 export interface DateRangePickerProps {
   dateFrom?: Date
   dateTo?: Date
-  onDateFromChange?: (date: Date | undefined) => void
-  onDateToChange?: (date: Date | undefined) => void
   onApply?: (dateFrom: Date | undefined, dateTo: Date | undefined) => void
   onClear?: () => void
   placeholder?: string
-  fromLabel?: string
-  toLabel?: string
+  label?: string
   applyLabel?: string
   clearLabel?: string
   className?: string
   align?: "start" | "center" | "end"
   variant?: "default" | "outline"
-  datesWithItems?: string[] // Array of date strings in format "yyyy-MM-dd" to highlight
+  datesWithItems?: string[]
 }
 
-export const DateRangePicker = ({
-  dateFrom: controlledDateFrom,
-  dateTo: controlledDateTo,
-  onDateFromChange,
-  onDateToChange,
+export function DateRangePicker({
+  dateFrom,
+  dateTo,
   onApply,
   onClear,
-  placeholder = "Chọn khoảng thời gian",
-  fromLabel = "Từ ngày",
-  toLabel = "Đến ngày",
+  placeholder = "Pick a date",
+  label,
   applyLabel = "Áp dụng",
   clearLabel = "Xóa",
   className,
   align = "start",
   variant = "outline",
   datesWithItems,
-}: DateRangePickerProps) => {
-  // Maintain internal state for user interactions (always update on user input)
-  const [internalDateFrom, setInternalDateFrom] = useState<Date | undefined>(
-    controlledDateFrom
-  )
-  const [internalDateTo, setInternalDateTo] = useState<Date | undefined>(
-    controlledDateTo
-  )
-  const [open, setOpen] = useState(false)
-  // Track if user has interacted to prioritize internal state
-  const [hasInteracted, setHasInteracted] = useState(false)
-  // Track screen size for responsive layout
-  const [isSmallScreen, setIsSmallScreen] = useState(
-    typeof window !== "undefined" ? window.innerWidth > 640 : false
-  )
+}: DateRangePickerProps) {
+  const [date, setDate] = React.useState<DateRange | undefined>({
+    from: dateFrom,
+    to: dateTo,
+  })
+  const [isOpen, setIsOpen] = React.useState(false)
 
-  // Handle window resize for responsive layout
-  useEffect(() => {
-    const handleResize = () => {
-      setIsSmallScreen(window.innerWidth > 640)
+  // State for month/year navigation
+  const [month, setMonth] = React.useState<Date>(() => dateFrom || new Date())
+
+  // Sync with props
+  React.useEffect(() => {
+    const newDate = { from: dateFrom, to: dateTo }
+    setDate(newDate)
+    if (dateFrom) {
+      setMonth(dateFrom)
     }
-
-    if (typeof window !== "undefined") {
-      handleResize() // Set initial value
-      window.addEventListener("resize", handleResize)
-      return () => {
-        window.removeEventListener("resize", handleResize)
-      }
-    }
-  }, [])
-
-  // Derive current values: prioritize internal state if user has interacted, otherwise use controlled props
-  const dateFrom = useMemo(() => {
-    if (hasInteracted) {
-      return internalDateFrom
-    }
-    return controlledDateFrom !== undefined ? controlledDateFrom : internalDateFrom
-  }, [controlledDateFrom, internalDateFrom, hasInteracted])
-  
-  const dateTo = useMemo(() => {
-    if (hasInteracted) {
-      return internalDateTo
-    }
-    return controlledDateTo !== undefined ? controlledDateTo : internalDateTo
-  }, [controlledDateTo, internalDateTo, hasInteracted])
-
-  const hasActiveFilter = dateFrom || dateTo
-
-  const handleDateFromChange = (date: Date | undefined) => {
-    // Always update internal state for user interactions
-    logger.debug("DateRangePicker: Chọn ngày bắt đầu", {
-      action: "date_from_selected",
-      date: date ? format(date, "dd/MM/yyyy", { locale: vi }) : undefined,
-      timestamp: date?.toISOString(),
-      previousDate: internalDateFrom ? format(internalDateFrom, "dd/MM/yyyy", { locale: vi }) : undefined,
-    })
-    setInternalDateFrom(date)
-    setHasInteracted(true)
-    onDateFromChange?.(date)
-  }
-
-  const handleDateToChange = (date: Date | undefined) => {
-    // Always update internal state for user interactions
-    logger.debug("DateRangePicker: Chọn ngày kết thúc", {
-      action: "date_to_selected",
-      date: date ? format(date, "dd/MM/yyyy", { locale: vi }) : undefined,
-      timestamp: date?.toISOString(),
-      previousDate: internalDateTo ? format(internalDateTo, "dd/MM/yyyy", { locale: vi }) : undefined,
-    })
-    setInternalDateTo(date)
-    setHasInteracted(true)
-    onDateToChange?.(date)
-  }
+  }, [dateFrom, dateTo])
 
   const handleApply = () => {
-    // Always use internal state when user has interacted (internal state reflects user's current selection)
-    // Only fall back to controlled props if internal state is undefined
-    const finalDateFrom = internalDateFrom !== undefined ? internalDateFrom : controlledDateFrom
-    const finalDateTo = internalDateTo !== undefined ? internalDateTo : controlledDateTo
-    
-    logger.info("DateRangePicker: Áp dụng khoảng thời gian", {
-      action: "date_range_applied",
-      dateFrom: finalDateFrom ? format(finalDateFrom, "dd/MM/yyyy", { locale: vi }) : undefined,
-      dateTo: finalDateTo ? format(finalDateTo, "dd/MM/yyyy", { locale: vi }) : undefined,
-      dateFromTimestamp: finalDateFrom?.toISOString(),
-      dateToTimestamp: finalDateTo?.toISOString(),
-      hasInteracted,
-      usedInternalState: {
-        from: internalDateFrom !== undefined,
-        to: internalDateTo !== undefined,
-      },
-    })
-    
-    onApply?.(finalDateFrom, finalDateTo)
-    setHasInteracted(false) // Reset interaction flag after apply
-    setOpen(false)
+    onApply?.(date?.from, date?.to)
+    setIsOpen(false)
   }
 
   const handleClear = () => {
-    logger.info("DateRangePicker: Xóa khoảng thời gian", {
-      action: "date_range_cleared",
-      previousDateFrom: internalDateFrom ? format(internalDateFrom, "dd/MM/yyyy", { locale: vi }) : undefined,
-      previousDateTo: internalDateTo ? format(internalDateTo, "dd/MM/yyyy", { locale: vi }) : undefined,
-    })
-    
-    setInternalDateFrom(undefined)
-    setInternalDateTo(undefined)
-    setHasInteracted(false) // Reset interaction flag after clear
-    onDateFromChange?.(undefined)
-    onDateToChange?.(undefined)
+    setDate(undefined)
     onClear?.()
-    setOpen(false)
-  }
-  
-  // Reset interaction flag when popover closes without applying
-  const handleOpenChange = (newOpen: boolean) => {
-    logger.debug("DateRangePicker: Thay đổi trạng thái popover", {
-      action: newOpen ? "popover_opened" : "popover_closed",
-      hasInteracted,
-      controlledDateFrom: controlledDateFrom ? format(controlledDateFrom, "dd/MM/yyyy", { locale: vi }) : undefined,
-      controlledDateTo: controlledDateTo ? format(controlledDateTo, "dd/MM/yyyy", { locale: vi }) : undefined,
-      internalDateFrom: internalDateFrom ? format(internalDateFrom, "dd/MM/yyyy", { locale: vi }) : undefined,
-      internalDateTo: internalDateTo ? format(internalDateTo, "dd/MM/yyyy", { locale: vi }) : undefined,
-    })
-    
-    setOpen(newOpen)
-    if (newOpen) {
-      // When opening, reset interaction flag and sync with controlled props
-      logger.debug("DateRangePicker: Reset và sync với controlled props khi mở", {
-        action: "sync_on_open",
-        controlledDateFrom: controlledDateFrom ? format(controlledDateFrom, "dd/MM/yyyy", { locale: vi }) : undefined,
-        controlledDateTo: controlledDateTo ? format(controlledDateTo, "dd/MM/yyyy", { locale: vi }) : undefined,
-      })
-      setHasInteracted(false)
-      setInternalDateFrom(controlledDateFrom)
-      setInternalDateTo(controlledDateTo)
-    } else if (!hasInteracted) {
-      // Reset to controlled props when closing without interaction
-      logger.debug("DateRangePicker: Reset về controlled props khi đóng (không có interaction)", {
-        action: "reset_on_close",
-        controlledDateFrom: controlledDateFrom ? format(controlledDateFrom, "dd/MM/yyyy", { locale: vi }) : undefined,
-        controlledDateTo: controlledDateTo ? format(controlledDateTo, "dd/MM/yyyy", { locale: vi }) : undefined,
-      })
-      setInternalDateFrom(controlledDateFrom)
-      setInternalDateTo(controlledDateTo)
-    }
+    setIsOpen(false)
   }
 
-  const displayText = useMemo(() => {
-    const isMobile = typeof window !== "undefined" && window.innerWidth < 640;
-    const dateFormat = isMobile ? "dd/MM" : "dd/MM/yyyy";
+  // Month/Year navigation helpers
+  const currentYear = month.getFullYear()
+  const currentMonthIndex = month.getMonth()
+  const years = Array.from({ length: 201 }, (_, i) => 1900 + i) // From 1900 to 2100
+  const monthNames = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"]
 
-    if (dateFrom && dateTo) {
-      return `${format(dateFrom, dateFormat, { locale: vi })} - ${format(dateTo, dateFormat, { locale: vi })}`
-    }
-    if (dateFrom) {
-      return `${isMobile ? "Từ" : "Từ ngày"} ${format(dateFrom, dateFormat, { locale: vi })}`
-    }
-    if (dateTo) {
-      return `${isMobile ? "Đến" : "Đến ngày"} ${format(dateTo, dateFormat, { locale: vi })}`
-    }
-    return isMobile ? "Thời gian" : placeholder
-  }, [dateFrom, dateTo, placeholder])
+  const handleYearChange = (value: string) => {
+    const newDate = new Date(month)
+    newDate.setFullYear(parseInt(value))
+    setMonth(newDate)
+  }
 
-  const buttonVariant = hasActiveFilter ? "default" : variant
+  const handleMonthChange = (value: string) => {
+    const newDate = new Date(month)
+    newDate.setMonth(parseInt(value))
+    setMonth(newDate)
+  }
+
+  const handlePreviousMonth = () => {
+    const newDate = new Date(month)
+    newDate.setMonth(newDate.getMonth() - 1)
+    setMonth(newDate)
+  }
+
+  const handleNextMonth = () => {
+    const newDate = new Date(month)
+    newDate.setMonth(newDate.getMonth() + 1)
+    setMonth(newDate)
+  }
+
+  // Calculate second month values
+  const nextMonth = new Date(month)
+  nextMonth.setMonth(nextMonth.getMonth() + 1)
+  const nextMonthYear = nextMonth.getFullYear()
+  const nextMonthIndex = nextMonth.getMonth()
+
+  const handleNextMonthYearChange = (value: string) => {
+    const newDate = new Date(month)
+    newDate.setFullYear(parseInt(value))
+    // We keep the same relative position, so the second month will have the new year
+    // but its month index remains nextMonthIndex.
+    // However, if we change the second month's year, it's simpler to just 
+    // update the base month's year.
+    setMonth(newDate)
+  }
+
+  const handleNextMonthChange = (value: string) => {
+    const newDate = new Date(month)
+    // If the second month should be 'value', then the first month should be 'value - 1'
+    newDate.setMonth(parseInt(value) - 1)
+    setMonth(newDate)
+  }
 
   return (
-    <Popover open={open} onOpenChange={handleOpenChange}>
-      <PopoverTrigger asChild>
-        <Button 
-          variant={buttonVariant}
-          className={cn(
-            "justify-start text-left font-normal",
-            !hasActiveFilter && "text-muted-foreground",
-            className
-          )}
-        >
-          <Flex align="center" gap={2}>
-            <IconSize size="sm">
-              <Calendar />
-            </IconSize>
-            <span className="truncate">{displayText}</span>
-          </Flex>
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent 
-        className="w-auto p-0 min-w-[280px] sm:min-w-[320px]" 
-        align={align}
-      >
-        <Flex 
-          direction="col"
-          gap={0}
-          width="full"
-        >
-          {/* Date Pickers Section */}
-          <div className="p-4 sm:p-5">
-            <Flex 
-              gap={3}
-              width="full"
-              direction={isSmallScreen ? "row" : "col"}
-            >
-              <Field
-                orientation="vertical"
-                className="flex-1 min-w-0"
-                style={{ 
-                  width: isSmallScreen ? "auto" : "100%",
-                }}
-              >
-                <FieldLabel className="text-sm font-medium mb-2">
-                  {fromLabel}
-                </FieldLabel>
-                <FieldContent>
-                  <DatePicker
-                    date={dateFrom}
-                    onDateChange={handleDateFromChange}
-                    placeholder="Chọn ngày bắt đầu"
-                    className="w-full"
-                    autoClose={false}
-                    datesWithItems={datesWithItems}
-                  />
-                </FieldContent>
-              </Field>
-              <Field
-                orientation="vertical"
-                className="flex-1 min-w-0"
-                style={{ 
-                  width: isSmallScreen ? "auto" : "100%",
-                }}
-              >
-                <FieldLabel className="text-sm font-medium mb-2">
-                  {toLabel}
-                </FieldLabel>
-                <FieldContent>
-                  <DatePicker
-                    date={dateTo}
-                    onDateChange={handleDateToChange}
-                    placeholder="Chọn ngày kết thúc"
-                    className="w-full"
-                    autoClose={false}
-                    datesWithItems={datesWithItems}
-                  />
-                </FieldContent>
-              </Field>
-            </Flex>
-          </div>
-          
-          {/* Action Buttons Section */}
-          <div className="px-4 sm:px-5 py-3 border-t bg-muted/30">
-            <Flex 
-              align="center" 
-              justify="end"
-              gap={2}
-              width="full"
-            >
-              {hasActiveFilter && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleClear}
-                  className="flex-1 sm:flex-initial sm:min-w-[90px]"
-                >
-                  <Flex align="center" gap={1.5}>
-                    <IconSize size="sm">
-                      <X />
-                    </IconSize>
-                    <span>{clearLabel}</span>
-                  </Flex>
-                </Button>
+    <Field className={cn("w-full", className)}>
+      {label && <FieldLabel htmlFor="date-picker-range">{label}</FieldLabel>}
+      <Popover open={isOpen} onOpenChange={setIsOpen}>
+        <PopoverTrigger asChild>
+          <Button
+            id="date-picker-range"
+            variant={variant}
+            className={cn(
+              "w-full justify-start px-2.5 font-normal h-9",
+              !date?.from && "text-muted-foreground"
+            )}
+          >
+            <CalendarIcon className="mr-2 h-4 w-4 shrink-0" />
+            <span className="truncate">
+              {date?.from ? (
+                date.to ? (
+                  <>
+                    {format(date.from, "LLL dd, y", { locale: vi })} -{" "}
+                    {format(date.to, "LLL dd, y", { locale: vi })}
+                  </>
+                ) : (
+                  format(date.from, "LLL dd, y", { locale: vi })
+                )
+              ) : (
+                <span>{placeholder}</span>
               )}
-              <Button
-                size="sm"
-                onClick={handleApply}
-                className="flex-1 sm:flex-initial sm:min-w-[90px]"
-              >
-                {applyLabel}
-              </Button>
-            </Flex>
+            </span>
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-auto p-0" align={align} sideOffset={4}>
+          <div className="flex flex-col">
+            {/* Custom Month/Year Selectors for both months */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x border-b">
+              {/* Left Month Navigation */}
+              <div className="flex items-center justify-between gap-2 px-4 py-3">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7 text-muted-foreground hover:text-accent-foreground"
+                  onClick={handlePreviousMonth}
+                  aria-label="Tháng trước"
+                >
+                  <ChevronLeft size={20} strokeWidth={2.5} />
+                </Button>
+                <div className="flex items-center justify-center gap-2 flex-1">
+                  <DropdownItem
+                    value={currentMonthIndex.toString()}
+                    onValueChange={handleMonthChange}
+                    options={monthNames.map((monthName, index) => ({
+                      label: monthName,
+                      value: index.toString(),
+                    }))}
+                    ariaLabel="Chọn tháng"
+                  />
+                  <span className="text-sm font-medium text-muted-foreground">/</span>
+                  <DropdownItem
+                    value={currentYear.toString()}
+                    onValueChange={handleYearChange}
+                    options={years.map((year) => ({
+                      label: year.toString(),
+                      value: year.toString(),
+                    }))}
+                    ariaLabel="Chọn năm"
+                  />
+                </div>
+                <div className="w-7 sm:hidden" /> {/* Spacer for mobile to center dropdowns */}
+              </div>
+
+              {/* Right Month Navigation */}
+              <div className="flex items-center justify-between gap-2 px-4 py-3">
+                <div className="w-7 sm:hidden" /> {/* Spacer for mobile to center dropdowns */}
+                <div className="flex items-center justify-center gap-2 flex-1">
+                  <DropdownItem
+                    value={nextMonthIndex.toString()}
+                    onValueChange={handleNextMonthChange}
+                    options={monthNames.map((monthName, index) => ({
+                      label: monthName,
+                      value: index.toString(),
+                    }))}
+                    ariaLabel="Chọn tháng"
+                  />
+                  <span className="text-sm font-medium text-muted-foreground">/</span>
+                  <DropdownItem
+                    value={nextMonthYear.toString()}
+                    onValueChange={handleNextMonthYearChange}
+                    options={years.map((year) => ({
+                      label: year.toString(),
+                      value: year.toString(),
+                    }))}
+                    ariaLabel="Chọn năm"
+                  />
+                </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7 text-muted-foreground hover:text-accent-foreground"
+                  onClick={handleNextMonth}
+                  aria-label="Tháng sau"
+                >
+                  <ChevronRight size={20} strokeWidth={2.5} />
+                </Button>
+              </div>
+            </div>
+
+            <Calendar
+              initialFocus
+              mode="range"
+              month={month}
+              onMonthChange={setMonth}
+              selected={date}
+              onSelect={setDate}
+              numberOfMonths={2}
+              locale={vi}
+              classNames={{
+                month_caption: "hidden", // Hide default caption
+                nav: "hidden", // Hide default navigation
+              }}
+              modifiers={
+                datesWithItems && datesWithItems.length > 0
+                  ? {
+                      hasItems: datesWithItems.map((dateStr: string) => {
+                        const [year, month, day] = dateStr.split("-").map(Number)
+                        return new Date(year, month - 1, day)
+                      }),
+                    }
+                  : undefined
+              }
+            />
           </div>
-        </Flex>
-      </PopoverContent>
-    </Popover>
+          <div className="flex items-center justify-end gap-2 border-t p-3">
+            <Button variant="outline" size="sm" onClick={handleClear}>
+              {clearLabel}
+            </Button>
+            <Button size="sm" onClick={handleApply}>
+              {applyLabel}
+            </Button>
+          </div>
+        </PopoverContent>
+      </Popover>
+    </Field>
   )
 }
-
-

@@ -22,7 +22,6 @@ export const ContactClient = ({ }: ContactClientProps) => {
         <TypographyH1>Liên hệ với HUB - Trường Đại học Ngân hàng TP.HCM</TypographyH1>
       </div>
       <div className="relative z-10 container mx-auto">
-        <TypographyH2 className="mb-8 lg:mb-12 text-center">Liên hệ với chúng tôi</TypographyH2>
         <Flex direction="col" gap={6} className="w-full lg:flex-row lg:gap-8 items-stretch">
           {/* Left Side - Contact Information */}
           <Flex direction="col" gap={6} className="w-full lg:w-1/3">

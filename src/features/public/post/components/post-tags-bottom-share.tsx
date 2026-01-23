@@ -14,10 +14,10 @@ export interface PostTagsAndBottomShareProps {
 
 export const PostTagsAndBottomShare = ({ post, postUrl }: PostTagsAndBottomShareProps) => {
   return (
-    <div className="mt-8">
+    <div>
       {/* Tags */}
       {post.tags.length > 0 && (
-        <Flex as="section" direction="row" align="center" justify="start" gap={3} wrap className="py-8 border-t" aria-label="Thẻ bài viết">
+        <Flex as="section" direction="row" align="center" justify="start" gap={3} wrap className="py-10 border-t" aria-label="Thẻ bài viết">
           <Flex align="center" justify="center" className="shrink-0 text-muted-foreground">
             <IconSize size="md">
               <Tag aria-hidden="true" />
@@ -34,7 +34,7 @@ export const PostTagsAndBottomShare = ({ post, postUrl }: PostTagsAndBottomShare
       )}
 
       {/* Bottom Share */}
-      <Flex as="section" direction="col" align="center" gap={4} className="py-12 border-t border-b bg-muted/30 rounded-lg px-6" aria-label="Chia sẻ bài viết">
+      <Flex as="section" direction="col" align="center" gap={4} className="py-10 bg-muted/30 rounded-lg px-6" aria-label="Chia sẻ bài viết">
         <Flex align="center" gap={2}>
           <IconSize size="md" className="text-primary">
             <Share2 aria-hidden="true" />

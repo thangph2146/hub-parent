@@ -66,8 +66,7 @@ export function ContextMenuPlugin(): JSX.Element {
             const item = readClipboardItems[0]
 
             const permission = await navigator.permissions.query({
-              // @ts-expect-error These types are incorrect.
-              name: "clipboard-read",
+              name: "clipboard-read" as PermissionName,
             })
             if (permission.state === "denied") {
               alert("Not allowed to paste from clipboard.")
@@ -93,8 +92,7 @@ export function ContextMenuPlugin(): JSX.Element {
         $onSelect: () => {
           navigator.clipboard.read().then(async function (..._args) {
             const permission = await navigator.permissions.query({
-              // @ts-expect-error These types are incorrect.
-              name: "clipboard-read",
+              name: "clipboard-read" as PermissionName,
             })
 
             if (permission.state === "denied") {

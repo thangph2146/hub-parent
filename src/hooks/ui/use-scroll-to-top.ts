@@ -51,11 +51,9 @@ export const useScrollToTop = () => {
     const searchParamsChanged = prevSearchParamsRef.current !== null && prevSearchParamsRef.current !== currentSearchParams
     
     if (pathnameChanged || searchParamsChanged) {
-      // Double RAF để đảm bảo DOM đã render hoàn toàn
+      // Use single RAF to avoid double frame delay which might conflict with navigation
       requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          scrollAllToTop("smooth")
-        })
+        scrollAllToTop("instant")
       })
     }
     

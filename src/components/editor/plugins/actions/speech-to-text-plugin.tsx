@@ -60,9 +60,11 @@ function SpeechToTextPluginImpl() {
   const [isEnabled, setIsEnabled] = useState<boolean>(false)
   const [isSpeechToText, setIsSpeechToText] = useState<boolean>(false)
   const SpeechRecognition =
-    // @ts-expect-error missing type
-    CAN_USE_DOM && (window.SpeechRecognition || window.webkitSpeechRecognition)
-  const recognition = useRef<typeof SpeechRecognition | null>(null)
+    CAN_USE_DOM &&
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const recognition = useRef<any | null>(null)
   const report = useReport()
 
   useEffect(() => {

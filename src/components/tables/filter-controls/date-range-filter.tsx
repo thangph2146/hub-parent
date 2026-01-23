@@ -73,18 +73,6 @@ export function DateRangeFilter<T extends object = object>({
         }
     }
 
-    const handleDateFromChange = (_date: Date | undefined) => {
-        // Chỉ update internal state trong DateRangePicker, không apply filter
-        // Filter chỉ được apply khi user nhấn "Áp dụng" trong handleApply
-        // Không gọi onChange ở đây để tránh apply filter tự động
-    }
-
-    const handleDateToChange = (_date: Date | undefined) => {
-        // Chỉ update internal state trong DateRangePicker, không apply filter
-        // Filter chỉ được apply khi user nhấn "Áp dụng" trong handleApply
-        // Không gọi onChange ở đây để tránh apply filter tự động
-    }
-
     const handleApply = (from: Date | undefined, to: Date | undefined) => {
         const fromStr = from ? format(from, "yyyy-MM-dd") : ""
         const toStr = to ? format(to, "yyyy-MM-dd") : ""
@@ -101,13 +89,9 @@ export function DateRangeFilter<T extends object = object>({
         <DateRangePicker
             dateFrom={dateFrom}
             dateTo={dateTo}
-            onDateFromChange={handleDateFromChange}
-            onDateToChange={handleDateToChange}
             onApply={handleApply}
             onClear={handleClear}
             placeholder={column.filter.placeholder ?? "Chọn khoảng thời gian"}
-            fromLabel={column.filter.fromLabel ?? "Từ ngày"}
-            toLabel={column.filter.toLabel ?? "Đến ngày"}
             applyLabel={column.filter.applyLabel ?? "Áp dụng"}
             clearLabel={column.filter.clearLabel ?? "Xóa"}
             datesWithItems={datesWithItems}

@@ -20,12 +20,10 @@ export function SubSuperToolbarPlugin() {
 
   const $updateToolbar = (selection: BaseSelection) => {
     if ($isRangeSelection(selection) || $isTableSelection(selection)) {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore - hasFormat accepts format strings that may not be in types
-      setIsSubscript(selection.hasFormat("subscript"))
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore - hasFormat accepts format strings that may not be in types
-      setIsSuperscript(selection.hasFormat("superscript"))
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      setIsSubscript((selection as any).hasFormat("subscript"))
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      setIsSuperscript((selection as any).hasFormat("superscript"))
     }
   }
 

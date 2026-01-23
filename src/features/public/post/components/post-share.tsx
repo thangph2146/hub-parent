@@ -86,7 +86,7 @@ export const PostShare = ({ title, url, variant = "default", compact: compactPro
         </div>
 
         {/* Mobile Sticky - Bottom Bar */}
-        <div className="fixed bottom-0 left-0 right-0 z-50 lg:hidden px-4 pb-4 pt-2 bg-gradient-to-t from-background via-background/95 to-transparent flex justify-center">
+        <div className="fixed bottom-0 left-0 right-0 z-50 lg:hidden px-4 pb-4 pt-2 flex justify-center">
           <div className="bg-background border shadow-md rounded-full py-1.5 px-4 flex items-center gap-3">
             {[
               { id: "facebook", icon: Facebook, color: "text-blue-600" },

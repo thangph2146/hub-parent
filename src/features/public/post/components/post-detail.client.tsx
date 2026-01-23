@@ -142,7 +142,7 @@ export const PostDetailClient = ({ post }: PostDetailClientProps) => {
         </div>
 
         {/* Tags and Bottom Share */}
-        <footer className="mt-8">
+        <footer>
           <PostTagsAndBottomShare post={post} postUrl={postUrl} />
         </footer>
       </Flex>

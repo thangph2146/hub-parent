@@ -62,6 +62,7 @@ export const PostTagNav = ({ tags }: PostTagNavProps) => {
         <Flex direction="col" align="stretch" gap={1}>
           <Link
             href={clearAllTags()}
+            prefetch={false}
             className={cn(
               "group relative px-3 py-2 rounded-md transition-all w-full",
               "hover:bg-accent/50 active:bg-accent",
@@ -89,6 +90,7 @@ export const PostTagNav = ({ tags }: PostTagNavProps) => {
               <Link
                 key={tag.id}
                 href={toggleTag(tag.slug)}
+                prefetch={false}
                 className={cn(
                   "group relative px-3 py-2 rounded-md transition-all w-full",
                   "hover:bg-accent/50 active:bg-accent",

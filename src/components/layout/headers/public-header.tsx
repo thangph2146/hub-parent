@@ -346,15 +346,16 @@ export function PublicHeader() {
           <Link
             href={PUBLIC_ROUTES.home}
             prefetch={false}
-            className="dark:bg-foreground rounded-md p-1"
+            className="flex items-center align-center justify-center dark:bg-foreground rounded-md p-1"
             aria-label="Trang chủ - Trường Đại học Ngân hàng TP.HCM"
           >
             <Logo className="h-8 w-8 sm:h-10 sm:w-10" />
-          </Link>
-          <Flex direction="col" align="start" justify="center">
+            <Flex direction="col" align="start" justify="center">
             <TypographyH6>Trường Đại học Ngân hàng</TypographyH6>
             <TypographyPSmall>Thành Phố Hồ Chí Minh</TypographyPSmall>
           </Flex>
+          </Link>
+          
           <Separator
             orientation="vertical"
             className="h-6 w-px bg-border hidden lg:block"
