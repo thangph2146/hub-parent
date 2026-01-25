@@ -31,6 +31,8 @@ export interface DateRangePickerProps {
   align?: "start" | "center" | "end"
   variant?: "default" | "outline"
   datesWithItems?: string[]
+  isLoading?: boolean
+  disabled?: boolean
 }
 
 export function DateRangePicker({
@@ -46,6 +48,8 @@ export function DateRangePicker({
   align = "start",
   variant = "outline",
   datesWithItems,
+  isLoading,
+  disabled,
 }: DateRangePickerProps) {
   const [date, setDate] = React.useState<DateRange | undefined>({
     from: dateFrom,
@@ -137,9 +141,11 @@ export function DateRangePicker({
           <Button
             id="date-picker-range"
             variant={variant}
+            disabled={disabled || isLoading}
             className={cn(
               "w-full justify-start px-2.5 font-normal h-9",
-              !date?.from && "text-muted-foreground"
+              !date?.from && "text-muted-foreground",
+              isLoading && "opacity-70 cursor-wait"
             )}
           >
             <CalendarIcon className="mr-2 h-4 w-4 shrink-0" />
@@ -260,11 +266,11 @@ export function DateRangePicker({
             />
           </div>
           <div className="flex items-center justify-end gap-2 border-t p-3">
-            <Button variant="outline" size="sm" onClick={handleClear}>
+            <Button variant="outline" size="sm" onClick={handleClear} disabled={isLoading}>
               {clearLabel}
             </Button>
-            <Button size="sm" onClick={handleApply}>
-              {applyLabel}
+            <Button size="sm" onClick={handleApply} disabled={isLoading}>
+              {isLoading ? "Đang xử lý..." : applyLabel}
             </Button>
           </div>
         </PopoverContent>

@@ -1,7 +1,5 @@
 import { PostListSkeleton } from "@/features/public/post/components/post-list"
-import { Grid } from "@/components/ui/grid"
 import { Skeleton } from "@/components/ui/skeleton"
-import { Flex } from "@/components/ui/flex"
 
 export default function Loading() {
   return (

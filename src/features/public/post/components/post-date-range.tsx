@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useEffect, useState } from "react"
+import { useMemo, useEffect, useState, useTransition } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { DateRangePicker } from "@/components/ui/date-range-picker"
 import { Button } from "@/components/ui/button"
@@ -16,6 +16,7 @@ export const PostDateRange = () => {
   const isMounted = useClientOnly()
   const router = useRouter()
   const searchParams = useSearchParams()
+  const [isPending, startTransition] = useTransition()
   const [datesWithItems, setDatesWithItems] = useState<string[]>([])
   
   const dateFromParam = searchParams?.get("dateFrom")
@@ -92,13 +93,22 @@ export const PostDateRange = () => {
     params.delete("page") // Reset to page 1 when changing date range
     
     const newUrl = `/bai-viet?${params.toString()}`
+    
+    // Only navigate if the URL actually changed
+    if (newUrl === `${window.location.pathname}${window.location.search}`) {
+      logger.debug("PostDateRange: URL không thay đổi, bỏ qua điều hướng")
+      return
+    }
+
     logger.debug("PostDateRange: Chuyển hướng với URL mới", {
       action: "navigate_with_date_range",
       url: newUrl,
       params: params.toString(),
     })
     
-    router.push(newUrl)
+    startTransition(() => {
+      router.push(newUrl)
+    })
   }
 
   const handleClear = () => {
@@ -114,13 +124,22 @@ export const PostDateRange = () => {
     params.delete("page")
     
     const newUrl = `/bai-viet?${params.toString()}`
+
+    // Only navigate if the URL actually changed
+    if (newUrl === `${window.location.pathname}${window.location.search}`) {
+      logger.debug("PostDateRange: URL không thay đổi, bỏ qua điều hướng")
+      return
+    }
+
     logger.debug("PostDateRange: Chuyển hướng sau khi xóa", {
       action: "navigate_after_clear",
       url: newUrl,
       params: params.toString(),
     })
     
-    router.push(newUrl)
+    startTransition(() => {
+      router.push(newUrl)
+    })
   }
 
   if (!isMounted) {
@@ -144,6 +163,7 @@ export const PostDateRange = () => {
       placeholder="Chọn khoảng thời gian"
       align="end"
       datesWithItems={datesWithItems}
+      isLoading={isPending}
     />
   )
 }
