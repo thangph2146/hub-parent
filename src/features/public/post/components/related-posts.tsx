@@ -33,7 +33,7 @@ export const RelatedPosts = ({ posts, title = "Bài viết liên quan" }: Relate
         <TypographyH2 id="related-posts-title">{title}</TypographyH2>
       </Flex>
 
-      <Grid cols={3} gap={8}>
+      <Grid cols="responsive-3" gap={8}>
         {posts.map((post) => (
           <PostCard key={post.id} post={post} headingLevel="h3" />
         ))}
