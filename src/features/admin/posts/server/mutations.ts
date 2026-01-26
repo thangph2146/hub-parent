@@ -1,7 +1,7 @@
 "use server";
 
 import type { Prisma } from "@prisma/client";
-import { PERMISSIONS, hasPermission } from "@/permissions";
+import { PERMISSIONS, hasPermission, canPerformAction } from "@/permissions";
 import { prisma } from "@/services/prisma";
 import { mapPostRecord, type PostWithAuthor } from "./helpers";
 import {
@@ -151,7 +151,13 @@ export const updatePost = async (
   const startTime = Date.now();
 
   logActionFlow("posts", "update", "start", { postId, actorId: ctx.actorId });
-  ensurePermission(ctx, PERMISSIONS.POSTS_UPDATE, PERMISSIONS.POSTS_MANAGE);
+
+  // Special check for publish action: if user has POSTS_PUBLISH, allow them to proceed
+  // even if they don't have POSTS_UPDATE. We'll validate the input fields later.
+  const hasPublishPermission = canPerformAction(ctx.permissions, ctx.roles, PERMISSIONS.POSTS_PUBLISH);
+  if (!hasPublishPermission) {
+    ensurePermission(ctx, PERMISSIONS.POSTS_UPDATE, PERMISSIONS.POSTS_MANAGE);
+  }
 
   const validated = updatePostSchema.parse(input);
 
@@ -179,10 +185,28 @@ export const updatePost = async (
     changes.published = { old: existing.published, new: validated.published };
   }
 
-  // Kiểm tra permission: nếu có POSTS_VIEW_ALL thì có thể sửa tất cả bài viết, nếu chỉ có POSTS_VIEW_OWN thì chỉ sửa của mình
-  const hasViewAllPermission = hasPermission(ctx.permissions, PERMISSIONS.POSTS_VIEW_ALL);
-  if (!hasViewAllPermission && existing.authorId !== ctx.actorId) {
-    throw new ForbiddenError("Bạn không có quyền sửa bài viết này");
+  // Kiểm tra permission: nếu có POSTS_VIEW_ALL hoặc POSTS_MANAGE thì có thể sửa tất cả bài viết
+  // Nếu chỉ có POSTS_VIEW_OWN thì chỉ sửa của mình
+  // Nếu có POSTS_PUBLISH và chỉ đang thay đổi trạng thái published thì cho phép
+  const hasViewAllPermission = canPerformAction(ctx.permissions, ctx.roles, PERMISSIONS.POSTS_VIEW_ALL);
+  const hasManagePermission = canPerformAction(ctx.permissions, ctx.roles, PERMISSIONS.POSTS_MANAGE);
+
+  // Check if we are only updating published status
+  // We check input keys instead of validated keys because Zod transforms
+  // might add default values (like empty arrays for categoryIds/tagIds)
+  // that were not actually present in the request.
+  const isPublishingOnly = Object.keys(input).every((key) => 
+    ["published", "publishedAt"].includes(key)
+  );
+
+  if (!hasViewAllPermission && !hasManagePermission && existing.authorId !== ctx.actorId) {
+    // Nếu không phải tác giả, không có quyền xem tất cả, không có quyền quản lý
+    // Thì kiểm tra xem có phải đang publish/unpublish và có quyền publish không
+    if (hasPublishPermission && isPublishingOnly) {
+      // Cho phép publish/unpublish
+    } else {
+      throw new ForbiddenError("Bạn không có quyền sửa bài viết này");
+    }
   }
 
   // Chỉ user có POSTS_VIEW_ALL mới được thay đổi tác giả, user khác không được phép

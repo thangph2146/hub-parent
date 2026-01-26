@@ -27,7 +27,9 @@ export interface PostRow {
   }>
 }
 
-export type PostsTableClientProps = BaseResourceTableClientProps<PostRow>
+export type PostsTableClientProps = BaseResourceTableClientProps<PostRow> & {
+  canPublish?: boolean
+}
 
 // API response structure: { success: true, data: { data: PostRow[], pagination: {...} } }
 export type PostsResponse = ApiResponsePayload<ResourceResponse<PostRow>>

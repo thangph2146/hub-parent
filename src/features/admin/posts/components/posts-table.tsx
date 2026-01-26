@@ -11,9 +11,10 @@ export interface PostsTableProps {
   canRestore?: boolean
   canManage?: boolean
   canCreate?: boolean
+  canPublish?: boolean
 }
 
-export async function PostsTable({ canDelete, canRestore, canManage, canCreate }: PostsTableProps) {
+export async function PostsTable({ canDelete, canRestore, canManage, canCreate, canPublish }: PostsTableProps) {
   // Get session and permissions for filtering
   const session = await requireAuth()
   const permissions = await getPermissions()
@@ -58,6 +59,7 @@ export async function PostsTable({ canDelete, canRestore, canManage, canCreate }
       canRestore={canRestore}
       canManage={canManage}
       canCreate={canCreate}
+      canPublish={canPublish}
       initialData={serializePostsList(postsData)}
     />
   )

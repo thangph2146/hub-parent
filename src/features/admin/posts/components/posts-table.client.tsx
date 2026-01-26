@@ -42,6 +42,7 @@ export const PostsTableClient = ({
   canRestore = false,
   canManage = false,
   canCreate = false,
+  canPublish = false,
   initialData,
 }: PostsTableClientProps) => {
   const router = useResourceRouter()
@@ -50,7 +51,7 @@ export const PostsTableClient = ({
   const { feedback, showFeedback, handleFeedbackOpenChange } = usePostFeedback()
   const { deleteConfirm, setDeleteConfirm, handleDeleteConfirm } = usePostDeleteConfirm()
   const [togglingPosts, setTogglingPosts] = useState<Set<string>>(new Set())
-  const canToggleStatus = canManage
+  const canToggleStatus = canManage || canPublish
 
   const getInvalidateQueryKey = useCallback(() => queryKeys.adminPosts.all(), [])
   const { onRefreshReady, refresh: refreshTable } = useResourceTableRefresh({

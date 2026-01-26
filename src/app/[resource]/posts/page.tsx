@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import { AdminHeader } from "@/components/layout/headers"
-import { PERMISSIONS } from "@/permissions"
+import { PERMISSIONS, hasPermission } from "@/permissions"
+import { getPermissions } from "@/auth/server"
 import { getTablePermissionsAsync } from "@/features/admin/resources/server"
 import { PostsTable } from "@/features/admin/posts/components/posts-table"
 import { TablePageSuspense } from "@/features/admin/resources/components"
@@ -35,12 +36,17 @@ async function PostsTableWithPermissions() {
     create: PERMISSIONS.POSTS_CREATE,
   })
 
+  // Get additional permissions
+  const authPermissions = await getPermissions()
+  const canPublish = hasPermission(authPermissions, PERMISSIONS.POSTS_PUBLISH)
+
   return (
     <PostsTable
       canDelete={permissions.canDelete}
       canRestore={permissions.canRestore}
       canManage={permissions.canManage}
       canCreate={permissions.canCreate}
+      canPublish={canPublish}
     />
   )
 }
