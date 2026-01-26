@@ -43,12 +43,12 @@ export async function generateMetadata({
  * - Header render ngay, form content stream khi ready
  * - UserEdit component sử dụng Promise.all để fetch user và roles song song
  */
-async function UserEditContent({ userId }: { userId: string }) {
+async function UserEditContent({ userId, resourceSegment }: { userId: string; resourceSegment: string }) {
   return (
     <UserEdit
       userId={userId}
       variant="page"
-      backUrl={`/admin/users/${userId}`}
+      backUrl={`/${resourceSegment}/users/${userId}`}
       backLabel="Quay lại chi tiết"
     />
   )
@@ -57,9 +57,9 @@ async function UserEditContent({ userId }: { userId: string }) {
 export default async function EditUserPage({
   params,
 }: {
-  params: Promise<{ id: string }>
+  params: Promise<{ id: string; resource: string }>
 }) {
-  const { id } = await params
+  const { id, resource: resourceSegment } = await params
   
   // Fetch user data (non-cached) để hiển thị tên trong breadcrumb
   // Theo chuẩn Next.js 16: không cache admin data
@@ -73,7 +73,8 @@ export default async function EditUserPage({
       <>
         <AdminHeader
           breadcrumbs={createEditBreadcrumbs({
-            listLabel: "Users",
+            resourceSegment,
+            listLabel: "Người dùng",
             listPath: "/admin/users",
             detailLabel: userName,
             detailPath: `/admin/users/${id}`,
@@ -97,7 +98,8 @@ export default async function EditUserPage({
     <>
       <AdminHeader
         breadcrumbs={createEditBreadcrumbs({
-          listLabel: "Users",
+          resourceSegment,
+          listLabel: "Người dùng",
           listPath: "/admin/users",
           detailLabel: userName,
           detailPath: `/admin/users/${id}`,
@@ -105,7 +107,7 @@ export default async function EditUserPage({
       />
       <div className="flex flex-1 flex-col gap-4 p-4">
         <FormPageSuspense fieldCount={8} sectionCount={2}>
-          <UserEditContent userId={validatedId} />
+          <UserEditContent userId={validatedId} resourceSegment={resourceSegment} />
         </FormPageSuspense>
       </div>
     </>

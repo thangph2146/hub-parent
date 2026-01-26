@@ -49,12 +49,16 @@ interface StudentEditPageProps {
  * - Header render ngay, form content stream khi ready
  * - StudentEdit component sử dụng Promise.all để fetch student, users, và auth info song song
  */
-async function StudentEditContent({ studentId }: { studentId: string }) {
-  return <StudentEdit studentId={studentId} variant="page" backUrl={`/admin/students/${studentId}`} />
+async function StudentEditContent({ studentId, resourceSegment }: { studentId: string; resourceSegment: string }) {
+  return <StudentEdit studentId={studentId} variant="page" backUrl={`/${resourceSegment}/students/${studentId}`} />
 }
 
-export default async function StudentEditPage({ params }: StudentEditPageProps) {
-  const { id } = await params
+export default async function StudentEditPage({
+  params,
+}: {
+  params: Promise<{ id: string; resource: string }>
+}) {
+  const { id, resource: resourceSegment } = await params
   
   // Fetch student data (non-cached) để hiển thị tên trong breadcrumb
   // Theo chuẩn Next.js 16: không cache admin data
@@ -69,6 +73,7 @@ export default async function StudentEditPage({ params }: StudentEditPageProps) 
       <>
         <AdminHeader
           breadcrumbs={createEditBreadcrumbs({
+            resourceSegment,
             listLabel: "sinh viên",
             listPath: "/admin/students",
             detailLabel: studentName,
@@ -93,6 +98,7 @@ export default async function StudentEditPage({ params }: StudentEditPageProps) 
     <>
       <AdminHeader
         breadcrumbs={createEditBreadcrumbs({
+          resourceSegment,
           listLabel: "sinh viên",
           listPath: "/admin/students",
           detailLabel: studentName,
@@ -101,7 +107,7 @@ export default async function StudentEditPage({ params }: StudentEditPageProps) 
       />
       <div className="flex flex-1 flex-col gap-4 p-4">
         <FormPageSuspense fieldCount={8} sectionCount={2}>
-          <StudentEditContent studentId={validatedId} />
+          <StudentEditContent studentId={validatedId} resourceSegment={resourceSegment} />
         </FormPageSuspense>
       </div>
     </>

@@ -22,22 +22,30 @@ export const metadata: Metadata = {
  * Theo Next.js 16 best practices:
  * - Header render ngay, form content stream khi ready
  */
-async function StudentCreateContent() {
-  return <StudentCreate />
+async function StudentCreateContent({ resourceSegment }: { resourceSegment: string }) {
+  return <StudentCreate backUrl={`/${resourceSegment}/students`} />
 }
 
-export default async function StudentCreatePage() {
+export default async function StudentCreatePage({
+  params,
+}: {
+  params: Promise<{ resource: string }>
+}) {
+  const resolvedParams = await params
+  const resourceSegment = resolvedParams.resource
+
   return (
     <>
       <AdminHeader
         breadcrumbs={createCreateBreadcrumbs({
+          resourceSegment,
           listLabel: "sinh viên",
           listPath: "/admin/students",
         })}
       />
       <div className="flex flex-1 flex-col gap-4 p-4">
         <FormPageSuspense fieldCount={8} sectionCount={2}>
-          <StudentCreateContent />
+          <StudentCreateContent resourceSegment={resourceSegment} />
         </FormPageSuspense>
       </div>
     </>

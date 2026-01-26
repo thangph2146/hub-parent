@@ -42,12 +42,12 @@ export async function generateMetadata({
  * Theo Next.js 16 best practices:
  * - Header render ngay, form content stream khi ready
  */
-async function PostEditContent({ postId }: { postId: string }) {
+async function PostEditContent({ postId, resourceSegment }: { postId: string; resourceSegment: string }) {
   return (
     <PostEdit
       postId={postId}
       variant="page"
-      backUrl={`/admin/posts/${postId}`}
+      backUrl={`/${resourceSegment}/posts/${postId}`}
       backLabel="Quay lại chi tiết"
     />
   )
@@ -65,7 +65,7 @@ export default async function EditPostPage({
   // Fetch post data (non-cached) để hiển thị tên trong breadcrumb
   // Theo chuẩn Next.js 16: không cache admin data
   const post = await getPostById(id)
-  const postTitle = truncateBreadcrumbLabel(post?.title || "Chi tiết")
+  const postTitle = truncateBreadcrumbLabel(post?.title || "Chỉnh sửa")
   
   // Validate route ID
   const validatedId = validateRouteId(id, "Bài viết")
@@ -76,9 +76,9 @@ export default async function EditPostPage({
           breadcrumbs={createEditBreadcrumbs({
             resourceSegment,
             listLabel: "Bài viết",
-            listPath: "/admin/posts",
+            listPath: `/${resourceSegment}/posts`,
             detailLabel: postTitle,
-            detailPath: `/admin/posts/${id}`,
+            detailPath: `/${resourceSegment}/posts/${id}`,
           })}
         />
         <div className="flex flex-1 flex-col gap-4 p-4">
@@ -101,14 +101,14 @@ export default async function EditPostPage({
         breadcrumbs={createEditBreadcrumbs({
           resourceSegment,
           listLabel: "Bài viết",
-          listPath: "/admin/posts",
+          listPath: `/${resourceSegment}/posts`,
           detailLabel: postTitle,
-          detailPath: `/admin/posts/${id}`,
+          detailPath: `/${resourceSegment}/posts/${id}`,
         })}
       />
       <div className="flex flex-1 flex-col gap-4 p-4">
-        <FormPageSuspense fieldCount={6} sectionCount={3}>
-          <PostEditContent postId={validatedId} />
+        <FormPageSuspense fieldCount={6} sectionCount={2}>
+          <PostEditContent postId={id} resourceSegment={resourceSegment} />
         </FormPageSuspense>
       </div>
     </>

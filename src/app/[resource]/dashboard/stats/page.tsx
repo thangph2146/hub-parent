@@ -25,11 +25,18 @@ export const metadata: Metadata = {
  * - Sử dụng Suspense để stream data fetching
  * - Fallback hiển thị skeleton trong khi đang fetch data
  */
-export default function Page() {
+export default async function Page({
+  params,
+}: {
+  params: Promise<{ resource: string }>
+}) {
+  const { resource } = await params
+
   return (
     <>
       <AdminHeader
         breadcrumbs={createNestedBreadcrumbs({
+          resourceSegment: resource,
           parentLabel: "Dashboard",
           parentPath: "/admin/dashboard",
           currentLabel: "Thống kê",

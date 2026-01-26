@@ -45,10 +45,22 @@ async function PostsTableWithPermissions() {
   )
 }
 
-export default async function PostsPage() {
+export default async function PostsPage({
+  params,
+}: {
+  params: Promise<{ resource: string }>
+}) {
+  const resolvedParams = await params
+  const resourceSegment = resolvedParams.resource
+
   return (
     <>
-      <AdminHeader breadcrumbs={createListBreadcrumbs({ listLabel: "Bài viết" })} />
+      <AdminHeader
+        breadcrumbs={createListBreadcrumbs({
+          resourceSegment,
+          listLabel: "Bài viết",
+        })}
+      />
       <div className="flex flex-1 flex-col gap-4 p-4">
         <TablePageSuspense columnCount={6} rowCount={10}>
           <PostsTableWithPermissions />

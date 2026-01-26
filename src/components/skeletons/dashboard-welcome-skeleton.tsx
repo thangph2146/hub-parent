@@ -12,7 +12,7 @@ import { Grid } from "@/components/ui/grid"
 
 export function DashboardWelcomeSkeleton() {
   return (
-    <Flex direction="col" flex="1" gap={6} padding="responsive-lg" position="relative" overflow="hidden">
+    <Flex direction="col" flex="1" gap={6} padding="responsive-lg" position="relative" overflow="hidden" fullWidth>
       {/* Background gradient effects */}
       <Flex position="absolute-inset" className="-z-10" overflow="hidden">
         <Flex position="absolute-right-top" className="w-96 h-96 bg-primary/5 rounded-full blur-3xl" />

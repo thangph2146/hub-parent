@@ -42,10 +42,22 @@ async function RolesTableContent() {
   )
 }
 
-export default async function RolesPage() {
+export default async function RolesPage({
+  params,
+}: {
+  params: Promise<{ resource: string }>
+}) {
+  const resolvedParams = await params
+  const resourceSegment = resolvedParams.resource
+
   return (
     <>
-      <AdminHeader breadcrumbs={createListBreadcrumbs({ listLabel: "Vai trò" })} />
+      <AdminHeader
+        breadcrumbs={createListBreadcrumbs({
+          resourceSegment,
+          listLabel: "Vai trò",
+        })}
+      />
       <div className="flex flex-1 flex-col gap-4 p-4">
         <TablePageSuspense columnCount={4} rowCount={10}>
           <RolesTableContent />

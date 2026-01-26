@@ -48,12 +48,16 @@ interface StudentDetailPageProps {
  * Theo Next.js 16 best practices:
  * - Header render ngay, detail content stream khi ready
  */
-async function StudentDetailContent({ studentId }: { studentId: string }) {
-  return <StudentDetail studentId={studentId} backUrl="/admin/students" />
+async function StudentDetailContent({ studentId, resourceSegment }: { studentId: string; resourceSegment: string }) {
+  return <StudentDetail studentId={studentId} backUrl={`/${resourceSegment}/students`} />
 }
 
-export default async function StudentDetailPage({ params }: StudentDetailPageProps) {
-  const { id } = await params
+export default async function StudentDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string; resource: string }>
+}) {
+  const { id, resource: resourceSegment } = await params
   
   // Fetch student data (non-cached) để hiển thị tên trong breadcrumb
   // Theo chuẩn Next.js 16: không cache admin data
@@ -68,6 +72,7 @@ export default async function StudentDetailPage({ params }: StudentDetailPagePro
       <>
         <AdminHeader
           breadcrumbs={createDetailBreadcrumbs({
+            resourceSegment,
             listLabel: "sinh viên",
             listPath: "/admin/students",
             detailLabel: studentName,
@@ -92,6 +97,7 @@ export default async function StudentDetailPage({ params }: StudentDetailPagePro
     <>
       <AdminHeader
         breadcrumbs={createDetailBreadcrumbs({
+          resourceSegment,
           listLabel: "sinh viên",
           listPath: "/admin/students",
           detailLabel: studentName,
@@ -100,7 +106,7 @@ export default async function StudentDetailPage({ params }: StudentDetailPagePro
       />
       <div className="flex flex-1 flex-col gap-4 p-4">
         <FormPageSuspense fieldCount={8} sectionCount={2}>
-          <StudentDetailContent studentId={validatedId} />
+          <StudentDetailContent studentId={validatedId} resourceSegment={resourceSegment} />
         </FormPageSuspense>
       </div>
     </>

@@ -23,22 +23,30 @@ export const metadata: Metadata = {
  * - Header render ngay, form content stream khi ready
  * - UserCreate component fetch roles data bên trong
  */
-async function UserCreateContent() {
-  return <UserCreate backUrl="/admin/users" />
+async function UserCreateContent({ resourceSegment }: { resourceSegment: string }) {
+  return <UserCreate backUrl={`/${resourceSegment}/users`} />
 }
 
-export default async function UserCreatePage() {
+export default async function UserCreatePage({
+  params,
+}: {
+  params: Promise<{ resource: string }>
+}) {
+  const resolvedParams = await params
+  const resourceSegment = resolvedParams.resource
+
   return (
     <>
       <AdminHeader
         breadcrumbs={createCreateBreadcrumbs({
-          listLabel: "Users",
+          resourceSegment,
+          listLabel: "Người dùng",
           listPath: "/admin/users",
         })}
       />
       <div className="flex flex-1 flex-col gap-4 p-4">
         <FormPageSuspense fieldCount={8} sectionCount={2}>
-          <UserCreateContent />
+          <UserCreateContent resourceSegment={resourceSegment} />
         </FormPageSuspense>
       </div>
     </>

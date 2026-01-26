@@ -42,10 +42,22 @@ async function CategoriesTableWithPermissions() {
   )
 }
 
-export default async function CategoriesPage() {
+export default async function CategoriesPage({
+  params,
+}: {
+  params: Promise<{ resource: string }>
+}) {
+  const resolvedParams = await params
+  const resourceSegment = resolvedParams.resource
+
   return (
     <>
-      <AdminHeader breadcrumbs={createListBreadcrumbs({ listLabel: "Danh mục" })} />
+      <AdminHeader
+        breadcrumbs={createListBreadcrumbs({
+          resourceSegment,
+          listLabel: "Danh mục",
+        })}
+      />
       <div className="flex flex-1 flex-col gap-4 p-4">
         <TablePageSuspense columnCount={4} rowCount={10}>
           <CategoriesTableWithPermissions />

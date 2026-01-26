@@ -42,16 +42,16 @@ export async function generateMetadata({
  * Theo Next.js 16 best practices:
  * - Header render ngay, form content stream khi ready
  */
-async function CategoryEditContent({ categoryId }: { categoryId: string }) {
-  return <CategoryEdit categoryId={categoryId} variant="page" backUrl={`/admin/categories/${categoryId}`} />
+async function CategoryEditContent({ categoryId, resourceSegment }: { categoryId: string; resourceSegment: string }) {
+  return <CategoryEdit categoryId={categoryId} variant="page" backUrl={`/${resourceSegment}/categories/${categoryId}`} />
 }
 
 export default async function CategoryEditPage({
   params,
 }: {
-  params: Promise<{ id: string }>
+  params: Promise<{ id: string; resource: string }>
 }) {
-  const { id } = await params
+  const { id, resource: resourceSegment } = await params
   
   // Fetch category data (non-cached) để hiển thị tên trong breadcrumb
   // Theo chuẩn Next.js 16: không cache admin data
@@ -65,6 +65,7 @@ export default async function CategoryEditPage({
       <>
         <AdminHeader
           breadcrumbs={createEditBreadcrumbs({
+            resourceSegment,
             listLabel: "Danh mục",
             listPath: "/admin/categories",
             detailLabel: categoryName,
@@ -89,6 +90,7 @@ export default async function CategoryEditPage({
     <>
       <AdminHeader
         breadcrumbs={createEditBreadcrumbs({
+          resourceSegment,
           listLabel: "Danh mục",
           listPath: "/admin/categories",
           detailLabel: categoryName,
@@ -97,7 +99,7 @@ export default async function CategoryEditPage({
       />
       <div className="flex flex-1 flex-col gap-4 p-4">
         <FormPageSuspense fieldCount={6} sectionCount={1}>
-          <CategoryEditContent categoryId={validatedId} />
+          <CategoryEditContent categoryId={validatedId} resourceSegment={resourceSegment} />
         </FormPageSuspense>
       </div>
     </>

@@ -42,16 +42,16 @@ export async function generateMetadata({
  * Theo Next.js 16 best practices:
  * - Header render ngay, detail content stream khi ready
  */
-async function UserDetailContent({ userId }: { userId: string }) {
-  return <UserDetail userId={userId} backUrl="/admin/users" />
+async function UserDetailContent({ userId, resourceSegment }: { userId: string; resourceSegment: string }) {
+  return <UserDetail userId={userId} backUrl={`/${resourceSegment}/users`} />
 }
 
 export default async function UserDetailPage({
   params,
 }: {
-  params: Promise<{ id: string }>
+  params: Promise<{ id: string; resource: string }>
 }) {
-  const { id } = await params
+  const { id, resource: resourceSegment } = await params
   
   // Fetch user data (non-cached) để hiển thị tên trong breadcrumb
   // Theo chuẩn Next.js 16: không cache admin data
@@ -65,7 +65,8 @@ export default async function UserDetailPage({
       <>
         <AdminHeader
           breadcrumbs={createDetailBreadcrumbs({
-            listLabel: "Users",
+            resourceSegment,
+            listLabel: "Người dùng",
             listPath: "/admin/users",
             detailLabel: userName,
             detailPath: `/admin/users/${id}`,
@@ -89,7 +90,8 @@ export default async function UserDetailPage({
     <>
       <AdminHeader
         breadcrumbs={createDetailBreadcrumbs({
-          listLabel: "Users",
+          resourceSegment,
+          listLabel: "Người dùng",
           listPath: "/admin/users",
           detailLabel: userName,
           detailPath: `/admin/users/${id}`,
@@ -97,7 +99,7 @@ export default async function UserDetailPage({
       />
       <div className="flex flex-1 flex-col gap-4 p-4">
         <FormPageSuspense fieldCount={8} sectionCount={2}>
-          <UserDetailContent userId={validatedId} />
+          <UserDetailContent userId={validatedId} resourceSegment={resourceSegment} />
         </FormPageSuspense>
       </div>
     </>

@@ -42,16 +42,16 @@ export async function generateMetadata({
  * Theo Next.js 16 best practices:
  * - Header render ngay, form content stream khi ready
  */
-async function RoleEditContent({ roleId }: { roleId: string }) {
-  return <RoleEdit roleId={roleId} variant="page" backUrl={`/admin/roles/${roleId}`} />
+async function RoleEditContent({ roleId, resourceSegment }: { roleId: string; resourceSegment: string }) {
+  return <RoleEdit roleId={roleId} variant="page" backUrl={`/${resourceSegment}/roles/${roleId}`} />
 }
 
 export default async function RoleEditPage({
   params,
 }: {
-  params: Promise<{ id: string }>
+  params: Promise<{ id: string; resource: string }>
 }) {
-  const { id } = await params
+  const { id, resource: resourceSegment } = await params
   
   // Fetch role data (non-cached) để hiển thị tên trong breadcrumb
   // Theo chuẩn Next.js 16: không cache admin data
@@ -65,10 +65,11 @@ export default async function RoleEditPage({
       <>
         <AdminHeader
           breadcrumbs={createEditBreadcrumbs({
+            resourceSegment,
             listLabel: "Vai trò",
-            listPath: "/admin/roles",
+            listPath: `/${resourceSegment}/roles`,
             detailLabel: roleName,
-            detailPath: `/admin/roles/${id}`,
+            detailPath: `/${resourceSegment}/roles/${id}`,
           })}
         />
         <div className="flex flex-1 flex-col gap-4 p-4">
@@ -89,15 +90,16 @@ export default async function RoleEditPage({
     <>
       <AdminHeader
         breadcrumbs={createEditBreadcrumbs({
+          resourceSegment,
           listLabel: "Vai trò",
-          listPath: "/admin/roles",
+          listPath: `/${resourceSegment}/roles`,
           detailLabel: roleName,
-          detailPath: `/admin/roles/${id}`,
+          detailPath: `/${resourceSegment}/roles/${id}`,
         })}
       />
       <div className="flex flex-1 flex-col gap-4 p-4">
         <FormPageSuspense fieldCount={6} sectionCount={2}>
-          <RoleEditContent roleId={validatedId} />
+          <RoleEditContent roleId={validatedId} resourceSegment={resourceSegment} />
         </FormPageSuspense>
       </div>
     </>

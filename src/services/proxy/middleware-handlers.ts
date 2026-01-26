@@ -99,7 +99,13 @@ export const handleIPWhitelist = (
   pathname: string,
   allowedIPs: string[]
 ): NextResponse | null => {
-  if (pathname.startsWith("/admin") || pathname.startsWith("/api/admin")) {
+  const isAdminRoute = 
+    pathname.startsWith("/admin") || 
+    pathname.startsWith("/super_admin") ||
+    pathname.startsWith("/api/admin") ||
+    pathname.startsWith("/api/super_admin")
+
+  if (isAdminRoute) {
     const clientIP = getClientIP(request)
     if (!checkIPWhitelist(clientIP, allowedIPs)) {
       return NextResponse.json(

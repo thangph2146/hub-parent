@@ -51,10 +51,22 @@ async function UsersTableWithPermissions() {
   )
 }
 
-export default async function UsersPage() {
+export default async function UsersPage({
+  params,
+}: {
+  params: Promise<{ resource: string }>
+}) {
+  const resolvedParams = await params
+  const resourceSegment = resolvedParams.resource
+
   return (
     <>
-      <AdminHeader breadcrumbs={createListBreadcrumbs({ listLabel: "Users" })} />
+      <AdminHeader
+        breadcrumbs={createListBreadcrumbs({
+          resourceSegment,
+          listLabel: "Người dùng",
+        })}
+      />
       <div className="flex flex-1 flex-col gap-4 p-4">
         <TablePageSuspense columnCount={6} rowCount={10}>
           <UsersTableWithPermissions />

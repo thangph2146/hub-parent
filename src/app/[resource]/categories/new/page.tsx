@@ -22,22 +22,30 @@ export const metadata: Metadata = {
  * Theo Next.js 16 best practices:
  * - Header render ngay, form content stream khi ready
  */
-async function CategoryCreateContent() {
-  return <CategoryCreate />
+async function CategoryCreateContent({ resourceSegment }: { resourceSegment: string }) {
+  return <CategoryCreate backUrl={`/${resourceSegment}/categories`} />
 }
 
-export default async function CategoryCreatePage() {
+export default async function CategoryCreatePage({
+  params,
+}: {
+  params: Promise<{ resource: string }>
+}) {
+  const resolvedParams = await params
+  const resourceSegment = resolvedParams.resource
+
   return (
     <>
       <AdminHeader
         breadcrumbs={createCreateBreadcrumbs({
+          resourceSegment,
           listLabel: "Danh mục",
           listPath: "/admin/categories",
         })}
       />
       <div className="flex flex-1 flex-col gap-4 p-4">
         <FormPageSuspense fieldCount={6} sectionCount={1}>
-          <CategoryCreateContent />
+          <CategoryCreateContent resourceSegment={resourceSegment} />
         </FormPageSuspense>
       </div>
     </>

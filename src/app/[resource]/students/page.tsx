@@ -66,10 +66,22 @@ async function StudentsTableContent() {
   )
 }
 
-export default async function StudentsPage() {
+export default async function StudentsPage({
+  params,
+}: {
+  params: Promise<{ resource: string }>
+}) {
+  const resolvedParams = await params
+  const resourceSegment = resolvedParams.resource
+
   return (
     <>
-      <AdminHeader breadcrumbs={createListBreadcrumbs({ listLabel: "sinh viên" })} />
+      <AdminHeader
+        breadcrumbs={createListBreadcrumbs({
+          resourceSegment,
+          listLabel: "sinh viên",
+        })}
+      />
       <div className="flex flex-1 flex-col gap-4 p-4">
         <TablePageSuspense columnCount={5} rowCount={10}>
           <StudentsTableContent />

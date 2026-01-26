@@ -42,21 +42,20 @@ export async function generateMetadata({
  * Theo Next.js 16 best practices:
  * - Header render ngay, detail content stream khi ready
  */
-async function RoleDetailContent({ roleId }: { roleId: string }) {
-  return <RoleDetail roleId={roleId} backUrl="/admin/roles" />
+async function RoleDetailContent({ roleId, resourceSegment }: { roleId: string; resourceSegment: string }) {
+  return <RoleDetail roleId={roleId} backUrl={`/${resourceSegment}/roles`} />
 }
 
 export default async function RoleDetailPage({
   params,
 }: {
-  params: Promise<{ id: string }>
+  params: Promise<{ id: string; resource: string }>
 }) {
-  const { id } = await params
+  const { id, resource: resourceSegment } = await params
   
   // Fetch role data (non-cached) để hiển thị tên trong breadcrumb
-  // Theo chuẩn Next.js 16: không cache admin data
   const role = await getRoleById(id)
-  const roleName = truncateBreadcrumbLabel(role?.displayName || role?.name || "Chi tiết")
+  const roleName = truncateBreadcrumbLabel(role?.name || "Chi tiết")
   
   // Validate route ID
   const validatedId = validateRouteId(id, "Vai trò")
@@ -65,10 +64,11 @@ export default async function RoleDetailPage({
       <>
         <AdminHeader
           breadcrumbs={createDetailBreadcrumbs({
+            resourceSegment,
             listLabel: "Vai trò",
-            listPath: "/admin/roles",
+            listPath: `/${resourceSegment}/roles`,
             detailLabel: roleName,
-            detailPath: `/admin/roles/${id}`,
+            detailPath: `/${resourceSegment}/roles/${id}`,
           })}
         />
         <div className="flex flex-1 flex-col gap-4 p-4">
@@ -89,15 +89,16 @@ export default async function RoleDetailPage({
     <>
       <AdminHeader
         breadcrumbs={createDetailBreadcrumbs({
+          resourceSegment,
           listLabel: "Vai trò",
-          listPath: "/admin/roles",
+          listPath: `/${resourceSegment}/roles`,
           detailLabel: roleName,
-          detailPath: `/admin/roles/${id}`,
+          detailPath: `/${resourceSegment}/roles/${id}`,
         })}
       />
       <div className="flex flex-1 flex-col gap-4 p-4">
-        <FormPageSuspense fieldCount={6} sectionCount={2}>
-          <RoleDetailContent roleId={validatedId} />
+        <FormPageSuspense fieldCount={4} sectionCount={1}>
+          <RoleDetailContent roleId={id} resourceSegment={resourceSegment} />
         </FormPageSuspense>
       </div>
     </>
