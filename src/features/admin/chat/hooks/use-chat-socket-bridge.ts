@@ -58,7 +58,7 @@ export const useChatSocketBridge = ({
       receiverId: payload.toUserId || null,
       groupId: payload.groupId || null,
       timestamp: new Date(payload.timestamp || Date.now()),
-      isRead: payload.isRead ?? (payload.groupId ? false : payload.toUserId !== currentUserId),
+      isRead: payload.isRead ?? false,
       type: "PERSONAL",
       parentId: payload.parentMessageId || null,
       readers: payload.readers || undefined, // Include readers array for group messages
