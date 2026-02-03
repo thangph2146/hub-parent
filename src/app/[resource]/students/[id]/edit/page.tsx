@@ -38,10 +38,6 @@ export async function generateMetadata({
   }
 }
 
-interface StudentEditPageProps {
-  params: Promise<{ id: string }>
-}
-
 /**
  * Student Edit Page với Suspense cho streaming
  * 

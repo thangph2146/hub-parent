@@ -38,10 +38,6 @@ export async function generateMetadata({
   }
 }
 
-interface StudentDetailPageProps {
-  params: Promise<{ id: string }>
-}
-
 /**
  * Student Detail Page với Suspense cho streaming
  * 

@@ -71,6 +71,17 @@ export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname
   const origin = request.headers.get("origin")
   
+  // Skip proxy for RSC requests to prevent net::ERR_ABORTED
+  // RSC requests are handled directly by Next.js
+  if (
+    request.nextUrl.searchParams.has("_rsc") ||
+    request.headers.get("rsc") === "1" ||
+    request.headers.get("next-router-prefetch") === "1" ||
+    request.headers.get("next-router-state-tree")
+  ) {
+    return NextResponse.next()
+  }
+  
   // Get configuration (Dependency Inversion Principle)
   const config = getProxyConfig()
 

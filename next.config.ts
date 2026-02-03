@@ -11,16 +11,16 @@ const nextConfig: NextConfig = {
   // Image optimization
   images: {
     remotePatterns: [
-      { protocol: "https", hostname: "**", pathname: "/**" },
-      { protocol: "http", hostname: "**", pathname: "/**" },
+      { protocol: "https", hostname: "fileserver2.hub.edu.vn", pathname: "/**" },
+      { protocol: "https", hostname: "hub.edu.vn", pathname: "/**" },
       { protocol: "https", hostname: "images.unsplash.com", pathname: "/**" },
       { protocol: "https", hostname: "source.unsplash.com", pathname: "/**" },
+      { protocol: "https", hostname: "**", pathname: "/**" },
+      { protocol: "http", hostname: "**", pathname: "/**" },
     ],
     formats: ["image/avif", "image/webp"],
     minimumCacheTTL: 3600,
     dangerouslyAllowSVG: true,
-    contentDispositionType: "attachment",
-    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
     // Default quality for all images (can be overridden per image)
     // Optimized for mobile-first: smaller sizes for mobile devices
     deviceSizes: [320, 375, 414, 640, 750, 828, 1080, 1200, 1920, 2048, 3840],
