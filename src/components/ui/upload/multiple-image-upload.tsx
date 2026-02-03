@@ -493,9 +493,11 @@ export function MultipleImageUpload({
                     <NextImage
                       src={item.preview}
                       alt={item.file.name}
+                      title={item.file.name}
                       fill
-                      className="object-cover"
+                      className="object-cover article-image article-image-ux-impr article-image-new expandable"
                       sizes="64px"
+                      unoptimized
                     />
                   </div>
                 )}

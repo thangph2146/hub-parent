@@ -75,10 +75,13 @@ export const HeroSection = ({
         <Image
           src={backgroundImage.src}
           alt={backgroundImage.alt}
+          title={backgroundImage.alt}
           fill
-          className="object-cover object-[center_bottom]"
+          className="object-cover object-[center_bottom] article-image article-image-ux-impr article-image-new expandable"
           priority
+          loading="eager"
           fetchPriority="high"
+          unoptimized
           quality={75}
           sizes="100vw"
         />

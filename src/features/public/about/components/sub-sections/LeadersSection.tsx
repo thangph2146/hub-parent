@@ -42,9 +42,12 @@ export const LeadersSection = () => {
                       <Image
                         src={leader.image}
                         alt={leader.name}
+                        title={leader.name}
                         fill
-                        className="object-cover"
+                        className="object-cover article-image article-image-ux-impr article-image-new expandable"
                         sizes="(max-width: 640px) 128px, 160px"
+                        unoptimized
+                        loading="eager"
                       />
                     </div>
                     <TypographyH3 className="mb-1 group-hover:text-primary transition-colors text-lg font-bold">

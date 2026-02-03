@@ -172,7 +172,7 @@ function LazyImage({
   return (
     <div ref={wrapperRef} style={{ display: "inline-block", width: "100%" }}>
       <Image
-        className={className || undefined}
+        className={cn(className, "article-image article-image-ux-impr article-image-new expandable")}
         src={src}
         alt={altText}
         title={altText}
@@ -189,7 +189,7 @@ function LazyImage({
         onError={onError}
         draggable={false}
         priority={fetchPriority === "high"}
-        loading={fetchPriority === "high" ? "eager" : "lazy"}
+        loading="eager"
         decoding="async"
         onLoad={(e) => {
           const img = e.currentTarget

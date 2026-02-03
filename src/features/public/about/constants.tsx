@@ -563,9 +563,12 @@ export const getTimelineData = (historyTimeline: typeof HISTORY_TIMELINE) =>
             <Image
               src={item.image}
               alt={item.year}
+              title={item.year}
               fill
-              className="object-cover"
+              className="object-cover article-image article-image-ux-impr article-image-new expandable"
               sizes="(max-width: 1024px) 100vw, 66vw"
+              unoptimized
+              loading="eager"
             />
           </div>
         </div>

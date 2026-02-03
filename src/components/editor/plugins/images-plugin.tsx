@@ -247,10 +247,12 @@ function ImagePickerFolderTree({
                 <Image
                   src={image.url}
                   alt={image.originalName}
+                  title={image.originalName}
                   fill
-                  className="object-cover"
+                  className="object-cover article-image article-image-ux-impr article-image-new expandable"
                   sizes="(max-width: 768px) 25vw, 20vw"
                   unoptimized
+                  loading="eager"
                 />
               </button>
             ))}
@@ -372,10 +374,12 @@ export function InsertImageUploadsDialogBody({
                       <Image
                         src={image.url}
                         alt={image.originalName}
+                        title={image.originalName}
                         fill
-                        className="object-cover"
+                        className="object-cover article-image article-image-ux-impr article-image-new expandable"
                         sizes="(max-width: 768px) 25vw, 20vw"
                         unoptimized
+                        loading="eager"
                       />
                     </button>
                   ))}

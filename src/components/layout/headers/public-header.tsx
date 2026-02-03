@@ -150,7 +150,7 @@ function AuthButton({
     <Button
       variant={variant}
       className={cn(
-        "w-full sm:w-1/2 h-auto",
+        "w-full h-auto",
         "py-3 px-3 sm:py-3.5 sm:px-4",
         "flex flex-row items-center justify-start rounded-lg max-w-full",
         "touch-action-manipulation tap-highlight-transparent",
@@ -492,7 +492,7 @@ export function PublicHeader() {
                         </div>
                       ) : (
                         <Flex
-                          direction="col-sm-row"
+                          direction="col"
                           gap={2}
                           border="bottom"
                           paddingY="4"

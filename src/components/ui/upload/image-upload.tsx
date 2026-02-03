@@ -318,8 +318,9 @@ export function ImageUpload({
               <NextImage
                 src={previewUrl}
                 alt="Preview"
+                title="Preview"
                 fill
-                className="object-contain"
+                className="object-contain article-image article-image-ux-impr article-image-new expandable"
                 unoptimized
               />
               {!disabled && (

@@ -126,9 +126,11 @@ export const ImageField = ({
             <Image
               src={imageUrl}
               alt="Preview"
+              title="Preview"
               fill
-              className="object-contain"
+              className="object-contain article-image article-image-ux-impr article-image-new expandable"
               unoptimized
+              loading="eager"
               onError={() => setImageError(true)}
               onLoad={() => setImageError(false)}
             />

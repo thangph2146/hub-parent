@@ -48,11 +48,13 @@ export function PostCard({ post, className, priority = false, headingLevel = "h2
                 <Image
                   src={post.image}
                   alt={post.title}
+                  title={post.title}
                   fill
-                  className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                  className="object-cover transition-transform duration-700 ease-out group-hover:scale-105 article-image article-image-ux-impr article-image-new expandable"
                   sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                  loading={priority ? "eager" : "lazy"}
+                  loading="eager"
                   priority={priority}
+                  unoptimized
                   quality={75}
                   onError={() => setImageError(true)}
                 />

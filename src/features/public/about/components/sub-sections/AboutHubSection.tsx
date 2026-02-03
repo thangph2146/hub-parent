@@ -60,9 +60,12 @@ export const AboutHubSection = () => {
             <Image
               src="https://fileserver2.hub.edu.vn/IMAGES/2024/12/31/20241231170332vehub.jpg"
               alt="Toàn cảnh khuôn viên Trường Đại học Ngân hàng TP.HCM (HUB)"
+              title="Toàn cảnh khuôn viên Trường Đại học Ngân hàng TP.HCM (HUB)"
               fill
-              className="object-cover"
+              className="object-cover article-image article-image-ux-impr article-image-new expandable"
               sizes="(max-width: 640px) 100vw, (max-width: 1200px) 90vw, 1200px"
+              unoptimized
+              loading="eager"
             />
           </div>
         </div>

@@ -322,10 +322,12 @@ export function SignInForm({
             <Image
               src="https://hub.edu.vn/DATA/IMAGES/2024/12/31/20241231235033-1vehub.jpg"
               alt="Hình ảnh"
+              title="Hình ảnh"
               width={1000}
               height={1000}
               loading="eager"
-              className="absolute inset-0 h-full w-full object-cover dark:brightness-[1]"
+              className="absolute inset-0 h-full w-full object-cover dark:brightness-[1] article-image article-image-ux-impr article-image-new expandable"
+              unoptimized
             />
           </Flex>
         </CardContent>

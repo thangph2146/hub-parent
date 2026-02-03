@@ -264,9 +264,12 @@ export const GuideClient = () => {
                           <Image
                             src={guide.imagePath}
                             alt={guide.title}
+                            title={guide.title}
                             fill
-                            className="object-contain p-4 transition-transform duration-500 group-hover:scale-105"
+                            className="object-contain p-4 transition-transform duration-500 group-hover:scale-105 article-image article-image-ux-impr article-image-new expandable"
                             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                            unoptimized
+                            loading="eager"
                           />
                           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-300" />
                         </div>

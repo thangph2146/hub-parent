@@ -42,11 +42,14 @@ export const OverviewSection = () => {
               <Image
                 src="https://fileserver2.hub.edu.vn/IMAGES/2025/03/26/2025032609060018.jpg"
                 alt="Tổng quan về HUB"
+                title="Tổng quan về HUB"
                 fill
-                className="object-cover"
+                className="object-cover article-image article-image-ux-impr article-image-new expandable"
                 sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 50vw"
                 quality={75}
                 priority
+                loading="eager"
+                unoptimized
               />
             </div>
           </div>

@@ -72,9 +72,11 @@ const ImageItem = ({
         <Image
           src={image.url}
           alt={image.alt || `Image ${index + 1}`}
+          title={image.alt || `Image ${index + 1}`}
           fill
-          className="object-cover"
+          className="object-cover article-image article-image-ux-impr article-image-new expandable"
           unoptimized
+          loading="eager"
         />
         <Flex align="center" justify="center" gap={2} position="absolute-inset" className="bg-black/0 group-hover:bg-black/40 transition-colors">
           {!isReadOnly && (

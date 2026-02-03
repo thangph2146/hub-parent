@@ -63,9 +63,12 @@ export const FacilitiesSection = () => {
                   <Image
                     src={image.url}
                     alt={image.title}
+                    title={image.title}
                     fill
-                    className="object-cover"
+                    className="object-cover article-image article-image-ux-impr article-image-new expandable"
                     sizes="(max-width: 640px) 100vw, (max-width: 1024px) 80vw, 50vw"
+                    unoptimized
+                    loading="eager"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                   <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6 text-white">

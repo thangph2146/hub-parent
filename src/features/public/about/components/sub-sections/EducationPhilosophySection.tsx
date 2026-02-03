@@ -43,9 +43,12 @@ export const EducationPhilosophySection = () => {
               <Image
                 src="https://fileserver2.hub.edu.vn/IMAGES/2025/03/26/2025032609084220241231170442trietlygiaoduc.png"
                 alt="Triết lý giáo dục của Trường Đại học Ngân hàng TP.HCM (HUB)"
+                title="Triết lý giáo dục của Trường Đại học Ngân hàng TP.HCM (HUB)"
                 fill
-                className="object-cover"
+                className="object-cover article-image article-image-ux-impr article-image-new expandable"
                 sizes="(max-width: 1280px) 100vw, 50vw"
+                unoptimized
+                loading="eager"
               />
             </div>
           </div>

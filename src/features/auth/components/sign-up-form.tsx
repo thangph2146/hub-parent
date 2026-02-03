@@ -286,10 +286,12 @@ export function SignUpForm({
             <Image
               src="https://hub.edu.vn/DATA/IMAGES/2025/06/06/20250606095214z6676928339374_824596735893cad9e9d4402075fcccd2.jpg"
               alt="Hình ảnh"
+              title="Hình ảnh"
               width={1000}
               height={1000}
               loading="eager"
-              className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.85]"
+              className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.85] article-image article-image-ux-impr article-image-new expandable"
+              unoptimized
             />
           </Flex>
         </CardContent>

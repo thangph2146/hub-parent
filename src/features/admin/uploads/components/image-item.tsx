@@ -83,8 +83,9 @@ export const ImageItem = ({
         <Image
           src={image.url}
           alt={image.originalName}
+          title={image.originalName}
           fill
-          className="object-cover transition-transform duration-200 group-hover:scale-105"
+          className="object-cover transition-transform duration-200 group-hover:scale-105 article-image article-image-ux-impr article-image-new expandable"
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, (max-width: 1280px) 20vw, 400px"
           unoptimized
         />
@@ -164,8 +165,9 @@ export const ImageItem = ({
           <Image
             src={image.url}
             alt={image.originalName}
+            title={image.originalName}
             fill
-            className="object-contain"
+            className="object-contain article-image article-image-ux-impr article-image-new expandable"
             sizes="95vw"
             unoptimized
           />

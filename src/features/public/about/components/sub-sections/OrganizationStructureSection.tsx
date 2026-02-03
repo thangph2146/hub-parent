@@ -31,9 +31,12 @@ export const OrganizationStructureSection = () => {
             <Image
               src="https://fileserver2.hub.edu.vn/IMAGES/2025/09/22/20250922082406Bộ-máy-tổ-chức-2.png"
               alt="Sơ đồ bộ máy tổ chức của Trường Đại học Ngân hàng TP.HCM (HUB)"
+              title="Sơ đồ bộ máy tổ chức của Trường Đại học Ngân hàng TP.HCM (HUB)"
               fill
-              className="object-cover"
+              className="object-cover article-image article-image-ux-impr article-image-new expandable"
               sizes="(max-width: 640px) 100vw, (max-width: 1200px) 90vw, 1200px"
+              unoptimized
+              loading="eager"
             />
           </div>
         </div>
