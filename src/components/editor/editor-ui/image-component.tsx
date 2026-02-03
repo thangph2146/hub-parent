@@ -175,10 +175,12 @@ function LazyImage({
         className={className || undefined}
         src={src}
         alt={altText}
+        title={altText}
         width={renderWidth}
         height={renderHeight}
         sizes={getSizes()}
         quality={75}
+        unoptimized={true}
         style={{
           height: height === "inherit" ? "auto" : height,
           width: width === "inherit" ? "100%" : width,
@@ -187,6 +189,7 @@ function LazyImage({
         onError={onError}
         draggable={false}
         priority={fetchPriority === "high"}
+        loading={fetchPriority === "high" ? "eager" : "lazy"}
         decoding="async"
         onLoad={(e) => {
           const img = e.currentTarget
@@ -955,7 +958,7 @@ export default function ImageComponent({
       : hasCaptionContent)
 
   const imageClassName = cn(
-    "cursor-default",
+    "article-image article-image-ux-impr article-image-new expandable cursor-default",
     isFocused && "focused ring-primary ring-2 ring-offset-2",
     isFocused &&
       $isNodeSelection(selection) &&
